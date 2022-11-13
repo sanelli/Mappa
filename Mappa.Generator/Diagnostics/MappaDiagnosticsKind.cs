@@ -20,4 +20,9 @@ internal enum MappaDiagnosticsKind
     /// The method returns void.
     /// </summary>
     MethodIsVoid,
+
+    /// <summary>
+    /// The method returns any of the task types.
+    /// </summary>
+    MethodReturnsTaskType,
 }

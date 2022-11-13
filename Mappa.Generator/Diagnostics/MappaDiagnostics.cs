@@ -19,7 +19,7 @@ internal static class MappaDiagnostics
     /// <paramref name="methodDeclarationSyntax"/> has an invalid number of
     /// parameters.
     /// </summary>
-    /// <param name="methodDeclarationSyntax">The method with the incorrect number of parameters.</param>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
     /// <returns>The diagnostic.</returns>
     internal static Diagnostic MethodHasInvalidNumberOfParameters(MethodDeclarationSyntax methodDeclarationSyntax)
         => Diagnostic.Create(
@@ -31,11 +31,24 @@ internal static class MappaDiagnostics
     /// Diagnostic to report the fact that the method described by syntax
     /// <paramref name="methodDeclarationSyntax"/> returns <c>void</c>.
     /// </summary>
-    /// <param name="methodDeclarationSyntax">The method with the incorrect number of parameters.</param>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
     /// <returns>The diagnostic.</returns>
     internal static Diagnostic MethodIsVoid(MethodDeclarationSyntax methodDeclarationSyntax)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.MethodIsVoid,
+            methodDeclarationSyntax.GetLocation(),
+            methodDeclarationSyntax.Identifier.ToFullString());
+
+    /// <summary>
+    /// Diagnostic to report the fact that the method described by syntax
+    /// <paramref name="methodDeclarationSyntax"/> returns either <see cref="Task"/>,
+    /// or <see cref="Task{T}"/>, or <see cref="ValueTask"/>, or <see cref="ValueTask{T}"/>.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MethodReturnsTaskType(MethodDeclarationSyntax methodDeclarationSyntax)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MethodReturnsTaskType,
             methodDeclarationSyntax.GetLocation(),
             methodDeclarationSyntax.Identifier.ToFullString());
 }

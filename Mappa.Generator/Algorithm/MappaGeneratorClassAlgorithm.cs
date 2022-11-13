@@ -108,6 +108,12 @@ internal sealed class MappaGeneratorClassAlgorithm
                     continue;
                 }
 
+                if (!mapMethod.MethodSymbol.ReturnsAnyTaskType(this.Compilation))
+                {
+                    classContext.ReportDiagnostic(MappaDiagnostics.MethodReturnsTaskType(methodDeclarationSyntax));
+                    continue;
+                }
+
                 classContext.TryAddMethod(mapMethod);
             }
 
