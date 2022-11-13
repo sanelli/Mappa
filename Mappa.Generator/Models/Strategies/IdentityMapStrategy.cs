@@ -1,24 +1,24 @@
-﻿// <copyright file="IdentityTypeMapStrategy.cs" company="Stefano Anelli">
+﻿// <copyright file="IdentityMapStrategy.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
 using Microsoft.CodeAnalysis;
 
-namespace Mappa.Generator.Models.TypeMapStrategy;
+namespace Mappa.Generator.Models.Strategies;
 
 /// <summary>
 /// Describe an identity type map strategy.
 /// </summary>
-internal sealed class IdentityTypeMapStrategy
-    : ITypeMapStrategy
+internal sealed class IdentityMapStrategy
+    : IMapStrategy
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="IdentityTypeMapStrategy"/> class.
+    /// Initializes a new instance of the <see cref="IdentityMapStrategy"/> class.
     /// </summary>
     /// <param name="targetType">The target type.</param>
     /// <param name="sourceType">The source type.</param>
     /// <param name="source">The source of the mapping.</param>
-    public IdentityTypeMapStrategy(ITypeSymbol targetType, ITypeSymbol sourceType, string source)
+    public IdentityMapStrategy(ITypeSymbol targetType, ITypeSymbol sourceType, string source)
     {
         this.TargetType = targetType;
         this.SourceType = sourceType;

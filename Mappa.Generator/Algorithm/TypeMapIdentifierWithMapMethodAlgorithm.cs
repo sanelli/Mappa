@@ -3,7 +3,7 @@
 // </copyright>
 
 using Mappa.Generator.Models;
-using Mappa.Generator.Models.TypeMapStrategy;
+using Mappa.Generator.Models.Strategies;
 
 using Microsoft.CodeAnalysis;
 
@@ -34,11 +34,11 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
     }
 
     /// <inheritdoc/>
-    internal override ITypeMapStrategy GetStrategy()
+    internal override IMapStrategy GetStrategy()
     {
         if (this.MethodContext.ClassContext.TryGetMethod(this.TargetType, this.SourceType, out var mapMethod))
         {
-            return new MapMethodTypeMapStrategy(mapMethod, this.Source);
+            return new MethodMapStrategy(mapMethod, this.Source);
         }
 
         return base.GetStrategy();

@@ -3,7 +3,7 @@
 // </copyright>
 
 using Mappa.Generator.Models;
-using Mappa.Generator.Models.TypeMapStrategy;
+using Mappa.Generator.Models.Strategies;
 
 using Microsoft.CodeAnalysis;
 
@@ -55,13 +55,12 @@ internal class TypeMapIdentifierAlgorithm
     internal string Source { get; }
 
     /// <summary>
-    /// Compute a suitable strategy from type <see cref="SourceType"/> tp
+    /// Compute a suitable strategy from type <see cref="SourceType"/> to
     /// <see cref="TargetType"/>.
     /// </summary>
     /// <returns>The strategy computed.</returns>
-    internal virtual ITypeMapStrategy GetStrategy()
+    internal virtual IMapStrategy GetStrategy()
     {
-        // 01. S1 -> object? : Identity strategy
         // XX. * -> object : IdentityStrategy
         // XX. T -> T or T -> T?: Identity strategy
         // XX. numeric -> implicit-convertible-numeric : Identity strategy.

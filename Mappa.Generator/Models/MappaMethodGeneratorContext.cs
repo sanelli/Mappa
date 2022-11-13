@@ -18,15 +18,13 @@ internal sealed class MappaMethodGeneratorContext
     /// Initializes a new instance of the <see cref="MappaMethodGeneratorContext"/> class.
     /// </summary>
     /// <param name="classContext">The context of the parent class.</param>
-    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="mapMethod">The method to be mapped.</param>
     public MappaMethodGeneratorContext(
         MappaClassGeneratorContext classContext,
-        MethodDeclarationSyntax methodDeclarationSyntax)
+        MapMethod mapMethod)
     {
         this.ClassContext = classContext;
-        this.MethodDeclarationSyntax = methodDeclarationSyntax;
-        this.MethodSymbol = classContext.SemanticModel.GetDeclaredSymbol(methodDeclarationSyntax) as IMethodSymbol
-            ?? throw new MappaGeneratorException($"Cannot obtain the semantic model for method \"{methodDeclarationSyntax.Identifier}\".", methodDeclarationSyntax.GetLocation());
+        this.MapMethod = mapMethod;
     }
 
     /// <summary>
@@ -37,12 +35,7 @@ internal sealed class MappaMethodGeneratorContext
     /// <summary>
     /// Gets the method declaration syntax.
     /// </summary>
-    internal MethodDeclarationSyntax MethodDeclarationSyntax { get; }
-
-    /// <summary>
-    /// Gets the method symbol.
-    /// </summary>
-    internal IMethodSymbol MethodSymbol { get; }
+    internal MapMethod MapMethod { get; }
 
     /// <summary>
     /// Gets a value indicating whether <c>nullable</c> is enabled for the method.
@@ -51,7 +44,7 @@ internal sealed class MappaMethodGeneratorContext
     internal bool IsNullableEnabled()
     {
         var methodNullableContext = this.ClassContext.SemanticModel
-           .GetNullableContext(this.MethodDeclarationSyntax
+           .GetNullableContext(this.MapMethod.MethodDeclarationSyntax
                .GetLocation()
                .GetLineSpan()
                .StartLinePosition
@@ -66,7 +59,7 @@ internal sealed class MappaMethodGeneratorContext
             case NullableContext.ContextInherited:
                 return this.ClassContext.Compilation.Options.NullableContextOptions == NullableContextOptions.Enable;
             default:
-                throw new MappaGeneratorException($"Cannot obtain the nullable context for method \"{this.MethodDeclarationSyntax.Identifier}\": unsupported value \"{methodNullableContext}\".", this.MethodDeclarationSyntax.GetLocation());
+                throw new MappaGeneratorException($"Cannot obtain the nullable context for method \"{this.MapMethod.MethodDeclarationSyntax.Identifier}\": unsupported value \"{methodNullableContext}\".", this.MapMethod.MethodDeclarationSyntax.GetLocation());
         }
     }
 }

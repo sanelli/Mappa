@@ -2,7 +2,13 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Exceptions;
+using Mappa.Generator.Extensions;
+using Mappa.Generator.Models.Strategies;
+
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Mappa.Generator.Models;
 
@@ -11,31 +17,27 @@ namespace Mappa.Generator.Models;
 /// </summary>
 internal sealed class MapMethod
 {
+    private MethodParameterMapStrategy? methodParameterMapStrategy = null;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="MapMethod"/> class.
     /// </summary>
-    /// <param name="fieldName">
-    /// The name of the field that can be used to access the method. This can be
-    /// <c>"this"</c> for local methods, <c>""</c> for static methods and
-    /// the name of the variable that can be used to access the class containing
-    /// the method.
-    /// </param>
-    /// <param name="methodName">The name of the method.</param>
-    /// <param name="targetType">The target type of the method.</param>
-    /// <param name="sourceType">The type of source parameter.</param>
-    /// <param name="sourceParameterName">The name of the source parameter.</param>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="semanticModel">The semantic model.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     public MapMethod(
-        string fieldName,
-        string methodName,
-        ITypeSymbol targetType,
-        ITypeSymbol sourceType,
-        string sourceParameterName)
+        MethodDeclarationSyntax methodDeclarationSyntax,
+        SemanticModel semanticModel,
+        CancellationToken cancellationToken)
     {
-        this.FieldName = fieldName;
-        this.MethodName = methodName;
-        this.TargetType = targetType;
-        this.SourceType = sourceType;
-        this.SourceParameterName = sourceParameterName;
+        this.MethodDeclarationSyntax = methodDeclarationSyntax;
+        this.FieldName = this.MethodDeclarationSyntax.IsStatic() ? string.Empty : "this";
+        this.MethodName = methodDeclarationSyntax.Identifier.ToFullString();
+        this.MethodSymbol = semanticModel.GetSymbolInfo(this.MethodDeclarationSyntax, cancellationToken).Symbol as IMethodSymbol
+            ?? throw new MappaGeneratorException($"Cannot obtain the method symbol for method \"{this.MethodDeclarationSyntax.Identifier}\" syntax node.", methodDeclarationSyntax.GetLocation());
+        this.TargetType = this.MethodSymbol.ReturnType;
+        this.SourceType = this.MethodSymbol.Parameters.First().Type;
+        this.SourceParameterName = this.MethodSymbol.Parameters.First().Name;
         this.Mapped = false;
     }
 
@@ -60,6 +62,16 @@ internal sealed class MapMethod
     internal ITypeSymbol SourceType { get; }
 
     /// <summary>
+    /// Gets the method declaration syntax.
+    /// </summary>
+    internal MethodDeclarationSyntax MethodDeclarationSyntax { get; }
+
+    /// <summary>
+    /// Gets the method symbol.
+    /// </summary>
+    internal IMethodSymbol MethodSymbol { get; }
+
+    /// <summary>
     /// Gets the source parameter name.
     /// </summary>
     internal string SourceParameterName { get; }
@@ -70,9 +82,35 @@ internal sealed class MapMethod
     internal bool Mapped { get; private set; }
 
     /// <summary>
+    /// Gets the method strategy.
+    /// </summary>
+    internal MethodParameterMapStrategy Strategy => this.methodParameterMapStrategy
+        ?? throw new MappaGeneratorException($"Strategy for method\"{this.MethodDeclarationSyntax.Identifier}\" has not been identified yet.", this.MethodDeclarationSyntax.GetLocation());
+
+    /// <summary>
+    /// Gets a value indicating whether the strategy has been set.
+    /// </summary>
+    internal bool HasStrategy => this.methodParameterMapStrategy is not null;
+
+    /// <summary>
     /// Mark the method as being mapped.
     /// </summary>
     internal void MarkMapped() => this.Mapped = true;
+
+    /// <summary>
+    /// Sets the startegy for the method.
+    /// </summary>
+    /// <param name="strategy">The strategy to be applied to the method.</param>
+    /// <exception cref="">When the strategy has been already set.</exception>
+    internal void SetStrategy(MethodParameterMapStrategy strategy)
+    {
+        if (this.HasStrategy)
+        {
+            throw new MappaGeneratorException($"Strategy for method\"{this.MethodDeclarationSyntax.Identifier}\" has already been identified.", this.MethodDeclarationSyntax.GetLocation());
+        }
+
+        this.methodParameterMapStrategy = strategy;
+    }
 
     /// <summary>
     /// Check if the method is map from <paramref name="sourceType"/>

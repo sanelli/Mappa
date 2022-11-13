@@ -1,23 +1,23 @@
-﻿// <copyright file="MapMethodTypeMapStrategy.cs" company="Stefano Anelli">
+﻿// <copyright file="MethodMapStrategy.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
 using Microsoft.CodeAnalysis;
 
-namespace Mappa.Generator.Models.TypeMapStrategy;
+namespace Mappa.Generator.Models.Strategies;
 
 /// <summary>
-/// DEscribe a startegy for mapping between two types that uses a map method.
+/// Describe a startegy for mapping between two types that uses a map method.
 /// </summary>
-internal sealed class MapMethodTypeMapStrategy
-    : ITypeMapStrategy
+internal sealed class MethodMapStrategy
+    : IMapStrategy
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="MapMethodTypeMapStrategy"/> class.
+    /// Initializes a new instance of the <see cref="MethodMapStrategy"/> class.
     /// </summary>
     /// <param name="mapMethod">The method to be used for the mapping.</param>
     /// <param name="source">The source of the mapping.</param>
-    public MapMethodTypeMapStrategy(MapMethod mapMethod, string source)
+    public MethodMapStrategy(MapMethod mapMethod, string source)
     {
         this.MapMethod = mapMethod;
         this.Source = source;

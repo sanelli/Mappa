@@ -92,6 +92,15 @@ internal sealed class MappaClassGeneratorContext
     }
 
     /// <summary>
+    /// Check if all methods have been mapped.
+    /// </summary>
+    /// <returns>
+    /// <c>true</c> if all <see cref="MapMethods"/> have the
+    /// <see cref="MapMethod.Mapped"/> flag set to <c>true</c>.</returns>
+    internal bool AreAllMethodsMapped()
+        => this.mapMethods.All(mapMethod => mapMethod.Mapped);
+
+    /// <summary>
     /// Records a new set of diagnostics.
     /// </summary>
     /// <param name="diagnostics">The diagnostics to be added.</param>

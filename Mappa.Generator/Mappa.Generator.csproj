@@ -15,7 +15,7 @@
 	</PropertyGroup>
 	<PropertyGroup>
 		<PackageId>Mappa.Generator</PackageId>
-		<Version>0.0.1-alpha.1</Version>
+		<Version>0.0.1-alpha.2</Version>
 		<Authors>Stefano Anelli</Authors>
 		<Company>Stefano Anelli</Company>
 		<Product>Mappa</Product>
@@ -29,7 +29,7 @@
 		<PackageTags>Mappa,Mapper,Mapping,SourceGenerator</PackageTags>
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="Mappa" Version="0.0.1-alpha.1" GeneratePathProperty="true" PrivateAssets="all" />
+		<PackageReference Include="Mappa" Version="0.0.1-alpha.2" GeneratePathProperty="true" PrivateAssets="all" />
 		<PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435">
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 			<PrivateAssets>all</PrivateAssets>
@@ -46,6 +46,7 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <None Remove="Exceptions\" />
+	  <None Remove="Extensions\" />
 	</ItemGroup>
 	<ItemGroup>
 		<None Include="$(PKGMappa)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
@@ -63,5 +64,6 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <Folder Include="Exceptions\" />
+	  <Folder Include="Extensions\" />
 	</ItemGroup>
 </Project>
