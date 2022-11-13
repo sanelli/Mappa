@@ -32,7 +32,41 @@ internal static class CompilationExtensions
     /// <typeparam name="TType">The type to be obtained.</typeparam>
     /// <param name="compilation">The current compilation.</param>
     /// <returns>The <see cref="INamedTypeSymbol"/> for type <typeparamref name="TType"/>.</returns>
-    /// <exception cref="MappaGeneratorException">When <paramref name="type"/> cannot be loaded.</exception>
+    /// <exception cref="MappaGeneratorException">When <typeparamref name="TType"/> cannot be loaded.</exception>
     internal static INamedTypeSymbol GetTypeSymbol<TType>(this Compilation compilation)
         => compilation.GetTypeSymbol(typeof(TType));
+
+    /// <summary>
+    /// Check if an implic conversion from <paramref name="sourceType"/> to
+    /// <paramref name="targetType"/> exists.
+    /// </summary>
+    /// <param name="compilation">The compilation.</param>
+    /// <param name="targetType">The target type.</param>
+    /// <param name="sourceType">The source type.</param>
+    /// <returns>
+    /// <c>true</c> if an implic conversion from <paramref name="sourceType"/> to
+    /// <paramref name="targetType"/> exists, <c>false</c> otherwise.
+    /// </returns>
+    internal static bool HasImplicitConversion(this Compilation compilation, ITypeSymbol targetType, ITypeSymbol sourceType)
+    {
+        var conversion = compilation.ClassifyCommonConversion(sourceType, targetType);
+        return conversion.Exists && conversion.IsImplicit;
+    }
+
+    /// <summary>
+    /// Check if an explicit non-numeric conversion from <paramref name="sourceType"/> to
+    /// <paramref name="targetType"/> exists.
+    /// </summary>
+    /// <param name="compilation">The compilation.</param>
+    /// <param name="targetType">The target type.</param>
+    /// <param name="sourceType">The source type.</param>
+    /// <returns>
+    /// <c>true</c> if an explicit non-numeric conversion from <paramref name="sourceType"/> to
+    /// <paramref name="targetType"/> exists, <c>false</c> otherwise.
+    /// </returns>
+    internal static bool HasExplicitNonNumericConversion(this Compilation compilation, ITypeSymbol targetType, ITypeSymbol sourceType)
+    {
+        var conversion = compilation.ClassifyCommonConversion(sourceType, targetType);
+        return conversion.Exists && !conversion.IsImplicit && !conversion.IsNumeric;
+    }
 }
