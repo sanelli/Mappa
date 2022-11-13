@@ -30,4 +30,13 @@ internal static class MethodDeclarationSyntaxExtensions
     /// <returns><c>true</c> is the method is partial.</returns>
     internal static bool IsPartial(this MethodDeclarationSyntax methodDeclarationSyntax)
         => methodDeclarationSyntax.Modifiers.Any(SyntaxKind.PartialKeyword);
+
+    /// <summary>
+    /// Check method has the given number of parameters.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="arity">The number of parameters.</param>
+    /// <returns><c>true</c> is the method is partial.</returns>
+    internal static bool HasArity(this MethodDeclarationSyntax methodDeclarationSyntax, int arity)
+        => methodDeclarationSyntax.ParameterList.Parameters.Count == arity;
 }

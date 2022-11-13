@@ -4,6 +4,7 @@
 
 using System.Collections.Immutable;
 
+using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Extensions;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
@@ -93,7 +94,19 @@ internal sealed class MappaGeneratorClassAlgorithm
                     continue;
                 }
 
+                if (!methodDeclarationSyntax.HasArity(1))
+                {
+                    classContext.ReportDiagnostic(MappaDiagnostics.MethodHasInvalidNumberOfParameters(methodDeclarationSyntax));
+                    continue;
+                }
+
                 var mapMethod = new MapMethod(methodDeclarationSyntax, classContext.SemanticModel, cancellationToken);
+
+                if (!mapMethod.MethodSymbol.IsVoid())
+                {
+                    classContext.ReportDiagnostic(MappaDiagnostics.MethodIsVoid(methodDeclarationSyntax));
+                    continue;
+                }
 
                 classContext.TryAddMethod(mapMethod);
             }
@@ -122,6 +135,12 @@ internal sealed class MappaGeneratorClassAlgorithm
             }
 
             // TODO: Generate the target code for the class.
+
+            // Report the diagnostics.
+            foreach (var diagnostic in classContext.Diagnostics)
+            {
+                this.Context.ReportDiagnostic(diagnostic);
+            }
         }
     }
 }

@@ -47,6 +47,7 @@
 	<ItemGroup>
 	  <None Remove="Exceptions\" />
 	  <None Remove="Extensions\" />
+	  <None Remove="Diagnostics\" />
 	</ItemGroup>
 	<ItemGroup>
 		<None Include="$(PKGMappa)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
@@ -65,5 +66,6 @@
 	<ItemGroup>
 	  <Folder Include="Exceptions\" />
 	  <Folder Include="Extensions\" />
+	  <Folder Include="Diagnostics\" />
 	</ItemGroup>
 </Project>

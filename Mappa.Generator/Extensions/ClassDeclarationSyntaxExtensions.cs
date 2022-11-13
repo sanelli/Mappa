@@ -2,6 +2,8 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Attributes;
+
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;

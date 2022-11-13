@@ -101,7 +101,7 @@ internal sealed class MapMethod
     /// Sets the startegy for the method.
     /// </summary>
     /// <param name="strategy">The strategy to be applied to the method.</param>
-    /// <exception cref="">When the strategy has been already set.</exception>
+    /// <exception cref="MappaGeneratorException">When the strategy has been already set.</exception>
     internal void SetStrategy(MethodParameterMapStrategy strategy)
     {
         if (this.HasStrategy)
