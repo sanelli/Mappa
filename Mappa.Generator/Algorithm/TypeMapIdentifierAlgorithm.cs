@@ -21,17 +21,23 @@ internal class TypeMapIdentifierAlgorithm
     /// <param name="context">The mappa class generator context.</param>
     /// <param name="targetType">The target type.</param>
     /// <param name="sourceType">The source type.</param>
-    public TypeMapIdentifierAlgorithm(MappaClassGeneratorContext context, ITypeSymbol targetType, ITypeSymbol sourceType)
+    /// <param name="source">The name of the source mapping.</param>
+    public TypeMapIdentifierAlgorithm(
+        MappaMethodGeneratorContext context,
+        ITypeSymbol targetType,
+        ITypeSymbol sourceType,
+        string source)
     {
-        this.Context = context;
+        this.MethodContext = context;
         this.TargetType = targetType;
         this.SourceType = sourceType;
+        this.Source = source;
     }
 
     /// <summary>
     /// Gets the context.
     /// </summary>
-    internal MappaClassGeneratorContext Context { get; }
+    internal MappaMethodGeneratorContext MethodContext { get; }
 
     /// <summary>
     /// Gets the target type.
@@ -44,25 +50,31 @@ internal class TypeMapIdentifierAlgorithm
     internal ITypeSymbol SourceType { get; }
 
     /// <summary>
+    /// Gets the mapping source.
+    /// </summary>
+    internal string Source { get; }
+
+    /// <summary>
     /// Compute a suitable strategy from type <see cref="SourceType"/> tp
     /// <see cref="TargetType"/>.
     /// </summary>
     /// <returns>The strategy computed.</returns>
     internal virtual ITypeMapStrategy GetStrategy()
     {
-        // 01. * -> object : Identity strategy
-        // 02. T -> T : Identity strategy
-        // 05. numeric -> implicit-convertible-numeric : Identity strategy.
-        // 03. IDictionary<TK,TV> -> Dictionary<SK,SV> : DictionaryStrategy( Strategy(TK, SK), Startegy(TV, SV) ).
-        // 04. enum -> string : EnumToString strategy.
-        // 05. enum -> implicit-convertible-integral : EnumToIntegral strategy.
-        // 06. string -> enum : StringToEnum strategy.
-        // 07. integral -> enum : IntegralToEnum strategy.
-        // 08. S[] -> T[] : ArrayStrategy ( Strategy(T, S) ).
-        // 09. HashSet<S> -> HashSet<T> : HashSetStrategy( Strategy(S, T) ).
-        // 10. List<S> -> List<T> : ListStrategy ( Strategy(T, S) ).
-        // 11. IReadOnlyCollection<S> -> IReadOnlyCollection<T> : ReadOnlyCollectionStrategy ( Strategy(T, S) ).
-        // 12. S -> T : ConstructorStrategy(S, T)
+        // 01. S1 -> object? : Identity strategy
+        // XX. * -> object : IdentityStrategy
+        // XX. T -> T or T -> T?: Identity strategy
+        // XX. numeric -> implicit-convertible-numeric : Identity strategy.
+        // XX. IDictionary<K,V> -> Dictionary<K,V> : DictionaryStrategy( Strategy(K, V), Startegy(TV, SV) ).
+        // XX. enum -> string : EnumToString strategy.
+        // XX. enum -> implicit-convertible-integral : EnumToIntegral strategy.
+        // XX. string -> enum : StringToEnum strategy.
+        // XX. integral -> enum : IntegralToEnum strategy.
+        // XX. S[] -> T[] : ArrayStrategy ( Strategy(T, S) ).
+        // XX. HashSet<S> -> HashSet<T> : HashSetStrategy( Strategy(S, T) ).
+        // XX. List<S> -> List<T> : ListStrategy ( Strategy(T, S) ).
+        // XX. IReadOnlyCollection<S> -> IReadOnlyCollection<T> : ReadOnlyCollectionStrategy ( Strategy(T, S) ).
+        // XX. S -> T : ConstructorStrategy(S, T)
         throw new NotImplementedException();
     }
 }

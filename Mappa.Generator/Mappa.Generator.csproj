@@ -45,6 +45,9 @@
 		</PackageReference>
 	</ItemGroup>
 	<ItemGroup>
+	  <None Remove="Exceptions\" />
+	</ItemGroup>
+	<ItemGroup>
 		<None Include="$(PKGMappa)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
 	</ItemGroup>
 	<PropertyGroup>
@@ -57,5 +60,8 @@
 	</Target>
 	<ItemGroup>
 		<AdditionalFiles Include="../stylecop.json" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Exceptions\" />
 	</ItemGroup>
 </Project>

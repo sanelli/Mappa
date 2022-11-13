@@ -19,19 +19,33 @@ internal sealed class MappaClassGeneratorContext
     /// Initializes a new instance of the <see cref="MappaClassGeneratorContext"/> class.
     /// </summary>
     /// <param name="options">The mappa global options.</param>
+    /// <param name="compilation">The compilation.</param>
     /// <param name="classDeclarationSyntax">The class declaration syntax.</param>
     public MappaClassGeneratorContext(
         MappaGlobalOptions options,
+        Compilation compilation,
         ClassDeclarationSyntax classDeclarationSyntax)
     {
         this.Options = options;
+        this.Compilation = compilation;
         this.ClassDeclarationSyntax = classDeclarationSyntax;
+        this.SemanticModel = compilation.GetSemanticModel(classDeclarationSyntax.SyntaxTree);
     }
 
     /// <summary>
     /// Gets the global mappa options.
     /// </summary>
     internal MappaGlobalOptions Options { get; }
+
+    /// <summary>
+    /// Gets the compilation.
+    /// </summary>
+    internal Compilation Compilation { get; }
+
+    /// <summary>
+    /// Gets the semantic model.
+    /// </summary>
+    internal SemanticModel SemanticModel { get; }
 
     /// <summary>
     /// Gets the class declarationsyntax of the mapper class begin processed.

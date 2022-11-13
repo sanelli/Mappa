@@ -17,10 +17,12 @@ internal sealed class IdentityTypeMapStrategy
     /// </summary>
     /// <param name="targetType">The target type.</param>
     /// <param name="sourceType">The source type.</param>
-    public IdentityTypeMapStrategy(ITypeSymbol targetType, ITypeSymbol sourceType)
+    /// <param name="source">The source of the mapping.</param>
+    public IdentityTypeMapStrategy(ITypeSymbol targetType, ITypeSymbol sourceType, string source)
     {
         this.TargetType = targetType;
         this.SourceType = sourceType;
+        this.Source = source;
     }
 
     /// <inheritdoc/>
@@ -28,4 +30,7 @@ internal sealed class IdentityTypeMapStrategy
 
     /// <inheritdoc/>
     public ITypeSymbol SourceType { get; }
+
+    /// <inheritdoc/>
+    public string Source { get; }
 }
