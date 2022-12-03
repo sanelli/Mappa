@@ -29,6 +29,8 @@
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
 		<PackageReference Include="FluentAssertions" Version="6.8.0" />
+		<PackageReference Include="xunit.categories" Version="2.0.6" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.4.0" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\Mappa.Generator\Mappa.Generator.csproj" />
@@ -36,5 +38,17 @@
 	</ItemGroup>
 	<ItemGroup>
 		<AdditionalFiles Include="../stylecop.json" />
+	</ItemGroup>
+	<ItemGroup>
+	  <None Remove="Abstractions\" />
+	  <None Remove="xunit.categories" />
+	  <None Remove="Microsoft.CodeAnalysis.CSharp" />
+	  <None Remove="Models\" />
+	  <None Remove="Assertions\" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Abstractions\" />
+	  <Folder Include="Models\" />
+	  <Folder Include="Assertions\" />
 	</ItemGroup>
 </Project>
