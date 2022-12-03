@@ -7,7 +7,7 @@ namespace Mappa.Tests.Models;
 /// <summary>
 /// Describe the generated results.
 /// </summary>
-/// <param name="Drvier">The generator driver.</param>
+/// <param name="Driver">The generator driver.</param>
 /// <param name="CompilationOutput">The compilation of the output.</param>
 /// <param name="Diagnostics">The generated diagnostics.</param>
 public sealed record GeneratedResults(GeneratorDriver Driver, Compilation CompilationOutput, Diagnostic[] Diagnostics);
