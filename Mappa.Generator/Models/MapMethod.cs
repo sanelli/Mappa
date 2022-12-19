@@ -17,7 +17,7 @@ namespace Mappa.Generator.Models;
 /// </summary>
 internal sealed class MapMethod
 {
-    private MethodParameterMapStrategy? methodParameterMapStrategy = null;
+    private MethodParameterMapStrategy? methodParameterMapStrategy;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MapMethod"/> class.
@@ -121,6 +121,6 @@ internal sealed class MapMethod
     /// <returns><c>true</c> if the method is a map from
     /// <paramref name="sourceType"/> to <paramref name="targetType"/>.</returns>
     internal bool IsMapFor(ITypeSymbol targetType, ITypeSymbol sourceType)
-        => SymbolEqualityComparer.Default.Equals(targetType, this.TargetType)
-            && SymbolEqualityComparer.Default.Equals(sourceType, this.SourceType);
+        => SymbolEqualityComparer.IncludeNullability.Equals(targetType, this.TargetType)
+            && SymbolEqualityComparer.IncludeNullability.Equals(sourceType, this.SourceType);
 }

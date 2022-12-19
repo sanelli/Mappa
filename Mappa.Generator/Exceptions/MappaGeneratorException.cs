@@ -18,6 +18,13 @@ public sealed class MappaGeneratorException
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaGeneratorException"/> class.
     /// </summary>
+    public MappaGeneratorException()
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MappaGeneratorException"/> class.
+    /// </summary>
     /// <param name="message">The message.</param>
     public MappaGeneratorException(string message)
         : base(message)

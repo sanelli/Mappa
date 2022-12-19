@@ -16,9 +16,9 @@ internal static class MappaDiagnosticDescriptors
     private const string Title = "Mappa";
     private const string Category = "Mappa.Generator";
 
-    private static DiagnosticDescriptor? methodHasInvalidNumberOfParameters = null;
-    private static DiagnosticDescriptor? methodIsVoid = null;
-    private static DiagnosticDescriptor? methodReturnsTaskType = null;
+    private static DiagnosticDescriptor? methodHasInvalidNumberOfParameters;
+    private static DiagnosticDescriptor? methodIsVoid;
+    private static DiagnosticDescriptor? methodReturnsTaskType;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
