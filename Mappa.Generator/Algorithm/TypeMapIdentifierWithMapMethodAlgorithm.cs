@@ -14,7 +14,9 @@ namespace Mappa.Generator.Algorithm;
 /// to <see cref="TypeMapIdentifierAlgorithm.TargetType"/>. This is similar to <see cref="TypeMapIdentifierAlgorithm"/>
 /// but it first check if a suitable map already exists in <see cref="TypeMapIdentifierAlgorithm.MethodContext"/>.
 /// </summary>
+#pragma warning disable CA1812
 internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
+#pragma warning restore CS1812
     : TypeMapIdentifierAlgorithm
 {
     /// <summary>

@@ -34,7 +34,7 @@ public sealed class MappaGeneratorClassAlgorithmUnitTests
             """;
 
         // Act
-        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None);
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         // Assert
         generatedResults.Should().NotHaveGeneratedAnySourceCode();
