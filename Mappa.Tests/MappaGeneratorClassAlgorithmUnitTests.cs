@@ -2,6 +2,8 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Diagnostics;
+
 namespace Mappa.Tests;
 
 /// <summary>
@@ -38,5 +40,67 @@ public sealed class MappaGeneratorClassAlgorithmUnitTests
 
         // Assert
         generatedResults.Should().NotHaveGeneratedAnySourceCode();
+    }
+
+    /// <summary>
+    /// Check that partial method of a class marked with
+    /// <see cref="MappaAttribute"/> is generate a diagnostic
+    /// error when it has no parameters.
+    /// </summary>
+    /// <returns>The asyc task.</returns>
+    [Fact]
+    [UnitTest]
+    public async Task PartialMethodsWithArity0GenerateADiagnosticError()
+    {
+        // Arrange
+        var sourceCode = """
+            using Mappa.Attributes;
+
+            namespace Mappa.Tests.UnitTests.SourceCode;
+
+            [Mappa]
+            public sealed partial class Mapper
+            {
+                public partial long Map();
+            }
+            """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should().HaveDiagnostics(1);
+        generatedResults.Should().ContainDiagnostic(MappaDiagnosticDescriptors.MethodHasInvalidNumberOfParameters, "Map");
+    }
+
+    /// <summary>
+    /// Check that partial method of a class marked with
+    /// <see cref="MappaAttribute"/> is generate a diagnostic
+    /// error when it has two parameters.
+    /// </summary>
+    /// <returns>The asyc task.</returns>
+    [Fact]
+    [UnitTest]
+    public async Task PartialMethodsWithArity2GenerateADiagnosticError()
+    {
+        // Arrange
+        var sourceCode = """
+            using Mappa.Attributes;
+
+            namespace Mappa.Tests.UnitTests.SourceCode;
+
+            [Mappa]
+            public sealed partial class Mapper
+            {
+                public partial long Map(int input1, int input2);
+            }
+            """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should().HaveDiagnostics(1);
+        generatedResults.Should().ContainDiagnostic(MappaDiagnosticDescriptors.MethodHasInvalidNumberOfParameters, "Map");
     }
 }

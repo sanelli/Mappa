@@ -10,6 +10,8 @@ namespace Mappa.Tests.Assertions;
 public sealed class GeneratedResultsAssertions
     : ObjectAssertions<GeneratedResults, GeneratedResultsAssertions>
 {
+    private GeneratorRunResult? generatorRunResult;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="GeneratedResultsAssertions"/> class.
     /// </summary>
@@ -31,10 +33,41 @@ public sealed class GeneratedResultsAssertions
         return this;
     }
 
+    /// <summary>
+    /// Check it contains a specific diagnostic.
+    /// </summary>
+    /// <param name="diagnosticDescriptor">The specific diagnostic descriptor.</param>
+    /// <param name="parameters">Parameters used to generate the message.</param>
+    /// <returns>The assertions instance.</returns>
+    public GeneratedResultsAssertions ContainDiagnostic(DiagnosticDescriptor diagnosticDescriptor, params string[] parameters)
+    {
+        var runResult = this.HaveOneResult();
+        runResult.Should().ContainDiagnostic(diagnosticDescriptor, parameters);
+        return this;
+    }
+
+    /// <summary>
+    /// Check it contains a specific number of diagnostics diagnostic.
+    /// </summary>
+    /// <param name="count">The expected number of diagnostics.</param>
+    /// <returns>The assertions instance.</returns>
+    public GeneratedResultsAssertions HaveDiagnostics(int count)
+    {
+        var runResult = this.HaveOneResult();
+        runResult.Should().HaveDiagnostics(count);
+        return this;
+    }
+
     private GeneratorRunResult HaveOneResult()
     {
-        var runResults = this.Subject.Driver.GetRunResult().Results;
-        runResults.Should().HaveCount(1);
-        return runResults.Single();
+        if (this.generatorRunResult is null)
+        {
+            var runResults = this.Subject.Driver.GetRunResult().Results;
+            runResults.Should().HaveCount(1);
+
+            this.generatorRunResult = runResults.Single();
+        }
+
+        return this.generatorRunResult.Value;
     }
 }

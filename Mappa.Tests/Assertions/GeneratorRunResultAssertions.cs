@@ -2,6 +2,8 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using System.Globalization;
+
 namespace Mappa.Tests.Assertions;
 
 /// <summary>
@@ -36,6 +38,33 @@ public sealed class GeneratorRunResultAssertions
     public GeneratorRunResultAssertions NotHaveSources()
     {
         this.Subject.GeneratedSources.Should().BeEmpty();
+        return this;
+    }
+
+    /// <summary>
+    /// Assert that the generator results have <paramref name="count"/> diagnostics.
+    /// </summary>
+    /// <param name="count">The number of expected diagnostics.</param>
+    /// <returns>The assertions itself.</returns>
+    public GeneratorRunResultAssertions HaveDiagnostics(int count)
+    {
+        this.Subject.Diagnostics.Should().HaveCount(1);
+        return this;
+    }
+
+    /// <summary>
+    /// Assert that the generator results have a specific diagnostic.
+    /// </summary>
+    /// <param name="diagnosticDescriptor">The specific diagnostic descriptor.</param>
+    /// <param name="parameters">Parameters used to generate the message.</param>
+    /// <returns>The assertions itself.</returns>
+    public GeneratorRunResultAssertions ContainDiagnostic(DiagnosticDescriptor diagnosticDescriptor, params string[] parameters)
+    {
+        ArgumentNullException.ThrowIfNull(diagnosticDescriptor);
+        var expectedMessage = string.Format(CultureInfo.CurrentCulture, diagnosticDescriptor.MessageFormat.ToString(CultureInfo.CurrentCulture), parameters);
+        this.Subject.Diagnostics.Should().Contain(diagnostic =>
+            diagnostic.Descriptor.Equals(diagnosticDescriptor) &&
+            diagnostic.GetMessage(CultureInfo.CurrentCulture).Equals(expectedMessage, StringComparison.Ordinal));
         return this;
     }
 }
