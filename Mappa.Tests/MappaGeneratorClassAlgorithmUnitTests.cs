@@ -107,7 +107,7 @@ public sealed class MappaGeneratorClassAlgorithmUnitTests
     /// <summary>
     /// Check that partial method of a class marked with
     /// <see cref="MappaAttribute"/> is generate a diagnostic
-    /// error when it returns void.
+    /// error when it returns <see cref="Void"/>.
     /// </summary>
     /// <returns>The asyc task.</returns>
     [Fact]
@@ -133,5 +133,133 @@ public sealed class MappaGeneratorClassAlgorithmUnitTests
         // Assert
         generatedResults.Should().HaveDiagnostics(1);
         generatedResults.Should().ContainDiagnostic(MappaDiagnosticDescriptors.MethodIsVoid, "Map");
+    }
+
+    /// <summary>
+    /// Check that partial method of a class marked with
+    /// <see cref="MappaAttribute"/> is generate a diagnostic
+    /// error when it returns <see cref="Task"/>.
+    /// </summary>
+    /// <returns>The asyc task.</returns>
+    [Fact]
+    [UnitTest]
+    public async Task PartialMethodsReturningTaskGeneratesADiagnosticError()
+    {
+        // Arrange
+        var sourceCode = """
+            using Mappa.Attributes;
+            using System.Threading.Tasks;
+            
+            namespace Mappa.Tests.UnitTests.SourceCode;
+
+            [Mappa]
+            public sealed partial class Mapper
+            {
+                public partial Task Map(int input);
+            }
+            """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should().HaveDiagnostics(1);
+        generatedResults.Should().ContainDiagnostic(MappaDiagnosticDescriptors.MethodReturnsTaskType, "Map");
+    }
+
+    /// <summary>
+    /// Check that partial method of a class marked with
+    /// <see cref="MappaAttribute"/> is generate a diagnostic
+    /// error when it returns <see cref="Task{T}"/>.
+    /// </summary>
+    /// <returns>The asyc task.</returns>
+    [Fact]
+    [UnitTest]
+    public async Task PartialMethodsReturningTaskTGeneratesADiagnosticError()
+    {
+        // Arrange
+        var sourceCode = """
+            using Mappa.Attributes;
+            using System.Threading.Tasks;
+            
+            namespace Mappa.Tests.UnitTests.SourceCode;
+
+            [Mappa]
+            public sealed partial class Mapper
+            {
+                public partial Task<string> Map(int input);
+            }
+            """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should().HaveDiagnostics(1);
+        generatedResults.Should().ContainDiagnostic(MappaDiagnosticDescriptors.MethodReturnsTaskType, "Map");
+    }
+
+    /// <summary>
+    /// Check that partial method of a class marked with
+    /// <see cref="MappaAttribute"/> is generate a diagnostic
+    /// error when it returns <see cref="ValueTask"/>.
+    /// </summary>
+    /// <returns>The asyc task.</returns>
+    [Fact]
+    [UnitTest]
+    public async Task PartialMethodsReturningValueTaskGeneratesADiagnosticError()
+    {
+        // Arrange
+        var sourceCode = """
+            using Mappa.Attributes;
+            using System.Threading.Tasks;
+            
+            namespace Mappa.Tests.UnitTests.SourceCode;
+
+            [Mappa]
+            public sealed partial class Mapper
+            {
+                public partial ValueTask Map(int input);
+            }
+            """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should().HaveDiagnostics(1);
+        generatedResults.Should().ContainDiagnostic(MappaDiagnosticDescriptors.MethodReturnsTaskType, "Map");
+    }
+
+    /// <summary>
+    /// Check that partial method of a class marked with
+    /// <see cref="MappaAttribute"/> is generate a diagnostic
+    /// error when it returns <see cref="ValueTask{T}"/>.
+    /// </summary>
+    /// <returns>The asyc task.</returns>
+    [Fact]
+    [UnitTest]
+    public async Task PartialMethodsReturningValueTaskTGeneratesADiagnosticError()
+    {
+        // Arrange
+        var sourceCode = """
+            using Mappa.Attributes;
+            using System.Threading.Tasks;
+            
+            namespace Mappa.Tests.UnitTests.SourceCode;
+
+            [Mappa]
+            public sealed partial class Mapper
+            {
+                public partial ValueTask<string> Map(int input);
+            }
+            """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should().HaveDiagnostics(1);
+        generatedResults.Should().ContainDiagnostic(MappaDiagnosticDescriptors.MethodReturnsTaskType, "Map");
     }
 }

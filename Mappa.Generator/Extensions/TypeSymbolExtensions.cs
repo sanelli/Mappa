@@ -32,6 +32,11 @@ internal static class TypeSymbolExtensions
         var valueTask = compilation.GetTypeSymbol<ValueTask>();
         var valueTaskGeneric = compilation.GetTypeSymbol(typeof(ValueTask<>));
 
+        if (!typeSymbol.IsDefinition)
+        {
+            typeSymbol = typeSymbol.OriginalDefinition;
+        }
+
         return SymbolEqualityComparer.Default.Equals(typeSymbol, task)
             || SymbolEqualityComparer.Default.Equals(typeSymbol, taskGeneric)
             || SymbolEqualityComparer.Default.Equals(typeSymbol, valueTask)

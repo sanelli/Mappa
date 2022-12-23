@@ -2,10 +2,10 @@ $MappaTestsAndCoveragePath = ".mappa-tests-and-coverage"
 
 if (Test-Path $MappaTestsAndCoveragePath)
 {
-    Remove-Item -Recurse -Force $MappaTestsAndCoveragePath
+    Remove-Item -Recurse -Force $MappaTestsAndCoveragePath > $null
 }
 
-New-Item -ItemType Directory -Name $MappaTestsAndCoveragePath
+New-Item -ItemType Directory -Name $MappaTestsAndCoveragePath > $null
 dotnet test -c Release Mappa.Tests --collect:"XPlat Code Coverage" --logger "html" --logger "xunit" --results-directory "$MappaTestsAndCoveragePath"
 if(-not $?)
 {
