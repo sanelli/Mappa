@@ -103,4 +103,35 @@ public sealed class MappaGeneratorClassAlgorithmUnitTests
         generatedResults.Should().HaveDiagnostics(1);
         generatedResults.Should().ContainDiagnostic(MappaDiagnosticDescriptors.MethodHasInvalidNumberOfParameters, "Map");
     }
+
+    /// <summary>
+    /// Check that partial method of a class marked with
+    /// <see cref="MappaAttribute"/> is generate a diagnostic
+    /// error when it returns void.
+    /// </summary>
+    /// <returns>The asyc task.</returns>
+    [Fact]
+    [UnitTest]
+    public async Task PartialMethodsReturningVoidGeneratesADiagnosticError()
+    {
+        // Arrange
+        var sourceCode = """
+            using Mappa.Attributes;
+
+            namespace Mappa.Tests.UnitTests.SourceCode;
+
+            [Mappa]
+            public sealed partial class Mapper
+            {
+                public partial void Map(int input);
+            }
+            """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should().HaveDiagnostics(1);
+        generatedResults.Should().ContainDiagnostic(MappaDiagnosticDescriptors.MethodIsVoid, "Map");
+    }
 }

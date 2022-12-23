@@ -33,7 +33,7 @@ internal sealed class MapMethod
         this.MethodDeclarationSyntax = methodDeclarationSyntax;
         this.FieldName = this.MethodDeclarationSyntax.IsStatic() ? string.Empty : "this";
         this.MethodName = methodDeclarationSyntax.Identifier.ToFullString();
-        this.MethodSymbol = semanticModel.GetSymbolInfo(this.MethodDeclarationSyntax, cancellationToken).Symbol as IMethodSymbol
+        this.MethodSymbol = semanticModel.GetDeclaredSymbol(this.MethodDeclarationSyntax, cancellationToken)
             ?? throw new MappaGeneratorException($"Cannot obtain the method symbol for method \"{this.MethodDeclarationSyntax.Identifier}\" syntax node.", methodDeclarationSyntax.GetLocation());
         this.TargetType = this.MethodSymbol.ReturnType;
         this.SourceType = this.MethodSymbol.Parameters.First().Type;

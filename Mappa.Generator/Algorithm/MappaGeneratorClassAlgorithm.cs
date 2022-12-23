@@ -102,13 +102,13 @@ internal sealed class MappaGeneratorClassAlgorithm
 
                 var mapMethod = new MapMethod(methodDeclarationSyntax, classContext.SemanticModel, cancellationToken);
 
-                if (!mapMethod.MethodSymbol.IsVoid())
+                if (mapMethod.MethodSymbol.IsVoid())
                 {
                     classContext.ReportDiagnostic(MappaDiagnostics.MethodIsVoid(methodDeclarationSyntax));
                     continue;
                 }
 
-                if (!mapMethod.MethodSymbol.ReturnsAnyTaskType(this.Compilation))
+                if (mapMethod.MethodSymbol.ReturnsAnyTaskType(this.Compilation))
                 {
                     classContext.ReportDiagnostic(MappaDiagnostics.MethodReturnsTaskType(methodDeclarationSyntax));
                     continue;
