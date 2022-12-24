@@ -61,6 +61,19 @@ internal class TypeMapIdentifierAlgorithm
     /// <returns>The strategy computed.</returns>
     internal virtual IMapStrategy GetStrategy()
     {
+        var nullableEnabled = this.Context.IsNullableEnabled();
+        var targetTypeNullableAnnotated = this.Context.TargetType.NullableAnnotation == NullableAnnotation.Annotated;
+        var sourceTypeNullableAnnotated = this.Context.SourceType.NullableAnnotation == NullableAnnotation.Annotated;
+
+        // 00. Target object
+        // (non-nullable): * -> object
+        // (nullable enabled): * -> object?
+        if ((nullableEnabled && targetTypeNullableAnnotated && sourceTypeNullableAnnotated) ||
+            !nullableEnabled)
+        {
+            return new IdentityMapStrategy(this.TargetType, this.SourceType, this.Source);
+        }
+
         // XX. * -> object : IdentityStrategy
         // XX. T -> T or T -> T?: Identity strategy
         // XX. numeric -> implicit-convertible-numeric : Identity strategy.

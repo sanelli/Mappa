@@ -9,9 +9,7 @@ namespace Mappa.Generator.Models.Strategies;
 /// <summary>
 /// Describe an identity type map strategy.
 /// </summary>
-#pragma warning disable CA1812
 internal sealed class IdentityMapStrategy
-#pragma warning restore CA1812
     : IMapStrategy
 {
     /// <summary>

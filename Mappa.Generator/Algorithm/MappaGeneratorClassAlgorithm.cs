@@ -4,6 +4,7 @@
 
 using System.Collections.Immutable;
 
+using Mappa.Generator.Builders;
 using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Extensions;
 using Mappa.Generator.Models;
@@ -140,7 +141,8 @@ internal sealed class MappaGeneratorClassAlgorithm
                 }
             }
 
-            // TODO: Generate the target code for the class.
+            var builder = new MapFileGeneratorBuilder(classContext);
+            this.Context.AddSource(builder.HintName, builder.ToString());
 
             // Report the diagnostics.
             foreach (var diagnostic in classContext.Diagnostics)
