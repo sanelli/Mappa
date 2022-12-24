@@ -4,6 +4,7 @@
 
 using System;
 
+using Mappa.Generator.Extensions;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Helpers;
 
@@ -32,9 +33,18 @@ internal sealed class MappaClassBuilder
     /// <inheritdoc/>
     public string BuildSource()
     {
+        const string space = " ";
+        var modifiers = string.Join(space, new[]
+        {
+            this.ClassContext.DeclaredClassSymbol.GetClassAccessibility(),
+            this.ClassContext.DeclaredClassSymbol.GetClassModifiers(),
+            "partial",
+        });
+
         var builder = new IndentStringBuilder();
         builder.AppendLine(new MappaGeneratedCodeAttributeBuilder().BuildSource())
-               .AppendLine($"partial class {this.ClassContext.ClassDeclarationSyntax.Identifier}");
+               .AppendLine($"{modifiers} class {this.ClassContext.ClassDeclarationSyntax.Identifier}");
+
         using (builder.BeginCodeBlock())
         using (builder.Indent())
         {
