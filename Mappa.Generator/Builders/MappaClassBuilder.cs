@@ -33,7 +33,7 @@ internal sealed class MappaClassBuilder
     public string BuildSource()
     {
         var builder = new IndentStringBuilder();
-        builder.AppendLine($"[System.CodeDom.Compiler.GeneratedCode(\"Mappa\",\"{typeof(MappaGenerator).Assembly.GetName().Version}\")]")
+        builder.AppendLine(new MappaGeneratedCodeAttributeBuilder().BuildSource())
                .AppendLine($"partial class {this.ClassContext.ClassDeclarationSyntax.Identifier}");
         using (builder.BeginCodeBlock())
         using (builder.Indent())

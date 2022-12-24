@@ -45,8 +45,8 @@
 		</PackageReference>
 	</ItemGroup>
 	<ItemGroup>
-	  <None Remove="Builders\" />
-	  <None Remove="Models\Helpers\" />
+		<None Remove="Builders\" />
+		<None Remove="Models\Helpers\" />
 	</ItemGroup>
 	<ItemGroup>
 		<None Include="$(PKGMappa)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
@@ -63,7 +63,7 @@
 		<AdditionalFiles Include="../stylecop.json" />
 	</ItemGroup>
 	<ItemGroup>
-	  <Folder Include="Builders\" />
-	  <Folder Include="Models\Helpers\" />
+		<Folder Include="Builders\" />
+		<Folder Include="Models\Helpers\" />
 	</ItemGroup>
 </Project>
