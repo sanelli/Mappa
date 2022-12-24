@@ -23,12 +23,12 @@ internal class TypeMapIdentifierAlgorithm
     /// <param name="sourceType">The source type.</param>
     /// <param name="source">The name of the source mapping.</param>
     public TypeMapIdentifierAlgorithm(
-        MappaMethodGeneratorContext context,
+        MappaMapAlgorithmContext context,
         ITypeSymbol targetType,
         ITypeSymbol sourceType,
         string source)
     {
-        this.MethodContext = context;
+        this.Context = context;
         this.TargetType = targetType;
         this.SourceType = sourceType;
         this.Source = source;
@@ -37,7 +37,7 @@ internal class TypeMapIdentifierAlgorithm
     /// <summary>
     /// Gets the context.
     /// </summary>
-    internal MappaMethodGeneratorContext MethodContext { get; }
+    internal MappaMapAlgorithmContext Context { get; }
 
     /// <summary>
     /// Gets the target type.

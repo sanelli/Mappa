@@ -19,7 +19,7 @@ public sealed class MappaGeneratorClassAlgorithmUnitTests
     /// </summary>
     /// <returns>The asyc task.</returns>
     [Fact]
-    [UnitTest]
+    [IntegrationTest]
     public async Task NonPartialMethodsAreIgnoredAndNotDiagnosticIsReported()
     {
         // Arrange
@@ -49,7 +49,7 @@ public sealed class MappaGeneratorClassAlgorithmUnitTests
     /// </summary>
     /// <returns>The asyc task.</returns>
     [Fact]
-    [UnitTest]
+    [IntegrationTest]
     public async Task PartialMethodsWithArity0GenerateADiagnosticError()
     {
         // Arrange
@@ -80,7 +80,7 @@ public sealed class MappaGeneratorClassAlgorithmUnitTests
     /// </summary>
     /// <returns>The asyc task.</returns>
     [Fact]
-    [UnitTest]
+    [IntegrationTest]
     public async Task PartialMethodsWithArity2GenerateADiagnosticError()
     {
         // Arrange
@@ -111,7 +111,7 @@ public sealed class MappaGeneratorClassAlgorithmUnitTests
     /// </summary>
     /// <returns>The asyc task.</returns>
     [Fact]
-    [UnitTest]
+    [IntegrationTest]
     public async Task PartialMethodsReturningVoidGeneratesADiagnosticError()
     {
         // Arrange
@@ -142,7 +142,7 @@ public sealed class MappaGeneratorClassAlgorithmUnitTests
     /// </summary>
     /// <returns>The asyc task.</returns>
     [Fact]
-    [UnitTest]
+    [IntegrationTest]
     public async Task PartialMethodsReturningTaskGeneratesADiagnosticError()
     {
         // Arrange
@@ -174,7 +174,7 @@ public sealed class MappaGeneratorClassAlgorithmUnitTests
     /// </summary>
     /// <returns>The asyc task.</returns>
     [Fact]
-    [UnitTest]
+    [IntegrationTest]
     public async Task PartialMethodsReturningTaskTGeneratesADiagnosticError()
     {
         // Arrange
@@ -206,7 +206,7 @@ public sealed class MappaGeneratorClassAlgorithmUnitTests
     /// </summary>
     /// <returns>The asyc task.</returns>
     [Fact]
-    [UnitTest]
+    [IntegrationTest]
     public async Task PartialMethodsReturningValueTaskGeneratesADiagnosticError()
     {
         // Arrange
@@ -238,7 +238,7 @@ public sealed class MappaGeneratorClassAlgorithmUnitTests
     /// </summary>
     /// <returns>The asyc task.</returns>
     [Fact]
-    [UnitTest]
+    [IntegrationTest]
     public async Task PartialMethodsReturningValueTaskTGeneratesADiagnosticError()
     {
         // Arrange

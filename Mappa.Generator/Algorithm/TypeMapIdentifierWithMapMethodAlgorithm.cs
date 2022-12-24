@@ -12,7 +12,7 @@ namespace Mappa.Generator.Algorithm;
 /// <summary>
 /// Algorithm to identify a suitable map strategy from <see cref="TypeMapIdentifierAlgorithm.SourceType"/>
 /// to <see cref="TypeMapIdentifierAlgorithm.TargetType"/>. This is similar to <see cref="TypeMapIdentifierAlgorithm"/>
-/// but it first check if a suitable map already exists in <see cref="TypeMapIdentifierAlgorithm.MethodContext"/>.
+/// but it first check if a suitable map already exists in <see cref="TypeMapIdentifierAlgorithm.Context"/>.
 /// </summary>
 #pragma warning disable CA1812
 internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
@@ -27,7 +27,7 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
     /// <param name="sourceType">The source type.</param>
     /// <param name="source">The mapping source.</param>
     public TypeMapIdentifierWithMapMethodAlgorithm(
-        MappaMethodGeneratorContext methodContext,
+        MappaMapAlgorithmContext methodContext,
         ITypeSymbol targetType,
         ITypeSymbol sourceType,
         string source)
@@ -38,7 +38,7 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
     /// <inheritdoc/>
     internal override IMapStrategy GetStrategy()
     {
-        if (this.MethodContext.ClassContext.TryGetMethod(this.TargetType, this.SourceType, out var mapMethod))
+        if (this.Context.TryGetMethod(this.TargetType, this.SourceType, out var mapMethod))
         {
             return new MethodMapStrategy(mapMethod, this.Source);
         }

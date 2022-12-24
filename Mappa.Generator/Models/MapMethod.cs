@@ -118,9 +118,15 @@ internal sealed class MapMethod
     /// </summary>
     /// <param name="targetType">The target type.</param>
     /// <param name="sourceType">The source type.</param>
+    /// <param name="includeNullability"><c>true</c> to include nullability for reference types.</param>
     /// <returns><c>true</c> if the method is a map from
     /// <paramref name="sourceType"/> to <paramref name="targetType"/>.</returns>
-    internal bool IsMapFor(ITypeSymbol targetType, ITypeSymbol sourceType)
-        => SymbolEqualityComparer.IncludeNullability.Equals(targetType, this.TargetType)
-            && SymbolEqualityComparer.IncludeNullability.Equals(sourceType, this.SourceType);
+    internal bool IsMapFor(ITypeSymbol targetType, ITypeSymbol sourceType, bool includeNullability)
+    {
+        var comparer = includeNullability
+            ? SymbolEqualityComparer.IncludeNullability
+            : SymbolEqualityComparer.Default;
+
+        return comparer.Equals(targetType, this.TargetType) && comparer.Equals(sourceType, this.SourceType);
+    }
 }

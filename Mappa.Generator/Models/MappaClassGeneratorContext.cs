@@ -2,6 +2,8 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Exceptions;
+
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -63,17 +65,45 @@ internal sealed class MappaClassGeneratorContext
     internal IReadOnlyCollection<Diagnostic> Diagnostics => this.diagnostics;
 
     /// <summary>
+    /// Gets a value indicating whether <c>nullable</c> is enabled for the method.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method to investigate.</param>
+    /// <returns><c>true</c> if the nullable context is enabled, <c>false</c> otherwise.</returns>
+    internal bool IsNullableEnabled(MethodDeclarationSyntax methodDeclarationSyntax)
+    {
+        var methodNullableContext = this.SemanticModel
+           .GetNullableContext(methodDeclarationSyntax
+               .GetLocation()
+               .GetLineSpan()
+               .StartLinePosition
+               .Line);
+
+        switch (methodNullableContext)
+        {
+            case NullableContext.Enabled:
+                return true;
+            case NullableContext.Disabled:
+                return false;
+            case NullableContext.ContextInherited:
+                return this.Compilation.Options.NullableContextOptions == NullableContextOptions.Enable;
+            default:
+                throw new MappaGeneratorException($"Cannot obtain the nullable context for method \"{methodDeclarationSyntax.Identifier}\": unsupported value \"{methodNullableContext}\".", methodDeclarationSyntax.GetLocation());
+        }
+    }
+
+    /// <summary>
     /// Try getting the method for mappung from <paramref name="sourceType"/> to
     /// <paramref name="targetType"/>.
     /// </summary>
     /// <param name="targetType">The target type.</param>
     /// <param name="sourceType">The source type.</param>
+    /// <param name="nullableEnabled">Nullable enabled.</param>
     /// <param name="mapMethod">The map method, if it exists.</param>
     /// <returns><c>true</c> if the method to map from <paramref name="sourceType"/> to
     /// <paramref name="targetType"/>, <c>false</c> otherwise.</returns>
-    internal bool TryGetMethod(ITypeSymbol targetType, ITypeSymbol sourceType, out MapMethod mapMethod)
+    internal bool TryGetMethod(ITypeSymbol targetType, ITypeSymbol sourceType, bool nullableEnabled, out MapMethod mapMethod)
     {
-        var foundMethod = this.mapMethods.FirstOrDefault(method => method.IsMapFor(targetType, sourceType));
+        var foundMethod = this.mapMethods.FirstOrDefault(method => method.IsMapFor(targetType, sourceType, nullableEnabled));
         mapMethod = foundMethod!;
         return foundMethod is not null;
     }
@@ -85,7 +115,7 @@ internal sealed class MappaClassGeneratorContext
     /// <param name="mapMethod">The method to be added.</param>
     internal void TryAddMethod(MapMethod mapMethod)
     {
-        if (!this.TryGetMethod(mapMethod.TargetType, mapMethod.SourceType, out _))
+        if (!this.TryGetMethod(mapMethod.TargetType, mapMethod.SourceType, this.IsNullableEnabled(mapMethod.MethodDeclarationSyntax),  out _))
         {
             this.mapMethods.Add(mapMethod);
         }

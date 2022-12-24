@@ -13,6 +13,7 @@ namespace Mappa.Generator.Models;
 /// Context describing the mapping of a single method.
 /// </summary>
 internal sealed class MappaMethodGeneratorContext
+    : MappaMapAlgorithmContext
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaMethodGeneratorContext"/> class.
@@ -37,11 +38,20 @@ internal sealed class MappaMethodGeneratorContext
     /// </summary>
     internal MapMethod MapMethod { get; }
 
+    /// <inheritdoc/>
+    internal override ITypeSymbol SourceType => throw new NotImplementedException();
+
+    /// <inheritdoc/>
+    internal override ITypeSymbol TargetType => throw new NotImplementedException();
+
+    /// <inheritdoc/>
+    internal override string PropertyName => throw new NotImplementedException();
+
     /// <summary>
     /// Gets a value indicating whether <c>nullable</c> is enabled for the method.
     /// </summary>
     /// <returns><c>true</c> if the nullable context is enabled, <c>false</c> otherwise.</returns>
-    internal bool IsNullableEnabled()
+    internal override bool IsNullableEnabled()
     {
         var methodNullableContext = this.ClassContext.SemanticModel
            .GetNullableContext(this.MapMethod.MethodDeclarationSyntax
@@ -62,4 +72,8 @@ internal sealed class MappaMethodGeneratorContext
                 throw new MappaGeneratorException($"Cannot obtain the nullable context for method \"{this.MapMethod.MethodDeclarationSyntax.Identifier}\": unsupported value \"{methodNullableContext}\".", this.MapMethod.MethodDeclarationSyntax.GetLocation());
         }
     }
+
+    /// <inheritdoc/>
+    internal override bool TryGetMethod(ITypeSymbol targetType, ITypeSymbol sourceType, out MapMethod mapMethod)
+        => this.ClassContext.TryGetMethod(targetType, sourceType, this.IsNullableEnabled(), out mapMethod);
 }

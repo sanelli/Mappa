@@ -12,12 +12,20 @@ namespace Mappa.Generator.Extensions;
 internal static class TypeSymbolExtensions
 {
     /// <summary>
-    /// Check if the type is <c>void</c>.
+    /// Check if the type is <see cref="Void"/>.
     /// </summary>
     /// <param name="typeSymbol">The type symbol.</param>
     /// <returns><c>true</c> if the type symbol is <c>void</c>.</returns>
     internal static bool IsVoid(this ITypeSymbol typeSymbol)
          => typeSymbol.SpecialType == SpecialType.System_Void;
+
+    /// <summary>
+    /// Check if the type is <see cref="object"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <returns><c>true</c> if the type symbol is <c>void</c>.</returns>
+    internal static bool IsObject(this ITypeSymbol typeSymbol)
+         => typeSymbol.SpecialType == SpecialType.System_Object;
 
     /// <summary>
     /// Check if the type is <c>void</c>.
