@@ -63,6 +63,16 @@ internal sealed class IndentStringBuilder
     }
 
     /// <summary>
+    /// Append an empty line to the buffer.
+    /// </summary>
+    /// <returns>This object.</returns>
+    internal IndentStringBuilder AppendEmptyLine()
+    {
+        this.buffer.Append(Environment.NewLine);
+        return this;
+    }
+
+    /// <summary>
     /// Start indentation.
     /// </summary>
     /// <returns>A disposable that reduce the indentation upon disposing.</returns>
