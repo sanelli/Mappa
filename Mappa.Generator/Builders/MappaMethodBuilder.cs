@@ -2,6 +2,8 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Extensions;
+using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 
 namespace Mappa.Generator.Builders;
@@ -36,6 +38,30 @@ internal sealed class MappaMethodBuilder
     /// <inheritdoc/>
     public string BuildSource()
     {
-        throw new NotImplementedException();
+        var builder = new IndentStringBuilder();
+        builder.AppendLine(this.GetSignature());
+
+        using (builder.BeginCodeBlock())
+        using (builder.Indent())
+        {
+            var (strategySource, header) = this.MapMethod.Strategy.GetBuilder().BuildSource();
+            builder.AppendLine(header);
+            builder.AppendLine(strategySource);
+        }
+
+        return builder.ToString();
+    }
+
+    private string GetSignature()
+    {
+        var modifiersWithReturnType = string.Join(
+            " ",
+            this.MapMethod.MethodSymbol.GetClassModifiers(),
+            this.MapMethod.TargetType.ToDisplayString());
+
+        var signature =
+            $"{modifiersWithReturnType} {this.MapMethod.MethodDeclarationSyntax.Identifier}({this.MapMethod.SourceType.ToDisplayString()} {this.MapMethod.SourceParameterName})";
+
+        return signature;
     }
 }

@@ -2,6 +2,8 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Builders.Strategies;
+
 using Microsoft.CodeAnalysis;
 
 namespace Mappa.Generator.Models.Strategies;
@@ -33,4 +35,7 @@ internal sealed class IdentityMapStrategy
 
     /// <inheritdoc/>
     public string Source { get; }
+
+    /// <inheritdoc/>
+    public IMappaStrategyBuilder GetBuilder() => new IdentityMapStrategyBuilder(this);
 }

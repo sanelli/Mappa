@@ -40,7 +40,7 @@ internal sealed class MappaNamespaceBuilder
     public string BuildSource()
     {
         var builder = new IndentStringBuilder();
-        var @namespace = this.ClassContext.DeclaredClassSymbol.ContainingNamespace.ToDisplayString();
+        var @namespace = this.ClassContext.ClassSymbol.ContainingNamespace.ToDisplayString();
         var fileScopedNamespace = (this.ClassContext.Compilation as CSharpCompilation)?.LanguageVersion >= LanguageVersion.CSharp10;
         if (fileScopedNamespace)
         {

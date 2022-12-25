@@ -47,21 +47,6 @@ internal sealed class IndentStringBuilder
         => this.AppendLines(line.Split(new[] { Environment.NewLine }, StringSplitOptions.None));
 
     /// <summary>
-    /// Append the lines to the the internal buffer.
-    /// </summary>
-    /// <param name="lines">The lines to be appended.</param>
-    /// <returns>This object.</returns>
-    internal IndentStringBuilder AppendLines(IEnumerable<string> lines)
-    {
-        foreach (var line in lines)
-        {
-            this.buffer.AppendLine($"{this.Spaces}{line.TrimEnd()}");
-        }
-
-        return this;
-    }
-
-    /// <summary>
     /// Append an empty line to the buffer.
     /// </summary>
     /// <returns>This object.</returns>
@@ -84,6 +69,21 @@ internal sealed class IndentStringBuilder
     /// <returns>A disposable object that closes the block upon dispose.</returns>
     internal IDisposable BeginCodeBlock()
         => new CodeBlock(this);
+
+    /// <summary>
+    /// Append the lines to the the internal buffer.
+    /// </summary>
+    /// <param name="lines">The lines to be appended.</param>
+    /// <returns>This object.</returns>
+    private IndentStringBuilder AppendLines(IEnumerable<string> lines)
+    {
+        foreach (var line in lines)
+        {
+            this.buffer.AppendLine($"{this.Spaces}{line.TrimEnd()}");
+        }
+
+        return this;
+    }
 
     /// <summary>
     /// Increase the indentation.

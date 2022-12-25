@@ -2,6 +2,8 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Builders.Strategies;
+
 using Microsoft.CodeAnalysis;
 
 namespace Mappa.Generator.Models.Strategies;
@@ -28,4 +30,10 @@ internal interface IMapStrategy
     /// Multiple properties are split by <c>.</c>.
     /// </summary>
     string Source { get; }
+
+    /// <summary>
+    /// Gets the strategy builder for this strategy.
+    /// </summary>
+    /// <returns>The strategy builder.</returns>
+    IMappaStrategyBuilder GetBuilder();
 }

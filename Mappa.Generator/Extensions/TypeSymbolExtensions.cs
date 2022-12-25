@@ -46,42 +46,8 @@ internal static class TypeSymbolExtensions
         }
 
         return SymbolEqualityComparer.Default.Equals(typeSymbol, task)
-            || SymbolEqualityComparer.Default.Equals(typeSymbol, taskGeneric)
-            || SymbolEqualityComparer.Default.Equals(typeSymbol, valueTask)
-            || SymbolEqualityComparer.Default.Equals(typeSymbol, valueTaskGeneric);
-    }
-
-    /// <summary>
-    /// Get the accessibility representation of the class.
-    /// </summary>
-    /// <param name="namedTypeSymbol">The name types symbol.</param>
-    /// <returns>The accessibility representation.</returns>
-    internal static string GetClassAccessibility(this ITypeSymbol namedTypeSymbol)
-        => namedTypeSymbol.DeclaredAccessibility.GetAccessibilityAsCode();
-
-    /// <summary>
-    /// Return the string representation of the class modifiers (public/private/..., abstract, sealed, static).
-    /// </summary>
-    /// <param name="namedTypeSymbol">The type to be investigated.</param>
-    /// <returns>The class modifiers.</returns>
-    internal static string GetClassModifiers(this ITypeSymbol namedTypeSymbol)
-    {
-        var keywords = new List<string> { namedTypeSymbol.GetClassAccessibility() };
-        if (namedTypeSymbol.IsAbstract)
-        {
-            keywords.Add("abstract");
-        }
-
-        if (namedTypeSymbol.IsSealed)
-        {
-            keywords.Add("sealed");
-        }
-
-        if (namedTypeSymbol.IsStatic)
-        {
-            keywords.Add("static");
-        }
-
-        return string.Join(" ", keywords);
+               || SymbolEqualityComparer.Default.Equals(typeSymbol, taskGeneric)
+               || SymbolEqualityComparer.Default.Equals(typeSymbol, valueTask)
+               || SymbolEqualityComparer.Default.Equals(typeSymbol, valueTaskGeneric);
     }
 }

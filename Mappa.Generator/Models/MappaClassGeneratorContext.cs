@@ -32,7 +32,7 @@ internal sealed class MappaClassGeneratorContext
         this.Compilation = compilation;
         this.ClassDeclarationSyntax = classDeclarationSyntax;
         this.SemanticModel = compilation.GetSemanticModel(classDeclarationSyntax.SyntaxTree);
-        this.DeclaredClassSymbol = this.SemanticModel.GetDeclaredSymbol(this.ClassDeclarationSyntax) as INamedTypeSymbol
+        this.ClassSymbol = this.SemanticModel.GetDeclaredSymbol(this.ClassDeclarationSyntax) as INamedTypeSymbol
             ?? throw new MappaGeneratorException("Cannot obtain semantic model", this.ClassDeclarationSyntax.GetLocation());
     }
 
@@ -59,7 +59,7 @@ internal sealed class MappaClassGeneratorContext
     /// <summary>
     /// Gets the declared symbol.
     /// </summary>
-    internal INamedTypeSymbol DeclaredClassSymbol { get; }
+    internal INamedTypeSymbol ClassSymbol { get; }
 
     /// <summary>
     /// Gets the list of map methods associated to class defined by <see cref="ClassDeclarationSyntax"/>.

@@ -2,6 +2,8 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Builders.Strategies;
+
 using Microsoft.CodeAnalysis;
 
 namespace Mappa.Generator.Models.Strategies;
@@ -34,4 +36,7 @@ internal sealed class MethodParameterMapStrategy
     /// Gets the strategy to be used to map the method.
     /// </summary>
     internal IMapStrategy Strategy { get; }
+
+    /// <inheritdoc/>
+    public IMappaStrategyBuilder GetBuilder() => new MethodParameterMapStrategyBuilder(this);
 }
