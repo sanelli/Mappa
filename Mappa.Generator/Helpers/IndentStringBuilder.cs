@@ -2,10 +2,9 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using System;
 using System.Text;
 
-namespace Mappa.Generator.Models.Helpers;
+namespace Mappa.Generator.Helpers;
 
 /// <summary>
 /// String builder that keep into account indentation.
@@ -15,7 +14,7 @@ internal sealed class IndentStringBuilder
     /// <summary>
     /// Gets the number of spaces per indentation.
     /// </summary>
-    private const int SpacesPerIndetation = 3;
+    private const int SpacesPerIndentation = 3;
 
     /// <summary>
     /// The buffer used to store the final string.
@@ -30,7 +29,7 @@ internal sealed class IndentStringBuilder
     /// <summary>
     /// Gets the overall number of spaces of the indentation.
     /// </summary>
-    internal string Spaces => new string(' ', this.indent * SpacesPerIndetation);
+    private string Spaces => new(' ', this.indent * SpacesPerIndentation);
 
     /// <inheritdoc/>
     public override string ToString()
@@ -126,7 +125,7 @@ internal sealed class IndentStringBuilder
     }
 
     /// <summary>
-    /// Descrbe the current indentation and allow for automatic
+    /// Describe the current indentation and allow for automatic
     /// indentation to happen using the <see cref="IDisposable"/>
     /// pattern.
     /// </summary>

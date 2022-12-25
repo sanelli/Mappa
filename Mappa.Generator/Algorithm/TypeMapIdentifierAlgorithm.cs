@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Extensions;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -62,18 +63,16 @@ internal class TypeMapIdentifierAlgorithm
     internal virtual IMapStrategy GetStrategy()
     {
         var nullableEnabled = this.Context.IsNullableEnabled();
-        var targetTypeNullableAnnotated = this.Context.TargetType.NullableAnnotation == NullableAnnotation.Annotated;
-        var sourceTypeNullableAnnotated = this.Context.SourceType.NullableAnnotation == NullableAnnotation.Annotated;
+        var notNullableEnabled = !nullableEnabled;
 
-        // 00. Target object
+        // 00. * -> object
         // (non-nullable): * -> object
-        // (nullable enabled): * -> object?
-        if ((nullableEnabled && targetTypeNullableAnnotated && sourceTypeNullableAnnotated) ||
-            !nullableEnabled)
+        if (notNullableEnabled && this.TargetType.IsObject())
         {
             return new IdentityMapStrategy(this.TargetType, this.SourceType, this.Source);
         }
 
+        // XX. (nullable enabled): * -> object?
         // XX. * -> object : IdentityStrategy
         // XX. T -> T or T -> T?: Identity strategy
         // XX. numeric -> implicit-convertible-numeric : Identity strategy.

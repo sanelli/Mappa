@@ -2,9 +2,6 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using System;
-using System.Threading;
-
 using Mappa.Attributes;
 
 using Microsoft.CodeAnalysis;

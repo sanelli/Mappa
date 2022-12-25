@@ -4,5 +4,5 @@
 
 using System.Runtime.CompilerServices;
 
-[assembly: System.CLSCompliant(false)]
+[assembly: CLSCompliant(false)]
 [assembly: InternalsVisibleTo("Mappa.Tests")]

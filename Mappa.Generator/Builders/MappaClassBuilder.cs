@@ -3,8 +3,8 @@
 // </copyright>
 
 using Mappa.Generator.Extensions;
+using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
-using Mappa.Generator.Models.Helpers;
 
 namespace Mappa.Generator.Builders;
 

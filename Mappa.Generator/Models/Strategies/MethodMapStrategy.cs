@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis;
 namespace Mappa.Generator.Models.Strategies;
 
 /// <summary>
-/// Describe a startegy for mapping between two types that uses a map method.
+/// Describe a strategy for mapping between two types that uses a map method.
 /// </summary>
 internal sealed class MethodMapStrategy
     : IMapStrategy
@@ -35,5 +35,5 @@ internal sealed class MethodMapStrategy
     /// <summary>
     /// Gets the method used for the mapping.
     /// </summary>
-    internal MapMethod MapMethod { get; }
+    private MapMethod MapMethod { get; }
 }

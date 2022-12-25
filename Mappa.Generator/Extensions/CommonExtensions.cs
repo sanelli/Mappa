@@ -2,10 +2,6 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using System;
-
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-
 namespace Mappa.Generator.Extensions;
 
 /// <summary>
