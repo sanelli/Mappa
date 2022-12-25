@@ -2,6 +2,10 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using System.CodeDom.Compiler;
+
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+
 namespace Mappa.Tests;
 
 /// <summary>
@@ -63,10 +67,65 @@ public sealed class IdentityStrategyUnitTest
         leadingTrivia[5].Should().Be("// </auto-generated>");
 
         // Namespace
+        var fileScopedNamespaceDeclarationSyntaxes = root.ChildNodes().OfType<FileScopedNamespaceDeclarationSyntax>().ToArray();
+        fileScopedNamespaceDeclarationSyntaxes.Should().HaveCount(1);
+        var fileScopedNamespaceDeclarationSyntax = fileScopedNamespaceDeclarationSyntaxes.Single();
+        fileScopedNamespaceDeclarationSyntax.Name.ToString().Should().Be("Mappa.Tests.UnitTests.SourceCode");
         
         // Class
+        var classDeclarationSyntaxes = fileScopedNamespaceDeclarationSyntax.ChildNodes().OfType<ClassDeclarationSyntax>().ToArray();
+        classDeclarationSyntaxes.Should().HaveCount(1);
+        var classDeclarationSyntax = classDeclarationSyntaxes.Single();
+        
+        // Class definition
+        var expectedClassModifiers = new HashSet<SyntaxKind>
+        {
+            SyntaxKind.PublicKeyword,
+            SyntaxKind.SealedKeyword,
+            SyntaxKind.PartialKeyword,
+        };
+        classDeclarationSyntax.Modifiers.Should().HaveCount(expectedClassModifiers.Count);
+        classDeclarationSyntax.Modifiers.Should()
+            .Contain(syntaxToken => expectedClassModifiers.Contains(syntaxToken.Kind()));
+        classDeclarationSyntax.Identifier.ToString().Should().Be("Mapper");
+        
+        // Class has attribute
+        classDeclarationSyntax.AttributeLists.Should().HaveCount(1);
+        var classAttributeList = classDeclarationSyntax.AttributeLists.Single();
+        classAttributeList.Attributes.Should().HaveCount(1);
+        var classAttribute = classAttributeList.Attributes.Single();
+        classAttribute.Name.ToString().Should().Be(typeof(GeneratedCodeAttribute).FullName);
+        classAttribute.ArgumentList.Arguments.Should().HaveCount(2);
+        classAttribute.ArgumentList.Arguments.First().GetText().ToString().Should().Be("\"Mappa\"");
+        classAttribute.ArgumentList.Arguments.Last().GetText().ToString().Should().Be($"\"{MappaGeneratorConsts.MappaGeneratorVersion.ToString()}\"");
+
+        // Method
+        var methodDeclarationSyntaxes = classDeclarationSyntax.ChildNodes().OfType<MethodDeclarationSyntax>().ToArray();
+        methodDeclarationSyntaxes.Should().HaveCount(1);
+        var methodDeclarationSyntax = methodDeclarationSyntaxes.Single();
+        
+        // Method attributes
+        methodDeclarationSyntax.AttributeLists.Should().HaveCount(1);
+        var methodAttributeList = methodDeclarationSyntax.AttributeLists.Single();
+        methodAttributeList.Attributes.Should().HaveCount(1);
+        var methodAttribute = methodAttributeList.Attributes.Single();
+        methodAttribute.Name.ToString().Should().Be(typeof(GeneratedCodeAttribute).FullName);
+        methodAttribute.ArgumentList.Arguments.Should().HaveCount(2);
+        methodAttribute.ArgumentList.Arguments.Should().HaveCount(2);
+        methodAttribute.ArgumentList.Arguments.First().GetText().ToString().Should().Be("\"Mappa\"");
+        methodAttribute.ArgumentList.Arguments.Last().GetText().ToString().Should().Be($"\"{MappaGeneratorConsts.MappaGeneratorVersion.ToString()}\"");   
         
         // Method signature
+        var expectedMethodModifier = new HashSet<SyntaxKind>
+        {
+            SyntaxKind.PublicKeyword,
+            SyntaxKind.SealedKeyword,
+            SyntaxKind.PartialKeyword,
+        };
+        classDeclarationSyntax.Modifiers.Should().HaveCount(expectedClassModifiers.Count);
+        classDeclarationSyntax.Modifiers.Should()
+            .Contain(syntaxToken => expectedClassModifiers.Contains(syntaxToken.Kind()));
+        classDeclarationSyntax.Identifier.ToString().Should().Be("Mapper");
         
         // Method statement content
         

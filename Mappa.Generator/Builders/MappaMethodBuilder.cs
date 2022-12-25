@@ -42,7 +42,9 @@ internal sealed class MappaMethodBuilder
         var isNullableEnabled = this.ClassContext.IsNullableEnabled(this.MapMethod.MethodDeclarationSyntax);
         using (builder.NullableBlock(isNullableEnabled))
         {
-            builder.AppendLine(this.GetSignature());
+            builder
+                .AppendLine(new MappaGeneratedCodeAttributeBuilder().BuildSource())
+                .AppendLine(this.GetSignature());
             using (builder.CodeBlock())
             using (builder.Indent())
             {
