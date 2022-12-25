@@ -17,7 +17,7 @@ public sealed class MappaGeneratorClassAlgorithmUnitTests
     /// <see cref="MappaAttribute"/> is ignored and not code
     /// is actually being generated for that.
     /// </summary>
-    /// <returns>The asyc task.</returns>
+    /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
     public async Task NonPartialMethodsAreIgnoredAndNotDiagnosticIsReported()
@@ -47,7 +47,7 @@ public sealed class MappaGeneratorClassAlgorithmUnitTests
     /// <see cref="MappaAttribute"/> is generate a diagnostic
     /// error when it has no parameters.
     /// </summary>
-    /// <returns>The asyc task.</returns>
+    /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
     public async Task PartialMethodsWithArity0GenerateADiagnosticError()
@@ -78,7 +78,7 @@ public sealed class MappaGeneratorClassAlgorithmUnitTests
     /// <see cref="MappaAttribute"/> is generate a diagnostic
     /// error when it has two parameters.
     /// </summary>
-    /// <returns>The asyc task.</returns>
+    /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
     public async Task PartialMethodsWithArity2GenerateADiagnosticError()
@@ -109,7 +109,7 @@ public sealed class MappaGeneratorClassAlgorithmUnitTests
     /// <see cref="MappaAttribute"/> is generate a diagnostic
     /// error when it returns <see cref="Void"/>.
     /// </summary>
-    /// <returns>The asyc task.</returns>
+    /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
     public async Task PartialMethodsReturningVoidGeneratesADiagnosticError()
@@ -140,7 +140,7 @@ public sealed class MappaGeneratorClassAlgorithmUnitTests
     /// <see cref="MappaAttribute"/> is generate a diagnostic
     /// error when it returns <see cref="Task"/>.
     /// </summary>
-    /// <returns>The asyc task.</returns>
+    /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
     public async Task PartialMethodsReturningTaskGeneratesADiagnosticError()
@@ -172,7 +172,7 @@ public sealed class MappaGeneratorClassAlgorithmUnitTests
     /// <see cref="MappaAttribute"/> is generate a diagnostic
     /// error when it returns <see cref="Task{T}"/>.
     /// </summary>
-    /// <returns>The asyc task.</returns>
+    /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
     public async Task PartialMethodsReturningTaskTGeneratesADiagnosticError()
@@ -204,7 +204,7 @@ public sealed class MappaGeneratorClassAlgorithmUnitTests
     /// <see cref="MappaAttribute"/> is generate a diagnostic
     /// error when it returns <see cref="ValueTask"/>.
     /// </summary>
-    /// <returns>The asyc task.</returns>
+    /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
     public async Task PartialMethodsReturningValueTaskGeneratesADiagnosticError()
@@ -236,7 +236,7 @@ public sealed class MappaGeneratorClassAlgorithmUnitTests
     /// <see cref="MappaAttribute"/> is generate a diagnostic
     /// error when it returns <see cref="ValueTask{T}"/>.
     /// </summary>
-    /// <returns>The asyc task.</returns>
+    /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
     public async Task PartialMethodsReturningValueTaskTGeneratesADiagnosticError()
