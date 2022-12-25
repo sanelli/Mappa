@@ -39,7 +39,9 @@ public sealed class MappaGeneratorClassAlgorithmUnitTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         // Assert
-        generatedResults.Should().NotHaveGeneratedAnySourceCode();
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .NotHaveGeneratedAnySourceCode();
     }
 
     /// <summary>
@@ -69,8 +71,9 @@ public sealed class MappaGeneratorClassAlgorithmUnitTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         // Assert
-        generatedResults.Should().HaveDiagnostics(1);
-        generatedResults.Should().ContainDiagnostic(MappaDiagnosticDescriptors.MethodHasInvalidNumberOfParameters, "Map");
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .ContainDiagnostic(MappaDiagnosticDescriptors.MethodHasInvalidNumberOfParameters, "Map");
     }
 
     /// <summary>
@@ -100,8 +103,9 @@ public sealed class MappaGeneratorClassAlgorithmUnitTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         // Assert
-        generatedResults.Should().HaveDiagnostics(1);
-        generatedResults.Should().ContainDiagnostic(MappaDiagnosticDescriptors.MethodHasInvalidNumberOfParameters, "Map");
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .ContainDiagnostic(MappaDiagnosticDescriptors.MethodHasInvalidNumberOfParameters, "Map");
     }
 
     /// <summary>
@@ -131,8 +135,9 @@ public sealed class MappaGeneratorClassAlgorithmUnitTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         // Assert
-        generatedResults.Should().HaveDiagnostics(1);
-        generatedResults.Should().ContainDiagnostic(MappaDiagnosticDescriptors.MethodIsVoid, "Map");
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .ContainDiagnostic(MappaDiagnosticDescriptors.MethodIsVoid, "Map");
     }
 
     /// <summary>
@@ -163,8 +168,9 @@ public sealed class MappaGeneratorClassAlgorithmUnitTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         // Assert
-        generatedResults.Should().HaveDiagnostics(1);
-        generatedResults.Should().ContainDiagnostic(MappaDiagnosticDescriptors.MethodReturnsTaskType, "Map");
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .ContainDiagnostic(MappaDiagnosticDescriptors.MethodReturnsTaskType, "Map");
     }
 
     /// <summary>
@@ -195,8 +201,9 @@ public sealed class MappaGeneratorClassAlgorithmUnitTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         // Assert
-        generatedResults.Should().HaveDiagnostics(1);
-        generatedResults.Should().ContainDiagnostic(MappaDiagnosticDescriptors.MethodReturnsTaskType, "Map");
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .ContainDiagnostic(MappaDiagnosticDescriptors.MethodReturnsTaskType, "Map");
     }
 
     /// <summary>
@@ -227,8 +234,9 @@ public sealed class MappaGeneratorClassAlgorithmUnitTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         // Assert
-        generatedResults.Should().HaveDiagnostics(1);
-        generatedResults.Should().ContainDiagnostic(MappaDiagnosticDescriptors.MethodReturnsTaskType, "Map");
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .ContainDiagnostic(MappaDiagnosticDescriptors.MethodReturnsTaskType, "Map");
     }
 
     /// <summary>
@@ -259,7 +267,8 @@ public sealed class MappaGeneratorClassAlgorithmUnitTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         // Assert
-        generatedResults.Should().HaveDiagnostics(1);
-        generatedResults.Should().ContainDiagnostic(MappaDiagnosticDescriptors.MethodReturnsTaskType, "Map");
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .ContainDiagnostic(MappaDiagnosticDescriptors.MethodReturnsTaskType, "Map");
     }
 }

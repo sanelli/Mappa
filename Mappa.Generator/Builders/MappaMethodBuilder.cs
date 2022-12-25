@@ -47,7 +47,12 @@ internal sealed class MappaMethodBuilder
             using (builder.Indent())
             {
                 var (strategySource, header) = this.MapMethod.Strategy.GetBuilder().BuildSource();
-                builder.AppendLine(header);
+                if (!string.IsNullOrWhiteSpace(header))
+                {
+                    builder.AppendLine(header);
+                    builder.AppendEmptyLine();
+                }
+
                 builder.AppendLine(strategySource);
             }
         }

@@ -29,12 +29,12 @@ internal sealed class MappaNamespaceBuilder
     /// <summary>
     /// Gets the class generator context.
     /// </summary>
-    internal MappaClassGeneratorContext ClassContext { get; }
+    private MappaClassGeneratorContext ClassContext { get; }
 
     /// <summary>
     /// Gets the class source code.
     /// </summary>
-    internal string ClassSourceCode { get; }
+    private string ClassSourceCode { get; }
 
     /// <inheritdoc/>
     public string BuildSource()
@@ -45,6 +45,7 @@ internal sealed class MappaNamespaceBuilder
         if (fileScopedNamespace)
         {
             builder.AppendLine($"namespace {@namespace};");
+            builder.AppendEmptyLine();
             builder.AppendLine(this.ClassSourceCode);
         }
         else

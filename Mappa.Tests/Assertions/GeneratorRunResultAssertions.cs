@@ -42,6 +42,17 @@ public sealed class GeneratorRunResultAssertions
     }
 
     /// <summary>
+    /// Assert that the generator results have <paramref name="count"/> sources.
+    /// </summary>
+    /// <param name="count">The expected number of sources.</param>
+    /// <returns>The assertions itself.</returns>
+    public GeneratorRunResultAssertions HaveSources(int count)
+    {
+        this.Subject.GeneratedSources.Should().HaveCount(count);
+        return this;
+    }
+
+    /// <summary>
     /// Assert that the generator results have <paramref name="count"/> diagnostics.
     /// </summary>
     /// <param name="count">The number of expected diagnostics.</param>
@@ -58,10 +69,15 @@ public sealed class GeneratorRunResultAssertions
     /// <param name="diagnosticDescriptor">The specific diagnostic descriptor.</param>
     /// <param name="parameters">Parameters used to generate the message.</param>
     /// <returns>The assertions itself.</returns>
-    public GeneratorRunResultAssertions ContainDiagnostic(DiagnosticDescriptor diagnosticDescriptor, params string[] parameters)
+    public GeneratorRunResultAssertions ContainDiagnostic(
+        DiagnosticDescriptor diagnosticDescriptor,
+        params object?[] parameters)
     {
         ArgumentNullException.ThrowIfNull(diagnosticDescriptor);
-        var expectedMessage = string.Format(CultureInfo.CurrentCulture, diagnosticDescriptor.MessageFormat.ToString(CultureInfo.CurrentCulture), parameters);
+        var expectedMessage = string.Format(
+            CultureInfo.CurrentCulture,
+            diagnosticDescriptor.MessageFormat.ToString(CultureInfo.CurrentCulture),
+            parameters);
         this.Subject.Diagnostics.Should().Contain(diagnostic =>
             diagnostic.Descriptor.Equals(diagnosticDescriptor) &&
             diagnostic.GetMessage(CultureInfo.CurrentCulture).Equals(expectedMessage, StringComparison.Ordinal));

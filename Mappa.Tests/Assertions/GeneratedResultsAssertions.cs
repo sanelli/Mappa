@@ -28,8 +28,18 @@ public sealed class GeneratedResultsAssertions
     public GeneratedResultsAssertions NotHaveGeneratedAnySourceCode()
     {
         var runResult = this.HaveOneResult();
-        runResult.Should().NotHaveDiagnostics();
         runResult.Should().NotHaveSources();
+        return this;
+    }
+
+    /// <summary>
+    /// Assert that one source code has been generated.
+    /// </summary>
+    /// <returns>The assertions instance.</returns>
+    public GeneratedResultsAssertions HaveGeneratedOneSourceCode()
+    {
+        var runResult = this.HaveOneResult();
+        runResult.Should().HaveSources(1);
         return this;
     }
 
@@ -39,7 +49,9 @@ public sealed class GeneratedResultsAssertions
     /// <param name="diagnosticDescriptor">The specific diagnostic descriptor.</param>
     /// <param name="parameters">Parameters used to generate the message.</param>
     /// <returns>The assertions instance.</returns>
-    public GeneratedResultsAssertions ContainDiagnostic(DiagnosticDescriptor diagnosticDescriptor, params string[] parameters)
+    public GeneratedResultsAssertions ContainDiagnostic(
+        DiagnosticDescriptor diagnosticDescriptor,
+        params string[] parameters)
     {
         var runResult = this.HaveOneResult();
         runResult.Should().ContainDiagnostic(diagnosticDescriptor, parameters);
@@ -55,6 +67,17 @@ public sealed class GeneratedResultsAssertions
     {
         var runResult = this.HaveOneResult();
         runResult.Should().HaveDiagnostics(count);
+        return this;
+    }
+
+    /// <summary>
+    /// Check it contains no diagnostics.
+    /// </summary>
+    /// <returns>The assertions instance.</returns>
+    public GeneratedResultsAssertions NotHaveDiagnostics()
+    {
+        var runResult = this.HaveOneResult();
+        runResult.Should().NotHaveDiagnostics();
         return this;
     }
 

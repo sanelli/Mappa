@@ -154,7 +154,7 @@ internal sealed class MappaGeneratorClassAlgorithm
 
     private void GenerateSourceCode(MappaClassGeneratorContext classContext)
     {
-        if (classContext.MapMethods.All(mapMethod => mapMethod.HasStrategy))
+        if (!classContext.MapMethods.Any(mapMethod => mapMethod.HasStrategy))
         {
             return;
         }
