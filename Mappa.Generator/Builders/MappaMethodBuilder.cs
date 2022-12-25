@@ -62,8 +62,9 @@ internal sealed class MappaMethodBuilder
             this.MapMethod.MethodSymbol.GetClassModifiers(),
             this.MapMethod.TargetType.ToDisplayString());
 
-        var signature =
-            $"{modifiersWithReturnType} {this.MapMethod.MethodDeclarationSyntax.Identifier}({this.MapMethod.SourceType.ToDisplayString()} {this.MapMethod.SourceParameterName})";
+        var parameters = $"{this.MapMethod.SourceType.ToDisplayString()} {this.MapMethod.SourceParameterName}";
+
+        var signature = $"{modifiersWithReturnType} {this.MapMethod.MethodDeclarationSyntax.Identifier}({parameters})";
 
         return signature;
     }
