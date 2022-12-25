@@ -29,15 +29,15 @@ public sealed class MappaGenerator
                 GetSemanticTargetForGeneration)
             .Where(CommonExtensions.IsNotNull);
 
-        // Step 2.Get the analizer options, the compilation provider and the classes
-        var analizerConfigOptionsCompilationAndClasses = context
+        // Step 2.Get the analyzer options, the compilation provider and the classes
+        var analyzerConfigOptionsCompilationAndClasses = context
             .AnalyzerConfigOptionsProvider
             .Combine(context
                 .CompilationProvider
                 .Combine(classDeclarations.Collect()));
 
         // Step 3. Register the source output to generate the code.
-        context.RegisterSourceOutput(analizerConfigOptionsCompilationAndClasses, Execute);
+        context.RegisterSourceOutput(analyzerConfigOptionsCompilationAndClasses, Execute);
     }
 
     private static bool IsPartialClassDeclarationWithAttributes(SyntaxNode syntaxNode, CancellationToken cancellationToken)
