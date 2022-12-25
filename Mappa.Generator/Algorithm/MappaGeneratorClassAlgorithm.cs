@@ -79,82 +79,122 @@ internal sealed class MappaGeneratorClassAlgorithm
             // Skip null class declaration syntaxes.
             if (classDeclarationSyntax is null)
             {
+                return;
+            }
+
+            // Execute for a single class.
+            this.ExecuteForSingleClass(classDeclarationSyntax, options, cancellationToken);
+        }
+    }
+
+    private static void GenerateStrategyForEachMethod(
+        MappaClassGeneratorContext classContext,
+        CancellationToken cancellationToken)
+    {
+        foreach (var mapMethod in classContext.MapMethods)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (mapMethod.Mapped)
+            {
                 continue;
             }
 
-            // Build the class generator context.
-            var classContext = new MappaClassGeneratorContext(options, this.Compilation, classDeclarationSyntax);
-
-            // Gather all the methods that require a mapping.
-            foreach (var methodDeclarationSyntax in classDeclarationSyntax.ChildNodes().OfType<MethodDeclarationSyntax>())
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                if (!methodDeclarationSyntax.IsPartial())
-                {
-                    continue;
-                }
-
-                if (!methodDeclarationSyntax.HasArity(1))
-                {
-                    classContext.ReportDiagnostic(MappaDiagnostics.MethodHasInvalidNumberOfParameters(methodDeclarationSyntax));
-                    continue;
-                }
-
-                var mapMethod = new MapMethod(methodDeclarationSyntax, classContext.SemanticModel, cancellationToken);
-
-                if (mapMethod.MethodSymbol.IsVoid())
-                {
-                    classContext.ReportDiagnostic(MappaDiagnostics.MethodIsVoid(methodDeclarationSyntax));
-                    continue;
-                }
-
-                if (mapMethod.MethodSymbol.ReturnsAnyTaskType(this.Compilation))
-                {
-                    classContext.ReportDiagnostic(MappaDiagnostics.MethodReturnsTaskType(methodDeclarationSyntax));
-                    continue;
-                }
-
-                classContext.TryAddMethod(mapMethod);
-            }
-
-            // TODO: Add all methods from references classes and mark them as mapped.
-
-            // Identify the strategy for each method.
-            while (!classContext.AreAllMethodsMapped())
-            {
-                foreach (var mapMethod in classContext.MapMethods)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    if (mapMethod.Mapped)
-                    {
-                        continue;
-                    }
-
-                    var methodContext = new MappaMethodGeneratorContext(classContext, mapMethod);
-                    var typeIdentifierAlgorithm = new TypeMapIdentifierAlgorithm(methodContext, mapMethod.TargetType, mapMethod.SourceType, mapMethod.SourceParameterName);
-                    var strategy = typeIdentifierAlgorithm.GetStrategy();
-                    var methodParameterMapStrategy = new MethodParameterMapStrategy(strategy);
-                    mapMethod.SetStrategy(methodParameterMapStrategy);
-                    mapMethod.MarkMapped();
-                }
-            }
-
-            // Build the source code (only if there is something to generate)
-            if (classContext.MapMethods.Any(mapMethod => mapMethod.HasStrategy))
-            {
-                var builder = new MappaFileBuilder(classContext);
-                var hintName = builder.HintName;
-                var sourceFile = builder.BuildSource();
-                this.Context.AddSource(hintName, sourceFile);
-            }
-
-            // Report the diagnostics.
-            foreach (var diagnostic in classContext.Diagnostics)
-            {
-                this.Context.ReportDiagnostic(diagnostic);
-            }
+            var methodContext = new MappaMethodGeneratorContext(classContext, mapMethod);
+            var typeIdentifierAlgorithm = new TypeMapIdentifierAlgorithm(
+                methodContext,
+                mapMethod.TargetType,
+                mapMethod.SourceType,
+                mapMethod.SourceParameterName);
+            var strategy = typeIdentifierAlgorithm.GetStrategy();
+            var methodParameterMapStrategy = new MethodParameterMapStrategy(strategy);
+            mapMethod.SetStrategy(methodParameterMapStrategy);
+            mapMethod.MarkMapped();
         }
+    }
+
+    private void ExecuteForSingleClass(
+        ClassDeclarationSyntax classDeclarationSyntax,
+        MappaGlobalOptions options,
+        CancellationToken cancellationToken)
+    {
+        // Build the class generator context.
+        var classContext = new MappaClassGeneratorContext(options, this.Compilation, classDeclarationSyntax);
+
+        // Gather all the methods that require a mapping.
+        foreach (var methodDeclarationSyntax in classDeclarationSyntax.ChildNodes().OfType<MethodDeclarationSyntax>())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            this.AcceptMapMethod(methodDeclarationSyntax, classContext, cancellationToken);
+        }
+
+        // TODO: Add all methods from references classes and mark them as mapped.
+
+        // Identify the strategy for each method.
+        // While generating strategies new methods might be found or requested to be generated.
+        while (!classContext.AreAllMethodsMapped())
+        {
+            GenerateStrategyForEachMethod(classContext, cancellationToken);
+        }
+
+        // Build the source code (only if there is something to generate)
+        this.GenerateSourceCode(classContext);
+
+        // Report the diagnostics.
+        this.ReportAllDiagnostics(classContext);
+    }
+
+    private void ReportAllDiagnostics(MappaClassGeneratorContext classContext)
+    {
+        foreach (var diagnostic in classContext.Diagnostics)
+        {
+            this.Context.ReportDiagnostic(diagnostic);
+        }
+    }
+
+    private void GenerateSourceCode(MappaClassGeneratorContext classContext)
+    {
+        if (classContext.MapMethods.All(mapMethod => mapMethod.HasStrategy))
+        {
+            return;
+        }
+
+        var builder = new MappaFileBuilder(classContext);
+        var hintName = builder.HintName;
+        var sourceFile = builder.BuildSource();
+        this.Context.AddSource(hintName, sourceFile);
+    }
+
+    private void AcceptMapMethod(
+        MethodDeclarationSyntax methodDeclarationSyntax,
+        MappaClassGeneratorContext classContext,
+        CancellationToken cancellationToken)
+    {
+        if (!methodDeclarationSyntax.IsPartial())
+        {
+            return;
+        }
+
+        if (!methodDeclarationSyntax.HasArity(1))
+        {
+            classContext.ReportDiagnostic(MappaDiagnostics.MethodHasInvalidNumberOfParameters(methodDeclarationSyntax));
+            return;
+        }
+
+        var mapMethod = new MapMethod(methodDeclarationSyntax, classContext.SemanticModel, cancellationToken);
+
+        if (mapMethod.MethodSymbol.IsVoid())
+        {
+            classContext.ReportDiagnostic(MappaDiagnostics.MethodIsVoid(methodDeclarationSyntax));
+            return;
+        }
+
+        if (mapMethod.MethodSymbol.ReturnsAnyTaskType(this.Compilation))
+        {
+            classContext.ReportDiagnostic(MappaDiagnostics.MethodReturnsTaskType(methodDeclarationSyntax));
+            return;
+        }
+
+        classContext.TryAddMethod(mapMethod);
     }
 }
