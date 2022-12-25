@@ -43,22 +43,22 @@ internal sealed class MappaGeneratorClassAlgorithm
     /// <summary>
     /// Gets the source production context.
     /// </summary>
-    public SourceProductionContext Context { get; }
+    private SourceProductionContext Context { get; }
 
     /// <summary>
     /// Gets the analyzer config options provider.
     /// </summary>
-    public AnalyzerConfigOptionsProvider AnalyzerConfigOptionsProvider { get; }
+    private AnalyzerConfigOptionsProvider AnalyzerConfigOptionsProvider { get; }
 
     /// <summary>
     /// Gets the compilation.
     /// </summary>
-    public Compilation Compilation { get; }
+    private Compilation Compilation { get; }
 
     /// <summary>
     /// Gets the class declaration syntaxes that can be  used to generate a mapper..
     /// </summary>
-    public ImmutableArray<ClassDeclarationSyntax?> ClassDeclarationSyntaxes { get; }
+    private ImmutableArray<ClassDeclarationSyntax?> ClassDeclarationSyntaxes { get; }
 
     /// <summary>
     /// Execute the algorithm and produces the sources.
@@ -71,22 +71,22 @@ internal sealed class MappaGeneratorClassAlgorithm
         // For each class generate the mapper source code.
         // At this point we know that the class declaration syntax is partial
         // and has the [Mappa] attribute.
-        foreach (var classDeclarationSynax in this.ClassDeclarationSyntaxes)
+        foreach (var classDeclarationSyntax in this.ClassDeclarationSyntaxes)
         {
             // Stop if the operation has been cancelled
             cancellationToken.ThrowIfCancellationRequested();
 
             // Skip null class declaration syntaxes.
-            if (classDeclarationSynax is null)
+            if (classDeclarationSyntax is null)
             {
                 continue;
             }
 
             // Build the class generator context.
-            var classContext = new MappaClassGeneratorContext(options, this.Compilation, classDeclarationSynax);
+            var classContext = new MappaClassGeneratorContext(options, this.Compilation, classDeclarationSyntax);
 
             // Gather all the methods that require a mapping.
-            foreach (var methodDeclarationSyntax in classDeclarationSynax.ChildNodes().OfType<MethodDeclarationSyntax>())
+            foreach (var methodDeclarationSyntax in classDeclarationSyntax.ChildNodes().OfType<MethodDeclarationSyntax>())
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -141,11 +141,14 @@ internal sealed class MappaGeneratorClassAlgorithm
                 }
             }
 
-            // Build the source code.
-            var builder = new MappaFileBuilder(classContext);
-            var hintName = builder.HintName;
-            var sourceFile = builder.BuildSource();
-            this.Context.AddSource(hintName, sourceFile);
+            // Build the source code (only if there is something to generate)
+            if (classContext.MapMethods.Any(mapMethod => mapMethod.HasStrategy))
+            {
+                var builder = new MappaFileBuilder(classContext);
+                var hintName = builder.HintName;
+                var sourceFile = builder.BuildSource();
+                this.Context.AddSource(hintName, sourceFile);
+            }
 
             // Report the diagnostics.
             foreach (var diagnostic in classContext.Diagnostics)

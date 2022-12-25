@@ -353,3 +353,4 @@ MigrationBackup/
 .package/
 nuget.config
 .mappa-tests-and-coverage
+.idea
