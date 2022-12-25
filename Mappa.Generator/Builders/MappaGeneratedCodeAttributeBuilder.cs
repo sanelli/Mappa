@@ -2,7 +2,6 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using System;
 using System.CodeDom.Compiler;
 
 namespace Mappa.Generator.Builders;

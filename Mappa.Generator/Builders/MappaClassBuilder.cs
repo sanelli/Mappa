@@ -2,8 +2,6 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using System;
-
 using Mappa.Generator.Extensions;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Helpers;
@@ -28,33 +26,32 @@ internal sealed class MappaClassBuilder
     /// <summary>
     /// Gets the class generator context.
     /// </summary>
-    internal MappaClassGeneratorContext ClassContext { get; }
+    private MappaClassGeneratorContext ClassContext { get; }
 
     /// <inheritdoc/>
     public string BuildSource()
     {
         const string space = " ";
-        var modifiers = string.Join(space, new[]
-        {
+        var modifiers = string.Join(
+            space,
             this.ClassContext.DeclaredClassSymbol.GetClassAccessibility(),
             this.ClassContext.DeclaredClassSymbol.GetClassModifiers(),
-            "partial",
-        });
+            "partial");
 
         var builder = new IndentStringBuilder();
-        builder.AppendLine(new MappaGeneratedCodeAttributeBuilder().BuildSource())
-               .AppendLine($"{modifiers} class {this.ClassContext.ClassDeclarationSyntax.Identifier}");
+        builder
+            .AppendLine(new MappaGeneratedCodeAttributeBuilder().BuildSource())
+            .AppendLine($"{modifiers} class {this.ClassContext.ClassDeclarationSyntax.Identifier}");
 
         using (builder.BeginCodeBlock())
         using (builder.Indent())
         {
             // Build all map  methods.
-            foreach (var mapMethod in this.ClassContext.MapMethods)
+            foreach (var mapMethod in this.ClassContext.MapMethods.Where(mapMethod => mapMethod.HasStrategy))
             {
-                if (mapMethod.HasStrategy)
-                {
-                    // TODO: Implement me
-                }
+                var methodBuilder = new MappaMethodBuilder(this.ClassContext, mapMethod);
+                var methodSourceCode = methodBuilder.BuildSource();
+                builder.AppendLine(methodSourceCode);
             }
         }
 

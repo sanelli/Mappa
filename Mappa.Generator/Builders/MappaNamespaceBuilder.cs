@@ -2,8 +2,6 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using System;
-
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Helpers;
 
