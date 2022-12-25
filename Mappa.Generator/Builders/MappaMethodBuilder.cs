@@ -39,14 +39,17 @@ internal sealed class MappaMethodBuilder
     public string BuildSource()
     {
         var builder = new IndentStringBuilder();
-        builder.AppendLine(this.GetSignature());
-
-        using (builder.BeginCodeBlock())
-        using (builder.Indent())
+        var isNullableEnabled = this.ClassContext.IsNullableEnabled(this.MapMethod.MethodDeclarationSyntax);
+        using (builder.NullableBlock(isNullableEnabled))
         {
-            var (strategySource, header) = this.MapMethod.Strategy.GetBuilder().BuildSource();
-            builder.AppendLine(header);
-            builder.AppendLine(strategySource);
+            builder.AppendLine(this.GetSignature());
+            using (builder.CodeBlock())
+            using (builder.Indent())
+            {
+                var (strategySource, header) = this.MapMethod.Strategy.GetBuilder().BuildSource();
+                builder.AppendLine(header);
+                builder.AppendLine(strategySource);
+            }
         }
 
         return builder.ToString();

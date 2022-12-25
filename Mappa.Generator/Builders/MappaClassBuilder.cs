@@ -42,7 +42,7 @@ internal sealed class MappaClassBuilder
             .AppendLine(new MappaGeneratedCodeAttributeBuilder().BuildSource())
             .AppendLine($"{modifiers} class {this.ClassContext.ClassDeclarationSyntax.Identifier}");
 
-        using (builder.BeginCodeBlock())
+        using (builder.CodeBlock())
         using (builder.Indent())
         {
             // Build all map  methods.

@@ -50,7 +50,7 @@ internal sealed class MappaNamespaceBuilder
         else
         {
             builder.AppendLine($"namespace {@namespace}");
-            using (builder.BeginCodeBlock())
+            using (builder.CodeBlock())
             using (builder.Indent())
             {
                 builder.AppendLine(this.ClassSourceCode);

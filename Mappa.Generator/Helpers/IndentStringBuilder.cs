@@ -64,11 +64,19 @@ internal sealed class IndentStringBuilder
         => new Indentation(this);
 
     /// <summary>
-    /// Begina a new code block.
+    /// Begin a new code block.
     /// </summary>
     /// <returns>A disposable object that closes the block upon dispose.</returns>
-    internal IDisposable BeginCodeBlock()
-        => new CodeBlock(this);
+    internal IDisposable CodeBlock()
+        => new CodeBlockDefinition(this);
+
+    /// <summary>
+    /// Generate a surrounding <c>#nullable</c> block.
+    /// </summary>
+    /// <param name="isNullableEnabled"><c>true</c> if nullable.</param>
+    /// <returns>A disposable object that closes the block upon dispose.</returns>
+    internal IDisposable NullableBlock(bool isNullableEnabled)
+        => new NullableBlockDefinition(this, isNullableEnabled);
 
     /// <summary>
     /// Append the lines to the the internal buffer.
@@ -99,7 +107,7 @@ internal sealed class IndentStringBuilder
     /// Describe a code block that is constructed using the
     /// <see cref="IDisposable"/> pattern.
     /// </summary>
-    private sealed class CodeBlock
+    private sealed class CodeBlockDefinition
         : IDisposable
     {
         /// <summary>
@@ -108,10 +116,10 @@ internal sealed class IndentStringBuilder
         private readonly IndentStringBuilder stringBuilder;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CodeBlock"/> class.
+        /// Initializes a new instance of the <see cref="CodeBlockDefinition"/> class.
         /// </summary>
         /// <param name="stringBuilder">The string builder.</param>
-        internal CodeBlock(IndentStringBuilder stringBuilder)
+        internal CodeBlockDefinition(IndentStringBuilder stringBuilder)
         {
             this.stringBuilder = stringBuilder;
             this.stringBuilder.AppendLine("{");
@@ -151,6 +159,37 @@ internal sealed class IndentStringBuilder
         public void Dispose()
         {
             this.stringBuilder.DecreaseIndentation();
+        }
+    }
+
+    /// <summary>
+    /// Describe the current indentation and allow for automatic
+    /// nullability to happen using the <see cref="IDisposable"/>
+    /// pattern.
+    /// </summary>
+    private sealed class NullableBlockDefinition
+        : IDisposable
+    {
+        /// <summary>
+        /// The indentation object.
+        /// </summary>
+        private readonly IndentStringBuilder stringBuilder;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NullableBlockDefinition"/> class.
+        /// </summary>
+        /// <param name="isNullableEnabled">The indentation object.</param>
+        /// <param name="nullable"><c>true</c> if nullable should be enabled.</param>
+        internal NullableBlockDefinition(IndentStringBuilder isNullableEnabled, bool nullable)
+        {
+            this.stringBuilder = isNullableEnabled;
+            this.stringBuilder.AppendLine($"#nullable {(nullable ? "enable" : "disable")}");
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            this.stringBuilder.AppendLine("#nullable restore");
         }
     }
 }
