@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Diagnostics.Debug;
 using Mappa.Generator.Exceptions;
 
 using Microsoft.CodeAnalysis;
@@ -21,25 +22,35 @@ internal sealed class MappaClassGeneratorContext
     /// Initializes a new instance of the <see cref="MappaClassGeneratorContext"/> class.
     /// </summary>
     /// <param name="options">The mappa global options.</param>
+    /// <param name="mappaDebug">Mappa debug helper.</param>
     /// <param name="compilation">The compilation.</param>
     /// <param name="classDeclarationSyntax">The class declaration syntax.</param>
     public MappaClassGeneratorContext(
         MappaGlobalOptions options,
+        MappaDebug mappaDebug,
         Compilation compilation,
         ClassDeclarationSyntax classDeclarationSyntax)
     {
         this.Options = options;
+        this.MappaDebug = mappaDebug;
         this.Compilation = compilation;
         this.ClassDeclarationSyntax = classDeclarationSyntax;
         this.SemanticModel = compilation.GetSemanticModel(classDeclarationSyntax.SyntaxTree);
         this.ClassSymbol = this.SemanticModel.GetDeclaredSymbol(this.ClassDeclarationSyntax) as INamedTypeSymbol
-            ?? throw new MappaGeneratorException("Cannot obtain semantic model", this.ClassDeclarationSyntax.GetLocation());
+                           ?? throw new MappaGeneratorException(
+                               "Cannot obtain semantic model",
+                               this.ClassDeclarationSyntax.GetLocation());
     }
 
     /// <summary>
     /// Gets the global mappa options.
     /// </summary>
     internal MappaGlobalOptions Options { get; }
+
+    /// <summary>
+    /// Gets the debugging tool.
+    /// </summary>
+    internal MappaDebug MappaDebug { get; }
 
     /// <summary>
     /// Gets the compilation.
@@ -79,13 +90,18 @@ internal sealed class MappaClassGeneratorContext
     internal bool IsNullableEnabled(MethodDeclarationSyntax methodDeclarationSyntax)
     {
         var methodNullableContext = this.SemanticModel
-           .GetNullableContext(methodDeclarationSyntax
-               .GetLocation()
-               .GetLineSpan()
-               .StartLinePosition
-               .Line);
+            .GetNullableContext(methodDeclarationSyntax
+                .GetLocation()
+                .GetLineSpan()
+                .StartLinePosition
+                .Line);
 
-        return (methodNullableContext & NullableContext.Enabled) > 0;
+        bool isNullableEnabled = (methodNullableContext & NullableContext.Enabled) > 0;
+
+        this.MappaDebug.Debug(
+            $"Nullability for \"{this.ClassDeclarationSyntax.Identifier.ToString()}.{methodDeclarationSyntax.Identifier.ToString()}\" is '{isNullableEnabled}'.",
+            methodDeclarationSyntax);
+        return isNullableEnabled;
     }
 
     /// <summary>
@@ -98,9 +114,14 @@ internal sealed class MappaClassGeneratorContext
     /// <param name="mapMethod">The map method, if it exists.</param>
     /// <returns><c>true</c> if the method to map from <paramref name="sourceType"/> to
     /// <paramref name="targetType"/>, <c>false</c> otherwise.</returns>
-    internal bool TryGetMethod(ITypeSymbol targetType, ITypeSymbol sourceType, bool nullableEnabled, out MapMethod mapMethod)
+    internal bool TryGetMethod(
+        ITypeSymbol targetType,
+        ITypeSymbol sourceType,
+        bool nullableEnabled,
+        out MapMethod mapMethod)
     {
-        var foundMethod = this.mapMethods.FirstOrDefault(method => method.IsMapFor(targetType, sourceType, nullableEnabled));
+        var foundMethod =
+            this.mapMethods.FirstOrDefault(method => method.IsMapFor(targetType, sourceType, nullableEnabled));
         mapMethod = foundMethod!;
         return foundMethod is not null;
     }
@@ -112,7 +133,11 @@ internal sealed class MappaClassGeneratorContext
     /// <param name="mapMethod">The method to be added.</param>
     internal void TryAddMethod(MapMethod mapMethod)
     {
-        if (!this.TryGetMethod(mapMethod.TargetType, mapMethod.SourceType, this.IsNullableEnabled(mapMethod.MethodDeclarationSyntax),  out _))
+        if (!this.TryGetMethod(
+                mapMethod.TargetType,
+                mapMethod.SourceType,
+                this.IsNullableEnabled(mapMethod.MethodDeclarationSyntax),
+                out _))
         {
             this.mapMethods.Add(mapMethod);
         }

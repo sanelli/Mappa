@@ -10,6 +10,11 @@ namespace Mappa.Generator.Diagnostics;
 internal enum MappaDiagnosticsKind
 {
     /// <summary>
+    /// Generic diagnostic debug.
+    /// </summary>
+    Debug,
+
+    /// <summary>
     /// The method has an invalid number of parameters.
     /// </summary>
     MethodHasInvalidNumberOfParameters = 1,

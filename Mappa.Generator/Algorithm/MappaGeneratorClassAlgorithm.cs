@@ -6,6 +6,7 @@ using System.Collections.Immutable;
 
 using Mappa.Generator.Builders;
 using Mappa.Generator.Diagnostics;
+using Mappa.Generator.Diagnostics.Debug;
 using Mappa.Generator.Extensions;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
@@ -66,7 +67,6 @@ internal sealed class MappaGeneratorClassAlgorithm
     internal void Execute()
     {
         var cancellationToken = this.Context.CancellationToken;
-        var options = new MappaGlobalOptions();
 
         // For each class generate the mapper source code.
         // At this point we know that the class declaration syntax is partial
@@ -82,8 +82,12 @@ internal sealed class MappaGeneratorClassAlgorithm
                 return;
             }
 
+            // Rebuild options
+            var options = new MappaGlobalOptions(this.AnalyzerConfigOptionsProvider, classDeclarationSyntax.SyntaxTree);
+            var mappaDebug = new MappaDebug(options, this.Context.ReportDiagnostic);
+
             // Execute for a single class.
-            this.ExecuteForSingleClass(classDeclarationSyntax, options, cancellationToken);
+            this.ExecuteForSingleClass(classDeclarationSyntax, options, mappaDebug, cancellationToken);
         }
     }
 
@@ -116,14 +120,24 @@ internal sealed class MappaGeneratorClassAlgorithm
     private void ExecuteForSingleClass(
         ClassDeclarationSyntax classDeclarationSyntax,
         MappaGlobalOptions options,
+        MappaDebug mappaDebug,
         CancellationToken cancellationToken)
     {
+        mappaDebug.Debug(
+            $"Started addressing class \"{classDeclarationSyntax.Identifier.ToFullString()}\".",
+            classDeclarationSyntax);
+
         // Build the class generator context.
-        var classContext = new MappaClassGeneratorContext(options, this.Compilation, classDeclarationSyntax);
+        var classContext =
+            new MappaClassGeneratorContext(options, mappaDebug, this.Compilation, classDeclarationSyntax);
 
         // Gather all the methods that require a mapping.
         foreach (var methodDeclarationSyntax in classDeclarationSyntax.ChildNodes().OfType<MethodDeclarationSyntax>())
         {
+            mappaDebug.Debug(
+                $"Started deciding if method class \"{classDeclarationSyntax.Identifier.ToFullString()}.{methodDeclarationSyntax.Identifier.ToString()}\" can be mapped.",
+                classDeclarationSyntax);
+
             cancellationToken.ThrowIfCancellationRequested();
             this.AcceptMapMethod(methodDeclarationSyntax, classContext, cancellationToken);
         }
