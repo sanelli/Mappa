@@ -9,11 +9,12 @@
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <AnalysisLevel>latest-all</AnalysisLevel>
+        <WarningsNotAsErrors>MP00000</WarningsNotAsErrors>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Mappa" Version="0.0.1-alpha.3" />
-        <PackageReference Include="Mappa.Generator" Version="0.0.1-alpha.9">
+        <PackageReference Include="Mappa.Generator" Version="0.0.1-alpha.13">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

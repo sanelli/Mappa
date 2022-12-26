@@ -12,14 +12,14 @@ namespace Mappa.Generator.Models;
 /// Values used are:
 /// <list type="bullet">
 ///     <item>
-///         <term><c>mappa_debug</c></term>
+///         <term><c>mappa.debug</c></term>
 ///         <description>Enabled the report of debugging messages when value is equal to <c>true</c>.</description>
 ///     </item>
 /// </list>
 /// </summary>
 internal sealed class MappaGlobalOptions
 {
-    private const string MappaDebugFlagName = "mappa_debug";
+    private const string MappaDebugFlagName = "debug";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaGlobalOptions"/> class.
@@ -30,13 +30,18 @@ internal sealed class MappaGlobalOptions
     {
         var options = analyzerConfigOptionsProvider.GetOptions(syntaxTree);
 
-        this.MappaDebug = options.TryGetValue(MappaDebugFlagName, out var mappaDebug)
+        this.MappaDebug = options.TryGetValue(GetOptionName(MappaDebugFlagName), out var mappaDebug)
                           && !string.IsNullOrWhiteSpace(mappaDebug)
-                          && "true".Equals(mappaDebug, StringComparison.Ordinal);
+                          && "true".Equals(mappaDebug, StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
     /// Gets a value indicating whether to report debug INFO diagnostics.
     /// </summary>
     internal bool MappaDebug { get; }
+
+    private static string GetOptionName(string name)
+#pragma warning disable CA1308 // Normalize strings to uppercase
+        => $"{nameof(Mappa)}.{name}".ToLowerInvariant();
+#pragma warning restore CA1308 // Normalize strings to uppercase
 }
