@@ -2,10 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using Mappa.Generator.Exceptions;
-
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Mappa.Generator.Models;
 
@@ -52,26 +49,7 @@ internal sealed class MappaMethodGeneratorContext
     /// </summary>
     /// <returns><c>true</c> if the nullable context is enabled, <c>false</c> otherwise.</returns>
     internal override bool IsNullableEnabled()
-    {
-        var methodNullableContext = this.ClassContext.SemanticModel
-           .GetNullableContext(this.MapMethod.MethodDeclarationSyntax
-               .GetLocation()
-               .GetLineSpan()
-               .StartLinePosition
-               .Line);
-
-        switch (methodNullableContext)
-        {
-            case NullableContext.Enabled:
-                return true;
-            case NullableContext.Disabled:
-                return false;
-            case NullableContext.ContextInherited:
-                return this.ClassContext.Compilation.Options.NullableContextOptions == NullableContextOptions.Enable;
-            default:
-                throw new MappaGeneratorException($"Cannot obtain the nullable context for method \"{this.MapMethod.MethodDeclarationSyntax.Identifier}\": unsupported value \"{methodNullableContext}\".", this.MapMethod.MethodDeclarationSyntax.GetLocation());
-        }
-    }
+        => this.ClassContext.IsNullableEnabled(this.MapMethod.MethodDeclarationSyntax);
 
     /// <inheritdoc/>
     internal override bool TryGetMethod(ITypeSymbol targetType, ITypeSymbol sourceType, out MapMethod mapMethod)

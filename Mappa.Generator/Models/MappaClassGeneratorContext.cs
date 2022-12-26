@@ -85,21 +85,11 @@ internal sealed class MappaClassGeneratorContext
                .StartLinePosition
                .Line);
 
-        switch (methodNullableContext)
-        {
-            case NullableContext.Enabled:
-                return true;
-            case NullableContext.Disabled:
-                return false;
-            case NullableContext.ContextInherited:
-                return this.Compilation.Options.NullableContextOptions == NullableContextOptions.Enable;
-            default:
-                throw new MappaGeneratorException($"Cannot obtain the nullable context for method \"{methodDeclarationSyntax.Identifier}\": unsupported value \"{methodNullableContext}\".", methodDeclarationSyntax.GetLocation());
-        }
+        return (methodNullableContext & NullableContext.Enabled) > 0;
     }
 
     /// <summary>
-    /// Try getting the method for mappung from <paramref name="sourceType"/> to
+    /// Try getting the method for mapping from <paramref name="sourceType"/> to
     /// <paramref name="targetType"/>.
     /// </summary>
     /// <param name="targetType">The target type.</param>

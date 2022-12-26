@@ -37,6 +37,7 @@ public sealed class IdentityStrategyUnitTest
             {
                 public partial object Map(string input);
             }
+            #nullable restore
             """;
 
         // Act
