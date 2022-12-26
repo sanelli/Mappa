@@ -20,7 +20,7 @@ internal sealed class MappaFileBuilder
     public MappaFileBuilder(MappaClassGeneratorContext classContext)
     {
         this.ClassContext = classContext;
-        this.HintName = $"{this.ClassContext.ClassDeclarationSyntax.Identifier}.{Guid.NewGuid()}.g.cs";
+        this.HintName = $"{this.ClassContext.ClassSymbol.ToDisplayString()}.g.cs";
     }
 
     /// <summary>

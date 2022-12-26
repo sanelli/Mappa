@@ -89,18 +89,16 @@ internal sealed class MappaClassGeneratorContext
     /// <returns><c>true</c> if the nullable context is enabled, <c>false</c> otherwise.</returns>
     internal bool IsNullableEnabled(MethodDeclarationSyntax methodDeclarationSyntax)
     {
-        var methodNullableContext = this.SemanticModel
-            .GetNullableContext(methodDeclarationSyntax
-                .GetLocation()
-                .GetLineSpan()
-                .StartLinePosition
-                .Line);
+        var methodNullableContext = this.SemanticModel.GetNullableContext(methodDeclarationSyntax.SpanStart);
+
+        bool contextInherit = (methodNullableContext & NullableContext.ContextInherited) > 0;
+        if (contextInherit)
+        {
+            var projectEnabled = (this.Compilation.Options.NullableContextOptions & NullableContextOptions.Enable) > 0;
+            return projectEnabled;
+        }
 
         bool isNullableEnabled = (methodNullableContext & NullableContext.Enabled) > 0;
-
-        this.MappaDebug.Debug(
-            $"Nullability for \"{this.ClassDeclarationSyntax.Identifier.ToString()}.{methodDeclarationSyntax.Identifier.ToString()}\" is '{isNullableEnabled}'.",
-            methodDeclarationSyntax);
         return isNullableEnabled;
     }
 

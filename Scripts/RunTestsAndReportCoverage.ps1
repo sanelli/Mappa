@@ -12,7 +12,7 @@ if(-not $?)
     Exit 1
 }
 
-dotnet reportgenerator -reports:"$MappaTestsAndCoveragePath/**/*.xml" -targetdir:"$MappaTestsAndCoveragePath" -title:"Mappa" -reporttypes:"Html;MarkdownSummary"
+dotnet reportgenerator -reports:"$MappaTestsAndCoveragePath/**/*.xml" -targetdir:"$MappaTestsAndCoveragePath" -title:"Mappa" -reporttypes:"Html;MarkdownSummary" -filefilters:"-*.g.cs" -assemblyfilters:"-Mappa.Samples"
 if(-not $?)
 {
     Exit 1
