@@ -16,9 +16,9 @@ internal static class SymbolExtensions
     /// </summary>
     /// <param name="symbol">The type to be investigated.</param>
     /// <returns>The class modifiers.</returns>
-    internal static string GetClassModifiers(this ISymbol symbol)
+    internal static string GetSymbolModifiers(this ISymbol symbol)
     {
-        var keywords = new List<string> { symbol.GetClassAccessibility() };
+        var keywords = new List<string> { symbol.GetSymbolAccessibility() };
         if (symbol.IsAbstract)
         {
             keywords.Add("abstract");
@@ -52,6 +52,6 @@ internal static class SymbolExtensions
     /// </summary>
     /// <param name="symbol">The symbol.</param>
     /// <returns>The accessibility representation.</returns>
-    private static string GetClassAccessibility(this ISymbol symbol)
+    private static string GetSymbolAccessibility(this ISymbol symbol)
         => symbol.DeclaredAccessibility.GetAccessibilityAsCode();
 }

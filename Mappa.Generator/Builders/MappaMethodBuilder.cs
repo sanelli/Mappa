@@ -66,8 +66,10 @@ internal sealed class MappaMethodBuilder
     {
         var modifiersWithReturnType = string.Join(
             " ",
-            this.MapMethod.MethodSymbol.GetClassModifiers(),
-            this.MapMethod.TargetType.ToDisplayString());
+            this.MapMethod.MethodSymbol.GetSymbolModifiers(),
+            "partial",
+            this.MapMethod.TargetType.ToDisplayString())
+            .Trim();
 
         var parameters = $"{this.MapMethod.SourceType.ToDisplayString()} {this.MapMethod.SourceParameterName}";
 

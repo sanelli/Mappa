@@ -120,6 +120,7 @@ public sealed class IdentityStrategyUnitTest
         // Method signature
         var expectedMethodModifier = new HashSet<SyntaxKind>
         {
+            SyntaxKind.PartialKeyword,
             SyntaxKind.PublicKeyword
         };
         methodDeclarationSyntax.Modifiers.Should().HaveCount(expectedMethodModifier.Count);

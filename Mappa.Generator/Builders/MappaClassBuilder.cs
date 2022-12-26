@@ -34,7 +34,7 @@ internal sealed class MappaClassBuilder
         const string space = " ";
         var modifiers = string.Join(
             space,
-            this.ClassContext.ClassSymbol.GetClassModifiers(),
+            this.ClassContext.ClassSymbol.GetSymbolModifiers(),
             "partial");
 
         var builder = new IndentStringBuilder();

@@ -12,7 +12,7 @@ namespace Mappa.Generator.Extensions;
 internal static class AccessibilityExtensions
 {
     /// <summary>
-    /// Get the accessibility cose representation.
+    /// Get the accessibility code representation.
     /// </summary>
     /// <param name="accessibility">The accessibility flag.</param>
     /// <returns>The accessibility representation.</returns>
