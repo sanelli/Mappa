@@ -4,6 +4,8 @@
 
 using System.CodeDom.Compiler;
 
+using Mappa.Generator.Extensions;
+
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Mappa.Tests;
@@ -47,7 +49,7 @@ public sealed class IdentityStrategyUnitTest
 
         #pragma warning disable
         var syntaxTree = generatedResults.OutputCompilation.SyntaxTrees.Last();
-        generatedResults.OutputCompilation.GetSemanticModel(syntaxTree);
+        var semanticModel = generatedResults.OutputCompilation.GetSemanticModel(syntaxTree);
 
         var root = await syntaxTree.GetRootAsync(CancellationToken.None).ConfigureAwait(true);
         
@@ -118,19 +120,26 @@ public sealed class IdentityStrategyUnitTest
         // Method signature
         var expectedMethodModifier = new HashSet<SyntaxKind>
         {
-            SyntaxKind.PublicKeyword,
-            SyntaxKind.SealedKeyword,
-            SyntaxKind.PartialKeyword,
+            SyntaxKind.PublicKeyword
         };
-        classDeclarationSyntax.Modifiers.Should().HaveCount(expectedClassModifiers.Count);
-        classDeclarationSyntax.Modifiers.Should()
-            .Contain(syntaxToken => expectedClassModifiers.Contains(syntaxToken.Kind()));
-        classDeclarationSyntax.Identifier.ToString().Should().Be("Mapper");
-        
-        // Method statement content
-        
-        foreach (var node in root.ChildNodes())
-        {
-        }
+        methodDeclarationSyntax.Modifiers.Should().HaveCount(expectedMethodModifier.Count);
+        methodDeclarationSyntax.Modifiers.Should()
+            .Contain(syntaxToken => expectedMethodModifier.Contains(syntaxToken.Kind()));
+        methodDeclarationSyntax.Identifier.ToString().Should().Be("Map");
+        methodDeclarationSyntax.ParameterList.Parameters.Should().HaveCount(1);
+        var methodSymbol = semanticModel.GetDeclaredSymbol(methodDeclarationSyntax);
+        methodSymbol.Parameters.Should().HaveCount(1);
+        methodSymbol.Parameters.First().Name.Should().Be("input");
+        SymbolEqualityComparer.Default.Equals(
+            methodSymbol.Parameters.First().Type.IsDefinition ? methodSymbol.Parameters.First().Type : methodSymbol.Parameters.First().OriginalDefinition,
+            generatedResults.OutputCompilation.GetTypeSymbol<string>())
+            .Should().BeTrue();
+
+        // Method body content
+        var methodBody = methodDeclarationSyntax.ChildNodes().OfType<BlockSyntax>().Single();
+        methodBody.ChildNodes().Should().HaveCount(1);
+        var returnStatement = methodBody.ChildNodes().OfType<ReturnStatementSyntax>().Single();
+        returnStatement.Expression.Should().BeOfType<IdentifierNameSyntax>();
+        ((IdentifierNameSyntax)returnStatement.Expression).Identifier.Text.Should().Be("input");
     }
 }
