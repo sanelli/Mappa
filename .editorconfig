@@ -367,3 +367,5 @@ dotnet_naming_style.s_camelcase.capitalization = camel_case
 dotnet_diagnostic.S1135.severity = none
 csharp_style_namespace_declarations = file_scoped:error
 mappa.debug = true
+dotnet_diagnostic.MP00000.severity = warning
+

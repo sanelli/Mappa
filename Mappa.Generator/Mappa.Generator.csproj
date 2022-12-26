@@ -16,7 +16,7 @@
 	</PropertyGroup>
 	<PropertyGroup>
 		<PackageId>Mappa.Generator</PackageId>
-		<Version>0.0.1-alpha.13</Version>
+		<Version>0.0.1-alpha.14</Version>
 		<Authors>Stefano Anelli</Authors>
 		<Company>Stefano Anelli</Company>
 		<Product>Mappa Generator</Product>
