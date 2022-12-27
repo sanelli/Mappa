@@ -6,7 +6,7 @@ if (Test-Path $MappaTestsAndCoveragePath)
 }
 
 New-Item -ItemType Directory -Name $MappaTestsAndCoveragePath > $null
-dotnet test -c Release Mappa.Tests --collect:"XPlat Code Coverage" --logger "html" --logger "xunit" --results-directory "$MappaTestsAndCoveragePath"
+dotnet test -c Release --collect:"XPlat Code Coverage" --logger "html" --logger "xunit" --results-directory "$MappaTestsAndCoveragePath"
 if(-not $?)
 {
     Exit 1
