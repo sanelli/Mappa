@@ -9,9 +9,7 @@ global using FluentAssertions;
 global using FluentAssertions.Primitives;
 
 global using Mappa.Attributes;
-global using Mappa.Generator;
 global using Mappa.Generator.Algorithm;
-global using Mappa.Tests.Models;
 
 global using Microsoft.CodeAnalysis;
 global using Microsoft.CodeAnalysis.CSharp;

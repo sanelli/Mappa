@@ -2,7 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-namespace Mappa.Tests.Models;
+namespace Mappa.Generator.Tests.Models;
 
 /// <summary>
 /// Describe the generated results.

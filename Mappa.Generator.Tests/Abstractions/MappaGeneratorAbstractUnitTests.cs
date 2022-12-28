@@ -2,6 +2,8 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Tests.Models;
+
 namespace Mappa.Generator.Tests.Abstractions;
 
 /// <summary>

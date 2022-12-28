@@ -25,7 +25,7 @@ public sealed class MappaGeneratorClassAlgorithmIntegrationTests
     public async Task NonPartialMethodsAreIgnoredAndNotDiagnosticIsReported()
     {
         // Arrange
-        var sourceCode = """
+        const string sourceCode = """
             using Mappa.Attributes;
 
             namespace Mappa.Generator.Tests.UnitTests.SourceCode;
@@ -57,7 +57,7 @@ public sealed class MappaGeneratorClassAlgorithmIntegrationTests
     public async Task PartialMethodsWithArity0GenerateADiagnosticError()
     {
         // Arrange
-        var sourceCode = """
+        const string sourceCode = """
             using Mappa.Attributes;
 
             namespace Mappa.Generator.Tests.UnitTests.SourceCode;
@@ -89,7 +89,7 @@ public sealed class MappaGeneratorClassAlgorithmIntegrationTests
     public async Task PartialMethodsWithArity2GenerateADiagnosticError()
     {
         // Arrange
-        var sourceCode = """
+        const string sourceCode = """
             using Mappa.Attributes;
 
             namespace Mappa.Generator.Tests.UnitTests.SourceCode;
@@ -121,7 +121,7 @@ public sealed class MappaGeneratorClassAlgorithmIntegrationTests
     public async Task PartialMethodsReturningVoidGeneratesADiagnosticError()
     {
         // Arrange
-        var sourceCode = """
+        const string sourceCode = """
             using Mappa.Attributes;
 
             namespace Mappa.Generator.Tests.UnitTests.SourceCode;
@@ -153,7 +153,7 @@ public sealed class MappaGeneratorClassAlgorithmIntegrationTests
     public async Task PartialMethodsReturningTaskGeneratesADiagnosticError()
     {
         // Arrange
-        var sourceCode = """
+        const string sourceCode = """
             using Mappa.Attributes;
             using System.Threading.Tasks;
             
@@ -186,7 +186,7 @@ public sealed class MappaGeneratorClassAlgorithmIntegrationTests
     public async Task PartialMethodsReturningTaskTGeneratesADiagnosticError()
     {
         // Arrange
-        var sourceCode = """
+        const string sourceCode = """
             using Mappa.Attributes;
             using System.Threading.Tasks;
             
@@ -219,7 +219,7 @@ public sealed class MappaGeneratorClassAlgorithmIntegrationTests
     public async Task PartialMethodsReturningValueTaskGeneratesADiagnosticError()
     {
         // Arrange
-        var sourceCode = """
+        const string sourceCode = """
             using Mappa.Attributes;
             using System.Threading.Tasks;
             
@@ -252,7 +252,7 @@ public sealed class MappaGeneratorClassAlgorithmIntegrationTests
     public async Task PartialMethodsReturningValueTaskTGeneratesADiagnosticError()
     {
         // Arrange
-        var sourceCode = """
+        const string sourceCode = """
             using Mappa.Attributes;
             using System.Threading.Tasks;
             

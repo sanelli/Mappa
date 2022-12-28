@@ -2,6 +2,10 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Tests.Models;
+
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+
 namespace Mappa.Generator.Tests.Assertions;
 
 /// <summary>
@@ -51,7 +55,7 @@ public sealed class GeneratedResultsAssertions
     /// <returns>The assertions instance.</returns>
     public GeneratedResultsAssertions ContainDiagnostic(
         DiagnosticDescriptor diagnosticDescriptor,
-        params string[] parameters)
+        params object?[] parameters)
     {
         var runResult = this.HaveOneResult();
         runResult.Should().ContainDiagnostic(diagnosticDescriptor, parameters);
@@ -79,6 +83,21 @@ public sealed class GeneratedResultsAssertions
         var runResult = this.HaveOneResult();
         runResult.Should().NotHaveDiagnostics();
         return this;
+    }
+
+    /// <summary>
+    /// Gets the assertions for the syntax tree.
+    /// </summary>
+    /// <returns>The syntax tree assertions instance.</returns>
+    public CompilationUnitSyntaxAssertions WithCompilationUnit()
+    {
+        this.Subject.OutputCompilation.SyntaxTrees.Should().HaveCount(2);
+        var syntaxTree = this.Subject.OutputCompilation.SyntaxTrees.Last();
+        var semanticModel = this.Subject.OutputCompilation.GetSemanticModel(syntaxTree);
+        return new CompilationUnitSyntaxAssertions(
+            (CompilationUnitSyntax)syntaxTree.GetRoot(),
+            semanticModel,
+            this.Subject.OutputCompilation);
     }
 
     private GeneratorRunResult HaveOneResult()
