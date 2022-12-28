@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mappa", "Mappa\Mappa.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mappa.Generator", "Mappa.Generator\Mappa.Generator.csproj", "{9A889238-69C9-4353-97AF-3E961D95D099}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mappa.Tests", "Mappa.Tests\Mappa.Tests.csproj", "{7B4AC96C-9650-455D-8339-A8A25FE53795}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mappa.Generator.Tests", "Mappa.Generator.Tests\Mappa.Generator.Tests.csproj", "{7B4AC96C-9650-455D-8339-A8A25FE53795}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C9B7F1B1-3F59-44F3-BF02-FFCF1083FF8A}"
 	ProjectSection(SolutionItems) = preProject

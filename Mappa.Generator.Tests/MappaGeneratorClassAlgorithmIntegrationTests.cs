@@ -1,16 +1,18 @@
-// <copyright file="MappaGeneratorClassAlgorithmUnitTests.cs" company="Stefano Anelli">
+// <copyright file="MappaGeneratorClassAlgorithmIntegrationTests.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
 using Mappa.Generator.Diagnostics;
+using Mappa.Generator.Tests.Abstractions;
+using Mappa.Generator.Tests.Assertions;
 
-namespace Mappa.Tests;
+namespace Mappa.Generator.Tests;
 
 /// <summary>
 /// Unit tess for <see cref="MappaGeneratorClassAlgorithm"/>.
 /// </summary>
-public sealed class MappaGeneratorClassAlgorithmUnitTests
-    : Abstractions.MappaGeneratorAbstractUnitTests
+public sealed class MappaGeneratorClassAlgorithmIntegrationTests
+    : MappaGeneratorAbstractUnitTests
 {
     /// <summary>
     /// Check that non-partial method of a class marked with
@@ -26,7 +28,7 @@ public sealed class MappaGeneratorClassAlgorithmUnitTests
         var sourceCode = """
             using Mappa.Attributes;
 
-            namespace Mappa.Tests.UnitTests.SourceCode;
+            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
             [Mappa]
             public sealed partial class Mapper
@@ -58,7 +60,7 @@ public sealed class MappaGeneratorClassAlgorithmUnitTests
         var sourceCode = """
             using Mappa.Attributes;
 
-            namespace Mappa.Tests.UnitTests.SourceCode;
+            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
             [Mappa]
             public sealed partial class Mapper
@@ -90,7 +92,7 @@ public sealed class MappaGeneratorClassAlgorithmUnitTests
         var sourceCode = """
             using Mappa.Attributes;
 
-            namespace Mappa.Tests.UnitTests.SourceCode;
+            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
             [Mappa]
             public sealed partial class Mapper
@@ -122,7 +124,7 @@ public sealed class MappaGeneratorClassAlgorithmUnitTests
         var sourceCode = """
             using Mappa.Attributes;
 
-            namespace Mappa.Tests.UnitTests.SourceCode;
+            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
             [Mappa]
             public sealed partial class Mapper
@@ -155,7 +157,7 @@ public sealed class MappaGeneratorClassAlgorithmUnitTests
             using Mappa.Attributes;
             using System.Threading.Tasks;
             
-            namespace Mappa.Tests.UnitTests.SourceCode;
+            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
             [Mappa]
             public sealed partial class Mapper
@@ -188,7 +190,7 @@ public sealed class MappaGeneratorClassAlgorithmUnitTests
             using Mappa.Attributes;
             using System.Threading.Tasks;
             
-            namespace Mappa.Tests.UnitTests.SourceCode;
+            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
             [Mappa]
             public sealed partial class Mapper
@@ -221,7 +223,7 @@ public sealed class MappaGeneratorClassAlgorithmUnitTests
             using Mappa.Attributes;
             using System.Threading.Tasks;
             
-            namespace Mappa.Tests.UnitTests.SourceCode;
+            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
             [Mappa]
             public sealed partial class Mapper
@@ -254,7 +256,7 @@ public sealed class MappaGeneratorClassAlgorithmUnitTests
             using Mappa.Attributes;
             using System.Threading.Tasks;
             
-            namespace Mappa.Tests.UnitTests.SourceCode;
+            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
             [Mappa]
             public sealed partial class Mapper

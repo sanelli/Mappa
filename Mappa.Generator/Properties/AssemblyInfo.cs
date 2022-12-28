@@ -5,4 +5,4 @@
 using System.Runtime.CompilerServices;
 
 [assembly: CLSCompliant(false)]
-[assembly: InternalsVisibleTo("Mappa.Tests")]
+[assembly: InternalsVisibleTo("Mappa.Generator.Tests")]

@@ -2,7 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-namespace Mappa.Tests.Assertions;
+namespace Mappa.Generator.Tests.Assertions;
 
 /// <summary>
 /// Fluent assertions extension methods.

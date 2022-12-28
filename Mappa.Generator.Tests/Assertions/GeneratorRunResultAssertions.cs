@@ -4,7 +4,7 @@
 
 using System.Globalization;
 
-namespace Mappa.Tests.Assertions;
+namespace Mappa.Generator.Tests.Assertions;
 
 /// <summary>
 /// Assertions for <see cref="GeneratorRunResult"/>.

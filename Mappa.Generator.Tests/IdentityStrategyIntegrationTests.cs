@@ -1,20 +1,22 @@
-// <copyright file="IdentityStrategyUnitTest.cs" company="Stefano Anelli">
+// <copyright file="IdentityStrategyIntegrationTests.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
 using System.CodeDom.Compiler;
 
 using Mappa.Generator.Extensions;
+using Mappa.Generator.Tests.Abstractions;
+using Mappa.Generator.Tests.Assertions;
 
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Mappa.Tests;
+namespace Mappa.Generator.Tests;
 
 /// <summary>
 /// Tests related to the identity strategy.
 /// </summary>
-public sealed class IdentityStrategyUnitTest
-    : Abstractions.MappaGeneratorAbstractUnitTests
+public sealed class IdentityStrategyIntegrationTests
+    : MappaGeneratorAbstractUnitTests
 {
     /// <summary>
     /// Test a mapping can be created from reference type
@@ -30,7 +32,7 @@ public sealed class IdentityStrategyUnitTest
             #nullable disable
             using Mappa.Attributes;
 
-            namespace Mappa.Tests.UnitTests.SourceCode;
+            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
             [Mappa]
             public sealed partial class Mapper
@@ -73,7 +75,7 @@ public sealed class IdentityStrategyUnitTest
         var fileScopedNamespaceDeclarationSyntaxes = root.ChildNodes().OfType<FileScopedNamespaceDeclarationSyntax>().ToArray();
         fileScopedNamespaceDeclarationSyntaxes.Should().HaveCount(1);
         var fileScopedNamespaceDeclarationSyntax = fileScopedNamespaceDeclarationSyntaxes.Single();
-        fileScopedNamespaceDeclarationSyntax.Name.ToString().Should().Be("Mappa.Tests.UnitTests.SourceCode");
+        fileScopedNamespaceDeclarationSyntax.Name.ToString().Should().Be("Mappa.Generator.Tests.UnitTests.SourceCode");
         
         // Class
         var classDeclarationSyntaxes = fileScopedNamespaceDeclarationSyntax.ChildNodes().OfType<ClassDeclarationSyntax>().ToArray();
