@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
@@ -9,16 +8,23 @@
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <AnalysisLevel>latest-all</AnalysisLevel>
-        <WarningsNotAsErrors>MP00000</WarningsNotAsErrors>
-        <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Mappa" Version="0.0.1-alpha.17" />
-        <PackageReference Include="Mappa.Generator" Version="0.0.1-alpha.17">
-            <PrivateAssets>all</PrivateAssets>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.2"/>
+        <PackageReference Include="xunit" Version="2.4.2"/>
+        <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
         </PackageReference>
+        <PackageReference Include="coverlet.collector" Version="3.1.2">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="FluentAssertions" Version="6.8.0"/>
+        <PackageReference Include="xunit.categories" Version="2.0.6"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.4.0"/>
+        <PackageReference Include="XunitXml.TestLogger" Version="3.0.70"/>
         <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
@@ -30,7 +36,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <AdditionalFiles Include="../stylecop.json" />
+        <ProjectReference Include="..\Mappa.Samples\Mappa.Samples.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <AdditionalFiles Include="../stylecop.json"/>
     </ItemGroup>
 
 </Project>

@@ -24,6 +24,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{01A7
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mappa.Samples", "Mappa.Samples\Mappa.Samples.csproj", "{0D70998F-986C-47B5-9989-23DD4A04340B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mappa.Samples.Tests", "Mappa.Samples.Tests\Mappa.Samples.Tests.csproj", "{FFCC9E4A-B8FC-499C-80B1-A38DFC52B132}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -49,6 +51,10 @@ Global
 		{0D70998F-986C-47B5-9989-23DD4A04340B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0D70998F-986C-47B5-9989-23DD4A04340B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0D70998F-986C-47B5-9989-23DD4A04340B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FFCC9E4A-B8FC-499C-80B1-A38DFC52B132}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FFCC9E4A-B8FC-499C-80B1-A38DFC52B132}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FFCC9E4A-B8FC-499C-80B1-A38DFC52B132}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FFCC9E4A-B8FC-499C-80B1-A38DFC52B132}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{01A7FC44-1956-4F7F-B29E-F53A08DE2146} = {C9B7F1B1-3F59-44F3-BF02-FFCF1083FF8A}

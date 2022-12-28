@@ -1,4 +1,4 @@
-// <copyright file="Test.cs" company="Stefano Anelli">
+// <copyright file="IdentityStrategyMapperUnitTest.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -7,17 +7,17 @@ using FluentAssertions;
 using Xunit;
 using Xunit.Categories;
 
-namespace Mappa.Samples.IdentityStrategy;
+namespace Mappa.Samples.Tests;
 
 /// <summary>
 /// Test class for the identity strategy.
 /// </summary>
-public sealed class Test
+public sealed class IdentityStrategyMapperUnitTest
 {
-    private readonly Mapper mapper = new();
+    private readonly IdentityStrategyMapper identityStrategyMapper = new();
 
     /// <summary>
-    /// Test the method <see cref="Mapper.MapStringToObjectWithNullableDisabled"/>.
+    /// Test the method <see cref="IdentityStrategyMapper.MapStringToObjectWithNullableDisabled"/>.
     /// </summary>
     /// <param name="input">The input string to be mapped.</param>
     [Theory]
@@ -26,7 +26,7 @@ public sealed class Test
     public void CanMapFromStringToObject(string input)
     {
         // Act
-        var output = this.mapper.MapStringToObjectWithNullableDisabled(input);
+        var output = this.identityStrategyMapper.MapStringToObjectWithNullableDisabled(input);
 
         // Assert
         output.Should().Be(input);

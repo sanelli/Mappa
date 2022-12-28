@@ -1,16 +1,17 @@
-﻿// <copyright file="Mapper.cs" company="Stefano Anelli">
+﻿// <copyright file="IdentityStrategyMapper.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
 using Mappa.Attributes;
 
-namespace Mappa.Samples.IdentityStrategy;
+namespace Mappa.Samples;
 
 /// <summary>
-/// Sample mapper to demonstrate the identity strategy.
+/// Sample mapper to demonstrate the identity strategy
+/// across various scenarios.
 /// </summary>
 [Mappa]
-public sealed partial class Mapper
+public sealed partial class IdentityStrategyMapper
 {
 #nullable disable
     /// <summary>
