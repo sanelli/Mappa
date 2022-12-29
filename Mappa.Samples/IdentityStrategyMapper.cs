@@ -15,11 +15,41 @@ public sealed partial class IdentityStrategyMapper
 {
 #nullable disable
     /// <summary>
+    /// Map <see cref="string"/> to <see cref="string"/>
+    /// when nullable is disabled.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The output object.</returns>
+    public partial string MapStringToStringWhenNullableIsDisabled(string input);
+#nullable restore
+
+#nullable enable
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="string"/>
+    /// when nullable is enabled.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The output object.</returns>
+    public partial string? MapStringToStringWhenNullableIsEnabled(string? input);
+#nullable restore
+
+#nullable disable
+    /// <summary>
+    /// Map <see cref="int"/> to <see cref="int"/>
+    /// when nullable is disabled.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The output object.</returns>
+    public partial int MapIntToIntWhenNullableIsDisabled(int input);
+#nullable restore
+
+#nullable disable
+    /// <summary>
     /// Map <see cref="string"/> to <see cref="object"/>
     /// when nullable is disabled.
     /// </summary>
     /// <param name="input">The input string.</param>
     /// <returns>The output object.</returns>
-    public partial object MapStringToObjectWithNullableDisabled(string input);
+    public partial object MapStringToObjectWhenNullableIsDisabled(string input);
 #nullable restore
 }

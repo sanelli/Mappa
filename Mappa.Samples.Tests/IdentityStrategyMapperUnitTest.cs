@@ -16,19 +16,75 @@ public sealed class IdentityStrategyMapperUnitTest
 {
     private readonly IdentityStrategyMapper identityStrategyMapper = new();
 
+#nullable disable
     /// <summary>
-    /// Test the method <see cref="IdentityStrategyMapper.MapStringToObjectWithNullableDisabled"/>.
+    /// Test the method <see cref="IdentityStrategyMapper.MapStringToStringWhenNullableIsDisabled"/>.
     /// </summary>
     /// <param name="input">The input string to be mapped.</param>
     [Theory]
     [UnitTest]
     [InlineData("Test string")]
-    public void CanMapFromStringToObject(string input)
+    public void CanMapStringToStringWhenNullableIsDisabled(string input)
     {
         // Act
-        var output = this.identityStrategyMapper.MapStringToObjectWithNullableDisabled(input);
+        var output = this.identityStrategyMapper.MapStringToStringWhenNullableIsDisabled(input);
 
         // Assert
         output.Should().Be(input);
     }
+#nullable restore
+
+#nullable enable
+    /// <summary>
+    /// Test the method <see cref="IdentityStrategyMapper.MapStringToStringWhenNullableIsEnabled"/>.
+    /// </summary>
+    /// <param name="input">The input string to be mapped.</param>
+    [Theory]
+    [UnitTest]
+    [InlineData("Test string")]
+    public void CanMapStringToStringWhenNullableIsEnabled(string? input)
+    {
+        // Act
+        var output = this.identityStrategyMapper.MapStringToStringWhenNullableIsEnabled(input);
+
+        // Assert
+        output.Should().Be(input);
+    }
+#nullable restore
+
+#nullable disable
+    /// <summary>
+    /// Test the method <see cref="IdentityStrategyMapper.MapIntToIntWhenNullableIsDisabled"/>.
+    /// </summary>
+    /// <param name="input">The input string to be mapped.</param>
+    [Theory]
+    [UnitTest]
+    [InlineData(17)]
+    public void CanMapIntToIntWhenNullableIsDisabled(int input)
+    {
+        // Act
+        var output = this.identityStrategyMapper.MapIntToIntWhenNullableIsDisabled(input);
+
+        // Assert
+        output.Should().Be(input);
+    }
+#nullable restore
+
+#nullable disable
+    /// <summary>
+    /// Test the method <see cref="IdentityStrategyMapper.MapStringToObjectWhenNullableIsDisabled"/>.
+    /// </summary>
+    /// <param name="input">The input string to be mapped.</param>
+    [Theory]
+    [UnitTest]
+    [InlineData("Test string")]
+    public void CanMapStringToObjectWithNullableDisabled(string input)
+    {
+        // Act
+        var output = this.identityStrategyMapper.MapStringToObjectWhenNullableIsDisabled(input);
+
+        // Assert
+        output.Should().Be(input);
+    }
+#nullable restore
 }
