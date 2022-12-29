@@ -33,6 +33,16 @@ public sealed partial class IdentityStrategyMapper
     public partial string? MapStringToStringWhenNullableIsEnabled(string? input);
 #nullable restore
 
+#nullable enable
+    /// <summary>
+    /// Map <see cref="string"/> to nullable <see cref="string"/>
+    /// when nullable is enabled.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The output object.</returns>
+    public partial string? MapStringToNullableStringWhenNullableIsEnabled(string input);
+#nullable restore
+
 #nullable disable
     /// <summary>
     /// Map <see cref="int"/> to <see cref="int"/>

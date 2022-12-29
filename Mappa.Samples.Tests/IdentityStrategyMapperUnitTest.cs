@@ -52,6 +52,24 @@ public sealed class IdentityStrategyMapperUnitTest
     }
 #nullable restore
 
+#nullable enable
+    /// <summary>
+    /// Test the method <see cref="IdentityStrategyMapper.MapStringToNullableStringWhenNullableIsEnabled"/>.
+    /// </summary>
+    /// <param name="input">The input string to be mapped.</param>
+    [Theory]
+    [UnitTest]
+    [InlineData("Test string")]
+    public void CanMapStringToNullableStringWhenNullableIsEnabled(string input)
+    {
+        // Act
+        var output = this.identityStrategyMapper.MapStringToNullableStringWhenNullableIsEnabled(input);
+
+        // Assert
+        output.Should().Be(input);
+    }
+#nullable restore
+
 #nullable disable
     /// <summary>
     /// Test the method <see cref="IdentityStrategyMapper.MapIntToIntWhenNullableIsDisabled"/>.
