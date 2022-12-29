@@ -15,10 +15,14 @@ public enum MappaAlgorithmRule
     None,
 
     /// <summary>
-    /// Any object can be mapped to <see cref="object"/> when
-    /// nullability is disabled in that context.
+    /// Source and target have the same type.
     /// </summary>
-    MapToObjectWhenNullableDisabled,
+    MapToSameType,
+
+    /// <summary>
+    /// Target type is <see cref="object"/>.
+    /// </summary>
+    MapToObject,
 
     /// <summary>
     /// The mapping is performed using an existing method.

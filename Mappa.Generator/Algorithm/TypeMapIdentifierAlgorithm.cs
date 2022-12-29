@@ -65,16 +65,31 @@ internal class TypeMapIdentifierAlgorithm
         var nullableEnabled = this.Context.IsNullableEnabled();
         var notNullableEnabled = !nullableEnabled;
 
-        // 00. * -> object
-        // (non-nullable): * -> object
-        if (notNullableEnabled && this.TargetType.IsObject())
+        // 01. Map to the very same type.
+        if ((notNullableEnabled && SymbolEqualityComparer.Default.Equals(this.TargetType, this.SourceType))
+            || (nullableEnabled && SymbolEqualityComparer.IncludeNullability.Equals(this.TargetType, this.SourceType)))
         {
+            // TODO: Introduce the ability to perform a deep copy instead of shallow copy.
             return new IdentityMapStrategy(
-                MappaAlgorithmRule.MapToObjectWhenNullableDisabled,
+                MappaAlgorithmRule.MapToSameType,
                 this.TargetType,
                 this.SourceType,
                 this.Source);
         }
+
+        // 02. Map to object
+        // (non-nullable): * -> object
+        if (notNullableEnabled && this.TargetType.IsObject())
+        {
+            return new IdentityMapStrategy(
+                MappaAlgorithmRule.MapToObject,
+                this.TargetType,
+                this.SourceType,
+                this.Source);
+        }
+
+        // (nullable): * -> object?
+        // TODO:
 
         // XX. (nullable enabled): * -> object?
         // XX. * -> object : IdentityStrategy
