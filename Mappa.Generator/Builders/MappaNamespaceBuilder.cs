@@ -37,7 +37,7 @@ internal sealed class MappaNamespaceBuilder
     private string ClassSourceCode { get; }
 
     /// <inheritdoc/>
-    public string BuildSource()
+    public string BuildSource(MappaGlobalOptions mappaGlobalOptions)
     {
         var builder = new IndentStringBuilder();
         var @namespace = this.ClassContext.ClassSymbol.ContainingNamespace.ToDisplayString();

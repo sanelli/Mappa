@@ -69,7 +69,11 @@ internal class TypeMapIdentifierAlgorithm
         // (non-nullable): * -> object
         if (notNullableEnabled && this.TargetType.IsObject())
         {
-            return new IdentityMapStrategy(this.TargetType, this.SourceType, this.Source);
+            return new IdentityMapStrategy(
+                MappaAlgorithmRule.MapToObjectWhenNullableDisabled,
+                this.TargetType,
+                this.SourceType,
+                this.Source);
         }
 
         // XX. (nullable enabled): * -> object?

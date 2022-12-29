@@ -29,7 +29,7 @@ internal sealed class MappaClassBuilder
     private MappaClassGeneratorContext ClassContext { get; }
 
     /// <inheritdoc/>
-    public string BuildSource()
+    public string BuildSource(MappaGlobalOptions mappaGlobalOptions)
     {
         const string space = " ";
         var modifiers = string.Join(
@@ -39,7 +39,7 @@ internal sealed class MappaClassBuilder
 
         var builder = new IndentStringBuilder();
         builder
-            .AppendLine(new MappaGeneratedCodeAttributeBuilder().BuildSource())
+            .AppendLine(new MappaGeneratedCodeAttributeBuilder().BuildSource(mappaGlobalOptions))
             .AppendLine($"{modifiers} class {this.ClassContext.ClassDeclarationSyntax.Identifier}");
 
         using (builder.CodeBlock())
@@ -49,7 +49,7 @@ internal sealed class MappaClassBuilder
             foreach (var mapMethod in this.ClassContext.MapMethods.Where(mapMethod => mapMethod.HasStrategy))
             {
                 var methodBuilder = new MappaMethodBuilder(this.ClassContext, mapMethod);
-                var methodSourceCode = methodBuilder.BuildSource();
+                var methodSourceCode = methodBuilder.BuildSource(mappaGlobalOptions);
                 builder.AppendLine(methodSourceCode);
             }
         }

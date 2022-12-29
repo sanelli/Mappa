@@ -4,6 +4,8 @@
 
 using System.CodeDom.Compiler;
 
+using Mappa.Generator.Models;
+
 namespace Mappa.Generator.Builders;
 
 /// <summary>
@@ -13,6 +15,6 @@ internal sealed class MappaGeneratedCodeAttributeBuilder
     : IMappaBuilder
 {
     /// <inheritdoc/>
-    public string BuildSource()
+    public string BuildSource(MappaGlobalOptions mappaGlobalOptions)
         => $"[{typeof(GeneratedCodeAttribute).FullName}(\"Mappa\", \"{typeof(MappaGenerator).Assembly.GetName().Version}\")]";
 }

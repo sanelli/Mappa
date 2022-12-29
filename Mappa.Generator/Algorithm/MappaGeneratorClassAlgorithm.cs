@@ -152,7 +152,7 @@ internal sealed class MappaGeneratorClassAlgorithm
         }
 
         // Build the source code (only if there is something to generate)
-        this.GenerateSourceCode(classContext);
+        this.GenerateSourceCode(classContext, options);
 
         // Report the diagnostics.
         this.ReportAllDiagnostics(classContext);
@@ -166,7 +166,9 @@ internal sealed class MappaGeneratorClassAlgorithm
         }
     }
 
-    private void GenerateSourceCode(MappaClassGeneratorContext classContext)
+    private void GenerateSourceCode(
+        MappaClassGeneratorContext classContext,
+        MappaGlobalOptions options)
     {
         if (!classContext.MapMethods.Any(mapMethod => mapMethod.HasStrategy))
         {
@@ -175,7 +177,7 @@ internal sealed class MappaGeneratorClassAlgorithm
 
         var builder = new MappaFileBuilder(classContext);
         var hintName = builder.HintName;
-        var sourceFile = builder.BuildSource();
+        var sourceFile = builder.BuildSource(options);
         this.Context.AddSource(hintName, sourceFile);
     }
 

@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
 namespace Mappa.Generator.Builders.Strategies;
@@ -27,9 +28,9 @@ internal sealed class MethodParameterMapStrategyBuilder
     private MethodParameterMapStrategy MethodParameterMapStrategy { get; }
 
     /// <inheritdoc/>
-    public (string StrategySource, string Header) BuildSource()
+    public (string StrategySource, string Header) BuildSource(MappaGlobalOptions mappaGlobalOptions)
     {
-        var (strategySource, header) = this.MethodParameterMapStrategy.Strategy.GetBuilder().BuildSource();
+        var (strategySource, header) = this.MethodParameterMapStrategy.Strategy.GetBuilder().BuildSource(mappaGlobalOptions);
         return ($"return {strategySource};", header);
     }
 }

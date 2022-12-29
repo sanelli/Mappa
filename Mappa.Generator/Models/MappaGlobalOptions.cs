@@ -20,6 +20,7 @@ namespace Mappa.Generator.Models;
 internal sealed class MappaGlobalOptions
 {
     private const string MappaDebugFlagName = "debug";
+    private const string MappaDebugCommentsFlagName = "debugcomments";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaGlobalOptions"/> class.
@@ -33,12 +34,22 @@ internal sealed class MappaGlobalOptions
         this.MappaDebug = options.TryGetValue(GetOptionName(MappaDebugFlagName), out var mappaDebug)
                           && !string.IsNullOrWhiteSpace(mappaDebug)
                           && "true".Equals(mappaDebug, StringComparison.OrdinalIgnoreCase);
+
+        this.MappaDebugComments =
+            options.TryGetValue(GetOptionName(MappaDebugCommentsFlagName), out var mappaDebugComments)
+            && !string.IsNullOrWhiteSpace(mappaDebugComments)
+            && "true".Equals(mappaDebugComments, StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
     /// Gets a value indicating whether to report debug INFO diagnostics.
     /// </summary>
     internal bool MappaDebug { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether to report debug comments in the generated code.
+    /// </summary>
+    internal bool MappaDebugComments { get; }
 
     private static string GetOptionName(string name)
 #pragma warning disable CA1308 // Normalize strings to uppercase

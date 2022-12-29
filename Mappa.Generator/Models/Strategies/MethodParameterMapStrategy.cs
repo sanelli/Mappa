@@ -32,6 +32,9 @@ internal sealed class MethodParameterMapStrategy
     /// <inheritdoc/>
     public string Source => this.Strategy.Source;
 
+    /// <inheritdoc/>
+    public MappaAlgorithmRule Rule => this.Strategy.Rule;
+
     /// <summary>
     /// Gets the strategy to be used to map the method.
     /// </summary>

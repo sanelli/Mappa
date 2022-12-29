@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
 namespace Mappa.Generator.Builders.Strategies;
@@ -27,8 +28,11 @@ internal sealed class IdentityMapStrategyBuilder
     private IdentityMapStrategy IdentityMapStrategy { get; }
 
     /// <inheritdoc/>
-    public (string StrategySource, string Header) BuildSource()
+    public (string StrategySource, string Header) BuildSource(MappaGlobalOptions mappaGlobalOptions)
     {
-        return (this.IdentityMapStrategy.Source, string.Empty);
+        var ruleComment = mappaGlobalOptions.MappaDebugComments
+            ? $"/* Mappa Rule: {this.IdentityMapStrategy.Rule} */ "
+            : string.Empty;
+        return ($"{ruleComment}{this.IdentityMapStrategy.Source}", string.Empty);
     }
 }

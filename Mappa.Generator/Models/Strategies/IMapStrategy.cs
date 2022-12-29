@@ -32,6 +32,11 @@ internal interface IMapStrategy
     string Source { get; }
 
     /// <summary>
+    /// Gets the rule applied.
+    /// </summary>
+    MappaAlgorithmRule Rule { get; }
+
+    /// <summary>
     /// Gets the strategy builder for this strategy.
     /// </summary>
     /// <returns>The strategy builder.</returns>
