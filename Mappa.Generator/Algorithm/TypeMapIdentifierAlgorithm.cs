@@ -66,8 +66,14 @@ internal class TypeMapIdentifierAlgorithm
         var notNullableEnabled = !nullableEnabled;
 
         // 01. Map to the very same type.
+        // (non-nullable): T -> T
+        // (nullable): T -> T
+        // (nullable): T? -> T?
+        // TODO: (nullable) T -> T?
         if ((notNullableEnabled && SymbolEqualityComparer.Default.Equals(this.TargetType, this.SourceType))
-            || (nullableEnabled && SymbolEqualityComparer.IncludeNullability.Equals(this.TargetType, this.SourceType)))
+            || (nullableEnabled && SymbolEqualityComparer.IncludeNullability.Equals(this.TargetType, this.SourceType))
+            || (nullableEnabled && SymbolEqualityComparer.Default.Equals(this.TargetType, this.SourceType) &&
+                this.TargetType.NullableAnnotation == NullableAnnotation.Annotated))
         {
             // TODO: Introduce the ability to perform a deep copy instead of shallow copy.
             return new IdentityMapStrategy(
@@ -79,7 +85,10 @@ internal class TypeMapIdentifierAlgorithm
 
         // 02. Map to object
         // (non-nullable): * -> object
-        if (notNullableEnabled && this.TargetType.IsObject())
+        // (nullable): * -> object?
+        if ((notNullableEnabled && this.TargetType.IsObject())
+            || (nullableEnabled && this.TargetType.IsObject() &&
+                this.TargetType.NullableAnnotation == NullableAnnotation.Annotated))
         {
             return new IdentityMapStrategy(
                 MappaAlgorithmRule.MapToObject,
@@ -88,12 +97,6 @@ internal class TypeMapIdentifierAlgorithm
                 this.Source);
         }
 
-        // (nullable): * -> object?
-        // TODO:
-
-        // XX. (nullable enabled): * -> object?
-        // XX. * -> object : IdentityStrategy
-        // XX. T -> T or T -> T?: Identity strategy
         // XX. numeric -> implicit-convertible-numeric : Identity strategy.
         // XX. IDictionary<K,V> -> Dictionary<K,V> : DictionaryStrategy( Strategy(K, V), Startegy(TV, SV) ).
         // XX. enum -> string : EnumToString strategy.
@@ -101,10 +104,12 @@ internal class TypeMapIdentifierAlgorithm
         // XX. string -> enum : StringToEnum strategy.
         // XX. integral -> enum : IntegralToEnum strategy.
         // XX. S[] -> T[] : ArrayStrategy ( Strategy(T, S) ).
-        // XX. HashSet<S> -> HashSet<T> : HashSetStrategy( Strategy(S, T) ).
+        // XX. HashSet<S> -> HashSet<T> : HashSetStrategy( Strategy(T, S) ).
         // XX. List<S> -> List<T> : ListStrategy ( Strategy(T, S) ).
         // XX. IReadOnlyCollection<S> -> IReadOnlyCollection<T> : ReadOnlyCollectionStrategy ( Strategy(T, S) ).
+        // XX. IEnumerable<S> -> IEnumerable<T> : EnumerableStrategy ( Strategy(T, T) )
         // XX. S -> T : ConstructorStrategy(S, T)
+        // XX. Report error
         throw new NotImplementedException();
     }
 }
