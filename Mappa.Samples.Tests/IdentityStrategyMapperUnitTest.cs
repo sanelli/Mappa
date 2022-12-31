@@ -74,7 +74,7 @@ public sealed class IdentityStrategyMapperUnitTest
     /// <summary>
     /// Test the method <see cref="IdentityStrategyMapper.MapIntToIntWhenNullableIsDisabled"/>.
     /// </summary>
-    /// <param name="input">The input string to be mapped.</param>
+    /// <param name="input">The input integer to be mapped.</param>
     [Theory]
     [UnitTest]
     [InlineData(17)]
@@ -82,6 +82,42 @@ public sealed class IdentityStrategyMapperUnitTest
     {
         // Act
         var output = this.identityStrategyMapper.MapIntToIntWhenNullableIsDisabled(input);
+
+        // Assert
+        output.Should().Be(input);
+    }
+#nullable restore
+
+#nullable disable
+    /// <summary>
+    /// Test the method <see cref="IdentityStrategyMapper.MapIntToObjectWhenNullableIsDisabled"/>.
+    /// </summary>
+    /// <param name="input">The input integer to be mapped.</param>
+    [Theory]
+    [UnitTest]
+    [InlineData(17)]
+    public void CanMapIntToObjectWhenNullableIsDisabled(int input)
+    {
+        // Act
+        var output = this.identityStrategyMapper.MapIntToObjectWhenNullableIsDisabled(input);
+
+        // Assert
+        output.Should().Be(input);
+    }
+#nullable restore
+
+#nullable enable
+    /// <summary>
+    /// Test the method <see cref="IdentityStrategyMapper.MapIntToNullableObjectWhenNullableIsEnabled"/>.
+    /// </summary>
+    /// <param name="input">The input integer to be mapped.</param>
+    [Theory]
+    [UnitTest]
+    [InlineData(17)]
+    public void CanMapIntToNullableObjectWhenNullableIsEnabled(int input)
+    {
+        // Act
+        var output = this.identityStrategyMapper.MapIntToNullableObjectWhenNullableIsEnabled(input);
 
         // Assert
         output.Should().Be(input);

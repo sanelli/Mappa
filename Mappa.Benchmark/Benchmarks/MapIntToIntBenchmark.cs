@@ -1,4 +1,4 @@
-// <copyright file="MapStringToStringBenchmark.cs" company="Stefano Anelli">
+// <copyright file="MapIntToIntBenchmark.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -12,19 +12,19 @@ using Mapster;
 namespace Mappa.Benchmark.Benchmarks;
 
 /// <summary>
-/// The benchmark to map <see cref="string"/> to <see cref="string"/>.
+/// The benchmark to map <see cref="int"/> to <see cref="int"/>.
 /// </summary>
 [MemoryDiagnoser]
-public class MapStringToStringBenchmark
+public class MapIntToIntBenchmark
 {
-    private const string InputString = "This is the input message";
+    private const int InputInteger = 17;
     private readonly IdentityStrategyMapper mappaMapper;
     private readonly AutoMapper.IMapper automapperMapper;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="MapStringToStringBenchmark"/> class.
+    /// Initializes a new instance of the <see cref="MapIntToIntBenchmark"/> class.
     /// </summary>
-    public MapStringToStringBenchmark()
+    public MapIntToIntBenchmark()
     {
         // Create the Mappa mapper.
         this.mappaMapper = new();
@@ -42,21 +42,9 @@ public class MapStringToStringBenchmark
     /// </summary>
     /// <returns>The mapped object.</returns>
     [Benchmark(Baseline = true)]
-    public string MappaWithNullableDisabled()
+    public int MappaWithNullableDisabled()
     {
-        return this.mappaMapper.MapStringToStringWhenNullableIsDisabled(InputString);
-    }
-#nullable restore
-
-#nullable enable
-    /// <summary>
-    /// Uses the Mappa mapper when nullable is enabled.
-    /// </summary>
-    /// <returns>The mapped object.</returns>
-    [Benchmark(Baseline = true)]
-    public string? MappaWithNullableEnabled()
-    {
-        return this.mappaMapper.MapStringToStringWhenNullableIsEnabled(InputString);
+        return this.mappaMapper.MapIntToIntWhenNullableIsDisabled(InputInteger);
     }
 #nullable restore
 
@@ -65,9 +53,9 @@ public class MapStringToStringBenchmark
     /// </summary>
     /// <returns>The mapped object.</returns>
     [Benchmark]
-    public string AutoMapper()
+    public int AutoMapper()
     {
-        return this.automapperMapper.Map<string>(InputString);
+        return this.automapperMapper.Map<int>(InputInteger);
     }
 
     /// <summary>
@@ -76,9 +64,9 @@ public class MapStringToStringBenchmark
     /// <returns>The mapped object.</returns>
     [Benchmark]
 #pragma warning disable CA1822
-    public string Mapster()
+    public int Mapster()
 #pragma warning restore CA1822
     {
-        return InputString.Adapt<string>();
+        return InputInteger.Adapt<int>();
     }
 }
