@@ -4,11 +4,7 @@
 
 #pragma warning disable CA1852
 
-using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Running;
 
-using Mappa.Benchmark.Benchmarks;
-
-var config = DefaultConfig.Instance.WithOptions(ConfigOptions.DisableOptimizationsValidator);
-BenchmarkRunner.Run<MapStringToObjectBenchmark>(config);
+BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
 #pragma warning restore CA1852

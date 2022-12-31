@@ -47,6 +47,18 @@ public class MapStringToObjectBenchmark
     }
 #nullable restore
 
+#nullable enable
+    /// <summary>
+    /// Uses the Mappa mapper when nullable is enabled.
+    /// </summary>
+    /// <returns>The mapped object.</returns>
+    [Benchmark(Baseline = true)]
+    public object? MappaWithNullableEnabled()
+    {
+        return this.mappaMapper.MapStringToNullableObjectWithNullableEnabled(InputString);
+    }
+#nullable restore
+
     /// <summary>
     /// Uses the AutoMapper.
     /// </summary>
