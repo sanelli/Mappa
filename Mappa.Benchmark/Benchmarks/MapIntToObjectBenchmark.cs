@@ -53,7 +53,7 @@ public class MapIntToObjectBenchmark
     /// Uses the Mappa mapper when nullable is enabled.
     /// </summary>
     /// <returns>The mapped object.</returns>
-    [Benchmark(Baseline = true)]
+    [Benchmark]
     public object? MappaWithNullableEnabled()
     {
         return this.mappaMapper.MapIntToNullableObjectWhenNullableIsEnabled(InputInteger);

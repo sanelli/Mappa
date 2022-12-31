@@ -53,7 +53,7 @@ public class MapStringToStringBenchmark
     /// Uses the Mappa mapper when nullable is enabled.
     /// </summary>
     /// <returns>The mapped object.</returns>
-    [Benchmark(Baseline = true)]
+    [Benchmark]
     public string? MappaWithNullableEnabled()
     {
         return this.mappaMapper.MapStringToStringWhenNullableIsEnabled(InputString);
