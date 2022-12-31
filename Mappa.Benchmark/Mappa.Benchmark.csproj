@@ -35,4 +35,8 @@
         <AdditionalFiles Include="../stylecop.json" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Mappa.Samples\Mappa.Samples.csproj" />
+    </ItemGroup>
+
 </Project>

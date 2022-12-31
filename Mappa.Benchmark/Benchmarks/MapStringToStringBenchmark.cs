@@ -1,4 +1,4 @@
-// <copyright file="MapStringToObjectBenchmark.cs" company="Stefano Anelli">
+// <copyright file="MapStringToStringBenchmark.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -12,19 +12,19 @@ using Mapster;
 namespace Mappa.Benchmark.Benchmarks;
 
 /// <summary>
-/// The benchmark to map <see cref="string"/> to <see cref="object"/>.
+/// Benchmark to map a reference type to itself.
 /// </summary>
 [MemoryDiagnoser]
-public class MapStringToObjectBenchmark
+public class MapStringToStringBenchmark
 {
     private const string InputString = "This is the input message";
     private readonly IdentityStrategyMapper mappaMapper;
     private readonly AutoMapper.IMapper automapperMapper;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="MapStringToObjectBenchmark"/> class.
+    /// Initializes a new instance of the <see cref="MapStringToStringBenchmark"/> class.
     /// </summary>
-    public MapStringToObjectBenchmark()
+    public MapStringToStringBenchmark()
     {
         // Create the Mappa mapper.
         this.mappaMapper = new();
@@ -42,9 +42,9 @@ public class MapStringToObjectBenchmark
     /// </summary>
     /// <returns>The mapped object.</returns>
     [Benchmark(Baseline = true)]
-    public object MappaWithNullableDisabled()
+    public string MappaWithNullableDisabled()
     {
-        return this.mappaMapper.MapStringToObjectWhenNullableIsDisabled(InputString);
+        return this.mappaMapper.MapStringToStringWhenNullableIsDisabled(InputString);
     }
 #nullable restore
 
@@ -54,9 +54,9 @@ public class MapStringToObjectBenchmark
     /// </summary>
     /// <returns>The mapped object.</returns>
     [Benchmark(Baseline = true)]
-    public object? MappaWithNullableEnabled()
+    public string? MappaWithNullableEnabled()
     {
-        return this.mappaMapper.MapStringToNullableObjectWhenNullableIsEnabled(InputString);
+        return this.mappaMapper.MapStringToStringWhenNullableIsEnabled(InputString);
     }
 #nullable restore
 
@@ -65,9 +65,9 @@ public class MapStringToObjectBenchmark
     /// </summary>
     /// <returns>The mapped object.</returns>
     [Benchmark]
-    public object AutoMapper()
+    public string AutoMapper()
     {
-        return this.automapperMapper.Map<object>(InputString);
+        return this.automapperMapper.Map<string>(InputString);
     }
 
     /// <summary>
@@ -76,9 +76,9 @@ public class MapStringToObjectBenchmark
     /// <returns>The mapped object.</returns>
     [Benchmark]
 #pragma warning disable CA1822
-    public object Mapster()
+    public string Mapster()
 #pragma warning restore CA1822
     {
-        return InputString.Adapt<object>();
+        return InputString.Adapt<string>();
     }
 }
