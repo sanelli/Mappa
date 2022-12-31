@@ -20,6 +20,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{01A7FC44-1956-4F7F-B29E-F53A08DE2146}"
 	ProjectSection(SolutionItems) = preProject
 		Scripts\RunTestsAndReportCoverage.ps1 = Scripts\RunTestsAndReportCoverage.ps1
+		Scripts\RunBenchmarks.ps1 = Scripts\RunBenchmarks.ps1
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mappa.Samples", "Mappa.Samples\Mappa.Samples.csproj", "{0D70998F-986C-47B5-9989-23DD4A04340B}"
