@@ -9,6 +9,8 @@ namespace Mappa.Samples;
 /// <summary>
 /// Sample mapper to demonstrate the identity strategy
 /// across various scenarios.
+/// This class contains duplicated mappers that cannot be
+/// defined inside <see cref="IdentityStrategyMapper"/>.
 /// </summary>
 [Mappa]
 public sealed partial class IdentityStrategyMapperDup
