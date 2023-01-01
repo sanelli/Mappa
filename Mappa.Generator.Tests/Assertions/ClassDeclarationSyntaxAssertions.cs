@@ -3,6 +3,7 @@
 // </copyright>
 
 using System.CodeDom.Compiler;
+using System.Collections.Immutable;
 
 using Mappa.Generator.Exceptions;
 
@@ -112,12 +113,9 @@ public sealed class ClassDeclarationSyntaxAssertions
                 var methodSymbol = this.SemanticModel.GetDeclaredSymbol(methodDeclarationSyntax)
                                    ?? throw new MappaGeneratorException(
                                        $"Cannot obtain symbol from method \"{methodDeclarationSyntax.Identifier}\".");
-                var methodReturnType = methodSymbol.ReturnType.IsDefinition
-                    ? methodSymbol.ReturnType
-                    : methodSymbol.ReturnType.OriginalDefinition;
-                var expectedReturnType = this.Compilation.GetTypeByMetadataName(returnType.FullName!);
+                var expectedReturnType = this.GetTypeSymbol(returnType);
 
-                if (!SymbolEqualityComparer.Default.Equals(methodReturnType, expectedReturnType))
+                if (!SymbolEqualityComparer.Default.Equals(methodSymbol.ReturnType, expectedReturnType))
                 {
                     return false;
                 }
@@ -142,8 +140,7 @@ public sealed class ClassDeclarationSyntaxAssertions
                         return false;
                     }
 
-                    var expectedType =
-                        this.Compilation.GetTypeByMetadataName(parameters[parameterIndex].Type.FullName!);
+                    var expectedType = this.GetTypeSymbol(parameters[parameterIndex].Type);
                     if (!SymbolEqualityComparer.Default.Equals(
                             expectedType,
                             methodSymbol.Parameters[parameterIndex].Type))
@@ -164,5 +161,25 @@ public sealed class ClassDeclarationSyntaxAssertions
         methods.Should().HaveCount(1);
 
         return new MethodDeclarationSyntaxAssertions(methods.Single(), this.SemanticModel, this.Compilation);
+    }
+
+    private ITypeSymbol GetTypeSymbol(Type type)
+    {
+        var typeParts = type.ToString().Split("[");
+        var namedTypeSymbol = this.Compilation.GetTypeByMetadataName(typeParts.First())!;
+        if (typeParts.Length > 1)
+        {
+            var typeArguments = typeParts.Last()
+                .Replace("]", string.Empty, StringComparison.Ordinal)
+                .Split(",")
+                .Select(s => this.Compilation.GetTypeByMetadataName(s))
+                .Where(t => t is not null)
+                .OfType<ITypeSymbol>()
+                .ToArray();
+            var constructedGenericType = namedTypeSymbol.Construct(typeArguments);
+            return constructedGenericType;
+        }
+
+        return namedTypeSymbol;
     }
 }

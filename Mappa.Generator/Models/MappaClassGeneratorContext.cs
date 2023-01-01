@@ -129,7 +129,8 @@ internal sealed class MappaClassGeneratorContext
     /// Method is added only if no other method with the same mapping exists.
     /// </summary>
     /// <param name="mapMethod">The method to be added.</param>
-    internal void TryAddMethod(MapMethod mapMethod)
+    /// <returns><c>true</c> if the method has been added, false otherwise.</returns>
+    internal bool TryAddMethod(MapMethod mapMethod)
     {
         if (!this.TryGetMethod(
                 mapMethod.TargetType,
@@ -138,7 +139,10 @@ internal sealed class MappaClassGeneratorContext
                 out _))
         {
             this.mapMethods.Add(mapMethod);
+            return true;
         }
+
+        return false;
     }
 
     /// <summary>

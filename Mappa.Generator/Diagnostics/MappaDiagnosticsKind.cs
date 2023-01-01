@@ -28,4 +28,9 @@ internal enum MappaDiagnosticsKind
     /// The method returns any of the task types.
     /// </summary>
     MethodReturnsTaskType,
+
+    /// <summary>
+    /// A mapping for the given type already exists in the class.
+    /// </summary>
+    DuplicatedMapping,
 }

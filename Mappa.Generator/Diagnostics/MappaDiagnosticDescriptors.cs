@@ -42,6 +42,14 @@ internal static class MappaDiagnosticDescriptors
             MappaDiagnosticsKind.MethodReturnsTaskType,
             "Method '{0}' cannot be used for mapping because it returns either Task, Task<T>, ValueTask or ValueTask<T>.");
 
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.DuplicatedMapping"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor DuplicatedMapping
+        => methodReturnsTaskType ??= BuildError(
+            MappaDiagnosticsKind.DuplicatedMapping,
+            "Method '{0}' cannot be used for mapping from '{1}' to '{2}' already exists in the current class.");
+
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new DiagnosticDescriptor(
             kind.ToDiagnosticId(),

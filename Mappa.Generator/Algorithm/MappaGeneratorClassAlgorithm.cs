@@ -91,7 +91,7 @@ internal sealed class MappaGeneratorClassAlgorithm
         }
     }
 
-    private static void GenerateStrategyForEachMethod(
+    private void GenerateStrategyForEachMethod(
         MappaClassGeneratorContext classContext,
         CancellationToken cancellationToken)
     {
@@ -109,7 +109,9 @@ internal sealed class MappaGeneratorClassAlgorithm
                 methodContext,
                 mapMethod.TargetType,
                 mapMethod.SourceType,
-                mapMethod.SourceParameterName);
+                mapMethod.SourceParameterName,
+                this.Compilation,
+                cancellationToken);
             var strategy = typeIdentifierAlgorithm.GetStrategy();
             var methodParameterMapStrategy = new MethodParameterMapStrategy(strategy);
             mapMethod.SetStrategy(methodParameterMapStrategy);
@@ -148,7 +150,7 @@ internal sealed class MappaGeneratorClassAlgorithm
         // While generating strategies new methods might be found or requested to be generated.
         while (!classContext.AreAllMethodsMapped())
         {
-            GenerateStrategyForEachMethod(classContext, cancellationToken);
+            this.GenerateStrategyForEachMethod(classContext, cancellationToken);
         }
 
         // Build the source code (only if there is something to generate)
@@ -211,6 +213,10 @@ internal sealed class MappaGeneratorClassAlgorithm
             return;
         }
 
-        classContext.TryAddMethod(mapMethod);
+        var added = classContext.TryAddMethod(mapMethod);
+        if (!added)
+        {
+            classContext.ReportDiagnostic(MappaDiagnostics.DuplicatedMapping(methodDeclarationSyntax));
+        }
     }
 }

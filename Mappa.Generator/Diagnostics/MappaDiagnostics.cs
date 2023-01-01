@@ -49,4 +49,18 @@ internal static class MappaDiagnostics
             MappaDiagnosticDescriptors.MethodReturnsTaskType,
             methodDeclarationSyntax.GetLocation(),
             methodDeclarationSyntax.Identifier.ToFullString());
+
+    /// <summary>
+    /// Diagnostic to report the fact that a method cannot be generated because a
+    /// mapping between two types has already been defined.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic DuplicatedMapping(MethodDeclarationSyntax methodDeclarationSyntax)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.DuplicatedMapping,
+            methodDeclarationSyntax.GetLocation(),
+            methodDeclarationSyntax.Identifier.ToFullString(),
+            methodDeclarationSyntax.ParameterList.Parameters.First().Type?.ToFullString() ?? "unknown",
+            methodDeclarationSyntax.ReturnType.ToFullString());
 }

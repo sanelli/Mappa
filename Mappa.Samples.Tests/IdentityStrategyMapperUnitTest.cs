@@ -15,6 +15,7 @@ namespace Mappa.Samples.Tests;
 public sealed class IdentityStrategyMapperUnitTest
 {
     private readonly IdentityStrategyMapper identityStrategyMapper = new();
+    private readonly IdentityStrategyMapperDup identityStrategyMapperDup = new();
 
 #nullable disable
     /// <summary>
@@ -82,6 +83,42 @@ public sealed class IdentityStrategyMapperUnitTest
     {
         // Act
         var output = this.identityStrategyMapper.MapIntToIntWhenNullableIsDisabled(input);
+
+        // Assert
+        output.Should().Be(input);
+    }
+#nullable restore
+
+#nullable disable
+    /// <summary>
+    /// Test the method <see cref="IdentityStrategyMapper.MapIntToNullableIntWhenNullableIsDisabled"/>.
+    /// </summary>
+    /// <param name="input">The input integer to be mapped.</param>
+    [Theory]
+    [UnitTest]
+    [InlineData(17)]
+    public void CanMapIntToNullableIntWhenNullableIsDisabled(int input)
+    {
+        // Act
+        var output = this.identityStrategyMapper.MapIntToNullableIntWhenNullableIsDisabled(input);
+
+        // Assert
+        output.Should().Be(input);
+    }
+#nullable restore
+
+#nullable disable
+    /// <summary>
+    /// Test the method <see cref="IdentityStrategyMapperDup.MapIntToNullableIntWhenNullableIsEnabled"/>.
+    /// </summary>
+    /// <param name="input">The input integer to be mapped.</param>
+    [Theory]
+    [UnitTest]
+    [InlineData(17)]
+    public void CanMapIntToNullableIntWhenNullableIsEnabled(int input)
+    {
+        // Act
+        var output = this.identityStrategyMapperDup.MapIntToNullableIntWhenNullableIsEnabled(input);
 
         // Assert
         output.Should().Be(input);

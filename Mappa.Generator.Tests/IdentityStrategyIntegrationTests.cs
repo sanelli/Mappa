@@ -234,6 +234,118 @@ public sealed class IdentityStrategyIntegrationTests
     }
 
     /// <summary>
+    /// Test a mapping can be created when source and target type are the
+    /// very same non reference type and target type is nullable.
+    /// Also the nullability has been disabled.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapNonReferenceTypeToSameNullableNonReferenceWhenNullableDisabled()
+    {
+        // Arrange
+        const string sourceCode = """
+            #nullable disable
+            using Mappa.Attributes;
+
+            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+            [Mappa]
+            public sealed partial class Mapper
+            {
+                public partial int? Map(int input);
+            }
+            #nullable restore
+            """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        var compilationUnitSyntaxAssertions = generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedOneSourceCode()
+            .WithCompilationUnit();
+        var namespaceDeclarationSyntaxAssertions = compilationUnitSyntaxAssertions
+            .HaveCommentHeader()
+            .HaveFileScopedNamespace()
+            .HaveNamespaceIdentifier("Mappa.Generator.Tests.UnitTests.SourceCode")
+            .HaveClasses(1);
+        var methodDeclarationSyntaxAssertions = namespaceDeclarationSyntaxAssertions
+            .HaveClass("Mapper")
+            .HaveModifiers(SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword)
+            .HaveGeneratedCodeAttribute()
+            .HaveMethods(1)
+            .HaveMethod(
+                typeof(int?),
+                NullableAnnotation.Annotated,
+                "Map",
+                (typeof(int), NullableAnnotation.NotAnnotated, "input"));
+        var blockSyntaxAssertions = methodDeclarationSyntaxAssertions
+            .HaveGeneratedCodeAttribute()
+            .HaveModifiers(SyntaxKind.PartialKeyword, SyntaxKind.PublicKeyword)
+            .HaveBody();
+        blockSyntaxAssertions
+            .HaveSingleReturnStatementWithIdentifierExpression("input");
+    }
+
+    /// <summary>
+    /// Test a mapping can be created when source and target type are the
+    /// very same non reference type and target type is nullable.
+    /// Also the nullability has been enabled.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapNonReferenceTypeToSameNullableNonReferenceWhenNullableEnabled()
+    {
+        // Arrange
+        const string sourceCode = """
+            #nullable enable
+            using Mappa.Attributes;
+
+            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+            [Mappa]
+            public sealed partial class Mapper
+            {
+                public partial int? Map(int input);
+            }
+            #nullable restore
+            """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        var compilationUnitSyntaxAssertions = generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedOneSourceCode()
+            .WithCompilationUnit();
+        var namespaceDeclarationSyntaxAssertions = compilationUnitSyntaxAssertions
+            .HaveCommentHeader()
+            .HaveFileScopedNamespace()
+            .HaveNamespaceIdentifier("Mappa.Generator.Tests.UnitTests.SourceCode")
+            .HaveClasses(1);
+        var methodDeclarationSyntaxAssertions = namespaceDeclarationSyntaxAssertions
+            .HaveClass("Mapper")
+            .HaveModifiers(SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword)
+            .HaveGeneratedCodeAttribute()
+            .HaveMethods(1)
+            .HaveMethod(
+                typeof(int?),
+                NullableAnnotation.Annotated,
+                "Map",
+                (typeof(int), NullableAnnotation.NotAnnotated, "input"));
+        var blockSyntaxAssertions = methodDeclarationSyntaxAssertions
+            .HaveGeneratedCodeAttribute()
+            .HaveModifiers(SyntaxKind.PartialKeyword, SyntaxKind.PublicKeyword)
+            .HaveBody();
+        blockSyntaxAssertions
+            .HaveSingleReturnStatementWithIdentifierExpression("input");
+    }
+
+    /// <summary>
     /// Test a mapping can be created when source is a non reference type
     /// and the target type is <see cref="object"/> and nullable is disabled.
     /// </summary>

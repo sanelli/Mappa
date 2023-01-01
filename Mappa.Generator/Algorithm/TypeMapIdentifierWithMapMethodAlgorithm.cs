@@ -26,18 +26,24 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
     /// <param name="targetType">The target type.</param>
     /// <param name="sourceType">The source type.</param>
     /// <param name="source">The mapping source.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     public TypeMapIdentifierWithMapMethodAlgorithm(
         MappaMapAlgorithmContext methodContext,
         ITypeSymbol targetType,
         ITypeSymbol sourceType,
-        string source)
-        : base(methodContext, targetType, sourceType, source)
+        string source,
+        Compilation compilation,
+        CancellationToken cancellationToken)
+        : base(methodContext, targetType, sourceType, source, compilation, cancellationToken)
     {
     }
 
     /// <inheritdoc/>
     internal override IMapStrategy GetStrategy()
     {
+        this.CancellationToken.ThrowIfCancellationRequested();
+
         if (this.Context.TryGetMethod(this.TargetType, this.SourceType, out var mapMethod))
         {
             return new MethodMapStrategy(MappaAlgorithmRule.MapUsingExistingMethod, mapMethod, this.Source);

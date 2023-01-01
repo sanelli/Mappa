@@ -23,37 +23,53 @@ internal class TypeMapIdentifierAlgorithm
     /// <param name="targetType">The target type.</param>
     /// <param name="sourceType">The source type.</param>
     /// <param name="source">The name of the source mapping.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     public TypeMapIdentifierAlgorithm(
         MappaMapAlgorithmContext context,
         ITypeSymbol targetType,
         ITypeSymbol sourceType,
-        string source)
+        string source,
+        Compilation compilation,
+        CancellationToken cancellationToken)
     {
         this.Context = context;
         this.TargetType = targetType;
         this.SourceType = sourceType;
         this.Source = source;
+        this.Compilation = compilation;
+        this.CancellationToken = cancellationToken;
     }
 
     /// <summary>
     /// Gets the context.
     /// </summary>
-    internal MappaMapAlgorithmContext Context { get; }
+    protected MappaMapAlgorithmContext Context { get; }
 
     /// <summary>
     /// Gets the target type.
     /// </summary>
-    internal ITypeSymbol TargetType { get; }
+    protected ITypeSymbol TargetType { get; }
 
     /// <summary>
     /// Gets the source type.
     /// </summary>
-    internal ITypeSymbol SourceType { get; }
+    protected ITypeSymbol SourceType { get; }
 
     /// <summary>
     /// Gets the mapping source.
     /// </summary>
-    internal string Source { get; }
+    protected string Source { get; }
+
+    /// <summary>
+    /// Gets the cancellation token.
+    /// </summary>
+    protected CancellationToken CancellationToken { get; }
+
+    /// <summary>
+    /// Gets the compilation.
+    /// </summary>
+    private Compilation Compilation { get; }
 
     /// <summary>
     /// Compute a suitable strategy from type <see cref="SourceType"/> to
@@ -62,19 +78,23 @@ internal class TypeMapIdentifierAlgorithm
     /// <returns>The strategy computed.</returns>
     internal virtual IMapStrategy GetStrategy()
     {
+        this.CancellationToken.ThrowIfCancellationRequested();
+
         var nullableEnabled = this.Context.IsNullableEnabled();
         var notNullableEnabled = !nullableEnabled;
 
         // 01. Map to the very same type.
         // (non-nullable): T -> T
-        // (nullable): T -> T
-        // (nullable): T? -> T?
-        // TODO: (nullable) T -> T?
-        // TODO: (non-nullable) T -> T? (where T is non reference type)
+        // (nullable): T -> T or T? -> T?
+        // (nullable) T -> T? && T is refType
+        // (nullable || not-nullable) T -> T? && T is not refType
         if ((notNullableEnabled && SymbolEqualityComparer.Default.Equals(this.TargetType, this.SourceType))
             || (nullableEnabled && SymbolEqualityComparer.IncludeNullability.Equals(this.TargetType, this.SourceType))
-            || (nullableEnabled && SymbolEqualityComparer.Default.Equals(this.TargetType, this.SourceType) &&
-                this.TargetType.NullableAnnotation == NullableAnnotation.Annotated))
+            || (nullableEnabled && SymbolEqualityComparer.Default.Equals(this.TargetType, this.SourceType)
+                                && this.TargetType is
+                                    { NullableAnnotation: NullableAnnotation.Annotated, IsReferenceType: true })
+            || (this.TargetType is { NullableAnnotation: NullableAnnotation.Annotated, IsReferenceType: false }
+                && this.TargetType.IsNullableGenericType(this.SourceType, nullableEnabled)))
         {
             // TODO: Introduce the ability to perform a deep copy instead of shallow copy.
             return new IdentityMapStrategy(
