@@ -70,6 +70,7 @@ internal class TypeMapIdentifierAlgorithm
         // (nullable): T -> T
         // (nullable): T? -> T?
         // TODO: (nullable) T -> T?
+        // TODO: (non-nullable) T -> T? (where T is non reference type)
         if ((notNullableEnabled && SymbolEqualityComparer.Default.Equals(this.TargetType, this.SourceType))
             || (nullableEnabled && SymbolEqualityComparer.IncludeNullability.Equals(this.TargetType, this.SourceType))
             || (nullableEnabled && SymbolEqualityComparer.Default.Equals(this.TargetType, this.SourceType) &&
@@ -86,6 +87,7 @@ internal class TypeMapIdentifierAlgorithm
         // 02. Map to object
         // (non-nullable): * -> object
         // (nullable): * -> object?
+        // TODO: (nullable) * -> object (When T is not NOT nullable annotated)
         if ((notNullableEnabled && this.TargetType.IsObject())
             || (nullableEnabled && this.TargetType.IsObject() &&
                 this.TargetType.NullableAnnotation == NullableAnnotation.Annotated))
@@ -97,8 +99,10 @@ internal class TypeMapIdentifierAlgorithm
                 this.Source);
         }
 
+        // XX. Map nullable to nullable
+        //    TODO: (nullable & non-nullable) S? -> T? : NullableStrategy( Strategy(T, S) )
         // XX. numeric -> implicit-convertible-numeric : Identity strategy.
-        // XX. IDictionary<K,V> -> Dictionary<K,V> : DictionaryStrategy( Strategy(K, V), Startegy(TV, SV) ).
+        // XX. IDictionary<SK,SV> -> Dictionary<TK,TV> : DictionaryStrategy( Strategy(TK, SK), Strategy(TV, SV) ).
         // XX. enum -> string : EnumToString strategy.
         // XX. enum -> implicit-convertible-integral : EnumToIntegral strategy.
         // XX. string -> enum : StringToEnum strategy.
