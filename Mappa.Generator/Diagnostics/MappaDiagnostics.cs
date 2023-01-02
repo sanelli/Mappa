@@ -63,4 +63,27 @@ internal static class MappaDiagnostics
             methodDeclarationSyntax.Identifier.ToFullString(),
             methodDeclarationSyntax.ParameterList.Parameters.First().Type?.ToFullString() ?? "unknown",
             methodDeclarationSyntax.ReturnType.ToFullString());
+
+    /// <summary>
+    /// Diagnostic to report the fact that a mapping cannot be identifier.
+    /// </summary>
+    /// <param name="targetType">The target type.</param>
+    /// <param name="target">The target of the mapping.</param>
+    /// <param name="sourceType">The source type.</param>
+    /// <param name="source">The source of the mapping.</param>
+    /// <param name="location">The location of the mapping.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic CannotIdentifyStrategy(
+        ITypeSymbol targetType,
+        string target,
+        ITypeSymbol sourceType,
+        string source,
+        Location? location)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.CannotIdentifyStrategy,
+            location,
+            source,
+            sourceType,
+            target,
+            targetType);
 }

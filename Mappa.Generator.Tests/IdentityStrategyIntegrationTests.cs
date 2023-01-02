@@ -513,12 +513,12 @@ public sealed class IdentityStrategyIntegrationTests
 
     /// <summary>
     /// Test a mapping can be created from reference type
-    /// to same nullable <see cref="object"/> when nullable is enabled.
+    /// to nullable <see cref="object"/> when nullable is enabled.
     /// </summary>
     /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
-    public async Task CanMapReferenceTypeToNullableReferenceTypeWhenNullableEnabled()
+    public async Task CanMapReferenceTypeToNullableObjectWhenNullableEnabled()
     {
         // Arrange
         const string sourceCode = """
@@ -612,6 +612,61 @@ public sealed class IdentityStrategyIntegrationTests
             .HaveMethod(
                 typeof(string),
                 NullableAnnotation.Annotated,
+                "Map",
+                (typeof(string), NullableAnnotation.NotAnnotated, "input"));
+        var blockSyntaxAssertions = methodDeclarationSyntaxAssertions
+            .HaveGeneratedCodeAttribute()
+            .HaveModifiers(SyntaxKind.PartialKeyword, SyntaxKind.PublicKeyword)
+            .HaveBody();
+        blockSyntaxAssertions
+            .HaveSingleReturnStatementWithIdentifierExpression("input");
+    }
+
+    /// <summary>
+    /// Test a mapping can be created from reference type
+    /// to <see cref="object"/> when nullable is enabled.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapReferenceTypeToObjectWhenNullableEnabled()
+    {
+        // Arrange
+        const string sourceCode = """
+            #nullable enable
+            using Mappa.Attributes;
+
+            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+            [Mappa]
+            public sealed partial class Mapper
+            {
+                public partial object Map(string input);
+            }
+            #nullable restore
+            """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        var compilationUnitSyntaxAssertions = generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedOneSourceCode()
+            .WithCompilationUnit();
+        var namespaceDeclarationSyntaxAssertions = compilationUnitSyntaxAssertions
+            .HaveCommentHeader()
+            .HaveFileScopedNamespace()
+            .HaveNamespaceIdentifier("Mappa.Generator.Tests.UnitTests.SourceCode")
+            .HaveClasses(1);
+        var methodDeclarationSyntaxAssertions = namespaceDeclarationSyntaxAssertions
+            .HaveClass("Mapper")
+            .HaveModifiers(SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword)
+            .HaveGeneratedCodeAttribute()
+            .HaveMethods(1)
+            .HaveMethod(
+                typeof(object),
+                NullableAnnotation.NotAnnotated,
                 "Map",
                 (typeof(string), NullableAnnotation.NotAnnotated, "input"));
         var blockSyntaxAssertions = methodDeclarationSyntaxAssertions

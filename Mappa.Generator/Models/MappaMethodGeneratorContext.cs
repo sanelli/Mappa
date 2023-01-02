@@ -36,22 +36,30 @@ internal sealed class MappaMethodGeneratorContext
     internal MapMethod MapMethod { get; }
 
     /// <inheritdoc/>
-    internal override ITypeSymbol SourceType => throw new NotImplementedException();
+    internal override ITypeSymbol SourceType => this.MapMethod.SourceType;
 
     /// <inheritdoc/>
-    internal override ITypeSymbol TargetType => throw new NotImplementedException();
+    internal override ITypeSymbol TargetType => this.MapMethod.TargetType;
 
     /// <inheritdoc/>
-    internal override string PropertyName => throw new NotImplementedException();
+    internal override string SourcePropertyName => this.MapMethod.SourceParameterName;
 
-    /// <summary>
-    /// Gets a value indicating whether <c>nullable</c> is enabled for the method.
-    /// </summary>
-    /// <returns><c>true</c> if the nullable context is enabled, <c>false</c> otherwise.</returns>
+    /// <inheritdoc/>
+    internal override string TargetPropertyName => string.Empty;
+
+    /// <inheritdoc/>
     internal override bool IsNullableEnabled()
         => this.ClassContext.IsNullableEnabled(this.MapMethod.MethodDeclarationSyntax);
 
     /// <inheritdoc/>
     internal override bool TryGetMethod(ITypeSymbol targetType, ITypeSymbol sourceType, out MapMethod mapMethod)
         => this.ClassContext.TryGetMethod(targetType, sourceType, this.IsNullableEnabled(), out mapMethod);
+
+    /// <inheritdoc/>
+    internal override void ReportDiagnostic(Diagnostic diagnostic)
+        => this.ClassContext.ReportDiagnostic(diagnostic);
+
+    /// <inheritdoc/>
+    internal override Location? GetLocation()
+        => this.MapMethod.MethodDeclarationSyntax.GetLocation();
 }

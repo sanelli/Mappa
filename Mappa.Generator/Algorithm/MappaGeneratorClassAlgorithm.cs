@@ -107,9 +107,6 @@ internal sealed class MappaGeneratorClassAlgorithm
             var methodContext = new MappaMethodGeneratorContext(classContext, mapMethod);
             var typeIdentifierAlgorithm = new TypeMapIdentifierAlgorithm(
                 methodContext,
-                mapMethod.TargetType,
-                mapMethod.SourceType,
-                mapMethod.SourceParameterName,
                 this.Compilation,
                 cancellationToken);
             var strategy = typeIdentifierAlgorithm.GetStrategy();

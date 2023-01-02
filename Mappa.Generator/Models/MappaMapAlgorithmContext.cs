@@ -27,7 +27,12 @@ internal abstract class MappaMapAlgorithmContext
     /// <summary>
     /// Gets the name of the property used to generate the source.
     /// </summary>
-    internal abstract string PropertyName { get; }
+    internal abstract string SourcePropertyName { get; }
+
+    /// <summary>
+    /// Gets the name of the property used to generate the target.
+    /// </summary>
+    internal abstract string TargetPropertyName { get; }
 
     /// <summary>
     /// Gets a value indicating weather the nullable flag
@@ -44,4 +49,16 @@ internal abstract class MappaMapAlgorithmContext
     /// <param name="mapMethod">The map method (if it exists).</param>
     /// <returns><c>true</c> if map method exists, <c>false</c> otherwise.</returns>
     internal abstract bool TryGetMethod(ITypeSymbol targetType, ITypeSymbol sourceType, out MapMethod mapMethod);
+
+    /// <summary>
+    /// Report a diagnostic.
+    /// </summary>
+    /// <param name="diagnostic">The diagnostic to report.</param>
+    internal abstract void ReportDiagnostic(Diagnostic diagnostic);
+
+    /// <summary>
+    /// Get the location being mapped.
+    /// </summary>
+    /// <returns>The location being mapped.</returns>
+    internal abstract Location? GetLocation();
 }

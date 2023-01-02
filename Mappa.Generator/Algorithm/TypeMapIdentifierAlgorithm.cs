@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Extensions;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
@@ -11,8 +12,8 @@ using Microsoft.CodeAnalysis;
 namespace Mappa.Generator.Algorithm;
 
 /// <summary>
-/// Algorithm to identify a suitable map strategy from <see cref="SourceType"/>
-/// to <see cref="TargetType"/>.
+/// Algorithm to identify a suitable map strategy from <see cref="MappaMapAlgorithmContext.SourceType"/> to
+/// <see cref="MappaMapAlgorithmContext.TargetType"/>.
 /// </summary>
 internal class TypeMapIdentifierAlgorithm
 {
@@ -20,23 +21,14 @@ internal class TypeMapIdentifierAlgorithm
     /// Initializes a new instance of the <see cref="TypeMapIdentifierAlgorithm"/> class.
     /// </summary>
     /// <param name="context">The mappa class generator context.</param>
-    /// <param name="targetType">The target type.</param>
-    /// <param name="sourceType">The source type.</param>
-    /// <param name="source">The name of the source mapping.</param>
     /// <param name="compilation">The compilation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     public TypeMapIdentifierAlgorithm(
         MappaMapAlgorithmContext context,
-        ITypeSymbol targetType,
-        ITypeSymbol sourceType,
-        string source,
         Compilation compilation,
         CancellationToken cancellationToken)
     {
         this.Context = context;
-        this.TargetType = targetType;
-        this.SourceType = sourceType;
-        this.Source = source;
         this.Compilation = compilation;
         this.CancellationToken = cancellationToken;
     }
@@ -45,21 +37,6 @@ internal class TypeMapIdentifierAlgorithm
     /// Gets the context.
     /// </summary>
     protected MappaMapAlgorithmContext Context { get; }
-
-    /// <summary>
-    /// Gets the target type.
-    /// </summary>
-    protected ITypeSymbol TargetType { get; }
-
-    /// <summary>
-    /// Gets the source type.
-    /// </summary>
-    protected ITypeSymbol SourceType { get; }
-
-    /// <summary>
-    /// Gets the mapping source.
-    /// </summary>
-    protected string Source { get; }
 
     /// <summary>
     /// Gets the cancellation token.
@@ -72,8 +49,8 @@ internal class TypeMapIdentifierAlgorithm
     private Compilation Compilation { get; }
 
     /// <summary>
-    /// Compute a suitable strategy from type <see cref="SourceType"/> to
-    /// <see cref="TargetType"/>.
+    /// Compute a suitable strategy from type <see cref="MappaMapAlgorithmContext.SourceType"/> to
+    /// <see cref="MappaMapAlgorithmContext.TargetType"/>.
     /// </summary>
     /// <returns>The strategy computed.</returns>
     internal virtual IMapStrategy GetStrategy()
@@ -88,35 +65,43 @@ internal class TypeMapIdentifierAlgorithm
         // (nullable): T -> T or T? -> T?
         // (nullable) T -> T? && T is refType
         // (nullable || not-nullable) T -> T? && T is not refType
-        if ((notNullableEnabled && SymbolEqualityComparer.Default.Equals(this.TargetType, this.SourceType))
-            || (nullableEnabled && SymbolEqualityComparer.IncludeNullability.Equals(this.TargetType, this.SourceType))
-            || (nullableEnabled && SymbolEqualityComparer.Default.Equals(this.TargetType, this.SourceType)
-                                && this.TargetType is
+        if ((notNullableEnabled &&
+             SymbolEqualityComparer.Default.Equals(this.Context.TargetType, this.Context.SourceType))
+            || (nullableEnabled &&
+                SymbolEqualityComparer.IncludeNullability.Equals(this.Context.TargetType, this.Context.SourceType))
+            || (nullableEnabled && SymbolEqualityComparer.Default.Equals(
+                                    this.Context.TargetType,
+                                    this.Context.SourceType)
+                                && this.Context.TargetType is
                                     { NullableAnnotation: NullableAnnotation.Annotated, IsReferenceType: true })
-            || (this.TargetType is { NullableAnnotation: NullableAnnotation.Annotated, IsReferenceType: false }
-                && this.TargetType.IsNullableGenericType(this.SourceType, nullableEnabled)))
+            || (this.Context.TargetType is { NullableAnnotation: NullableAnnotation.Annotated, IsReferenceType: false }
+                && this.Context.TargetType.IsNullableGenericType(this.Context.SourceType, nullableEnabled)))
         {
             // TODO: Introduce the ability to perform a deep copy instead of shallow copy.
             return new IdentityMapStrategy(
                 MappaAlgorithmRule.MapToSameType,
-                this.TargetType,
-                this.SourceType,
-                this.Source);
+                this.Context.TargetType,
+                this.Context.SourceType,
+                this.Context.SourcePropertyName);
         }
 
         // 02. Map to object
-        // (non-nullable): * -> object
-        // (nullable): * -> object?
-        // TODO: (nullable) * -> object (When T is not NOT nullable annotated)
-        if ((notNullableEnabled && this.TargetType.IsObject())
-            || (nullableEnabled && this.TargetType.IsObject() &&
-                this.TargetType.NullableAnnotation == NullableAnnotation.Annotated))
+        // (non-nullable): T -> object
+        // (nullable): T -> object?
+        // (nullable) T -> object (When T is not NOT nullable annotated)
+        if ((notNullableEnabled && this.Context.TargetType.IsObject())
+            || (nullableEnabled && this.Context.TargetType.IsObject() &&
+                this.Context.TargetType.NullableAnnotation == NullableAnnotation.Annotated)
+            || (nullableEnabled
+                && this.Context.TargetType.IsObject()
+                && this.Context.TargetType.NullableAnnotation == NullableAnnotation.NotAnnotated
+                && this.Context.SourceType.NullableAnnotation == NullableAnnotation.NotAnnotated))
         {
             return new IdentityMapStrategy(
                 MappaAlgorithmRule.MapToObject,
-                this.TargetType,
-                this.SourceType,
-                this.Source);
+                this.Context.TargetType,
+                this.Context.SourceType,
+                this.Context.SourcePropertyName);
         }
 
         // XX. Map nullable to nullable
@@ -134,6 +119,12 @@ internal class TypeMapIdentifierAlgorithm
         // XX. IEnumerable<S> -> IEnumerable<T> : EnumerableStrategy ( Strategy(T, T) )
         // XX. S -> T : ConstructorStrategy(S, T)
         // XX. Report error
-        throw new NotImplementedException();
+        this.Context.ReportDiagnostic(MappaDiagnostics.CannotIdentifyStrategy(
+            this.Context.TargetType,
+            this.Context.TargetPropertyName,
+            this.Context.SourceType,
+            this.Context.SourcePropertyName,
+            this.Context.GetLocation()));
+        return new NoMapStrategy(this.Context.TargetType, this.Context.SourceType, this.Context.SourcePropertyName);
     }
 }

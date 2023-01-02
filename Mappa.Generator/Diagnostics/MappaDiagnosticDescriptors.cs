@@ -50,6 +50,14 @@ internal static class MappaDiagnosticDescriptors
             MappaDiagnosticsKind.DuplicatedMapping,
             "Method '{0}' cannot be used for mapping from '{1}' to '{2}' already exists in the current class.");
 
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.CannotIdentifyStrategy"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor CannotIdentifyStrategy
+        => methodReturnsTaskType ??= BuildError(
+            MappaDiagnosticsKind.CannotIdentifyStrategy,
+            "Cannot identify a mapping strategy between from '{0}' (type: '{1}') to '{2}' (type: '{3}').");
+
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new DiagnosticDescriptor(
             kind.ToDiagnosticId(),

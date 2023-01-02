@@ -33,4 +33,9 @@ internal enum MappaDiagnosticsKind
     /// A mapping for the given type already exists in the class.
     /// </summary>
     DuplicatedMapping,
+
+    /// <summary>
+    /// A mapping strategy cannot be identifier.
+    /// </summary>
+    CannotIdentifyStrategy,
 }

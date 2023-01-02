@@ -10,8 +10,8 @@ using Microsoft.CodeAnalysis;
 namespace Mappa.Generator.Algorithm;
 
 /// <summary>
-/// Algorithm to identify a suitable map strategy from <see cref="TypeMapIdentifierAlgorithm.SourceType"/>
-/// to <see cref="TypeMapIdentifierAlgorithm.TargetType"/>. This is similar to <see cref="TypeMapIdentifierAlgorithm"/>
+/// Algorithm to identify a suitable map strategy from <see cref="MappaMapAlgorithmContext.SourceType"/>
+/// to <see cref="MappaMapAlgorithmContext.TargetType"/>. This is similar to <see cref="TypeMapIdentifierAlgorithm"/>
 /// but it first check if a suitable map already exists in <see cref="TypeMapIdentifierAlgorithm.Context"/>.
 /// </summary>
 #pragma warning disable CA1812
@@ -23,19 +23,13 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
     /// Initializes a new instance of the <see cref="TypeMapIdentifierWithMapMethodAlgorithm"/> class.
     /// </summary>
     /// <param name="methodContext">The mappa method generator context.</param>
-    /// <param name="targetType">The target type.</param>
-    /// <param name="sourceType">The source type.</param>
-    /// <param name="source">The mapping source.</param>
     /// <param name="compilation">The compilation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     public TypeMapIdentifierWithMapMethodAlgorithm(
         MappaMapAlgorithmContext methodContext,
-        ITypeSymbol targetType,
-        ITypeSymbol sourceType,
-        string source,
         Compilation compilation,
         CancellationToken cancellationToken)
-        : base(methodContext, targetType, sourceType, source, compilation, cancellationToken)
+        : base(methodContext, compilation, cancellationToken)
     {
     }
 
@@ -44,9 +38,9 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
     {
         this.CancellationToken.ThrowIfCancellationRequested();
 
-        if (this.Context.TryGetMethod(this.TargetType, this.SourceType, out var mapMethod))
+        if (this.Context.TryGetMethod(this.Context.TargetType, this.Context.SourceType, out var mapMethod))
         {
-            return new MethodMapStrategy(MappaAlgorithmRule.MapUsingExistingMethod, mapMethod, this.Source);
+            return new MethodMapStrategy(MappaAlgorithmRule.MapUsingExistingMethod, mapMethod, this.Context.SourcePropertyName);
         }
 
         return base.GetStrategy();

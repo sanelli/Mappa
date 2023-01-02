@@ -305,4 +305,40 @@ public sealed class MappaGeneratorClassAlgorithmIntegrationTests
             .HaveDiagnostics(1)
             .ContainDiagnostic(MappaDiagnosticDescriptors.DuplicatedMapping, "AnotherMap", "int ", "int ");
     }
+
+    /// <summary>
+    /// Check that the appropriate diagnostic is reported
+    /// when a mapping cannot be identified.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task ADiagnosticErrorIsReportedWhenTheMappingCannotBeGenerated()
+    {
+        // Arrange
+        const string sourceCode = """
+            using Mappa.Attributes;
+
+            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+            [Mappa]
+            public sealed partial class Mapper
+            {
+                public partial int Map(long input);
+            }
+            """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .ContainDiagnostic(
+                MappaDiagnosticDescriptors.CannotIdentifyStrategy,
+                "input",
+                "long",
+                string.Empty,
+                "int");
+    }
 }
