@@ -12,21 +12,6 @@ namespace Mappa.Generator.Tests.Abstractions;
 public abstract class MappaGeneratorAbstractUnitTests
 {
     /// <summary>
-    /// Run the generator on the input sources.
-    /// </summary>
-    /// <param name="sources">The input sources.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>The driver, the cancellation output and the diagnostics.</returns>
-    protected static Task<GeneratedResults> RunMappaGeneratorAsync(IEnumerable<string> sources, CancellationToken cancellationToken)
-    {
-        var generator = new MappaGenerator();
-        var compilation = BuildCompilation(sources);
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
-        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var diagnostics, cancellationToken);
-        return Task.FromResult(new GeneratedResults(driver, outputCompilation, diagnostics.ToArray()));
-    }
-
-    /// <summary>
     /// Run the generator on the input source.
     /// </summary>
     /// <param name="source">The input source code.</param>
@@ -34,6 +19,27 @@ public abstract class MappaGeneratorAbstractUnitTests
     /// <returns>The driver, the cancellation output and the diagnostics.</returns>
     protected static Task<GeneratedResults> RunMappaGeneratorAsync(string source, CancellationToken cancellationToken)
         => RunMappaGeneratorAsync(new[] { source }, cancellationToken);
+
+    /// <summary>
+    /// Run the generator on the input sources.
+    /// </summary>
+    /// <param name="sources">The input sources.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The driver, the cancellation output and the diagnostics.</returns>
+    private static Task<GeneratedResults> RunMappaGeneratorAsync(
+        IEnumerable<string> sources,
+        CancellationToken cancellationToken)
+    {
+        var generator = new MappaGenerator();
+        var compilation = BuildCompilation(sources);
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
+        driver = driver.RunGeneratorsAndUpdateCompilation(
+            compilation,
+            out var outputCompilation,
+            out var diagnostics,
+            cancellationToken);
+        return Task.FromResult(new GeneratedResults(driver, outputCompilation, diagnostics.ToArray()));
+    }
 
     /// <summary>
     /// Create a new compilation for the source generator.
