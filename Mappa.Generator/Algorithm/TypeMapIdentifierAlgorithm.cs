@@ -61,21 +61,7 @@ internal class TypeMapIdentifierAlgorithm
         var notNullableEnabled = !nullableEnabled;
 
         // 01. Map to the very same type.
-        // (non-nullable): T -> T
-        // (nullable): T -> T or T? -> T?
-        // (nullable) T -> T? && T is refType
-        // (nullable || not-nullable) T -> T? && T is not refType
-        if ((notNullableEnabled &&
-             SymbolEqualityComparer.Default.Equals(this.Context.TargetType, this.Context.SourceType))
-            || (nullableEnabled &&
-                SymbolEqualityComparer.IncludeNullability.Equals(this.Context.TargetType, this.Context.SourceType))
-            || (nullableEnabled && SymbolEqualityComparer.Default.Equals(
-                                    this.Context.TargetType,
-                                    this.Context.SourceType)
-                                && this.Context.TargetType is
-                                    { NullableAnnotation: NullableAnnotation.Annotated, IsReferenceType: true })
-            || (this.Context.TargetType is { NullableAnnotation: NullableAnnotation.Annotated, IsReferenceType: false }
-                && this.Context.TargetType.IsNullableGenericType(this.Context.SourceType, nullableEnabled)))
+        if (CanMapUsingMapToSameTypeRule())
         {
             // TODO: Introduce the ability to perform a deep copy instead of shallow copy.
             return new IdentityMapStrategy(
@@ -86,16 +72,7 @@ internal class TypeMapIdentifierAlgorithm
         }
 
         // 02. Map to object
-        // (non-nullable): T -> object
-        // (nullable): T -> object?
-        // (nullable) T -> object (When T is not NOT nullable annotated)
-        if ((notNullableEnabled && this.Context.TargetType.IsObject())
-            || (nullableEnabled && this.Context.TargetType.IsObject() &&
-                this.Context.TargetType.NullableAnnotation == NullableAnnotation.Annotated)
-            || (nullableEnabled
-                && this.Context.TargetType.IsObject()
-                && this.Context.TargetType.NullableAnnotation == NullableAnnotation.NotAnnotated
-                && this.Context.SourceType.NullableAnnotation == NullableAnnotation.NotAnnotated))
+        if (CanMapUsingMapToObjectRule())
         {
             return new IdentityMapStrategy(
                 MappaAlgorithmRule.MapToObject,
@@ -126,5 +103,41 @@ internal class TypeMapIdentifierAlgorithm
             this.Context.SourcePropertyName,
             this.Context.GetLocation()));
         return new NoMapStrategy(this.Context.TargetType, this.Context.SourceType, this.Context.SourcePropertyName);
+
+        bool CanMapUsingMapToSameTypeRule()
+        {
+            // (non-nullable): T -> T
+            // (nullable): T -> T or T? -> T?
+            // (nullable) T -> T? && T is refType
+            // (nullable || not-nullable) T -> T? && T is not refType
+            return (notNullableEnabled &&
+                    SymbolEqualityComparer.Default.Equals(this.Context.TargetType, this.Context.SourceType))
+                   || (nullableEnabled &&
+                       SymbolEqualityComparer.IncludeNullability.Equals(
+                           this.Context.TargetType,
+                           this.Context.SourceType))
+                   || (nullableEnabled && SymbolEqualityComparer.Default.Equals(
+                                           this.Context.TargetType,
+                                           this.Context.SourceType)
+                                       && this.Context.TargetType is
+                                           { NullableAnnotation: NullableAnnotation.Annotated, IsReferenceType: true })
+                   || (this.Context.TargetType is
+                           { NullableAnnotation: NullableAnnotation.Annotated, IsReferenceType: false }
+                       && this.Context.TargetType.IsNullableGenericType(this.Context.SourceType, nullableEnabled));
+        }
+
+        bool CanMapUsingMapToObjectRule()
+        {
+            // (non-nullable): T -> object
+            // (nullable): T -> object?
+            // (nullable) T -> object (When T is not NOT nullable annotated)
+            return (notNullableEnabled && this.Context.TargetType.IsObject())
+                   || (nullableEnabled && this.Context.TargetType.IsObject() &&
+                       this.Context.TargetType.NullableAnnotation == NullableAnnotation.Annotated)
+                   || (nullableEnabled
+                       && this.Context.TargetType.IsObject()
+                       && this.Context.TargetType.NullableAnnotation == NullableAnnotation.NotAnnotated
+                       && this.Context.SourceType.NullableAnnotation == NullableAnnotation.NotAnnotated);
+        }
     }
 }
