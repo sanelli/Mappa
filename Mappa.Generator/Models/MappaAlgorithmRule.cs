@@ -28,4 +28,14 @@ public enum MappaAlgorithmRule
     /// The mapping is performed using an existing method.
     /// </summary>
     MapUsingExistingMethod,
+
+    /// <summary>
+    /// There is an implicit conversion that can be used to perform the mapping.
+    /// </summary>
+    ImplicitConversion,
+
+    /// <summary>
+    /// There is an explicit conversion that can be used to perform the mapping.
+    /// </summary>
+    ExplicitNonNumericConversion,
 }

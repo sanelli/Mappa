@@ -44,7 +44,9 @@ internal sealed class IndentStringBuilder
     /// <returns>This object.</returns>
     /// <remarks>If the line contains multiple lines is split and properly indented.</remarks>
     internal IndentStringBuilder AppendLine(string line)
-        => this.AppendLines(line.Split(new[] { Environment.NewLine }, StringSplitOptions.None));
+        => this.AppendLines(line
+            .Split(new[] { "\n" }, StringSplitOptions.None)
+            .Select(subLine => subLine.TrimEnd()));
 
     /// <summary>
     /// Append an empty line to the buffer.
@@ -52,7 +54,7 @@ internal sealed class IndentStringBuilder
     /// <returns>This object.</returns>
     internal IndentStringBuilder AppendEmptyLine()
     {
-        this.buffer.Append(Environment.NewLine);
+        this.buffer.AppendLine();
         return this;
     }
 

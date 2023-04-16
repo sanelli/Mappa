@@ -7,7 +7,7 @@ namespace Mappa.Attributes;
 /// <summary>
 /// Specify the class represents a Mappa mapper.
 /// </summary>
-[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
+[AttributeUsage(AttributeTargets.Class, Inherited = false)]
 public sealed class MappaAttribute
     : Attribute
 {

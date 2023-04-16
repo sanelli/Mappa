@@ -8,6 +8,7 @@ using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Mappa.Generator.Algorithm;
 
@@ -81,9 +82,18 @@ internal class TypeMapIdentifierAlgorithm
                 this.Context.SourcePropertyName);
         }
 
-        // XX. Map nullable to nullable
+        // 03. Implicit conversion.
+        if (CanMapUsingImplicitConversion())
+        {
+            return new IdentityMapStrategy(
+                MappaAlgorithmRule.ImplicitConversion,
+                this.Context.TargetType,
+                this.Context.SourceType,
+                this.Context.SourcePropertyName);
+        }
+
+        // XX. Map nullable struct to nullable struct
         //    TODO: (nullable & non-nullable) S? -> T? : NullableStrategy( Strategy(T, S) )
-        // XX. numeric -> implicit-convertible-numeric : Identity strategy.
         // XX. IDictionary<SK,SV> -> Dictionary<TK,TV> : DictionaryStrategy( Strategy(TK, SK), Strategy(TV, SV) ).
         // XX. enum -> string : EnumToString strategy.
         // XX. enum -> implicit-convertible-integral : EnumToIntegral strategy.
@@ -138,6 +148,11 @@ internal class TypeMapIdentifierAlgorithm
                        && this.Context.TargetType.IsObject()
                        && this.Context.TargetType.NullableAnnotation == NullableAnnotation.NotAnnotated
                        && this.Context.SourceType.NullableAnnotation == NullableAnnotation.NotAnnotated);
+        }
+
+        bool CanMapUsingImplicitConversion()
+        {
+            return this.Compilation.HasImplicitConversion(this.Context.SourceType, this.Context.TargetType);
         }
     }
 }
