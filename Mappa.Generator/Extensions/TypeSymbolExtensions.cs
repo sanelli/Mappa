@@ -28,6 +28,22 @@ internal static class TypeSymbolExtensions
         => typeSymbol.SpecialType == SpecialType.System_Object;
 
     /// <summary>
+    /// Check if the type is <see cref="Enum"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <returns><c>true</c> if the type symbol is <c>void</c>.</returns>
+    internal static bool IsEnum(this ITypeSymbol typeSymbol)
+        => typeSymbol is { TypeKind: TypeKind.Enum, BaseType.SpecialType: SpecialType.System_Enum };
+
+    /// <summary>
+    /// Check if the type is <see cref="string"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <returns><c>true</c> if the type symbol is <c>void</c>.</returns>
+    internal static bool IsString(this ITypeSymbol typeSymbol)
+        => typeSymbol.SpecialType == SpecialType.System_String;
+
+    /// <summary>
     /// Check if the type is <see cref="Nullable{T}"/>.
     /// </summary>
     /// <param name="typeSymbol">The type symbol.</param>
@@ -95,5 +111,21 @@ internal static class TypeSymbolExtensions
                || SymbolEqualityComparer.Default.Equals(typeSymbol, taskGeneric)
                || SymbolEqualityComparer.Default.Equals(typeSymbol, valueTask)
                || SymbolEqualityComparer.Default.Equals(typeSymbol, valueTaskGeneric);
+    }
+
+    /// <summary>
+    /// Get all the enum names and values.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol representing an enumeration.</param>
+    /// <returns>A sequence of enumeration name and values.</returns>
+    internal static IEnumerable<(string Name, object Value)> GetEnumValues(this ITypeSymbol typeSymbol)
+    {
+        foreach (var member in typeSymbol.GetMembers())
+        {
+            if (member is IFieldSymbol { ConstantValue: not null } fieldSymbol)
+            {
+                yield return (fieldSymbol.Name, fieldSymbol.ConstantValue);
+            }
+        }
     }
 }

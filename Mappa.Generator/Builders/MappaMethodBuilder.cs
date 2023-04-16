@@ -36,19 +36,19 @@ internal sealed class MappaMethodBuilder
     private MapMethod MapMethod { get; }
 
     /// <inheritdoc/>
-    public string BuildSource(MappaGlobalOptions mappaGlobalOptions)
+    public string BuildSource(MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
         var builder = new IndentStringBuilder();
         var isNullableEnabled = this.ClassContext.IsNullableEnabled(this.MapMethod.MethodDeclarationSyntax);
         using (builder.NullableBlock(isNullableEnabled))
         {
             builder
-                .AppendLine(new MappaGeneratedCodeAttributeBuilder().BuildSource(mappaGlobalOptions))
+                .AppendLine(new MappaGeneratedCodeAttributeBuilder().BuildSource(context, mappaGlobalOptions))
                 .AppendLine(this.GetSignature());
             using (builder.CodeBlock())
             using (builder.Indent())
             {
-                var (strategySource, header) = this.MapMethod.Strategy.GetBuilder().BuildSource(mappaGlobalOptions);
+                var (strategySource, header) = this.MapMethod.Strategy.GetBuilder().BuildSource(context, mappaGlobalOptions);
                 if (!string.IsNullOrWhiteSpace(header))
                 {
                     builder.AppendLine(header);

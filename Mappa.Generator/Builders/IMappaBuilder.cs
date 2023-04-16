@@ -14,7 +14,8 @@ internal interface IMappaBuilder
     /// <summary>
     /// Generate the source code required by this builder.
     /// </summary>
+    /// <param name="context">The context of the build.</param>
     /// <param name="mappaGlobalOptions">The Mappa global options.</param>
     /// <returns>The source code.</returns>
-    string BuildSource(MappaGlobalOptions mappaGlobalOptions);
+    string BuildSource(MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions);
 }

@@ -1,4 +1,4 @@
-﻿// <copyright file="ShouldExtensions.cs" company="Stefano Anelli">
+﻿// <copyright file="ShouldAssertions.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -11,7 +11,7 @@ namespace Mappa.Generator.Tests.Assertions;
 /// <summary>
 /// Fluent assertions extension methods.
 /// </summary>
-public static class ShouldExtensions
+public static class ShouldAssertions
 {
     /// <summary>
     /// Begin asserting on an object of type <see cref="GeneratorRunResult"/>.

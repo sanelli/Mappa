@@ -28,9 +28,9 @@ internal sealed class MethodParameterMapStrategyBuilder
     private MethodParameterMapStrategy MethodParameterMapStrategy { get; }
 
     /// <inheritdoc/>
-    public (string StrategySource, string Header) BuildSource(MappaGlobalOptions mappaGlobalOptions)
+    public (string StrategySource, string Header) BuildSource(MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
-        var (strategySource, header) = this.MethodParameterMapStrategy.Strategy.GetBuilder().BuildSource(mappaGlobalOptions);
+        var (strategySource, header) = this.MethodParameterMapStrategy.Strategy.GetBuilder().BuildSource(context, mappaGlobalOptions);
         return ($"return {strategySource};", header);
     }
 }

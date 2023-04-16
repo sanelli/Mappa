@@ -8,7 +8,6 @@ using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 
 namespace Mappa.Generator.Algorithm;
 
@@ -92,13 +91,22 @@ internal class TypeMapIdentifierAlgorithm
                 this.Context.SourcePropertyName);
         }
 
-        // XX. Map nullable struct to nullable struct
-        //    TODO: (nullable & non-nullable) S? -> T? : NullableStrategy( Strategy(T, S) )
-        // XX. IDictionary<SK,SV> -> Dictionary<TK,TV> : DictionaryStrategy( Strategy(TK, SK), Strategy(TV, SV) ).
         // XX. enum -> string : EnumToString strategy.
+        if (CanMapEnumToString())
+        {
+            return new EnumToStringMapStrategy(
+                this.Context.TargetType,
+                this.Context.SourceType,
+                this.Context.SourcePropertyName);
+        }
+
         // XX. enum -> implicit-convertible-integral : EnumToIntegral strategy.
         // XX. string -> enum : StringToEnum strategy.
         // XX. integral -> enum : IntegralToEnum strategy.
+        // XX. enum -> enum: EnumToEnumStrategy
+        // XX. Map nullable struct to nullable struct
+        //    TODO: (nullable & non-nullable) S? -> T? : NullableStrategy( Strategy(T, S) )
+        // XX. IDictionary<SK,SV> -> Dictionary<TK,TV> : DictionaryStrategy( Strategy(TK, SK), Strategy(TV, SV) ).
         // XX. S[] -> T[] : ArrayStrategy ( Strategy(T, S) ).
         // XX. HashSet<S> -> HashSet<T> : HashSetStrategy( Strategy(T, S) ).
         // XX. List<S> -> List<T> : ListStrategy ( Strategy(T, S) ).
@@ -153,6 +161,13 @@ internal class TypeMapIdentifierAlgorithm
         bool CanMapUsingImplicitConversion()
         {
             return this.Compilation.HasImplicitConversion(this.Context.SourceType, this.Context.TargetType);
+        }
+
+        bool CanMapEnumToString()
+        {
+            var isEnum = this.Context.SourceType.IsEnum();
+            var isString = this.Context.TargetType.IsString();
+            return isEnum && isString;
         }
     }
 }

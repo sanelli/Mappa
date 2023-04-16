@@ -8,31 +8,28 @@ using Mappa.Generator.Models.Strategies;
 namespace Mappa.Generator.Builders.Strategies;
 
 /// <summary>
-/// Builder for <see cref="Strategy"/> strategy.
+/// Builder for <see cref="strategy"/> strategy.
 /// </summary>
 internal sealed class IdentityMapStrategyBuilder
     : IMappaStrategyBuilder
 {
+    private readonly IdentityMapStrategy strategy;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="IdentityMapStrategyBuilder"/> class.
     /// </summary>
     /// <param name="strategy">The strategy.</param>
     public IdentityMapStrategyBuilder(IdentityMapStrategy strategy)
     {
-        this.Strategy = strategy;
+        this.strategy = strategy;
     }
 
-    /// <summary>
-    /// Gets the strategy.
-    /// </summary>
-    private IdentityMapStrategy Strategy { get; }
-
     /// <inheritdoc/>
-    public (string StrategySource, string Header) BuildSource(MappaGlobalOptions mappaGlobalOptions)
+    public (string StrategySource, string Header) BuildSource(MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
         var ruleComment = mappaGlobalOptions.MappaDebugComments
-            ? $"/* Mappa Rule: {this.Strategy.Rule} */ "
+            ? $"/* Mappa Rule: {this.strategy.Rule} */ "
             : string.Empty;
-        return ($"{ruleComment}{this.Strategy.Source}", string.Empty);
+        return ($"{ruleComment}{this.strategy.Source}", string.Empty);
     }
 }

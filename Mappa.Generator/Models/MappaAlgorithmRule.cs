@@ -35,7 +35,7 @@ public enum MappaAlgorithmRule
     ImplicitConversion,
 
     /// <summary>
-    /// There is an explicit conversion that can be used to perform the mapping.
+    /// Convert an enum to a string.
     /// </summary>
-    ExplicitNonNumericConversion,
+    EnumToString,
 }

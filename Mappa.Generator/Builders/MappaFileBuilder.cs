@@ -34,13 +34,13 @@ internal sealed class MappaFileBuilder
     private MappaClassGeneratorContext ClassContext { get; }
 
     /// <inheritdoc/>
-    public string BuildSource(MappaGlobalOptions mappaGlobalOptions)
+    public string BuildSource(MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
         // Build the source for the class.
-        var classSourceCode = new MappaClassBuilder(this.ClassContext).BuildSource(mappaGlobalOptions);
+        var classSourceCode = new MappaClassBuilder(this.ClassContext).BuildSource(context, mappaGlobalOptions);
 
         // Add the namespace to the class code.
-        var classSourceCodeWithNamespace = new MappaNamespaceBuilder(this.ClassContext, classSourceCode).BuildSource(mappaGlobalOptions);
+        var classSourceCodeWithNamespace = new MappaNamespaceBuilder(this.ClassContext, classSourceCode).BuildSource(context, mappaGlobalOptions);
 
         var builder = new IndentStringBuilder();
 

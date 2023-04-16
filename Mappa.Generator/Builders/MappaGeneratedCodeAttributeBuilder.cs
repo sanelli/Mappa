@@ -15,6 +15,6 @@ internal sealed class MappaGeneratedCodeAttributeBuilder
     : IMappaBuilder
 {
     /// <inheritdoc/>
-    public string BuildSource(MappaGlobalOptions mappaGlobalOptions)
+    public string BuildSource(MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
         => $"[{typeof(GeneratedCodeAttribute).FullName}(\"Mappa\", \"{typeof(MappaGenerator).Assembly.GetName().Version}\")]";
 }

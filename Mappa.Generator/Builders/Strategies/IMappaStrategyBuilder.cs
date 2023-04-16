@@ -14,7 +14,8 @@ internal interface IMappaStrategyBuilder
     /// <summary>
     /// Build the source code for the strategy.
     /// </summary>
+    /// <param name="context">The building context.</param>
     /// <param name="mappaGlobalOptions">The global options.</param>
     /// <returns>The strategy source code and the potential header code.</returns>
-    (string StrategySource, string Header) BuildSource(MappaGlobalOptions mappaGlobalOptions);
+    (string StrategySource, string Header) BuildSource(MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions);
 }
