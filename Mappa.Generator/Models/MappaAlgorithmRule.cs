@@ -38,4 +38,9 @@ public enum MappaAlgorithmRule
     /// Convert an enum to a string.
     /// </summary>
     EnumToString,
+
+    /// <summary>
+    /// Convert an enum to a integral numeric value..
+    /// </summary>
+    EnumToIntegral,
 }

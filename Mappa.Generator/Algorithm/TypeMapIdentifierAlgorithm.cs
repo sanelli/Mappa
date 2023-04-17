@@ -91,7 +91,7 @@ internal class TypeMapIdentifierAlgorithm
                 this.Context.SourcePropertyName);
         }
 
-        // XX. enum -> string : EnumToString strategy.
+        // 04. enum -> string : EnumToString strategy.
         if (CanMapEnumToString())
         {
             return new EnumToStringMapStrategy(
@@ -100,7 +100,15 @@ internal class TypeMapIdentifierAlgorithm
                 this.Context.SourcePropertyName);
         }
 
-        // XX. enum -> implicit-convertible-integral : EnumToIntegral strategy.
+        // 05. enum -> implicit-convertible-integral : EnumToIntegral strategy.
+        if (CanMapEnumToIntegral())
+        {
+            return new EnumToIntegralMapStrategy(
+            this.Context.TargetType,
+            this.Context.SourceType,
+            this.Context.SourcePropertyName);
+        }
+
         // XX. string -> enum : StringToEnum strategy.
         // XX. integral -> enum : IntegralToEnum strategy.
         // XX. enum -> enum: EnumToEnumStrategy
@@ -168,6 +176,18 @@ internal class TypeMapIdentifierAlgorithm
             var isEnum = this.Context.SourceType.IsEnum();
             var isString = this.Context.TargetType.IsString();
             return isEnum && isString;
+        }
+
+        bool CanMapEnumToIntegral()
+        {
+            var isEnum = this.Context.SourceType.IsEnum();
+            if (!isEnum)
+            {
+                return false;
+            }
+
+            var enumUnderlyingType = ((INamedTypeSymbol)this.Context.SourceType).EnumUnderlyingType;
+            return this.Compilation.HasImplicitConversion(enumUnderlyingType, this.Context.TargetType);
         }
     }
 }
