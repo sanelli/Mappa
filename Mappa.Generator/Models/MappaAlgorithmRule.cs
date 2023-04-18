@@ -40,7 +40,12 @@ public enum MappaAlgorithmRule
     EnumToString,
 
     /// <summary>
-    /// Convert an enum to a integral numeric value..
+    /// Convert an enum to a integral numeric value.
     /// </summary>
     EnumToIntegral,
+
+    /// <summary>
+    /// Convert a string to enum value.
+    /// </summary>
+    StringToEnum,
 }

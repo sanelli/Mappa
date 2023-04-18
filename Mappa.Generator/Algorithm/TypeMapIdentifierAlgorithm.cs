@@ -109,7 +109,15 @@ internal class TypeMapIdentifierAlgorithm
             this.Context.SourcePropertyName);
         }
 
-        // XX. string -> enum : StringToEnum strategy.
+        // 06. string -> enum : StringToEnum strategy.
+        if (CanMapStringToEnum())
+        {
+            return new StringToEnumMapStrategy(
+            this.Context.TargetType,
+            this.Context.SourceType,
+            this.Context.SourcePropertyName);
+        }
+
         // XX. integral -> enum : IntegralToEnum strategy.
         // XX. enum -> enum: EnumToEnumStrategy
         // XX. Map nullable struct to nullable struct
@@ -188,6 +196,13 @@ internal class TypeMapIdentifierAlgorithm
 
             var enumUnderlyingType = ((INamedTypeSymbol)this.Context.SourceType).EnumUnderlyingType;
             return this.Compilation.HasImplicitConversion(enumUnderlyingType, this.Context.TargetType);
+        }
+
+        bool CanMapStringToEnum()
+        {
+            var isEnum = this.Context.TargetType.IsEnum();
+            var isString = this.Context.SourceType.IsString();
+            return isEnum && isString;
         }
     }
 }

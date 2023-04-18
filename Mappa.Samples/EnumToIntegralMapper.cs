@@ -16,20 +16,20 @@ public sealed partial class EnumToIntegralMapper
     /// Map an enum to a integer.
     /// </summary>
     /// <param name="input">The input enum value.</param>
-    /// <returns>The string mapped from the value.</returns>
+    /// <returns>The integer mapped from the value.</returns>
     public partial int MapToInteger(CountingValues input);
 
     /// <summary>
     /// Map an enum with custom values to a integer.
     /// </summary>
     /// <param name="input">The input enum value.</param>
-    /// <returns>The string mapped from the value.</returns>
+    /// <returns>The integer mapped from the value.</returns>
     public partial int MapToInteger(CountingValuesBackwards input);
 
     /// <summary>
     /// Map an enum to a long.
     /// </summary>
     /// <param name="input">The input enum value.</param>
-    /// <returns>The string mapped from the value.</returns>
+    /// <returns>The long mapped from the value.</returns>
     public partial long MapToLong(CountingValues input);
 }

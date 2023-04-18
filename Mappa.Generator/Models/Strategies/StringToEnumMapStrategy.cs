@@ -1,6 +1,7 @@
-// <copyright file="EnumToIntegralMapStrategy.cs" company="Stefano Anelli">
+// <copyright file="StringToEnumMapStrategy.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
+
 using Mappa.Generator.Builders.Strategies;
 
 using Microsoft.CodeAnalysis;
@@ -8,18 +9,18 @@ using Microsoft.CodeAnalysis;
 namespace Mappa.Generator.Models.Strategies;
 
 /// <summary>
-/// Strategy to map <see cref="Enum"/> to integral type.
+/// Strategy to map <see cref="string"/> to <see cref="Enum"/>.
 /// </summary>
-internal sealed class EnumToIntegralMapStrategy
+internal sealed class StringToEnumMapStrategy
     : IMapStrategy
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="EnumToIntegralMapStrategy"/> class.
+    /// Initializes a new instance of the <see cref="StringToEnumMapStrategy"/> class.
     /// </summary>
     /// <param name="targetType">The target type.</param>
     /// <param name="sourceType">The source type.</param>
     /// <param name="source">The name of the source.</param>
-    public EnumToIntegralMapStrategy(ITypeSymbol targetType, ITypeSymbol sourceType, string source)
+    public StringToEnumMapStrategy(ITypeSymbol targetType, ITypeSymbol sourceType, string source)
     {
         this.TargetType = targetType;
         this.SourceType = sourceType;
@@ -36,8 +37,8 @@ internal sealed class EnumToIntegralMapStrategy
     public string Source { get; }
 
     /// <inheritdoc />
-    public MappaAlgorithmRule Rule => MappaAlgorithmRule.EnumToIntegral;
+    public MappaAlgorithmRule Rule => MappaAlgorithmRule.StringToEnum;
 
     /// <inheritdoc />
-    public IMappaStrategyBuilder GetBuilder() => new EnumToIntegralMapStrategyBuilder(this);
+    public IMappaStrategyBuilder GetBuilder() => new StringToEnumMapStrategyBuilder(this);
 }
