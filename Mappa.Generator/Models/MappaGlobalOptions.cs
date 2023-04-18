@@ -13,7 +13,11 @@ namespace Mappa.Generator.Models;
 /// <list type="bullet">
 ///     <item>
 ///         <term><c>mappa.debug</c></term>
-///         <description>Enabled the report of debugging messages when value is equal to <c>true</c>.</description>
+///         <description>Enable the report of debugging messages when value is equal to <c>true</c>.</description>
+///     </item>
+///     <item>
+///         <term><c>mappa.debugcomments</c></term>
+///         <description>Enable the report of debugging comments in the generated code when value is equal to <c>true</c>.</description>
 ///     </item>
 /// </list>
 /// </summary>

@@ -48,4 +48,9 @@ public enum MappaAlgorithmRule
     /// Convert a string to enum value.
     /// </summary>
     StringToEnum,
+
+    /// <summary>
+    /// Convert an integral to an enum value.
+    /// </summary>
+    IntegralToEnum,
 }

@@ -94,6 +94,7 @@ internal class TypeMapIdentifierAlgorithm
         // 04. enum -> string : EnumToString strategy.
         if (CanMapEnumToString())
         {
+            // TODO: Add ability to use content of Description attribute
             return new EnumToStringMapStrategy(
                 this.Context.TargetType,
                 this.Context.SourceType,
@@ -104,30 +105,37 @@ internal class TypeMapIdentifierAlgorithm
         if (CanMapEnumToIntegral())
         {
             return new EnumToIntegralMapStrategy(
-            this.Context.TargetType,
-            this.Context.SourceType,
-            this.Context.SourcePropertyName);
+                this.Context.TargetType,
+                this.Context.SourceType,
+                this.Context.SourcePropertyName);
         }
 
         // 06. string -> enum : StringToEnum strategy.
         if (CanMapStringToEnum())
         {
+            // TODO: Add ability to use content of Description attribute
             return new StringToEnumMapStrategy(
-            this.Context.TargetType,
-            this.Context.SourceType,
-            this.Context.SourcePropertyName);
+                this.Context.TargetType,
+                this.Context.SourceType,
+                this.Context.SourcePropertyName);
         }
 
-        // XX. integral -> enum : IntegralToEnum strategy.
+        // 07. integral -> enum : IntegralToEnum strategy.
+        if (CanMapIntegralToEnum())
+        {
+            return new IntegralToEnumMapStrategy(
+                this.Context.TargetType,
+                this.Context.SourceType,
+                this.Context.SourcePropertyName);
+        }
+
         // XX. enum -> enum: EnumToEnumStrategy
-        // XX. Map nullable struct to nullable struct
-        //    TODO: (nullable & non-nullable) S? -> T? : NullableStrategy( Strategy(T, S) )
-        // XX. IDictionary<SK,SV> -> Dictionary<TK,TV> : DictionaryStrategy( Strategy(TK, SK), Strategy(TV, SV) ).
+        // XX. string -> numeric : ParseNumberStrategy
+        // XX. S -> string : InvokeToStringStrategy
+        // XX. (struct) S? -> T? : NullableStructStrategy( Strategy(T, S) )
         // XX. S[] -> T[] : ArrayStrategy ( Strategy(T, S) ).
-        // XX. HashSet<S> -> HashSet<T> : HashSetStrategy( Strategy(T, S) ).
         // XX. List<S> -> List<T> : ListStrategy ( Strategy(T, S) ).
-        // XX. IReadOnlyCollection<S> -> IReadOnlyCollection<T> : ReadOnlyCollectionStrategy ( Strategy(T, S) ).
-        // XX. IEnumerable<S> -> IEnumerable<T> : EnumerableStrategy ( Strategy(T, T) )
+        // XX. Dictionary<SK,SV> -> Dictionary<TK,TV> : DictionaryStrategy( Strategy(TK, SK), Strategy(TV, SV) ).
         // XX. S -> T : ConstructorStrategy(S, T)
         // XX. Report error
         this.Context.ReportDiagnostic(MappaDiagnostics.CannotIdentifyStrategy(
@@ -203,6 +211,18 @@ internal class TypeMapIdentifierAlgorithm
             var isEnum = this.Context.TargetType.IsEnum();
             var isString = this.Context.SourceType.IsString();
             return isEnum && isString;
+        }
+
+        bool CanMapIntegralToEnum()
+        {
+            var isEnum = this.Context.TargetType.IsEnum();
+            if (!isEnum)
+            {
+                return false;
+            }
+
+            var enumUnderlyingType = ((INamedTypeSymbol)this.Context.TargetType).EnumUnderlyingType;
+            return this.Compilation.HasImplicitConversion(this.Context.SourceType, enumUnderlyingType);
         }
     }
 }
