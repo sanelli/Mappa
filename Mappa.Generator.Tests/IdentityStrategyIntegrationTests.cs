@@ -676,4 +676,59 @@ public sealed class IdentityStrategyIntegrationTests
         blockSyntaxAssertions
             .HaveSingleReturnStatementWithIdentifierExpression("input");
     }
+
+    /// <summary>
+    /// Test a mapping can be created when an implicit conversion
+    /// can be applied between the types.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapUsingImplicitConversion()
+    {
+        // Arrange
+        const string sourceCode = """
+            #nullable disable
+            using Mappa.Attributes;
+
+            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+            [Mappa]
+            internal sealed partial class Mapper
+            {
+                internal partial long Map(int input);
+            }
+            #nullable restore
+            """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        var compilationUnitSyntaxAssertions = generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedOneSourceCode()
+            .WithCompilationUnit();
+        var namespaceDeclarationSyntaxAssertions = compilationUnitSyntaxAssertions
+            .HaveCommentHeader()
+            .HaveFileScopedNamespace()
+            .HaveNamespaceIdentifier("Mappa.Generator.Tests.UnitTests.SourceCode")
+            .HaveClasses(1);
+        var methodDeclarationSyntaxAssertions = namespaceDeclarationSyntaxAssertions
+            .HaveClass("Mapper")
+            .HaveModifiers(SyntaxKind.InternalKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword)
+            .HaveGeneratedCodeAttribute()
+            .HaveMethods(1)
+            .HaveMethod(
+                typeof(long),
+                NullableAnnotation.NotAnnotated,
+                "Map",
+                (typeof(int), NullableAnnotation.NotAnnotated, "input"));
+        var blockSyntaxAssertions = methodDeclarationSyntaxAssertions
+            .HaveGeneratedCodeAttribute()
+            .HaveModifiers(SyntaxKind.PartialKeyword, SyntaxKind.InternalKeyword)
+            .HaveBody();
+        blockSyntaxAssertions
+            .HaveSingleReturnStatementWithIdentifierExpression("input");
+    }
 }
