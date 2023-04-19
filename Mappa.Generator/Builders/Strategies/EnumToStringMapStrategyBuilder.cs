@@ -37,7 +37,7 @@ internal sealed class EnumToStringMapStrategyBuilder
 
         var enumFullName = this.strategy.SourceType.ToDisplayString();
         var temporary = context.NextTemporary();
-        builder.AppendLine($"var {temporary} = string.Empty;");
+        builder.AppendLine($"string {temporary};");
         builder.AppendLine($"switch ({this.strategy.Source})");
         using (builder.CodeBlock())
         using (builder.Indent())

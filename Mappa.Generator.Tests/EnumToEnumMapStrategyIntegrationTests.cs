@@ -1,4 +1,4 @@
-// <copyright file="StringToEnumMapStrategyIntegrationTests.cs" company="Stefano Anelli">
+// <copyright file="EnumToEnumMapStrategyIntegrationTests.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -9,9 +9,9 @@ using Mappa.Generator.Tests.Assertions;
 namespace Mappa.Generator.Tests;
 
 /// <summary>
-/// Integration tests for the <see cref="StringToEnumMapStrategy"/>.
+/// Integration tests for the <see cref="EnumToEnumMapStrategy"/>.
 /// </summary>
-public sealed class StringToEnumMapStrategyIntegrationTests
+public sealed class EnumToEnumMapStrategyIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {
     /// <summary>
@@ -21,7 +21,7 @@ public sealed class StringToEnumMapStrategyIntegrationTests
     /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
-    public async Task CanMapStringToEnum()
+    public async Task CanMapEnumToEnum()
     {
         // Arrange
         const string sourceCode = """
@@ -29,17 +29,24 @@ public sealed class StringToEnumMapStrategyIntegrationTests
 
             namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
-            public enum TestEnum
+            public enum TestSourceEnum
             {
                 One,
                 Two,
                 Three,
             }
 
+            public enum TestTargetEnum
+            {
+                Two,
+                Three,
+                Four,
+            }
+
             [Mappa]
             public sealed partial class Mapper
             {
-                public partial TestEnum Map(string input);
+                public partial TestTargetEnum Map(TestSourceEnum input);
             }
             """;
 

@@ -113,7 +113,8 @@ internal class TypeMapIdentifierAlgorithm
         // 06. string -> enum : StringToEnum strategy.
         if (CanMapStringToEnum())
         {
-            // TODO: Add ability to use content of Description attribute
+            // TODO: Add ability to use content of Description attribute.
+            // TODO: Add ability to be case insensitive.
             return new StringToEnumMapStrategy(
                 this.Context.TargetType,
                 this.Context.SourceType,
@@ -129,7 +130,17 @@ internal class TypeMapIdentifierAlgorithm
                 this.Context.SourcePropertyName);
         }
 
-        // XX. enum -> enum: EnumToEnumStrategy
+        // 08. enum -> enum: EnumToEnumStrategy
+        if (CanMapEnumToEnum())
+        {
+            // TODO: Allow to map using enum numeric value instead of their name.
+            // TODO: Allow to fail generation if not all values can be mapped.
+            return new EnumToEnumMapStrategy(
+                this.Context.TargetType,
+                this.Context.SourceType,
+                this.Context.SourcePropertyName);
+        }
+
         // XX. string -> numeric : ParseNumberStrategy
         // XX. S -> string : InvokeToStringStrategy
         // XX. (struct) S? -> T? : NullableStructStrategy( Strategy(T, S) )
@@ -223,6 +234,13 @@ internal class TypeMapIdentifierAlgorithm
 
             var enumUnderlyingType = ((INamedTypeSymbol)this.Context.TargetType).EnumUnderlyingType;
             return this.Compilation.HasImplicitConversion(this.Context.SourceType, enumUnderlyingType);
+        }
+
+        bool CanMapEnumToEnum()
+        {
+            var isTargetEnum = this.Context.TargetType.IsEnum();
+            var isSourceEnum = this.Context.SourceType.IsEnum();
+            return isTargetEnum && isSourceEnum;
         }
     }
 }

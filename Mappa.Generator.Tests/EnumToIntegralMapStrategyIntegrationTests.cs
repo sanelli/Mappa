@@ -25,7 +25,6 @@ public sealed class EnumToIntegralMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
-            #nullable disable
             using Mappa.Attributes;
 
             namespace Mappa.Generator.Tests.UnitTests.SourceCode;
@@ -42,7 +41,6 @@ public sealed class EnumToIntegralMapStrategyIntegrationTests
             {
                 public partial int Map(TestEnum input);
             }
-            #nullable restore
             """;
 
         // Act

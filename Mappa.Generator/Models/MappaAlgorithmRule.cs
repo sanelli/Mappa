@@ -53,4 +53,9 @@ public enum MappaAlgorithmRule
     /// Convert an integral to an enum value.
     /// </summary>
     IntegralToEnum,
+
+    /// <summary>
+    /// Convert an enum to another enum.
+    /// </summary>
+    EnumToEnum,
 }

@@ -70,7 +70,7 @@ internal sealed class IntegralToEnumMapStrategyBuilder
         }
 
         var ruleComment = mappaGlobalOptions.MappaDebugComments
-            ? $"/* Mappa Rule: {this.strategy.Rule} (source-enum is \"{enumFullName}\") */ "
+            ? $"/* Mappa Rule: {this.strategy.Rule} (source-type is \"{this.strategy.SourceType.ToDisplayString()}\", target-enum is \"{enumFullName}\") */ "
             : string.Empty;
 
         return ($"{ruleComment}{temporary}", builder.ToString());
