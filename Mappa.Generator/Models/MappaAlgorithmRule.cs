@@ -58,4 +58,9 @@ public enum MappaAlgorithmRule
     /// Convert an enum to another enum.
     /// </summary>
     EnumToEnum,
+
+    /// <summary>
+    /// Map a string to a number value.
+    /// </summary>
+    StringToNumber,
 }

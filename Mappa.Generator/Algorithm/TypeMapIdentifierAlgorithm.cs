@@ -141,7 +141,17 @@ internal class TypeMapIdentifierAlgorithm
                 this.Context.SourcePropertyName);
         }
 
-        // XX. string -> numeric : ParseNumberStrategy
+        // 09. string -> numeric : ParseNumberStrategy
+        if (CanMapStringToNumber())
+        {
+            // TODO: Allow to setup different file format.
+            return new StringToNumberMapStrategy(
+                this.Context.TargetType,
+                this.Context.SourceType,
+                this.Context.SourcePropertyName);
+        }
+
+        // XX. string -> DateTime : ParseDateTimeStrategy
         // XX. S -> string : InvokeToStringStrategy
         // XX. (struct) S? -> T? : NullableStructStrategy( Strategy(T, S) )
         // XX. S[] -> T[] : ArrayStrategy ( Strategy(T, S) ).
@@ -241,6 +251,13 @@ internal class TypeMapIdentifierAlgorithm
             var isTargetEnum = this.Context.TargetType.IsEnum();
             var isSourceEnum = this.Context.SourceType.IsEnum();
             return isTargetEnum && isSourceEnum;
+        }
+
+        bool CanMapStringToNumber()
+        {
+            var isNumeric = this.Context.TargetType.IsNumeric();
+            var isString = this.Context.SourceType.IsString();
+            return isNumeric && isString;
         }
     }
 }

@@ -23,7 +23,7 @@ internal static class TypeSymbolExtensions
     /// Check if the type is <see cref="object"/>.
     /// </summary>
     /// <param name="typeSymbol">The type symbol.</param>
-    /// <returns><c>true</c> if the type symbol is <c>void</c>.</returns>
+    /// <returns><c>true</c> if the type symbol is <see cref="object"/>.</returns>
     internal static bool IsObject(this ITypeSymbol typeSymbol)
         => typeSymbol.SpecialType == SpecialType.System_Object;
 
@@ -31,7 +31,7 @@ internal static class TypeSymbolExtensions
     /// Check if the type is <see cref="Enum"/>.
     /// </summary>
     /// <param name="typeSymbol">The type symbol.</param>
-    /// <returns><c>true</c> if the type symbol is <c>void</c>.</returns>
+    /// <returns><c>true</c> if the type symbol is <see cref="Enum"/>.</returns>
     internal static bool IsEnum(this ITypeSymbol typeSymbol)
         => typeSymbol is { TypeKind: TypeKind.Enum, BaseType.SpecialType: SpecialType.System_Enum };
 
@@ -39,9 +39,35 @@ internal static class TypeSymbolExtensions
     /// Check if the type is <see cref="string"/>.
     /// </summary>
     /// <param name="typeSymbol">The type symbol.</param>
-    /// <returns><c>true</c> if the type symbol is <c>void</c>.</returns>
+    /// <returns><c>true</c> if the type symbol is <see cref="string"/>.</returns>
     internal static bool IsString(this ITypeSymbol typeSymbol)
         => typeSymbol.SpecialType == SpecialType.System_String;
+
+    /// <summary>
+    /// Check if the type is a numeric type.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <returns><c>true</c> if the type symbol is numeric.</returns>
+    internal static bool IsNumeric(this ITypeSymbol typeSymbol)
+    {
+        switch (typeSymbol.SpecialType)
+        {
+            case SpecialType.System_Byte:
+            case SpecialType.System_SByte:
+            case SpecialType.System_Int16:
+            case SpecialType.System_UInt16:
+            case SpecialType.System_Int32:
+            case SpecialType.System_UInt32:
+            case SpecialType.System_Int64:
+            case SpecialType.System_UInt64:
+            case SpecialType.System_Single:
+            case SpecialType.System_Double:
+            case SpecialType.System_Decimal:
+                return true;
+            default:
+                return false;
+        }
+    }
 
     /// <summary>
     /// Check if the type is <see cref="Nullable{T}"/>.

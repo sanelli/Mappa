@@ -13,7 +13,7 @@ namespace Mappa.Samples;
 public sealed partial class StringToEnumMapper
 {
     /// <summary>
-    /// Map an enum to a string.
+    /// Map a string to an enum.
     /// </summary>
     /// <param name="input">The input string value.</param>
     /// <returns>The enum mapped from the string.</returns>
