@@ -20,14 +20,10 @@ internal sealed class GenericMappaMethodGeneratorContext
     /// <param name="parent">The parent context.</param>
     /// <param name="targetType">The target type.</param>
     /// <param name="sourceType">The source type.</param>
-    /// <param name="targetPropertyName">The name of the target property.</param>
-    /// <param name="sourcePropertyName">The source property name.</param>
     public GenericMappaMethodGeneratorContext(
         MappaMapAlgorithmContext parent,
         ITypeSymbol targetType,
-        ITypeSymbol sourceType,
-        string targetPropertyName,
-        string sourcePropertyName)
+        ITypeSymbol sourceType)
     {
         this.parent = parent;
         this.SourceType = sourceType;

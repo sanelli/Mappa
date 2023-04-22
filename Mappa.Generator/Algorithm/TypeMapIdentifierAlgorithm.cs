@@ -168,9 +168,7 @@ internal class TypeMapIdentifierAlgorithm
             var context = new GenericMappaMethodGeneratorContext(
                 this.Context,
                 targetFirstGenericType,
-                sourceFirstGenericType,
-                string.Empty,
-                string.Empty);
+                sourceFirstGenericType);
             var algorithm = new TypeMapIdentifierWithMapMethodAlgorithm(context, this.Compilation, this.CancellationToken);
             var innerStrategy = algorithm.GetStrategy();
 
@@ -195,9 +193,7 @@ internal class TypeMapIdentifierAlgorithm
             var context = new GenericMappaMethodGeneratorContext(
                 this.Context,
                 targetArrayElementType,
-                sourceArrayElementType,
-                string.Empty,
-                string.Empty);
+                sourceArrayElementType);
             var algorithm = new TypeMapIdentifierWithMapMethodAlgorithm(context, this.Compilation, this.CancellationToken);
             var innerStrategy = algorithm.GetStrategy();
 
