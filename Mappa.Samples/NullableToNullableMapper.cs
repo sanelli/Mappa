@@ -8,13 +8,13 @@ using Mappa.Samples.Models;
 namespace Mappa.Samples;
 
 /// <summary>
-/// Mapper using enum-to-enum strategy.
+/// Mapper using nullable-to-nullable strategy.
 /// </summary>
 [Mappa]
 public sealed partial class NullableToNullableMapper
 {
     /// <summary>
-    /// Map an enum to another enum.
+    /// Map a nullable enum to a nullable integer.
     /// </summary>
     /// <param name="input">The input enum value.</param>
     /// <returns>The integer mapped from the value.</returns>

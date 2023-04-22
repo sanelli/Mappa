@@ -18,5 +18,6 @@ public sealed class AutoMapperProfile
     public AutoMapperProfile()
     {
         this.CreateMap<string, object>();
+        this.CreateMap<string, string>();
     }
 }
