@@ -15,8 +15,8 @@ public sealed class EnumToStringMapStrategyIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {
     /// <summary>
-    /// Test a mapping can be created when source and target type are the
-    /// very same non reference type and nullable is enabled.
+    /// Test a mapping can be created from an enum
+    /// to a string.
     /// </summary>
     /// <returns>The async task.</returns>
     [Fact]

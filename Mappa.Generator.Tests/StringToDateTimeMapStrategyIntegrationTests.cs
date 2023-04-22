@@ -1,4 +1,4 @@
-// <copyright file="IntegralToEnumMapStrategyIntegrationTests.cs" company="Stefano Anelli">
+// <copyright file="StringToDateTimeMapStrategyIntegrationTests.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -9,37 +9,31 @@ using Mappa.Generator.Tests.Assertions;
 namespace Mappa.Generator.Tests;
 
 /// <summary>
-/// Integration tests for the <see cref="IntegralToEnumMapStrategy"/>.
+/// Integration tests for the <see cref="StringToDateTimeMapStrategy"/>.
 /// </summary>
-public sealed class IntegralToEnumMapStrategyIntegrationTests
+public sealed class StringToDateTimeMapStrategyIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {
     /// <summary>
-    /// Test a mapping can be created from a numeric value
-    /// to an enum.
+    /// Test a mapping can be created when mapping a string
+    /// to a <see cref="DateTime"/> object.
     /// </summary>
     /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
-    public async Task CanMapIntegralToEnum()
+    public async Task CanMapStringToDateTime()
     {
         // Arrange
         const string sourceCode = """
+            using System;
             using Mappa.Attributes;
 
             namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
-            public enum TestEnum
-            {
-                One,
-                Two,
-                Three,
-            }
-
             [Mappa]
             public sealed partial class Mapper
             {
-                public partial TestEnum Map(int input);
+                public partial DateTime Map(string input);
             }
             """;
 

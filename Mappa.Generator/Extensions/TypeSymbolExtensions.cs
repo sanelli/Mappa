@@ -70,6 +70,14 @@ internal static class TypeSymbolExtensions
     }
 
     /// <summary>
+    /// Check if the type is <see cref="DateTime"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="DateTime"/>.</returns>
+    internal static bool IsDateTime(this ITypeSymbol typeSymbol)
+        => typeSymbol.SpecialType == SpecialType.System_DateTime;
+
+    /// <summary>
     /// Check if the type is <see cref="Nullable{T}"/>.
     /// </summary>
     /// <param name="typeSymbol">The type symbol.</param>

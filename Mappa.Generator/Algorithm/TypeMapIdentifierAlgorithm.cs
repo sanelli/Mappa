@@ -151,7 +151,16 @@ internal class TypeMapIdentifierAlgorithm
                 this.Context.SourcePropertyName);
         }
 
-        // XX. string -> DateTime : ParseDateTimeStrategy
+        // 10. string -> DateTime : ParseDateTimeStrategy
+        if (CanMapStringToDateTime())
+        {
+            // TODO: Allow to specify the expected format.
+            return new StringToDateTimeMapStrategy(
+                this.Context.TargetType,
+                this.Context.SourceType,
+                this.Context.SourcePropertyName);
+        }
+
         // XX. S -> string : InvokeToStringStrategy
         // XX. (struct) S? -> T? : NullableStructStrategy( Strategy(T, S) )
         // XX. S[] -> T[] : ArrayStrategy ( Strategy(T, S) ).
@@ -217,8 +226,8 @@ internal class TypeMapIdentifierAlgorithm
 
         bool CanMapEnumToIntegral()
         {
-            var isEnum = this.Context.SourceType.IsEnum();
-            if (!isEnum)
+            var isSourceEnum = this.Context.SourceType.IsEnum();
+            if (!isSourceEnum)
             {
                 return false;
             }
@@ -229,15 +238,15 @@ internal class TypeMapIdentifierAlgorithm
 
         bool CanMapStringToEnum()
         {
-            var isEnum = this.Context.TargetType.IsEnum();
-            var isString = this.Context.SourceType.IsString();
-            return isEnum && isString;
+            var isTargetEnum = this.Context.TargetType.IsEnum();
+            var isSourceString = this.Context.SourceType.IsString();
+            return isTargetEnum && isSourceString;
         }
 
         bool CanMapIntegralToEnum()
         {
-            var isEnum = this.Context.TargetType.IsEnum();
-            if (!isEnum)
+            var isTargetEnum = this.Context.TargetType.IsEnum();
+            if (!isTargetEnum)
             {
                 return false;
             }
@@ -255,9 +264,16 @@ internal class TypeMapIdentifierAlgorithm
 
         bool CanMapStringToNumber()
         {
-            var isNumeric = this.Context.TargetType.IsNumeric();
-            var isString = this.Context.SourceType.IsString();
-            return isNumeric && isString;
+            var isTargetDateTime = this.Context.TargetType.IsNumeric();
+            var isSourceString = this.Context.SourceType.IsString();
+            return isTargetDateTime && isSourceString;
+        }
+
+        bool CanMapStringToDateTime()
+        {
+            var isTargetDateTime = this.Context.TargetType.IsDateTime();
+            var isSourceString = this.Context.SourceType.IsString();
+            return isTargetDateTime && isSourceString;
         }
     }
 }

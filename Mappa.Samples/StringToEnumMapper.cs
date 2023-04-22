@@ -7,7 +7,7 @@ using Mappa.Samples.Models;
 namespace Mappa.Samples;
 
 /// <summary>
-/// Mapper using the enum-to-string strategy.
+/// Mapper using the string-to-enum strategy.
 /// </summary>
 [Mappa]
 public sealed partial class StringToEnumMapper

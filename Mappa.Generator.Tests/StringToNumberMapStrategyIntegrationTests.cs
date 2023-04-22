@@ -15,8 +15,8 @@ public sealed class StringToNumberMapStrategyIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {
     /// <summary>
-    /// Test a mapping can be created when source and target type are the
-    /// very same non reference type and nullable is enabled.
+    /// Test a mapping can be created from a string
+    /// to a number.
     /// </summary>
     /// <returns>The async task.</returns>
     [Fact]

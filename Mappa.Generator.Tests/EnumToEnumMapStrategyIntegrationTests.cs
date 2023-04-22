@@ -15,8 +15,7 @@ public sealed class EnumToEnumMapStrategyIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {
     /// <summary>
-    /// Test a mapping can be created when source and target type are the
-    /// very same non reference type and nullable is enabled.
+    /// Test a mapping can be created between two enums.
     /// </summary>
     /// <returns>The async task.</returns>
     [Fact]

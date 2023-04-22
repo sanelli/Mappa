@@ -6,7 +6,7 @@ using Mappa.Attributes;
 namespace Mappa.Samples;
 
 /// <summary>
-/// Mapper using the enum-to-string strategy.
+/// Mapper using the string-to-number strategy.
 /// </summary>
 [Mappa]
 public sealed partial class StringToNumberMapper
