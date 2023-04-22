@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Extensions;
 using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
@@ -32,26 +33,36 @@ internal sealed class NullableToNullableMapStrategyBuilder
             ? $"/* Mappa Rule: {this.strategy.Rule} (inner strategy: {this.strategy.ChildStrategy.Rule}) */ "
             : string.Empty;
 
-        var temporary = context.NextTemporary();
+        var returnValue = context.NextTemporary();
 
         var builder = new IndentStringBuilder();
-        builder.AppendLine($"{this.strategy.TargetType.ToDisplayString()} {temporary};");
+        builder.AppendLine($"{this.strategy.TargetType.ToDisplayString()} {returnValue};");
         builder.AppendLine($"if ({source}.HasValue)");
         using (builder.CodeBlock())
         using (builder.Indent())
         {
-            var (innerStrategySource, innerHeader) = this.strategy.ChildStrategy.GetBuilder().BuildSource($"{source}.Value", context, mappaGlobalOptions);
-            builder.AppendLine(innerHeader);
-            builder.AppendLine($"{temporary} = {innerStrategySource};");
+            var temporary = context.NextTemporary();
+            var sourceUnderlyingType = this.strategy.SourceType.GetFirstGenericType();
+            builder.AppendLine($"{sourceUnderlyingType} {temporary} = {source}.Value;");
+
+            var (innerVariable, innerStrategyCode) = this.strategy.ChildStrategy.GetBuilder().BuildSource(temporary, context, mappaGlobalOptions);
+
+            if (!string.IsNullOrWhiteSpace(innerStrategyCode))
+            {
+                builder.AppendLine(innerStrategyCode);
+                builder.AppendEmptyLine();
+            }
+
+            builder.AppendLine($"{returnValue} = {innerVariable};");
         }
 
         builder.AppendLine("else");
         using (builder.CodeBlock())
         using (builder.Indent())
         {
-            builder.AppendLine($"{temporary} = ({this.strategy.TargetType.ToDisplayString()}) null;");
+            builder.AppendLine($"{returnValue} = ({this.strategy.TargetType.ToDisplayString()}) null;");
         }
 
-        return ($"{ruleComment}{temporary}", builder.ToString());
+        return ($"{ruleComment}{returnValue}", builder.ToString());
     }
 }

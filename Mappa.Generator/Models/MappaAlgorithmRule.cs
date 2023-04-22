@@ -78,4 +78,9 @@ public enum MappaAlgorithmRule
     /// Map a nullable struct to a nullable struct.
     /// </summary>
     NullableToNullable,
+
+    /// <summary>
+    /// Map an array to an array.
+    /// </summary>
+    ArrayToArray,
 }

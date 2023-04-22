@@ -54,6 +54,14 @@ internal static class TypeSymbolExtensions
         => typeSymbol.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T;
 
     /// <summary>
+    /// Check if the type is an array with rank one.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <returns><c>true</c> if the type symbol is an array.</returns>
+    internal static bool IsArray(this ITypeSymbol typeSymbol)
+        => typeSymbol is IArrayTypeSymbol { Rank: 1 };
+
+    /// <summary>
     /// Gets the first type generic parameter.
     /// </summary>
     /// <param name="typeSymbol">The type symbol.</param>
@@ -64,6 +72,19 @@ internal static class TypeSymbolExtensions
         return typeSymbol is INamedTypeSymbol namedTypeSymbol
             ? namedTypeSymbol.TypeArguments.First()
             : throw new MappaGeneratorException($"Type {typeSymbol.ToDisplayString()} is not a named type symbol");
+    }
+
+    /// <summary>
+    /// Gets the array element type.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <returns>The array element type.</returns>
+    /// <exception cref="MappaGeneratorException">If <paramref name="typeSymbol"/> is not of type <see cref="IArrayTypeSymbol"/>.</exception>
+    internal static ITypeSymbol GetArrayElementType(this ITypeSymbol typeSymbol)
+    {
+        return typeSymbol is IArrayTypeSymbol arrayTypeSymbol
+            ? arrayTypeSymbol.ElementType
+            : throw new MappaGeneratorException($"Type {typeSymbol.ToDisplayString()} is not an array");
     }
 
     /// <summary>

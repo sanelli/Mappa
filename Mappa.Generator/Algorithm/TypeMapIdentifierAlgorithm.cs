@@ -162,15 +162,15 @@ internal class TypeMapIdentifierAlgorithm
         // 12. (struct) S? -> T? : NullableToNullableStrategy( Strategy(T, S) )
         if (CanMapNullableToNullable())
         {
-            var sourceTypeFirstGenericType = this.Context.SourceType.GetFirstGenericType();
-            var targetTypeFirstGenericType = this.Context.TargetType.GetFirstGenericType();
+            var sourceFirstGenericType = this.Context.SourceType.GetFirstGenericType();
+            var targetFirstGenericType = this.Context.TargetType.GetFirstGenericType();
 
             var context = new GenericMappaMethodGeneratorContext(
                 this.Context,
-                targetTypeFirstGenericType,
-                sourceTypeFirstGenericType,
-                this.Context.TargetPropertyName,
-                $"{this.Context.SourcePropertyName}.Value");
+                targetFirstGenericType,
+                sourceFirstGenericType,
+                string.Empty,
+                string.Empty);
             var algorithm = new TypeMapIdentifierWithMapMethodAlgorithm(context, this.Compilation, this.CancellationToken);
             var innerStrategy = algorithm.GetStrategy();
 
@@ -186,6 +186,32 @@ internal class TypeMapIdentifierAlgorithm
         }
 
         // 13. S[] -> T[] : ArrayStrategy ( Strategy(T, S) ).
+        if (CanMapArrayToArray())
+        {
+            // TODO: Add support for faster iteration using Span<T>
+            var sourceArrayElementType = this.Context.SourceType.GetArrayElementType();
+            var targetArrayElementType = this.Context.TargetType.GetArrayElementType();
+
+            var context = new GenericMappaMethodGeneratorContext(
+                this.Context,
+                targetArrayElementType,
+                sourceArrayElementType,
+                string.Empty,
+                string.Empty);
+            var algorithm = new TypeMapIdentifierWithMapMethodAlgorithm(context, this.Compilation, this.CancellationToken);
+            var innerStrategy = algorithm.GetStrategy();
+
+            if (innerStrategy is NoMapStrategy noMapStrategy)
+            {
+                return noMapStrategy;
+            }
+
+            return new ArrayToArrayMapStrategy(
+                this.Context.TargetType,
+                this.Context.SourceType,
+                innerStrategy);
+        }
+
         // 14. List<S> -> List<T> : ListStrategy ( Strategy(T, S) ).
         // 15. Dictionary<SK,SV> -> Dictionary<TK,TV> : DictionaryStrategy( Strategy(TK, SK), Strategy(TV, SV) ).
         // 16. S -> T : ConstructorStrategy(S, T)
@@ -309,6 +335,13 @@ internal class TypeMapIdentifierAlgorithm
             var isSourceNullable = this.Context.SourceType.IsNullable();
             var isTargetNullable = this.Context.TargetType.IsNullable();
             return isSourceNullable && isTargetNullable;
+        }
+
+        bool CanMapArrayToArray()
+        {
+            var isSourceArray = this.Context.SourceType.IsArray();
+            var isTargetArray = this.Context.TargetType.IsArray();
+            return isSourceArray && isTargetArray;
         }
     }
 }
