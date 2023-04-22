@@ -2,6 +2,8 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Exceptions;
+
 using Microsoft.CodeAnalysis;
 
 namespace Mappa.Generator.Extensions;
@@ -42,6 +44,27 @@ internal static class TypeSymbolExtensions
     /// <returns><c>true</c> if the type symbol is <see cref="string"/>.</returns>
     internal static bool IsString(this ITypeSymbol typeSymbol)
         => typeSymbol.SpecialType == SpecialType.System_String;
+
+    /// <summary>
+    /// Check if the type is <see cref="Nullable{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="Nullable{T}"/>.</returns>
+    internal static bool IsNullable(this ITypeSymbol typeSymbol)
+        => typeSymbol.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T;
+
+    /// <summary>
+    /// Gets the first type generic parameter.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <returns>The first type parameter of the generic type.</returns>
+    /// <exception cref="MappaGeneratorException">If <paramref name="typeSymbol"/> is not of type <see cref="INamedTypeSymbol"/>.</exception>
+    internal static ITypeSymbol GetFirstGenericType(this ITypeSymbol typeSymbol)
+    {
+        return typeSymbol is INamedTypeSymbol namedTypeSymbol
+            ? namedTypeSymbol.TypeArguments.First()
+            : throw new MappaGeneratorException($"Type {typeSymbol.ToDisplayString()} is not a named type symbol");
+    }
 
     /// <summary>
     /// Check if the type is a numeric type.

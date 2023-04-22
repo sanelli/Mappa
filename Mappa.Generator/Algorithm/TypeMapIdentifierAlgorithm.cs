@@ -170,7 +170,33 @@ internal class TypeMapIdentifierAlgorithm
                 this.Context.SourcePropertyName);
         }
 
-        // 12. (struct) S? -> T? : NullableStructStrategy( Strategy(T, S) )
+        // 12. (struct) S? -> T? : NullableToNullableStrategy( Strategy(T, S) )
+        if (CanMapNullableToNullable())
+        {
+            var sourceTypeFirstGenericType = this.Context.SourceType.GetFirstGenericType();
+            var targetTypeFirstGenericType = this.Context.TargetType.GetFirstGenericType();
+
+            var context = new GenericMappaMethodGeneratorContext(
+                this.Context,
+                targetTypeFirstGenericType,
+                sourceTypeFirstGenericType,
+                this.Context.TargetPropertyName,
+                $"{this.Context.SourcePropertyName}.Value");
+            var algorithm = new TypeMapIdentifierWithMapMethodAlgorithm(context, this.Compilation, this.CancellationToken);
+            var innerStrategy = algorithm.GetStrategy();
+
+            if (innerStrategy is NoMapStrategy)
+            {
+                return innerStrategy;
+            }
+
+            return new NullableToNullableMapStrategy(
+                this.Context.TargetType,
+                this.Context.SourceType,
+                this.Context.SourcePropertyName,
+                innerStrategy);
+        }
+
         // 13. S[] -> T[] : ArrayStrategy ( Strategy(T, S) ).
         // 14. List<S> -> List<T> : ListStrategy ( Strategy(T, S) ).
         // 15. Dictionary<SK,SV> -> Dictionary<TK,TV> : DictionaryStrategy( Strategy(TK, SK), Strategy(TV, SV) ).
@@ -288,6 +314,13 @@ internal class TypeMapIdentifierAlgorithm
         {
             var isTargetString = this.Context.TargetType.IsString();
             return isTargetString;
+        }
+
+        bool CanMapNullableToNullable()
+        {
+            var isSourceNullable = this.Context.SourceType.IsNullable();
+            var isTargetNullable = this.Context.TargetType.IsNullable();
+            return isSourceNullable && isTargetNullable;
         }
     }
 }

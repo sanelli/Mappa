@@ -73,4 +73,9 @@ public enum MappaAlgorithmRule
     /// Map a string to a date-time.
     /// </summary>
     InvokeToString,
+
+    /// <summary>
+    /// Map a nullable struct to a nullable struct.
+    /// </summary>
+    NullableToNullable,
 }
