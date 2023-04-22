@@ -58,7 +58,7 @@ internal static class MappaDiagnosticDescriptors
     internal static DiagnosticDescriptor CannotIdentifyStrategy
         => cannotIdentifyStrategy ??= BuildError(
             MappaDiagnosticsKind.CannotIdentifyStrategy,
-            "Cannot identify a mapping strategy between from '{0}' (type: '{1}') to '{2}' (type: '{3}').");
+            "Cannot identify a mapping strategy between from type: '{1}' type: '{3}'.");
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new DiagnosticDescriptor(

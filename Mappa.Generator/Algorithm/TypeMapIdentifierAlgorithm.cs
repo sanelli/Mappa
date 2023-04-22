@@ -218,9 +218,7 @@ internal class TypeMapIdentifierAlgorithm
         // 17. Report error
         this.Context.ReportDiagnostic(MappaDiagnostics.CannotIdentifyStrategy(
             this.Context.TargetType,
-            this.Context.TargetPropertyName,
             this.Context.SourceType,
-            this.Context.SourcePropertyName,
             this.Context.GetLocation()));
         return new NoMapStrategy(this.Context.TargetType, this.Context.SourceType);
 

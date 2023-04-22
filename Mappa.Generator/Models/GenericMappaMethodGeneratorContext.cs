@@ -32,8 +32,6 @@ internal sealed class GenericMappaMethodGeneratorContext
         this.parent = parent;
         this.SourceType = sourceType;
         this.TargetType = targetType;
-        this.SourcePropertyName = sourcePropertyName;
-        this.TargetPropertyName = targetPropertyName;
     }
 
     /// <inheritdoc/>
@@ -41,12 +39,6 @@ internal sealed class GenericMappaMethodGeneratorContext
 
     /// <inheritdoc/>
     internal override ITypeSymbol TargetType { get; }
-
-    /// <inheritdoc/>
-    internal override string SourcePropertyName { get; }
-
-    /// <inheritdoc/>
-    internal override string TargetPropertyName { get; }
 
     /// <inheritdoc/>
     internal override bool IsNullableEnabled()

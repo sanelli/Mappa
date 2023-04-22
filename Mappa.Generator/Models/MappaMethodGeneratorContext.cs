@@ -42,12 +42,6 @@ internal sealed class MappaMethodGeneratorContext
     internal override ITypeSymbol TargetType => this.MapMethod.TargetType;
 
     /// <inheritdoc/>
-    internal override string SourcePropertyName => this.MapMethod.SourceParameterName;
-
-    /// <inheritdoc/>
-    internal override string TargetPropertyName => string.Empty;
-
-    /// <inheritdoc/>
     internal override bool IsNullableEnabled()
         => this.ClassContext.IsNullableEnabled(this.MapMethod.MethodDeclarationSyntax);
 
@@ -60,6 +54,6 @@ internal sealed class MappaMethodGeneratorContext
         => this.ClassContext.ReportDiagnostic(diagnostic);
 
     /// <inheritdoc/>
-    internal override Location? GetLocation()
+    internal override Location GetLocation()
         => this.MapMethod.MethodDeclarationSyntax.GetLocation();
 }

@@ -2,8 +2,6 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using System;
-
 using Microsoft.CodeAnalysis;
 
 namespace Mappa.Generator.Models;
@@ -23,16 +21,6 @@ internal abstract class MappaMapAlgorithmContext
     /// Gets the target type.
     /// </summary>
     internal abstract ITypeSymbol TargetType { get; }
-
-    /// <summary>
-    /// Gets the name of the property used to generate the source.
-    /// </summary>
-    internal abstract string SourcePropertyName { get; }
-
-    /// <summary>
-    /// Gets the name of the property used to generate the target.
-    /// </summary>
-    internal abstract string TargetPropertyName { get; }
 
     /// <summary>
     /// Gets a value indicating weather the nullable flag
