@@ -30,7 +30,7 @@ internal sealed class NullableToNullableMapStrategyBuilder
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
         var ruleComment = mappaGlobalOptions.MappaDebugComments
-            ? $"/* Mappa Rule: {this.strategy.Rule} (inner strategy: {this.strategy.ChildStrategy.Rule}) */ "
+            ? $"/* Mappa Rule: {this.strategy.Rule} (inner strategy: {this.strategy.TypeArgumentStrategy.Rule}) */ "
             : string.Empty;
 
         var returnValue = context.NextTemporary();
@@ -45,7 +45,7 @@ internal sealed class NullableToNullableMapStrategyBuilder
             var sourceUnderlyingType = this.strategy.SourceType.GetFirstGenericType();
             builder.AppendLine($"{sourceUnderlyingType} {temporary} = {source}.Value;");
 
-            var (innerVariable, innerStrategyCode) = this.strategy.ChildStrategy.GetBuilder().BuildSource(temporary, context, mappaGlobalOptions);
+            var (innerVariable, innerStrategyCode) = this.strategy.TypeArgumentStrategy.GetBuilder().BuildSource(temporary, context, mappaGlobalOptions);
 
             if (!string.IsNullOrWhiteSpace(innerStrategyCode))
             {

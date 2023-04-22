@@ -30,7 +30,7 @@ internal sealed class ArrayToArrayMapStrategyBuilder
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
         var ruleComment = mappaGlobalOptions.MappaDebugComments
-            ? $"/* Mappa Rule: {this.strategy.Rule} (inner strategy: {this.strategy.ChildStrategy.Rule}) */ "
+            ? $"/* Mappa Rule: {this.strategy.Rule} (inner strategy: {this.strategy.ElementStrategy.Rule}) */ "
             : string.Empty;
 
         var targetUnderlyingType = this.strategy.TargetType.GetArrayElementType();
@@ -47,7 +47,7 @@ internal sealed class ArrayToArrayMapStrategyBuilder
         {
             var itemTemporary = context.NextTemporary();
             builder.AppendLine($"{sourceUnderlyingType} {itemTemporary} = {source}[{counterTemporary}];");
-            var (innerVariable, innerStrategyCode) = this.strategy.ChildStrategy.GetBuilder().BuildSource(itemTemporary, context, mappaGlobalOptions);
+            var (innerVariable, innerStrategyCode) = this.strategy.ElementStrategy.GetBuilder().BuildSource(itemTemporary, context, mappaGlobalOptions);
             if (!string.IsNullOrEmpty(innerStrategyCode))
             {
                 builder.AppendLine(innerStrategyCode);

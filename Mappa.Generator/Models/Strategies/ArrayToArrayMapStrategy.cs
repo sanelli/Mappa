@@ -19,15 +19,15 @@ internal sealed class ArrayToArrayMapStrategy
     /// </summary>
     /// <param name="targetType">The target type.</param>
     /// <param name="sourceType">The source type.</param>
-    /// <param name="childStrategy">The strategy that map types encapsulated by the nullable types.</param>
+    /// <param name="elementStrategy">The strategy that map the array element.</param>
     public ArrayToArrayMapStrategy(
         ITypeSymbol targetType,
         ITypeSymbol sourceType,
-        IMapStrategy childStrategy)
+        IMapStrategy elementStrategy)
     {
         this.TargetType = targetType;
         this.SourceType = sourceType;
-        this.ChildStrategy = childStrategy;
+        this.ElementStrategy = elementStrategy;
     }
 
     /// <inheritdoc/>
@@ -39,7 +39,7 @@ internal sealed class ArrayToArrayMapStrategy
     /// <summary>
     /// Gets the strategy to map the types encapsulated by the nullable struct.
     /// </summary>
-    public IMapStrategy ChildStrategy { get; }
+    public IMapStrategy ElementStrategy { get; }
 
     /// <inheritdoc/>
     public MappaAlgorithmRule Rule => MappaAlgorithmRule.ArrayToArray;
