@@ -26,7 +26,7 @@ internal sealed class EnumToIntegralMapStrategyBuilder
     }
 
     /// <inheritdoc/>
-    public (string StrategySource, string Header) BuildSource(MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
+    public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
         var builder = new IndentStringBuilder();
 
@@ -38,7 +38,7 @@ internal sealed class EnumToIntegralMapStrategyBuilder
         var enumFullName = this.strategy.SourceType.ToDisplayString();
         var temporary = context.NextTemporary();
         builder.AppendLine($"{this.strategy.TargetType.ToDisplayString()} {temporary};");
-        builder.AppendLine($"switch ({this.strategy.Source})");
+        builder.AppendLine($"switch ({source})");
         using (builder.CodeBlock())
         using (builder.Indent())
         {
@@ -59,7 +59,7 @@ internal sealed class EnumToIntegralMapStrategyBuilder
             using (builder.CodeBlock())
             using (builder.Indent())
             {
-                builder.AppendLine($"throw new System.ArgumentOutOfRangeException(nameof({this.strategy.Source}));");
+                builder.AppendLine($"throw new System.ArgumentOutOfRangeException(\"{source}\");");
             }
         }
 

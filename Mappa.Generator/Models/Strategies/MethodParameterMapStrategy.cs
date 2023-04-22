@@ -30,9 +30,6 @@ internal sealed class MethodParameterMapStrategy
     public ITypeSymbol SourceType => this.Strategy.SourceType;
 
     /// <inheritdoc/>
-    public string Source => this.Strategy.Source;
-
-    /// <inheritdoc/>
     public MappaAlgorithmRule Rule => this.Strategy.Rule;
 
     /// <summary>

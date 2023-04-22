@@ -28,8 +28,8 @@ internal sealed class NoMapStrategyBuilder
     private NoMapStrategy NoMapStrategy { get; }
 
     /// <inheritdoc/>
-    public (string StrategySource, string Header) BuildSource(MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
+    public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
-        return ("/* ??? */", string.Empty);
+        return ($"/* ?? {source} ?? */", string.Empty);
     }
 }

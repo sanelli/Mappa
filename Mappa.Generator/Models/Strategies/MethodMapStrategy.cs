@@ -19,11 +19,9 @@ internal sealed class MethodMapStrategy
     /// </summary>
     /// <param name="rule">The rule used to generate this strategy.</param>
     /// <param name="mapMethod">The method to be used for the mapping.</param>
-    /// <param name="source">The source of the mapping.</param>
-    public MethodMapStrategy(MappaAlgorithmRule rule, MapMethod mapMethod, string source)
+    public MethodMapStrategy(MappaAlgorithmRule rule, MapMethod mapMethod)
     {
         this.MapMethod = mapMethod;
-        this.Source = source;
         this.Rule = rule;
     }
 
@@ -32,9 +30,6 @@ internal sealed class MethodMapStrategy
 
     /// <inheritdoc/>
     public ITypeSymbol SourceType => this.MapMethod.SourceType;
-
-    /// <inheritdoc/>
-    public string Source { get; }
 
     /// <inheritdoc/>
     public MappaAlgorithmRule Rule { get; }

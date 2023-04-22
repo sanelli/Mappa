@@ -26,9 +26,9 @@ internal sealed class StringToDateTimeMapStrategyBuilder
     }
 
     /// <inheritdoc/>
-    public (string StrategySource, string Header) BuildSource(MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
+    public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
-        var code = $"System.DateTime.Parse({this.strategy.Source})";
+        var code = $"System.DateTime.Parse({source})";
 
         var ruleComment = mappaGlobalOptions.MappaDebugComments
             ? $"/* Mappa Rule: {this.strategy.Rule} */ "

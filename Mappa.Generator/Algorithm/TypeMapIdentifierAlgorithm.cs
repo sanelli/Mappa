@@ -67,8 +67,7 @@ internal class TypeMapIdentifierAlgorithm
             return new IdentityMapStrategy(
                 MappaAlgorithmRule.MapToSameType,
                 this.Context.TargetType,
-                this.Context.SourceType,
-                this.Context.SourcePropertyName);
+                this.Context.SourceType);
         }
 
         // 02. Map to object
@@ -77,8 +76,7 @@ internal class TypeMapIdentifierAlgorithm
             return new IdentityMapStrategy(
                 MappaAlgorithmRule.MapToObject,
                 this.Context.TargetType,
-                this.Context.SourceType,
-                this.Context.SourcePropertyName);
+                this.Context.SourceType);
         }
 
         // 03. Implicit conversion.
@@ -87,8 +85,7 @@ internal class TypeMapIdentifierAlgorithm
             return new IdentityMapStrategy(
                 MappaAlgorithmRule.ImplicitConversion,
                 this.Context.TargetType,
-                this.Context.SourceType,
-                this.Context.SourcePropertyName);
+                this.Context.SourceType);
         }
 
         // 04. enum -> string : EnumToString strategy.
@@ -97,8 +94,7 @@ internal class TypeMapIdentifierAlgorithm
             // TODO: Add ability to use content of Description attribute
             return new EnumToStringMapStrategy(
                 this.Context.TargetType,
-                this.Context.SourceType,
-                this.Context.SourcePropertyName);
+                this.Context.SourceType);
         }
 
         // 05. enum -> implicit-convertible-integral : EnumToIntegral strategy.
@@ -106,8 +102,7 @@ internal class TypeMapIdentifierAlgorithm
         {
             return new EnumToIntegralMapStrategy(
                 this.Context.TargetType,
-                this.Context.SourceType,
-                this.Context.SourcePropertyName);
+                this.Context.SourceType);
         }
 
         // 06. string -> enum : StringToEnum strategy.
@@ -117,8 +112,7 @@ internal class TypeMapIdentifierAlgorithm
             // TODO: Add ability to be case insensitive.
             return new StringToEnumMapStrategy(
                 this.Context.TargetType,
-                this.Context.SourceType,
-                this.Context.SourcePropertyName);
+                this.Context.SourceType);
         }
 
         // 07. integral -> enum : IntegralToEnum strategy.
@@ -126,8 +120,7 @@ internal class TypeMapIdentifierAlgorithm
         {
             return new IntegralToEnumMapStrategy(
                 this.Context.TargetType,
-                this.Context.SourceType,
-                this.Context.SourcePropertyName);
+                this.Context.SourceType);
         }
 
         // 08. enum -> enum: EnumToEnumStrategy
@@ -137,8 +130,7 @@ internal class TypeMapIdentifierAlgorithm
             // TODO: Allow to fail generation if not all values can be mapped.
             return new EnumToEnumMapStrategy(
                 this.Context.TargetType,
-                this.Context.SourceType,
-                this.Context.SourcePropertyName);
+                this.Context.SourceType);
         }
 
         // 09. string -> numeric : ParseNumberStrategy
@@ -147,8 +139,7 @@ internal class TypeMapIdentifierAlgorithm
             // TODO: Allow to setup different file format.
             return new StringToNumberMapStrategy(
                 this.Context.TargetType,
-                this.Context.SourceType,
-                this.Context.SourcePropertyName);
+                this.Context.SourceType);
         }
 
         // 10. string -> DateTime : ParseDateTimeStrategy
@@ -157,8 +148,7 @@ internal class TypeMapIdentifierAlgorithm
             // TODO: Allow to specify the expected format.
             return new StringToDateTimeMapStrategy(
                 this.Context.TargetType,
-                this.Context.SourceType,
-                this.Context.SourcePropertyName);
+                this.Context.SourceType);
         }
 
         // 11. S -> string : InvokeToStringStrategy
@@ -166,8 +156,7 @@ internal class TypeMapIdentifierAlgorithm
         {
             return new InvokeToStringMapStrategy(
                 this.Context.TargetType,
-                this.Context.SourceType,
-                this.Context.SourcePropertyName);
+                this.Context.SourceType);
         }
 
         // 12. (struct) S? -> T? : NullableToNullableStrategy( Strategy(T, S) )
@@ -193,7 +182,6 @@ internal class TypeMapIdentifierAlgorithm
             return new NullableToNullableMapStrategy(
                 this.Context.TargetType,
                 this.Context.SourceType,
-                this.Context.SourcePropertyName,
                 innerStrategy);
         }
 
@@ -208,7 +196,7 @@ internal class TypeMapIdentifierAlgorithm
             this.Context.SourceType,
             this.Context.SourcePropertyName,
             this.Context.GetLocation()));
-        return new NoMapStrategy(this.Context.TargetType, this.Context.SourceType, this.Context.SourcePropertyName);
+        return new NoMapStrategy(this.Context.TargetType, this.Context.SourceType);
 
         bool CanMapUsingMapToSameTypeRule()
         {

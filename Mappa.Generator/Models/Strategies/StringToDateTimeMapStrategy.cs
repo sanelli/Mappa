@@ -20,12 +20,10 @@ internal sealed class StringToDateTimeMapStrategy
     /// </summary>
     /// <param name="targetType">The target type.</param>
     /// <param name="sourceType">The source type.</param>
-    /// <param name="source">The name of the source.</param>
-    public StringToDateTimeMapStrategy(ITypeSymbol targetType, ITypeSymbol sourceType, string source)
+    public StringToDateTimeMapStrategy(ITypeSymbol targetType, ITypeSymbol sourceType)
     {
         this.TargetType = targetType;
         this.SourceType = sourceType;
-        this.Source = source;
     }
 
     /// <inheritdoc/>
@@ -33,9 +31,6 @@ internal sealed class StringToDateTimeMapStrategy
 
     /// <inheritdoc/>
     public ITypeSymbol SourceType { get; }
-
-    /// <inheritdoc/>
-    public string Source { get; }
 
     /// <inheritdoc/>
     public MappaAlgorithmRule Rule => MappaAlgorithmRule.StringToDateTime;

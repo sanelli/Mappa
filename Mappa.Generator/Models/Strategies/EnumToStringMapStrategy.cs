@@ -18,12 +18,10 @@ internal sealed class EnumToStringMapStrategy
     /// </summary>
     /// <param name="targetType">The target type.</param>
     /// <param name="sourceType">The source type.</param>
-    /// <param name="source">The name of the source.</param>
-    public EnumToStringMapStrategy(ITypeSymbol targetType, ITypeSymbol sourceType, string source)
+    public EnumToStringMapStrategy(ITypeSymbol targetType, ITypeSymbol sourceType)
     {
         this.TargetType = targetType;
         this.SourceType = sourceType;
-        this.Source = source;
     }
 
     /// <inheritdoc />
@@ -31,9 +29,6 @@ internal sealed class EnumToStringMapStrategy
 
     /// <inheritdoc />
     public ITypeSymbol SourceType { get; }
-
-    /// <inheritdoc />
-    public string Source { get; }
 
     /// <inheritdoc />
     public MappaAlgorithmRule Rule => MappaAlgorithmRule.EnumToString;

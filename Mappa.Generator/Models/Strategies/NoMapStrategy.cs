@@ -19,12 +19,10 @@ internal sealed class NoMapStrategy
     /// </summary>
     /// <param name="targetType">The target type.</param>
     /// <param name="sourceType">The source type.</param>
-    /// <param name="source">The source of the mapping.</param>
-    public NoMapStrategy(ITypeSymbol targetType, ITypeSymbol sourceType, string source)
+    public NoMapStrategy(ITypeSymbol targetType, ITypeSymbol sourceType)
     {
         this.TargetType = targetType;
         this.SourceType = sourceType;
-        this.Source = source;
     }
 
     /// <inheritdoc/>
@@ -34,12 +32,8 @@ internal sealed class NoMapStrategy
     public ITypeSymbol SourceType { get; }
 
     /// <inheritdoc/>
-    public string Source { get; }
-
-    /// <inheritdoc/>
     public MappaAlgorithmRule Rule => MappaAlgorithmRule.None;
 
     /// <inheritdoc/>
-    public IMappaStrategyBuilder GetBuilder()
-        => new NoMapStrategyBuilder(this);
+    public IMappaStrategyBuilder GetBuilder() => new NoMapStrategyBuilder(this);
 }

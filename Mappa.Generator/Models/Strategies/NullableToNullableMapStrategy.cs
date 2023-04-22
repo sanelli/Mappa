@@ -20,17 +20,14 @@ internal sealed class NullableToNullableMapStrategy
     /// </summary>
     /// <param name="targetType">The target type.</param>
     /// <param name="sourceType">The source type.</param>
-    /// <param name="source">The name of the source.</param>
     /// <param name="childStrategy">The strategy that map types encapsulated by the nullable types.</param>
     public NullableToNullableMapStrategy(
         ITypeSymbol targetType,
         ITypeSymbol sourceType,
-        string source,
         IMapStrategy childStrategy)
     {
         this.TargetType = targetType;
         this.SourceType = sourceType;
-        this.Source = source;
         this.ChildStrategy = childStrategy;
     }
 
@@ -39,9 +36,6 @@ internal sealed class NullableToNullableMapStrategy
 
     /// <inheritdoc/>
     public ITypeSymbol SourceType { get; }
-
-    /// <inheritdoc/>
-    public string Source { get; }
 
     /// <summary>
     /// Gets the strategy to map the types encapsulated by the nullable struct.

@@ -20,12 +20,10 @@ internal sealed class InvokeToStringMapStrategy
     /// </summary>
     /// <param name="targetType">The target type.</param>
     /// <param name="sourceType">The source type.</param>
-    /// <param name="source">The name of the source.</param>
-    public InvokeToStringMapStrategy(ITypeSymbol targetType, ITypeSymbol sourceType, string source)
+    public InvokeToStringMapStrategy(ITypeSymbol targetType, ITypeSymbol sourceType)
     {
         this.TargetType = targetType;
         this.SourceType = sourceType;
-        this.Source = source;
     }
 
     /// <inheritdoc />
@@ -33,9 +31,6 @@ internal sealed class InvokeToStringMapStrategy
 
     /// <inheritdoc />
     public ITypeSymbol SourceType { get; }
-
-    /// <inheritdoc />
-    public string Source { get; }
 
     /// <inheritdoc />
     public MappaAlgorithmRule Rule => MappaAlgorithmRule.InvokeToString;

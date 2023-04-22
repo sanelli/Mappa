@@ -30,7 +30,7 @@ internal sealed class IntegralToEnumMapStrategyBuilder
     }
 
     /// <inheritdoc/>
-    public (string StrategySource, string Header) BuildSource(MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
+    public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
         var builder = new IndentStringBuilder();
 
@@ -44,7 +44,7 @@ internal sealed class IntegralToEnumMapStrategyBuilder
                                  ?? throw new MappaGeneratorException($"The enum \"{enumFullName}\" does not have an underlying type");
         var temporary = context.NextTemporary();
         builder.AppendLine($"{enumFullName} {temporary};");
-        builder.AppendLine($"switch (({enumUnderlyingType.ToDisplayString()}) {this.strategy.Source})");
+        builder.AppendLine($"switch (({enumUnderlyingType.ToDisplayString()}) {source})");
         using (builder.CodeBlock())
         using (builder.Indent())
         {
@@ -65,7 +65,7 @@ internal sealed class IntegralToEnumMapStrategyBuilder
             using (builder.CodeBlock())
             using (builder.Indent())
             {
-                builder.AppendLine($"throw new System.ArgumentOutOfRangeException(nameof({this.strategy.Source}));");
+                builder.AppendLine($"throw new System.ArgumentOutOfRangeException(\"{source}\");");
             }
         }
 

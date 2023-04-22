@@ -26,12 +26,12 @@ internal sealed class StringToNumberMapStrategyBuilder
     }
 
     /// <inheritdoc/>
-    public (string StrategySource, string Header) BuildSource(MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
+    public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
         var builder = new IndentStringBuilder();
         var targetType = this.strategy.TargetType.ToDisplayString();
 
-        var code = $"{targetType}.Parse({this.strategy.Source})";
+        var code = $"{targetType}.Parse({source})";
 
         var ruleComment = mappaGlobalOptions.MappaDebugComments
             ? $"/* Mappa Rule: {this.strategy.Rule} (target-type is \"{targetType}\") */ "

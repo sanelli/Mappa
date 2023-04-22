@@ -26,7 +26,7 @@ internal sealed class NullableToNullableMapStrategyBuilder
     }
 
     /// <inheritdoc/>
-    public (string StrategySource, string Header) BuildSource(MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
+    public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
         var ruleComment = mappaGlobalOptions.MappaDebugComments
             ? $"/* Mappa Rule: {this.strategy.Rule} (inner strategy: {this.strategy.ChildStrategy.Rule}) */ "
@@ -36,11 +36,11 @@ internal sealed class NullableToNullableMapStrategyBuilder
 
         var builder = new IndentStringBuilder();
         builder.AppendLine($"{this.strategy.TargetType.ToDisplayString()} {temporary};");
-        builder.AppendLine($"if ({this.strategy.Source}.HasValue)");
+        builder.AppendLine($"if ({source}.HasValue)");
         using (builder.CodeBlock())
         using (builder.Indent())
         {
-            var (innerStrategySource, innerHeader) = this.strategy.ChildStrategy.GetBuilder().BuildSource(context, mappaGlobalOptions);
+            var (innerStrategySource, innerHeader) = this.strategy.ChildStrategy.GetBuilder().BuildSource($"{source}.Value", context, mappaGlobalOptions);
             builder.AppendLine(innerHeader);
             builder.AppendLine($"{temporary} = {innerStrategySource};");
         }

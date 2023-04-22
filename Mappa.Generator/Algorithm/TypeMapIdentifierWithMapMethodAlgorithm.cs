@@ -40,7 +40,7 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
 
         if (this.Context.TryGetMethod(this.Context.TargetType, this.Context.SourceType, out var mapMethod))
         {
-            return new MethodMapStrategy(MappaAlgorithmRule.MapUsingExistingMethod, mapMethod, this.Context.SourcePropertyName);
+            return new MethodMapStrategy(MappaAlgorithmRule.MapUsingExistingMethod, mapMethod);
         }
 
         return base.GetStrategy();
