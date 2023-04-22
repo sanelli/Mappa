@@ -68,4 +68,9 @@ public enum MappaAlgorithmRule
     /// Map a string to a date-time.
     /// </summary>
     StringToDateTime,
+
+    /// <summary>
+    /// Map a string to a date-time.
+    /// </summary>
+    InvokeToString,
 }

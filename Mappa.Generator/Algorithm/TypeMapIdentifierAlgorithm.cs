@@ -161,13 +161,21 @@ internal class TypeMapIdentifierAlgorithm
                 this.Context.SourcePropertyName);
         }
 
-        // XX. S -> string : InvokeToStringStrategy
-        // XX. (struct) S? -> T? : NullableStructStrategy( Strategy(T, S) )
-        // XX. S[] -> T[] : ArrayStrategy ( Strategy(T, S) ).
-        // XX. List<S> -> List<T> : ListStrategy ( Strategy(T, S) ).
-        // XX. Dictionary<SK,SV> -> Dictionary<TK,TV> : DictionaryStrategy( Strategy(TK, SK), Strategy(TV, SV) ).
-        // XX. S -> T : ConstructorStrategy(S, T)
-        // XX. Report error
+        // 11. S -> string : InvokeToStringStrategy
+        if (CanMapToString())
+        {
+            return new InvokeToStringMapStrategy(
+                this.Context.TargetType,
+                this.Context.SourceType,
+                this.Context.SourcePropertyName);
+        }
+
+        // 12. (struct) S? -> T? : NullableStructStrategy( Strategy(T, S) )
+        // 13. S[] -> T[] : ArrayStrategy ( Strategy(T, S) ).
+        // 14. List<S> -> List<T> : ListStrategy ( Strategy(T, S) ).
+        // 15. Dictionary<SK,SV> -> Dictionary<TK,TV> : DictionaryStrategy( Strategy(TK, SK), Strategy(TV, SV) ).
+        // 16. S -> T : ConstructorStrategy(S, T)
+        // 17. Report error
         this.Context.ReportDiagnostic(MappaDiagnostics.CannotIdentifyStrategy(
             this.Context.TargetType,
             this.Context.TargetPropertyName,
@@ -274,6 +282,12 @@ internal class TypeMapIdentifierAlgorithm
             var isTargetDateTime = this.Context.TargetType.IsDateTime();
             var isSourceString = this.Context.SourceType.IsString();
             return isTargetDateTime && isSourceString;
+        }
+
+        bool CanMapToString()
+        {
+            var isTargetString = this.Context.TargetType.IsString();
+            return isTargetString;
         }
     }
 }

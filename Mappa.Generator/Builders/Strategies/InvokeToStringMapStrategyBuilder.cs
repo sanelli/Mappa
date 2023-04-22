@@ -1,4 +1,4 @@
-// <copyright file="StringToDateTimeMapStrategyBuilder.cs" company="Stefano Anelli">
+// <copyright file="InvokeToStringMapStrategyBuilder.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -9,18 +9,18 @@ using Mappa.Generator.Models.Strategies;
 namespace Mappa.Generator.Builders.Strategies;
 
 /// <summary>
-/// Builder for <see cref="StringToDateTimeMapStrategy"/> strategy.
+/// Builder for <see cref="InvokeToStringMapStrategy"/> strategy.
 /// </summary>
-internal sealed class StringToDateTimeMapStrategyBuilder
-   : IMappaStrategyBuilder
+internal sealed class InvokeToStringMapStrategyBuilder
+    : IMappaStrategyBuilder
 {
-    private readonly StringToDateTimeMapStrategy strategy;
+    private readonly InvokeToStringMapStrategy strategy;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="StringToDateTimeMapStrategyBuilder"/> class.
+    /// Initializes a new instance of the <see cref="InvokeToStringMapStrategyBuilder"/> class.
     /// </summary>
     /// <param name="strategy">The strategy.</param>
-    public StringToDateTimeMapStrategyBuilder(StringToDateTimeMapStrategy strategy)
+    public InvokeToStringMapStrategyBuilder(InvokeToStringMapStrategy strategy)
     {
         this.strategy = strategy;
     }
@@ -28,7 +28,7 @@ internal sealed class StringToDateTimeMapStrategyBuilder
     /// <inheritdoc/>
     public (string StrategySource, string Header) BuildSource(MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
-        var code = $"System.DateTime.Parse({this.strategy.Source})";
+        var code = $"{this.strategy.Source}.ToString()";
 
         var ruleComment = mappaGlobalOptions.MappaDebugComments
             ? $"/* Mappa Rule: {this.strategy.Rule} */ "
