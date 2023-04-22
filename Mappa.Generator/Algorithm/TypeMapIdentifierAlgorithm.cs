@@ -185,9 +185,9 @@ internal class TypeMapIdentifierAlgorithm
             var algorithm = new TypeMapIdentifierWithMapMethodAlgorithm(context, this.Compilation, this.CancellationToken);
             var innerStrategy = algorithm.GetStrategy();
 
-            if (innerStrategy is NoMapStrategy)
+            if (innerStrategy is NoMapStrategy noMapStrategy)
             {
-                return innerStrategy;
+                return noMapStrategy;
             }
 
             return new NullableToNullableMapStrategy(
