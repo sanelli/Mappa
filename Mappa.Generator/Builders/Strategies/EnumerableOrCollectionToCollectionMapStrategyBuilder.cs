@@ -1,4 +1,4 @@
-// <copyright file="ArrayToArrayMapStrategyBuilder.cs" company="Stefano Anelli">
+// <copyright file="EnumerableOrCollectionToCollectionMapStrategyBuilder.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -10,18 +10,18 @@ using Mappa.Generator.Models.Strategies;
 namespace Mappa.Generator.Builders.Strategies;
 
 /// <summary>
-/// Builder for <see cref="ArrayToArrayMapStrategy"/> strategy.
+/// Builder for <see cref="EnumerableOrCollectionToCollectionMapStrategy"/> strategy.
 /// </summary>
-internal sealed class ArrayToArrayMapStrategyBuilder
+internal sealed class EnumerableOrCollectionToCollectionMapStrategyBuilder
     : IMappaStrategyBuilder
 {
-    private readonly ArrayToArrayMapStrategy strategy;
+    private readonly EnumerableOrCollectionToCollectionMapStrategy strategy;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ArrayToArrayMapStrategyBuilder"/> class.
+    /// Initializes a new instance of the <see cref="EnumerableOrCollectionToCollectionMapStrategyBuilder"/> class.
     /// </summary>
     /// <param name="strategy">The strategy.</param>
-    public ArrayToArrayMapStrategyBuilder(ArrayToArrayMapStrategy strategy)
+    public EnumerableOrCollectionToCollectionMapStrategyBuilder(EnumerableOrCollectionToCollectionMapStrategy strategy)
     {
         this.strategy = strategy;
     }
@@ -37,24 +37,22 @@ internal sealed class ArrayToArrayMapStrategyBuilder
         var sourceElementType = this.strategy.SourceType.GetElementType();
 
         var returnVariable = context.NextTemporary();
-        var counterTemporary = context.NextTemporary();
+        var loopTemporary = context.NextTemporary();
 
         var builder = new IndentStringBuilder();
-        builder.AppendLine($"{targetElementType.ToDisplayString()}[] {returnVariable} = new {targetElementType.ToDisplayString()}[{source}.Length];");
-        builder.AppendLine($"for (int {counterTemporary} = 0 ; {counterTemporary} < {source}.Length ; ++{counterTemporary})");
+        builder.AppendLine($"System.Collections.Generic.List<{targetElementType.ToDisplayString()}> {returnVariable} = new System.Collections.Generic.List<{targetElementType.ToDisplayString()}>();");
+        builder.AppendLine($"foreach ({sourceElementType.ToDisplayString()} {loopTemporary} in {source})");
         using (builder.CodeBlock())
         using (builder.Indent())
         {
-            var itemTemporary = context.NextTemporary();
-            builder.AppendLine($"{sourceElementType} {itemTemporary} = {source}[{counterTemporary}];");
-            var (innerVariable, innerStrategyCode) = this.strategy.ElementStrategy.GetBuilder().BuildSource(itemTemporary, context, mappaGlobalOptions);
+            var (innerVariable, innerStrategyCode) = this.strategy.ElementStrategy.GetBuilder().BuildSource(loopTemporary, context, mappaGlobalOptions);
             if (!string.IsNullOrEmpty(innerStrategyCode))
             {
                 builder.AppendLine(innerStrategyCode);
                 builder.AppendEmptyLine();
             }
 
-            builder.AppendLine($"{returnVariable}[{counterTemporary}] = {innerVariable};");
+            builder.AppendLine($"{returnVariable}.Add({innerVariable});");
         }
 
         return ($"{ruleComment}{returnVariable}", builder.ToString());

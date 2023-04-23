@@ -2,6 +2,8 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using System.Collections;
+
 using Mappa.Generator.Exceptions;
 
 using Microsoft.CodeAnalysis;
@@ -62,29 +64,84 @@ internal static class TypeSymbolExtensions
         => typeSymbol is IArrayTypeSymbol { Rank: 1 };
 
     /// <summary>
-    /// Gets the first type generic parameter.
+    /// Check if the type is <see cref="IList{T}"/>.
     /// </summary>
     /// <param name="typeSymbol">The type symbol.</param>
-    /// <returns>The first type parameter of the generic type.</returns>
-    /// <exception cref="MappaGeneratorException">If <paramref name="typeSymbol"/> is not of type <see cref="INamedTypeSymbol"/>.</exception>
-    internal static ITypeSymbol GetFirstGenericType(this ITypeSymbol typeSymbol)
+    /// <returns><c>true</c> if the type symbol is <see cref="IList{T}"/>.</returns>
+    internal static bool IsIList(this ITypeSymbol typeSymbol)
+        => typeSymbol.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IList_T;
+
+    /// <summary>
+    /// Check if the type is <see cref="List{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="List{T}"/>.</returns>
+    internal static bool IsList(this ITypeSymbol typeSymbol, Compilation compilation)
     {
-        return typeSymbol is INamedTypeSymbol namedTypeSymbol
-            ? namedTypeSymbol.TypeArguments.First()
-            : throw new MappaGeneratorException($"Type {typeSymbol.ToDisplayString()} is not a named type symbol");
+        var listType = compilation.GetTypeByMetadataName(typeof(List<>).FullName);
+        var isList = SymbolEqualityComparer.Default.Equals(listType, typeSymbol.OriginalDefinition);
+        return isList;
     }
 
     /// <summary>
-    /// Gets the array element type.
+    /// Check if the type is <see cref="ICollection{T}"/>.
     /// </summary>
     /// <param name="typeSymbol">The type symbol.</param>
-    /// <returns>The array element type.</returns>
-    /// <exception cref="MappaGeneratorException">If <paramref name="typeSymbol"/> is not of type <see cref="IArrayTypeSymbol"/>.</exception>
-    internal static ITypeSymbol GetArrayElementType(this ITypeSymbol typeSymbol)
+    /// <returns><c>true</c> if the type symbol is <see cref="ICollection{T}"/>.</returns>
+    internal static bool IsICollection(this ITypeSymbol typeSymbol)
+        => typeSymbol.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_ICollection_T;
+
+    /// <summary>
+    /// Check if the type is <see cref="IReadOnlyCollection{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="IReadOnlyCollection{T}"/>.</returns>
+    internal static bool IsIReadOnlyCollection(this ITypeSymbol typeSymbol)
+        => typeSymbol.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IReadOnlyCollection_T;
+
+    /// <summary>
+    /// Check if the type is <see cref="IEnumerable{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="IEnumerable{T}"/>.</returns>
+    internal static bool IsIEnumerable(this ITypeSymbol typeSymbol)
+        => typeSymbol.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T;
+
+    /// <summary>
+    /// Gets the element type of the container.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <returns>The element type of the container.</returns>
+    /// <exception cref="MappaGeneratorException">If <paramref name="typeSymbol"/> is not an array or a generic type.</exception>
+    internal static ITypeSymbol GetElementType(this ITypeSymbol typeSymbol)
     {
-        return typeSymbol is IArrayTypeSymbol arrayTypeSymbol
-            ? arrayTypeSymbol.ElementType
-            : throw new MappaGeneratorException($"Type {typeSymbol.ToDisplayString()} is not an array");
+        if (typeSymbol is IArrayTypeSymbol arrayTypeSymbol)
+        {
+            return arrayTypeSymbol.ElementType;
+        }
+
+        if (typeSymbol is INamedTypeSymbol namedTypeSymbol && namedTypeSymbol.TypeArguments.Any())
+        {
+            return namedTypeSymbol.TypeArguments.First();
+        }
+
+        throw new MappaGeneratorException($"Cannot obtain element type of \"{typeSymbol.ToDisplayString()}\"");
+    }
+
+    /// <summary>
+    /// Gets the name of the property returning the number of items.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <returns> The name of the property returning the number of items.</returns>
+    internal static string GetCountProperty(this ITypeSymbol typeSymbol)
+    {
+        if (typeSymbol is IArrayTypeSymbol)
+        {
+            return nameof(Array.Length);
+        }
+
+        return nameof(ICollection.Count);
     }
 
     /// <summary>

@@ -159,20 +159,11 @@ internal class TypeMapIdentifierAlgorithm
                 this.Context.SourceType);
         }
 
-        // 12. (struct) S? -> T? : NullableToNullableStrategy( Strategy(T, S) )
+        // 12. (struct) S? -> T? : NullableToNullableStrategy( IMapStrategy(T, S) )
         if (CanMapNullableToNullable())
         {
-            var sourceFirstGenericType = this.Context.SourceType.GetFirstGenericType();
-            var targetFirstGenericType = this.Context.TargetType.GetFirstGenericType();
-
-            var context = new GenericMappaMethodGeneratorContext(
-                this.Context,
-                targetFirstGenericType,
-                sourceFirstGenericType);
-            var algorithm = new TypeMapIdentifierWithMapMethodAlgorithm(context, this.Compilation, this.CancellationToken);
-            var innerStrategy = algorithm.GetStrategy();
-
-            if (innerStrategy is NoMapStrategy noMapStrategy)
+            var elementStrategy = GetElementStrategy();
+            if (elementStrategy is NoMapStrategy noMapStrategy)
             {
                 return noMapStrategy;
             }
@@ -180,24 +171,16 @@ internal class TypeMapIdentifierAlgorithm
             return new NullableToNullableMapStrategy(
                 this.Context.TargetType,
                 this.Context.SourceType,
-                innerStrategy);
+                elementStrategy);
         }
 
-        // 13. S[] -> T[] : ArrayStrategy ( Strategy(T, S) ).
+        // 13. S[] -> T[] : ArrayToArrayStrategy ( IMapStrategy(T, S) ).
         if (CanMapArrayToArray())
         {
-            // TODO: Add support for faster iteration using Span<T>
-            var sourceArrayElementType = this.Context.SourceType.GetArrayElementType();
-            var targetArrayElementType = this.Context.TargetType.GetArrayElementType();
-
-            var context = new GenericMappaMethodGeneratorContext(
-                this.Context,
-                targetArrayElementType,
-                sourceArrayElementType);
-            var algorithm = new TypeMapIdentifierWithMapMethodAlgorithm(context, this.Compilation, this.CancellationToken);
-            var innerStrategy = algorithm.GetStrategy();
-
-            if (innerStrategy is NoMapStrategy noMapStrategy)
+            // TODO: Support as input IList{T} and List{T}
+            // TODO: Add support for faster iteration using Span<>
+            var elementStrategy = GetElementStrategy();
+            if (elementStrategy is NoMapStrategy noMapStrategy)
             {
                 return noMapStrategy;
             }
@@ -205,18 +188,69 @@ internal class TypeMapIdentifierAlgorithm
             return new ArrayToArrayMapStrategy(
                 this.Context.TargetType,
                 this.Context.SourceType,
-                innerStrategy);
+                elementStrategy);
         }
 
-        // 14. List<S> -> List<T> : ListStrategy ( Strategy(T, S) ).
-        // 15. Dictionary<SK,SV> -> Dictionary<TK,TV> : DictionaryStrategy( Strategy(TK, SK), Strategy(TV, SV) ).
-        // 16. S -> T : ConstructorStrategy(S, T)
-        // 17. Report error
+        // 14. S[]/List<S> -> Collection<T>/IEnumerable<T> : ArrayOrListToCollectionMapStrategy ( IMapStrategy(T, S) ).
+        if (CanMapArrayOrListToCollectionOrEnumerable())
+        {
+            // TODO: Check if it is possible using Span<> here as well.
+            // TODO: Allow to prefer returning array over lists
+            var elementStrategy = GetElementStrategy();
+            if (elementStrategy is NoMapStrategy noMapStrategy)
+            {
+                return noMapStrategy;
+            }
+
+            return new ArrayOrListToCollectionMapStrategy(
+                this.Context.TargetType,
+                this.Context.SourceType,
+                elementStrategy);
+        }
+
+        // 15. IEnumerable<S>/Collection<S> -> Collection<T>/IEnumerable<T> : EnumerableOrCollectionToCollectionMapStrategy ( IMapStrategy(T, S) ).
+        if (CanMapCollectionOrEnumerableToCollectionOrEnumerable())
+        {
+            // TODO: Check if it is possible using Span<> here as well.
+            // TODO: Allow to prefer returning array over lists
+            var elementStrategy = GetElementStrategy();
+            if (elementStrategy is NoMapStrategy noMapStrategy)
+            {
+                return noMapStrategy;
+            }
+
+            return new EnumerableOrCollectionToCollectionMapStrategy(
+                this.Context.TargetType,
+                this.Context.SourceType,
+                elementStrategy);
+        }
+
+        // XX. IEnumerable<S>/Collection<S> -> T[] : CollectionToCollectionMapStrategy ( IMapStrategy(T, S) ).
+        // XX. IEnumerable<S> -> T[] : EnumerableToArrayStrategy ( IMapStrategy(T, S) ).
+        // XX. Dictionary<SK,SV> -> Dictionary<TK,TV> : DictionaryStrategy( IMapStrategy(TK, SK), IMapStrategy(TV, SV) ).
+        // XX. (S1, ..., SN) -> (T1, ..., TN) : TupleStrategy( IMapStrategy(T1, S1), ..., IMapStrategy(TN, SN))
+        // XX. S -> T : ConstructorStrategy(S, T)
+        // Report error
         this.Context.ReportDiagnostic(MappaDiagnostics.CannotIdentifyStrategy(
             this.Context.TargetType,
             this.Context.SourceType,
             this.Context.GetLocation()));
         return new NoMapStrategy(this.Context.TargetType, this.Context.SourceType);
+
+        IMapStrategy GetElementStrategy()
+        {
+            var sourceElementType = this.Context.SourceType.GetElementType();
+            var targetElementType = this.Context.TargetType.GetElementType();
+
+            var context = new GenericMappaMethodGeneratorContext(
+                this.Context,
+                targetElementType,
+                sourceElementType);
+            var algorithm = new TypeMapIdentifierWithMapMethodAlgorithm(context, this.Compilation, this.CancellationToken);
+            var elementStrategy = algorithm.GetStrategy();
+
+            return elementStrategy;
+        }
 
         bool CanMapUsingMapToSameTypeRule()
         {
@@ -336,6 +370,42 @@ internal class TypeMapIdentifierAlgorithm
             var isSourceArray = this.Context.SourceType.IsArray();
             var isTargetArray = this.Context.TargetType.IsArray();
             return isSourceArray && isTargetArray;
+        }
+
+        bool CanMapArrayOrListToCollectionOrEnumerable()
+        {
+            // Source can be S[], IList<S>, List<S>
+            var acceptSource = this.Context.SourceType.IsArray();
+            acceptSource = acceptSource || this.Context.SourceType.IsIList();
+            acceptSource = acceptSource || this.Context.SourceType.IsList(this.Compilation);
+
+            // Target can be IList<T>, List<T>, ICollection<T>, IReadOnlyCollection<T>, IEnumerable<T>
+            var acceptTarget = this.Context.TargetType.IsIList();
+            acceptTarget = acceptTarget || this.Context.TargetType.IsList(this.Compilation);
+            acceptTarget = acceptTarget || this.Context.TargetType.IsICollection();
+            acceptTarget = acceptTarget || this.Context.TargetType.IsIReadOnlyCollection();
+            acceptTarget = acceptTarget || this.Context.TargetType.IsIEnumerable();
+
+            // Return result of check.
+            return acceptSource && acceptTarget;
+        }
+
+        bool CanMapCollectionOrEnumerableToCollectionOrEnumerable()
+        {
+            // Source can be S[], IList<S>, List<S>
+            var acceptSource = this.Context.SourceType.IsIEnumerable();
+            acceptSource = acceptSource || this.Context.SourceType.IsICollection();
+            acceptSource = acceptSource || this.Context.SourceType.IsIReadOnlyCollection();
+
+            // Target can be IList<T>, List<T>, ICollection<T>, IReadOnlyCollection<T>, IEnumerable<T>
+            var acceptTarget = this.Context.TargetType.IsIList();
+            acceptTarget = acceptTarget || this.Context.TargetType.IsList(this.Compilation);
+            acceptTarget = acceptTarget || this.Context.TargetType.IsICollection();
+            acceptTarget = acceptTarget || this.Context.TargetType.IsIReadOnlyCollection();
+            acceptTarget = acceptTarget || this.Context.TargetType.IsIEnumerable();
+
+            // Return result of check.
+            return acceptSource && acceptTarget;
         }
     }
 }

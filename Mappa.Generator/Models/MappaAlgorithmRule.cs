@@ -83,4 +83,16 @@ public enum MappaAlgorithmRule
     /// Map an array to an array.
     /// </summary>
     ArrayToArray,
+
+    /// <summary>
+    /// Map an array, or <see cref="IList{T}"/> or <see cref="List{T}"/>
+    /// to any collection (excluding array).
+    /// </summary>
+    ArrayOrListToCollection,
+
+    /// <summary>
+    /// Map an <see cref="IEnumerable{T}"/>, or <see cref="ICollection{T}"/> or <see cref="IReadOnlyCollection{T}"/>
+    /// to any collection (excluding array).
+    /// </summary>
+    EnumerableOrCollectionToCollection,
 }

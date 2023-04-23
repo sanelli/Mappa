@@ -42,7 +42,7 @@ internal sealed class NullableToNullableMapStrategyBuilder
         using (builder.Indent())
         {
             var temporary = context.NextTemporary();
-            var sourceUnderlyingType = this.strategy.SourceType.GetFirstGenericType();
+            var sourceUnderlyingType = this.strategy.SourceType.GetElementType();
             builder.AppendLine($"{sourceUnderlyingType} {temporary} = {source}.Value;");
 
             var (innerVariable, innerStrategyCode) = this.strategy.TypeArgumentStrategy.GetBuilder().BuildSource(temporary, context, mappaGlobalOptions);
