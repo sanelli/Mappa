@@ -81,6 +81,14 @@ internal sealed class IndentStringBuilder
         => new NullableBlockDefinition(this, isNullableEnabled);
 
     /// <summary>
+    /// Generate a surrounding <c>#pragma warning</c> block.
+    /// </summary>
+    /// <param name="warnings">Optional list of warnings.</param>
+    /// <returns>A disposable object that closes the block upon dispose.</returns>
+    internal IDisposable PragmaWarningDisableBlock(string warnings = "")
+        => new PragmaWarningBlockDefinition(this, warnings);
+
+    /// <summary>
     /// Append the lines to the the internal buffer.
     /// </summary>
     /// <param name="lines">The lines to be appended.</param>
@@ -135,8 +143,8 @@ internal sealed class IndentStringBuilder
     }
 
     /// <summary>
-    /// Describe the current indentation and allow for automatic
-    /// indentation to happen using the <see cref="IDisposable"/>
+    /// Describe the current indentation block and allow for automatic
+    /// indentation to terminate using the <see cref="IDisposable"/>
     /// pattern.
     /// </summary>
     private sealed class Indentation
@@ -150,10 +158,10 @@ internal sealed class IndentStringBuilder
         /// <summary>
         /// Initializes a new instance of the <see cref="Indentation"/> class.
         /// </summary>
-        /// <param name="indent">The indentation object.</param>
-        internal Indentation(IndentStringBuilder indent)
+        /// <param name="stringBuilder">The indentation object.</param>
+        internal Indentation(IndentStringBuilder stringBuilder)
         {
-            this.stringBuilder = indent;
+            this.stringBuilder = stringBuilder;
             this.stringBuilder.IncreaseIndentation();
         }
 
@@ -165,9 +173,8 @@ internal sealed class IndentStringBuilder
     }
 
     /// <summary>
-    /// Describe the current indentation and allow for automatic
-    /// nullability to happen using the <see cref="IDisposable"/>
-    /// pattern.
+    /// Describe a nullability pragma block that will be closed
+    /// using the <see cref="IDisposable"/> pattern.
     /// </summary>
     private sealed class NullableBlockDefinition
         : IDisposable
@@ -180,11 +187,11 @@ internal sealed class IndentStringBuilder
         /// <summary>
         /// Initializes a new instance of the <see cref="NullableBlockDefinition"/> class.
         /// </summary>
-        /// <param name="isNullableEnabled">The indentation object.</param>
+        /// <param name="stringBuilder">The stirng builder.</param>
         /// <param name="nullable"><c>true</c> if nullable should be enabled.</param>
-        internal NullableBlockDefinition(IndentStringBuilder isNullableEnabled, bool nullable)
+        internal NullableBlockDefinition(IndentStringBuilder stringBuilder, bool nullable)
         {
-            this.stringBuilder = isNullableEnabled;
+            this.stringBuilder = stringBuilder;
             this.stringBuilder.AppendLine($"#nullable {(nullable ? "enable" : "disable")}");
         }
 
@@ -192,6 +199,42 @@ internal sealed class IndentStringBuilder
         public void Dispose()
         {
             this.stringBuilder.AppendLine("#nullable restore");
+        }
+    }
+
+    /// <summary>
+    /// Describe a warning disable pragma block that will be closed (i.e. restored)
+    /// using the <see cref="IDisposable"/> pattern.
+    /// </summary>
+    private sealed class PragmaWarningBlockDefinition
+        : IDisposable
+    {
+        /// <summary>
+        /// The indentation object.
+        /// </summary>
+        private readonly IndentStringBuilder stringBuilder;
+
+        /// <summary>
+        /// The warnings disabled.
+        /// </summary>
+        private readonly string warnings;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PragmaWarningBlockDefinition"/> class.
+        /// </summary>
+        /// <param name="stringBuilder">The string builder.</param>
+        /// <param name="warnings">The warnings to disable.</param>
+        internal PragmaWarningBlockDefinition(IndentStringBuilder stringBuilder, string warnings = "")
+        {
+            this.stringBuilder = stringBuilder;
+            this.warnings = string.IsNullOrWhiteSpace(warnings) ? string.Empty : $" {warnings}";
+            this.stringBuilder.AppendLine($"#pragma warning disable{this.warnings}");
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            this.stringBuilder.AppendLine($"#pragma warning restore{this.warnings}");
         }
     }
 }
