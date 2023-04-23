@@ -53,7 +53,6 @@ public sealed class IdentityStrategyIntegrationTests
         var methodDeclarationSyntaxAssertions = namespaceDeclarationSyntaxAssertions
             .HaveClass("Mapper")
             .HaveModifiers(SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword)
-            .HaveGeneratedCodeAttribute()
             .HaveMethods(1)
             .HaveMethod(
                 typeof(string),
@@ -108,7 +107,6 @@ public sealed class IdentityStrategyIntegrationTests
         var methodDeclarationSyntaxAssertions = namespaceDeclarationSyntaxAssertions
             .HaveClass("Mapper")
             .HaveModifiers(SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword)
-            .HaveGeneratedCodeAttribute()
             .HaveMethods(1)
             .HaveMethod(
                 typeof(string),
@@ -163,7 +161,6 @@ public sealed class IdentityStrategyIntegrationTests
         var methodDeclarationSyntaxAssertions = namespaceDeclarationSyntaxAssertions
             .HaveClass("Mapper")
             .HaveModifiers(SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword)
-            .HaveGeneratedCodeAttribute()
             .HaveMethods(1)
             .HaveMethod(
                 typeof(string),
@@ -218,7 +215,6 @@ public sealed class IdentityStrategyIntegrationTests
         var methodDeclarationSyntaxAssertions = namespaceDeclarationSyntaxAssertions
             .HaveClass("Mapper")
             .HaveModifiers(SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword)
-            .HaveGeneratedCodeAttribute()
             .HaveMethods(1)
             .HaveMethod(
                 typeof(int),
@@ -274,7 +270,6 @@ public sealed class IdentityStrategyIntegrationTests
         var methodDeclarationSyntaxAssertions = namespaceDeclarationSyntaxAssertions
             .HaveClass("Mapper")
             .HaveModifiers(SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword)
-            .HaveGeneratedCodeAttribute()
             .HaveMethods(1)
             .HaveMethod(
                 typeof(int?),
@@ -330,7 +325,6 @@ public sealed class IdentityStrategyIntegrationTests
         var methodDeclarationSyntaxAssertions = namespaceDeclarationSyntaxAssertions
             .HaveClass("Mapper")
             .HaveModifiers(SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword)
-            .HaveGeneratedCodeAttribute()
             .HaveMethods(1)
             .HaveMethod(
                 typeof(int?),
@@ -385,7 +379,6 @@ public sealed class IdentityStrategyIntegrationTests
         var methodDeclarationSyntaxAssertions = namespaceDeclarationSyntaxAssertions
             .HaveClass("Mapper")
             .HaveModifiers(SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword)
-            .HaveGeneratedCodeAttribute()
             .HaveMethods(1)
             .HaveMethod(
                 typeof(object),
@@ -441,7 +434,6 @@ public sealed class IdentityStrategyIntegrationTests
         var methodDeclarationSyntaxAssertions = namespaceDeclarationSyntaxAssertions
             .HaveClass("Mapper")
             .HaveModifiers(SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword)
-            .HaveGeneratedCodeAttribute()
             .HaveMethods(1)
             .HaveMethod(
                 typeof(object),
@@ -496,7 +488,6 @@ public sealed class IdentityStrategyIntegrationTests
         var methodDeclarationSyntaxAssertions = namespaceDeclarationSyntaxAssertions
             .HaveClass("Mapper")
             .HaveModifiers(SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword)
-            .HaveGeneratedCodeAttribute()
             .HaveMethods(1)
             .HaveMethod(
                 typeof(object),
@@ -551,7 +542,6 @@ public sealed class IdentityStrategyIntegrationTests
         var methodDeclarationSyntaxAssertions = namespaceDeclarationSyntaxAssertions
             .HaveClass("Mapper")
             .HaveModifiers(SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword)
-            .HaveGeneratedCodeAttribute()
             .HaveMethods(1)
             .HaveMethod(
                 typeof(object),
@@ -607,7 +597,6 @@ public sealed class IdentityStrategyIntegrationTests
         var methodDeclarationSyntaxAssertions = namespaceDeclarationSyntaxAssertions
             .HaveClass("Mapper")
             .HaveModifiers(SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword)
-            .HaveGeneratedCodeAttribute()
             .HaveMethods(1)
             .HaveMethod(
                 typeof(string),
@@ -662,7 +651,6 @@ public sealed class IdentityStrategyIntegrationTests
         var methodDeclarationSyntaxAssertions = namespaceDeclarationSyntaxAssertions
             .HaveClass("Mapper")
             .HaveModifiers(SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword)
-            .HaveGeneratedCodeAttribute()
             .HaveMethods(1)
             .HaveMethod(
                 typeof(object),
@@ -717,7 +705,6 @@ public sealed class IdentityStrategyIntegrationTests
         var methodDeclarationSyntaxAssertions = namespaceDeclarationSyntaxAssertions
             .HaveClass("Mapper")
             .HaveModifiers(SyntaxKind.InternalKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword)
-            .HaveGeneratedCodeAttribute()
             .HaveMethods(1)
             .HaveMethod(
                 typeof(long),

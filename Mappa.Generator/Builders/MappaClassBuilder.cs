@@ -38,9 +38,7 @@ internal sealed class MappaClassBuilder
             "partial");
 
         var builder = new IndentStringBuilder();
-        builder
-            .AppendLine(new MappaGeneratedCodeAttributeBuilder().BuildSource(context, mappaGlobalOptions))
-            .AppendLine($"{modifiers} class {this.ClassContext.ClassDeclarationSyntax.Identifier}");
+        builder.AppendLine($"{modifiers} class {this.ClassContext.ClassDeclarationSyntax.Identifier}");
 
         using (builder.CodeBlock())
         using (builder.Indent())
