@@ -39,17 +39,17 @@ internal sealed class ArrayOrListToCollectionMapStrategyBuilder
 
         var lengthTemporary = context.NextTemporary();
         var returnVariable = context.NextTemporary();
-        var counterTemporary = context.NextTemporary();
+        var indexTemporary = context.NextTemporary();
 
         var builder = new IndentStringBuilder();
         builder.AppendLine($"int {lengthTemporary} = {source}.{countProperty};");
         builder.AppendLine($"System.Collections.Generic.List<{targetElementType.ToDisplayString()}> {returnVariable} = new System.Collections.Generic.List<{targetElementType.ToDisplayString()}>({lengthTemporary});");
-        builder.AppendLine($"for (int {counterTemporary} = 0 ; {counterTemporary} < {lengthTemporary} ; ++{counterTemporary})");
+        builder.AppendLine($"for (int {indexTemporary} = 0 ; {indexTemporary} < {lengthTemporary} ; ++{indexTemporary})");
         using (builder.CodeBlock())
         using (builder.Indent())
         {
             var itemTemporary = context.NextTemporary();
-            builder.AppendLine($"{sourceElementType} {itemTemporary} = {source}[{counterTemporary}];");
+            builder.AppendLine($"{sourceElementType} {itemTemporary} = {source}[{indexTemporary}];");
             var (innerVariable, innerStrategyCode) = this.strategy.ElementStrategy.GetBuilder().BuildSource(itemTemporary, context, mappaGlobalOptions);
             if (!string.IsNullOrEmpty(innerStrategyCode))
             {

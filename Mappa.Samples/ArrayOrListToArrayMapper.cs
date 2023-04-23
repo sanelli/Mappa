@@ -1,4 +1,4 @@
-// <copyright file="ArrayToArrayMapper.cs" company="Stefano Anelli">
+// <copyright file="ArrayOrListToArrayMapper.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -11,7 +11,7 @@ namespace Mappa.Samples;
 /// Mapper using nullable-to-nullable strategy.
 /// </summary>
 [Mappa]
-public sealed partial class ArrayToArrayMapper
+public sealed partial class ArrayOrListToArrayMapper
 {
     /// <summary>
     /// Map an array of enum to an array of integer.
@@ -26,4 +26,18 @@ public sealed partial class ArrayToArrayMapper
     /// <param name="input">The input enum value.</param>
     /// <returns>The integer mapped from the value.</returns>
     public partial int?[] Map(CountingValues?[] input);
+
+    /// <summary>
+    /// Map an <see cref="IList{T}"/> of enum to an array of integer.
+    /// </summary>
+    /// <param name="input">The input enum value.</param>
+    /// <returns>The integer mapped from the value.</returns>
+    public partial int[] Map(IList<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="List{T}"/> of enum to an array of integer.
+    /// </summary>
+    /// <param name="input">The input enum value.</param>
+    /// <returns>The integer mapped from the value.</returns>
+    public partial int[] Map(List<CountingValues> input);
 }

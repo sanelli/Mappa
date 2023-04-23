@@ -1,4 +1,4 @@
-// <copyright file="ArrayToArrayMapStrategy.cs" company="Stefano Anelli">
+// <copyright file="ArrayOrListToArrayMapStrategy.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -11,16 +11,16 @@ namespace Mappa.Generator.Models.Strategies;
 /// <summary>
 /// Strategy to map an array to another array.
 /// </summary>
-internal sealed class ArrayToArrayMapStrategy
+internal sealed class ArrayOrListToArrayMapStrategy
     : IMapStrategy
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="ArrayToArrayMapStrategy"/> class.
+    /// Initializes a new instance of the <see cref="ArrayOrListToArrayMapStrategy"/> class.
     /// </summary>
     /// <param name="targetType">The target type.</param>
     /// <param name="sourceType">The source type.</param>
     /// <param name="elementStrategy">The strategy that map the array element.</param>
-    public ArrayToArrayMapStrategy(
+    public ArrayOrListToArrayMapStrategy(
         ITypeSymbol targetType,
         ITypeSymbol sourceType,
         IMapStrategy elementStrategy)
@@ -42,8 +42,8 @@ internal sealed class ArrayToArrayMapStrategy
     public IMapStrategy ElementStrategy { get; }
 
     /// <inheritdoc/>
-    public MappaAlgorithmRule Rule => MappaAlgorithmRule.ArrayToArray;
+    public MappaAlgorithmRule Rule => MappaAlgorithmRule.ArrayOrListToArray;
 
     /// <inheritdoc/>
-    public IMappaStrategyBuilder GetBuilder() => new ArrayToArrayMapStrategyBuilder(this);
+    public IMappaStrategyBuilder GetBuilder() => new ArrayOrListToArrayMapStrategyBuilder(this);
 }

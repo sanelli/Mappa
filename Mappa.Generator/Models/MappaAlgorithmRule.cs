@@ -82,7 +82,7 @@ public enum MappaAlgorithmRule
     /// <summary>
     /// Map an array to an array.
     /// </summary>
-    ArrayToArray,
+    ArrayOrListToArray,
 
     /// <summary>
     /// Map an array, or <see cref="IList{T}"/> or <see cref="List{T}"/>

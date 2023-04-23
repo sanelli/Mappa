@@ -15,7 +15,7 @@
 
     <ItemGroup>
         <PackageReference Include="Mappa" Version="0.0.1-alpha.19" />
-        <PackageReference Include="Mappa.Generator" Version="0.0.1-alpha.52">
+        <PackageReference Include="Mappa.Generator" Version="0.0.1-alpha.54">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

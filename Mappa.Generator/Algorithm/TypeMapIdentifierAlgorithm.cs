@@ -168,12 +168,11 @@ internal class TypeMapIdentifierAlgorithm
                 nullableElementStrategy);
         }
 
-        // 13. S[]/List<T> -> T[] : ArrayToArrayStrategy ( IMapStrategy(T, S) ).
-        if (CanMapArrayToArray(out var arrayElementStrategy))
+        // 13. S[]/List<T> -> T[] : ArrayOrListToArrayMapStrategy ( IMapStrategy(T, S) ).
+        if (CanMapArrayOrListToArray(out var arrayElementStrategy))
         {
-            // TODO: Support as input IList{T} & List{T}
             // TODO: Add support for faster iteration using Span<>
-            return new ArrayToArrayMapStrategy(
+            return new ArrayOrListToArrayMapStrategy(
                 this.Context.TargetType,
                 this.Context.SourceType,
                 arrayElementStrategy);
@@ -344,13 +343,17 @@ internal class TypeMapIdentifierAlgorithm
             return isSourceNullable && isTargetNullable && TryGetElementStrategy(out elementStrategy);
         }
 
-        bool CanMapArrayToArray(out IMapStrategy elementStrategy)
+        bool CanMapArrayOrListToArray(out IMapStrategy elementStrategy)
         {
-            var isSourceArray = this.Context.SourceType.IsArray();
+            // Source can be S[], IList<S>, List<S>
+            var acceptSource = this.Context.SourceType.IsArray();
+            acceptSource = acceptSource || this.Context.SourceType.IsIList();
+            acceptSource = acceptSource || this.Context.SourceType.IsList(this.Compilation);
+
             var isTargetArray = this.Context.TargetType.IsArray();
 
             elementStrategy = new NoMapStrategy(this.Context.TargetType, this.Context.SourceType);
-            return isSourceArray && isTargetArray && TryGetElementStrategy(out elementStrategy);
+            return acceptSource && isTargetArray && TryGetElementStrategy(out elementStrategy);
         }
 
         bool CanMapArrayOrListToCollectionOrEnumerable(out IMapStrategy elementStrategy)
