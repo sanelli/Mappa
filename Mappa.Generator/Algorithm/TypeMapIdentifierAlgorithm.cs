@@ -169,17 +169,24 @@ internal class TypeMapIdentifierAlgorithm
         }
 
         // 13. S[]/List<T> -> T[] : ArrayOrListToArrayMapStrategy ( IMapStrategy(T, S) ).
-        if (CanMapArrayOrListToArray(out var arrayElementStrategy))
+        if (CanMapArrayOrListToArray(out var arrayOrListToArrayElementStrategy))
         {
             // TODO: Add support for faster iteration using Span<>
             return new ArrayOrListToArrayMapStrategy(
                 this.Context.TargetType,
                 this.Context.SourceType,
-                arrayElementStrategy);
+                arrayOrListToArrayElementStrategy);
         }
 
         // 14. Collection<S>/Enumerable<S> -> T[] : CollectionOrEnumerableToArray( IMapStrategy(T, S) )
-        // TODO: Implement me!
+        if (CanMapCollectionOrEnumerableToArray(out var collectionOrEnumerableToArrayElementStrategy))
+        {
+            return new EnumerableOrCollectionToArrayMapStrategy(
+                this.Context.TargetType,
+                this.Context.SourceType,
+                collectionOrEnumerableToArrayElementStrategy);
+        }
+
         // 15. S[]/List<S> -> Collection<T>/IEnumerable<T> : ArrayOrListToCollectionMapStrategy ( IMapStrategy(T, S) ).
         if (CanMapArrayOrListToCollectionOrEnumerable(out var arrayOrListElementStrategy))
         {
@@ -349,6 +356,19 @@ internal class TypeMapIdentifierAlgorithm
             var acceptSource = this.Context.SourceType.IsArray();
             acceptSource = acceptSource || this.Context.SourceType.IsIList();
             acceptSource = acceptSource || this.Context.SourceType.IsList(this.Compilation);
+
+            var isTargetArray = this.Context.TargetType.IsArray();
+
+            elementStrategy = new NoMapStrategy(this.Context.TargetType, this.Context.SourceType);
+            return acceptSource && isTargetArray && TryGetElementStrategy(out elementStrategy);
+        }
+
+        bool CanMapCollectionOrEnumerableToArray(out IMapStrategy elementStrategy)
+        {
+            // Source can be IEnumerable<S>, ICollection<S> or IReadOnlyCollection<S>
+            var acceptSource = this.Context.SourceType.IsIEnumerable();
+            acceptSource = acceptSource || this.Context.SourceType.IsICollection();
+            acceptSource = acceptSource || this.Context.SourceType.IsIReadOnlyCollection();
 
             var isTargetArray = this.Context.TargetType.IsArray();
 

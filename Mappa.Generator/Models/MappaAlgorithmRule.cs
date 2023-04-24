@@ -35,7 +35,7 @@ public enum MappaAlgorithmRule
     ImplicitConversion,
 
     /// <summary>
-    /// Convert an enum to a string.
+    /// Convert an enum to a <see cref="string"/>.
     /// </summary>
     EnumToString,
 
@@ -45,7 +45,7 @@ public enum MappaAlgorithmRule
     EnumToIntegral,
 
     /// <summary>
-    /// Convert a string to enum value.
+    /// Convert a <see cref="string"/> to enum value.
     /// </summary>
     StringToEnum,
 
@@ -60,22 +60,22 @@ public enum MappaAlgorithmRule
     EnumToEnum,
 
     /// <summary>
-    /// Map a string to a number value.
+    /// Map a <see cref="string"/> to a number value.
     /// </summary>
     StringToNumber,
 
     /// <summary>
-    /// Map a string to a date-time.
+    /// Map a <see cref="string"/> to a <see cref="DateTime"/>.
     /// </summary>
     StringToDateTime,
 
     /// <summary>
-    /// Map a string to a date-time.
+    /// Map to <see cref="string"/> by invoking <see cref="object.ToString()"/>.
     /// </summary>
     InvokeToString,
 
     /// <summary>
-    /// Map a nullable struct to a nullable struct.
+    /// Map a <see cref="Nullable{T}"/> struct to a <see cref="Nullable{T}"/> struct.
     /// </summary>
     NullableToNullable,
 
@@ -95,4 +95,10 @@ public enum MappaAlgorithmRule
     /// to any collection (excluding array).
     /// </summary>
     EnumerableOrCollectionToCollection,
+
+    /// <summary>
+    /// Map an <see cref="IEnumerable{T}"/>, or <see cref="ICollection{T}"/> or <see cref="IReadOnlyCollection{T}"/>
+    /// to array.
+    /// </summary>
+    EnumerableOrCollectionToArray,
 }

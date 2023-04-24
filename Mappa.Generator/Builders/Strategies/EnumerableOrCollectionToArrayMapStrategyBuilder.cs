@@ -1,4 +1,4 @@
-// <copyright file="EnumerableOrCollectionToCollectionMapStrategyBuilder.cs" company="Stefano Anelli">
+// <copyright file="EnumerableOrCollectionToArrayMapStrategyBuilder.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -10,18 +10,18 @@ using Mappa.Generator.Models.Strategies;
 namespace Mappa.Generator.Builders.Strategies;
 
 /// <summary>
-/// Builder for <see cref="EnumerableOrCollectionToCollectionMapStrategy"/> strategy.
+/// Builder for <see cref="EnumerableOrCollectionToArrayMapStrategy"/> strategy.
 /// </summary>
-internal sealed class EnumerableOrCollectionToCollectionMapStrategyBuilder
+internal sealed class EnumerableOrCollectionToArrayMapStrategyBuilder
     : IMappaStrategyBuilder
 {
-    private readonly EnumerableOrCollectionToCollectionMapStrategy strategy;
+    private readonly EnumerableOrCollectionToArrayMapStrategy strategy;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="EnumerableOrCollectionToCollectionMapStrategyBuilder"/> class.
+    /// Initializes a new instance of the <see cref="EnumerableOrCollectionToArrayMapStrategyBuilder"/> class.
     /// </summary>
     /// <param name="strategy">The strategy.</param>
-    public EnumerableOrCollectionToCollectionMapStrategyBuilder(EnumerableOrCollectionToCollectionMapStrategy strategy)
+    public EnumerableOrCollectionToArrayMapStrategyBuilder(EnumerableOrCollectionToArrayMapStrategy strategy)
     {
         this.strategy = strategy;
     }
@@ -36,12 +36,11 @@ internal sealed class EnumerableOrCollectionToCollectionMapStrategyBuilder
         var targetElementType = this.strategy.TargetType.GetElementType();
         var sourceElementType = this.strategy.SourceType.GetElementType();
 
-        var returnVariable = context.NextTemporary();
+        var listTemporary = context.NextTemporary();
         var loopTemporary = context.NextTemporary();
 
-        // TODO: If the input is IList<T>, List<T> or T[] we might be able to optimize this
         var builder = new IndentStringBuilder();
-        builder.AppendLine($"System.Collections.Generic.List<{targetElementType.ToDisplayString()}> {returnVariable} = new System.Collections.Generic.List<{targetElementType.ToDisplayString()}>();");
+        builder.AppendLine($"System.Collections.Generic.List<{targetElementType.ToDisplayString()}> {listTemporary} = new System.Collections.Generic.List<{targetElementType.ToDisplayString()}>();");
         builder.AppendLine($"foreach ({sourceElementType.ToDisplayString()} {loopTemporary} in {source})");
         using (builder.CodeBlock())
         using (builder.Indent())
@@ -53,9 +52,12 @@ internal sealed class EnumerableOrCollectionToCollectionMapStrategyBuilder
                 builder.AppendEmptyLine();
             }
 
-            builder.AppendLine($"{returnVariable}.Add({innerVariable});");
+            builder.AppendLine($"{listTemporary}.Add({innerVariable});");
         }
 
-        return ($"{ruleComment}{returnVariable}", builder.ToString());
+        var arrayTemporary = context.NextTemporary();
+        builder.AppendLine($"{targetElementType.ToDisplayString()}[] {arrayTemporary} = {listTemporary}.ToArray();");
+
+        return ($"{ruleComment}{arrayTemporary}", builder.ToString());
     }
 }
