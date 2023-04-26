@@ -210,7 +210,16 @@ internal class TypeMapIdentifierAlgorithm
         }
 
         // 17. Dictionary<SK,SV> -> Dictionary<TK,TV> : DictionaryStrategy( IMapStrategy(TK, SK), IMapStrategy(TV, SV) ).
-        // TODO: Implement me
+        if (CanMapDictionaryToDictionary(out var keyStrategy, out var valueStrategy))
+        {
+            // TODO: Allow the user to specify if they want to use .Add or the indexer
+            return new DictionaryToDictionaryMapStrategy(
+                this.Context.TargetType,
+                this.Context.SourceType,
+                keyStrategy,
+                valueStrategy);
+        }
+
         // 18. (S1, ..., SN) -> (T1, ..., TN) : TupleStrategy( IMapStrategy(T1, S1), ..., IMapStrategy(TN, SN))
         // TODO: Implement me
         // 19. S -> T : ConstructorStrategy(S, T)
@@ -233,6 +242,30 @@ internal class TypeMapIdentifierAlgorithm
             var algorithm = new TypeMapIdentifierWithMapMethodAlgorithm(context, this.Compilation, this.CancellationToken);
             elementStrategy = algorithm.GetStrategy();
             return elementStrategy is not NoMapStrategy;
+        }
+
+        bool TryGetKeyAndValueStrategy(out IMapStrategy keyStrategy, out IMapStrategy valueStrategy)
+        {
+            var (sourceKeyType, sourceKeyValueType) = this.Context.SourceType.GetKeyAndValueTypes();
+            var (targetKeyType, targetValueType) = this.Context.TargetType.GetKeyAndValueTypes();
+
+            // Get strategy for key
+            var keyContext = new GenericMappaMethodGeneratorContext(
+                this.Context,
+                targetKeyType,
+                sourceKeyType);
+            var keyAlgorithm = new TypeMapIdentifierWithMapMethodAlgorithm(keyContext, this.Compilation, this.CancellationToken);
+            keyStrategy = keyAlgorithm.GetStrategy();
+
+            // Get strategy for value
+            var valueContext = new GenericMappaMethodGeneratorContext(
+                this.Context,
+                targetValueType,
+                sourceKeyValueType);
+            var valueAlgorithm = new TypeMapIdentifierWithMapMethodAlgorithm(valueContext, this.Compilation, this.CancellationToken);
+            valueStrategy = valueAlgorithm.GetStrategy();
+
+            return keyStrategy is not NoMapStrategy && valueStrategy is not NoMapStrategy;
         }
 
         bool CanMapUsingMapToSameTypeRule()
@@ -412,6 +445,19 @@ internal class TypeMapIdentifierAlgorithm
             // Return result of check.
             elementStrategy = new NoMapStrategy(this.Context.TargetType, this.Context.SourceType);
             return acceptSource && acceptTarget && TryGetElementStrategy(out elementStrategy);
+        }
+
+        bool CanMapDictionaryToDictionary(out IMapStrategy keyStrategy, out IMapStrategy valueStrategy)
+        {
+            var isSourceDictionary = this.Context.SourceType.IsIDictionary(this.Compilation)
+                                    || this.Context.SourceType.IsDictionary(this.Compilation);
+            var isTargetDictionary = this.Context.TargetType.IsIDictionary(this.Compilation)
+                                    || this.Context.TargetType.IsDictionary(this.Compilation);
+
+            keyStrategy = new NoMapStrategy(this.Context.TargetType, this.Context.SourceType);
+            valueStrategy = new NoMapStrategy(this.Context.TargetType, this.Context.SourceType);
+
+            return isSourceDictionary && isTargetDictionary && TryGetKeyAndValueStrategy(out keyStrategy, out valueStrategy);
         }
     }
 }

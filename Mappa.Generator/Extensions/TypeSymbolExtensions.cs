@@ -85,6 +85,32 @@ internal static class TypeSymbolExtensions
     }
 
     /// <summary>
+    /// Check if the type is <see cref="IDictionary{K,V}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="IDictionary{K,V}"/>.</returns>
+    internal static bool IsIDictionary(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var listType = compilation.GetTypeByMetadataName(typeof(IDictionary<,>).FullName);
+        var isList = SymbolEqualityComparer.Default.Equals(listType, typeSymbol.OriginalDefinition);
+        return isList;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="Dictionary{K,V}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="Dictionary{K,V}"/>.</returns>
+    internal static bool IsDictionary(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var listType = compilation.GetTypeByMetadataName(typeof(Dictionary<,>).FullName);
+        var isList = SymbolEqualityComparer.Default.Equals(listType, typeSymbol.OriginalDefinition);
+        return isList;
+    }
+
+    /// <summary>
     /// Check if the type is <see cref="ICollection{T}"/>.
     /// </summary>
     /// <param name="typeSymbol">The type symbol.</param>
@@ -121,12 +147,28 @@ internal static class TypeSymbolExtensions
             return arrayTypeSymbol.ElementType;
         }
 
-        if (typeSymbol is INamedTypeSymbol namedTypeSymbol && namedTypeSymbol.TypeArguments.Any())
+        if (typeSymbol is INamedTypeSymbol namedTypeSymbol && namedTypeSymbol.TypeArguments.Length == 1)
         {
             return namedTypeSymbol.TypeArguments.First();
         }
 
         throw new MappaGeneratorException($"Cannot obtain element type of \"{typeSymbol.ToDisplayString()}\"");
+    }
+
+    /// <summary>
+    /// Gets the key and value type of the container.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <returns>The element type of the key and value of the contain.</returns>
+    /// <exception cref="MappaGeneratorException">If <paramref name="typeSymbol"/> is not an array or a generic type.</exception>
+    internal static (ITypeSymbol KeyType, ITypeSymbol ValueType) GetKeyAndValueTypes(this ITypeSymbol typeSymbol)
+    {
+        if (typeSymbol is INamedTypeSymbol { TypeArguments.Length: 2 } namedTypeSymbol)
+        {
+            return (namedTypeSymbol.TypeArguments.First(), namedTypeSymbol.TypeArguments.Last());
+        }
+
+        throw new MappaGeneratorException($"Cannot obtain key and value types of \"{typeSymbol.ToDisplayString()}\"");
     }
 
     /// <summary>

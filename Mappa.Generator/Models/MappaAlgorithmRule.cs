@@ -101,4 +101,10 @@ public enum MappaAlgorithmRule
     /// to array.
     /// </summary>
     EnumerableOrCollectionToArray,
+
+    /// <summary>
+    /// Map a <see cref="IDictionary{TKey,TValue}"/> or <see cref="Dictionary{TKey,TValue}"/>
+    /// to <see cref="IDictionary{TKey,TValue}"/> or <see cref="Dictionary{TKey,TValue}"/>.
+    /// </summary>
+    DictionaryToDictionary,
 }

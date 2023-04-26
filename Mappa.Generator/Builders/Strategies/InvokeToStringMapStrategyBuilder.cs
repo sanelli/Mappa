@@ -28,12 +28,13 @@ internal sealed class InvokeToStringMapStrategyBuilder
     /// <inheritdoc/>
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
-        var code = $"{source}.ToString()";
+        var temporary = context.NextTemporary();
+        var code = $"string {temporary} = {source}.ToString();";
 
         var ruleComment = mappaGlobalOptions.MappaDebugComments
             ? $"/* Mappa Rule: {this.strategy.Rule} */ "
             : string.Empty;
 
-        return ($"{ruleComment}{code}", string.Empty);
+        return ($"{ruleComment}{temporary}", code);
     }
 }
