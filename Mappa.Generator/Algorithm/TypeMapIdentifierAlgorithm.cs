@@ -79,7 +79,7 @@ internal class TypeMapIdentifierAlgorithm
             new ReferenceNullableMapStrategyDetector(),
 
             // 08. Constructor related strategies.
-            new ConstructorMapStrategyDetector(),
+            new ConstructorMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
         };
 
         foreach (var detector in detectors)

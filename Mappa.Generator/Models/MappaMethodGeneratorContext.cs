@@ -36,6 +36,9 @@ internal sealed class MappaMethodGeneratorContext
     internal MapMethod MapMethod { get; }
 
     /// <inheritdoc/>
+    internal override ISymbol ParentSymbol => this.MapMethod.MethodSymbol.ContainingSymbol;
+
+    /// <inheritdoc/>
     internal override ITypeSymbol SourceType => this.MapMethod.SourceType;
 
     /// <inheritdoc/>

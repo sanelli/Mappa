@@ -13,6 +13,11 @@ namespace Mappa.Generator.Models;
 internal abstract class MappaMapAlgorithmContext
 {
     /// <summary>
+    /// Gets the parent symbol.
+    /// </summary>
+    internal abstract ISymbol ParentSymbol { get;  }
+
+    /// <summary>
     /// Gets the source type.
     /// </summary>
     internal abstract ITypeSymbol SourceType { get; }

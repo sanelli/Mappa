@@ -112,4 +112,9 @@ public enum MappaAlgorithmRule
     /// Map a tuple to another tuple.
     /// </summary>
     TupleToTuple,
+
+    /// <summary>
+    /// Invoke the mapping constructor.
+    /// </summary>
+    InvokeMappingConstructor,
 }

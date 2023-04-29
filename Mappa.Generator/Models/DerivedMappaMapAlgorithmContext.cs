@@ -31,6 +31,10 @@ internal sealed class DerivedMappaMapAlgorithmContext
     }
 
     /// <inheritdoc/>
+    internal override ISymbol ParentSymbol
+        => this.parent.ParentSymbol;
+
+    /// <inheritdoc/>
     internal override ITypeSymbol SourceType { get; }
 
     /// <inheritdoc/>

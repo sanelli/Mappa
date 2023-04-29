@@ -1,0 +1,44 @@
+// <copyright file="InvokeMappingConstructorMapStrategy.cs" company="Stefano Anelli">
+// Copyright (c) Stefano Anelli. All rights reserved.
+// </copyright>
+
+using Mappa.Generator.Builders.Strategies;
+
+using Microsoft.CodeAnalysis;
+
+namespace Mappa.Generator.Models.Strategies;
+
+/// <summary>
+/// Strategy used when invoking the mapping constructor of a class.
+/// </summary>
+internal sealed class InvokeMappingConstructorMapStrategy
+    : IMapStrategy
+{
+    /// <summary>
+    /// Initializes a new instance of the <see cref="InvokeMappingConstructorMapStrategy"/> class.
+    /// </summary>
+    /// <param name="targetType">The target type.</param>
+    /// <param name="sourceType">The source type.</param>
+    /// <param name="constructor">The constructor.</param>
+    /// <param name="parameterStrategy">The parameter strategy.</param>
+    public InvokeMappingConstructorMapStrategy(ITypeSymbol targetType, ITypeSymbol sourceType, IMethodSymbol constructor, IMapStrategy parameterStrategy)
+    {
+        this.TargetType = targetType;
+        this.SourceType = sourceType;
+    }
+
+    /// <inheritdoc/>
+    public ITypeSymbol TargetType { get; }
+
+    /// <inheritdoc/>
+    public ITypeSymbol SourceType { get; }
+
+    /// <inheritdoc/>
+    public MappaAlgorithmRule Rule => MappaAlgorithmRule.InvokeMappingConstructor;
+
+    /// <inheritdoc/>
+    public IMappaStrategyBuilder GetBuilder()
+    {
+        throw new NotImplementedException();
+    }
+}
