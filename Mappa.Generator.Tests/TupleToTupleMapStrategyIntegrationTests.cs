@@ -1,0 +1,154 @@
+// <copyright file="TupleToTupleMapStrategyIntegrationTests.cs" company="Stefano Anelli">
+// Copyright (c) Stefano Anelli. All rights reserved.
+// </copyright>
+
+using Mappa.Generator.Models.Strategies;
+using Mappa.Generator.Tests.Abstractions;
+using Mappa.Generator.Tests.Assertions;
+
+namespace Mappa.Generator.Tests;
+
+/// <summary>
+/// Integration tests for <see cref="TupleToTupleMapStrategy"/> strategy.
+/// </summary>
+// TODO: Test Tuple<...> -> (...)
+// TODO: Test Tuple<...> -> ( named )
+// TODO: (...) -> Test Tuple<...>
+// TODO: (...) -> ( named )
+// TODO: ( named ) -> Test Tuple<...>
+// TODO: ( named ) -> (...)
+public sealed class TupleToTupleMapStrategyIntegrationTests
+    : MappaGeneratorAbstractUnitTests
+{
+    /// <summary>
+    /// Test a mapping can be created from <see cref="Tuple{T1,T2,T3}"/>
+    /// to <see cref="Tuple{T1,T2,T3}"/>.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapSystemTupleToSystemTuple()
+    {
+        // Arrange
+        const string sourceCode = """
+            using Mappa.Attributes;
+            using System;
+
+            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+            public enum TestEnum
+            {
+                One,
+                Two,
+                Three,
+            }
+
+            [Mappa]
+            public sealed partial class Mapper
+            {
+                public partial Tuple<string, string, string> Map(Tuple<int, TestEnum, long> input);
+            }
+            """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        #pragma warning disable
+        var compilationUnitSyntaxAssertions = generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedOneSourceCode()
+            .WithCompilationUnit();
+
+        // TODO: Add correct assertions
+        compilationUnitSyntaxAssertions.NotBeNull();
+        #pragma warning restore
+    }
+
+    /// <summary>
+    /// Test a mapping can be created between two tuple
+    /// with anonymous elements.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapTupleWithAnonymousElementsToTupleWithAnonymousElements()
+    {
+        // Arrange
+        const string sourceCode = """
+            using Mappa.Attributes;
+            using System;
+
+            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+            public enum TestEnum
+            {
+                One,
+                Two,
+                Three,
+            }
+
+            [Mappa]
+            public sealed partial class Mapper
+            {
+                public partial (string, string, string) Map((int, TestEnum, long) input);
+            }
+            """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        #pragma warning disable
+        var compilationUnitSyntaxAssertions = generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedOneSourceCode()
+            .WithCompilationUnit();
+
+        // TODO: Add correct assertions
+        compilationUnitSyntaxAssertions.NotBeNull();
+        #pragma warning restore
+    }
+
+    /// <summary>
+    /// Test a mapping can be created between two tuple
+    /// with names elements.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapTupleWithNamedElementsToTupleWithNamedElements()
+    {
+        // Arrange
+        const string sourceCode = """
+            using Mappa.Attributes;
+            using System;
+
+            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+            public enum TestEnum
+            {
+                One,
+                Two,
+                Three,
+            }
+
+            [Mappa]
+            public sealed partial class Mapper
+            {
+                public partial (string First, string Second, string Third) Map((int Alfa, TestEnum Beta, long Gamma) input);
+            }
+            """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        #pragma warning disable
+        var compilationUnitSyntaxAssertions = generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedOneSourceCode()
+            .WithCompilationUnit();
+
+        // TODO: Add correct assertions
+        compilationUnitSyntaxAssertions.NotBeNull();
+        #pragma warning restore
+    }
+}

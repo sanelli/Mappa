@@ -3,6 +3,7 @@
 // </copyright>
 
 using System.Collections;
+using System.Collections.Immutable;
 
 using Mappa.Generator.Exceptions;
 
@@ -135,6 +136,23 @@ internal static class TypeSymbolExtensions
         => typeSymbol.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T;
 
     /// <summary>
+    /// Check if the type is <see cref="Tuple"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="IDictionary{K,V}"/>.</returns>
+    internal static bool IsTuple(this ITypeSymbol typeSymbol, Compilation compilation)
+        => typeSymbol.IsTupleType
+            || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(typeof(Tuple<>).FullName), typeSymbol.OriginalDefinition)
+            || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(typeof(Tuple<,>).FullName), typeSymbol.OriginalDefinition)
+            || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(typeof(Tuple<,,>).FullName), typeSymbol.OriginalDefinition)
+            || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(typeof(Tuple<,,,>).FullName), typeSymbol.OriginalDefinition)
+            || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(typeof(Tuple<,,,,>).FullName), typeSymbol.OriginalDefinition)
+            || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(typeof(Tuple<,,,,,>).FullName), typeSymbol.OriginalDefinition)
+            || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(typeof(Tuple<,,,,,,>).FullName), typeSymbol.OriginalDefinition)
+            || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(typeof(Tuple<,,,,,,,>).FullName), typeSymbol.OriginalDefinition);
+
+    /// <summary>
     /// Gets the element type of the container.
     /// </summary>
     /// <param name="typeSymbol">The type symbol.</param>
@@ -169,6 +187,24 @@ internal static class TypeSymbolExtensions
         }
 
         throw new MappaGeneratorException($"Cannot obtain key and value types of \"{typeSymbol.ToDisplayString()}\"");
+    }
+
+    /// <summary>
+    /// Gets all the type parameters of this type.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="typeArguments">The type parameters associated to <paramref name="typeSymbol"/>.</param>
+    /// <returns><c>true</c> if the element contains at least one type parameter.</returns>
+    internal static bool TryGetTypeArguments(this ITypeSymbol typeSymbol, out ImmutableArray<ITypeSymbol> typeArguments)
+    {
+        if (typeSymbol is INamedTypeSymbol { TypeArguments.Length: > 0 } namedTypeSymbol)
+        {
+            typeArguments = namedTypeSymbol.TypeArguments;
+            return true;
+        }
+
+        typeArguments = Array.Empty<ITypeSymbol>().ToImmutableArray();
+        return false;
     }
 
     /// <summary>

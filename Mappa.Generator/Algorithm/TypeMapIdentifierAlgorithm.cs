@@ -210,18 +210,25 @@ internal class TypeMapIdentifierAlgorithm
         }
 
         // 17. Dictionary<SK,SV> -> Dictionary<TK,TV> : DictionaryStrategy( IMapStrategy(TK, SK), IMapStrategy(TV, SV) ).
-        if (CanMapDictionaryToDictionary(out var keyStrategy, out var valueStrategy))
+        if (CanMapDictionaryToDictionary(out var dictionaryKeyStrategy, out var dictionaryValueStrategy))
         {
             // TODO: Allow the user to specify if they want to use .Add or the indexer
             return new DictionaryToDictionaryMapStrategy(
                 this.Context.TargetType,
                 this.Context.SourceType,
-                keyStrategy,
-                valueStrategy);
+                dictionaryKeyStrategy,
+                dictionaryValueStrategy);
         }
 
         // 18. (S1, ..., SN) -> (T1, ..., TN) : TupleStrategy( IMapStrategy(T1, S1), ..., IMapStrategy(TN, SN))
-        // TODO: Implement me
+        if (CanMapTupleToTuple(out var tupleElementStrategies))
+        {
+            return new TupleToTupleMapStrategy(
+                this.Context.TargetType,
+                this.Context.SourceType,
+                tupleElementStrategies.ToArray());
+        }
+
         // 19. S -> T : ConstructorStrategy(S, T)
         // TODO: Implement me
         // Report error
@@ -458,6 +465,38 @@ internal class TypeMapIdentifierAlgorithm
             valueStrategy = new NoMapStrategy(this.Context.TargetType, this.Context.SourceType);
 
             return isSourceDictionary && isTargetDictionary && TryGetKeyAndValueStrategy(out keyStrategy, out valueStrategy);
+        }
+
+        bool CanMapTupleToTuple(out IList<IMapStrategy> elementsStrategies)
+        {
+            var isSourceTuple = this.Context.SourceType.IsTuple(this.Compilation);
+            var isTargetTuple = this.Context.TargetType.IsTuple(this.Compilation);
+
+            var tmpTupleStrategies = elementsStrategies = new List<IMapStrategy>();
+
+            return isSourceTuple
+                   && isTargetTuple
+                   && this.Context.SourceType.TryGetTypeArguments(out var sourceTypeArguments)
+                   && this.Context.TargetType.TryGetTypeArguments(out var targetTypeArguments)
+                   && sourceTypeArguments.Length == targetTypeArguments.Length
+                   && Enumerable.Range(0, sourceTypeArguments.Length)
+                       .All(index =>
+                   {
+                       var elementContext = new GenericMappaMethodGeneratorContext(
+                           this.Context,
+                           targetTypeArguments[index],
+                           sourceTypeArguments[index]);
+                       var elementAlgorithm = new TypeMapIdentifierWithMapMethodAlgorithm(elementContext, this.Compilation, this.CancellationToken);
+                       var elementStrategy = elementAlgorithm.GetStrategy();
+
+                       if (elementStrategy is NoMapStrategy)
+                       {
+                           return false;
+                       }
+
+                       tmpTupleStrategies.Add(elementStrategy);
+                       return true;
+                   });
         }
     }
 }

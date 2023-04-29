@@ -107,4 +107,9 @@ public enum MappaAlgorithmRule
     /// to <see cref="IDictionary{TKey,TValue}"/> or <see cref="Dictionary{TKey,TValue}"/>.
     /// </summary>
     DictionaryToDictionary,
+
+    /// <summary>
+    /// Map a tuple to another tuple.
+    /// </summary>
+    TupleToTuple,
 }
