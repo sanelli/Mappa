@@ -159,7 +159,7 @@ internal class TypeMapIdentifierAlgorithm
                 this.Context.SourceType);
         }
 
-        // 12. (struct) S? -> T? : NullableToNullableStrategy( IMapStrategy(T, S) )
+        // 12. Nullable<S> -> Nullable<T> : NullableToNullableStrategy( IMapStrategy(T, S) )
         if (CanMapNullableToNullable(out var nullableElementStrategy))
         {
             return new NullableToNullableMapStrategy(
@@ -168,10 +168,10 @@ internal class TypeMapIdentifierAlgorithm
                 nullableElementStrategy);
         }
 
-        // 13. (struct) 12/A S? -> T
+        // 13. Nullable<S> -> T : SourceIsNullableStrategy ( IMapStrategy(T, S) )
         // TODO: Implement me
-        // 14. (struct) 12/B S -> T?
-        // TODO: Implement me
+        // 14.S -> Nullable<T>
+        // TODO: Implement me  : TargetIsNullableStrategy ( IMapStrategy(T, S) )
         // 15. S[]/List<T> -> T[] : ArrayOrListToArrayMapStrategy ( IMapStrategy(T, S) ).
         if (CanMapArrayOrListToArray(out var arrayOrListToArrayElementStrategy))
         {
@@ -233,13 +233,13 @@ internal class TypeMapIdentifierAlgorithm
                 tupleElementStrategies.ToArray());
         }
 
-        // 21. (nullable enabled) (ref type) S? -> T? : ReferenceNullableToReferenceNullable( IMapStrategy(T,S) )
+        // 21. (nullable enabled) S? -> T? : ReferenceNullableToReferenceNullableStrategy( IMapStrategy(T,S) )
         // TODO: Implement me
-        // 22. (nullable enabled) (ref type) S? -> T
+        // 22. (nullable enabled) S? -> T : SourceReferenceNullableStrategy ( IMapStrategy(T ,S) )
         // TODO: Implement me
-        // 23. (nullable enabled) (ref type) S -> T?
+        // 23. (nullable enabled) S -> T? : TargetReferenceNullableStrategy ( IMapStrategy(T, S) )
         // TODO: Implement me
-        // 24. S -> T : ConstructorStrategy(S, T)
+        // 24. S -> T : ConstructorStrategy(T, S)
         // TODO: Implement me
         // Report error
         this.Context.ReportDiagnostic(MappaDiagnostics.CannotIdentifyStrategy(
@@ -252,7 +252,7 @@ internal class TypeMapIdentifierAlgorithm
         {
             var sourceElementType = this.Context.SourceType.GetElementType();
             var targetElementType = this.Context.TargetType.GetElementType();
-            var context = new GenericMappaMethodGeneratorContext(
+            var context = new DerivedMappaMapAlgorithmContext(
                 this.Context,
                 targetElementType,
                 sourceElementType);
@@ -267,7 +267,7 @@ internal class TypeMapIdentifierAlgorithm
             var (targetKeyType, targetValueType) = this.Context.TargetType.GetKeyAndValueTypes();
 
             // Get strategy for key
-            var keyContext = new GenericMappaMethodGeneratorContext(
+            var keyContext = new DerivedMappaMapAlgorithmContext(
                 this.Context,
                 targetKeyType,
                 sourceKeyType);
@@ -275,7 +275,7 @@ internal class TypeMapIdentifierAlgorithm
             keyStrategy = keyAlgorithm.GetStrategy();
 
             // Get strategy for value
-            var valueContext = new GenericMappaMethodGeneratorContext(
+            var valueContext = new DerivedMappaMapAlgorithmContext(
                 this.Context,
                 targetValueType,
                 sourceKeyValueType);
@@ -492,7 +492,7 @@ internal class TypeMapIdentifierAlgorithm
                    && Enumerable.Range(0, sourceTypeArguments.Length)
                        .All(index =>
                    {
-                       var elementContext = new GenericMappaMethodGeneratorContext(
+                       var elementContext = new DerivedMappaMapAlgorithmContext(
                            this.Context,
                            targetTypeArguments[index],
                            sourceTypeArguments[index]);
