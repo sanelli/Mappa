@@ -23,6 +23,11 @@ internal abstract class MappaMapAlgorithmContext
     internal abstract ITypeSymbol TargetType { get; }
 
     /// <summary>
+    /// Gets the context settings.
+    /// </summary>
+    internal abstract MappaMapAlgorithmContextSettings Settings { get; }
+
+    /// <summary>
     /// Gets a value indicating weather the nullable flag
     /// is enabled in the current context.
     /// </summary>

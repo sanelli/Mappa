@@ -42,6 +42,9 @@ internal sealed class MappaMethodGeneratorContext
     internal override ITypeSymbol TargetType => this.MapMethod.TargetType;
 
     /// <inheritdoc/>
+    internal override MappaMapAlgorithmContextSettings Settings { get; } = new();
+
+    /// <inheritdoc/>
     internal override bool IsNullableEnabled()
         => this.ClassContext.IsNullableEnabled(this.MapMethod.MethodDeclarationSyntax);
 

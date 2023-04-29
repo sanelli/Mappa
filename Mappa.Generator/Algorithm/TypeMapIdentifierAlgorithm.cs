@@ -74,25 +74,34 @@ internal class TypeMapIdentifierAlgorithm
 
             // 06. Tuple related strategies.
             new TupleMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
+
+            // 07. Reference nullable related strategies.
+            new ReferenceNullableMapStrategyDetector(),
+
+            // 08. Constructor related strategies.
+            new ConstructorMapStrategyDetector(),
         };
 
         foreach (var detector in detectors)
         {
-            this.CancellationToken.ThrowIfCancellationRequested();
-            if (detector.TryDetect(out var detectedStrategy))
+            // Skip the constructor strategy in order to avoid infinite loops
+            // in the case this algorithm is run inside the constructor strategy
+            // detector itself.
+            if (detector is ConstructorMapStrategyDetector && this.Context.Settings.UseConstructorMapStrategyDetector)
             {
-                return detectedStrategy;
+                continue;
+            }
+
+            this.CancellationToken.ThrowIfCancellationRequested();
+            using (this.Context.Settings.UseConstructorMapStrategyDetector.Apply(true))
+            {
+                if (detector.TryDetect(out var detectedStrategy))
+                {
+                    return detectedStrategy;
+                }
             }
         }
 
-        // 21. (nullable enabled) S? -> T? : ReferenceNullableToReferenceNullableStrategy( IMapStrategy(T,S) )
-        // TODO: Implement me
-        // 22. (nullable enabled) S? -> T : SourceReferenceNullableStrategy ( IMapStrategy(T ,S) )
-        // TODO: Implement me
-        // 23. (nullable enabled) S -> T? : TargetReferenceNullableStrategy ( IMapStrategy(T, S) )
-        // TODO: Implement me
-        // 24. S -> T : ConstructorStrategy(T, S)
-        // TODO: Implement me
         // Report error
         this.Context.ReportDiagnostic(MappaDiagnostics.CannotIdentifyStrategy(
             this.Context.TargetType,
