@@ -55,7 +55,6 @@ internal class TypeMapIdentifierAlgorithm
     /// <returns>The strategy computed.</returns>
     internal virtual IMapStrategy GetStrategy()
     {
-        this.CancellationToken.ThrowIfCancellationRequested();
         IMapStrategyDetector[] detectors =
         {
             // 01. Identity strategy.
