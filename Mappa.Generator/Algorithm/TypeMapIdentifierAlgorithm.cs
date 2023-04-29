@@ -168,7 +168,11 @@ internal class TypeMapIdentifierAlgorithm
                 nullableElementStrategy);
         }
 
-        // 13. S[]/List<T> -> T[] : ArrayOrListToArrayMapStrategy ( IMapStrategy(T, S) ).
+        // 13. (struct) 12/A S? -> T
+        // TODO: Implement me
+        // 14. (struct) 12/B S -> T?
+        // TODO: Implement me
+        // 15. S[]/List<T> -> T[] : ArrayOrListToArrayMapStrategy ( IMapStrategy(T, S) ).
         if (CanMapArrayOrListToArray(out var arrayOrListToArrayElementStrategy))
         {
             // TODO: Add support for faster iteration using Span<>
@@ -178,7 +182,7 @@ internal class TypeMapIdentifierAlgorithm
                 arrayOrListToArrayElementStrategy);
         }
 
-        // 14. Collection<S>/Enumerable<S> -> T[] : CollectionOrEnumerableToArray( IMapStrategy(T, S) )
+        // 16. Collection<S>/Enumerable<S> -> T[] : CollectionOrEnumerableToArray( IMapStrategy(T, S) )
         if (CanMapCollectionOrEnumerableToArray(out var collectionOrEnumerableToArrayElementStrategy))
         {
             return new EnumerableOrCollectionToArrayMapStrategy(
@@ -187,7 +191,7 @@ internal class TypeMapIdentifierAlgorithm
                 collectionOrEnumerableToArrayElementStrategy);
         }
 
-        // 15. S[]/List<S> -> Collection<T>/IEnumerable<T> : ArrayOrListToCollectionMapStrategy ( IMapStrategy(T, S) ).
+        // 17. S[]/List<S> -> Collection<T>/IEnumerable<T> : ArrayOrListToCollectionMapStrategy ( IMapStrategy(T, S) ).
         if (CanMapArrayOrListToCollectionOrEnumerable(out var arrayOrListElementStrategy))
         {
             // TODO: Check if it is possible using Span<> here as well.
@@ -198,7 +202,7 @@ internal class TypeMapIdentifierAlgorithm
                 arrayOrListElementStrategy);
         }
 
-        // 16. IEnumerable<S>/Collection<S> -> Collection<T>/IEnumerable<T> : EnumerableOrCollectionToCollectionMapStrategy ( IMapStrategy(T, S) ).
+        // 18. IEnumerable<S>/Collection<S> -> Collection<T>/IEnumerable<T> : EnumerableOrCollectionToCollectionMapStrategy ( IMapStrategy(T, S) ).
         if (CanMapCollectionOrEnumerableToCollectionOrEnumerable(out var collectionOrEnumerableElementStrategy))
         {
             // TODO: Check if it is possible using Span<> here as well.
@@ -209,7 +213,7 @@ internal class TypeMapIdentifierAlgorithm
                 collectionOrEnumerableElementStrategy);
         }
 
-        // 17. Dictionary<SK,SV> -> Dictionary<TK,TV> : DictionaryStrategy( IMapStrategy(TK, SK), IMapStrategy(TV, SV) ).
+        // 19. Dictionary<SK,SV> -> Dictionary<TK,TV> : DictionaryStrategy( IMapStrategy(TK, SK), IMapStrategy(TV, SV) ).
         if (CanMapDictionaryToDictionary(out var dictionaryKeyStrategy, out var dictionaryValueStrategy))
         {
             // TODO: Allow the user to specify if they want to use .Add or the indexer
@@ -220,7 +224,7 @@ internal class TypeMapIdentifierAlgorithm
                 dictionaryValueStrategy);
         }
 
-        // 18. (S1, ..., SN) -> (T1, ..., TN) : TupleStrategy( IMapStrategy(T1, S1), ..., IMapStrategy(TN, SN))
+        // 20. (S1, ..., SN) -> (T1, ..., TN) : TupleStrategy( IMapStrategy(T1, S1), ..., IMapStrategy(TN, SN))
         if (CanMapTupleToTuple(out var tupleElementStrategies))
         {
             return new TupleToTupleMapStrategy(
@@ -229,7 +233,13 @@ internal class TypeMapIdentifierAlgorithm
                 tupleElementStrategies.ToArray());
         }
 
-        // 19. S -> T : ConstructorStrategy(S, T)
+        // 21. (nullable enabled) (ref type) S? -> T? : ReferenceNullableToReferenceNullable( IMapStrategy(T,S) )
+        // TODO: Implement me
+        // 22. (nullable enabled) (ref type) S? -> T
+        // TODO: Implement me
+        // 23. (nullable enabled) (ref type) S -> T?
+        // TODO: Implement me
+        // 24. S -> T : ConstructorStrategy(S, T)
         // TODO: Implement me
         // Report error
         this.Context.ReportDiagnostic(MappaDiagnostics.CannotIdentifyStrategy(
