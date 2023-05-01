@@ -21,7 +21,7 @@ public sealed class InvokeEmptyConstructorStrategyMapperUnitTests
     private readonly InvokeEmptyConstructorStrategyMapper mapper = new();
 
     /// <summary>
-    /// Unit test for <see cref="InvokeEmptyConstructorStrategyMapper.Map"/>.
+    /// Unit test for <see cref="InvokeEmptyConstructorStrategyMapper.Map(SourceClassModel)"/>.
     /// </summary>
     [Fact]
     [UnitTest]
@@ -29,6 +29,24 @@ public sealed class InvokeEmptyConstructorStrategyMapperUnitTests
     {
         // Arrange
         var source = new SourceClassModel { ParamA = 123, ParamB = CountingValues.Three };
+
+        // Act
+        var target = this.mapper.Map(source);
+
+        // Arrange
+        target.ParamA.Should().Be(source.ParamA.ToString(NumberFormatInfo.CurrentInfo));
+        target.ParamB.Should().Be((int)source.ParamB);
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="InvokeEmptyConstructorStrategyMapper.Map(SourceRecordModelWithEmptyConstructor)"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapToRecordWithSingleEmptyConstructor()
+    {
+        // Arrange
+        var source = new SourceRecordModelWithEmptyConstructor { ParamA = 123, ParamB = CountingValues.Three };
 
         // Act
         var target = this.mapper.Map(source);
