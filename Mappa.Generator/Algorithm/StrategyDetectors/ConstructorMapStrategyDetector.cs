@@ -62,7 +62,7 @@ internal sealed class ConstructorMapStrategyDetector
         return mapStrategy is not NoMapStrategy;
     }
 
-    private bool CanInvokeMappingConstructor(out IMethodSymbol constructor,  out IMapStrategy strategy)
+    private bool CanInvokeMappingConstructor(out IMethodSymbol constructor, out IMapStrategy strategy)
     {
         constructor = null!;
         var noMapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
@@ -94,7 +94,7 @@ internal sealed class ConstructorMapStrategyDetector
             strategy = constructorsWithStrategy.Single().Strategy;
         }
 
-        // Of if more than one has been found check if any of these
+        // If more than one has been found check if any of these
         // that has the very same input type and ise that for the mapping.
         else
         {
@@ -141,63 +141,74 @@ internal sealed class ConstructorMapStrategyDetector
 
                 // Ignore indexer properties.
                 // Ignore properties without a setter.
-                .Where(property => property.IsIndexer is false && property.SetMethod is not null);
-
-            // Gets the source properties.
-            var sourceProperties = this.context.SourceType.GetTypeProperties()
-
-                // Ignore indexer properties.
-                // Ignore properties without a setter.
-                .Where(property => property.IsIndexer is false && property.GetMethod is not null)
-
-                // Map them to a dictionary
-                .ToDictionary(property => property.Name);
-
-            // Match target property with a source property.
-            var initializerStrategies = targetProperties
-                .Select(
-                    targetProperty =>
-                    {
-                        // TODO: Allow to use a source property with a different name.
-                        if (!sourceProperties.TryGetValue(targetProperty.Name, out var sourceProperty))
-                        {
-                            return new PropertyMapStrategy(targetProperty, null!, noMapStrategy);
-                        }
-
-                        var targetPropertyType = targetProperty.Type;
-                        var sourcePropertyType = sourceProperty.Type;
-
-                        if (this.TryGetStrategyBetweenTypes(targetPropertyType, sourcePropertyType, out var propertyStrategy))
-                        {
-                            return new PropertyMapStrategy(targetProperty, sourceProperty, propertyStrategy);
-                        }
-
-                        return new PropertyMapStrategy(targetProperty, null!, noMapStrategy);
-                    })
+                .Where(property => property.IsIndexer is false && property.SetMethod is not null)
                 .ToArray();
 
-            // Check if any property strategy is required but no strategy has been found
-            if (initializerStrategies
-                .Any(propertyStrategy => propertyStrategy.TargetProperty.IsRequired && propertyStrategy.PropertyStrategy is NoMapStrategy))
+            // If no target properties exist there is no point in applying this strategy
+            // this way we can avoid to attempt using this strategy for basic types
+            // like string, int, etc...
+            if (targetProperties.Any())
             {
-                strategy = noMapStrategy;
+                // Gets the source properties.
+                var sourceProperties = this.context.SourceType.GetTypeProperties()
+
+                    // Ignore indexer properties.
+                    // Ignore properties without a setter.
+                    .Where(property => property.IsIndexer is false && property.GetMethod is not null)
+
+                    // Map them to a dictionary
+                    .ToDictionary(property => property.Name);
+
+                // Match target property with a source property.
+                var initializerStrategies = targetProperties
+                    .Select(
+                        targetProperty =>
+                        {
+                            // TODO: Allow to use a source property with a different name.
+                            if (!sourceProperties.TryGetValue(targetProperty.Name, out var sourceProperty))
+                            {
+                                return new PropertyMapStrategy(targetProperty, null!, noMapStrategy);
+                            }
+
+                            var targetPropertyType = targetProperty.Type;
+                            var sourcePropertyType = sourceProperty.Type;
+
+                            if (this.TryGetStrategyBetweenTypes(targetPropertyType, sourcePropertyType, out var propertyStrategy))
+                            {
+                                return new PropertyMapStrategy(targetProperty, sourceProperty, propertyStrategy);
+                            }
+
+                            return new PropertyMapStrategy(targetProperty, null!, noMapStrategy);
+                        })
+                    .ToArray();
+
+                // Check if any property strategy is required but no strategy has been found
+                if (initializerStrategies
+                    .Any(propertyStrategy => propertyStrategy.TargetProperty.IsRequired && propertyStrategy.PropertyStrategy is NoMapStrategy))
+                {
+                    strategy = noMapStrategy;
+                }
+                else
+                {
+                    // Filter out properties that have no mapping.
+                    // TODO: Allow to prevent skipping some non required parameters.
+                    initializerStrategies = initializerStrategies
+                        .Where(propertyStrategy => propertyStrategy.PropertyStrategy is not NoMapStrategy)
+                        .ToArray();
+
+                    // TODO: Allow to return an error if some source properties are not mapped.
+                    strategy = new InvokeConstructorMapStrategy(
+                        MappaAlgorithmRule.InvokeEmptyConstructor,
+                        this.context.TargetType,
+                        this.context.SourceType,
+                        constructors.Single(),
+                        Array.Empty<PropertyMapStrategy>(),
+                        initializerStrategies);
+                }
             }
             else
             {
-                // Filter out properties that have no mapping.
-                // TODO: Allow to prevent skipping some non required parameters.
-                initializerStrategies = initializerStrategies
-                    .Where(propertyStrategy => propertyStrategy.PropertyStrategy is not NoMapStrategy)
-                    .ToArray();
-
-                // TODO: Allow to return an error if some source properties are not mapped.
-                strategy = new InvokeConstructorMapStrategy(
-                    MappaAlgorithmRule.InvokeEmptyConstructor,
-                    this.context.TargetType,
-                    this.context.SourceType,
-                    constructors.Single(),
-                    Array.Empty<PropertyMapStrategy>(),
-                    initializerStrategies);
+                strategy = noMapStrategy;
             }
         }
 
