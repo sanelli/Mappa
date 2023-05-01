@@ -69,8 +69,5 @@ internal sealed class InvokeConstructorMapStrategy
     public MappaAlgorithmRule Rule { get; }
 
     /// <inheritdoc/>
-    public IMappaStrategyBuilder GetBuilder()
-    {
-        throw new NotImplementedException();
-    }
+    public IMappaStrategyBuilder GetBuilder() => new InvokeConstructorMapStrategyBuilder(this);
 }

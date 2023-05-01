@@ -68,9 +68,10 @@ internal sealed class IndentStringBuilder
     /// <summary>
     /// Begin a new code block.
     /// </summary>
+    /// <param name="addSemicolonAfterClose"><c>true</c> if a semicolon should be added when the block is being closed..</param>
     /// <returns>A disposable object that closes the block upon dispose.</returns>
-    internal IDisposable CodeBlock()
-        => new CodeBlockDefinition(this);
+    internal IDisposable CodeBlock(bool addSemicolonAfterClose = false)
+        => new CodeBlockDefinition(this, addSemicolonAfterClose);
 
     /// <summary>
     /// Generate a surrounding <c>#nullable</c> block.
@@ -126,19 +127,27 @@ internal sealed class IndentStringBuilder
         private readonly IndentStringBuilder stringBuilder;
 
         /// <summary>
+        /// <c>true</c> if a semicolon should be added when closing
+        /// the block.
+        /// </summary>
+        private readonly bool addSemicolonAfterClose;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="CodeBlockDefinition"/> class.
         /// </summary>
         /// <param name="stringBuilder">The string builder.</param>
-        internal CodeBlockDefinition(IndentStringBuilder stringBuilder)
+        /// <param name="addSemicolonAfterClose"><c>true</c> if a semicolon should be added when closing the block.</param>
+        internal CodeBlockDefinition(IndentStringBuilder stringBuilder, bool addSemicolonAfterClose)
         {
             this.stringBuilder = stringBuilder;
+            this.addSemicolonAfterClose = addSemicolonAfterClose;
             this.stringBuilder.AppendLine("{");
         }
 
         /// <inheritdoc />
         public void Dispose()
         {
-            this.stringBuilder.AppendLine("}");
+            this.stringBuilder.AppendLine(this.addSemicolonAfterClose ? "};" : "}");
         }
     }
 

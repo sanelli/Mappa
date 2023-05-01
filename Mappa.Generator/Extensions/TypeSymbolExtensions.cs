@@ -365,7 +365,7 @@ internal static class TypeSymbolExtensions
 
             if (numberOfArguments is not null)
             {
-                constructors = constructors.Where(methodSymbol => methodSymbol.Parameters.Length == 1);
+                constructors = constructors.Where(methodSymbol => methodSymbol.Parameters.Length == numberOfArguments);
             }
 
             return constructors.ToArray();
