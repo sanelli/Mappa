@@ -20,13 +20,17 @@ internal sealed class InvokeMappingConstructorMapStrategy
     /// <param name="targetType">The target type.</param>
     /// <param name="sourceType">The source type.</param>
     /// <param name="constructor">The constructor.</param>
-    /// <param name="parameterStrategy">The parameter strategy.</param>
-    public InvokeMappingConstructorMapStrategy(ITypeSymbol targetType, ITypeSymbol sourceType, IMethodSymbol constructor, IMapStrategy parameterStrategy)
+    /// <param name="argumentStrategy">The argument strategy.</param>
+    public InvokeMappingConstructorMapStrategy(
+        ITypeSymbol targetType,
+        ITypeSymbol sourceType,
+        IMethodSymbol constructor,
+        IMapStrategy argumentStrategy)
     {
         this.TargetType = targetType;
         this.SourceType = sourceType;
         this.Constructor = constructor;
-        this.ParameterStrategy = parameterStrategy;
+        this.ArgumentStrategy = argumentStrategy;
     }
 
     /// <inheritdoc/>
@@ -43,7 +47,7 @@ internal sealed class InvokeMappingConstructorMapStrategy
     /// <summary>
     /// Gets the strategy for the parameter.
     /// </summary>
-    public IMapStrategy ParameterStrategy { get; }
+    public IMapStrategy ArgumentStrategy { get; }
 
     /// <inheritdoc/>
     public MappaAlgorithmRule Rule => MappaAlgorithmRule.InvokeMappingConstructor;

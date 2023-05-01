@@ -143,14 +143,14 @@ internal static class TypeSymbolExtensions
     /// <returns><c>true</c> if the type symbol is <see cref="IDictionary{K,V}"/>.</returns>
     internal static bool IsTuple(this ITypeSymbol typeSymbol, Compilation compilation)
         => typeSymbol.IsTupleType
-            || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(typeof(Tuple<>).FullName), typeSymbol.OriginalDefinition)
-            || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(typeof(Tuple<,>).FullName), typeSymbol.OriginalDefinition)
-            || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(typeof(Tuple<,,>).FullName), typeSymbol.OriginalDefinition)
-            || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(typeof(Tuple<,,,>).FullName), typeSymbol.OriginalDefinition)
-            || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(typeof(Tuple<,,,,>).FullName), typeSymbol.OriginalDefinition)
-            || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(typeof(Tuple<,,,,,>).FullName), typeSymbol.OriginalDefinition)
-            || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(typeof(Tuple<,,,,,,>).FullName), typeSymbol.OriginalDefinition)
-            || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(typeof(Tuple<,,,,,,,>).FullName), typeSymbol.OriginalDefinition);
+           || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(typeof(Tuple<>).FullName), typeSymbol.OriginalDefinition)
+           || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(typeof(Tuple<,>).FullName), typeSymbol.OriginalDefinition)
+           || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(typeof(Tuple<,,>).FullName), typeSymbol.OriginalDefinition)
+           || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(typeof(Tuple<,,,>).FullName), typeSymbol.OriginalDefinition)
+           || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(typeof(Tuple<,,,,>).FullName), typeSymbol.OriginalDefinition)
+           || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(typeof(Tuple<,,,,,>).FullName), typeSymbol.OriginalDefinition)
+           || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(typeof(Tuple<,,,,,,>).FullName), typeSymbol.OriginalDefinition)
+           || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(typeof(Tuple<,,,,,,,>).FullName), typeSymbol.OriginalDefinition);
 
     /// <summary>
     /// Gets the element type of the container.
@@ -348,23 +348,22 @@ internal static class TypeSymbolExtensions
     /// <param name="typeSymbol">The symbol for which you require the list of constructors.</param>
     /// <param name="compilation">The compilation.</param>
     /// <param name="accessibleWithin">The symbol from which the constructor should be accessible.</param>
-    /// <param name="numberOfParameters">The number of parameters; <c>null</c> if any number of parameters is acceptable.</param>
+    /// <param name="numberOfArguments">The number of arguments; <c>null</c> if any number of parameters is acceptable.</param>
     /// <returns>The list of accessible constructor for <paramref name="typeSymbol"/>.</returns>
     /// <exception cref="MappaGeneratorException">If <paramref name="typeSymbol"/> is not of type <see cref="INamedTypeSymbol"/>.</exception>
     internal static IMethodSymbol[] GetAccessibleConstructors(
         this ITypeSymbol typeSymbol,
         Compilation compilation,
         ISymbol accessibleWithin,
-        int? numberOfParameters = null)
+        int? numberOfArguments = null)
     {
         if (typeSymbol is INamedTypeSymbol namedTypeSymbol)
         {
             var constructors = namedTypeSymbol
                 .Constructors
-                .Where(methodSymbol => compilation.IsSymbolAccessibleWithin(methodSymbol, accessibleWithin))
-                ;
+                .Where(methodSymbol => compilation.IsSymbolAccessibleWithin(methodSymbol, accessibleWithin));
 
-            if (numberOfParameters is not null)
+            if (numberOfArguments is not null)
             {
                 constructors = constructors.Where(methodSymbol => methodSymbol.Parameters.Length == 1);
             }
@@ -373,5 +372,15 @@ internal static class TypeSymbolExtensions
         }
 
         throw new MappaGeneratorException($"Cannot detect constructors for type \"{typeSymbol.ToDisplayString()}\"");
+    }
+
+    /// <summary>
+    /// Gets the properties of the type.
+    /// </summary>
+    /// <param name="typeSymbol">Get the symbol properties.</param>
+    /// <returns>The symbol properties.</returns>
+    internal static IEnumerable<IPropertySymbol> GetTypeProperties(this ITypeSymbol typeSymbol)
+    {
+        return typeSymbol.GetMembers().OfType<IPropertySymbol>();
     }
 }

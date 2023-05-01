@@ -117,4 +117,19 @@ public enum MappaAlgorithmRule
     /// Invoke the mapping constructor.
     /// </summary>
     InvokeMappingConstructor,
+
+    /// <summary>
+    /// Invoke the empty constructor.
+    /// </summary>
+    InvokeEmptyConstructor,
+
+    /// <summary>
+    /// Invoke the constructor.
+    /// </summary>
+    InvokeConstructor,
+
+    /// <summary>
+    /// Strategy to map two properties.
+    /// </summary>
+    PropertyStrategy,
 }

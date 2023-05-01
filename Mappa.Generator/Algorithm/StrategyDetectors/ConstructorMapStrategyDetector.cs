@@ -42,17 +42,21 @@ internal sealed class ConstructorMapStrategyDetector
         mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
 
         // 01. Constructor TargetType(SourceType input) exists -> InvokeMappingConstructorStrategy ( IMapStrategy(T.InputParameterType, S) )
-        if (this.CanInvokeMappingConstructor(out var invokeConstructor, out var invokeStrategy))
+        if (this.CanInvokeMappingConstructor(out var invokeConstructor, out var argumentStrategy))
         {
             mapStrategy = new InvokeMappingConstructorMapStrategy(
                 this.context.TargetType,
                 this.context.SourceType,
                 invokeConstructor,
-                invokeStrategy);
+                argumentStrategy);
         }
 
         // 02. Can map individual properties using an empty parameter constructor. -> InvokeConstructorStrategy( IMapStrategy[] parameters, IMapStrategy[] initProperties )
-        // TODO: Implement me
+        if (this.CanInvokeEmptyConstructor(out var emptyConstructorStrategy))
+        {
+            mapStrategy = emptyConstructorStrategy;
+        }
+
         // 03. If there is not empty constructor try identifying the best one -> InvokeConstructorStrategy( IMapStrategy[] parameters, IMapStrategy[] initProperties )
         // TODO: Implement me
         return mapStrategy is not NoMapStrategy;
@@ -64,7 +68,7 @@ internal sealed class ConstructorMapStrategyDetector
         var noMapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
 
         // Detect all constructors that:
-        // - Have 1 parameter
+        // - Have 1 argument
         // - Are accessible
         // - Have a mapping from source to the type of the parameter
         var constructors = this.context.TargetType.GetAccessibleConstructors(this.compilation, this.context.ParentSymbol, 1);
@@ -73,7 +77,7 @@ internal sealed class ConstructorMapStrategyDetector
             {
                 var constructorParameterType = constructor.Parameters.Single().Type;
 
-                if (this.TryGetStrategyBetweenTypes(out var constructorParameterStrategy, constructorParameterType, this.context.SourceType))
+                if (this.TryGetStrategyBetweenTypes(constructorParameterType, this.context.SourceType, out var constructorParameterStrategy))
                 {
                     return (constructor, constructorParameterStrategy);
                 }
@@ -115,7 +119,92 @@ internal sealed class ConstructorMapStrategyDetector
         return strategy is not NoMapStrategy;
     }
 
-    private bool TryGetStrategyBetweenTypes(out IMapStrategy elementStrategy, ITypeSymbol targetType, ITypeSymbol sourceType)
+    private bool CanInvokeEmptyConstructor(out IMapStrategy strategy)
+    {
+        var noMapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
+
+        // Detect all constructors that:
+        // - Have 0 parameter
+        // - Is accessible
+        var constructors = this.context.TargetType.GetAccessibleConstructors(this.compilation, this.context.ParentSymbol, 0);
+
+        // If there is no constructor with zero parameters cannot apply this strategy.
+        if (!constructors.Any())
+        {
+            strategy = noMapStrategy;
+        }
+        else
+        {
+            // Gets the target properties
+            // TODO: Allow to ignore some target properties.
+            var targetProperties = this.context.TargetType.GetTypeProperties()
+
+                // Ignore indexer properties.
+                // Ignore properties without a setter.
+                .Where(property => property.IsIndexer is false && property.SetMethod is not null);
+
+            // Gets the source properties.
+            var sourceProperties = this.context.SourceType.GetTypeProperties()
+
+                // Ignore indexer properties.
+                // Ignore properties without a setter.
+                .Where(property => property.IsIndexer is false && property.GetMethod is not null)
+
+                // Map them to a dictionary
+                .ToDictionary(property => property.Name);
+
+            // Match target property with a source property.
+            var initializerStrategies = targetProperties
+                .Select(
+                    targetProperty =>
+                    {
+                        // TODO: Allow to use a source property with a different name.
+                        if (!sourceProperties.TryGetValue(targetProperty.Name, out var sourceProperty))
+                        {
+                            return new PropertyMapStrategy(targetProperty, null!, noMapStrategy);
+                        }
+
+                        var targetPropertyType = targetProperty.Type;
+                        var sourcePropertyType = sourceProperty.Type;
+
+                        if (this.TryGetStrategyBetweenTypes(targetPropertyType, sourcePropertyType, out var propertyStrategy))
+                        {
+                            return new PropertyMapStrategy(targetProperty, sourceProperty, propertyStrategy);
+                        }
+
+                        return new PropertyMapStrategy(targetProperty, null!, noMapStrategy);
+                    })
+                .ToArray();
+
+            // Check if any property strategy is required but no strategy has been found
+            if (initializerStrategies
+                .Any(propertyStrategy => propertyStrategy.TargetProperty.IsRequired && propertyStrategy.PropertyStrategy is NoMapStrategy))
+            {
+                strategy = noMapStrategy;
+            }
+            else
+            {
+                // Filter out properties that have no mapping.
+                // TODO: Allow to prevent skipping some non required parameters.
+                initializerStrategies = initializerStrategies
+                    .Where(propertyStrategy => propertyStrategy.PropertyStrategy is not NoMapStrategy)
+                    .ToArray();
+
+                // TODO: Allow to return an error if some source properties are not mapped.
+                strategy = new InvokeConstructorMapStrategy(
+                    MappaAlgorithmRule.InvokeEmptyConstructor,
+                    this.context.TargetType,
+                    this.context.SourceType,
+                    constructors.Single(),
+                    Array.Empty<PropertyMapStrategy>(),
+                    initializerStrategies);
+            }
+        }
+
+        return strategy is not NoMapStrategy;
+    }
+
+    private bool TryGetStrategyBetweenTypes(ITypeSymbol targetType, ITypeSymbol sourceType, out IMapStrategy elementStrategy)
     {
         using (this.context.Settings.UseConstructorMapStrategyDetector.Apply(false))
         {
