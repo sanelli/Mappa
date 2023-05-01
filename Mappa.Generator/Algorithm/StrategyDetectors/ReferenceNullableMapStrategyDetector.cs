@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
 namespace Mappa.Generator.Algorithm.StrategyDetectors;
@@ -12,6 +13,17 @@ namespace Mappa.Generator.Algorithm.StrategyDetectors;
 internal sealed class ReferenceNullableMapStrategyDetector
     : IMapStrategyDetector
 {
+    private readonly MappaMapAlgorithmContext context;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ReferenceNullableMapStrategyDetector"/> class.
+    /// </summary>
+    /// <param name="context">The context.</param>
+    public ReferenceNullableMapStrategyDetector(MappaMapAlgorithmContext context)
+    {
+        this.context = context;
+    }
+
     /// <inheritdoc/>
     public bool TryDetect(out IMapStrategy mapStrategy)
     {
@@ -21,6 +33,7 @@ internal sealed class ReferenceNullableMapStrategyDetector
         // TODO: Implement me
         // 03. (nullable enabled) S -> T? : TargetReferenceNullableStrategy ( IMapStrategy(T, S) )
         // TODO: Implement me
-        throw new NotImplementedException();
+        mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
+        return mapStrategy is not NoMapStrategy;
     }
 }

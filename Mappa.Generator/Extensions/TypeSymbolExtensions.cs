@@ -341,4 +341,37 @@ internal static class TypeSymbolExtensions
             }
         }
     }
+
+    /// <summary>
+    /// Gets the list of accessible constructors for <paramref name="typeSymbol"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The symbol for which you require the list of constructors.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <param name="accessibleWithin">The symbol from which the constructor should be accessible.</param>
+    /// <param name="numberOfParameters">The number of parameters; <c>null</c> if any number of parameters is acceptable.</param>
+    /// <returns>The list of accessible constructor for <paramref name="typeSymbol"/>.</returns>
+    /// <exception cref="MappaGeneratorException">If <paramref name="typeSymbol"/> is not of type <see cref="INamedTypeSymbol"/>.</exception>
+    internal static IMethodSymbol[] GetAccessibleConstructors(
+        this ITypeSymbol typeSymbol,
+        Compilation compilation,
+        ISymbol accessibleWithin,
+        int? numberOfParameters = null)
+    {
+        if (typeSymbol is INamedTypeSymbol namedTypeSymbol)
+        {
+            var constructors = namedTypeSymbol
+                .Constructors
+                .Where(methodSymbol => compilation.IsSymbolAccessibleWithin(methodSymbol, accessibleWithin))
+                ;
+
+            if (numberOfParameters is not null)
+            {
+                constructors = constructors.Where(methodSymbol => methodSymbol.Parameters.Length == 1);
+            }
+
+            return constructors.ToArray();
+        }
+
+        throw new MappaGeneratorException($"Cannot detect constructors for type \"{typeSymbol.ToDisplayString()}\"");
+    }
 }

@@ -25,6 +25,8 @@ internal sealed class InvokeMappingConstructorMapStrategy
     {
         this.TargetType = targetType;
         this.SourceType = sourceType;
+        this.Constructor = constructor;
+        this.ParameterStrategy = parameterStrategy;
     }
 
     /// <inheritdoc/>
@@ -33,12 +35,19 @@ internal sealed class InvokeMappingConstructorMapStrategy
     /// <inheritdoc/>
     public ITypeSymbol SourceType { get; }
 
+    /// <summary>
+    /// Gets the constructor to be used.
+    /// </summary>
+    public IMethodSymbol Constructor { get; }
+
+    /// <summary>
+    /// Gets the strategy for the parameter.
+    /// </summary>
+    public IMapStrategy ParameterStrategy { get; }
+
     /// <inheritdoc/>
     public MappaAlgorithmRule Rule => MappaAlgorithmRule.InvokeMappingConstructor;
 
     /// <inheritdoc/>
-    public IMappaStrategyBuilder GetBuilder()
-    {
-        throw new NotImplementedException();
-    }
+    public IMappaStrategyBuilder GetBuilder() => new InvokeMappingConstructorMapStrategyBuilder(this);
 }

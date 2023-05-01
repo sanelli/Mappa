@@ -67,10 +67,8 @@ internal sealed class ConstructorMapStrategyDetector
         // - Have 1 parameter
         // - Are accessible
         // - Have a mapping from source to the type of the parameter
-        var matchingConstructorsWithStrategy = ((INamedTypeSymbol)this.context.TargetType)
-            .Constructors
-            .Where(constructor => constructor.Parameters.Length == 1)
-            .Where(constructor => this.compilation.IsSymbolAccessibleWithin(constructor, this.context.ParentSymbol))
+        var constructors = this.context.TargetType.GetAccessibleConstructors(this.compilation, this.context.ParentSymbol, 1);
+        var constructorsWithStrategy = constructors
             .Select<IMethodSymbol, (IMethodSymbol Constructor, IMapStrategy Strategy)>(constructor =>
             {
                 var constructorParameterType = constructor.Parameters.Single().Type;
@@ -86,18 +84,17 @@ internal sealed class ConstructorMapStrategyDetector
             .ToArray();
 
         // Either user the only one that has been found.
-        if (matchingConstructorsWithStrategy.Length == 1)
+        if (constructorsWithStrategy.Length == 1)
         {
-            constructor = matchingConstructorsWithStrategy.Single().Constructor;
-            strategy = matchingConstructorsWithStrategy.Single().Strategy;
-            return true;
+            constructor = constructorsWithStrategy.Single().Constructor;
+            strategy = constructorsWithStrategy.Single().Strategy;
         }
 
         // Of if more than one has been found check if any of these
         // that has the very same input type and ise that for the mapping.
         else
         {
-            var constructorWithSameInputTypeAsSource = matchingConstructorsWithStrategy
+            var constructorWithSameInputTypeAsSource = constructorsWithStrategy
                 .Where(constructorWithStrategy =>
                     constructorWithStrategy.Constructor.Parameters.Single().Type.IsEqualTo(this.context.SourceType, this.context.IsNullableEnabled()))
                 .ToArray();
@@ -106,12 +103,16 @@ internal sealed class ConstructorMapStrategyDetector
             {
                 constructor = constructorWithSameInputTypeAsSource.Single().Constructor;
                 strategy = constructorWithSameInputTypeAsSource.Single().Strategy;
-                return true;
+            }
+
+            // No matching constructor has been found
+            else
+            {
+                strategy = noMapStrategy;
             }
         }
 
-        strategy = noMapStrategy;
-        return false;
+        return strategy is not NoMapStrategy;
     }
 
     private bool TryGetStrategyBetweenTypes(out IMapStrategy elementStrategy, ITypeSymbol targetType, ITypeSymbol sourceType)

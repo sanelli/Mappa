@@ -76,7 +76,7 @@ internal class TypeMapIdentifierAlgorithm
             new TupleMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
 
             // 07. Reference nullable related strategies.
-            new ReferenceNullableMapStrategyDetector(),
+            new ReferenceNullableMapStrategyDetector(this.Context),
 
             // 08. Constructor related strategies.
             new ConstructorMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
@@ -87,7 +87,7 @@ internal class TypeMapIdentifierAlgorithm
             // Skip the constructor strategy in order to avoid infinite loops
             // in the case this algorithm is run inside the constructor strategy
             // detector itself.
-            if (detector is ConstructorMapStrategyDetector && this.Context.Settings.UseConstructorMapStrategyDetector)
+            if (detector is ConstructorMapStrategyDetector && !this.Context.Settings.UseConstructorMapStrategyDetector)
             {
                 continue;
             }
