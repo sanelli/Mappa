@@ -138,7 +138,13 @@ internal sealed class MappaGeneratorClassAlgorithm
                 classDeclarationSyntax);
 
             cancellationToken.ThrowIfCancellationRequested();
-            this.AcceptMapMethod(methodDeclarationSyntax, classContext, cancellationToken);
+
+            // Try to add a method as either a method that define a mapping from Mappa
+            // or as a method with already code that can be used for the mapping.
+            if (!this.AcceptMapMethod(methodDeclarationSyntax, classContext, cancellationToken))
+            {
+                this.AcceptMapMethodAlreadyMapped(methodDeclarationSyntax, classContext, cancellationToken);
+            }
         }
 
         // TODO: Add all methods from references classes and mark them as mapped.
@@ -180,20 +186,20 @@ internal sealed class MappaGeneratorClassAlgorithm
         this.Context.AddSource(hintName, sourceFile);
     }
 
-    private void AcceptMapMethod(
+    private bool AcceptMapMethod(
         MethodDeclarationSyntax methodDeclarationSyntax,
         MappaClassGeneratorContext classContext,
         CancellationToken cancellationToken)
     {
         if (!methodDeclarationSyntax.IsPartial())
         {
-            return;
+            return false;
         }
 
         if (!methodDeclarationSyntax.HasArity(1))
         {
             classContext.ReportDiagnostic(MappaDiagnostics.MethodHasInvalidNumberOfParameters(methodDeclarationSyntax));
-            return;
+            return false;
         }
 
         var mapMethod = new MapMethod(methodDeclarationSyntax, classContext.SemanticModel, cancellationToken);
@@ -201,19 +207,56 @@ internal sealed class MappaGeneratorClassAlgorithm
         if (mapMethod.MethodSymbol.IsVoid())
         {
             classContext.ReportDiagnostic(MappaDiagnostics.MethodIsVoid(methodDeclarationSyntax));
-            return;
+            return false;
         }
 
         if (mapMethod.MethodSymbol.ReturnsAnyTaskType(this.Compilation))
         {
             classContext.ReportDiagnostic(MappaDiagnostics.MethodReturnsTaskType(methodDeclarationSyntax));
-            return;
+            return false;
         }
 
         var added = classContext.TryAddMethod(mapMethod);
         if (!added)
         {
             classContext.ReportDiagnostic(MappaDiagnostics.DuplicatedMapping(methodDeclarationSyntax));
+            return false;
+        }
+
+        return true;
+    }
+
+    private void AcceptMapMethodAlreadyMapped(
+        MethodDeclarationSyntax methodDeclarationSyntax,
+        MappaClassGeneratorContext classContext,
+        CancellationToken cancellationToken)
+    {
+        if (methodDeclarationSyntax.IsPartial())
+        {
+            return;
+        }
+
+        if (!methodDeclarationSyntax.HasArity(1))
+        {
+            return;
+        }
+
+        var mapMethod = new MapMethod(methodDeclarationSyntax, classContext.SemanticModel, cancellationToken);
+
+        if (mapMethod.MethodSymbol.IsVoid())
+        {
+            return;
+        }
+
+        if (mapMethod.MethodSymbol.ReturnsAnyTaskType(this.Compilation))
+        {
+            return;
+        }
+
+        var added = classContext.TryAddMethod(mapMethod);
+        if (added)
+        {
+            mapMethod.MarkMapped();
         }
     }
 }

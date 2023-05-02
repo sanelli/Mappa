@@ -37,11 +37,8 @@ internal sealed class MethodMapStrategy
     /// <summary>
     /// Gets the method used for the mapping.
     /// </summary>
-    private MapMethod MapMethod { get; }
+    public MapMethod MapMethod { get; }
 
     /// <inheritdoc/>
-    public IMappaStrategyBuilder GetBuilder()
-    {
-        throw new NotImplementedException();
-    }
+    public IMappaStrategyBuilder GetBuilder() => new MethodMapStrategyBuilder(this);
 }

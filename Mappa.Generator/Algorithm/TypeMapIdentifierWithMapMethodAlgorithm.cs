@@ -39,6 +39,7 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
         // TODO: Allow to get method compatible with expected types:
         // - Input can be any of the base types/interfaces
         // - Return type can be a derived type
+        // This will require identifying a mapping between input & target parameter.
         if (this.Context.TryGetMethod(this.Context.TargetType, this.Context.SourceType, out var mapMethod))
         {
             return new MethodMapStrategy(MappaAlgorithmRule.MapUsingExistingMethod, mapMethod);

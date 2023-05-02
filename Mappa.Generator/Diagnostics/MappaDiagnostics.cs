@@ -78,6 +78,6 @@ internal static class MappaDiagnostics
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.CannotIdentifyStrategy,
             location,
-            sourceType,
-            targetType);
+            sourceType.ToDisplayString(),
+            targetType.ToDisplayString());
 }

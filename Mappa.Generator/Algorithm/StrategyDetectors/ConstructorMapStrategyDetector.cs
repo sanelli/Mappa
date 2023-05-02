@@ -77,7 +77,7 @@ internal sealed class ConstructorMapStrategyDetector
             {
                 var constructorParameterType = constructor.Parameters.Single().Type;
 
-                if (this.TryGetStrategyBetweenTypes(constructorParameterType, this.context.SourceType, out var constructorParameterStrategy))
+                if (this.TryGetStrategyBetweenTypes(constructorParameterType, this.context.SourceType, false, out var constructorParameterStrategy))
                 {
                     return (constructor, constructorParameterStrategy);
                 }
@@ -173,7 +173,7 @@ internal sealed class ConstructorMapStrategyDetector
                             var targetPropertyType = targetProperty.Type;
                             var sourcePropertyType = sourceProperty.Type;
 
-                            if (this.TryGetStrategyBetweenTypes(targetPropertyType, sourcePropertyType, out var propertyStrategy))
+                            if (this.TryGetStrategyBetweenTypes(targetPropertyType, sourcePropertyType, true, out var propertyStrategy))
                             {
                                 return new PropertyMapStrategy(targetProperty, sourceProperty, propertyStrategy);
                             }
@@ -215,9 +215,13 @@ internal sealed class ConstructorMapStrategyDetector
         return strategy is not NoMapStrategy;
     }
 
-    private bool TryGetStrategyBetweenTypes(ITypeSymbol targetType, ITypeSymbol sourceType, out IMapStrategy elementStrategy)
+    private bool TryGetStrategyBetweenTypes(
+        ITypeSymbol targetType,
+        ITypeSymbol sourceType,
+        bool useConstructorMapStrategyDetector,
+        out IMapStrategy elementStrategy)
     {
-        using (this.context.Settings.UseConstructorMapStrategyDetector.Apply(false))
+        using (this.context.Settings.UseConstructorMapStrategyDetector.Apply(useConstructorMapStrategyDetector))
         {
             var derivedContext = new DerivedMappaMapAlgorithmContext(
                 this.context,

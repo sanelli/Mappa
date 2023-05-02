@@ -31,7 +31,9 @@ internal sealed class MapMethod
         CancellationToken cancellationToken)
     {
         this.MethodDeclarationSyntax = methodDeclarationSyntax;
-        this.FieldName = this.MethodDeclarationSyntax.IsStatic() ? string.Empty : "this";
+
+        // TODO: Field name can be the name of the dependency class.
+        this.AccessFieldName = this.MethodDeclarationSyntax.IsStatic() ? string.Empty : "this";
         this.MethodName = methodDeclarationSyntax.Identifier.ToFullString();
         this.MethodSymbol = semanticModel.GetDeclaredSymbol(this.MethodDeclarationSyntax, cancellationToken)
             ?? throw new MappaGeneratorException($"Cannot obtain the method symbol for method \"{this.MethodDeclarationSyntax.Identifier}\" syntax node.", methodDeclarationSyntax.GetLocation());
@@ -44,7 +46,7 @@ internal sealed class MapMethod
     /// <summary>
     /// Gets the field name to access method.
     /// </summary>
-    internal string FieldName { get; }
+    internal string AccessFieldName { get; }
 
     /// <summary>
     /// Gets the method name.
