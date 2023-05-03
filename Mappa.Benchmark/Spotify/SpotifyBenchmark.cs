@@ -20,6 +20,7 @@ public class SpotifyBenchmark
     private readonly SpotifyAlbumDto spotifyAlbumDto;
     private readonly AutoMapper.IMapper automapperMapper;
     private readonly MapperlyMapper mapperlyMapper;
+    private readonly MappaMapper mappaMapper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SpotifyBenchmark"/> class.
@@ -33,6 +34,8 @@ public class SpotifyBenchmark
 
         this.mapperlyMapper = new();
 
+        this.mappaMapper = new();
+
         this.spotifyAlbumDto = new AutoBogus.AutoFaker<SpotifyAlbumDto>().Generate();
     }
 
@@ -40,7 +43,7 @@ public class SpotifyBenchmark
     /// Map using <see cref="AutoMapper"/>.
     /// </summary>
     /// <returns>The mapper model.</returns>
-    [Benchmark(Baseline = true)]
+    [Benchmark]
     public SpotifyAlbum Automapper()
         => this.automapperMapper.Map<SpotifyAlbum>(this.spotifyAlbumDto);
 
@@ -59,4 +62,12 @@ public class SpotifyBenchmark
     [Benchmark]
     public SpotifyAlbum Mapster()
         => this.spotifyAlbumDto.Adapt<SpotifyAlbum>();
+
+    /// <summary>
+    /// Map using <see cref="Mappa.Attributes"/>.
+    /// </summary>
+    /// <returns>The mapper model.</returns>
+    [Benchmark(Baseline = true)]
+    public SpotifyAlbum Mappa()
+        => this.mappaMapper.Map(this.spotifyAlbumDto);
 }

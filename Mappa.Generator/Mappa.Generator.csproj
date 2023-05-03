@@ -17,7 +17,7 @@
     </PropertyGroup>
     <PropertyGroup>
         <PackageId>Mappa.Generator</PackageId>
-        <Version>0.0.1-alpha.67</Version>
+        <Version>0.0.1-alpha.68</Version>
         <Authors>Stefano Anelli</Authors>
         <Company>Stefano Anelli</Company>
         <Product>Mappa Generator</Product>
@@ -31,7 +31,7 @@
         <PackageTags>Mappa,Mapper,Mapping,SourceGenerator</PackageTags>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Mappa" Version="0.0.1-alpha.19" GeneratePathProperty="true" PrivateAssets="all" />
+        <PackageReference Include="Mappa" Version="0.0.1-alpha.20" GeneratePathProperty="true" PrivateAssets="all" />
         <PackageReference Include="StyleCop.Analyzers.Unstable" Version="1.2.0.435">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
