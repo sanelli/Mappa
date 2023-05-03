@@ -13,9 +13,11 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="AutoBogus" Version="2.13.1" />
         <PackageReference Include="AutoMapper" Version="12.0.1" />
         <PackageReference Include="BenchmarkDotNet" Version="0.13.5" />
         <PackageReference Include="Mapster" Version="7.3.0" />
+        <PackageReference Include="Riok.Mapperly" Version="2.8.0" />
         <PackageReference Include="StyleCop.Analyzers.Unstable" Version="1.2.0.435">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -24,14 +26,14 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
+        <PackageReference Include="Mappa.Generator" Version="0.0.1-alpha.67">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
     </ItemGroup>
 
     <ItemGroup>
         <AdditionalFiles Include="../stylecop.json" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\Mappa.Samples\Mappa.Samples.csproj" />
     </ItemGroup>
 
 </Project>
