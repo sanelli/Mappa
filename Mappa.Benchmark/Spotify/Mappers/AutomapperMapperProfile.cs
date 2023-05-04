@@ -9,7 +9,7 @@ using Mappa.Benchmark.Spotify.Models;
 namespace Mappa.Benchmark.Spotify.Mappers;
 
 /// <summary>
-/// The mapper for <see cref="AutomapperMapperProfile"/>.
+/// The mapper profile for <see cref="AutoMapper"/>.
 /// </summary>
 public sealed class AutomapperMapperProfile
     : Profile
