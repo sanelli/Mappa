@@ -141,6 +141,7 @@ internal sealed class ConstructorMapStrategyDetector
 
                 // Ignore indexer properties.
                 // Ignore properties without a setter.
+                // TODO: We might want to include properties with a getter implementing IList<T> to support protobuf?
                 .Where(property => property.IsIndexer is false && property.SetMethod is not null)
                 .ToArray();
 
@@ -178,6 +179,7 @@ internal sealed class ConstructorMapStrategyDetector
                                 return new PropertyMapStrategy(targetProperty, sourceProperty, propertyStrategy);
                             }
 
+                            // TODO: If target property is a get-only whose type is implementing the IList<T> we can invoke a specific strategy to just add the items
                             return new PropertyMapStrategy(targetProperty, null!, noMapStrategy);
                         })
                     .ToArray();

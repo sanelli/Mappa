@@ -37,11 +37,13 @@ internal sealed class ContainerMapStrategyDetector
     }
 
     /// <inheritdoc/>
+    // TODO: For many of these scenario where we support IList<T>/ICollection<T>/IEnumerable<T> we might want to check if
+    //       the type implements IList<T>/ICollection<T>/IEnumerable<T>.
     public bool TryDetect(out IMapStrategy mapStrategy)
     {
         mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
 
-         // 01. S[]/List<T> -> T[] : ArrayOrListToArrayMapStrategy ( IMapStrategy(T, S) ).
+        // 01. S[]/List<T> -> T[] : ArrayOrListToArrayMapStrategy ( IMapStrategy(T, S) ).
         if (this.CanMapArrayOrListToArray(out var arrayOrListToArrayElementStrategy))
         {
             // TODO: Add support for faster iteration using Span<>
