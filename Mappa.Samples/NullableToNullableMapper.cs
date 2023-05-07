@@ -19,4 +19,18 @@ public sealed partial class NullableToNullableMapper
     /// <param name="input">The input enum value.</param>
     /// <returns>The integer mapped from the value.</returns>
     public partial int? Map(CountingValues? input);
+
+    /// <summary>
+    /// Map a enum to a nullable integer.
+    /// </summary>
+    /// <param name="input">The input enum value.</param>
+    /// <returns>The integer mapped from the value.</returns>
+    public partial int? Map(CountingValues input);
+
+    /// <summary>
+    /// Map a nullable enum to an integer.
+    /// </summary>
+    /// <param name="input">The input enum value.</param>
+    /// <returns>The integer mapped from the value.</returns>
+    public partial int MapToNonNullable(CountingValues? input);
 }

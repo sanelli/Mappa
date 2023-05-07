@@ -80,6 +80,16 @@ public enum MappaAlgorithmRule
     NullableToNullable,
 
     /// <summary>
+    /// Map a <see cref="Nullable{T}"/> struct to another object.
+    /// </summary>
+    NullableToNonNullable,
+
+    /// <summary>
+    /// Map a object to a <see cref="Nullable{T}"/> struct.
+    /// </summary>
+    NonNullableToNullable,
+
+    /// <summary>
     /// Map an array to an array.
     /// </summary>
     ArrayOrListToArray,

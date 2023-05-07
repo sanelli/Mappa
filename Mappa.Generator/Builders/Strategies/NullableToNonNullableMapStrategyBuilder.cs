@@ -1,4 +1,4 @@
-// <copyright file="NullableToNullableMapStrategyBuilder.cs" company="Stefano Anelli">
+// <copyright file="NullableToNonNullableMapStrategyBuilder.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -10,18 +10,18 @@ using Mappa.Generator.Models.Strategies;
 namespace Mappa.Generator.Builders.Strategies;
 
 /// <summary>
-/// Builder for <see cref="NullableToNullableMapStrategy"/> strategy.
+/// Builder for <see cref="NullableToNonNullableMapStrategy"/> strategy.
 /// </summary>
-internal sealed class NullableToNullableMapStrategyBuilder
+internal sealed class NullableToNonNullableMapStrategyBuilder
     : IMappaStrategyBuilder
 {
-    private readonly NullableToNullableMapStrategy strategy;
+    private readonly NullableToNonNullableMapStrategy strategy;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="NullableToNullableMapStrategyBuilder"/> class.
+    /// Initializes a new instance of the <see cref="NullableToNonNullableMapStrategyBuilder"/> class.
     /// </summary>
     /// <param name="strategy">The strategy.</param>
-    public NullableToNullableMapStrategyBuilder(NullableToNullableMapStrategy strategy)
+    public NullableToNonNullableMapStrategyBuilder(NullableToNonNullableMapStrategy strategy)
     {
         this.strategy = strategy;
     }
@@ -30,7 +30,7 @@ internal sealed class NullableToNullableMapStrategyBuilder
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
         var ruleComment = mappaGlobalOptions.MappaDebugComments
-            ? $"/* Mappa Rule: {this.strategy.Rule} (type argument strategy: {this.strategy.TypeArgumentStrategy.Rule}) */ "
+            ? $"/* Mappa Rule: {this.strategy.Rule} (inner strategy: {this.strategy.InnerStrategy.Rule}) */ "
             : string.Empty;
 
         var returnValue = context.NextTemporary();
@@ -45,7 +45,7 @@ internal sealed class NullableToNullableMapStrategyBuilder
             var sourceUnderlyingType = this.strategy.SourceType.GetElementType();
             builder.AppendLine($"{sourceUnderlyingType} {temporary} = {source}.Value;");
 
-            var (innerVariable, innerStrategyCode) = this.strategy.TypeArgumentStrategy.GetBuilder().BuildSource(temporary, context, mappaGlobalOptions);
+            var (innerVariable, innerStrategyCode) = this.strategy.InnerStrategy.GetBuilder().BuildSource(temporary, context, mappaGlobalOptions);
 
             if (!string.IsNullOrWhiteSpace(innerStrategyCode))
             {
@@ -60,7 +60,7 @@ internal sealed class NullableToNullableMapStrategyBuilder
         using (builder.CodeBlock())
         using (builder.Indent())
         {
-            builder.AppendLine($"{returnValue} = ({this.strategy.TargetType.ToDisplayString()}) null;");
+            builder.AppendLine($"throw new System.NullReferenceException(\"\\\"{source}\\\" is null.\");");
         }
 
         return ($"{ruleComment}{returnValue}", builder.ToString());

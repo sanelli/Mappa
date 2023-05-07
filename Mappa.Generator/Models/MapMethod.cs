@@ -100,7 +100,7 @@ internal sealed class MapMethod
     internal void MarkMapped() => this.Mapped = true;
 
     /// <summary>
-    /// Sets the startegy for the method.
+    /// Sets the strategy for the method.
     /// </summary>
     /// <param name="strategy">The strategy to be applied to the method.</param>
     /// <exception cref="MappaGeneratorException">When the strategy has been already set.</exception>
@@ -125,7 +125,7 @@ internal sealed class MapMethod
     /// <paramref name="sourceType"/> to <paramref name="targetType"/>.</returns>
     internal bool IsMapFor(ITypeSymbol targetType, ITypeSymbol sourceType, bool includeNullability)
     {
-        var comparer = includeNullability
+        var comparer = includeNullability || !sourceType.IsReferenceType || !targetType.IsReferenceType
             ? SymbolEqualityComparer.IncludeNullability
             : SymbolEqualityComparer.Default;
 
