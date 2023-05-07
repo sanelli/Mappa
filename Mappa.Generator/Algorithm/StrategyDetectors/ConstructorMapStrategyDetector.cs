@@ -137,6 +137,7 @@ internal sealed class ConstructorMapStrategyDetector
         {
             // Gets the target properties
             // TODO: Allow to ignore some target properties.
+            // TODO: ensure property setter method is accessible.
             var targetProperties = this.context.TargetType.GetTypeProperties()
 
                 // Ignore indexer properties.
@@ -155,6 +156,7 @@ internal sealed class ConstructorMapStrategyDetector
 
                     // Ignore indexer properties.
                     // Ignore properties without a setter.
+                    // TODO: ensure property getter method is accessible.
                     .Where(property => property.IsIndexer is false && property.GetMethod is not null)
 
                     // Map them to a dictionary
