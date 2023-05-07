@@ -52,7 +52,7 @@ internal sealed class ConstructorMapStrategyDetector
         }
 
         // 02. Can map individual properties using an empty parameter constructor. -> InvokeConstructorStrategy( IMapStrategy[] parameters, IMapStrategy[] initProperties )
-        if (this.CanInvokeEmptyConstructor(out var emptyConstructorStrategy))
+        else if (this.CanInvokeEmptyConstructor(out var emptyConstructorStrategy))
         {
             mapStrategy = emptyConstructorStrategy;
         }
