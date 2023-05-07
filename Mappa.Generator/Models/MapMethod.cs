@@ -125,7 +125,7 @@ internal sealed class MapMethod
     /// <paramref name="sourceType"/> to <paramref name="targetType"/>.</returns>
     internal bool IsMapFor(ITypeSymbol targetType, ITypeSymbol sourceType, bool includeNullability)
     {
-        var comparer = includeNullability || !sourceType.IsReferenceType || !targetType.IsReferenceType
+        var comparer = includeNullability
             ? SymbolEqualityComparer.IncludeNullability
             : SymbolEqualityComparer.Default;
 
