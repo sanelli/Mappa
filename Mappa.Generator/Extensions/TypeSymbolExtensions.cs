@@ -383,4 +383,30 @@ internal static class TypeSymbolExtensions
     {
         return typeSymbol.GetMembers().OfType<IPropertySymbol>();
     }
+
+    /// <summary>
+    /// Check if a reference type has the nullable attribute.
+    /// </summary>
+    /// <param name="typeSymbol">The symbol.</param>
+    /// <returns><c>true</c> if the type is a reference nullable type.</returns>
+    internal static bool IsReferenceNullable(this ITypeSymbol typeSymbol)
+        => typeSymbol is
+        {
+            IsReferenceType: true,
+            NullableAnnotation: NullableAnnotation.Annotated
+        };
+
+    /// <summary>
+    /// Obtain the display string without the nullable question mark
+    /// for reference type.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <returns>The display string without the question mark for reference types.</returns>
+    internal static string ToDisplayNameWithoutNullableAnnotation(this ITypeSymbol typeSymbol)
+    {
+        var displayString = typeSymbol.ToDisplayString();
+        return typeSymbol.NullableAnnotation == NullableAnnotation.Annotated
+            ? displayString.Substring(0, displayString.Length - 1)
+            : displayString;
+    }
 }

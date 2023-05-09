@@ -22,4 +22,45 @@ internal sealed class MappaMapAlgorithmContextSettings
     /// with single parameter.
     /// </remarks>
     internal StackSettings<bool> UseConstructorMapStrategyDetector { get; } = new(true);
+
+    /// <summary>
+    /// Gets the stack settings that enable or disable the algorithm
+    /// in making sure if a nullable reference map strategy can be
+    /// applied or not.
+    /// </summary>
+    /// <remarks>
+    /// Typically the nullable reference strategy won't be applied if
+    /// we are looking for a strategy to match a nullable reference strategy.
+    /// </remarks>
+    internal StackSettings<bool> UseReferenceNullableMapStrategyDetector { get; } = new(true);
+
+    /// <summary>
+    /// Apply default values.
+    /// </summary>
+    /// <returns>The disposable object that once dispose will restore default values.</returns>
+    internal IDisposable ApplyDefaults()
+        => new MappaMapAlgorithmContextSettingsDefaults(this);
+
+    private sealed class MappaMapAlgorithmContextSettingsDefaults
+        : IDisposable
+    {
+        private readonly IDisposable[] disposables;
+
+        internal MappaMapAlgorithmContextSettingsDefaults(MappaMapAlgorithmContextSettings settings)
+        {
+            this.disposables = new[]
+            {
+                settings.UseConstructorMapStrategyDetector.Apply(true),
+                settings.UseReferenceNullableMapStrategyDetector.Apply(true),
+            };
+        }
+
+        public void Dispose()
+        {
+            foreach (var disposable in this.disposables)
+            {
+                disposable.Dispose();
+            }
+        }
+    }
 }

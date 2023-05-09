@@ -142,4 +142,19 @@ public enum MappaAlgorithmRule
     /// Strategy to map two properties.
     /// </summary>
     PropertyStrategy,
+
+    /// <summary>
+    /// Map a reference nullable to another reference nullable.
+    /// </summary>
+    ReferenceNullableToReferenceNullable,
+
+    /// <summary>
+    /// Map to a reference nullable.
+    /// </summary>
+    ToReferenceNullable,
+
+    /// <summary>
+    /// Map from a reference nullable.
+    /// </summary>
+    FromReferenceNullable,
 }

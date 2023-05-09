@@ -37,6 +37,7 @@ internal sealed class ConstructorMapStrategyDetector
     }
 
     /// <inheritdoc/>
+    // TODO: if nullable is not enabled we might want to throw if input is null.
     public bool TryDetect(out IMapStrategy mapStrategy)
     {
         mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);

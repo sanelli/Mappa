@@ -1,4 +1,4 @@
-// <copyright file="NonNullableToNullableMapStrategyBuilder.cs" company="Stefano Anelli">
+// <copyright file="ToReferenceNullableMapStrategyBuilder.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -8,18 +8,18 @@ using Mappa.Generator.Models.Strategies;
 namespace Mappa.Generator.Builders.Strategies;
 
 /// <summary>
-/// Builder for <see cref="NonNullableToNullableMapStrategy"/> strategy.
+/// Builder for <see cref="ToReferenceNullableMapStrategy"/> strategy.
 /// </summary>
-internal sealed class NonNullableToNullableMapStrategyBuilder
+internal sealed class ToReferenceNullableMapStrategyBuilder
     : IMappaStrategyBuilder
 {
-    private readonly NonNullableToNullableMapStrategy strategy;
+    private readonly ToReferenceNullableMapStrategy strategy;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="NonNullableToNullableMapStrategyBuilder"/> class.
+    /// Initializes a new instance of the <see cref="ToReferenceNullableMapStrategyBuilder"/> class.
     /// </summary>
     /// <param name="strategy">The strategy.</param>
-    public NonNullableToNullableMapStrategyBuilder(NonNullableToNullableMapStrategy strategy)
+    public ToReferenceNullableMapStrategyBuilder(ToReferenceNullableMapStrategy strategy)
     {
         this.strategy = strategy;
     }

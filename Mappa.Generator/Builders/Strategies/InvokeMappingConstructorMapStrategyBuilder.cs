@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Extensions;
 using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
@@ -30,6 +31,7 @@ internal sealed class InvokeMappingConstructorMapStrategyBuilder
     {
         var targetTypeName = this.strategy.TargetType.ToDisplayString();
         var sourceTypeName = this.strategy.SourceType.ToDisplayString();
+        var targetTypeWithoutNullableAnnotation = this.strategy.TargetType.ToDisplayNameWithoutNullableAnnotation();
 
         var stringBuilder = new IndentStringBuilder();
 
@@ -44,7 +46,7 @@ internal sealed class InvokeMappingConstructorMapStrategyBuilder
         }
 
         var targetTemporary = context.NextTemporary();
-        stringBuilder.AppendLine($"{targetTypeName} {targetTemporary} = new {targetTypeName}({parameterTemporary});");
+        stringBuilder.AppendLine($"{targetTypeName} {targetTemporary} = new {targetTypeWithoutNullableAnnotation}({parameterTemporary});");
 
         var ruleComment = mappaGlobalOptions.MappaDebugComments
             ? $"/* Mappa Rule: {this.strategy.Rule} */ "

@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Extensions;
 using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
@@ -48,7 +49,7 @@ internal sealed class InvokeConstructorMapStrategyBuilder
         }
 
         var resultTemporary = context.NextTemporary();
-        builder.AppendLine($"{this.strategy.TargetType.ToDisplayString()} {resultTemporary} = new {this.strategy.TargetType.ToDisplayString()}()");
+        builder.AppendLine($"{this.strategy.TargetType.ToDisplayString()} {resultTemporary} = new {this.strategy.TargetType.ToDisplayNameWithoutNullableAnnotation()}()");
         using (builder.CodeBlock(addSemicolonAfterClose: true))
         using (builder.Indent())
         {
