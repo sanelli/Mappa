@@ -12,14 +12,14 @@ using Xunit.Categories;
 namespace Mappa.Samples.Tests;
 
 /// <summary>
-/// Unit tests for <see cref="InvokeEmptyConstructorOnPropertyMapper"/>.
+/// Unit tests for <see cref="MapMethodStrategyMapperWithDependency"/>.
 /// </summary>
 public sealed class MapMethodStrategyMapperWithDependencyUnitTests
 {
     private readonly MapMethodStrategyMapperWithDependency mapper = new(new());
 
     /// <summary>
-    /// Unit test for <see cref="MapMethodStrategyMapper.Map(SourceClassWithInnerClassModel)"/>.
+    /// Unit test for <see cref="MapMethodStrategyMapperWithDependency.Map"/>.
     /// </summary>
     [Fact]
     [UnitTest]
