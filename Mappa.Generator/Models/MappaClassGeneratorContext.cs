@@ -83,13 +83,13 @@ internal sealed class MappaClassGeneratorContext
     internal IReadOnlyCollection<Diagnostic> Diagnostics => this.diagnostics;
 
     /// <summary>
-    /// Gets a value indicating whether <c>nullable</c> is enabled for the method.
+    /// Gets a value indicating whether <c>nullable</c> is enabled for a syntax node.
     /// </summary>
-    /// <param name="methodDeclarationSyntax">The method to investigate.</param>
+    /// <param name="syntaxNode">The suntax node to investigate.</param>
     /// <returns><c>true</c> if the nullable context is enabled, <c>false</c> otherwise.</returns>
-    internal bool IsNullableEnabled(MethodDeclarationSyntax methodDeclarationSyntax)
+    internal bool IsNullableEnabled(SyntaxNode syntaxNode)
     {
-        var methodNullableContext = this.SemanticModel.GetNullableContext(methodDeclarationSyntax.SpanStart);
+        var methodNullableContext = this.SemanticModel.GetNullableContext(syntaxNode.SpanStart);
 
         bool contextInherit = (methodNullableContext & NullableContext.ContextInherited) > 0;
         if (contextInherit)
@@ -135,7 +135,7 @@ internal sealed class MappaClassGeneratorContext
         if (!this.TryGetMethod(
                 mapMethod.TargetType,
                 mapMethod.SourceType,
-                this.IsNullableEnabled(mapMethod.MethodDeclarationSyntax),
+                mapMethod.NullableEnabled,
                 out _))
         {
             this.mapMethods.Add(mapMethod);

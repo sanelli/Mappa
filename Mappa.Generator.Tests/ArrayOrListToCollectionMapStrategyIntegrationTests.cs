@@ -52,7 +52,7 @@ public sealed class ArrayOrListToCollectionMapStrategyIntegrationTests
         #pragma warning disable
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
-            .HaveGeneratedOneSourceCode()
+            .HaveGeneratedSourceCode()
             .WithCompilationUnit();
 
         // TODO: Add correct assertions
@@ -95,7 +95,7 @@ public sealed class ArrayOrListToCollectionMapStrategyIntegrationTests
         #pragma warning disable
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
-            .HaveGeneratedOneSourceCode()
+            .HaveGeneratedSourceCode()
             .WithCompilationUnit();
 
         // TODO: Add correct assertions
@@ -138,7 +138,7 @@ public sealed class ArrayOrListToCollectionMapStrategyIntegrationTests
         #pragma warning disable
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
-            .HaveGeneratedOneSourceCode()
+            .HaveGeneratedSourceCode()
             .WithCompilationUnit();
 
         // TODO: Add correct assertions

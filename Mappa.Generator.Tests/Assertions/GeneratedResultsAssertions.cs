@@ -39,11 +39,12 @@ public sealed class GeneratedResultsAssertions
     /// <summary>
     /// Assert that one source code has been generated.
     /// </summary>
+    /// <param name="howMany">The number of expected generated sources.</param>
     /// <returns>The assertions instance.</returns>
-    public GeneratedResultsAssertions HaveGeneratedOneSourceCode()
+    public GeneratedResultsAssertions HaveGeneratedSourceCode(int howMany = 1)
     {
         var runResult = this.HaveOneResult();
-        runResult.Should().HaveSources(1);
+        runResult.Should().HaveSources(howMany);
         return this;
     }
 
@@ -98,6 +99,27 @@ public sealed class GeneratedResultsAssertions
             (CompilationUnitSyntax)syntaxTree.GetRoot(),
             semanticModel,
             this.Subject.OutputCompilation);
+    }
+
+    /// <summary>
+    /// Gets the assertions for the syntax tree.
+    /// </summary>
+    /// <param name="howMany">The number of expected generated syntax trees.</param>
+    /// <returns>The syntax tree assertions instance.</returns>
+    public CompilationUnitSyntaxAssertions[] WithCompilationUnits(int howMany)
+    {
+        this.Subject.OutputCompilation.SyntaxTrees.Should().HaveCount(howMany + 1);
+        var syntaxTrees = this.Subject.OutputCompilation.SyntaxTrees.Skip(1);
+
+        return syntaxTrees.Select(syntaxTree =>
+            {
+                var semanticModel = this.Subject.OutputCompilation.GetSemanticModel(syntaxTree);
+                return new CompilationUnitSyntaxAssertions(
+                    (CompilationUnitSyntax)syntaxTree.GetRoot(),
+                    semanticModel,
+                    this.Subject.OutputCompilation);
+            })
+            .ToArray();
     }
 
     private GeneratorRunResult HaveOneResult()

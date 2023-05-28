@@ -15,7 +15,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {
     /// <summary>
-    /// Test a mapping can be created from an enum
+    /// Test a mapping can be created from an integer
     /// to a string.
     /// </summary>
     /// <returns>The async task.</returns>
@@ -42,7 +42,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
         #pragma warning disable
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
-            .HaveGeneratedOneSourceCode()
+            .HaveGeneratedSourceCode()
             .WithCompilationUnit();
 
         // TODO: Add correct assertions

@@ -52,7 +52,7 @@ public sealed class MethodMapStrategyIntegrationTests
         #pragma warning disable
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
-            .HaveGeneratedOneSourceCode()
+            .HaveGeneratedSourceCode()
             .WithCompilationUnit();
 
         // TODO: Add correct assertions
@@ -95,11 +95,119 @@ public sealed class MethodMapStrategyIntegrationTests
         #pragma warning disable
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
-            .HaveGeneratedOneSourceCode()
+            .HaveGeneratedSourceCode()
             .WithCompilationUnit();
 
         // TODO: Add correct assertions
         compilationUnitSyntaxAssertions.NotBeNull();
+        #pragma warning restore
+    }
+
+    /// <summary>
+    /// Test a mapping can be created using a method from
+    /// a dependency class via property.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapUsingPropertyDependency()
+    {
+        // Arrange
+        const string sourceCode = """
+            using Mappa.Attributes;
+
+            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+            public class InnerSource { public int A { get; set; } }
+            public class InnerTarget { public int A { get; set; } }
+
+            public class Source { public InnerSource Property { get; set; } }
+            public class Target { public InnerTarget Property { get; set; } }
+
+            [Mappa]
+            public sealed partial class Dependency
+            {
+                public partial InnerTarget Map(InnerSource input);
+            }
+
+            [Mappa]
+            public sealed partial class Mapper
+            {
+                [MappaDependency]
+                private Dependency DependencyProperty { get; } = new Dependency();
+
+                public partial Target Map(Source input);
+            }
+            """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        #pragma warning disable
+        var compilationUnitSyntaxAssertions = generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode(howMany: 2)
+            .WithCompilationUnits(2);
+
+        // TODO: Add correct assertions
+        foreach (var compilationUnitAssertion in compilationUnitSyntaxAssertions)
+        {
+            compilationUnitAssertion.NotBeNull();
+        }
+        #pragma warning restore
+    }
+
+    /// <summary>
+    /// Test a mapping can be created using a method from
+    /// a dependency class via a field.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapUsingFieldDependency()
+    {
+        // Arrange
+        const string sourceCode = """
+            using Mappa.Attributes;
+
+            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+            public class InnerSource { public int A { get; set; } }
+            public class InnerTarget { public int A { get; set; } }
+
+            public class Source { public InnerSource Property { get; set; } }
+            public class Target { public InnerTarget Property { get; set; } }
+
+            [Mappa]
+            public sealed partial class Dependency
+            {
+                public partial InnerTarget Map(InnerSource input);
+            }
+
+            [Mappa]
+            public sealed partial class Mapper
+            {
+                [MappaDependency]
+                private Dependency dependencyField = new Dependency();
+
+                public partial Target Map(Source input);
+            }
+            """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        #pragma warning disable
+        var compilationUnitSyntaxAssertions = generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode(howMany: 2)
+            .WithCompilationUnits(2);
+
+        // TODO: Add correct assertions
+        foreach (var compilationUnitAssertion in compilationUnitSyntaxAssertions)
+        {
+            compilationUnitAssertion.NotBeNull();
+        }
         #pragma warning restore
     }
 }

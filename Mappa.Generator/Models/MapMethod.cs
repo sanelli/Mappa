@@ -24,24 +24,59 @@ internal sealed class MapMethod
     /// </summary>
     /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
     /// <param name="semanticModel">The semantic model.</param>
+    /// <param name="nullableEnabled"><c>true</c> if reference nullable is enabled.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
+    /// <remarks>
+    /// The method is NOT considered mapped.
+    /// </remarks>
     public MapMethod(
         MethodDeclarationSyntax methodDeclarationSyntax,
         SemanticModel semanticModel,
+        bool nullableEnabled,
         CancellationToken cancellationToken)
     {
-        this.MethodDeclarationSyntax = methodDeclarationSyntax;
-
-        // TODO: Field name can be the name of the dependency class.
-        this.AccessFieldName = this.MethodDeclarationSyntax.IsStatic() ? string.Empty : "this";
+        this.AccessFieldName = methodDeclarationSyntax.IsStatic() ? string.Empty : "this";
         this.MethodName = methodDeclarationSyntax.Identifier.ToFullString();
-        this.MethodSymbol = semanticModel.GetDeclaredSymbol(this.MethodDeclarationSyntax, cancellationToken)
-            ?? throw new MappaGeneratorException($"Cannot obtain the method symbol for method \"{this.MethodDeclarationSyntax.Identifier}\" syntax node.", methodDeclarationSyntax.GetLocation());
+        this.MethodSymbol = semanticModel.GetDeclaredSymbol(methodDeclarationSyntax, cancellationToken)
+            ?? throw new MappaGeneratorException($"Cannot obtain the method symbol for method \"{methodDeclarationSyntax.Identifier}\" syntax node.", methodDeclarationSyntax.GetLocation());
         this.TargetType = this.MethodSymbol.ReturnType;
         this.SourceType = this.MethodSymbol.Parameters.First().Type;
         this.SourceParameterName = this.MethodSymbol.Parameters.First().Name;
         this.Mapped = false;
+        this.Location = methodDeclarationSyntax.GetLocation();
+        this.NullableEnabled = nullableEnabled;
     }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MapMethod"/> class.
+    /// </summary>
+    /// <param name="methodSymbol">The method symbol.</param>
+    /// <param name="accessFiledName">The name of the field or property that can be used to access the method.</param>
+    /// <param name="nullableEnabled"><c>true</c> if reference nullable is enabled.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <remarks>
+    /// The method is already considered mapped.
+    /// </remarks>
+    public MapMethod(
+        IMethodSymbol methodSymbol,
+        string accessFiledName,
+        bool nullableEnabled,
+        CancellationToken cancellationToken)
+    {
+        this.AccessFieldName = accessFiledName;
+        this.MethodName = methodSymbol.Name;
+        this.MethodSymbol = methodSymbol;
+        this.TargetType = this.MethodSymbol.ReturnType;
+        this.SourceType = this.MethodSymbol.Parameters.First().Type;
+        this.SourceParameterName = this.MethodSymbol.Parameters.First().Name;
+        this.Mapped = true;
+        this.NullableEnabled = nullableEnabled;
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether reference nullable is enabled.
+    /// </summary>
+    internal bool NullableEnabled { get; }
 
     /// <summary>
     /// Gets the field name to access method.
@@ -64,11 +99,6 @@ internal sealed class MapMethod
     internal ITypeSymbol SourceType { get; }
 
     /// <summary>
-    /// Gets the method declaration syntax.
-    /// </summary>
-    internal MethodDeclarationSyntax MethodDeclarationSyntax { get; }
-
-    /// <summary>
     /// Gets the method symbol.
     /// </summary>
     internal IMethodSymbol MethodSymbol { get; }
@@ -84,10 +114,15 @@ internal sealed class MapMethod
     internal bool Mapped { get; private set; }
 
     /// <summary>
+    /// Gets the location.
+    /// </summary>
+    internal Location? Location { get; }
+
+    /// <summary>
     /// Gets the method strategy.
     /// </summary>
     internal MethodParameterMapStrategy Strategy => this.methodParameterMapStrategy
-        ?? throw new MappaGeneratorException($"Strategy for method\"{this.MethodDeclarationSyntax.Identifier}\" has not been identified yet.", this.MethodDeclarationSyntax.GetLocation());
+        ?? throw new MappaGeneratorException($"Strategy for method\"{this.MethodName}\" has not been identified yet.", this.Location);
 
     /// <summary>
     /// Gets a value indicating whether the strategy has been set.
@@ -108,7 +143,7 @@ internal sealed class MapMethod
     {
         if (this.HasStrategy)
         {
-            throw new MappaGeneratorException($"Strategy for method\"{this.MethodDeclarationSyntax.Identifier}\" has already been identified.", this.MethodDeclarationSyntax.GetLocation());
+            throw new MappaGeneratorException($"Strategy for method\"{this.MethodName}\" has already been identified.", this.Location);
         }
 
         this.methodParameterMapStrategy = strategy;

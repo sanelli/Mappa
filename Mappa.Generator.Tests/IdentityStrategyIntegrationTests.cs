@@ -43,7 +43,7 @@ public sealed class IdentityStrategyIntegrationTests
         // Assert
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
-            .HaveGeneratedOneSourceCode()
+            .HaveGeneratedSourceCode()
             .WithCompilationUnit();
         var namespaceDeclarationSyntaxAssertions = compilationUnitSyntaxAssertions
             .HaveCommentHeader()
@@ -97,7 +97,7 @@ public sealed class IdentityStrategyIntegrationTests
         // Assert
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
-            .HaveGeneratedOneSourceCode()
+            .HaveGeneratedSourceCode()
             .WithCompilationUnit();
         var namespaceDeclarationSyntaxAssertions = compilationUnitSyntaxAssertions
             .HaveCommentHeader()
@@ -151,7 +151,7 @@ public sealed class IdentityStrategyIntegrationTests
         // Assert
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
-            .HaveGeneratedOneSourceCode()
+            .HaveGeneratedSourceCode()
             .WithCompilationUnit();
         var namespaceDeclarationSyntaxAssertions = compilationUnitSyntaxAssertions
             .HaveCommentHeader()
@@ -205,7 +205,7 @@ public sealed class IdentityStrategyIntegrationTests
         // Assert
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
-            .HaveGeneratedOneSourceCode()
+            .HaveGeneratedSourceCode()
             .WithCompilationUnit();
         var namespaceDeclarationSyntaxAssertions = compilationUnitSyntaxAssertions
             .HaveCommentHeader()
@@ -260,7 +260,7 @@ public sealed class IdentityStrategyIntegrationTests
         // Assert
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
-            .HaveGeneratedOneSourceCode()
+            .HaveGeneratedSourceCode()
             .WithCompilationUnit();
         var namespaceDeclarationSyntaxAssertions = compilationUnitSyntaxAssertions
             .HaveCommentHeader()
@@ -315,7 +315,7 @@ public sealed class IdentityStrategyIntegrationTests
         // Assert
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
-            .HaveGeneratedOneSourceCode()
+            .HaveGeneratedSourceCode()
             .WithCompilationUnit();
         var namespaceDeclarationSyntaxAssertions = compilationUnitSyntaxAssertions
             .HaveCommentHeader()
@@ -369,7 +369,7 @@ public sealed class IdentityStrategyIntegrationTests
         // Assert
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
-            .HaveGeneratedOneSourceCode()
+            .HaveGeneratedSourceCode()
             .WithCompilationUnit();
         var namespaceDeclarationSyntaxAssertions = compilationUnitSyntaxAssertions
             .HaveCommentHeader()
@@ -424,7 +424,7 @@ public sealed class IdentityStrategyIntegrationTests
         // Assert
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
-            .HaveGeneratedOneSourceCode()
+            .HaveGeneratedSourceCode()
             .WithCompilationUnit();
         var namespaceDeclarationSyntaxAssertions = compilationUnitSyntaxAssertions
             .HaveCommentHeader()
@@ -478,7 +478,7 @@ public sealed class IdentityStrategyIntegrationTests
         // Assert
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
-            .HaveGeneratedOneSourceCode()
+            .HaveGeneratedSourceCode()
             .WithCompilationUnit();
         var namespaceDeclarationSyntaxAssertions = compilationUnitSyntaxAssertions
             .HaveCommentHeader()
@@ -532,7 +532,7 @@ public sealed class IdentityStrategyIntegrationTests
         // Assert
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
-            .HaveGeneratedOneSourceCode()
+            .HaveGeneratedSourceCode()
             .WithCompilationUnit();
         var namespaceDeclarationSyntaxAssertions = compilationUnitSyntaxAssertions
             .HaveCommentHeader()
@@ -587,7 +587,7 @@ public sealed class IdentityStrategyIntegrationTests
         // Assert
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
-            .HaveGeneratedOneSourceCode()
+            .HaveGeneratedSourceCode()
             .WithCompilationUnit();
         var namespaceDeclarationSyntaxAssertions = compilationUnitSyntaxAssertions
             .HaveCommentHeader()
@@ -641,7 +641,7 @@ public sealed class IdentityStrategyIntegrationTests
         // Assert
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
-            .HaveGeneratedOneSourceCode()
+            .HaveGeneratedSourceCode()
             .WithCompilationUnit();
         var namespaceDeclarationSyntaxAssertions = compilationUnitSyntaxAssertions
             .HaveCommentHeader()
@@ -695,7 +695,7 @@ public sealed class IdentityStrategyIntegrationTests
         // Assert
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
-            .HaveGeneratedOneSourceCode()
+            .HaveGeneratedSourceCode()
             .WithCompilationUnit();
         var namespaceDeclarationSyntaxAssertions = compilationUnitSyntaxAssertions
             .HaveCommentHeader()

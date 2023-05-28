@@ -49,7 +49,7 @@ internal sealed class MappaMethodGeneratorContext
 
     /// <inheritdoc/>
     internal override bool IsNullableEnabled()
-        => this.ClassContext.IsNullableEnabled(this.MapMethod.MethodDeclarationSyntax);
+        => this.MapMethod.NullableEnabled;
 
     /// <inheritdoc/>
     internal override bool TryGetMethod(ITypeSymbol targetType, ITypeSymbol sourceType, out MapMethod mapMethod)
@@ -60,6 +60,6 @@ internal sealed class MappaMethodGeneratorContext
         => this.ClassContext.ReportDiagnostic(diagnostic);
 
     /// <inheritdoc/>
-    internal override Location GetLocation()
-        => this.MapMethod.MethodDeclarationSyntax.GetLocation();
+    internal override Location? GetLocation()
+        => this.MapMethod.Location;
 }

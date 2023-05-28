@@ -39,7 +39,7 @@ internal sealed class MappaMethodBuilder
     public string BuildSource(MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
         var builder = new IndentStringBuilder();
-        var isNullableEnabled = this.ClassContext.IsNullableEnabled(this.MapMethod.MethodDeclarationSyntax);
+        var isNullableEnabled = this.MapMethod.NullableEnabled;
         using (builder.NullableBlock(isNullableEnabled))
         {
             builder
@@ -73,7 +73,7 @@ internal sealed class MappaMethodBuilder
 
         var parameters = $"{this.MapMethod.SourceType.ToDisplayString()} {this.MapMethod.SourceParameterName}";
 
-        var signature = $"{modifiersWithReturnType} {this.MapMethod.MethodDeclarationSyntax.Identifier}({parameters})";
+        var signature = $"{modifiersWithReturnType} {this.MapMethod.MethodName}({parameters})";
 
         return signature;
     }

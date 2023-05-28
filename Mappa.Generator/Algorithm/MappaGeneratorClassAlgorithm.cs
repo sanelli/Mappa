@@ -12,6 +12,7 @@ using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
@@ -147,7 +148,75 @@ internal sealed class MappaGeneratorClassAlgorithm
             }
         }
 
-        // TODO: Add all methods from references classes and mark them as mapped.
+        // Get all accessible properties that:
+        // - have a getter method
+        // - have MappaDependency attribute
+        foreach (var propertyDeclarationSyntax in classDeclarationSyntax.ChildNodes().OfType<PropertyDeclarationSyntax>())
+        {
+            if (propertyDeclarationSyntax.AccessorList is not null && propertyDeclarationSyntax.AccessorList.Accessors.Any(accessor => accessor.Kind() == SyntaxKind.GetAccessorDeclaration))
+            {
+                if (propertyDeclarationSyntax.AttributeLists.GetMappaDependencyAttribute(classContext.SemanticModel, cancellationToken) is null)
+                {
+                    continue;
+                }
+
+                var propertySymbol = classContext.SemanticModel.GetDeclaredSymbol(propertyDeclarationSyntax, cancellationToken);
+                if (propertySymbol is not null)
+                {
+                    var accessFieldName = propertyDeclarationSyntax.Identifier.ToString();
+                    if (!propertySymbol.IsStatic)
+                    {
+                        accessFieldName = $"this.{accessFieldName}";
+                    }
+
+                    var methods = propertySymbol.Type.GetMembers().OfType<IMethodSymbol>().ToArray();
+                    foreach (var method in methods)
+                    {
+                        this.AcceptMapMethod(
+                            propertyDeclarationSyntax,
+                            method,
+                            accessFieldName,
+                            classContext,
+                            cancellationToken);
+                    }
+                }
+            }
+        }
+
+        // Get all accessible properties that have MappaDependency attribute
+        foreach (var fieldDeclarationSyntax in classDeclarationSyntax.ChildNodes().OfType<FieldDeclarationSyntax>())
+        {
+            if (fieldDeclarationSyntax.AttributeLists.GetMappaDependencyAttribute(classContext.SemanticModel, cancellationToken) is null)
+            {
+                continue;
+            }
+
+            // We only take one declaration because all variable would have anyway
+            // the same type and won't make sense having multiple dependencies against
+            // the same type (it would be ignored anyway when trying to add the mapping method).
+            foreach (var variableDeclarationSyntax in fieldDeclarationSyntax.Declaration.Variables.Take(1))
+            {
+                if (classContext.SemanticModel.GetDeclaredSymbol(variableDeclarationSyntax, cancellationToken) is IFieldSymbol fieldSymbol)
+                {
+                    var accessFieldName = variableDeclarationSyntax.Identifier.ToString();
+                    if (!fieldDeclarationSyntax.Modifiers.Any(SyntaxKind.StaticKeyword))
+                    {
+                        accessFieldName = $"this.{accessFieldName}";
+                    }
+
+                    var methods = fieldSymbol.Type.GetMembers().OfType<IMethodSymbol>().ToArray();
+                    foreach (var method in methods)
+                    {
+                        this.AcceptMapMethod(
+                            fieldDeclarationSyntax,
+                            method,
+                            accessFieldName,
+                            classContext,
+                            cancellationToken);
+                    }
+                }
+            }
+        }
 
         // Identify the strategy for each method.
         // While generating strategies new methods might be found or requested to be generated.
@@ -202,7 +271,11 @@ internal sealed class MappaGeneratorClassAlgorithm
             return false;
         }
 
-        var mapMethod = new MapMethod(methodDeclarationSyntax, classContext.SemanticModel, cancellationToken);
+        var mapMethod = new MapMethod(
+            methodDeclarationSyntax,
+            classContext.SemanticModel,
+            classContext.IsNullableEnabled(methodDeclarationSyntax),
+            cancellationToken);
 
         if (mapMethod.MethodSymbol.IsVoid())
         {
@@ -226,6 +299,45 @@ internal sealed class MappaGeneratorClassAlgorithm
         return true;
     }
 
+    private void AcceptMapMethod(
+        SyntaxNode referenceSyntaxNode,
+        IMethodSymbol method,
+        string accessFieldName,
+        MappaClassGeneratorContext classContext,
+        CancellationToken cancellationToken)
+    {
+        if (!this.Compilation.IsSymbolAccessibleWithin(method, classContext.ClassSymbol))
+        {
+            return;
+        }
+
+        if (method.Parameters.Length != 1)
+        {
+            return;
+        }
+
+        if (method.IsVoid())
+        {
+            return;
+        }
+
+        if (method.ReturnsAnyTaskType(this.Compilation))
+        {
+            return;
+        }
+
+        var mapMethod = new MapMethod(
+            method,
+            accessFieldName,
+            classContext.IsNullableEnabled(referenceSyntaxNode),
+            cancellationToken);
+
+        // If the method cannot be added it is OK:
+        // method defined in the class takes precedence if they
+        // declare the very same mapping.
+        classContext.TryAddMethod(mapMethod);
+    }
+
     private void AcceptMapMethodAlreadyMapped(
         MethodDeclarationSyntax methodDeclarationSyntax,
         MappaClassGeneratorContext classContext,
@@ -241,7 +353,11 @@ internal sealed class MappaGeneratorClassAlgorithm
             return;
         }
 
-        var mapMethod = new MapMethod(methodDeclarationSyntax, classContext.SemanticModel, cancellationToken);
+        var mapMethod = new MapMethod(
+            methodDeclarationSyntax,
+            classContext.SemanticModel,
+            classContext.IsNullableEnabled(methodDeclarationSyntax),
+            cancellationToken);
 
         if (mapMethod.MethodSymbol.IsVoid())
         {
