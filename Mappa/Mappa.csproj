@@ -27,11 +27,11 @@
 		<PackageTags>Mappa,Mapper,Mapping,SourceGenerator</PackageTags>
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="StyleCop.Analyzers.Unstable" Version="1.2.0.435">
+		<PackageReference Include="StyleCop.Analyzers.Unstable" Version="1.2.0.507">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="SonarAnalyzer.CSharp" Version="8.55.0.65544">
+		<PackageReference Include="SonarAnalyzer.CSharp" Version="9.5.0.73987">
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>

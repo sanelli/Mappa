@@ -12,5 +12,5 @@ public sealed class TargetClassWithInnerClassModel
     /// <summary>
     /// Gets or sets the inner model.
     /// </summary>
-    required public TargetClassModel InnerModel { get; set; } = new();
+    public required TargetClassModel InnerModel { get; set; } = new();
 }

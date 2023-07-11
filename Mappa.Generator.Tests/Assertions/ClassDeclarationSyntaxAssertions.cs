@@ -166,10 +166,10 @@ public sealed class ClassDeclarationSyntaxAssertions
     private ITypeSymbol GetTypeSymbol(Type type)
     {
         var typeParts = type.ToString().Split("[");
-        var namedTypeSymbol = this.Compilation.GetTypeByMetadataName(typeParts.First())!;
+        var namedTypeSymbol = this.Compilation.GetTypeByMetadataName(typeParts[0])!;
         if (typeParts.Length > 1)
         {
-            var typeArguments = typeParts.Last()
+            var typeArguments = typeParts[^1]
                 .Replace("]", string.Empty, StringComparison.Ordinal)
                 .Split(",")
                 .Select(s => this.Compilation.GetTypeByMetadataName(s))

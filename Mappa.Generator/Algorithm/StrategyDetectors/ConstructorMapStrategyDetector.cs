@@ -188,8 +188,8 @@ internal sealed class ConstructorMapStrategyDetector
                     .ToArray();
 
                 // Check if any property strategy is required but no strategy has been found
-                if (initializerStrategies
-                    .Any(propertyStrategy => propertyStrategy.TargetProperty.IsRequired && propertyStrategy.PropertyStrategy is NoMapStrategy))
+                if (Array
+                    .Exists(initializerStrategies, propertyStrategy => propertyStrategy.TargetProperty.IsRequired && propertyStrategy.PropertyStrategy is NoMapStrategy))
                 {
                     strategy = noMapStrategy;
                 }

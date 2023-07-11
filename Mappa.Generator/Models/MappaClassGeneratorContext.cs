@@ -119,7 +119,7 @@ internal sealed class MappaClassGeneratorContext
         out MapMethod mapMethod)
     {
         var foundMethod =
-            this.mapMethods.FirstOrDefault(method => method.IsMapFor(targetType, sourceType, nullableEnabled));
+            this.mapMethods.Find(method => method.IsMapFor(targetType, sourceType, nullableEnabled));
         mapMethod = foundMethod!;
         return foundMethod is not null;
     }
@@ -152,7 +152,7 @@ internal sealed class MappaClassGeneratorContext
     /// <c>true</c> if all <see cref="MapMethods"/> have the
     /// <see cref="MapMethod.Mapped"/> flag set to <c>true</c>.</returns>
     internal bool AreAllMethodsMapped()
-        => this.mapMethods.All(mapMethod => mapMethod.Mapped);
+        => this.mapMethods.TrueForAll(mapMethod => mapMethod.Mapped);
 
     /// <summary>
     /// Records a new set of diagnostics.

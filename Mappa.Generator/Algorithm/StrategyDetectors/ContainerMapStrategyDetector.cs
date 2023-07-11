@@ -46,6 +46,7 @@ internal sealed class ContainerMapStrategyDetector
         // 01. S[]/List<T> -> T[] : ArrayOrListToArrayMapStrategy ( IMapStrategy(T, S) ).
         if (this.CanMapArrayOrListToArray(out var arrayOrListToArrayElementStrategy))
         {
+            // TODO: Add Support for input implementing IList<>
             // TODO: Add support for faster iteration using Span<>
             mapStrategy = new ArrayOrListToArrayMapStrategy(
                 this.context.TargetType,
@@ -56,6 +57,7 @@ internal sealed class ContainerMapStrategyDetector
         // 02. Collection<S>/Enumerable<S> -> T[] : CollectionOrEnumerableToArray( IMapStrategy(T, S) )
         else if (this.CanMapCollectionOrEnumerableToArray(out var collectionOrEnumerableToArrayElementStrategy))
         {
+            // TODO: Add Support for input implementing IEnumerable<>, ICollection<>, IReadOnlyCollection<>
             mapStrategy = new EnumerableOrCollectionToArrayMapStrategy(
                 this.context.TargetType,
                 this.context.SourceType,
@@ -65,6 +67,8 @@ internal sealed class ContainerMapStrategyDetector
         // 03. S[]/List<S> -> Collection<T>/IEnumerable<T> : ArrayOrListToCollectionMapStrategy ( IMapStrategy(T, S) ).
         else if (this.CanMapArrayOrListToCollectionOrEnumerable(out var arrayOrListElementStrategy))
         {
+            // TODO: Add Support for input implementing IList<>
+            // TODO: Add Support for output implementing IList<>, IEnumerable<>, IReadOnlyCollection<>, ICollection<>
             // TODO: Check if it is possible using Span<> here as well.
             // TODO: Allow to prefer returning array over lists
             mapStrategy = new ArrayOrListToCollectionMapStrategy(
@@ -76,6 +80,8 @@ internal sealed class ContainerMapStrategyDetector
         // 04. IEnumerable<S>/Collection<S> -> Collection<T>/IEnumerable<T> : EnumerableOrCollectionToCollectionMapStrategy ( IMapStrategy(T, S) ).
         else if (this.CanMapCollectionOrEnumerableToCollectionOrEnumerable(out var collectionOrEnumerableElementStrategy))
         {
+            // TODO: Add Support for input implementing IEnumerable<>, ICollection<>, IReadOnlyCollection<>
+            // TODO: Add Support for output implementing IList<>, IEnumerable<>, IReadOnlyCollection<>, ICollection<>
             // TODO: Check if it is possible using Span<> here as well.
             // TODO: Allow to prefer returning array over lists
             mapStrategy = new EnumerableOrCollectionToCollectionMapStrategy(
@@ -88,6 +94,8 @@ internal sealed class ContainerMapStrategyDetector
         else if (this.CanMapDictionaryToDictionary(out var dictionaryKeyStrategy, out var dictionaryValueStrategy))
         {
             // TODO: Allow the user to specify if they want to use .Add or the indexer
+            // TODO: Add Support for input implementing IDictionary<>
+            // TODO: Add Support for output implementing IDictionary<>
             mapStrategy = new DictionaryToDictionaryMapStrategy(
                 this.context.TargetType,
                 this.context.SourceType,
