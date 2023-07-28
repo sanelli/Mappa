@@ -3,7 +3,6 @@
 // </copyright>
 
 using System.CodeDom.Compiler;
-using System.Collections.Immutable;
 
 using Mappa.Generator.Exceptions;
 

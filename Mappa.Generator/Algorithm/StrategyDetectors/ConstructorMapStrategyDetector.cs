@@ -52,13 +52,13 @@ internal sealed class ConstructorMapStrategyDetector
                 argumentStrategy);
         }
 
-        // 02. Can map individual properties using an empty parameter constructor. -> InvokeConstructorStrategy( IMapStrategy[] parameters, IMapStrategy[] initProperties )
+        // 02. Can map individual properties using an empty parameter constructor. -> InvokeConstructorMapStrategy( IMapStrategy[] parameters, IMapStrategy[] initProperties )
         else if (this.CanInvokeEmptyConstructor(out var emptyConstructorStrategy))
         {
             mapStrategy = emptyConstructorStrategy;
         }
 
-        // 03. If there is not empty constructor try identifying the best one -> InvokeConstructorStrategy( IMapStrategy[] parameters, IMapStrategy[] initProperties )
+        // 03. If there is not empty constructor try identifying the best one -> InvokeConstructorMapStrategy( IMapStrategy[] parameters, IMapStrategy[] initProperties )
         // TODO: Implement me
         return mapStrategy is not NoMapStrategy;
     }
@@ -169,6 +169,7 @@ internal sealed class ConstructorMapStrategyDetector
                         targetProperty =>
                         {
                             // TODO: Allow to use a source property with a different name.
+                            // TODO: Allow properties to match regardless of casing
                             if (!sourceProperties.TryGetValue(targetProperty.Name, out var sourceProperty))
                             {
                                 return new PropertyMapStrategy(targetProperty, null!, noMapStrategy);
