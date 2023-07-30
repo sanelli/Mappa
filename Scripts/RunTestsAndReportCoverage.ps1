@@ -13,6 +13,7 @@ if(-not $?)
     Exit 1
 }
 
+dotnet tool restore
 dotnet reportgenerator -reports:"$MappaTestsAndCoveragePath/**/*.xml" -targetdir:"$MappaTestsAndCoveragePath" -title:"Mappa" -reporttypes:"Html;MarkdownSummary;XmlSummary" -filefilters:"-*.g.cs" -assemblyfilters:"-Mappa.Samples"
 if(-not $?)
 {

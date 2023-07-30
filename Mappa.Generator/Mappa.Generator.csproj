@@ -31,6 +31,10 @@
         <PackageTags>Mappa,Mapper,Mapping,SourceGenerator</PackageTags>
     </PropertyGroup>
     <ItemGroup>
+        <PackageReference Include="Comment.Todo.Analyzer" Version="1.0.1">
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+          <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
         <PackageReference Include="Mappa" Version="0.0.1-alpha.21" GeneratePathProperty="true" PrivateAssets="all" />
         <PackageReference Include="StyleCop.Analyzers.Unstable" Version="1.2.0.507">
             <PrivateAssets>all</PrivateAssets>
