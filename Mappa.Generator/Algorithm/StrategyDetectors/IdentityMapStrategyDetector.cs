@@ -44,7 +44,7 @@ internal sealed class IdentityMapStrategyDetector
         // 01. Map to the very same type.
         if (this.CanMapUsingMapToSameTypeRule())
         {
-            // TODO: Introduce the ability to perform a deep copy instead of shallow copy.
+            // TODO [#14] Add support for deep copy instead of shallow copy when the type is the same via attribute.
            mapStrategy = new IdentityMapStrategy(
                 MappaAlgorithmRule.MapToSameType,
                 this.context.TargetType,

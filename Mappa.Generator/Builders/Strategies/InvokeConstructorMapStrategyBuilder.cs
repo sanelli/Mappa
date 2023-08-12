@@ -32,7 +32,7 @@ internal sealed class InvokeConstructorMapStrategyBuilder
         var builder = new IndentStringBuilder();
 
         // Handle arguments mappings
-        // TODO: Implement me
+        // TODO [#10] Add support for mapping arguments.
         // Handle initializer properties
         var propertyInitializersMappings = new List<(string TargetPropertyName, string TemporaryName)>();
         foreach (var propertyMapStrategy in this.strategy.InitializerStrategies)

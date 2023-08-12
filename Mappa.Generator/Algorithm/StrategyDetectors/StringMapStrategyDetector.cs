@@ -33,7 +33,6 @@ internal sealed class StringMapStrategyDetector
         // 01. string -> numeric : ParseNumberStrategy
         if (this.CanMapStringToNumber())
         {
-            // TODO: Allow to setup different file format.
             mapStrategy = new StringToNumberMapStrategy(
                 this.context.TargetType,
                 this.context.SourceType);
@@ -42,7 +41,6 @@ internal sealed class StringMapStrategyDetector
         // 02. string -> DateTime : ParseDateTimeStrategy
         else if (this.CanMapStringToDateTime())
         {
-            // TODO: Allow to specify the expected format.
             mapStrategy = new StringToDateTimeMapStrategy(
                 this.context.TargetType,
                 this.context.SourceType);

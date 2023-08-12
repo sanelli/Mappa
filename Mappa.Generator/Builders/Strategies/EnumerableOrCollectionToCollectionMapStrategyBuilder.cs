@@ -39,7 +39,7 @@ internal sealed class EnumerableOrCollectionToCollectionMapStrategyBuilder
         var returnVariable = context.NextTemporary();
         var loopTemporary = context.NextTemporary();
 
-        // TODO: If the input is IList<T>, List<T> or T[] we might be able to optimize this
+        // TODO [#12] If the input is IList<T>, List<T> or T[] we might be able to optimise the code.
         var builder = new IndentStringBuilder();
         builder.AppendLine($"System.Collections.Generic.List<{targetElementType.ToDisplayString()}> {returnVariable} = new System.Collections.Generic.List<{targetElementType.ToDisplayString()}>();");
         builder.AppendLine($"foreach ({sourceElementType.ToDisplayString()} {loopTemporary} in {source})");

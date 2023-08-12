@@ -36,9 +36,7 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
     {
         this.CancellationToken.ThrowIfCancellationRequested();
 
-        // TODO: Allow to get method compatible with expected types:
-        // - Input can be any of the base types/interfaces
-        // - Return type can be a derived type
+        // TODO [#13] `GetStrategy` should also allow to get compatible methods in some scenarios.
         // This will require identifying a mapping between input & target parameter.
         if (this.Context.TryGetMethod(this.Context.TargetType, this.Context.SourceType, out var mapMethod))
         {
