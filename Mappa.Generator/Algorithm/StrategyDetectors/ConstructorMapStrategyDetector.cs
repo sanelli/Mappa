@@ -137,13 +137,14 @@ internal sealed class ConstructorMapStrategyDetector
         else
         {
             // Gets the target properties
-            // TODO: Allow to ignore some target properties.
-            // TODO: ensure property setter method is accessible.
+            // TODO [#3] Allow to ignore some target properties when looking for for one empty constructor mapping.
+            // TODO [#4] Ensure property setter is accessible.
             var targetProperties = this.context.TargetType.GetTypeProperties()
 
                 // Ignore indexer properties.
                 // Ignore properties without a setter.
-                // TODO: We might want to include properties with a getter implementing IList<T> to support protobuf?
+                // TODO [#5] Accept target properties implementing IList<T>.
+                // TODO [#6] Accept target properties implementing IDictionary<K, V>.
                 .Where(property => property.IsIndexer is false && property.SetMethod is not null)
                 .ToArray();
 
@@ -157,7 +158,7 @@ internal sealed class ConstructorMapStrategyDetector
 
                     // Ignore indexer properties.
                     // Ignore properties without a setter.
-                    // TODO: ensure property getter method is accessible.
+                    // TODO [#7] Ensure property getter method is accessible.
                     .Where(property => property.IsIndexer is false && property.GetMethod is not null)
 
                     // Map them to a dictionary
@@ -168,8 +169,8 @@ internal sealed class ConstructorMapStrategyDetector
                     .Select(
                         targetProperty =>
                         {
-                            // TODO: Allow to use a source property with a different name.
-                            // TODO: Allow properties to match regardless of casing
+                            // TODO [#8] Allow property mapping where source property name differ from target property name using an attribute.
+                            // TODO [#9] Allow property mapping regardless of casing using an attribute.
                             if (!sourceProperties.TryGetValue(targetProperty.Name, out var sourceProperty))
                             {
                                 return new PropertyMapStrategy(targetProperty, null!, noMapStrategy);
@@ -183,7 +184,6 @@ internal sealed class ConstructorMapStrategyDetector
                                 return new PropertyMapStrategy(targetProperty, sourceProperty, propertyStrategy);
                             }
 
-                            // TODO: If target property is a get-only whose type is implementing the IList<T> we can invoke a specific strategy to just add the items
                             return new PropertyMapStrategy(targetProperty, null!, noMapStrategy);
                         })
                     .ToArray();
