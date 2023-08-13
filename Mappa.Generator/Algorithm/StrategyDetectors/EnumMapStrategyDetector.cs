@@ -40,7 +40,7 @@ internal sealed class EnumMapStrategyDetector
         // 01. enum -> string : EnumToString strategy.
         if (this.CanMapEnumToString())
         {
-            // TODO: Add ability to use content of Description attribute
+            // TODO [#15] Support using the Description attribute when mapping enum to string.
             mapStrategy = new EnumToStringMapStrategy(
                 this.context.TargetType,
                 this.context.SourceType);
@@ -57,8 +57,8 @@ internal sealed class EnumMapStrategyDetector
         // 03. string -> enum : StringToEnum strategy.
         else if (this.CanMapStringToEnum())
         {
-            // TODO: Add ability to use content of Description attribute.
-            // TODO: Add ability to be case insensitive.
+            // TODO [#16] Support using the Description attribute when mapping string to enum.
+            // TODO [#17] Support case insensitive mapping from string to enum.
             mapStrategy = new StringToEnumMapStrategy(
                 this.context.TargetType,
                 this.context.SourceType);
@@ -75,8 +75,8 @@ internal sealed class EnumMapStrategyDetector
         // 05. enum -> enum: EnumToEnumStrategy
         else if (this.CanMapEnumToEnum())
         {
-            // TODO: Allow to map using enum numeric value instead of their name.
-            // TODO: Allow to fail generation if not all values can be mapped.
+            // TODO [#18] Allow to map the source enum to the target enum using numeric values instead than their name.
+            // TODO [#19] Allow to fail the map from the source enum to the target enum if not all values can be mapped.
             mapStrategy = new EnumToEnumMapStrategy(
                 this.context.TargetType,
                 this.context.SourceType);
