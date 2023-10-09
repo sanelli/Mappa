@@ -172,7 +172,7 @@ internal sealed class MappaGeneratorClassAlgorithm
                     var methods = propertySymbol.Type.GetMembers().OfType<IMethodSymbol>().ToArray();
                     foreach (var method in methods)
                     {
-                        this.AcceptMapMethod(
+                        this.AcceptMapMethodFromDependency(
                             propertyDeclarationSyntax,
                             method,
                             accessFieldName,
@@ -207,7 +207,7 @@ internal sealed class MappaGeneratorClassAlgorithm
                     var methods = fieldSymbol.Type.GetMembers().OfType<IMethodSymbol>().ToArray();
                     foreach (var method in methods)
                     {
-                        this.AcceptMapMethod(
+                        this.AcceptMapMethodFromDependency(
                             fieldDeclarationSyntax,
                             method,
                             accessFieldName,
@@ -260,6 +260,7 @@ internal sealed class MappaGeneratorClassAlgorithm
         MappaClassGeneratorContext classContext,
         CancellationToken cancellationToken)
     {
+        // TODO [#37] Allow to skip method using MappaIgnore attribute.
         if (!methodDeclarationSyntax.IsPartial())
         {
             return false;
@@ -299,13 +300,14 @@ internal sealed class MappaGeneratorClassAlgorithm
         return true;
     }
 
-    private void AcceptMapMethod(
+    private void AcceptMapMethodFromDependency(
         SyntaxNode referenceSyntaxNode,
         IMethodSymbol method,
         string accessFieldName,
         MappaClassGeneratorContext classContext,
         CancellationToken cancellationToken)
     {
+        // TODO [#37] Allow to skip method using MappaIgnore attribute.
         if (!this.Compilation.IsSymbolAccessibleWithin(method, classContext.ClassSymbol))
         {
             return;
@@ -343,6 +345,7 @@ internal sealed class MappaGeneratorClassAlgorithm
         MappaClassGeneratorContext classContext,
         CancellationToken cancellationToken)
     {
+        // TODO [#37] Allow to skip method using MappaIgnore attribute.
         if (methodDeclarationSyntax.IsPartial())
         {
             return;
