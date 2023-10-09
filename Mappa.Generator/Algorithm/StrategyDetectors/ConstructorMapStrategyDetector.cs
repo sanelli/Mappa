@@ -13,6 +13,7 @@ namespace Mappa.Generator.Algorithm.StrategyDetectors;
 /// <summary>
 /// Detector for the constructor strategies.
 /// </summary>
+// TODO [#22] Add support for polymorphism.
 internal sealed class ConstructorMapStrategyDetector
     : IMapStrategyDetector
 {
@@ -189,20 +190,19 @@ internal sealed class ConstructorMapStrategyDetector
                     .ToArray();
 
                 // Check if any property strategy is required but no strategy has been found
-                if (Array
-                    .Exists(initializerStrategies, propertyStrategy => propertyStrategy.TargetProperty.IsRequired && propertyStrategy.PropertyStrategy is NoMapStrategy))
+                if (Array.Exists(initializerStrategies, propertyStrategy => propertyStrategy.TargetProperty.IsRequired && propertyStrategy.PropertyStrategy is NoMapStrategy))
                 {
                     strategy = noMapStrategy;
                 }
                 else
                 {
                     // Filter out properties that have no mapping.
-                    // TODO: Allow to prevent skipping some non required parameters.
+                    // TODO [#20] Allow to prevent skipping some non required parameters.
                     initializerStrategies = initializerStrategies
                         .Where(propertyStrategy => propertyStrategy.PropertyStrategy is not NoMapStrategy)
                         .ToArray();
 
-                    // TODO: Allow to return an error if some source properties are not mapped.
+                    // TODO [#21] Allow to return an error if some source properties are not mapped.
                     strategy = new InvokeConstructorMapStrategy(
                         MappaAlgorithmRule.InvokeEmptyConstructor,
                         this.context.TargetType,
