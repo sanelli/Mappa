@@ -16,6 +16,18 @@ namespace Mappa.Generator.Extensions;
 /// </summary>
 internal static class TypeSymbolExtensions
 {
+    private static readonly string Tuple1Fullname = typeof(Tuple<>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Tuple<>)}");
+    private static readonly string Tuple2Fullname = typeof(Tuple<,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Tuple<,>)}");
+    private static readonly string Tuple3Fullname = typeof(Tuple<,,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Tuple<,,>)}");
+    private static readonly string Tuple4Fullname = typeof(Tuple<,,,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Tuple<,,,>)}");
+    private static readonly string Tuple5Fullname = typeof(Tuple<,,,,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Tuple<,,,,>)}");
+    private static readonly string Tuple6Fullname = typeof(Tuple<,,,,,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Tuple<,,,,,>)}");
+    private static readonly string Tuple7Fullname = typeof(Tuple<,,,,,,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Tuple<,,,,,,>)}");
+    private static readonly string Tuple8Fullname = typeof(Tuple<,,,,,,,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Tuple<,,,,,,,>)}");
+    private static readonly string DictionaryFullName = typeof(Dictionary<,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Dictionary<,>)}");
+    private static readonly string DictionaryInterfaceFullName = typeof(IDictionary<,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(IDictionary<,>)}");
+    private static readonly string ListFullName = typeof(List<>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(List<>)}");
+
     /// <summary>
     /// Check if the type is <see cref="Void"/>.
     /// </summary>
@@ -80,7 +92,7 @@ internal static class TypeSymbolExtensions
     /// <returns><c>true</c> if the type symbol is <see cref="List{T}"/>.</returns>
     internal static bool IsList(this ITypeSymbol typeSymbol, Compilation compilation)
     {
-        var listType = compilation.GetTypeByMetadataName(typeof(List<>).FullName);
+        var listType = compilation.GetTypeByMetadataName(ListFullName);
         var isList = SymbolEqualityComparer.Default.Equals(listType, typeSymbol.OriginalDefinition);
         return isList;
     }
@@ -93,7 +105,7 @@ internal static class TypeSymbolExtensions
     /// <returns><c>true</c> if the type symbol is <see cref="IDictionary{K,V}"/>.</returns>
     internal static bool IsIDictionary(this ITypeSymbol typeSymbol, Compilation compilation)
     {
-        var listType = compilation.GetTypeByMetadataName(typeof(IDictionary<,>).FullName);
+        var listType = compilation.GetTypeByMetadataName(DictionaryInterfaceFullName);
         var isList = SymbolEqualityComparer.Default.Equals(listType, typeSymbol.OriginalDefinition);
         return isList;
     }
@@ -106,7 +118,7 @@ internal static class TypeSymbolExtensions
     /// <returns><c>true</c> if the type symbol is <see cref="Dictionary{K,V}"/>.</returns>
     internal static bool IsDictionary(this ITypeSymbol typeSymbol, Compilation compilation)
     {
-        var listType = compilation.GetTypeByMetadataName(typeof(Dictionary<,>).FullName);
+        var listType = compilation.GetTypeByMetadataName(DictionaryFullName);
         var isList = SymbolEqualityComparer.Default.Equals(listType, typeSymbol.OriginalDefinition);
         return isList;
     }
@@ -143,14 +155,14 @@ internal static class TypeSymbolExtensions
     /// <returns><c>true</c> if the type symbol is <see cref="IDictionary{K,V}"/>.</returns>
     internal static bool IsTuple(this ITypeSymbol typeSymbol, Compilation compilation)
         => typeSymbol.IsTupleType
-           || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(typeof(Tuple<>).FullName), typeSymbol.OriginalDefinition)
-           || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(typeof(Tuple<,>).FullName), typeSymbol.OriginalDefinition)
-           || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(typeof(Tuple<,,>).FullName), typeSymbol.OriginalDefinition)
-           || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(typeof(Tuple<,,,>).FullName), typeSymbol.OriginalDefinition)
-           || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(typeof(Tuple<,,,,>).FullName), typeSymbol.OriginalDefinition)
-           || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(typeof(Tuple<,,,,,>).FullName), typeSymbol.OriginalDefinition)
-           || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(typeof(Tuple<,,,,,,>).FullName), typeSymbol.OriginalDefinition)
-           || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(typeof(Tuple<,,,,,,,>).FullName), typeSymbol.OriginalDefinition);
+           || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(Tuple1Fullname), typeSymbol.OriginalDefinition)
+           || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(Tuple2Fullname), typeSymbol.OriginalDefinition)
+           || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(Tuple3Fullname), typeSymbol.OriginalDefinition)
+           || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(Tuple4Fullname), typeSymbol.OriginalDefinition)
+           || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(Tuple5Fullname), typeSymbol.OriginalDefinition)
+           || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(Tuple6Fullname), typeSymbol.OriginalDefinition)
+           || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(Tuple7Fullname), typeSymbol.OriginalDefinition)
+           || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(Tuple8Fullname), typeSymbol.OriginalDefinition);
 
     /// <summary>
     /// Gets the element type of the container.
@@ -165,7 +177,7 @@ internal static class TypeSymbolExtensions
             return arrayTypeSymbol.ElementType;
         }
 
-        if (typeSymbol is INamedTypeSymbol namedTypeSymbol && namedTypeSymbol.TypeArguments.Length == 1)
+        if (typeSymbol is INamedTypeSymbol { TypeArguments.Length: 1 } namedTypeSymbol)
         {
             return namedTypeSymbol.TypeArguments.First();
         }
