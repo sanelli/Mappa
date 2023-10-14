@@ -1,11 +1,11 @@
 # Check that the versions of the packages used by Benchmark
 # and samples matches the one epoxsed by Mappa and Mappa.Generator
 
-[xml]$MappaCsproj = Get-Content ./Mappa/Mappa.csproj
+[xml]$MappaCsproj = Get-Content ./Mappa.targets
 $ExpectedMappaVersion = "$($MappaCsproj.Project.PropertyGroup.Version)".Trim()
 
-[xml]$MappaGeneratorCsproj = Get-Content ./Mappa.Generator/Mappa.Generator.csproj
-$ExpectedMappaGeneratorVersion = "$($MappaGeneratorCsproj.Project.PropertyGroup.Version)".Trim()
+# [xml]$MappaGeneratorCsproj = Get-Content ./Mappa.targets
+# $ExpectedMappaGeneratorVersion = "$($MappaGeneratorCsproj.Project.PropertyGroup.Version)".Trim()
 
 [xml]$BenchmatkCsproj = Get-Content ./Mappa.Benchmark/Mappa.Benchmark.csproj
 $MappaVersionInBenchmark = "$($($BenchmatkCsproj.Project.ItemGroup.PackageReference | Where-Object { $_.Include -eq "Mappa" }).Version)".Trim()
@@ -15,12 +15,7 @@ $MappaGeneratorVersionInBenchmark = "$($($BenchmatkCsproj.Project.ItemGroup.Pack
 $MappaVersionInSample = "$($($SamplesCsproj.Project.ItemGroup.PackageReference | Where-Object { $_.Include -eq "Mappa" }).Version)".Trim()
 $MappaGeneratorVersionInSample = "$($($SamplesCsproj.Project.ItemGroup.PackageReference | Where-Object { $_.Include -eq "Mappa.Generator" }).Version)".Trim()
 
-Write-Host "** Checking versions **" -ForegroundColor Yellow
-Write-Host "- Expected"
-Write-Host "  - Mappa: $ExpectedMappaVersion"
-Write-Host "  - Mappa.Generator: $ExpectedMappaGeneratorVersion"
-
-Write-Host ""
+Write-Host "- Expected: $ExpectedMappaVersion"
 
 $Success = $true
 
@@ -40,7 +35,7 @@ else
 
 # Is Mappa.Generator version correct in Mappa.Benchmarks
 Write-Host "    - Mappa.Generator: " -NoNewline
-if($ExpectedMappaGeneratorVersion -ne $MappaGeneratorVersionInBenchmark)
+if($ExpectedMappaVersion -ne $MappaGeneratorVersionInBenchmark)
 {
     Write-Host "[KO] (actual: $MappaGeneratorVersionInBenchmark)" -ForegroundColor Red
     $Success = $false
@@ -65,7 +60,7 @@ else
 
 # Is Mappa.Generator version correct in Mappa.Benchmarks
 Write-Host "    - Mappa.Generator: " -NoNewline
-if($ExpectedMappaGeneratorVersion -ne $MappaGeneratorVersionInSample)
+if($ExpectedMappaVersion -ne $MappaGeneratorVersionInSample)
 {
     Write-Host "[KO] (actual: $MappaGeneratorVersionInSample)" -ForegroundColor Red
     $Success = $false

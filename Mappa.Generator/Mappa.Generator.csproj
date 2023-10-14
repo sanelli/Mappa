@@ -1,29 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
+    <Import Project="$(SolutionDir)Mappa.targets"/>
     <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-        <LangVersion>latest</LangVersion>
-        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <AnalysisLevel>latest-all</AnalysisLevel>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <IncludeBuildOutput>false</IncludeBuildOutput>
-        <PackageOutputPath>../.packages</PackageOutputPath>
         <NoWarn>$(NoWarn);NU5128</NoWarn>
         <DevelopmentDependency>true</DevelopmentDependency>
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     </PropertyGroup>
     <PropertyGroup>
         <PackageId>Mappa.Generator</PackageId>
-        <Version>0.0.1-alpha.76</Version>
-        <Authors>Stefano Anelli</Authors>
-        <Company>Stefano Anelli</Company>
         <Product>Mappa Generator</Product>
-        <NeutralLanguage>en</NeutralLanguage>
         <Description>Mappa source generator.</Description>
-        <Copyright>Stefano Anelli</Copyright>
         <PackageLicense>https://github.com/sanelli/Mappa/blob/main/LICENSE</PackageLicense>
         <PackageProjectUrl>https://github.com/sanelli/Mappa</PackageProjectUrl>
         <RepositoryUrl>https://github.com/sanelli/Mappa</RepositoryUrl>
