@@ -3,7 +3,6 @@
 // </copyright>
 
 using Mappa.Generator.Extensions;
-using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -35,11 +34,10 @@ internal sealed class NullableToNullableMapStrategyBuilder
 
         var returnValue = context.NextTemporary();
 
-        var builder = new IndentStringBuilder();
+        var builder = new PrettyCode.StringBuilder();
         builder.AppendLine($"{this.strategy.TargetType.ToDisplayString()} {returnValue};");
         builder.AppendLine($"if ({source}.HasValue)");
-        using (builder.CodeBlock())
-        using (builder.Indent())
+        using (builder.CurlyBracesBlock())
         {
             var temporary = context.NextTemporary();
             var sourceUnderlyingType = this.strategy.SourceType.GetElementType();
@@ -57,8 +55,7 @@ internal sealed class NullableToNullableMapStrategyBuilder
         }
 
         builder.AppendLine("else");
-        using (builder.CodeBlock())
-        using (builder.Indent())
+        using (builder.CurlyBracesBlock())
         {
             builder.AppendLine($"{returnValue} = ({this.strategy.TargetType.ToDisplayString()}) null;");
         }

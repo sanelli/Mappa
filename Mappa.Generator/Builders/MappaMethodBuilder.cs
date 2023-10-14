@@ -3,7 +3,6 @@
 // </copyright>
 
 using Mappa.Generator.Extensions;
-using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 
 namespace Mappa.Generator.Builders;
@@ -38,15 +37,14 @@ internal sealed class MappaMethodBuilder
     /// <inheritdoc/>
     public string BuildSource(MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
-        var builder = new IndentStringBuilder();
+        var builder = new PrettyCode.StringBuilder();
         var isNullableEnabled = this.MapMethod.NullableEnabled;
-        using (builder.NullableBlock(isNullableEnabled))
+        using (builder.NullableDirective(isNullableEnabled))
         {
             builder
                 .AppendLine(new MappaGeneratedCodeAttributeBuilder().BuildSource(context, mappaGlobalOptions))
                 .AppendLine(this.GetSignature());
-            using (builder.CodeBlock())
-            using (builder.Indent())
+            using (builder.CurlyBracesBlock())
             {
                 var (strategySource, header) = this.MapMethod.Strategy.GetBuilder().BuildSource(this.MapMethod.SourceParameterName, context, mappaGlobalOptions);
                 if (!string.IsNullOrWhiteSpace(header))

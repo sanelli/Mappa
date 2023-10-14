@@ -3,7 +3,6 @@
 // </copyright>
 
 using Mappa.Generator.Extensions;
-using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -40,12 +39,11 @@ internal sealed class ArrayOrListToArrayMapStrategyBuilder
         var returnVariable = context.NextTemporary();
         var indexTemporary = context.NextTemporary();
 
-        var builder = new IndentStringBuilder();
+        var builder = new PrettyCode.StringBuilder();
         builder.AppendLine($"int {lengthTemporary} = {source}.{this.strategy.SourceType.GetCountProperty()};");
         builder.AppendLine($"{targetElementType.ToDisplayString()}[] {returnVariable} = new {targetElementType.ToDisplayString()}[{lengthTemporary}];");
         builder.AppendLine($"for (int {indexTemporary} = 0 ; {indexTemporary} < {lengthTemporary} ; ++{indexTemporary})");
-        using (builder.CodeBlock())
-        using (builder.Indent())
+        using (builder.CurlyBracesBlock())
         {
             var itemTemporary = context.NextTemporary();
             builder.AppendLine($"{sourceElementType} {itemTemporary} = {source}[{indexTemporary}];");

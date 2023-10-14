@@ -3,7 +3,6 @@
 // </copyright>
 
 using Mappa.Generator.Extensions;
-using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 
 namespace Mappa.Generator.Builders;
@@ -37,11 +36,10 @@ internal sealed class MappaClassBuilder
             this.ClassContext.ClassSymbol.GetSymbolModifiers(),
             "partial");
 
-        var builder = new IndentStringBuilder();
+        var builder = new PrettyCode.StringBuilder();
         builder.AppendLine($"{modifiers} class {this.ClassContext.ClassDeclarationSyntax.Identifier}");
 
-        using (builder.CodeBlock())
-        using (builder.Indent())
+        using (builder.CurlyBracesBlock())
         {
             // Build all map methods.
             foreach (var mapMethod in this.ClassContext.MapMethods.Where(mapMethod => mapMethod.HasStrategy))

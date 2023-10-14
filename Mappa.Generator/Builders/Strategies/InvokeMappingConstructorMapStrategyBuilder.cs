@@ -3,7 +3,6 @@
 // </copyright>
 
 using Mappa.Generator.Extensions;
-using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -33,7 +32,7 @@ internal sealed class InvokeMappingConstructorMapStrategyBuilder
         var sourceTypeName = this.strategy.SourceType.ToDisplayString();
         var targetTypeWithoutNullableAnnotation = this.strategy.TargetType.ToDisplayNameWithoutNullableAnnotation();
 
-        var stringBuilder = new IndentStringBuilder();
+        var stringBuilder = new PrettyCode.StringBuilder();
 
         var sourceTemporary = context.NextTemporary();
         stringBuilder.AppendLine($"{sourceTypeName} {sourceTemporary} = {source};");

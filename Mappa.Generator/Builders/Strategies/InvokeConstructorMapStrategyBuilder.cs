@@ -3,7 +3,6 @@
 // </copyright>
 
 using Mappa.Generator.Extensions;
-using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -29,7 +28,7 @@ internal sealed class InvokeConstructorMapStrategyBuilder
     /// <inheritdoc/>
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
-        var builder = new IndentStringBuilder();
+        var builder = new PrettyCode.StringBuilder();
 
         // Handle arguments mappings
         // TODO [#10] Add support for mapping arguments.
@@ -50,8 +49,7 @@ internal sealed class InvokeConstructorMapStrategyBuilder
 
         var resultTemporary = context.NextTemporary();
         builder.AppendLine($"{this.strategy.TargetType.ToDisplayString()} {resultTemporary} = new {this.strategy.TargetType.ToDisplayNameWithoutNullableAnnotation()}()");
-        using (builder.CodeBlock(addSemicolonAfterClose: true))
-        using (builder.Indent())
+        using (builder.CurlyBracesBlock(trailingSemicolon: true, indent: false))
         {
             foreach (var propertyInitializersMapping in propertyInitializersMappings)
             {

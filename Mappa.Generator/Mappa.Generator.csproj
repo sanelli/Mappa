@@ -31,11 +31,12 @@
         <PackageTags>Mappa,Mapper,Mapping,SourceGenerator</PackageTags>
     </PropertyGroup>
     <ItemGroup>
+        <PackageReference Include="Mappa" Version="0.0.1-alpha.21" GeneratePathProperty="true" PrivateAssets="all" />
+        <PackageReference Include="PrettyCode.StringBuilder" Version="1.0.0"  GeneratePathProperty="true" PrivateAssets="all" />
         <PackageReference Include="Comment.Todo.Analyzer" Version="1.0.1">
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
           <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="Mappa" Version="0.0.1-alpha.21" GeneratePathProperty="true" PrivateAssets="all" />
         <PackageReference Include="StyleCop.Analyzers.Unstable" Version="1.2.0.507">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -53,6 +54,7 @@
     <ItemGroup>
         <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
         <None Include="$(PKGMappa)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+        <None Include="$(PKGPrettyCode_StringBuilder)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     </ItemGroup>
     <PropertyGroup>
         <GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
@@ -60,6 +62,7 @@
     <Target Name="GetDependencyTargetPaths">
         <ItemGroup>
             <TargetPathWithTargetPlatformMoniker Include="$(PKGMappa)\lib\netstandard2.0\*.dll" IncludeRuntimeDependency="false" />
+            <TargetPathWithTargetPlatformMoniker Include="$(PKGPrettyCode_StringBuilder)\lib\netstandard2.0\*.dll" IncludeRuntimeDependency="false" />
         </ItemGroup>
     </Target>
     <ItemGroup>

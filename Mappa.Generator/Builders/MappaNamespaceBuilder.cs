@@ -2,7 +2,6 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 
 using Microsoft.CodeAnalysis.CSharp;
@@ -39,7 +38,7 @@ internal sealed class MappaNamespaceBuilder
     /// <inheritdoc/>
     public string BuildSource(MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
-        var builder = new IndentStringBuilder();
+        var builder = new PrettyCode.StringBuilder();
         var @namespace = this.ClassContext.ClassSymbol.ContainingNamespace.ToDisplayString();
         var fileScopedNamespace = (this.ClassContext.Compilation as CSharpCompilation)?.LanguageVersion >= LanguageVersion.CSharp10;
         if (fileScopedNamespace)
@@ -51,8 +50,7 @@ internal sealed class MappaNamespaceBuilder
         else
         {
             builder.AppendLine($"namespace {@namespace}");
-            using (builder.CodeBlock())
-            using (builder.Indent())
+            using (builder.CurlyBracesBlock())
             {
                 builder.AppendLine(this.ClassSourceCode);
             }

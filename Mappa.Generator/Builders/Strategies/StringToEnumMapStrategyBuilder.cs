@@ -3,7 +3,6 @@
 // </copyright>
 
 using Mappa.Generator.Extensions;
-using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -29,7 +28,7 @@ internal sealed class StringToEnumMapStrategyBuilder
     /// <inheritdoc/>
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
-        var builder = new IndentStringBuilder();
+        var builder = new PrettyCode.StringBuilder();
 
         if (mappaGlobalOptions.MappaDebugComments)
         {
@@ -40,16 +39,14 @@ internal sealed class StringToEnumMapStrategyBuilder
         var temporary = context.NextTemporary();
         builder.AppendLine($"{enumFullName} {temporary};");
         builder.AppendLine($"switch ({source})");
-        using (builder.CodeBlock())
-        using (builder.Indent())
+        using (builder.CurlyBracesBlock())
         {
             var enumValues = this.strategy.TargetType.GetEnumValues();
             foreach (var enumValue in enumValues)
             {
                 var enumValueFullName = $"{enumFullName}.{enumValue.Name}";
                 builder.AppendLine($"case nameof({enumValueFullName}):");
-                using (builder.CodeBlock())
-                using (builder.Indent())
+                using (builder.CurlyBracesBlock())
                 {
                     builder.AppendLine($"{temporary} = {enumValueFullName};");
                     builder.AppendLine("break;");
@@ -57,8 +54,7 @@ internal sealed class StringToEnumMapStrategyBuilder
             }
 
             builder.AppendLine("default:");
-            using (builder.CodeBlock())
-            using (builder.Indent())
+            using (builder.CurlyBracesBlock())
             {
                 builder.AppendLine($"throw new System.ArgumentOutOfRangeException(\"{source}\");");
             }

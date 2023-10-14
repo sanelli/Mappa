@@ -3,7 +3,6 @@
 // </copyright>
 
 using Mappa.Generator.Extensions;
-using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -29,7 +28,7 @@ internal sealed class EnumToEnumMapStrategyBuilder
     /// <inheritdoc/>
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
-        var builder = new IndentStringBuilder();
+        var builder = new PrettyCode.StringBuilder();
 
         if (mappaGlobalOptions.MappaDebugComments)
         {
@@ -42,8 +41,7 @@ internal sealed class EnumToEnumMapStrategyBuilder
         var temporary = context.NextTemporary();
         builder.AppendLine($"{targetEnumFullType} {temporary};");
         builder.AppendLine($"switch ({source})");
-        using (builder.CodeBlock())
-        using (builder.Indent())
+        using (builder.CurlyBracesBlock())
         {
             var sourceEnumNames = new HashSet<string>(this.strategy.SourceType.GetEnumValues().Select(enumValue => enumValue.Name));
             var targetEnumNames = new HashSet<string>(this.strategy.TargetType.GetEnumValues().Select(enumValue => enumValue.Name));
@@ -52,8 +50,7 @@ internal sealed class EnumToEnumMapStrategyBuilder
             foreach (var enumName in sharedEnumNames)
             {
                 builder.AppendLine($"case {sourceEnumFullType}.{enumName}:");
-                using (builder.CodeBlock())
-                using (builder.Indent())
+                using (builder.CurlyBracesBlock())
                 {
                     builder.AppendLine($"{temporary} = {targetEnumFullType}.{enumName};");
                     builder.AppendLine("break;");
@@ -61,8 +58,7 @@ internal sealed class EnumToEnumMapStrategyBuilder
             }
 
             builder.AppendLine($"default:");
-            using (builder.CodeBlock())
-            using (builder.Indent())
+            using (builder.CurlyBracesBlock())
             {
                 builder.AppendLine($"throw new System.ArgumentOutOfRangeException(\"{source}\");");
             }

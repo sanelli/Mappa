@@ -3,7 +3,6 @@
 // </copyright>
 
 using Mappa.Generator.Extensions;
-using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -36,11 +35,10 @@ internal sealed class FromReferenceNullableMapStrategyBuilder
         var returnValue = context.NextTemporary();
         var nonNullTemporary = context.NextTemporary();
 
-        var builder = new IndentStringBuilder();
+        var builder = new PrettyCode.StringBuilder();
         builder.AppendLine($"{this.strategy.TargetType.ToDisplayString()} {returnValue};");
         builder.AppendLine($"if ({source} is not null)");
-        using (builder.CodeBlock())
-        using (builder.Indent())
+        using (builder.CurlyBracesBlock())
         {
             builder.AppendLine($"{this.strategy.SourceType.ToDisplayNameWithoutNullableAnnotation()} {nonNullTemporary} = {source};");
             var (innerVariable, innerStrategyCode) = this.strategy.InnerStrategy.GetBuilder().BuildSource(nonNullTemporary, context, mappaGlobalOptions);
@@ -55,8 +53,7 @@ internal sealed class FromReferenceNullableMapStrategyBuilder
         }
 
         builder.AppendLine("else");
-        using (builder.CodeBlock())
-        using (builder.Indent())
+        using (builder.CurlyBracesBlock())
         {
             builder.AppendLine($"throw new System.NullReferenceException(\"\\\"{source}\\\" is null.\");");
         }

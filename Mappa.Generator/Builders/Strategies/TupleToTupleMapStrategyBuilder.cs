@@ -2,7 +2,6 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -33,7 +32,7 @@ internal sealed class TupleToTupleMapStrategyBuilder
             : string.Empty;
 
         var elementTemporaries = new List<string>();
-        var builder = new IndentStringBuilder();
+        var builder = new PrettyCode.StringBuilder();
         for (int index = 0; index < this.strategy.ElementStrategies.Length; ++index)
         {
             var elementStrategy = this.strategy.ElementStrategies[index];

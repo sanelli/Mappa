@@ -3,7 +3,6 @@
 // </copyright>
 
 using Mappa.Generator.Extensions;
-using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -40,11 +39,10 @@ internal sealed class EnumerableOrCollectionToCollectionMapStrategyBuilder
         var loopTemporary = context.NextTemporary();
 
         // TODO [#12] If the input is IList<T>, List<T> or T[] we might be able to optimise the code.
-        var builder = new IndentStringBuilder();
+        var builder = new PrettyCode.StringBuilder();
         builder.AppendLine($"System.Collections.Generic.List<{targetElementType.ToDisplayString()}> {returnVariable} = new System.Collections.Generic.List<{targetElementType.ToDisplayString()}>();");
         builder.AppendLine($"foreach ({sourceElementType.ToDisplayString()} {loopTemporary} in {source})");
-        using (builder.CodeBlock())
-        using (builder.Indent())
+        using (builder.CurlyBracesBlock())
         {
             var (innerVariable, innerStrategyCode) = this.strategy.ElementStrategy.GetBuilder().BuildSource(loopTemporary, context, mappaGlobalOptions);
             if (!string.IsNullOrEmpty(innerStrategyCode))

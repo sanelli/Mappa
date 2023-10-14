@@ -3,7 +3,6 @@
 // </copyright>
 
 using Mappa.Generator.Extensions;
-using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -39,12 +38,11 @@ internal sealed class DictionaryToDictionaryMapStrategyBuilder
         var dictionaryTemporary = context.NextTemporary();
         var loopTemporary = context.NextTemporary();
 
-        var builder = new IndentStringBuilder();
+        var builder = new PrettyCode.StringBuilder();
         builder.AppendLine($"System.Collections.Generic.Dictionary<{targetKeyType.ToDisplayString()}, {targetValueType.ToDisplayString()}> {dictionaryTemporary} = new System.Collections.Generic.Dictionary<{targetKeyType.ToDisplayString()}, {targetValueType.ToDisplayString()}>();");
         builder.AppendLine($"foreach (System.Collections.Generic.KeyValuePair<{sourceKeyType.ToDisplayString()}, {sourceValueType.ToDisplayString()}> {loopTemporary} in {source})");
 
-        using (builder.CodeBlock())
-        using (builder.Indent())
+        using (builder.CurlyBracesBlock())
         {
             // Process the source
             var sourceKeyTemporary = context.NextTemporary();

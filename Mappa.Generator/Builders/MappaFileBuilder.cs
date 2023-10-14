@@ -2,7 +2,6 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 
 namespace Mappa.Generator.Builders;
@@ -42,7 +41,7 @@ internal sealed class MappaFileBuilder
         // Add the namespace to the class code.
         var classSourceCodeWithNamespace = new MappaNamespaceBuilder(this.ClassContext, classSourceCode).BuildSource(context, mappaGlobalOptions);
 
-        var builder = new IndentStringBuilder();
+        var builder = new PrettyCode.StringBuilder();
 
         // Add the file command description and the class code with namespace.
         // TODO [#11] Surround the entire code with `#pragma warning disable` / `#pragma warning enable`.
