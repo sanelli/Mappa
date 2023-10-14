@@ -9,9 +9,10 @@
         <AnalysisLevel>latest-all</AnalysisLevel>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageOutputPath>../.packages</PackageOutputPath>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
     <PropertyGroup>
-        <Version>0.0.1-alpha.100</Version>
+        <Version>0.0.1-alpha.101</Version>
         <Authors>Stefano Anelli</Authors>
         <Company>Stefano Anelli</Company>
         <NeutralLanguage>en</NeutralLanguage>
