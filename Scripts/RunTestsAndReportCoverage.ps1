@@ -5,6 +5,13 @@ if (Test-Path $MappaTestsAndCoveragePath)
     Remove-Item -Recurse -Force $MappaTestsAndCoveragePath > $null
 }
 
+dotnet publish -c Release --self-contained ./Mappa.Samples.Aot/ > $null
+if(-not $?)
+{
+    Write-Host "Cannot generate native code" -ForegroundColor Red
+    Exit 1
+}
+
 New-Item -ItemType Directory -Name $MappaTestsAndCoveragePath > $null
 dotnet test -c Release --collect:"XPlat Code Coverage" --logger "html" --logger "xunit;LogFileName=mappa.{assembly}.test-results.xml" --results-directory "$MappaTestsAndCoveragePath"
 if(-not $?)
