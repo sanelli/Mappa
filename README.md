@@ -1,7 +1,7 @@
 # Mappa
-Mapper using source generators
+Mapper using source generators.
 
-## Notes
+## NuGet
 In order to be able to compile you need to setup a `nuget.config` like the following:
 ```XML
 <?xml version="1.0" encoding="utf-8"?>
@@ -12,6 +12,25 @@ In order to be able to compile you need to setup a `nuget.config` like the follo
     </packageSources>
 </configuration>
 ```
+
+The `nuget.config` can be generated automatically by running: `./Scripts/CreateNuGetConfig.ps1`
+
+The projects automatically store all NuGet packages in `.packages\` folder.
+
+## Scripts
+### Check version matches
+`./Scripts/CheckVersions.ps1`
+
+### Run tests and report code coverage
+`./Scripts/RunTestsAndReportCoverage.ps1`
+
+Reports are:
+- `.mappa-tests-and-coverage/index.html`
+- `.mappa-tests-and-coverage/Summary.md`
+- `.mappa-tests-and-coverage/Summary.xml`
+
+### Run benchmarks
+`./Scripts/RunBenchmarks.ps1`
 
 ## References
 - [Roslyn API FAQ](https://github.com/dotnet/roslyn-sdk/blob/main/samples/CSharp/APISamples/FAQ.cs)
