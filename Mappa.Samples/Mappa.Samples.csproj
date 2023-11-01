@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
+    <Import Project="$(MSBuildThisFileDirectory)../MappaVersion.targets"/>
 
     <PropertyGroup>
         <TargetFramework>net7.0</TargetFramework>
@@ -14,8 +15,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Mappa" Version="0.0.1-alpha.101" />
-        <PackageReference Include="Mappa.Generator" Version="0.0.1-alpha.101">
+        <PackageReference Include="Mappa" Version="$(MappaVersion)" />
+        <PackageReference Include="Mappa.Generator" Version="$(MappaVersion)">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

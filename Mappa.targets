@@ -1,4 +1,5 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Import Project="$(MSBuildThisFileDirectory)MappaVersion.targets"/>
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -12,7 +13,7 @@
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
     <PropertyGroup>
-        <Version>0.0.1-alpha.101</Version>
+        <Version>$(MappaVersion)</Version>
         <Authors>Stefano Anelli</Authors>
         <Company>Stefano Anelli</Company>
         <NeutralLanguage>en</NeutralLanguage>

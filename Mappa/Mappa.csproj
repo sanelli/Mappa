@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-    <Import Project="$(SolutionDir)Mappa.targets"/>
+    <Import Project="$(MSBuildThisFileDirectory)../Mappa.targets"/>
 	<PropertyGroup>
 		<PackageId>Mappa</PackageId>
 		<Product>Mappa</Product>

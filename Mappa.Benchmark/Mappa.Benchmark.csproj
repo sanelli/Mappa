@@ -1,4 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
+    <Import Project="$(MSBuildThisFileDirectory)../MappaVersion.targets"/>
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
@@ -13,7 +14,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Mappa" Version="0.0.1-alpha.100" />
+        <PackageReference Include="Mappa" Version="$(MappaVersion)" />
         <PackageReference Include="AutoBogus" Version="2.13.1" />
         <PackageReference Include="AutoMapper" Version="12.0.1" />
         <PackageReference Include="BenchmarkDotNet" Version="0.13.6" />
@@ -27,7 +28,7 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="Mappa.Generator" Version="0.0.1-alpha.101">
+        <PackageReference Include="Mappa.Generator" Version="$(MappaVersion)">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
