@@ -25,41 +25,40 @@ public sealed class InvokeMappingConstructorMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
-            using Mappa.Attributes;
+                                  using Mappa.Attributes;
 
-            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
-            public class Source
-            {
-                public Source(int sourceProperty)
-                {
-                    this.SourceProperty = sourceProperty;
-                }
+                                  public class Source
+                                  {
+                                      public Source(int sourceProperty)
+                                      {
+                                          this.SourceProperty = sourceProperty;
+                                      }
+                                  
+                                      public int SourceProperty { get; };
+                                  }
 
-                public int SourceProperty { get; };
-            }
+                                  public class Target
+                                  {
+                                      public Target(Source source)
+                                      {
+                                          this.TargetProperty = source.SourceProperty;
+                                      }
+                                  
+                                      public int TargetProperty { get; };
+                                  }
 
-            public class Target
-            {
-                public Target(Source source)
-                {
-                    this.TargetProperty = source.SourceProperty;
-                }
-
-                public int TargetProperty { get; };
-            }
-
-            [Mappa]
-            public sealed partial class Mapper
-            {
-                public partial Target Map(Source input);
-            }
-            """;
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial Target Map(Source input);
+                                  }
+                                  """;
 
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
-        #pragma warning disable
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
             .HaveGeneratedSourceCode()
@@ -67,7 +66,6 @@ public sealed class InvokeMappingConstructorMapStrategyIntegrationTests
 
         // TODO [#42] Add correct assertions.
         compilationUnitSyntaxAssertions.NotBeNull();
-        #pragma warning restore
     }
 
     /// <summary>
@@ -82,38 +80,37 @@ public sealed class InvokeMappingConstructorMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
-            using Mappa.Attributes;
+                                  using Mappa.Attributes;
 
-            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
-            public enum Source
-            {
-                One,
-                Two,
-                Three,
-            }
+                                  public enum Source
+                                  {
+                                      One,
+                                      Two,
+                                      Three,
+                                  }
 
-            public class Target
-            {
-                public Target(int source)
-                {
-                    this.TargetProperty = (Source)source;
-                }
+                                  public class Target
+                                  {
+                                      public Target(int source)
+                                      {
+                                          this.TargetProperty = (Source)source;
+                                      }
+                                  
+                                      public Source TargetProperty { get; };
+                                  }
 
-                public Source TargetProperty { get; };
-            }
-
-            [Mappa]
-            public sealed partial class Mapper
-            {
-                public partial Target Map(Source input);
-            }
-            """;
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial Target Map(Source input);
+                                  }
+                                  """;
 
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
-        #pragma warning disable
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
             .HaveGeneratedSourceCode()
@@ -121,7 +118,6 @@ public sealed class InvokeMappingConstructorMapStrategyIntegrationTests
 
         // TODO [#42] Add correct assertions.
         compilationUnitSyntaxAssertions.NotBeNull();
-        #pragma warning restore
     }
 
     /// <summary>
@@ -136,43 +132,42 @@ public sealed class InvokeMappingConstructorMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
-            using Mappa.Attributes;
+                                  using Mappa.Attributes;
 
-            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
-            public enum Source
-            {
-                One,
-                Two,
-                Three,
-            }
+                                  public enum Source
+                                  {
+                                      One,
+                                      Two,
+                                      Three,
+                                  }
 
-            public class Target
-            {
-                public Target(int source)
-                {
-                    this.TargetProperty = (Source)source;
-                }
+                                  public class Target
+                                  {
+                                      public Target(int source)
+                                      {
+                                          this.TargetProperty = (Source)source;
+                                      }
+                                  
+                                      public Target(Source source)
+                                      {
+                                          this.TargetProperty = source;
+                                      }
+                                  
+                                      public Source TargetProperty { get; };
+                                  }
 
-                public Target(Source source)
-                {
-                    this.TargetProperty = source;
-                }
-
-                public Source TargetProperty { get; };
-            }
-
-            [Mappa]
-            public sealed partial class Mapper
-            {
-                public partial Target Map(Source input);
-            }
-            """;
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial Target Map(Source input);
+                                  }
+                                  """;
 
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
-        #pragma warning disable
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
             .HaveGeneratedSourceCode()
@@ -180,6 +175,5 @@ public sealed class InvokeMappingConstructorMapStrategyIntegrationTests
 
         // TODO [#42] Add correct assertions.
         compilationUnitSyntaxAssertions.NotBeNull();
-        #pragma warning restore
     }
 }

@@ -25,40 +25,39 @@ public sealed class InvokeConstructorMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
-            using Mappa.Attributes;
+                                  using Mappa.Attributes;
 
-            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
-            public enum TestEnum
-            {
-                One,
-                Two,
-                Three,
-            }
+                                  public enum TestEnum
+                                  {
+                                      One,
+                                      Two,
+                                      Three,
+                                  }
 
-            public class Source
-            {
-                public int PropertyA { get; set; }
-                public TestEnum PropertyB { get; set; }
-            }
+                                  public class Source
+                                  {
+                                      public int PropertyA { get; set; }
+                                      public TestEnum PropertyB { get; set; }
+                                  }
 
-            public class Target
-            {
-                public string PropertyA { get; set; }
-                public int PropertyB { get; set; }
-            }
+                                  public class Target
+                                  {
+                                      public string PropertyA { get; set; }
+                                      public int PropertyB { get; set; }
+                                  }
 
-            [Mappa]
-            public sealed partial class Mapper
-            {
-                public partial Target Map(Source input);
-            }
-            """;
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial Target Map(Source input);
+                                  }
+                                  """;
 
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
-        #pragma warning disable
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
             .HaveGeneratedSourceCode()
@@ -66,7 +65,6 @@ public sealed class InvokeConstructorMapStrategyIntegrationTests
 
         // TODO [#42] Add correct assertions.
         compilationUnitSyntaxAssertions.NotBeNull();
-        #pragma warning restore
     }
 
     /// <summary>
@@ -80,50 +78,49 @@ public sealed class InvokeConstructorMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
-            using Mappa.Attributes;
+                                  using Mappa.Attributes;
 
-            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
-            public enum TestEnum
-            {
-                One,
-                Two,
-                Three,
-            }
+                                  public enum TestEnum
+                                  {
+                                      One,
+                                      Two,
+                                      Three,
+                                  }
 
-            public class InnerSource
-            {
-                public int PropertyA { get; set; }
-                public TestEnum PropertyB { get; set; }
-            }
+                                  public class InnerSource
+                                  {
+                                      public int PropertyA { get; set; }
+                                      public TestEnum PropertyB { get; set; }
+                                  }
 
-            public class InnerTarget
-            {
-                public string PropertyA { get; set; }
-                public int PropertyB { get; set; }
-            }
+                                  public class InnerTarget
+                                  {
+                                      public string PropertyA { get; set; }
+                                      public int PropertyB { get; set; }
+                                  }
 
-            public class Source
-            {
-                public InnerSource Property { get; }
-            }
+                                  public class Source
+                                  {
+                                      public InnerSource Property { get; }
+                                  }
 
-            public class Target
-            {
-                public InnerTarget Property { set; }
-            }
+                                  public class Target
+                                  {
+                                      public InnerTarget Property { set; }
+                                  }
 
-            [Mappa]
-            public sealed partial class Mapper
-            {
-                public partial Target Map(Source input);
-            }
-            """;
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial Target Map(Source input);
+                                  }
+                                  """;
 
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
-        #pragma warning disable
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
             .HaveGeneratedSourceCode()
@@ -131,6 +128,5 @@ public sealed class InvokeConstructorMapStrategyIntegrationTests
 
         // TODO [#42] Add correct assertions.
         compilationUnitSyntaxAssertions.NotBeNull();
-        #pragma warning restore
     }
 }

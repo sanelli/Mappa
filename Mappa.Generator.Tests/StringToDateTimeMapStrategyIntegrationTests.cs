@@ -25,22 +25,21 @@ public sealed class StringToDateTimeMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
-            using System;
-            using Mappa.Attributes;
+                                  using System;
+                                  using Mappa.Attributes;
 
-            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
-            [Mappa]
-            public sealed partial class Mapper
-            {
-                public partial DateTime Map(string input);
-            }
-            """;
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial DateTime Map(string input);
+                                  }
+                                  """;
 
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
-        #pragma warning disable
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
             .HaveGeneratedSourceCode()
@@ -48,6 +47,5 @@ public sealed class StringToDateTimeMapStrategyIntegrationTests
 
         // TODO [#42] Add correct assertions.
         compilationUnitSyntaxAssertions.NotBeNull();
-        #pragma warning restore
     }
 }

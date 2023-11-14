@@ -52,7 +52,6 @@ public sealed class EnumToEnumMapStrategyIntegrationTests
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
-        #pragma warning disable
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
             .HaveGeneratedSourceCode()
@@ -60,6 +59,5 @@ public sealed class EnumToEnumMapStrategyIntegrationTests
 
         // TODO [#42] Add correct assertions.
         compilationUnitSyntaxAssertions.NotBeNull();
-        #pragma warning restore
     }
 }

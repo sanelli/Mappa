@@ -25,21 +25,20 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
-            using Mappa.Attributes;
+                                  using Mappa.Attributes;
 
-            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
-            [Mappa]
-            public sealed partial class Mapper
-            {
-                public partial string Map(int input);
-            }
-            """;
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial string Map(int input);
+                                  }
+                                  """;
 
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
-        #pragma warning disable
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
             .HaveGeneratedSourceCode()
@@ -47,6 +46,5 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
 
         // TODO [#42] Add correct assertions.
         compilationUnitSyntaxAssertions.NotBeNull();
-        #pragma warning restore
     }
 }

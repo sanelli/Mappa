@@ -11,9 +11,7 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Integration tests for <see cref="EnumerableOrCollectionToCollectionMapStrategy"/>.
 /// </summary>
-#pragma warning disable
-// TODO: Add tests for all other combinations of input/output types.
-#pragma warning enable
+// TODO [#42] Add tests for all other combinations of input/output types.
 public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {
@@ -27,29 +25,28 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
     {
         // Arrange
         const string sourceCode = """
-            using Mappa.Attributes;
-            using System.Collections.Generic;
+                                  using Mappa.Attributes;
+                                  using System.Collections.Generic;
 
-            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
-            public enum TestEnum
-            {
-                One,
-                Two,
-                Three,
-            }
+                                  public enum TestEnum
+                                  {
+                                      One,
+                                      Two,
+                                      Three,
+                                  }
 
-            [Mappa]
-            public sealed partial class Mapper
-            {
-                public partial ICollection<int> Map(ICollection<TestEnum> input);
-            }
-            """;
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial ICollection<int> Map(ICollection<TestEnum> input);
+                                  }
+                                  """;
 
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
-        #pragma warning disable
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
             .HaveGeneratedSourceCode()
@@ -57,7 +54,6 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
 
         // TODO [#42] Add correct assertions.
         compilationUnitSyntaxAssertions.NotBeNull();
-        #pragma warning restore
     }
 
     /// <summary>
@@ -70,29 +66,28 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
     {
         // Arrange
         const string sourceCode = """
-            using Mappa.Attributes;
-            using System.Collections.Generic;
+                                  using Mappa.Attributes;
+                                  using System.Collections.Generic;
 
-            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
-            public enum TestEnum
-            {
-                One,
-                Two,
-                Three,
-            }
+                                  public enum TestEnum
+                                  {
+                                      One,
+                                      Two,
+                                      Three,
+                                  }
 
-            [Mappa]
-            public sealed partial class Mapper
-            {
-                public partial IEnumerable<int> Map(IEnumerable<TestEnum> input);
-            }
-            """;
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial IEnumerable<int> Map(IEnumerable<TestEnum> input);
+                                  }
+                                  """;
 
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
-        #pragma warning disable
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
             .HaveGeneratedSourceCode()
@@ -100,7 +95,6 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
 
         // TODO [#42] Add correct assertions.
         compilationUnitSyntaxAssertions.NotBeNull();
-        #pragma warning restore
     }
 
     /// <summary>
@@ -113,29 +107,28 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
     {
         // Arrange
         const string sourceCode = """
-            using Mappa.Attributes;
-            using System.Collections.Generic;
+                                  using Mappa.Attributes;
+                                  using System.Collections.Generic;
 
-            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
-            public enum TestEnum
-            {
-                One,
-                Two,
-                Three,
-            }
+                                  public enum TestEnum
+                                  {
+                                      One,
+                                      Two,
+                                      Three,
+                                  }
 
-            [Mappa]
-            public sealed partial class Mapper
-            {
-                public partial List<int> Map(IEnumerable<TestEnum> input);
-            }
-            """;
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial List<int> Map(IEnumerable<TestEnum> input);
+                                  }
+                                  """;
 
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
-        #pragma warning disable
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
             .HaveGeneratedSourceCode()
@@ -143,6 +136,5 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
 
         // TODO [#42] Add correct assertions.
         compilationUnitSyntaxAssertions.NotBeNull();
-        #pragma warning restore
     }
 }

@@ -66,8 +66,8 @@ public sealed class ClassDeclarationSyntaxAssertions
     public ClassDeclarationSyntaxAssertions HaveGeneratedCodeAttribute()
     {
         var attributes = this.Subject.AttributeLists.SelectMany(attributeList => attributeList.Attributes);
-        var generatedCodeAttributes = attributes.Where(x =>
-                x.Name.ToString().Equals(typeof(GeneratedCodeAttribute).FullName, StringComparison.Ordinal))
+        var generatedCodeAttributes = attributes.Where(attributeSyntax =>
+                attributeSyntax.Name.ToString().Equals(typeof(GeneratedCodeAttribute).FullName, StringComparison.Ordinal))
             .ToArray();
         generatedCodeAttributes.Should().HaveCount(1);
         var generatedCodeAttribute = generatedCodeAttributes.Single();

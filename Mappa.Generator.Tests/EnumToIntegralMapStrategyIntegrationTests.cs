@@ -24,28 +24,27 @@ public sealed class EnumToIntegralMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
-            using Mappa.Attributes;
+                                  using Mappa.Attributes;
 
-            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
-            public enum TestEnum
-            {
-                One,
-                Two,
-                Three,
-            }
+                                  public enum TestEnum
+                                  {
+                                      One,
+                                      Two,
+                                      Three,
+                                  }
 
-            [Mappa]
-            public sealed partial class Mapper
-            {
-                public partial int Map(TestEnum input);
-            }
-            """;
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial int Map(TestEnum input);
+                                  }
+                                  """;
 
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
-        #pragma warning disable
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
             .HaveGeneratedSourceCode()
@@ -53,6 +52,5 @@ public sealed class EnumToIntegralMapStrategyIntegrationTests
 
         // TODO [#42] Add correct assertions.
         compilationUnitSyntaxAssertions.NotBeNull();
-        #pragma warning restore
     }
 }

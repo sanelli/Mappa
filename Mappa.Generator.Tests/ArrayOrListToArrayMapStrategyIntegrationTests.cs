@@ -24,28 +24,27 @@ public class ArrayOrListToArrayMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
-            using Mappa.Attributes;
+                                  using Mappa.Attributes;
 
-            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
-            public enum TestEnum
-            {
-                One,
-                Two,
-                Three,
-            }
+                                  public enum TestEnum
+                                  {
+                                      One,
+                                      Two,
+                                      Three,
+                                  }
 
-            [Mappa]
-            public sealed partial class Mapper
-            {
-                public partial int[] Map(TestEnum[] input);
-            }
-            """;
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial int[] Map(TestEnum[] input);
+                                  }
+                                  """;
 
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
-        #pragma warning disable
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
             .HaveGeneratedSourceCode()
@@ -53,7 +52,6 @@ public class ArrayOrListToArrayMapStrategyIntegrationTests
 
         // TODO [#42] Add correct assertions.
         compilationUnitSyntaxAssertions.NotBeNull();
-        #pragma warning restore
     }
 
     /// <summary>
@@ -67,29 +65,28 @@ public class ArrayOrListToArrayMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
-            using Mappa.Attributes;
-            using System.Collections.Generic;
+                                  using Mappa.Attributes;
+                                  using System.Collections.Generic;
 
-            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
-            public enum TestEnum
-            {
-                One,
-                Two,
-                Three,
-            }
+                                  public enum TestEnum
+                                  {
+                                      One,
+                                      Two,
+                                      Three,
+                                  }
 
-            [Mappa]
-            public sealed partial class Mapper
-            {
-                public partial int[] Map(IList<TestEnum> input);
-            }
-            """;
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial int[] Map(IList<TestEnum> input);
+                                  }
+                                  """;
 
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
-        #pragma warning disable
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
             .HaveGeneratedSourceCode()
@@ -97,7 +94,6 @@ public class ArrayOrListToArrayMapStrategyIntegrationTests
 
         // TODO [#42] Add correct assertions.
         compilationUnitSyntaxAssertions.NotBeNull();
-        #pragma warning restore
     }
 
     /// <summary>
@@ -111,29 +107,28 @@ public class ArrayOrListToArrayMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
-            using Mappa.Attributes;
-            using System.Collections.Generic;
+                                  using Mappa.Attributes;
+                                  using System.Collections.Generic;
 
-            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
-            public enum TestEnum
-            {
-                One,
-                Two,
-                Three,
-            }
+                                  public enum TestEnum
+                                  {
+                                      One,
+                                      Two,
+                                      Three,
+                                  }
 
-            [Mappa]
-            public sealed partial class Mapper
-            {
-                public partial int[] Map(List<TestEnum> input);
-            }
-            """;
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial int[] Map(List<TestEnum> input);
+                                  }
+                                  """;
 
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
-        #pragma warning disable
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
             .HaveGeneratedSourceCode()
@@ -141,6 +136,5 @@ public class ArrayOrListToArrayMapStrategyIntegrationTests
 
         // TODO [#42] Add correct assertions.
         compilationUnitSyntaxAssertions.NotBeNull();
-        #pragma warning restore
     }
 }

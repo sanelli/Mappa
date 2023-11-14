@@ -26,33 +26,32 @@ public class FromReferenceNullableMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
-            #nullable enable
-            using Mappa.Attributes;
+                                  #nullable enable
+                                  using Mappa.Attributes;
 
-            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
-            public class Source
-            {
-                public int PropertyA { get; set; }
-            }
+                                  public class Source
+                                  {
+                                      public int PropertyA { get; set; }
+                                  }
 
-            public class Target
-            {
-                public int PropertyA { get; set; }
-            }
+                                  public class Target
+                                  {
+                                      public int PropertyA { get; set; }
+                                  }
 
-            [Mappa]
-            public sealed partial class Mapper
-            {
-                public partial Target Map(Source? input);
-            }
-            #nullable restore
-            """;
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial Target Map(Source? input);
+                                  }
+                                  #nullable restore
+                                  """;
 
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
-        #pragma warning disable
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
             .HaveGeneratedSourceCode()
@@ -60,6 +59,5 @@ public class FromReferenceNullableMapStrategyIntegrationTests
 
         // TODO [#42] Add correct assertions.
         compilationUnitSyntaxAssertions.NotBeNull();
-        #pragma warning restore
     }
 }

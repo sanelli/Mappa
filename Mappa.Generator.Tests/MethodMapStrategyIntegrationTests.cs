@@ -25,31 +25,30 @@ public sealed class MethodMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
-            using Mappa.Attributes;
+                                  using Mappa.Attributes;
 
-            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
-            public class InnerSource { public int A { get; set; } }
-            public class InnerTarget { public int B { get; set; } }
+                                  public class InnerSource { public int A { get; set; } }
+                                  public class InnerTarget { public int B { get; set; } }
 
-            public class Source { public InnerSource Property { get; set; } }
-            public class Target { public InnerTarget Property { get; set; } }
+                                  public class Source { public InnerSource Property { get; set; } }
+                                  public class Target { public InnerTarget Property { get; set; } }
 
-            [Mappa]
-            public sealed partial class Mapper
-            {
-                public InnerTarget Map(InnerSource input)
-                {
-                    return new InnerTarget() { B = input.A };
-                }
-                public partial Target Map(Source input);
-            }
-            """;
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public InnerTarget Map(InnerSource input)
+                                      {
+                                          return new InnerTarget() { B = input.A };
+                                      }
+                                      public partial Target Map(Source input);
+                                  }
+                                  """;
 
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
-        #pragma warning disable
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
             .HaveGeneratedSourceCode()
@@ -57,7 +56,6 @@ public sealed class MethodMapStrategyIntegrationTests
 
         // TODO [#42] Add correct assertions.
         compilationUnitSyntaxAssertions.NotBeNull();
-        #pragma warning restore
     }
 
     /// <summary>
@@ -71,28 +69,27 @@ public sealed class MethodMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
-            using Mappa.Attributes;
+                                  using Mappa.Attributes;
 
-            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
-            public class InnerSource { public int A { get; set; } }
-            public class InnerTarget { public int A { get; set; } }
+                                  public class InnerSource { public int A { get; set; } }
+                                  public class InnerTarget { public int A { get; set; } }
 
-            public class Source { public InnerSource Property { get; set; } }
-            public class Target { public InnerTarget Property { get; set; } }
+                                  public class Source { public InnerSource Property { get; set; } }
+                                  public class Target { public InnerTarget Property { get; set; } }
 
-            [Mappa]
-            public sealed partial class Mapper
-            {
-                public partial InnerTarget Map(InnerSource input);
-                public partial Target Map(Source input);
-            }
-            """;
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial InnerTarget Map(InnerSource input);
+                                      public partial Target Map(Source input);
+                                  }
+                                  """;
 
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
-        #pragma warning disable
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
             .HaveGeneratedSourceCode()
@@ -100,7 +97,6 @@ public sealed class MethodMapStrategyIntegrationTests
 
         // TODO [#42] Add correct assertions.
         compilationUnitSyntaxAssertions.NotBeNull();
-        #pragma warning restore
     }
 
     /// <summary>
@@ -114,36 +110,35 @@ public sealed class MethodMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
-            using Mappa.Attributes;
+                                  using Mappa.Attributes;
 
-            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
-            public class InnerSource { public int A { get; set; } }
-            public class InnerTarget { public int A { get; set; } }
+                                  public class InnerSource { public int A { get; set; } }
+                                  public class InnerTarget { public int A { get; set; } }
 
-            public class Source { public InnerSource Property { get; set; } }
-            public class Target { public InnerTarget Property { get; set; } }
+                                  public class Source { public InnerSource Property { get; set; } }
+                                  public class Target { public InnerTarget Property { get; set; } }
 
-            [Mappa]
-            public sealed partial class Dependency
-            {
-                public partial InnerTarget Map(InnerSource input);
-            }
+                                  [Mappa]
+                                  public sealed partial class Dependency
+                                  {
+                                      public partial InnerTarget Map(InnerSource input);
+                                  }
 
-            [Mappa]
-            public sealed partial class Mapper
-            {
-                [MappaDependency]
-                private Dependency DependencyProperty { get; } = new Dependency();
-
-                public partial Target Map(Source input);
-            }
-            """;
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaDependency]
+                                      private Dependency DependencyProperty { get; } = new Dependency();
+                                  
+                                      public partial Target Map(Source input);
+                                  }
+                                  """;
 
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
-        #pragma warning disable
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
             .HaveGeneratedSourceCode(howMany: 2)
@@ -154,7 +149,6 @@ public sealed class MethodMapStrategyIntegrationTests
         {
             compilationUnitAssertion.NotBeNull();
         }
-        #pragma warning restore
     }
 
     /// <summary>
@@ -168,36 +162,35 @@ public sealed class MethodMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
-            using Mappa.Attributes;
+                                  using Mappa.Attributes;
 
-            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
-            public class InnerSource { public int A { get; set; } }
-            public class InnerTarget { public int A { get; set; } }
+                                  public class InnerSource { public int A { get; set; } }
+                                  public class InnerTarget { public int A { get; set; } }
 
-            public class Source { public InnerSource Property { get; set; } }
-            public class Target { public InnerTarget Property { get; set; } }
+                                  public class Source { public InnerSource Property { get; set; } }
+                                  public class Target { public InnerTarget Property { get; set; } }
 
-            [Mappa]
-            public sealed partial class Dependency
-            {
-                public partial InnerTarget Map(InnerSource input);
-            }
+                                  [Mappa]
+                                  public sealed partial class Dependency
+                                  {
+                                      public partial InnerTarget Map(InnerSource input);
+                                  }
 
-            [Mappa]
-            public sealed partial class Mapper
-            {
-                [MappaDependency]
-                private Dependency dependencyField = new Dependency();
-
-                public partial Target Map(Source input);
-            }
-            """;
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaDependency]
+                                      private Dependency dependencyField = new Dependency();
+                                  
+                                      public partial Target Map(Source input);
+                                  }
+                                  """;
 
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
-        #pragma warning disable
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
             .HaveGeneratedSourceCode(howMany: 2)
@@ -208,6 +201,5 @@ public sealed class MethodMapStrategyIntegrationTests
         {
             compilationUnitAssertion.NotBeNull();
         }
-        #pragma warning restore
     }
 }
