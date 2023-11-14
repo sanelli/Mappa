@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using System.Diagnostics;
 using System.Globalization;
 
 namespace Mappa.Generator.Tests.Assertions;
@@ -9,6 +10,7 @@ namespace Mappa.Generator.Tests.Assertions;
 /// <summary>
 /// Assertions for <see cref="GeneratorRunResult"/>.
 /// </summary>
+[DebuggerNonUserCode]
 public sealed class GeneratorRunResultAssertions
     : ObjectAssertions<GeneratorRunResult, GeneratorRunResultAssertions>
 {

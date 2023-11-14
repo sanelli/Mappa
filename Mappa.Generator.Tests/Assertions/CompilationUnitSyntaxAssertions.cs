@@ -2,6 +2,8 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using System.Diagnostics;
+
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Mappa.Generator.Tests.Assertions;
@@ -9,6 +11,7 @@ namespace Mappa.Generator.Tests.Assertions;
 /// <summary>
 /// Assertions for <see cref="SyntaxTree"/>.
 /// </summary>
+[DebuggerNonUserCode]
 public sealed class CompilationUnitSyntaxAssertions
     : ObjectAssertions<CompilationUnitSyntax, CompilationUnitSyntaxAssertions>
 {
@@ -59,16 +62,21 @@ public sealed class CompilationUnitSyntaxAssertions
     /// <summary>
     /// Assert the compilation unit contains a file scoped namespace.
     /// </summary>
+    /// <param name="assert">Assertions on the file scoped namespace.</param>
     /// <returns>The file scoped namespace declaration syntax assertions.</returns>
-    public FileScopedNamespaceDeclarationSyntaxAssertions HaveFileScopedNamespace()
+    public CompilationUnitSyntaxAssertions HaveFileScopedNamespace(Action<FileScopedNamespaceDeclarationSyntaxAssertions> assert)
     {
+        ArgumentNullException.ThrowIfNull(assert);
+
         var fileScopedNamespaceDeclarationSyntaxes =
             this.Subject.ChildNodes().OfType<FileScopedNamespaceDeclarationSyntax>().ToArray();
         fileScopedNamespaceDeclarationSyntaxes.Should().HaveCount(1);
 
-        return new FileScopedNamespaceDeclarationSyntaxAssertions(
+        assert(new FileScopedNamespaceDeclarationSyntaxAssertions(
             fileScopedNamespaceDeclarationSyntaxes.Single(),
             this.semanticModel,
-            this.compilation);
+            this.compilation));
+
+        return this;
     }
 }

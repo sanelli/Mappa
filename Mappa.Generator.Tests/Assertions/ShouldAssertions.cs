@@ -2,6 +2,8 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using System.Diagnostics;
+
 using Mappa.Generator.Tests.Models;
 
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -12,6 +14,7 @@ namespace Mappa.Generator.Tests.Assertions;
 /// Fluent assertions extension methods.
 /// </summary>
 // TODO [#43] Extract to its own project in a different solution/repo.
+[DebuggerNonUserCode]
 public static class ShouldAssertions
 {
     /// <summary>

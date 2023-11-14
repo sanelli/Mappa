@@ -2,6 +2,8 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using System.Diagnostics;
+
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Mappa.Generator.Tests.Assertions;
@@ -11,6 +13,7 @@ namespace Mappa.Generator.Tests.Assertions;
 /// </summary>
 /// <typeparam name="TNamespaceSyntax">The namespace syntax.</typeparam>
 /// <typeparam name="TDerivedAssertion">The derived return type.</typeparam>
+[DebuggerNonUserCode]
 public abstract class BaseNamespaceDeclarationSyntaxAssertions<TNamespaceSyntax, TDerivedAssertion>
     : ObjectAssertions<TNamespaceSyntax, TDerivedAssertion>
     where TNamespaceSyntax : BaseNamespaceDeclarationSyntax

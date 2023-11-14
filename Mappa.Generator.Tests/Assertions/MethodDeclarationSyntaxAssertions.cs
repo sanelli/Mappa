@@ -3,6 +3,7 @@
 // </copyright>
 
 using System.CodeDom.Compiler;
+using System.Diagnostics;
 
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -11,6 +12,7 @@ namespace Mappa.Generator.Tests.Assertions;
 /// <summary>
 /// Assertions for <see cref="MethodDeclarationSyntax"/>.
 /// </summary>
+[DebuggerNonUserCode]
 public sealed class MethodDeclarationSyntaxAssertions
     : ObjectAssertions<MethodDeclarationSyntax, MethodDeclarationSyntaxAssertions>
 {

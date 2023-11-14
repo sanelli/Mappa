@@ -3,6 +3,7 @@
 // </copyright>
 
 using System.CodeDom.Compiler;
+using System.Diagnostics;
 
 using Mappa.Generator.Exceptions;
 
@@ -13,6 +14,7 @@ namespace Mappa.Generator.Tests.Assertions;
 /// <summary>
 /// Assertions for <see cref="ClassDeclarationSyntax"/>.
 /// </summary>
+[DebuggerNonUserCode]
 public sealed class ClassDeclarationSyntaxAssertions
     : ObjectAssertions<ClassDeclarationSyntax, ClassDeclarationSyntaxAssertions>
 {

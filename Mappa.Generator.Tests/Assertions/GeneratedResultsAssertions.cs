@@ -2,6 +2,8 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using System.Diagnostics;
+
 using Mappa.Generator.Tests.Models;
 
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -11,6 +13,7 @@ namespace Mappa.Generator.Tests.Assertions;
 /// <summary>
 /// Assertions for <see cref="GeneratedResults"/>.
 /// </summary>
+[DebuggerNonUserCode]
 public sealed class GeneratedResultsAssertions
     : ObjectAssertions<GeneratedResults, GeneratedResultsAssertions>
 {

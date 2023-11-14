@@ -2,6 +2,8 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using System.Diagnostics;
+
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Mappa.Generator.Tests.Assertions;
@@ -9,6 +11,7 @@ namespace Mappa.Generator.Tests.Assertions;
 /// <summary>
 /// Syntax node assertions.
 /// </summary>
+[DebuggerNonUserCode]
 public sealed class SyntaxNodeAssertions
     : ObjectAssertions<SyntaxNode, SyntaxNodeAssertions>
 {
