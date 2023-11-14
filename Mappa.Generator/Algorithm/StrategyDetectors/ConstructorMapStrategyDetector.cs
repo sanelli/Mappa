@@ -105,7 +105,7 @@ internal sealed class ConstructorMapStrategyDetector
                     constructorWithStrategy.Constructor.Parameters.Single().Type.IsEqualTo(this.context.SourceType, this.context.IsNullableEnabled()))
                 .ToArray();
 
-            if (constructorWithSameInputTypeAsSource.Any())
+            if (constructorWithSameInputTypeAsSource.Length > 0)
             {
                 constructor = constructorWithSameInputTypeAsSource.Single().Constructor;
                 strategy = constructorWithSameInputTypeAsSource.Single().Strategy;
@@ -131,7 +131,7 @@ internal sealed class ConstructorMapStrategyDetector
         var constructors = this.context.TargetType.GetAccessibleConstructors(this.compilation, this.context.ParentSymbol, 0);
 
         // If there is no constructor with zero parameters cannot apply this strategy.
-        if (!constructors.Any())
+        if (constructors.Length == 0)
         {
             strategy = noMapStrategy;
         }
@@ -146,13 +146,13 @@ internal sealed class ConstructorMapStrategyDetector
                 // Ignore properties without a setter.
                 // TODO [#5] Accept target properties implementing IList<T>.
                 // TODO [#6] Accept target properties implementing IDictionary<K, V>.
-                .Where(property => property.IsIndexer is false && property.SetMethod is not null)
+                .Where(property => !property.IsIndexer && property.SetMethod is not null)
                 .ToArray();
 
             // If no target properties exist there is no point in applying this strategy
             // this way we can avoid to attempt using this strategy for basic types
             // like string, int, etc...
-            if (targetProperties.Any())
+            if (targetProperties.Length > 0)
             {
                 // Gets the source properties.
                 var sourceProperties = this.context.SourceType.GetTypeProperties()
@@ -160,7 +160,7 @@ internal sealed class ConstructorMapStrategyDetector
                     // Ignore indexer properties.
                     // Ignore properties without a setter.
                     // TODO [#7] Ensure property getter method is accessible.
-                    .Where(property => property.IsIndexer is false && property.GetMethod is not null)
+                    .Where(property => !property.IsIndexer && property.GetMethod is not null)
 
                     // Map them to a dictionary
                     .ToDictionary(property => property.Name);

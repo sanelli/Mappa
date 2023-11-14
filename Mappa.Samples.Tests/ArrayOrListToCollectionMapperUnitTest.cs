@@ -16,6 +16,7 @@ namespace Mappa.Samples.Tests;
 /// </summary>
 public class ArrayOrListToCollectionMapperUnitTest
 {
+    private static readonly int[] ExpectedZeroAndTwoArray = { 0, 2 };
     private readonly ArrayOrListToCollectionMapper mapper = new();
 
     /// <summary>
@@ -32,7 +33,8 @@ public class ArrayOrListToCollectionMapperUnitTest
         var actual = this.mapper.MapArrayToIList(input);
 
         // Assert
-        actual.Should().BeEquivalentTo(new[] { 0, 2 });
+        var expectation = ExpectedZeroAndTwoArray;
+        actual.Should().BeEquivalentTo(expectation);
     }
 
     /// <summary>
@@ -49,7 +51,7 @@ public class ArrayOrListToCollectionMapperUnitTest
         var actual = this.mapper.MapArrayToList(input);
 
         // Assert
-        actual.Should().BeEquivalentTo(new[] { 0, 2 });
+        actual.Should().BeEquivalentTo(ExpectedZeroAndTwoArray);
     }
 
     /// <summary>
@@ -66,7 +68,7 @@ public class ArrayOrListToCollectionMapperUnitTest
         var actual = this.mapper.MapArrayToICollection(input);
 
         // Assert
-        actual.Should().BeEquivalentTo(new[] { 0, 2 });
+        actual.Should().BeEquivalentTo(ExpectedZeroAndTwoArray);
     }
 
     /// <summary>
@@ -83,7 +85,7 @@ public class ArrayOrListToCollectionMapperUnitTest
         var actual = this.mapper.MapArrayToIReadOnlyCollection(input);
 
         // Assert
-        actual.Should().BeEquivalentTo(new[] { 0, 2 });
+        actual.Should().BeEquivalentTo(ExpectedZeroAndTwoArray);
     }
 
     /// <summary>
@@ -100,7 +102,7 @@ public class ArrayOrListToCollectionMapperUnitTest
         var actual = this.mapper.MapArrayToIEnumerable(input);
 
         // Assert
-        actual.Should().BeEquivalentTo(new[] { 0, 2 });
+        actual.Should().BeEquivalentTo(ExpectedZeroAndTwoArray);
     }
 
     /// <summary>
@@ -117,7 +119,7 @@ public class ArrayOrListToCollectionMapperUnitTest
         var actual = this.mapper.MapIListToIList(input);
 
         // Assert
-        actual.Should().BeEquivalentTo(new[] { 0, 2 });
+        actual.Should().BeEquivalentTo(ExpectedZeroAndTwoArray);
     }
 
     /// <summary>
@@ -134,7 +136,7 @@ public class ArrayOrListToCollectionMapperUnitTest
         var actual = this.mapper.MapIListToList(input);
 
         // Assert
-        actual.Should().BeEquivalentTo(new[] { 0, 2 });
+        actual.Should().BeEquivalentTo(ExpectedZeroAndTwoArray);
     }
 
     /// <summary>
@@ -151,7 +153,7 @@ public class ArrayOrListToCollectionMapperUnitTest
         var actual = this.mapper.MapIListToICollection(input);
 
         // Assert
-        actual.Should().BeEquivalentTo(new[] { 0, 2 });
+        actual.Should().BeEquivalentTo(ExpectedZeroAndTwoArray);
     }
 
     /// <summary>
@@ -168,7 +170,7 @@ public class ArrayOrListToCollectionMapperUnitTest
         var actual = this.mapper.MapIListToIReadOnlyCollection(input);
 
         // Assert
-        actual.Should().BeEquivalentTo(new[] { 0, 2 });
+        actual.Should().BeEquivalentTo(ExpectedZeroAndTwoArray);
     }
 
     /// <summary>
@@ -185,7 +187,7 @@ public class ArrayOrListToCollectionMapperUnitTest
         var actual = this.mapper.MapIListToIEnumerable(input);
 
         // Assert
-        actual.Should().BeEquivalentTo(new[] { 0, 2 });
+        actual.Should().BeEquivalentTo(ExpectedZeroAndTwoArray);
     }
 
     /// <summary>
@@ -202,7 +204,7 @@ public class ArrayOrListToCollectionMapperUnitTest
         var actual = this.mapper.MapListToIList(input);
 
         // Assert
-        actual.Should().BeEquivalentTo(new[] { 0, 2 });
+        actual.Should().BeEquivalentTo(ExpectedZeroAndTwoArray);
     }
 
     /// <summary>
@@ -219,7 +221,7 @@ public class ArrayOrListToCollectionMapperUnitTest
         var actual = this.mapper.MapListToList(input);
 
         // Assert
-        actual.Should().BeEquivalentTo(new[] { 0, 2 });
+        actual.Should().BeEquivalentTo(ExpectedZeroAndTwoArray);
     }
 
     /// <summary>
@@ -236,7 +238,7 @@ public class ArrayOrListToCollectionMapperUnitTest
         var actual = this.mapper.MapListToICollection(input);
 
         // Assert
-        actual.Should().BeEquivalentTo(new[] { 0, 2 });
+        actual.Should().BeEquivalentTo(ExpectedZeroAndTwoArray);
     }
 
     /// <summary>
@@ -253,7 +255,7 @@ public class ArrayOrListToCollectionMapperUnitTest
         var actual = this.mapper.MapListToIReadOnlyCollection(input);
 
         // Assert
-        actual.Should().BeEquivalentTo(new[] { 0, 2 });
+        actual.Should().BeEquivalentTo(ExpectedZeroAndTwoArray);
     }
 
     /// <summary>
@@ -270,6 +272,6 @@ public class ArrayOrListToCollectionMapperUnitTest
         var actual = this.mapper.MapListToIEnumerable(input);
 
         // Assert
-        actual.Should().BeEquivalentTo(new[] { 0, 2 });
+        actual.Should().BeEquivalentTo(ExpectedZeroAndTwoArray);
     }
 }

@@ -16,6 +16,7 @@ namespace Mappa.Samples.Tests;
 /// </summary>
 public sealed class EnumerableOrCollectionToCollectionMapperUnitTests
 {
+    private static readonly int[] ExpectationZeroAndTwoArray = { 0, 2 };
     private readonly EnumerableOrCollectionToCollectionMapper mapper = new();
 
     /// <summary>
@@ -32,7 +33,7 @@ public sealed class EnumerableOrCollectionToCollectionMapperUnitTests
         var actual = this.mapper.MapIEnumerableToIList(input);
 
         // Assert
-        actual.Should().BeEquivalentTo(new[] { 0, 2 });
+        actual.Should().BeEquivalentTo(ExpectationZeroAndTwoArray);
     }
 
     /// <summary>
@@ -49,7 +50,7 @@ public sealed class EnumerableOrCollectionToCollectionMapperUnitTests
         var actual = this.mapper.MapIEnumerableToList(input);
 
         // Assert
-        actual.Should().BeEquivalentTo(new[] { 0, 2 });
+        actual.Should().BeEquivalentTo(ExpectationZeroAndTwoArray);
     }
 
     /// <summary>
@@ -66,7 +67,7 @@ public sealed class EnumerableOrCollectionToCollectionMapperUnitTests
         var actual = this.mapper.MapIEnumerableToICollection(input);
 
         // Assert
-        actual.Should().BeEquivalentTo(new[] { 0, 2 });
+        actual.Should().BeEquivalentTo(ExpectationZeroAndTwoArray);
     }
 
     /// <summary>
@@ -83,7 +84,7 @@ public sealed class EnumerableOrCollectionToCollectionMapperUnitTests
         var actual = this.mapper.MapIEnumerableToIReadOnlyCollection(input);
 
         // Assert
-        actual.Should().BeEquivalentTo(new[] { 0, 2 });
+        actual.Should().BeEquivalentTo(ExpectationZeroAndTwoArray);
     }
 
     /// <summary>
@@ -100,7 +101,7 @@ public sealed class EnumerableOrCollectionToCollectionMapperUnitTests
         var actual = this.mapper.MapIEnumerableToIEnumerable(input);
 
         // Assert
-        actual.Should().BeEquivalentTo(new[] { 0, 2 });
+        actual.Should().BeEquivalentTo(ExpectationZeroAndTwoArray);
     }
 
     /// <summary>
@@ -117,7 +118,7 @@ public sealed class EnumerableOrCollectionToCollectionMapperUnitTests
         var actual = this.mapper.MapICollectionToIList(input);
 
         // Assert
-        actual.Should().BeEquivalentTo(new[] { 0, 2 });
+        actual.Should().BeEquivalentTo(ExpectationZeroAndTwoArray);
     }
 
     /// <summary>
@@ -134,7 +135,7 @@ public sealed class EnumerableOrCollectionToCollectionMapperUnitTests
         var actual = this.mapper.MapICollectionToList(input);
 
         // Assert
-        actual.Should().BeEquivalentTo(new[] { 0, 2 });
+        actual.Should().BeEquivalentTo(ExpectationZeroAndTwoArray);
     }
 
     /// <summary>
@@ -151,7 +152,7 @@ public sealed class EnumerableOrCollectionToCollectionMapperUnitTests
         var actual = this.mapper.MapICollectionToICollection(input);
 
         // Assert
-        actual.Should().BeEquivalentTo(new[] { 0, 2 });
+        actual.Should().BeEquivalentTo(ExpectationZeroAndTwoArray);
     }
 
     /// <summary>
@@ -168,7 +169,7 @@ public sealed class EnumerableOrCollectionToCollectionMapperUnitTests
         var actual = this.mapper.MapICollectionToIReadOnlyCollection(input);
 
         // Assert
-        actual.Should().BeEquivalentTo(new[] { 0, 2 });
+        actual.Should().BeEquivalentTo(ExpectationZeroAndTwoArray);
     }
 
     /// <summary>
@@ -185,7 +186,7 @@ public sealed class EnumerableOrCollectionToCollectionMapperUnitTests
         var actual = this.mapper.MapICollectionToIEnumerable(input);
 
         // Assert
-        actual.Should().BeEquivalentTo(new[] { 0, 2 });
+        actual.Should().BeEquivalentTo(ExpectationZeroAndTwoArray);
     }
 
     /// <summary>
@@ -202,7 +203,7 @@ public sealed class EnumerableOrCollectionToCollectionMapperUnitTests
         var actual = this.mapper.MapIReadOnlyCollectionToIList(input);
 
         // Assert
-        actual.Should().BeEquivalentTo(new[] { 0, 2 });
+        actual.Should().BeEquivalentTo(ExpectationZeroAndTwoArray);
     }
 
     /// <summary>
@@ -219,7 +220,7 @@ public sealed class EnumerableOrCollectionToCollectionMapperUnitTests
         var actual = this.mapper.MapIReadOnlyCollectionToList(input);
 
         // Assert
-        actual.Should().BeEquivalentTo(new[] { 0, 2 });
+        actual.Should().BeEquivalentTo(ExpectationZeroAndTwoArray);
     }
 
     /// <summary>
@@ -236,7 +237,7 @@ public sealed class EnumerableOrCollectionToCollectionMapperUnitTests
         var actual = this.mapper.MapIReadOnlyCollectionToICollection(input);
 
         // Assert
-        actual.Should().BeEquivalentTo(new[] { 0, 2 });
+        actual.Should().BeEquivalentTo(ExpectationZeroAndTwoArray);
     }
 
     /// <summary>
@@ -253,7 +254,7 @@ public sealed class EnumerableOrCollectionToCollectionMapperUnitTests
         var actual = this.mapper.MapIReadOnlyCollectionToIReadOnlyCollection(input);
 
         // Assert
-        actual.Should().BeEquivalentTo(new[] { 0, 2 });
+        actual.Should().BeEquivalentTo(ExpectationZeroAndTwoArray);
     }
 
     /// <summary>
@@ -270,6 +271,6 @@ public sealed class EnumerableOrCollectionToCollectionMapperUnitTests
         var actual = this.mapper.MapIReadOnlyCollectionToIEnumerable(input);
 
         // Assert
-        actual.Should().BeEquivalentTo(new[] { 0, 2 });
+        actual.Should().BeEquivalentTo(ExpectationZeroAndTwoArray);
     }
 }

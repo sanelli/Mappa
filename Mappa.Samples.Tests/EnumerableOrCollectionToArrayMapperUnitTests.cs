@@ -16,6 +16,7 @@ namespace Mappa.Samples.Tests;
 /// </summary>
 public sealed class EnumerableOrCollectionToArrayMapperUnitTests
 {
+    private static readonly int[] ExpectationZeroAndTwoArray = { 0, 2 };
     private readonly EnumerableOrCollectionToArrayMapper mapper = new();
 
     /// <summary>
@@ -32,7 +33,7 @@ public sealed class EnumerableOrCollectionToArrayMapperUnitTests
         var actual = this.mapper.Map(input);
 
         // Assert
-        actual.Should().BeEquivalentTo(new[] { 0, 2 });
+        actual.Should().BeEquivalentTo(ExpectationZeroAndTwoArray);
     }
 
     /// <summary>
@@ -49,7 +50,7 @@ public sealed class EnumerableOrCollectionToArrayMapperUnitTests
         var actual = this.mapper.Map(input);
 
         // Assert
-        actual.Should().BeEquivalentTo(new[] { 0, 2 });
+        actual.Should().BeEquivalentTo(ExpectationZeroAndTwoArray);
     }
 
     /// <summary>
@@ -66,6 +67,6 @@ public sealed class EnumerableOrCollectionToArrayMapperUnitTests
         var actual = this.mapper.Map(input);
 
         // Assert
-        actual.Should().BeEquivalentTo(new[] { 0, 2 });
+        actual.Should().BeEquivalentTo(ExpectationZeroAndTwoArray);
     }
 }

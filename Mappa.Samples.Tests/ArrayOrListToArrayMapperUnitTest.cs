@@ -50,19 +50,19 @@ public sealed class ArrayOrListToArrayMapperUnitTest
     {
         yield return new object[]
         {
-            (IList<CountingValues>)new[] { CountingValues.One },
-            new int[] { 0 },
+            new[] { CountingValues.One },
+            new[] { 0 },
         };
 
         yield return new object[]
         {
-            (IList<CountingValues>)new[] { CountingValues.One, CountingValues.Three },
-            new int[] { 0, 2 },
+            new[] { CountingValues.One, CountingValues.Three },
+            new[] { 0, 2 },
         };
 
         yield return new object[]
         {
-            (IList<CountingValues>)Array.Empty<CountingValues>(),
+            Array.Empty<CountingValues>(),
             Array.Empty<int>(),
         };
     }
@@ -76,13 +76,13 @@ public sealed class ArrayOrListToArrayMapperUnitTest
         yield return new object[]
         {
             new List<CountingValues> { CountingValues.One },
-            new int[] { 0 },
+            new[] { 0 },
         };
 
         yield return new object[]
         {
             new List<CountingValues> { CountingValues.One, CountingValues.Three },
-            new int[] { 0, 2 },
+            new[] { 0, 2 },
         };
 
         yield return new object[]
@@ -93,15 +93,24 @@ public sealed class ArrayOrListToArrayMapperUnitTest
     }
 
     /// <summary>
+    /// Returns test data for <see cref="CanMapArrayToArray"/>.
+    /// </summary>
+    /// <returns>The test data for <see cref="CanMapArrayToArray"/>.</returns>
+    public static IEnumerable<object[]> CanMapArrayToArrayTestData()
+    {
+        yield return new object[] { new[] { CountingValues.One }, new[] { 0 } };
+        yield return new object[] { new[] { CountingValues.One, CountingValues.Two }, new[] { 0, 1 } };
+        yield return new object[] { Array.Empty<CountingValues>(), Array.Empty<int>() };
+    }
+
+    /// <summary>
     /// Unit test for <see cref="ArrayOrListToArrayMapper.Map(Mappa.Samples.Models.CountingValues[])"/>.
     /// </summary>
     /// <param name="value">The value to map.</param>
     /// <param name="expected">The expected value of the mapping.</param>
     [Theory]
     [UnitTest]
-    [InlineData(new[] { CountingValues.One }, new[] { 0 })]
-    [InlineData(new[] { CountingValues.One, CountingValues.Two }, new[] { 0, 1 })]
-    [InlineData(new CountingValues[0], new int[0])]
+    [MemberData(nameof(CanMapArrayToArrayTestData))]
     public void CanMapArrayToArray(CountingValues[] value, int[] expected)
     {
         // Act

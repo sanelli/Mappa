@@ -46,14 +46,14 @@ public abstract class MappaGeneratorAbstractUnitTests
     /// </summary>
     /// <param name="sources">The source generator.</param>
     /// <returns>The compilation.</returns>
-    private static Compilation BuildCompilation(IEnumerable<string> sources)
+    private static CSharpCompilation BuildCompilation(IEnumerable<string> sources)
     {
         var frameworkPath = Path.GetDirectoryName(typeof(Attribute).GetTypeInfo().Assembly.Location)!;
         var metadataReferences = new List<PortableExecutableReference>
         {
             MetadataReference.CreateFromFile(typeof(MappaAttribute).GetTypeInfo().Assembly.Location),
             MetadataReference.CreateFromFile(typeof(object).GetTypeInfo().Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(System.Uri).GetTypeInfo().Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(Uri).GetTypeInfo().Assembly.Location),
             MetadataReference.CreateFromFile(Path.Combine(frameworkPath, "netstandard.dll")),
             MetadataReference.CreateFromFile(Path.Combine(frameworkPath, "System.Runtime.dll")),
         };
