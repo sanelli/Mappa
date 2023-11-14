@@ -12,52 +12,51 @@ namespace Mappa.Generator.Tests.Assertions;
 public sealed class BlockSyntaxAssertions
     : ObjectAssertions<BlockSyntax, BlockSyntaxAssertions>
 {
+    private int nextSyntaxNodePosition;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="BlockSyntaxAssertions"/> class.
     /// </summary>
     /// <param name="value">The target of the assertions.</param>
-    /// <param name="semanticModel">The semantic model.</param>
-    /// <param name="compilation">The compilation unit.</param>
     public BlockSyntaxAssertions(
-        BlockSyntax value,
-        SemanticModel semanticModel,
-        Compilation compilation)
+        BlockSyntax value)
         : base(value)
     {
-        this.SemanticModel = semanticModel;
-        this.Compilation = compilation;
     }
 
     /// <summary>
-    /// Gets the semantic model.
+    /// Asset the number of nodes in the code block.
     /// </summary>
-    private SemanticModel SemanticModel { get; }
-
-    /// <summary>
-    /// Gets the compilation.
-    /// </summary>
-    private Compilation Compilation { get; }
-
-    /// <summary>
-    /// Assert that the block contains a single return statement. The return statement
-    /// also return an identifier expression (i.e. <c>return <paramref name="identifierName"/></c>).
-    /// </summary>
-    /// <param name="identifierName">The name of the identifier in the return expression.</param>
-    /// <returns>The assertions.</returns>
-    public BlockSyntaxAssertions HaveSingleReturnStatementWithIdentifierExpression(string identifierName)
+    /// <param name="count">The number of expected syntax nodes in the code block.</param>
+    /// <returns>The assertion.</returns>
+    public BlockSyntaxAssertions HasSyntaxNodes(int count)
     {
-        this.Subject.ChildNodes().Should().HaveCount(1);
-        var singleStatement = this.Subject.ChildNodes().Single();
-        AssertIsReturnStatementWithIdentifierExpression(singleStatement, identifierName);
+        this.Subject.ChildNodes().Should().HaveCount(count);
         return this;
     }
 
-    private static void AssertIsReturnStatementWithIdentifierExpression(SyntaxNode syntaxNode, string identifierName)
+    /// <summary>
+    /// Assert that the syntax node at a given position match the given criteria.
+    /// </summary>
+    /// <param name="position">The position of the token.</param>
+    /// <param name="assert">The assertions on the node.</param>
+    /// <returns>The assertions.</returns>
+    public BlockSyntaxAssertions HasSyntaxNode(int position, Action<SyntaxNodeAssertions> assert)
     {
-        syntaxNode.Should().BeOfType<ReturnStatementSyntax>();
-        var returnStatement = (ReturnStatementSyntax)syntaxNode;
-        returnStatement.Expression.Should().NotBeNull();
-        returnStatement.Expression.Should().BeOfType<IdentifierNameSyntax>();
-        ((IdentifierNameSyntax)returnStatement.Expression!).Identifier.Text.Should().Be(identifierName);
+        ArgumentNullException.ThrowIfNull(assert);
+
+        var syntaxNode = this.Subject.ChildNodes().ElementAt(position);
+        assert(new SyntaxNodeAssertions(syntaxNode));
+        return this;
+    }
+
+    /// <summary>
+    /// Assert that the syntax node matched the given criteria.
+    /// </summary>
+    /// <param name="assert">The assertions on the node.</param>
+    /// <returns>The assertions.</returns>
+    public BlockSyntaxAssertions HasNextSyntaxNode(Action<SyntaxNodeAssertions> assert)
+    {
+        return this.HasSyntaxNode(this.nextSyntaxNodePosition++, assert);
     }
 }

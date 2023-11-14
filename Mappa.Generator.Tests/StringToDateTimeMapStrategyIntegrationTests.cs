@@ -46,7 +46,7 @@ public sealed class StringToDateTimeMapStrategyIntegrationTests
             .HaveGeneratedSourceCode()
             .WithCompilationUnit();
 
-        // TODO: Add correct assertions
+        // TODO [#42] Add correct assertions.
         compilationUnitSyntaxAssertions.NotBeNull();
         #pragma warning restore
     }

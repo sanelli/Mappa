@@ -80,6 +80,22 @@ public sealed class MethodDeclarationSyntaxAssertions
     {
         var blockSyntaxes = this.Subject.ChildNodes().OfType<BlockSyntax>().ToArray();
         blockSyntaxes.Should().HaveCount(1);
-        return new BlockSyntaxAssertions(blockSyntaxes.Single(), this.SemanticModel, this.Compilation);
+        return new BlockSyntaxAssertions(blockSyntaxes.Single());
+    }
+
+    /// <summary>
+    /// Assert that the method has a body with specific characteristics.
+    /// </summary>
+    /// <param name="assert">The assertions on the method's body.</param>
+    /// <returns>The method syntax assertion.</returns>
+    public MethodDeclarationSyntaxAssertions HaveBody(Action<BlockSyntaxAssertions> assert)
+    {
+        ArgumentNullException.ThrowIfNull(assert);
+
+        var blockSyntaxes = this.Subject.ChildNodes().OfType<BlockSyntax>().ToArray();
+        blockSyntaxes.Should().HaveCount(1);
+        var blockSyntaxAssertions = new BlockSyntaxAssertions(blockSyntaxes.Single());
+        assert(blockSyntaxAssertions);
+        return this;
     }
 }

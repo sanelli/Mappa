@@ -9,6 +9,7 @@ namespace Mappa.Generator.Tests.Abstractions;
 /// <summary>
 /// Base class with helper methods for running tests.
 /// </summary>
+// TODO [#43] Extract to its own project in a different solution/repo.
 public abstract class MappaGeneratorAbstractUnitTests
 {
     /// <summary>

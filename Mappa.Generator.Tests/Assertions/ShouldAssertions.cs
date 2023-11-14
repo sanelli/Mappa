@@ -11,6 +11,7 @@ namespace Mappa.Generator.Tests.Assertions;
 /// <summary>
 /// Fluent assertions extension methods.
 /// </summary>
+// TODO [#43] Extract to its own project in a different solution/repo.
 public static class ShouldAssertions
 {
     /// <summary>

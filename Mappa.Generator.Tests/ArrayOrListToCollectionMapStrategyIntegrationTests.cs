@@ -11,9 +11,7 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Integration tests for <see cref="ArrayOrListToCollectionMapStrategy"/>.
 /// </summary>
-#pragma warning disable
-// TODO: Add tests for all other combinations of input/output types.
-#pragma warning enable
+// TODO [#42] Add tests for all other combinations of input/output types.
 public sealed class ArrayOrListToCollectionMapStrategyIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {
@@ -55,7 +53,7 @@ public sealed class ArrayOrListToCollectionMapStrategyIntegrationTests
             .HaveGeneratedSourceCode()
             .WithCompilationUnit();
 
-        // TODO: Add correct assertions
+        // TODO [#42] Add correct assertions.
         compilationUnitSyntaxAssertions.NotBeNull();
         #pragma warning restore
     }
@@ -98,7 +96,7 @@ public sealed class ArrayOrListToCollectionMapStrategyIntegrationTests
             .HaveGeneratedSourceCode()
             .WithCompilationUnit();
 
-        // TODO: Add correct assertions
+        // TODO [#42] Add correct assertions.
         compilationUnitSyntaxAssertions.NotBeNull();
         #pragma warning restore
     }
@@ -141,7 +139,7 @@ public sealed class ArrayOrListToCollectionMapStrategyIntegrationTests
             .HaveGeneratedSourceCode()
             .WithCompilationUnit();
 
-        // TODO: Add correct assertions
+        // TODO [#42] Add correct assertions.
         compilationUnitSyntaxAssertions.NotBeNull();
         #pragma warning restore
     }

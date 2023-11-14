@@ -11,8 +11,8 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Integration tests for <see cref="DictionaryToDictionaryMapStrategy"/> strategy.
 /// </summary>
-// TODO: Add missing test IDictionary -> Dictionary
-// TODO: Add missing test Dictionary -> IDictionary
+// TODO [#42] Add missing test IDictionary -> Dictionary.
+// TODO [#42] Add missing test Dictionary -> IDictionary.
 public sealed class DictionaryToDictionaryMapStrategyIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {
@@ -55,7 +55,7 @@ public sealed class DictionaryToDictionaryMapStrategyIntegrationTests
             .HaveGeneratedSourceCode()
             .WithCompilationUnit();
 
-        // TODO: Add correct assertions
+        // TODO [#42] Add correct assertions.
         compilationUnitSyntaxAssertions.NotBeNull();
         #pragma warning restore
     }
@@ -99,7 +99,7 @@ public sealed class DictionaryToDictionaryMapStrategyIntegrationTests
             .HaveGeneratedSourceCode()
             .WithCompilationUnit();
 
-        // TODO: Add correct assertions
+        // TODO [#42] Add correct assertions.
         compilationUnitSyntaxAssertions.NotBeNull();
         #pragma warning restore
     }

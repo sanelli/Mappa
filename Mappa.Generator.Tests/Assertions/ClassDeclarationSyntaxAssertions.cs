@@ -93,13 +93,17 @@ public sealed class ClassDeclarationSyntaxAssertions
     /// <param name="returnTypeNullableAnnotation"><c>true</c> if the method has been annotated with nullability.</param>
     /// <param name="name">The method name.</param>
     /// <param name="parameters">The expected parameters of the method.</param>
+    /// <param name="assert">The assertion on the method.</param>
     /// <returns>The method declaration syntax assertions.</returns>
-    public MethodDeclarationSyntaxAssertions HaveMethod(
+    public ClassDeclarationSyntaxAssertions HaveMethod(
         Type returnType,
         NullableAnnotation returnTypeNullableAnnotation,
         string name,
-        params (Type Type, NullableAnnotation NullableAnnotation, string Name)[] parameters)
+        (Type Type, NullableAnnotation NullableAnnotation, string Name)[] parameters,
+        Action<MethodDeclarationSyntaxAssertions> assert)
     {
+        ArgumentNullException.ThrowIfNull(assert);
+
         var methods = this.Subject.ChildNodes()
             .OfType<MethodDeclarationSyntax>()
             .Where(methodDeclarationSyntax =>
@@ -159,7 +163,8 @@ public sealed class ClassDeclarationSyntaxAssertions
             .ToArray();
         methods.Should().HaveCount(1);
 
-        return new MethodDeclarationSyntaxAssertions(methods.Single(), this.SemanticModel, this.Compilation);
+        assert(new MethodDeclarationSyntaxAssertions(methods.Single(), this.SemanticModel, this.Compilation));
+        return this;
     }
 
     private ITypeSymbol GetTypeSymbol(Type type)

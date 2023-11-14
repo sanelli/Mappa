@@ -11,12 +11,12 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Integration tests for <see cref="TupleToTupleMapStrategy"/> strategy.
 /// </summary>
-// TODO: Test Tuple<...> -> (...)
-// TODO: Test Tuple<...> -> ( named )
-// TODO: (...) -> Test Tuple<...>
-// TODO: (...) -> ( named )
-// TODO: ( named ) -> Test Tuple<...>
-// TODO: ( named ) -> (...)
+// TODO [#42] Test Tuple<...> -> (...).
+// TODO [#42] Test Tuple<...> -> ( named ).
+// TODO [#42] (...) -> Test Tuple<...>.
+// TODO [#42] (...) -> ( named ).
+// TODO [#42] ( named ) -> Test Tuple<...>.
+// TODO [#42] ( named ) -> (...).
 public sealed class TupleToTupleMapStrategyIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {
@@ -59,7 +59,7 @@ public sealed class TupleToTupleMapStrategyIntegrationTests
             .HaveGeneratedSourceCode()
             .WithCompilationUnit();
 
-        // TODO: Add correct assertions
+        // TODO [#42] Add correct assertions.
         compilationUnitSyntaxAssertions.NotBeNull();
         #pragma warning restore
     }
@@ -103,7 +103,7 @@ public sealed class TupleToTupleMapStrategyIntegrationTests
             .HaveGeneratedSourceCode()
             .WithCompilationUnit();
 
-        // TODO: Add correct assertions
+        // TODO [#42] Add correct assertions.
         compilationUnitSyntaxAssertions.NotBeNull();
         #pragma warning restore
     }
@@ -147,7 +147,7 @@ public sealed class TupleToTupleMapStrategyIntegrationTests
             .HaveGeneratedSourceCode()
             .WithCompilationUnit();
 
-        // TODO: Add correct assertions
+        // TODO [#42] Add correct assertions.
         compilationUnitSyntaxAssertions.NotBeNull();
         #pragma warning restore
     }
