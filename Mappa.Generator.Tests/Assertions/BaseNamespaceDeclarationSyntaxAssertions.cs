@@ -10,17 +10,19 @@ namespace Mappa.Generator.Tests.Assertions;
 /// Assertions for <see cref="BaseNamespaceDeclarationSyntax"/>.
 /// </summary>
 /// <typeparam name="TNamespaceSyntax">The namespace syntax.</typeparam>
-public sealed class BaseNamespaceDeclarationSyntaxAssertions<TNamespaceSyntax>
-    : ObjectAssertions<TNamespaceSyntax, BaseNamespaceDeclarationSyntaxAssertions<TNamespaceSyntax>>
+/// <typeparam name="TDerivedAssertion">The derived return type.</typeparam>
+public abstract class BaseNamespaceDeclarationSyntaxAssertions<TNamespaceSyntax, TDerivedAssertion>
+    : ObjectAssertions<TNamespaceSyntax, TDerivedAssertion>
     where TNamespaceSyntax : BaseNamespaceDeclarationSyntax
+    where TDerivedAssertion : BaseNamespaceDeclarationSyntaxAssertions<TNamespaceSyntax, TDerivedAssertion>
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="BaseNamespaceDeclarationSyntaxAssertions{TNamespaceSyntax}"/> class.
+    /// Initializes a new instance of the <see cref="BaseNamespaceDeclarationSyntaxAssertions{TNamespaceSyntax, TDerivedAssertion}"/> class.
     /// </summary>
     /// <param name="value">The target of the assertions.</param>
     /// <param name="semanticModel">The semantic model.</param>
     /// <param name="compilation">The compilation unit.</param>
-    public BaseNamespaceDeclarationSyntaxAssertions(
+    protected BaseNamespaceDeclarationSyntaxAssertions(
         TNamespaceSyntax value,
         SemanticModel semanticModel,
         Compilation compilation)
@@ -45,10 +47,10 @@ public sealed class BaseNamespaceDeclarationSyntaxAssertions<TNamespaceSyntax>
     /// </summary>
     /// <param name="identifier">The expected namespace identifier.</param>
     /// <returns>The assertions.</returns>
-    public BaseNamespaceDeclarationSyntaxAssertions<TNamespaceSyntax> HaveNamespaceIdentifier(string identifier)
+    public TDerivedAssertion HaveNamespaceIdentifier(string identifier)
     {
         this.Subject.Name.ToString().Should().Be(identifier);
-        return this;
+        return (TDerivedAssertion)this;
     }
 
     /// <summary>
@@ -56,25 +58,29 @@ public sealed class BaseNamespaceDeclarationSyntaxAssertions<TNamespaceSyntax>
     /// </summary>
     /// <param name="count">The number of expected classes in the namespace.</param>
     /// <returns>The assertions.</returns>
-    public BaseNamespaceDeclarationSyntaxAssertions<TNamespaceSyntax> HaveClasses(int count)
+    public TDerivedAssertion HaveClasses(int count)
     {
         var classDeclarationSyntaxes = this.Subject.ChildNodes().OfType<ClassDeclarationSyntax>().ToArray();
         classDeclarationSyntaxes.Should().HaveCount(count);
-        return this;
+        return (TDerivedAssertion)this;
     }
 
     /// <summary>
     /// Assert that the namespace contains a specific class.
     /// </summary>
     /// <param name="identifier">The identifier of the class.</param>
+    /// <param name="assert">The assertions.</param>
     /// <returns>The class declaration syntax.</returns>
-    public ClassDeclarationSyntaxAssertions HaveClass(string identifier)
+    public TDerivedAssertion HaveClass(string identifier, Action<ClassDeclarationSyntaxAssertions> assert)
     {
+        ArgumentNullException.ThrowIfNull(assert);
+
         var classDeclarationSyntaxes = this.Subject.ChildNodes().OfType<ClassDeclarationSyntax>().ToArray();
         classDeclarationSyntaxes.Should().Contain(classDeclarationSyntax =>
             classDeclarationSyntax.Identifier.ToString().Equals(identifier, StringComparison.Ordinal));
         var classDeclarationSyntax = classDeclarationSyntaxes.Single(classDeclarationSyntax =>
             classDeclarationSyntax.Identifier.ToString().Equals(identifier, StringComparison.Ordinal));
-        return new ClassDeclarationSyntaxAssertions(classDeclarationSyntax, this.SemanticModel, this.Compilation);
+        assert(new ClassDeclarationSyntaxAssertions(classDeclarationSyntax, this.SemanticModel, this.Compilation));
+        return (TDerivedAssertion)this;
     }
 }

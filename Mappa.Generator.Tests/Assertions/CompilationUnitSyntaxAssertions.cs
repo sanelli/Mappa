@@ -12,6 +12,9 @@ namespace Mappa.Generator.Tests.Assertions;
 public sealed class CompilationUnitSyntaxAssertions
     : ObjectAssertions<CompilationUnitSyntax, CompilationUnitSyntaxAssertions>
 {
+    private readonly SemanticModel semanticModel;
+    private readonly Compilation compilation;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="CompilationUnitSyntaxAssertions"/> class.
     /// </summary>
@@ -24,19 +27,9 @@ public sealed class CompilationUnitSyntaxAssertions
         Compilation compilation)
         : base(value)
     {
-        this.SemanticModel = semanticModel;
-        this.Compilation = compilation;
+        this.semanticModel = semanticModel;
+        this.compilation = compilation;
     }
-
-    /// <summary>
-    /// Gets the semantic model.
-    /// </summary>
-    private SemanticModel SemanticModel { get; }
-
-    /// <summary>
-    /// Gets the compilation.
-    /// </summary>
-    private Compilation Compilation { get; }
 
     /// <summary>
     /// Check that the header of the file contains a comment
@@ -67,15 +60,15 @@ public sealed class CompilationUnitSyntaxAssertions
     /// Assert the compilation unit contains a file scoped namespace.
     /// </summary>
     /// <returns>The file scoped namespace declaration syntax assertions.</returns>
-    public BaseNamespaceDeclarationSyntaxAssertions<FileScopedNamespaceDeclarationSyntax> HaveFileScopedNamespace()
+    public FileScopedNamespaceDeclarationSyntaxAssertions HaveFileScopedNamespace()
     {
         var fileScopedNamespaceDeclarationSyntaxes =
             this.Subject.ChildNodes().OfType<FileScopedNamespaceDeclarationSyntax>().ToArray();
         fileScopedNamespaceDeclarationSyntaxes.Should().HaveCount(1);
 
-        return new BaseNamespaceDeclarationSyntaxAssertions<FileScopedNamespaceDeclarationSyntax>(
+        return new FileScopedNamespaceDeclarationSyntaxAssertions(
             fileScopedNamespaceDeclarationSyntaxes.Single(),
-            this.SemanticModel,
-            this.Compilation);
+            this.semanticModel,
+            this.compilation);
     }
 }
