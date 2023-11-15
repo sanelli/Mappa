@@ -24,7 +24,7 @@ public sealed class CompilationUnitSyntaxAssertions
     /// <param name="value">The target of the assertions.</param>
     /// <param name="semanticModel">The semantic model.</param>
     /// <param name="compilation">The compilation unit.</param>
-    public CompilationUnitSyntaxAssertions(
+    internal CompilationUnitSyntaxAssertions(
         CompilationUnitSyntax value,
         SemanticModel semanticModel,
         Compilation compilation)

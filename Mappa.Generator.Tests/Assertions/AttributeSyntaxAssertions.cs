@@ -20,7 +20,7 @@ public sealed class AttributeSyntaxAssertions
     /// Initializes a new instance of the <see cref="AttributeSyntaxAssertions"/> class.
     /// </summary>
     /// <param name="value">The target of the assertions.</param>
-    public AttributeSyntaxAssertions(AttributeSyntax value)
+    internal AttributeSyntaxAssertions(AttributeSyntax value)
         : base(value)
     {
     }

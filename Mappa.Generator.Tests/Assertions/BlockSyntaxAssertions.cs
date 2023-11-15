@@ -15,16 +15,24 @@ namespace Mappa.Generator.Tests.Assertions;
 public sealed class BlockSyntaxAssertions
     : ObjectAssertions<BlockSyntax, BlockSyntaxAssertions>
 {
+    private readonly SemanticModel semanticModel;
+    private readonly Compilation compilation;
     private int nextSyntaxNodePosition;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BlockSyntaxAssertions"/> class.
     /// </summary>
     /// <param name="value">The target of the assertions.</param>
-    public BlockSyntaxAssertions(
-        BlockSyntax value)
+    /// <param name="semanticModel">The semantic model.</param>
+    /// <param name="compilation">The compilation.</param>
+    internal BlockSyntaxAssertions(
+        BlockSyntax value,
+        SemanticModel semanticModel,
+        Compilation compilation)
         : base(value)
     {
+        this.semanticModel = semanticModel;
+        this.compilation = compilation;
     }
 
     /// <summary>
@@ -49,7 +57,7 @@ public sealed class BlockSyntaxAssertions
         ArgumentNullException.ThrowIfNull(assert);
 
         var syntaxNode = this.Subject.ChildNodes().ElementAt(position);
-        assert(new SyntaxNodeAssertions(syntaxNode));
+        assert(new SyntaxNodeAssertions(syntaxNode, this.semanticModel, this.compilation));
         return this;
     }
 

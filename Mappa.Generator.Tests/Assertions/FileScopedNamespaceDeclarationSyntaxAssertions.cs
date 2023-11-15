@@ -21,7 +21,7 @@ public sealed class FileScopedNamespaceDeclarationSyntaxAssertions
     /// <param name="value">The target of the assertions.</param>
     /// <param name="semanticModel">The semantic model.</param>
     /// <param name="compilation">The compilation unit.</param>
-    public FileScopedNamespaceDeclarationSyntaxAssertions(
+    internal FileScopedNamespaceDeclarationSyntaxAssertions(
         FileScopedNamespaceDeclarationSyntax value,
         SemanticModel semanticModel,
         Compilation compilation)

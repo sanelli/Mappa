@@ -16,31 +16,24 @@ namespace Mappa.Generator.Tests.Assertions;
 public sealed class MethodDeclarationSyntaxAssertions
     : ObjectAssertions<MethodDeclarationSyntax, MethodDeclarationSyntaxAssertions>
 {
+    private readonly SemanticModel semanticModel;
+    private readonly Compilation compilation;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="MethodDeclarationSyntaxAssertions"/> class.
     /// </summary>
     /// <param name="value">The target of the assertions.</param>
     /// <param name="semanticModel">The semantic model.</param>
     /// <param name="compilation">The compilation unit.</param>
-    public MethodDeclarationSyntaxAssertions(
+    internal MethodDeclarationSyntaxAssertions(
         MethodDeclarationSyntax value,
         SemanticModel semanticModel,
         Compilation compilation)
         : base(value)
     {
-        this.SemanticModel = semanticModel;
-        this.Compilation = compilation;
+        this.semanticModel = semanticModel;
+        this.compilation = compilation;
     }
-
-    /// <summary>
-    /// Gets the semantic model.
-    /// </summary>
-    private SemanticModel SemanticModel { get; }
-
-    /// <summary>
-    /// Gets the compilation.
-    /// </summary>
-    private Compilation Compilation { get; }
 
     /// <summary>
     /// Assert that the class have all the expected modifiers.
@@ -75,17 +68,6 @@ public sealed class MethodDeclarationSyntaxAssertions
     }
 
     /// <summary>
-    /// Assert that the method has a body.
-    /// </summary>
-    /// <returns>The block syntax assertion.</returns>
-    public BlockSyntaxAssertions HaveBody()
-    {
-        var blockSyntaxes = this.Subject.ChildNodes().OfType<BlockSyntax>().ToArray();
-        blockSyntaxes.Should().HaveCount(1);
-        return new BlockSyntaxAssertions(blockSyntaxes.Single());
-    }
-
-    /// <summary>
     /// Assert that the method has a body with specific characteristics.
     /// </summary>
     /// <param name="assert">The assertions on the method's body.</param>
@@ -96,7 +78,7 @@ public sealed class MethodDeclarationSyntaxAssertions
 
         var blockSyntaxes = this.Subject.ChildNodes().OfType<BlockSyntax>().ToArray();
         blockSyntaxes.Should().HaveCount(1);
-        var blockSyntaxAssertions = new BlockSyntaxAssertions(blockSyntaxes.Single());
+        var blockSyntaxAssertions = new BlockSyntaxAssertions(blockSyntaxes.Single(), this.semanticModel, this.compilation);
         assert(blockSyntaxAssertions);
         return this;
     }

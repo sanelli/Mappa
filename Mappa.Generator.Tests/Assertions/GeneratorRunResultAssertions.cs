@@ -18,7 +18,7 @@ public sealed class GeneratorRunResultAssertions
     /// Initializes a new instance of the <see cref="GeneratorRunResultAssertions"/> class.
     /// </summary>
     /// <param name="value">The target of the assertions.</param>
-    public GeneratorRunResultAssertions(GeneratorRunResult value)
+    internal GeneratorRunResultAssertions(GeneratorRunResult value)
         : base(value)
     {
     }

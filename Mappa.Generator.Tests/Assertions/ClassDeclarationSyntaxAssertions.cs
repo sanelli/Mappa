@@ -23,7 +23,7 @@ public sealed class ClassDeclarationSyntaxAssertions
     /// <param name="value">The target of the assertions.</param>
     /// <param name="semanticModel">The semantic model.</param>
     /// <param name="compilation">The compilation unit.</param>
-    public ClassDeclarationSyntaxAssertions(
+    internal ClassDeclarationSyntaxAssertions(
         ClassDeclarationSyntax value,
         SemanticModel semanticModel,
         Compilation compilation)
@@ -127,7 +127,7 @@ public sealed class ClassDeclarationSyntaxAssertions
                 var methodSymbol = this.SemanticModel.GetDeclaredSymbol(methodDeclarationSyntax)
                                    ?? throw new MappaGeneratorException(
                                        $"Cannot obtain symbol from method \"{methodDeclarationSyntax.Identifier}\".");
-                var expectedReturnType = this.GetTypeSymbol(returnType);
+                var expectedReturnType = AssertionsHelpers.GetTypeSymbol(this.Compilation, returnType);
 
                 if (!SymbolEqualityComparer.Default.Equals(methodSymbol.ReturnType, expectedReturnType))
                 {
@@ -154,7 +154,7 @@ public sealed class ClassDeclarationSyntaxAssertions
                         return false;
                     }
 
-                    var expectedType = this.GetTypeSymbol(parameters[parameterIndex].Type);
+                    var expectedType = AssertionsHelpers.GetTypeSymbol(this.Compilation, parameters[parameterIndex].Type);
                     if (!SymbolEqualityComparer.Default.Equals(
                             expectedType,
                             methodSymbol.Parameters[parameterIndex].Type))
@@ -176,25 +176,5 @@ public sealed class ClassDeclarationSyntaxAssertions
 
         assert(new MethodDeclarationSyntaxAssertions(methods.Single(), this.SemanticModel, this.Compilation));
         return this;
-    }
-
-    private ITypeSymbol GetTypeSymbol(string type)
-    {
-        var typeParts = type.Split("[");
-        var namedTypeSymbol = this.Compilation.GetTypeByMetadataName(typeParts[0])!;
-        if (typeParts.Length > 1)
-        {
-            var typeArguments = typeParts[^1]
-                .Replace("]", string.Empty, StringComparison.Ordinal)
-                .Split(",")
-                .Select(s => this.Compilation.GetTypeByMetadataName(s))
-                .Where(t => t is not null)
-                .OfType<ITypeSymbol>()
-                .ToArray();
-            var constructedGenericType = namedTypeSymbol.Construct(typeArguments);
-            return constructedGenericType;
-        }
-
-        return namedTypeSymbol;
     }
 }

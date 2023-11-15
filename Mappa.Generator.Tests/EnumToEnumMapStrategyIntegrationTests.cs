@@ -83,6 +83,7 @@ public sealed class EnumToEnumMapStrategyIntegrationTests
                                                 blockSyntaxAssertions.HasNextSyntaxNode(syntaxNodeAssertions =>
                                                 {
                                                     // TODO [#42] Add correct assertions.
+                                                    syntaxNodeAssertions.IsLocalDeclarationStatementSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.TestTargetEnum", "__mappa_tmp_1");
                                                 });
                                             });
                                     });

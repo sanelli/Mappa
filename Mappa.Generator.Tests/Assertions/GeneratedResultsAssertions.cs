@@ -23,7 +23,7 @@ public sealed class GeneratedResultsAssertions
     /// Initializes a new instance of the <see cref="GeneratedResultsAssertions"/> class.
     /// </summary>
     /// <param name="value">The target of the assertions.</param>
-    public GeneratedResultsAssertions(GeneratedResults value)
+    internal GeneratedResultsAssertions(GeneratedResults value)
         : base(value)
     {
     }

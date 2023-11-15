@@ -19,7 +19,7 @@ public sealed class ExpressionSyntaxAssertions
     /// Initializes a new instance of the <see cref="ExpressionSyntaxAssertions"/> class.
     /// </summary>
     /// <param name="value">The target of the assertion.</param>
-    public ExpressionSyntaxAssertions(
+    internal ExpressionSyntaxAssertions(
         ExpressionSyntax value)
         : base(value)
     {
