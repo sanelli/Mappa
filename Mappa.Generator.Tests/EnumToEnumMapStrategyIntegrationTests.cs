@@ -24,30 +24,30 @@ public sealed class EnumToEnumMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
-            using Mappa.Attributes;
+                                  using Mappa.Attributes;
 
-            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
-            public enum TestSourceEnum
-            {
-                One,
-                Two,
-                Three,
-            }
+                                  public enum TestSourceEnum
+                                  {
+                                      One,
+                                      Two,
+                                      Three,
+                                  }
 
-            public enum TestTargetEnum
-            {
-                Two,
-                Three,
-                Four,
-            }
+                                  public enum TestTargetEnum
+                                  {
+                                      Two,
+                                      Three,
+                                      Four,
+                                  }
 
-            [Mappa]
-            public sealed partial class Mapper
-            {
-                public partial TestTargetEnum Map(TestSourceEnum input);
-            }
-            """;
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial TestTargetEnum Map(TestSourceEnum input);
+                                  }
+                                  """;
 
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
@@ -55,9 +55,40 @@ public sealed class EnumToEnumMapStrategyIntegrationTests
         var compilationUnitSyntaxAssertions = generatedResults.Should()
             .NotHaveDiagnostics()
             .HaveGeneratedSourceCode()
-            .WithCompilationUnit();
+            .WithCompilationUnit()
+            .HaveCommentHeader()
+            .HaveFileScopedNamespace(fileScopedNamespaceDeclarationSyntaxAssertions =>
+            {
+                fileScopedNamespaceDeclarationSyntaxAssertions
+                    .HaveClasses(1)
+                    .HaveClass(
+                        "Mapper",
+                        classDeclarationSyntaxAssertions =>
+                        {
+                            classDeclarationSyntaxAssertions
+                                .HaveModifiers(SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword)
+                                .HaveMethods(1)
+                                .HaveMethod(
+                                    "Mappa.Generator.Tests.UnitTests.SourceCode.TestTargetEnum",
+                                    NullableAnnotation.NotAnnotated,
+                                    "Map",
+                                    new[] { ("Mappa.Generator.Tests.UnitTests.SourceCode.TestSourceEnum", NullableAnnotation.NotAnnotated, "input") },
+                                    methodDeclarationSyntaxAssertions =>
+                                    {
+                                        methodDeclarationSyntaxAssertions
+                                            .HaveGeneratedCodeAttribute()
+                                            .HaveModifiers(SyntaxKind.PartialKeyword, SyntaxKind.PublicKeyword)
+                                            .HaveBody(blockSyntaxAssertions =>
+                                            {
+                                                blockSyntaxAssertions.HasNextSyntaxNode(syntaxNodeAssertions =>
+                                                {
+                                                    // TODO [#42] Add correct assertions.
+                                                });
+                                            });
+                                    });
+                        });
+            });
 
-        // TODO [#42] Add correct assertions.
         compilationUnitSyntaxAssertions.NotBeNull();
     }
 }

@@ -8,7 +8,7 @@ namespace Mappa.Attributes;
 /// Specify that a property or a field can be used
 /// as a source of mapping methods.
 /// </summary>
-[AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, Inherited = false)]
+[AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
 public sealed class MappaDependencyAttribute
     : Attribute
 {

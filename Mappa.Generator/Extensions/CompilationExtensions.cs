@@ -5,7 +5,6 @@
 using Mappa.Generator.Exceptions;
 
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 
 namespace Mappa.Generator.Extensions;
 

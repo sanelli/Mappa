@@ -2,7 +2,6 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using System.CodeDom.Compiler;
 using System.Diagnostics;
 
 using Mappa.Generator.Exceptions;
@@ -60,23 +59,6 @@ public sealed class ClassDeclarationSyntaxAssertions
     }
 
     /// <summary>
-    /// Assert that the class have all the expected modifiers.
-    /// </summary>
-    /// <returns>The assertions.</returns>
-    public ClassDeclarationSyntaxAssertions HaveGeneratedCodeAttribute()
-    {
-        var attributes = this.Subject.AttributeLists.SelectMany(attributeList => attributeList.Attributes);
-        var generatedCodeAttributes = attributes.Where(attributeSyntax =>
-                attributeSyntax.Name.ToString().Equals(typeof(GeneratedCodeAttribute).FullName, StringComparison.Ordinal))
-            .ToArray();
-        generatedCodeAttributes.Should().HaveCount(1);
-        var generatedCodeAttribute = generatedCodeAttributes.Single();
-        generatedCodeAttribute.Should().BeGeneratedCodeAttribute();
-
-        return this;
-    }
-
-    /// <summary>
     /// Assert that the class has <paramref name="count"/> methods.
     /// </summary>
     /// <param name="count">Expected number of methods.</param>
@@ -101,7 +83,34 @@ public sealed class ClassDeclarationSyntaxAssertions
         Type returnType,
         NullableAnnotation returnTypeNullableAnnotation,
         string name,
-        (Type Type, NullableAnnotation NullableAnnotation, string Name)[] parameters,
+        IEnumerable<(Type Type, NullableAnnotation NullableAnnotation, string Name)> parameters,
+        Action<MethodDeclarationSyntaxAssertions> assert)
+    {
+        ArgumentNullException.ThrowIfNull(returnType);
+        ArgumentNullException.ThrowIfNull(name);
+
+        return this.HaveMethod(
+            returnType.ToString(),
+            returnTypeNullableAnnotation,
+            name,
+            parameters.Select(parameter => (parameter.Type.ToString(), parameter.NullableAnnotation, parameter.Name)).ToArray(),
+            assert);
+    }
+
+    /// <summary>
+    /// Assert that the class has a method with a specific signature.
+    /// </summary>
+    /// <param name="returnType">The return type of the method.</param>
+    /// <param name="returnTypeNullableAnnotation"><c>true</c> if the method has been annotated with nullability.</param>
+    /// <param name="name">The method name.</param>
+    /// <param name="parameters">The expected parameters of the method.</param>
+    /// <param name="assert">The assertion on the method.</param>
+    /// <returns>The method declaration syntax assertions.</returns>
+    public ClassDeclarationSyntaxAssertions HaveMethod(
+        string returnType,
+        NullableAnnotation returnTypeNullableAnnotation,
+        string name,
+        (string Type, NullableAnnotation NullableAnnotation, string Name)[] parameters,
         Action<MethodDeclarationSyntaxAssertions> assert)
     {
         ArgumentNullException.ThrowIfNull(assert);
@@ -169,9 +178,9 @@ public sealed class ClassDeclarationSyntaxAssertions
         return this;
     }
 
-    private ITypeSymbol GetTypeSymbol(Type type)
+    private ITypeSymbol GetTypeSymbol(string type)
     {
-        var typeParts = type.ToString().Split("[");
+        var typeParts = type.Split("[");
         var namedTypeSymbol = this.Compilation.GetTypeByMetadataName(typeParts[0])!;
         if (typeParts.Length > 1)
         {
