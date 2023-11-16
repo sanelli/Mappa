@@ -52,8 +52,8 @@ public sealed class SyntaxNodeAssertions
         var returnStatement = (ReturnStatementSyntax)this.Subject;
         if (expressionAssertion is not null)
         {
-            returnStatement.Expression!.Should().NotBeNull();
-            expressionAssertion(new ExpressionSyntaxAssertions(returnStatement.Expression!));
+            returnStatement.Expression.Should().NotBeNull();
+            expressionAssertion(new ExpressionSyntaxAssertions(returnStatement.Expression!, this.SemanticModel, this.Compilation));
         }
 
         return this;
@@ -105,7 +105,7 @@ public sealed class SyntaxNodeAssertions
 
         this.Subject.Should().BeOfType<SwitchStatementSyntax>();
         var switchStatementSyntax = (SwitchStatementSyntax)this.Subject;
-        assertExpression(new ExpressionSyntaxAssertions(switchStatementSyntax.Expression));
+        assertExpression(new ExpressionSyntaxAssertions(switchStatementSyntax.Expression, this.SemanticModel, this.Compilation));
 
         var caseStatements = switchStatementSyntax
             .ChildNodes()
@@ -124,6 +124,16 @@ public sealed class SyntaxNodeAssertions
             assertCase[index](labelAssertions, statementAssertions);
         }
 
+        return this;
+    }
+
+    /// <summary>
+    /// Assert that the syntax node is a break statement.
+    /// </summary>
+    /// <returns>The assertions.</returns>
+    public SyntaxNodeAssertions IsBreakStatement()
+    {
+        this.Subject.Should().BeOfType<BreakStatementSyntax>();
         return this;
     }
 }

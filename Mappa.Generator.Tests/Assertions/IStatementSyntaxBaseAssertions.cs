@@ -16,4 +16,16 @@ public interface IStatementSyntaxBaseAssertions
     /// </summary>
     /// <returns>The assertion.</returns>
     IStatementSyntaxBaseAssertions IsBlockStatement();
+
+    /// <summary>
+    /// Returns this instance as a <see cref="BlockSyntaxAssertions"/>.
+    /// </summary>
+    /// <returns>This instance as a <see cref="BlockSyntaxAssertions"/>.</returns>
+    public BlockSyntaxAssertions AsBlock() => (BlockSyntaxAssertions)this;
+
+    /// <summary>
+    /// Returns this instance as a <see cref="StatementSyntaxAssertions"/>.
+    /// </summary>
+    /// <returns>This instance as a <see cref="StatementSyntaxAssertions"/>.</returns>
+    public StatementSyntaxAssertions AsStatement() => (StatementSyntaxAssertions)this;
 }

@@ -77,15 +77,23 @@ public sealed class EnumToEnumMapStrategyIntegrationTests
                                 {
                                     labelsAssertions.Should().HaveCount(1);
                                     labelsAssertions[0].IsCase();
+                                    labelsAssertions[0].AsCase().HasValue(expressionSyntaxAssertions => expressionSyntaxAssertions.IsMemberAccessExpressionSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.TestSourceEnum.Three"));
                                     statementAssertions.Should().HaveCount(1);
                                     statementAssertions[0].IsBlockStatement();
+                                    statementAssertions[0].AsBlock().HasSyntaxNodes(2);
+                                    statementAssertions[0].AsBlock().HasNextSyntaxNode(_ => { /* Implement me*/ });
+                                    statementAssertions[0].AsBlock().HasNextSyntaxNode(assert => assert.IsBreakStatement());
                                 },
                                 (labelsAssertions, statementAssertions) =>
                                 {
                                     labelsAssertions.Should().HaveCount(1);
                                     labelsAssertions[0].IsCase();
+                                    labelsAssertions[0].AsCase().HasValue(expressionSyntaxAssertions => expressionSyntaxAssertions.IsMemberAccessExpressionSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.TestSourceEnum.Two"));
                                     statementAssertions.Should().HaveCount(1);
                                     statementAssertions[0].IsBlockStatement();
+                                    statementAssertions[0].AsBlock().HasSyntaxNodes(2);
+                                    statementAssertions[0].AsBlock().HasNextSyntaxNode(_ => { /* Implement me*/ });
+                                    statementAssertions[0].AsBlock().HasNextSyntaxNode(assert => assert.IsBreakStatement());
                                 },
                                 (labelsAssertions, statementAssertions) =>
                                 {

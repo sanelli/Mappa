@@ -58,4 +58,16 @@ public sealed class CaseSwitchLabelSyntaxAssertions
         this.Subject.Should().BeOfType<DefaultSwitchLabelSyntax>();
         return this;
     }
+
+    /// <summary>
+    /// Assert on the value of the case.
+    /// </summary>
+    /// <param name="assert">The assertion on the value of the case.</param>
+    /// <returns>The assertions.</returns>
+    public CaseSwitchLabelSyntaxAssertions HasValue(Action<ExpressionSyntaxAssertions> assert)
+    {
+        ArgumentNullException.ThrowIfNull(assert);
+        assert(new ExpressionSyntaxAssertions(this.Subject.Value, this.SemanticModel, this.Compilation));
+        return this;
+    }
 }
