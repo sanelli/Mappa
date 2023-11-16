@@ -38,16 +38,19 @@ public sealed class MethodDeclarationSyntaxAssertions
     /// <summary>
     /// Assert that the class have all the expected modifiers.
     /// </summary>
+    /// <param name="assert">The attribute syntax assertion.</param>
     /// <returns>The assertions.</returns>
-    public MethodDeclarationSyntaxAssertions HaveGeneratedCodeAttribute()
+    public MethodDeclarationSyntaxAssertions HaveGeneratedCodeAttribute(Action<AttributeSyntaxAssertions> assert)
     {
+        ArgumentNullException.ThrowIfNull(assert);
+
         var attributes = this.Subject.AttributeLists.SelectMany(attributeList => attributeList.Attributes);
         var generatedCodeAttributes = attributes.Where(attributeSyntax =>
                 attributeSyntax.Name.ToString().Equals(typeof(GeneratedCodeAttribute).FullName, StringComparison.Ordinal))
             .ToArray();
         generatedCodeAttributes.Should().HaveCount(1);
         var generatedCodeAttribute = generatedCodeAttributes.Single();
-        generatedCodeAttribute.Should().BeGeneratedCodeAttribute();
+        assert(generatedCodeAttribute.Should());
 
         return this;
     }

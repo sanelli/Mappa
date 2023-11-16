@@ -10,7 +10,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace Mappa.Generator.Tests.Assertions;
 
 /// <summary>
-/// Assertions for <see cref="AttributeSyntaxAssertions"/>.
+/// Assertions for <see cref="AttributeSyntax"/>.
 /// </summary>
 [DebuggerNonUserCode]
 public sealed class AttributeSyntaxAssertions
@@ -28,15 +28,16 @@ public sealed class AttributeSyntaxAssertions
     /// <summary>
     /// Assert that the attribute is a <see cref="GeneratedCodeAttribute"/>.
     /// </summary>
+    /// <param name="name">The name of the generator.</param>
+    /// <param name="version">The version of the gererator.</param>
     /// <returns>The assertions.</returns>
-    public AttributeSyntaxAssertions BeGeneratedCodeAttribute()
+    public AttributeSyntaxAssertions BeGeneratedCodeAttribute(string name, string version)
     {
         this.Subject.Name.ToString().Should().Be(typeof(GeneratedCodeAttribute).FullName);
         this.Subject.ArgumentList.Should().NotBeNull();
         this.Subject.ArgumentList!.Arguments.Should().HaveCount(2);
-        this.Subject.ArgumentList.Arguments.First().GetText().ToString().Should().Be("\"Mappa\"");
-        this.Subject.ArgumentList.Arguments.Last().GetText().ToString().Should()
-            .Be($"\"{MappaGeneratorConsts.MappaGeneratorVersion.ToString()}\"");
+        this.Subject.ArgumentList.Arguments.First().GetText().ToString().Should().Be(name);
+        this.Subject.ArgumentList.Arguments.Last().GetText().ToString().Should().Be(version);
         return this;
     }
 }

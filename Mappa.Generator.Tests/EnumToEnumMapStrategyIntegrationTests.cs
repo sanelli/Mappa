@@ -5,6 +5,7 @@
 using Mappa.Generator.Models.Strategies;
 using Mappa.Generator.Tests.Abstractions;
 using Mappa.Generator.Tests.Assertions;
+using Mappa.Generator.Tests.Assertions.Extensions;
 
 namespace Mappa.Generator.Tests;
 
@@ -52,44 +53,29 @@ public sealed class EnumToEnumMapStrategyIntegrationTests
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
-        var compilationUnitSyntaxAssertions = generatedResults.Should()
+        generatedResults.Should()
             .NotHaveDiagnostics()
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
-            .HaveCommentHeader()
-            .HaveFileScopedNamespace(fileScopedNamespaceDeclarationSyntaxAssertions =>
-            {
-                fileScopedNamespaceDeclarationSyntaxAssertions
-                    .HaveClasses(1)
-                    .HaveClass(
-                        "Mapper",
-                        classDeclarationSyntaxAssertions =>
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.TestTargetEnum",
+                "Mappa.Generator.Tests.UnitTests.SourceCode.TestSourceEnum",
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
-                            classDeclarationSyntaxAssertions
-                                .HaveModifiers(SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword)
-                                .HaveMethods(1)
-                                .HaveMethod(
-                                    "Mappa.Generator.Tests.UnitTests.SourceCode.TestTargetEnum",
-                                    NullableAnnotation.NotAnnotated,
-                                    "Map",
-                                    new[] { ("Mappa.Generator.Tests.UnitTests.SourceCode.TestSourceEnum", NullableAnnotation.NotAnnotated, "input") },
-                                    methodDeclarationSyntaxAssertions =>
-                                    {
-                                        methodDeclarationSyntaxAssertions
-                                            .HaveGeneratedCodeAttribute()
-                                            .HaveModifiers(SyntaxKind.PartialKeyword, SyntaxKind.PublicKeyword)
-                                            .HaveBody(blockSyntaxAssertions =>
-                                            {
-                                                blockSyntaxAssertions.HasNextSyntaxNode(syntaxNodeAssertions =>
-                                                {
-                                                    // TODO [#42] Add correct assertions.
-                                                    syntaxNodeAssertions.IsLocalDeclarationStatementSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.TestTargetEnum", "__mappa_tmp_1");
-                                                });
-                                            });
-                                    });
+                            syntaxNodeAssertions.IsLocalDeclarationStatementSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.TestTargetEnum", "__mappa_tmp_1");
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            // TODO [#42] Add correct assertions.
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.IsReturnStatement(assertion => assertion.IsIdentifierName("__mappa_tmp_1"));
                         });
-            });
-
-        compilationUnitSyntaxAssertions.NotBeNull();
+                });
     }
 }

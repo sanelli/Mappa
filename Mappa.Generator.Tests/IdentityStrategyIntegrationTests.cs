@@ -4,6 +4,7 @@
 
 using Mappa.Generator.Tests.Abstractions;
 using Mappa.Generator.Tests.Assertions;
+using Mappa.Generator.Tests.Assertions.Extensions;
 
 namespace Mappa.Generator.Tests;
 
@@ -45,41 +46,26 @@ public sealed class IdentityStrategyIntegrationTests
             .NotHaveDiagnostics()
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
-            .HaveCommentHeader()
-            .HaveFileScopedNamespace(fileScopedNamespaceDeclarationSyntaxAssertions =>
-            {
-                fileScopedNamespaceDeclarationSyntaxAssertions
-                    .HaveNamespaceIdentifier("Mappa.Generator.Tests.UnitTests.SourceCode")
-                    .HaveClasses(1)
-                    .HaveClass(
-                        "Mapper",
-                        classDeclarationSyntaxAssertions =>
+            .NotBeNull().And
+            .HaveMapMethod(
+                "Mapper",
+                new[] { SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword },
+                "Map",
+                new[] { SyntaxKind.PublicKeyword, SyntaxKind.PartialKeyword },
+                typeof(string),
+                NullableAnnotation.None,
+                "input",
+                typeof(string),
+                NullableAnnotation.None,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodes(1)
+                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.IsReturnStatement(expressionSyntaxAssertions =>
                         {
-                            classDeclarationSyntaxAssertions
-                                .HaveModifiers(SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword)
-                                .HaveMethods(1)
-                                .HaveMethod(
-                                    typeof(string),
-                                    NullableAnnotation.None,
-                                    "Map",
-                                    new[] { (typeof(string), NullableAnnotation.None, "input") },
-                                    methodDeclarationSyntaxAssertions =>
-                                    {
-                                        methodDeclarationSyntaxAssertions
-                                            .HaveGeneratedCodeAttribute()
-                                            .HaveModifiers(SyntaxKind.PartialKeyword, SyntaxKind.PublicKeyword)
-                                            .HaveBody(blockSyntaxAssertions =>
-                                            {
-                                                blockSyntaxAssertions
-                                                    .HasSyntaxNodes(1)
-                                                    .HasNextSyntaxNode(nodeAssertions => nodeAssertions.IsReturnStatement(expressionSyntaxAssertions =>
-                                                    {
-                                                        expressionSyntaxAssertions.IsIdentifierName("input");
-                                                    }));
-                                            });
-                                    });
-                        });
-            });
+                            expressionSyntaxAssertions.IsIdentifierName("input");
+                        }));
+                });
     }
 
     /// <summary>
@@ -87,6 +73,7 @@ public sealed class IdentityStrategyIntegrationTests
     /// very same non reference type and nullable is enabled but not applied.
     /// </summary>
     /// <returns>The async task.</returns>
+    // TODO [#42] Update all subsequent tests to use the simplified HaveMapMethod.
     [Fact]
     [IntegrationTest]
     public async Task CanMapReferenceTypeToSameReferenceWhenNullableEnabledAndNotApplied()
@@ -135,7 +122,7 @@ public sealed class IdentityStrategyIntegrationTests
                                     methodDeclarationSyntaxAssertions =>
                                     {
                                         methodDeclarationSyntaxAssertions
-                                            .HaveGeneratedCodeAttribute()
+                                            .HaveGeneratedCodeAttribute(attributeSyntaxAssertions => attributeSyntaxAssertions.BeMappaGeneratedCodeAttribute())
                                             .HaveModifiers(SyntaxKind.PartialKeyword, SyntaxKind.PublicKeyword)
                                             .HaveBody(blockSyntaxAssertions =>
                                             {
@@ -207,7 +194,7 @@ public sealed class IdentityStrategyIntegrationTests
                                     methodDeclarationSyntaxAssertions =>
                                     {
                                         methodDeclarationSyntaxAssertions
-                                            .HaveGeneratedCodeAttribute()
+                                            .HaveGeneratedCodeAttribute(attributeSyntaxAssertions => attributeSyntaxAssertions.BeMappaGeneratedCodeAttribute())
                                             .HaveModifiers(SyntaxKind.PartialKeyword, SyntaxKind.PublicKeyword)
                                             .HaveBody(blockSyntaxAssertions =>
                                             {
@@ -279,7 +266,7 @@ public sealed class IdentityStrategyIntegrationTests
                                     methodDeclarationSyntaxAssertions =>
                                     {
                                         methodDeclarationSyntaxAssertions
-                                            .HaveGeneratedCodeAttribute()
+                                            .HaveGeneratedCodeAttribute(attributeSyntaxAssertions => attributeSyntaxAssertions.BeMappaGeneratedCodeAttribute())
                                             .HaveModifiers(SyntaxKind.PartialKeyword, SyntaxKind.PublicKeyword)
                                             .HaveBody(blockSyntaxAssertions =>
                                             {
@@ -352,7 +339,7 @@ public sealed class IdentityStrategyIntegrationTests
                                     methodDeclarationSyntaxAssertions =>
                                     {
                                         methodDeclarationSyntaxAssertions
-                                            .HaveGeneratedCodeAttribute()
+                                            .HaveGeneratedCodeAttribute(attributeSyntaxAssertions => attributeSyntaxAssertions.BeMappaGeneratedCodeAttribute())
                                             .HaveModifiers(SyntaxKind.PartialKeyword, SyntaxKind.PublicKeyword)
                                             .HaveBody(blockSyntaxAssertions =>
                                             {
@@ -425,7 +412,7 @@ public sealed class IdentityStrategyIntegrationTests
                                     methodDeclarationSyntaxAssertions =>
                                     {
                                         methodDeclarationSyntaxAssertions
-                                            .HaveGeneratedCodeAttribute()
+                                            .HaveGeneratedCodeAttribute(attributeSyntaxAssertions => attributeSyntaxAssertions.BeMappaGeneratedCodeAttribute())
                                             .HaveModifiers(SyntaxKind.PartialKeyword, SyntaxKind.PublicKeyword)
                                             .HaveBody(blockSyntaxAssertions =>
                                             {
@@ -497,7 +484,7 @@ public sealed class IdentityStrategyIntegrationTests
                                     methodDeclarationSyntaxAssertions =>
                                     {
                                         methodDeclarationSyntaxAssertions
-                                            .HaveGeneratedCodeAttribute()
+                                            .HaveGeneratedCodeAttribute(attributeSyntaxAssertions => attributeSyntaxAssertions.BeMappaGeneratedCodeAttribute())
                                             .HaveModifiers(SyntaxKind.PartialKeyword, SyntaxKind.PublicKeyword)
                                             .HaveBody(blockSyntaxAssertions =>
                                             {
@@ -570,7 +557,7 @@ public sealed class IdentityStrategyIntegrationTests
                                     methodDeclarationSyntaxAssertions =>
                                     {
                                         methodDeclarationSyntaxAssertions
-                                            .HaveGeneratedCodeAttribute()
+                                            .HaveGeneratedCodeAttribute(attributeSyntaxAssertions => attributeSyntaxAssertions.BeMappaGeneratedCodeAttribute())
                                             .HaveModifiers(SyntaxKind.PartialKeyword, SyntaxKind.PublicKeyword)
                                             .HaveBody(blockSyntaxAssertions =>
                                             {
@@ -642,7 +629,7 @@ public sealed class IdentityStrategyIntegrationTests
                                     methodDeclarationSyntaxAssertions =>
                                     {
                                         methodDeclarationSyntaxAssertions
-                                            .HaveGeneratedCodeAttribute()
+                                            .HaveGeneratedCodeAttribute(attributeSyntaxAssertions => attributeSyntaxAssertions.BeMappaGeneratedCodeAttribute())
                                             .HaveModifiers(SyntaxKind.PartialKeyword, SyntaxKind.PublicKeyword)
                                             .HaveBody(blockSyntaxAssertions =>
                                             {
@@ -714,7 +701,7 @@ public sealed class IdentityStrategyIntegrationTests
                                     methodDeclarationSyntaxAssertions =>
                                     {
                                         methodDeclarationSyntaxAssertions
-                                            .HaveGeneratedCodeAttribute()
+                                            .HaveGeneratedCodeAttribute(attributeSyntaxAssertions => attributeSyntaxAssertions.BeMappaGeneratedCodeAttribute())
                                             .HaveModifiers(SyntaxKind.PartialKeyword, SyntaxKind.PublicKeyword)
                                             .HaveBody(blockSyntaxAssertions =>
                                             {
@@ -787,7 +774,7 @@ public sealed class IdentityStrategyIntegrationTests
                                     methodDeclarationSyntaxAssertions =>
                                     {
                                         methodDeclarationSyntaxAssertions
-                                            .HaveGeneratedCodeAttribute()
+                                            .HaveGeneratedCodeAttribute(attributeSyntaxAssertions => attributeSyntaxAssertions.BeMappaGeneratedCodeAttribute())
                                             .HaveModifiers(SyntaxKind.PartialKeyword, SyntaxKind.PublicKeyword)
                                             .HaveBody(blockSyntaxAssertions =>
                                             {
@@ -859,7 +846,7 @@ public sealed class IdentityStrategyIntegrationTests
                                     methodDeclarationSyntaxAssertions =>
                                     {
                                         methodDeclarationSyntaxAssertions
-                                            .HaveGeneratedCodeAttribute()
+                                            .HaveGeneratedCodeAttribute(attributeSyntaxAssertions => attributeSyntaxAssertions.BeMappaGeneratedCodeAttribute())
                                             .HaveModifiers(SyntaxKind.PartialKeyword, SyntaxKind.PublicKeyword)
                                             .HaveBody(blockSyntaxAssertions =>
                                             {
@@ -931,7 +918,7 @@ public sealed class IdentityStrategyIntegrationTests
                                     methodDeclarationSyntaxAssertions =>
                                     {
                                         methodDeclarationSyntaxAssertions
-                                            .HaveGeneratedCodeAttribute()
+                                            .HaveGeneratedCodeAttribute(attributeSyntaxAssertions => attributeSyntaxAssertions.BeMappaGeneratedCodeAttribute())
                                             .HaveModifiers(SyntaxKind.PartialKeyword, SyntaxKind.InternalKeyword)
                                             .HaveBody(blockSyntaxAssertions =>
                                             {
