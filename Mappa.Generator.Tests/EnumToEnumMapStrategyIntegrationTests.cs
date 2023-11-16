@@ -71,6 +71,29 @@ public sealed class EnumToEnumMapStrategyIntegrationTests
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
                             // TODO [#42] Add correct assertions.
+                            syntaxNodeAssertions.IsSwitchStatementSyntax(
+                                switchExpressionAssertions => { switchExpressionAssertions.IsIdentifierName("input"); },
+                                (labelsAssertions, statementAssertions) =>
+                                {
+                                    labelsAssertions.Should().HaveCount(1);
+                                    labelsAssertions[0].IsCase();
+                                    statementAssertions.Should().HaveCount(1);
+                                    statementAssertions[0].IsBlockStatement();
+                                },
+                                (labelsAssertions, statementAssertions) =>
+                                {
+                                    labelsAssertions.Should().HaveCount(1);
+                                    labelsAssertions[0].IsCase();
+                                    statementAssertions.Should().HaveCount(1);
+                                    statementAssertions[0].IsBlockStatement();
+                                },
+                                (labelsAssertions, statementAssertions) =>
+                                {
+                                    labelsAssertions.Should().HaveCount(1);
+                                    labelsAssertions[0].IsDefault();
+                                    statementAssertions.Should().HaveCount(1);
+                                    statementAssertions[0].IsBlockStatement();
+                                });
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {

@@ -28,15 +28,15 @@ public sealed class AttributeSyntaxAssertions
     /// <summary>
     /// Assert that the attribute is a <see cref="GeneratedCodeAttribute"/>.
     /// </summary>
-    /// <param name="name">The name of the generator.</param>
-    /// <param name="version">The version of the gererator.</param>
+    /// <param name="tool">The name of the tool.</param>
+    /// <param name="version">The version of the tool.</param>
     /// <returns>The assertions.</returns>
-    public AttributeSyntaxAssertions BeGeneratedCodeAttribute(string name, string version)
+    public AttributeSyntaxAssertions BeGeneratedCodeAttribute(string tool, string version)
     {
         this.Subject.Name.ToString().Should().Be(typeof(GeneratedCodeAttribute).FullName);
         this.Subject.ArgumentList.Should().NotBeNull();
         this.Subject.ArgumentList!.Arguments.Should().HaveCount(2);
-        this.Subject.ArgumentList.Arguments.First().GetText().ToString().Should().Be(name);
+        this.Subject.ArgumentList.Arguments.First().GetText().ToString().Should().Be(tool);
         this.Subject.ArgumentList.Arguments.Last().GetText().ToString().Should().Be(version);
         return this;
     }

@@ -13,7 +13,8 @@ namespace Mappa.Generator.Tests.Assertions;
 /// </summary>
 [DebuggerNonUserCode]
 public sealed class BlockSyntaxAssertions
-    : ObjectAssertions<BlockSyntax, BlockSyntaxAssertions>
+    : ObjectAssertions<BlockSyntax, BlockSyntaxAssertions>,
+        IStatementSyntaxBaseAssertions
 {
     private readonly SemanticModel semanticModel;
     private readonly Compilation compilation;
@@ -69,5 +70,12 @@ public sealed class BlockSyntaxAssertions
     public BlockSyntaxAssertions HasNextSyntaxNode(Action<SyntaxNodeAssertions> assert)
     {
         return this.HasSyntaxNode(this.nextSyntaxNodePosition++, assert);
+    }
+
+    /// <inheritdoc/>
+    public IStatementSyntaxBaseAssertions IsBlockStatement()
+    {
+        this.Subject.Should().BeOfType<BlockSyntax>();
+        return this;
     }
 }

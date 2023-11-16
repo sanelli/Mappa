@@ -30,11 +30,4 @@ public static class ShouldAssertions
     /// <param name="generatedResults">The target of the assertions.</param>
     /// <returns>The assertions object.</returns>
     public static GeneratedResultsAssertions Should(this GeneratedResults generatedResults) => new(generatedResults);
-
-    /// <summary>
-    /// Begin assertions on an object of type <see cref="AttributeSyntax"/>.
-    /// </summary>
-    /// <param name="attributeSyntax">The target of the assertions.</param>
-    /// <returns>The assertions object.</returns>
-    public static AttributeSyntaxAssertions Should(this AttributeSyntax attributeSyntax) => new(attributeSyntax);
 }

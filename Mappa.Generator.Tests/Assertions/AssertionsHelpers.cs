@@ -2,6 +2,8 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+
 namespace Mappa.Generator.Tests.Assertions;
 
 /// <summary>
@@ -15,7 +17,7 @@ internal static class AssertionsHelpers
     /// <param name="compilation">The compilation.</param>
     /// <param name="type">The name of the type.</param>
     /// <returns>The symbol.</returns>
-    internal static ITypeSymbol GetTypeSymbol(Compilation compilation, string type)
+    internal static ITypeSymbol GetTypeSymbol(this Compilation compilation, string type)
     {
         ArgumentNullException.ThrowIfNull(compilation);
         ArgumentException.ThrowIfNullOrWhiteSpace(type);
@@ -37,4 +39,37 @@ internal static class AssertionsHelpers
 
         return namedTypeSymbol;
     }
+
+    /// <summary>
+    /// Obtain the correct list of assertions for a list of statement.
+    /// </summary>
+    /// <param name="statements">The list of statements.</param>
+    /// <param name="semanticModel">The semantic model.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The list of assertions for the statement.</returns>
+    internal static IStatementSyntaxBaseAssertions[] ToAssertions(this IEnumerable<StatementSyntax> statements, SemanticModel semanticModel, Compilation compilation)
+        => statements
+            .Select(statement => statement switch
+            {
+                BlockSyntax blockSyntax => (IStatementSyntaxBaseAssertions)new BlockSyntaxAssertions(blockSyntax, semanticModel, compilation),
+                _ => new StatementSyntaxAssertions(statement, semanticModel, compilation),
+            })
+            .ToArray();
+
+    /// <summary>
+    /// Obtain the correct list of assertions for a list of switch label syntax.
+    /// </summary>
+    /// <param name="switchSectionSyntaxes">The list of statements.</param>
+    /// <param name="semanticModel">The semantic model.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The list of assertions for the switch label syntax.</returns>
+    internal static ISwitchLabelSyntaxAssertions[] ToAssertions(this IEnumerable<SwitchLabelSyntax> switchSectionSyntaxes, SemanticModel semanticModel, Compilation compilation)
+        => switchSectionSyntaxes
+            .Select(statement => statement switch
+            {
+                CaseSwitchLabelSyntax caseSwitchLabelSyntax => (ISwitchLabelSyntaxAssertions)new CaseSwitchLabelSyntaxAssertions(caseSwitchLabelSyntax, semanticModel, compilation),
+                DefaultSwitchLabelSyntax defaultSwitchLabelSyntax => new DefaultSwitchLabelSyntaxAssertions(defaultSwitchLabelSyntax, semanticModel, compilation),
+                _ => throw new ArgumentException($"Unknown switch label of type {statement.GetType().FullName}"),
+            })
+            .ToArray();
 }

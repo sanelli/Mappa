@@ -16,9 +16,6 @@ namespace Mappa.Generator.Tests.Assertions;
 public sealed class MethodDeclarationSyntaxAssertions
     : ObjectAssertions<MethodDeclarationSyntax, MethodDeclarationSyntaxAssertions>
 {
-    private readonly SemanticModel semanticModel;
-    private readonly Compilation compilation;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="MethodDeclarationSyntaxAssertions"/> class.
     /// </summary>
@@ -31,9 +28,19 @@ public sealed class MethodDeclarationSyntaxAssertions
         Compilation compilation)
         : base(value)
     {
-        this.semanticModel = semanticModel;
-        this.compilation = compilation;
+        this.SemanticModel = semanticModel;
+        this.Compilation = compilation;
     }
+
+    /// <summary>
+    /// Gets the semantic model.
+    /// </summary>
+    public SemanticModel SemanticModel { get; }
+
+    /// <summary>
+    /// Gets the compilation.
+    /// </summary>
+    public Compilation Compilation { get; }
 
     /// <summary>
     /// Assert that the class have all the expected modifiers.
@@ -50,7 +57,7 @@ public sealed class MethodDeclarationSyntaxAssertions
             .ToArray();
         generatedCodeAttributes.Should().HaveCount(1);
         var generatedCodeAttribute = generatedCodeAttributes.Single();
-        assert(generatedCodeAttribute.Should());
+        assert(new AttributeSyntaxAssertions(generatedCodeAttribute));
 
         return this;
     }
@@ -81,7 +88,7 @@ public sealed class MethodDeclarationSyntaxAssertions
 
         var blockSyntaxes = this.Subject.ChildNodes().OfType<BlockSyntax>().ToArray();
         blockSyntaxes.Should().HaveCount(1);
-        var blockSyntaxAssertions = new BlockSyntaxAssertions(blockSyntaxes.Single(), this.semanticModel, this.compilation);
+        var blockSyntaxAssertions = new BlockSyntaxAssertions(blockSyntaxes.Single(), this.SemanticModel, this.Compilation);
         assert(blockSyntaxAssertions);
         return this;
     }

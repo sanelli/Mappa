@@ -127,7 +127,7 @@ public sealed class ClassDeclarationSyntaxAssertions
                 var methodSymbol = this.SemanticModel.GetDeclaredSymbol(methodDeclarationSyntax)
                                    ?? throw new MappaGeneratorException(
                                        $"Cannot obtain symbol from method \"{methodDeclarationSyntax.Identifier}\".");
-                var expectedReturnType = AssertionsHelpers.GetTypeSymbol(this.Compilation, returnType);
+                var expectedReturnType = this.Compilation.GetTypeSymbol(returnType);
 
                 if (!SymbolEqualityComparer.Default.Equals(methodSymbol.ReturnType, expectedReturnType))
                 {
@@ -154,7 +154,7 @@ public sealed class ClassDeclarationSyntaxAssertions
                         return false;
                     }
 
-                    var expectedType = AssertionsHelpers.GetTypeSymbol(this.Compilation, parameters[parameterIndex].Type);
+                    var expectedType = this.Compilation.GetTypeSymbol(parameters[parameterIndex].Type);
                     if (!SymbolEqualityComparer.Default.Equals(
                             expectedType,
                             methodSymbol.Parameters[parameterIndex].Type))

@@ -15,9 +15,6 @@ namespace Mappa.Generator.Tests.Assertions;
 public sealed class SyntaxNodeAssertions
     : ObjectAssertions<SyntaxNode, SyntaxNodeAssertions>
 {
-    private readonly SemanticModel semanticModel;
-    private readonly Compilation compilation;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="SyntaxNodeAssertions"/> class.
     /// </summary>
@@ -30,9 +27,19 @@ public sealed class SyntaxNodeAssertions
         Compilation compilation)
         : base(value)
     {
-        this.semanticModel = semanticModel;
-        this.compilation = compilation;
+        this.SemanticModel = semanticModel;
+        this.Compilation = compilation;
     }
+
+    /// <summary>
+    /// Gets the semantic model.
+    /// </summary>
+    private SemanticModel SemanticModel { get; }
+
+    /// <summary>
+    /// Gets the compilation.
+    /// </summary>
+    private Compilation Compilation { get; }
 
     /// <summary>
     /// Assert that the syntax node is a return statement.
@@ -70,8 +77,8 @@ public sealed class SyntaxNodeAssertions
             .Should()
             .BeEquivalentTo(names);
 
-        var expectedType = AssertionsHelpers.GetTypeSymbol(this.compilation, type);
-        var localSymbol = this.semanticModel.GetDeclaredSymbol(localDeclarationStatementSyntax.Declaration.Variables[0]) as ILocalSymbol;
+        var expectedType = this.Compilation.GetTypeSymbol(type);
+        var localSymbol = this.SemanticModel.GetDeclaredSymbol(localDeclarationStatementSyntax.Declaration.Variables[0]) as ILocalSymbol;
 
         localSymbol.Should().NotBeNull();
 
@@ -79,6 +86,43 @@ public sealed class SyntaxNodeAssertions
             .Default
             .Equals(localSymbol!.Type, expectedType)
             .Should().BeTrue();
+
+        return this;
+    }
+
+    /// <summary>
+    /// Assert that the syntax node is a switch statement.
+    /// </summary>
+    /// <param name="assertExpression">Assertions on the expression of the switch statement.</param>
+    /// <param name="assertCase">Assertions on the case statements.</param>
+    /// <returns>The assertions.</returns>
+    public SyntaxNodeAssertions IsSwitchStatementSyntax(
+        Action<ExpressionSyntaxAssertions> assertExpression,
+        params Action<ISwitchLabelSyntaxAssertions[], IStatementSyntaxBaseAssertions[]>[] assertCase)
+    {
+        ArgumentNullException.ThrowIfNull(assertExpression);
+        ArgumentNullException.ThrowIfNull(assertCase);
+
+        this.Subject.Should().BeOfType<SwitchStatementSyntax>();
+        var switchStatementSyntax = (SwitchStatementSyntax)this.Subject;
+        assertExpression(new ExpressionSyntaxAssertions(switchStatementSyntax.Expression));
+
+        var caseStatements = switchStatementSyntax
+            .ChildNodes()
+            .Skip(1)
+            .ToArray();
+
+        caseStatements.Should().HaveCount(assertCase.Length);
+        for (var index = 0; index < assertCase.Length; ++index)
+        {
+            caseStatements[index].Should().BeOfType<SwitchSectionSyntax>();
+            var switchSectionSyntax = (SwitchSectionSyntax)caseStatements[index];
+
+            var labelAssertions = switchSectionSyntax.Labels.ToAssertions(this.SemanticModel, this.Compilation);
+            var statementAssertions = switchSectionSyntax.Statements.ToAssertions(this.SemanticModel, this.Compilation);
+
+            assertCase[index](labelAssertions, statementAssertions);
+        }
 
         return this;
     }

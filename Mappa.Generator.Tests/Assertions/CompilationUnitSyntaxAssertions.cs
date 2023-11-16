@@ -15,9 +15,6 @@ namespace Mappa.Generator.Tests.Assertions;
 public sealed class CompilationUnitSyntaxAssertions
     : ObjectAssertions<CompilationUnitSyntax, CompilationUnitSyntaxAssertions>
 {
-    private readonly SemanticModel semanticModel;
-    private readonly Compilation compilation;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="CompilationUnitSyntaxAssertions"/> class.
     /// </summary>
@@ -30,9 +27,19 @@ public sealed class CompilationUnitSyntaxAssertions
         Compilation compilation)
         : base(value)
     {
-        this.semanticModel = semanticModel;
-        this.compilation = compilation;
+        this.SemanticModel = semanticModel;
+        this.Compilation = compilation;
     }
+
+    /// <summary>
+    /// Gets the semantic model.
+    /// </summary>
+    public SemanticModel SemanticModel { get; }
+
+    /// <summary>
+    /// Gets the compilation.
+    /// </summary>
+    public Compilation Compilation { get; }
 
     /// <summary>
     /// Assert the compilation unit contains a file scoped namespace.
@@ -49,8 +56,8 @@ public sealed class CompilationUnitSyntaxAssertions
 
         assert(new FileScopedNamespaceDeclarationSyntaxAssertions(
             fileScopedNamespaceDeclarationSyntaxes.Single(),
-            this.semanticModel,
-            this.compilation));
+            this.SemanticModel,
+            this.Compilation));
 
         return this;
     }
