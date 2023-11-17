@@ -46,7 +46,7 @@ public sealed class ExpressionSyntaxAssertions
     /// </summary>
     /// <param name="identifierName">The identifier.</param>
     /// <returns>The assertion.</returns>
-    public ExpressionSyntaxAssertions IsIdentifierName(string identifierName)
+    public ExpressionSyntaxAssertions BeIdentifierName(string identifierName)
     {
         this.Subject.Should().BeOfType<IdentifierNameSyntax>();
         var identifierNameSyntax = (IdentifierNameSyntax)this.Subject;
@@ -60,11 +60,26 @@ public sealed class ExpressionSyntaxAssertions
     /// </summary>
     /// <param name="fullAccessPath">The string representation of the expression.</param>
     /// <returns>The assertions.</returns>
-    public ExpressionSyntaxAssertions IsMemberAccessExpressionSyntax(string fullAccessPath)
+    public ExpressionSyntaxAssertions BeMemberAccessExpressionSyntax(string fullAccessPath)
     {
         this.Subject.Should().BeOfType<MemberAccessExpressionSyntax>();
         var memberAccessExpressionSyntax = (MemberAccessExpressionSyntax)this.Subject;
         memberAccessExpressionSyntax.ToString().Should().Be(fullAccessPath);
+        return this;
+    }
+
+    /// <summary>
+    /// Assert that the expression is a literal expression.
+    /// </summary>
+    /// <param name="value">The expected value of the expression.</param>
+    /// <returns>The expression.</returns>
+    public ExpressionSyntaxAssertions BeLiteralExpressionSyntax(object value)
+    {
+        this.Subject.Should().BeOfType<LiteralExpressionSyntax>();
+        var literalExpressionSyntax = (LiteralExpressionSyntax)this.Subject;
+        literalExpressionSyntax.Token.Should().BeOfType<SyntaxToken>();
+        literalExpressionSyntax.Token.Value.Should().NotBeNull();
+        literalExpressionSyntax.Token.Value.Should().Be(value);
         return this;
     }
 }

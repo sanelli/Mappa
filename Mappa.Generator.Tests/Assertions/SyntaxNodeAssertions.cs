@@ -46,7 +46,7 @@ public sealed class SyntaxNodeAssertions
     /// </summary>
     /// <param name="expressionAssertion">The assertion on the expression returned.</param>
     /// <returns>The assertions.</returns>
-    public SyntaxNodeAssertions IsReturnStatement(Action<ExpressionSyntaxAssertions>? expressionAssertion = null)
+    public SyntaxNodeAssertions BeReturnStatement(Action<ExpressionSyntaxAssertions>? expressionAssertion = null)
     {
         this.Subject.Should().BeOfType<ReturnStatementSyntax>();
         var returnStatement = (ReturnStatementSyntax)this.Subject;
@@ -65,7 +65,7 @@ public sealed class SyntaxNodeAssertions
     /// <param name="type">The type of the variable.</param>
     /// <param name="names">The names of the variables declared.</param>
     /// <returns>The assertion.</returns>
-    public SyntaxNodeAssertions IsLocalDeclarationStatementSyntax(string type, params string[] names)
+    public SyntaxNodeAssertions BeLocalDeclarationStatementSyntax(string type, params string[] names)
     {
         ArgumentNullException.ThrowIfNull(names);
 
@@ -96,7 +96,7 @@ public sealed class SyntaxNodeAssertions
     /// <param name="assertExpression">Assertions on the expression of the switch statement.</param>
     /// <param name="assertCase">Assertions on the case statements.</param>
     /// <returns>The assertions.</returns>
-    public SyntaxNodeAssertions IsSwitchStatementSyntax(
+    public SyntaxNodeAssertions BeSwitchStatementSyntax(
         Action<ExpressionSyntaxAssertions> assertExpression,
         params Action<ISwitchLabelSyntaxAssertions[], IStatementSyntaxBaseAssertions[]>[] assertCase)
     {
@@ -131,7 +131,7 @@ public sealed class SyntaxNodeAssertions
     /// Assert that the syntax node is a break statement.
     /// </summary>
     /// <returns>The assertions.</returns>
-    public SyntaxNodeAssertions IsBreakStatement()
+    public SyntaxNodeAssertions BeBreakStatement()
     {
         this.Subject.Should().BeOfType<BreakStatementSyntax>();
         return this;
@@ -143,7 +143,7 @@ public sealed class SyntaxNodeAssertions
     /// <param name="identifierName">The name of the identifier.</param>
     /// <param name="assert">Assertion on the right hande side expression.</param>
     /// <returns>The assertions.</returns>
-    public SyntaxNodeAssertions IsAssignmentExpressionStatement(string identifierName, Action<ExpressionSyntaxAssertions> assert)
+    public SyntaxNodeAssertions BeAssignmentExpressionStatement(string identifierName, Action<ExpressionSyntaxAssertions> assert)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(identifierName);
         ArgumentNullException.ThrowIfNull(assert);
@@ -158,6 +158,34 @@ public sealed class SyntaxNodeAssertions
         identifier.Identifier.Text.Should().Be(identifierName);
 
         assert(new ExpressionSyntaxAssertions(assignmentExpressionSyntax.Right, this.SemanticModel, this.Compilation));
+
+        return this;
+    }
+
+    /// <summary>
+    /// Assert that the syntax node is a throw statement.
+    /// </summary>
+    /// <param name="parameterAssertions">Assertions on the parameters of the created exception.</param>
+    /// <returns>The assertions.</returns>
+    /// <typeparam name="TException">The type of the exception thrown.</typeparam>
+    public SyntaxNodeAssertions BeThrowStatementSyntax<TException>(
+        params Action<ExpressionSyntaxAssertions>[] parameterAssertions)
+    {
+        ArgumentNullException.ThrowIfNull(parameterAssertions);
+
+        this.Subject.Should().BeOfType<ThrowStatementSyntax>();
+        var throwStatementSyntax = (ThrowStatementSyntax)this.Subject;
+        throwStatementSyntax.Expression.Should().NotBeNull();
+        throwStatementSyntax.Expression.Should().BeOfType<ObjectCreationExpressionSyntax>();
+        var objectCreationExpressionSyntax = (ObjectCreationExpressionSyntax)throwStatementSyntax.Expression!;
+        objectCreationExpressionSyntax.Type.ToString().Should().Be(typeof(TException).FullName);
+        objectCreationExpressionSyntax.ArgumentList.Should().NotBeNull();
+        objectCreationExpressionSyntax.ArgumentList!.Arguments.Should().HaveCount(parameterAssertions.Length);
+
+        for (int index = 0; index < parameterAssertions.Length; ++index)
+        {
+            parameterAssertions[index](new ExpressionSyntaxAssertions(objectCreationExpressionSyntax.ArgumentList!.Arguments[index].Expression, this.SemanticModel, this.Compilation));
+        }
 
         return this;
     }

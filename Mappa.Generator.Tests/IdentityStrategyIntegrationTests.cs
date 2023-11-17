@@ -61,9 +61,9 @@ public sealed class IdentityStrategyIntegrationTests
                 {
                     blockSyntaxAssertions
                         .HasSyntaxNodes(1)
-                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.IsReturnStatement(expressionSyntaxAssertions =>
+                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
                         {
-                            expressionSyntaxAssertions.IsIdentifierName("input");
+                            expressionSyntaxAssertions.BeIdentifierName("input");
                         }));
                 });
     }
@@ -130,9 +130,9 @@ public sealed class IdentityStrategyIntegrationTests
                                                     .HasSyntaxNodes(1)
                                                     .HasNextSyntaxNode(nodeAssertions =>
                                                     {
-                                                        nodeAssertions.IsReturnStatement(expressionSyntaxAssertions =>
+                                                        nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
                                                         {
-                                                            expressionSyntaxAssertions.IsIdentifierName("input");
+                                                            expressionSyntaxAssertions.BeIdentifierName("input");
                                                         });
                                                     });
                                             });
@@ -202,9 +202,9 @@ public sealed class IdentityStrategyIntegrationTests
                                                     .HasSyntaxNodes(1)
                                                     .HasNextSyntaxNode(nodeAssertions =>
                                                     {
-                                                        nodeAssertions.IsReturnStatement(expressionSyntaxAssertions =>
+                                                        nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
                                                         {
-                                                            expressionSyntaxAssertions.IsIdentifierName("input");
+                                                            expressionSyntaxAssertions.BeIdentifierName("input");
                                                         });
                                                     });
                                             });
@@ -274,9 +274,9 @@ public sealed class IdentityStrategyIntegrationTests
                                                     .HasSyntaxNodes(1)
                                                     .HasNextSyntaxNode(nodeAssertions =>
                                                     {
-                                                        nodeAssertions.IsReturnStatement(expressionSyntaxAssertions =>
+                                                        nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
                                                         {
-                                                            expressionSyntaxAssertions.IsIdentifierName("input");
+                                                            expressionSyntaxAssertions.BeIdentifierName("input");
                                                         });
                                                     });
                                             });
@@ -347,9 +347,9 @@ public sealed class IdentityStrategyIntegrationTests
                                                     .HasSyntaxNodes(1)
                                                     .HasNextSyntaxNode(nodeAssertions =>
                                                     {
-                                                        nodeAssertions.IsReturnStatement(expressionSyntaxAssertions =>
+                                                        nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
                                                         {
-                                                            expressionSyntaxAssertions.IsIdentifierName("input");
+                                                            expressionSyntaxAssertions.BeIdentifierName("input");
                                                         });
                                                     });
                                             });
@@ -420,9 +420,9 @@ public sealed class IdentityStrategyIntegrationTests
                                                     .HasSyntaxNodes(1)
                                                     .HasNextSyntaxNode(nodeAssertions =>
                                                     {
-                                                        nodeAssertions.IsReturnStatement(expressionSyntaxAssertions =>
+                                                        nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
                                                         {
-                                                            expressionSyntaxAssertions.IsIdentifierName("input");
+                                                            expressionSyntaxAssertions.BeIdentifierName("input");
                                                         });
                                                     });
                                             });
@@ -492,9 +492,9 @@ public sealed class IdentityStrategyIntegrationTests
                                                     .HasSyntaxNodes(1)
                                                     .HasNextSyntaxNode(nodeAssertions =>
                                                     {
-                                                        nodeAssertions.IsReturnStatement(expressionSyntaxAssertions =>
+                                                        nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
                                                         {
-                                                            expressionSyntaxAssertions.IsIdentifierName("input");
+                                                            expressionSyntaxAssertions.BeIdentifierName("input");
                                                         });
                                                     });
                                             });
@@ -565,9 +565,9 @@ public sealed class IdentityStrategyIntegrationTests
                                                     .HasSyntaxNodes(1)
                                                     .HasNextSyntaxNode(nodeAssertions =>
                                                     {
-                                                        nodeAssertions.IsReturnStatement(expressionSyntaxAssertions =>
+                                                        nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
                                                         {
-                                                            expressionSyntaxAssertions.IsIdentifierName("input");
+                                                            expressionSyntaxAssertions.BeIdentifierName("input");
                                                         });
                                                     });
                                             });
@@ -637,9 +637,9 @@ public sealed class IdentityStrategyIntegrationTests
                                                     .HasSyntaxNodes(1)
                                                     .HasNextSyntaxNode(nodeAssertions =>
                                                     {
-                                                        nodeAssertions.IsReturnStatement(expressionSyntaxAssertions =>
+                                                        nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
                                                         {
-                                                            expressionSyntaxAssertions.IsIdentifierName("input");
+                                                            expressionSyntaxAssertions.BeIdentifierName("input");
                                                         });
                                                     });
                                             });
@@ -709,9 +709,9 @@ public sealed class IdentityStrategyIntegrationTests
                                                     .HasSyntaxNodes(1)
                                                     .HasNextSyntaxNode(nodeAssertions =>
                                                     {
-                                                        nodeAssertions.IsReturnStatement(expressionSyntaxAssertions =>
+                                                        nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
                                                         {
-                                                            expressionSyntaxAssertions.IsIdentifierName("input");
+                                                            expressionSyntaxAssertions.BeIdentifierName("input");
                                                         });
                                                     });
                                             });
@@ -782,9 +782,9 @@ public sealed class IdentityStrategyIntegrationTests
                                                     .HasSyntaxNodes(1)
                                                     .HasNextSyntaxNode(nodeAssertions =>
                                                     {
-                                                        nodeAssertions.IsReturnStatement(expressionSyntaxAssertions =>
+                                                        nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
                                                         {
-                                                            expressionSyntaxAssertions.IsIdentifierName("input");
+                                                            expressionSyntaxAssertions.BeIdentifierName("input");
                                                         });
                                                     });
                                             });
@@ -854,9 +854,9 @@ public sealed class IdentityStrategyIntegrationTests
                                                     .HasSyntaxNodes(1)
                                                     .HasNextSyntaxNode(nodeAssertions =>
                                                     {
-                                                        nodeAssertions.IsReturnStatement(expressionSyntaxAssertions =>
+                                                        nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
                                                         {
-                                                            expressionSyntaxAssertions.IsIdentifierName("input");
+                                                            expressionSyntaxAssertions.BeIdentifierName("input");
                                                         });
                                                     });
                                             });
@@ -926,9 +926,9 @@ public sealed class IdentityStrategyIntegrationTests
                                                     .HasSyntaxNodes(1)
                                                     .HasNextSyntaxNode(nodeAssertions =>
                                                     {
-                                                        nodeAssertions.IsReturnStatement(expressionSyntaxAssertions =>
+                                                        nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
                                                         {
-                                                            expressionSyntaxAssertions.IsIdentifierName("input");
+                                                            expressionSyntaxAssertions.BeIdentifierName("input");
                                                         });
                                                     });
                                             });
