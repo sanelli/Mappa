@@ -136,4 +136,29 @@ public sealed class SyntaxNodeAssertions
         this.Subject.Should().BeOfType<BreakStatementSyntax>();
         return this;
     }
+
+    /// <summary>
+    /// Assert that that the syntax node is an assignment.
+    /// </summary>
+    /// <param name="identifierName">The name of the identifier.</param>
+    /// <param name="assert">Assertion on the right hande side expression.</param>
+    /// <returns>The assertions.</returns>
+    public SyntaxNodeAssertions IsAssignmentExpressionStatement(string identifierName, Action<ExpressionSyntaxAssertions> assert)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(identifierName);
+        ArgumentNullException.ThrowIfNull(assert);
+
+        this.Subject.Should().BeOfType<ExpressionStatementSyntax>();
+        var expressionStatementSyntax = (ExpressionStatementSyntax)this.Subject;
+        expressionStatementSyntax.Expression.Should().BeOfType<AssignmentExpressionSyntax>();
+        var assignmentExpressionSyntax = (AssignmentExpressionSyntax)expressionStatementSyntax.Expression;
+
+        assignmentExpressionSyntax.Left.Should().BeOfType<IdentifierNameSyntax>();
+        var identifier = (IdentifierNameSyntax)assignmentExpressionSyntax.Left;
+        identifier.Identifier.Text.Should().Be(identifierName);
+
+        assert(new ExpressionSyntaxAssertions(assignmentExpressionSyntax.Right, this.SemanticModel, this.Compilation));
+
+        return this;
+    }
 }

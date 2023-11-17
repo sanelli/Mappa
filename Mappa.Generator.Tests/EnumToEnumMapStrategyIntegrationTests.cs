@@ -64,6 +64,7 @@ public sealed class EnumToEnumMapStrategyIntegrationTests
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
+                        .HasSyntaxNodes(3)
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
                             syntaxNodeAssertions.IsLocalDeclarationStatementSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.TestTargetEnum", "__mappa_tmp_1");
@@ -80,9 +81,10 @@ public sealed class EnumToEnumMapStrategyIntegrationTests
                                     labelsAssertions[0].AsCase().HasValue(expressionSyntaxAssertions => expressionSyntaxAssertions.IsMemberAccessExpressionSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.TestSourceEnum.Three"));
                                     statementAssertions.Should().HaveCount(1);
                                     statementAssertions[0].IsBlockStatement();
-                                    statementAssertions[0].AsBlock().HasSyntaxNodes(2);
-                                    statementAssertions[0].AsBlock().HasNextSyntaxNode(_ => { /* Implement me*/ });
-                                    statementAssertions[0].AsBlock().HasNextSyntaxNode(assert => assert.IsBreakStatement());
+                                    statementAssertions[0].AsBlock()
+                                        .HasSyntaxNodes(2)
+                                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.IsAssignmentExpressionStatement("__mappa_tmp_1", assert => assert.IsMemberAccessExpressionSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.TestTargetEnum.Three")))
+                                        .HasNextSyntaxNode(assert => assert.IsBreakStatement());
                                 },
                                 (labelsAssertions, statementAssertions) =>
                                 {
@@ -91,9 +93,10 @@ public sealed class EnumToEnumMapStrategyIntegrationTests
                                     labelsAssertions[0].AsCase().HasValue(expressionSyntaxAssertions => expressionSyntaxAssertions.IsMemberAccessExpressionSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.TestSourceEnum.Two"));
                                     statementAssertions.Should().HaveCount(1);
                                     statementAssertions[0].IsBlockStatement();
-                                    statementAssertions[0].AsBlock().HasSyntaxNodes(2);
-                                    statementAssertions[0].AsBlock().HasNextSyntaxNode(_ => { /* Implement me*/ });
-                                    statementAssertions[0].AsBlock().HasNextSyntaxNode(assert => assert.IsBreakStatement());
+                                    statementAssertions[0].AsBlock()
+                                        .HasSyntaxNodes(2)
+                                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.IsAssignmentExpressionStatement("__mappa_tmp_1", assert => assert.IsMemberAccessExpressionSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.TestTargetEnum.Two")))
+                                        .HasNextSyntaxNode(assert => assert.IsBreakStatement());
                                 },
                                 (labelsAssertions, statementAssertions) =>
                                 {
@@ -101,6 +104,8 @@ public sealed class EnumToEnumMapStrategyIntegrationTests
                                     labelsAssertions[0].IsDefault();
                                     statementAssertions.Should().HaveCount(1);
                                     statementAssertions[0].IsBlockStatement();
+                                    statementAssertions[0].AsBlock()
+                                        .HasSyntaxNodes(1);
                                 });
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
