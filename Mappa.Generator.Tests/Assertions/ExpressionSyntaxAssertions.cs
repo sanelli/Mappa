@@ -82,4 +82,21 @@ public sealed class ExpressionSyntaxAssertions
         literalExpressionSyntax.Token.Value.Should().Be(value);
         return this;
     }
+
+    /// <summary>
+    /// Assert that the expression is a <c>nameof</c> expression.
+    /// </summary>
+    /// <param name="name">The expected value of the expression.</param>
+    /// <returns>The expression.</returns>
+    public ExpressionSyntaxAssertions BeNameofWithMemberAccess(string name)
+    {
+        this.Subject.Should().BeOfType<InvocationExpressionSyntax>();
+        var invocationExpressionSyntax = (InvocationExpressionSyntax)this.Subject;
+        new ExpressionSyntaxAssertions(invocationExpressionSyntax.Expression, this.SemanticModel, this.Compilation)
+            .BeIdentifierName("nameof");
+        invocationExpressionSyntax.ArgumentList.Arguments.Should().HaveCount(1);
+        new ExpressionSyntaxAssertions(invocationExpressionSyntax.ArgumentList.Arguments[0].Expression, this.SemanticModel, this.Compilation)
+            .BeMemberAccessExpressionSyntax(name);
+        return this;
+    }
 }

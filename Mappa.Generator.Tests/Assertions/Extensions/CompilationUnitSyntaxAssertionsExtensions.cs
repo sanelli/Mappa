@@ -86,6 +86,35 @@ internal static class CompilationUnitSyntaxAssertionsExtensions
     /// </summary>
     /// <param name="this">The compilation unit assertions.</param>
     /// <param name="returnType">The return type of the method.</param>
+    /// <param name="returnTypeNullableAnnotation">The return type nullable annotation.</param>
+    /// <param name="parameterType">The parameter type of the method.</param>
+    /// <param name="parameterNullableAnnotation">The parameter nullable annotation.</param>
+    /// <param name="bodyAssertion">The assertions on the body of the method.</param>
+    /// <returns>The input compilation unit syntax assertions.</returns>
+    public static CompilationUnitSyntaxAssertions HaveDefaultMapMethod(
+        this CompilationUnitSyntaxAssertions @this,
+        string returnType,
+        NullableAnnotation returnTypeNullableAnnotation,
+        string parameterType,
+        NullableAnnotation parameterNullableAnnotation,
+        Action<BlockSyntaxAssertions> bodyAssertion)
+        => @this.HaveMapMethod(
+            "Mapper",
+            new[] { SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword },
+            "Map",
+            new[] { SyntaxKind.PublicKeyword, SyntaxKind.PartialKeyword },
+            returnType,
+            returnTypeNullableAnnotation,
+            "input",
+            parameterType,
+            parameterNullableAnnotation,
+            bodyAssertion);
+
+    /// <summary>
+    /// Assert that the compilation unit has a mapper method using default values.
+    /// </summary>
+    /// <param name="this">The compilation unit assertions.</param>
+    /// <param name="returnType">The return type of the method.</param>
     /// <param name="parameterType">The parameter type of the method.</param>
     /// <param name="bodyAssertion">The assertions on the body of the method.</param>
     /// <returns>The input compilation unit syntax assertions.</returns>
