@@ -58,7 +58,7 @@ internal sealed class InvokeConstructorMapStrategyBuilder
         }
 
         var ruleComment = mappaGlobalOptions.MappaDebugComments
-            ? $"/* Mappa Rule: {this.strategy.Rule} (source-type is \"{this.strategy.SourceType.ToDisplayString()}\", target-enum is \"{this.strategy.TargetType.ToDisplayString()}\") */ "
+            ? $"/* Mappa Rule: {this.strategy.Rule} (source-type is \"{this.strategy.SourceType.ToDisplayString()}\", target-type is \"{this.strategy.TargetType.ToDisplayString()}\") */ "
             : string.Empty;
 
         return ($"{ruleComment}{resultTemporary}", builder.ToString());
