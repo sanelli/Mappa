@@ -46,11 +46,32 @@ public sealed class ExpressionSyntaxAssertions
     /// </summary>
     /// <param name="identifierName">The identifier.</param>
     /// <returns>The assertion.</returns>
-    public ExpressionSyntaxAssertions BeIdentifierName(string identifierName)
+    public ExpressionSyntaxAssertions BeIdentifierNameSyntax(string identifierName)
     {
         this.Subject.Should().BeOfType<IdentifierNameSyntax>();
         var identifierNameSyntax = (IdentifierNameSyntax)this.Subject;
         identifierNameSyntax.Identifier.Text.Should().Be(identifierName);
+        return this;
+    }
+
+    /// <summary>
+    /// Assert that the expression is a cast expression.
+    /// </summary>
+    /// <param name="type">The type the expression is being cast to.</param>
+    /// <param name="assert">Assert the expression.</param>
+    /// <returns>The assertion.</returns>
+    public ExpressionSyntaxAssertions BeCastExpressionSyntax(
+        string type,
+        Action<ExpressionSyntaxAssertions> assert)
+    {
+        ArgumentNullException.ThrowIfNull(assert);
+
+        this.Subject.Should().BeOfType<CastExpressionSyntax>();
+        var castExpressionSyntax = (CastExpressionSyntax)this.Subject;
+
+        castExpressionSyntax.Type.ToString().Should().Be(type);
+
+        assert(new ExpressionSyntaxAssertions(castExpressionSyntax.Expression, this.SemanticModel, this.Compilation));
         return this;
     }
 
@@ -93,10 +114,36 @@ public sealed class ExpressionSyntaxAssertions
         this.Subject.Should().BeOfType<InvocationExpressionSyntax>();
         var invocationExpressionSyntax = (InvocationExpressionSyntax)this.Subject;
         new ExpressionSyntaxAssertions(invocationExpressionSyntax.Expression, this.SemanticModel, this.Compilation)
-            .BeIdentifierName("nameof");
+            .BeIdentifierNameSyntax("nameof");
         invocationExpressionSyntax.ArgumentList.Arguments.Should().HaveCount(1);
         new ExpressionSyntaxAssertions(invocationExpressionSyntax.ArgumentList.Arguments[0].Expression, this.SemanticModel, this.Compilation)
             .BeMemberAccessExpressionSyntax(name);
+        return this;
+    }
+
+    /// <summary>
+    /// Assert that the expression is an identifier name expression.
+    /// </summary>
+    /// <param name="memberAccess">The name of the method being invoked.</param>
+    /// <param name="assertArguments">Assertions on the arguments.</param>
+    /// <returns>The assertion.</returns>
+    public ExpressionSyntaxAssertions BeInvocationExpressionSyntax(
+        string memberAccess,
+        params Action<ExpressionSyntaxAssertions>[] assertArguments)
+    {
+        ArgumentNullException.ThrowIfNull(assertArguments);
+
+        this.Subject.Should().BeOfType<InvocationExpressionSyntax>();
+        var invocationExpressionSyntax = (InvocationExpressionSyntax)this.Subject;
+        new ExpressionSyntaxAssertions(invocationExpressionSyntax.Expression, this.SemanticModel, this.Compilation)
+            .BeMemberAccessExpressionSyntax(memberAccess);
+        invocationExpressionSyntax.ArgumentList.Arguments.Should().HaveCount(assertArguments.Length);
+
+        for (int index = 0; index < assertArguments.Length; ++index)
+        {
+            assertArguments[index](new ExpressionSyntaxAssertions(invocationExpressionSyntax.ArgumentList.Arguments[index].Expression, this.SemanticModel, this.Compilation));
+        }
+
         return this;
     }
 }

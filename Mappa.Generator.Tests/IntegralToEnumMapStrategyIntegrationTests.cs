@@ -47,6 +47,7 @@ public sealed class IntegralToEnumMapStrategyIntegrationTests
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
+        // Assert
         generatedResults.Should()
             .NotHaveDiagnostics()
             .HaveGeneratedSourceCode()
@@ -66,7 +67,7 @@ public sealed class IntegralToEnumMapStrategyIntegrationTests
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
                             syntaxNodeAssertions.BeSwitchStatementSyntax(
-                                switchExpressionAssertions => { switchExpressionAssertions.BeIdentifierName("input"); },
+                                switchExpressionAssertions => { switchExpressionAssertions.BeCastExpressionSyntax("int", expressionSyntaxAssertions => expressionSyntaxAssertions.BeIdentifierNameSyntax("input")); },
                                 (labelsAssertions, statementAssertions) =>
                                 {
                                     labelsAssertions.Should().HaveCount(1);
@@ -117,7 +118,7 @@ public sealed class IntegralToEnumMapStrategyIntegrationTests
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
-                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierName("__mappa_tmp_1"));
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_1"));
                         });
                 });
     }

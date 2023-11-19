@@ -60,14 +60,43 @@ public sealed class SyntaxNodeAssertions
     }
 
     /// <summary>
-    /// Validate that the syntax node is a variable declaration syntax.
+    /// Validate that the syntax node is a variable declaration syntax without initialization.
     /// </summary>
     /// <param name="type">The type of the variable.</param>
     /// <param name="names">The names of the variables declared.</param>
     /// <returns>The assertion.</returns>
     public SyntaxNodeAssertions BeLocalDeclarationStatementSyntax(string type, params string[] names)
+        => this.BeLocalDeclarationStatementSyntax(type, names, null);
+
+    /// <summary>
+    /// Validate that the syntax node is a variable declaration syntax
+    /// for a single variable.
+    /// </summary>
+    /// <param name="type">The type of the variable.</param>
+    /// <param name="name">The names of the variable declared.</param>
+    /// <param name="assertInitialization">Assert the initialization expression.</param>
+    /// <returns>The assertion.</returns>
+    public SyntaxNodeAssertions BeLocalDeclarationStatementSyntax(string type, string name, Action<ExpressionSyntaxAssertions> assertInitialization)
+        => this.BeLocalDeclarationStatementSyntax(type, new[] { name }, new[] { assertInitialization });
+
+    /// <summary>
+    /// Validate that the syntax node is a variable declaration syntax.
+    /// </summary>
+    /// <param name="type">The type of the variable.</param>
+    /// <param name="names">The names of the variables declared.</param>
+    /// <param name="assertInitializations">Assert the initialization expressions.</param>
+    /// <returns>The assertion.</returns>
+    public SyntaxNodeAssertions BeLocalDeclarationStatementSyntax(string type, string[] names, Action<ExpressionSyntaxAssertions>[]? assertInitializations)
     {
         ArgumentNullException.ThrowIfNull(names);
+
+        if (assertInitializations is not null)
+        {
+            if (names.Length != assertInitializations.Length)
+            {
+                throw new ArgumentException($"'{nameof(names)}' and '{nameof(assertInitializations)}' must have the same length", nameof(assertInitializations));
+            }
+        }
 
         this.Subject.Should().BeOfType<LocalDeclarationStatementSyntax>();
         var localDeclarationStatementSyntax = (LocalDeclarationStatementSyntax)this.Subject;
@@ -86,6 +115,23 @@ public sealed class SyntaxNodeAssertions
             .Default
             .Equals(localSymbol!.Type, expectedType)
             .Should().BeTrue();
+
+        if (assertInitializations is null)
+        {
+            foreach (var variableDeclaratorSyntax in localDeclarationStatementSyntax.Declaration.Variables)
+            {
+                variableDeclaratorSyntax.Initializer.Should().BeNull();
+            }
+        }
+        else
+        {
+            for (int index = 0; index < assertInitializations.Length; ++index)
+            {
+                localDeclarationStatementSyntax.Declaration.Variables[index].Initializer.Should().NotBeNull();
+                var initializer = localDeclarationStatementSyntax.Declaration.Variables[index].Initializer!;
+                assertInitializations[index](new ExpressionSyntaxAssertions(initializer.Value, this.SemanticModel, this.Compilation));
+            }
+        }
 
         return this;
     }

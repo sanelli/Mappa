@@ -72,7 +72,7 @@ public sealed class EnumToEnumMapStrategyIntegrationTests
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
                             syntaxNodeAssertions.BeSwitchStatementSyntax(
-                                switchExpressionAssertions => { switchExpressionAssertions.BeIdentifierName("input"); },
+                                switchExpressionAssertions => { switchExpressionAssertions.BeIdentifierNameSyntax("input"); },
                                 (labelsAssertions, statementAssertions) =>
                                 {
                                     labelsAssertions.Should().HaveCount(1);
@@ -111,7 +111,7 @@ public sealed class EnumToEnumMapStrategyIntegrationTests
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
-                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierName("__mappa_tmp_1"));
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_1"));
                         });
                 });
     }
