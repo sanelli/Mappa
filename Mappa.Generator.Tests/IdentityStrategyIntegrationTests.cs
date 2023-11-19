@@ -47,15 +47,10 @@ public sealed class IdentityStrategyIntegrationTests
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .NotBeNull().And
-            .HaveMapMethod(
-                "Mapper",
-                new[] { SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword },
-                "Map",
-                new[] { SyntaxKind.PublicKeyword, SyntaxKind.PartialKeyword },
-                typeof(string),
+            .HaveDefaultMapMethod(
+                typeof(string).ToString(),
                 NullableAnnotation.None,
-                "input",
-                typeof(string),
+                typeof(string).ToString(),
                 NullableAnnotation.None,
                 blockSyntaxAssertions =>
                 {
@@ -73,7 +68,6 @@ public sealed class IdentityStrategyIntegrationTests
     /// very same non reference type and nullable is enabled but not applied.
     /// </summary>
     /// <returns>The async task.</returns>
-    // TODO [#42] Update all subsequent tests to use the simplified HaveMapMethod.
     [Fact]
     [IntegrationTest]
     public async Task CanMapReferenceTypeToSameReferenceWhenNullableEnabledAndNotApplied()
@@ -102,43 +96,20 @@ public sealed class IdentityStrategyIntegrationTests
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .HaveCommentHeader()
-            .HaveFileScopedNamespace(fileScopedNamespaceDeclarationSyntaxAssertions =>
-            {
-                fileScopedNamespaceDeclarationSyntaxAssertions
-                    .HaveNamespaceIdentifier("Mappa.Generator.Tests.UnitTests.SourceCode")
-                    .HaveClasses(1)
-                    .HaveClass(
-                        "Mapper",
-                        classDeclarationSyntaxAssertions =>
+            .HaveDefaultMapMethod(
+                typeof(string).ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(string).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodes(1)
+                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
                         {
-                            classDeclarationSyntaxAssertions
-                                .HaveModifiers(SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword)
-                                .HaveMethods(1)
-                                .HaveMethod(
-                                    typeof(string),
-                                    NullableAnnotation.NotAnnotated,
-                                    "Map",
-                                    new[] { (typeof(string), NullableAnnotation.NotAnnotated, "input") },
-                                    methodDeclarationSyntaxAssertions =>
-                                    {
-                                        methodDeclarationSyntaxAssertions
-                                            .HaveGeneratedCodeAttribute(attributeSyntaxAssertions => attributeSyntaxAssertions.BeMappaGeneratedCodeAttribute())
-                                            .HaveModifiers(SyntaxKind.PartialKeyword, SyntaxKind.PublicKeyword)
-                                            .HaveBody(blockSyntaxAssertions =>
-                                            {
-                                                blockSyntaxAssertions
-                                                    .HasSyntaxNodes(1)
-                                                    .HasNextSyntaxNode(nodeAssertions =>
-                                                    {
-                                                        nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
-                                                        {
-                                                            expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
-                                                        });
-                                                    });
-                                            });
-                                    });
-                        });
-            });
+                            expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
+                        }));
+                });
     }
 
     /// <summary>
@@ -174,43 +145,20 @@ public sealed class IdentityStrategyIntegrationTests
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .HaveCommentHeader()
-            .HaveFileScopedNamespace(fileScopedNamespaceDeclarationSyntaxAssertions =>
-            {
-                fileScopedNamespaceDeclarationSyntaxAssertions
-                    .HaveNamespaceIdentifier("Mappa.Generator.Tests.UnitTests.SourceCode")
-                    .HaveClasses(1)
-                    .HaveClass(
-                        "Mapper",
-                        classDeclarationSyntaxAssertions =>
+            .HaveDefaultMapMethod(
+                typeof(string).ToString(),
+                NullableAnnotation.Annotated,
+                typeof(string).ToString(),
+                NullableAnnotation.Annotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodes(1)
+                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
                         {
-                            classDeclarationSyntaxAssertions
-                                .HaveModifiers(SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword)
-                                .HaveMethods(1)
-                                .HaveMethod(
-                                    typeof(string),
-                                    NullableAnnotation.Annotated,
-                                    "Map",
-                                    new[] { (typeof(string), NullableAnnotation.Annotated, "input") },
-                                    methodDeclarationSyntaxAssertions =>
-                                    {
-                                        methodDeclarationSyntaxAssertions
-                                            .HaveGeneratedCodeAttribute(attributeSyntaxAssertions => attributeSyntaxAssertions.BeMappaGeneratedCodeAttribute())
-                                            .HaveModifiers(SyntaxKind.PartialKeyword, SyntaxKind.PublicKeyword)
-                                            .HaveBody(blockSyntaxAssertions =>
-                                            {
-                                                blockSyntaxAssertions
-                                                    .HasSyntaxNodes(1)
-                                                    .HasNextSyntaxNode(nodeAssertions =>
-                                                    {
-                                                        nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
-                                                        {
-                                                            expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
-                                                        });
-                                                    });
-                                            });
-                                    });
-                        });
-            });
+                            expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
+                        }));
+                });
     }
 
     /// <summary>
@@ -246,43 +194,20 @@ public sealed class IdentityStrategyIntegrationTests
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .HaveCommentHeader()
-            .HaveFileScopedNamespace(fileScopedNamespaceDeclarationSyntaxAssertions =>
-            {
-                fileScopedNamespaceDeclarationSyntaxAssertions
-                    .HaveNamespaceIdentifier("Mappa.Generator.Tests.UnitTests.SourceCode")
-                    .HaveClasses(1)
-                    .HaveClass(
-                        "Mapper",
-                        classDeclarationSyntaxAssertions =>
+            .HaveDefaultMapMethod(
+                typeof(int).ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(int).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodes(1)
+                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
                         {
-                            classDeclarationSyntaxAssertions
-                                .HaveModifiers(SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword)
-                                .HaveMethods(1)
-                                .HaveMethod(
-                                    typeof(int),
-                                    NullableAnnotation.NotAnnotated,
-                                    "Map",
-                                    new[] { (typeof(int), NullableAnnotation.NotAnnotated, "input") },
-                                    methodDeclarationSyntaxAssertions =>
-                                    {
-                                        methodDeclarationSyntaxAssertions
-                                            .HaveGeneratedCodeAttribute(attributeSyntaxAssertions => attributeSyntaxAssertions.BeMappaGeneratedCodeAttribute())
-                                            .HaveModifiers(SyntaxKind.PartialKeyword, SyntaxKind.PublicKeyword)
-                                            .HaveBody(blockSyntaxAssertions =>
-                                            {
-                                                blockSyntaxAssertions
-                                                    .HasSyntaxNodes(1)
-                                                    .HasNextSyntaxNode(nodeAssertions =>
-                                                    {
-                                                        nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
-                                                        {
-                                                            expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
-                                                        });
-                                                    });
-                                            });
-                                    });
-                        });
-            });
+                            expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
+                        }));
+                });
     }
 
     /// <summary>
@@ -319,43 +244,20 @@ public sealed class IdentityStrategyIntegrationTests
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .HaveCommentHeader()
-            .HaveFileScopedNamespace(fileScopedNamespaceDeclarationSyntaxAssertions =>
-            {
-                fileScopedNamespaceDeclarationSyntaxAssertions
-                    .HaveNamespaceIdentifier("Mappa.Generator.Tests.UnitTests.SourceCode")
-                    .HaveClasses(1)
-                    .HaveClass(
-                        "Mapper",
-                        classDeclarationSyntaxAssertions =>
+            .HaveDefaultMapMethod(
+                typeof(int?).ToString(),
+                NullableAnnotation.Annotated,
+                typeof(int).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodes(1)
+                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
                         {
-                            classDeclarationSyntaxAssertions
-                                .HaveModifiers(SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword)
-                                .HaveMethods(1)
-                                .HaveMethod(
-                                    typeof(int?),
-                                    NullableAnnotation.Annotated,
-                                    "Map",
-                                    new[] { (typeof(int), NullableAnnotation.NotAnnotated, "input") },
-                                    methodDeclarationSyntaxAssertions =>
-                                    {
-                                        methodDeclarationSyntaxAssertions
-                                            .HaveGeneratedCodeAttribute(attributeSyntaxAssertions => attributeSyntaxAssertions.BeMappaGeneratedCodeAttribute())
-                                            .HaveModifiers(SyntaxKind.PartialKeyword, SyntaxKind.PublicKeyword)
-                                            .HaveBody(blockSyntaxAssertions =>
-                                            {
-                                                blockSyntaxAssertions
-                                                    .HasSyntaxNodes(1)
-                                                    .HasNextSyntaxNode(nodeAssertions =>
-                                                    {
-                                                        nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
-                                                        {
-                                                            expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
-                                                        });
-                                                    });
-                                            });
-                                    });
-                        });
-            });
+                            expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
+                        }));
+                });
     }
 
     /// <summary>
@@ -392,43 +294,20 @@ public sealed class IdentityStrategyIntegrationTests
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .HaveCommentHeader()
-            .HaveFileScopedNamespace(fileScopedNamespaceDeclarationSyntaxAssertions =>
-            {
-                fileScopedNamespaceDeclarationSyntaxAssertions
-                    .HaveNamespaceIdentifier("Mappa.Generator.Tests.UnitTests.SourceCode")
-                    .HaveClasses(1)
-                    .HaveClass(
-                        "Mapper",
-                        classDeclarationSyntaxAssertions =>
+            .HaveDefaultMapMethod(
+                typeof(int?).ToString(),
+                NullableAnnotation.Annotated,
+                typeof(int).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodes(1)
+                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
                         {
-                            classDeclarationSyntaxAssertions
-                                .HaveModifiers(SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword)
-                                .HaveMethods(1)
-                                .HaveMethod(
-                                    typeof(int?),
-                                    NullableAnnotation.Annotated,
-                                    "Map",
-                                    new[] { (typeof(int), NullableAnnotation.NotAnnotated, "input") },
-                                    methodDeclarationSyntaxAssertions =>
-                                    {
-                                        methodDeclarationSyntaxAssertions
-                                            .HaveGeneratedCodeAttribute(attributeSyntaxAssertions => attributeSyntaxAssertions.BeMappaGeneratedCodeAttribute())
-                                            .HaveModifiers(SyntaxKind.PartialKeyword, SyntaxKind.PublicKeyword)
-                                            .HaveBody(blockSyntaxAssertions =>
-                                            {
-                                                blockSyntaxAssertions
-                                                    .HasSyntaxNodes(1)
-                                                    .HasNextSyntaxNode(nodeAssertions =>
-                                                    {
-                                                        nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
-                                                        {
-                                                            expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
-                                                        });
-                                                    });
-                                            });
-                                    });
-                        });
-            });
+                            expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
+                        }));
+                });
     }
 
     /// <summary>
@@ -464,43 +343,20 @@ public sealed class IdentityStrategyIntegrationTests
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .HaveCommentHeader()
-            .HaveFileScopedNamespace(fileScopedNamespaceDeclarationSyntaxAssertions =>
-            {
-                fileScopedNamespaceDeclarationSyntaxAssertions
-                    .HaveNamespaceIdentifier("Mappa.Generator.Tests.UnitTests.SourceCode")
-                    .HaveClasses(1)
-                    .HaveClass(
-                        "Mapper",
-                        classDeclarationSyntaxAssertions =>
+            .HaveDefaultMapMethod(
+                typeof(object).ToString(),
+                NullableAnnotation.None,
+                typeof(int).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodes(1)
+                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
                         {
-                            classDeclarationSyntaxAssertions
-                                .HaveModifiers(SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword)
-                                .HaveMethods(1)
-                                .HaveMethod(
-                                    typeof(object),
-                                    NullableAnnotation.None,
-                                    "Map",
-                                    new[] { (typeof(int), NullableAnnotation.NotAnnotated, "input") },
-                                    methodDeclarationSyntaxAssertions =>
-                                    {
-                                        methodDeclarationSyntaxAssertions
-                                            .HaveGeneratedCodeAttribute(attributeSyntaxAssertions => attributeSyntaxAssertions.BeMappaGeneratedCodeAttribute())
-                                            .HaveModifiers(SyntaxKind.PartialKeyword, SyntaxKind.PublicKeyword)
-                                            .HaveBody(blockSyntaxAssertions =>
-                                            {
-                                                blockSyntaxAssertions
-                                                    .HasSyntaxNodes(1)
-                                                    .HasNextSyntaxNode(nodeAssertions =>
-                                                    {
-                                                        nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
-                                                        {
-                                                            expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
-                                                        });
-                                                    });
-                                            });
-                                    });
-                        });
-            });
+                            expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
+                        }));
+                });
     }
 
     /// <summary>
@@ -537,43 +393,20 @@ public sealed class IdentityStrategyIntegrationTests
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .HaveCommentHeader()
-            .HaveFileScopedNamespace(fileScopedNamespaceDeclarationSyntaxAssertions =>
-            {
-                fileScopedNamespaceDeclarationSyntaxAssertions
-                    .HaveNamespaceIdentifier("Mappa.Generator.Tests.UnitTests.SourceCode")
-                    .HaveClasses(1)
-                    .HaveClass(
-                        "Mapper",
-                        classDeclarationSyntaxAssertions =>
+            .HaveDefaultMapMethod(
+                typeof(object).ToString(),
+                NullableAnnotation.Annotated,
+                typeof(int).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodes(1)
+                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
                         {
-                            classDeclarationSyntaxAssertions
-                                .HaveModifiers(SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword)
-                                .HaveMethods(1)
-                                .HaveMethod(
-                                    typeof(object),
-                                    NullableAnnotation.Annotated,
-                                    "Map",
-                                    new[] { (typeof(int), NullableAnnotation.NotAnnotated, "input") },
-                                    methodDeclarationSyntaxAssertions =>
-                                    {
-                                        methodDeclarationSyntaxAssertions
-                                            .HaveGeneratedCodeAttribute(attributeSyntaxAssertions => attributeSyntaxAssertions.BeMappaGeneratedCodeAttribute())
-                                            .HaveModifiers(SyntaxKind.PartialKeyword, SyntaxKind.PublicKeyword)
-                                            .HaveBody(blockSyntaxAssertions =>
-                                            {
-                                                blockSyntaxAssertions
-                                                    .HasSyntaxNodes(1)
-                                                    .HasNextSyntaxNode(nodeAssertions =>
-                                                    {
-                                                        nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
-                                                        {
-                                                            expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
-                                                        });
-                                                    });
-                                            });
-                                    });
-                        });
-            });
+                            expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
+                        }));
+                });
     }
 
     /// <summary>
@@ -609,43 +442,20 @@ public sealed class IdentityStrategyIntegrationTests
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .HaveCommentHeader()
-            .HaveFileScopedNamespace(fileScopedNamespaceDeclarationSyntaxAssertions =>
-            {
-                fileScopedNamespaceDeclarationSyntaxAssertions
-                    .HaveNamespaceIdentifier("Mappa.Generator.Tests.UnitTests.SourceCode")
-                    .HaveClasses(1)
-                    .HaveClass(
-                        "Mapper",
-                        classDeclarationSyntaxAssertions =>
+            .HaveDefaultMapMethod(
+                typeof(object).ToString(),
+                NullableAnnotation.None,
+                typeof(string).ToString(),
+                NullableAnnotation.None,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodes(1)
+                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
                         {
-                            classDeclarationSyntaxAssertions
-                                .HaveModifiers(SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword)
-                                .HaveMethods(1)
-                                .HaveMethod(
-                                    typeof(object),
-                                    NullableAnnotation.None,
-                                    "Map",
-                                    new[] { (typeof(string), NullableAnnotation.None, "input") },
-                                    methodDeclarationSyntaxAssertions =>
-                                    {
-                                        methodDeclarationSyntaxAssertions
-                                            .HaveGeneratedCodeAttribute(attributeSyntaxAssertions => attributeSyntaxAssertions.BeMappaGeneratedCodeAttribute())
-                                            .HaveModifiers(SyntaxKind.PartialKeyword, SyntaxKind.PublicKeyword)
-                                            .HaveBody(blockSyntaxAssertions =>
-                                            {
-                                                blockSyntaxAssertions
-                                                    .HasSyntaxNodes(1)
-                                                    .HasNextSyntaxNode(nodeAssertions =>
-                                                    {
-                                                        nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
-                                                        {
-                                                            expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
-                                                        });
-                                                    });
-                                            });
-                                    });
-                        });
-            });
+                            expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
+                        }));
+                });
     }
 
     /// <summary>
@@ -681,43 +491,20 @@ public sealed class IdentityStrategyIntegrationTests
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .HaveCommentHeader()
-            .HaveFileScopedNamespace(fileScopedNamespaceDeclarationSyntaxAssertions =>
-            {
-                fileScopedNamespaceDeclarationSyntaxAssertions
-                    .HaveNamespaceIdentifier("Mappa.Generator.Tests.UnitTests.SourceCode")
-                    .HaveClasses(1)
-                    .HaveClass(
-                        "Mapper",
-                        classDeclarationSyntaxAssertions =>
+            .HaveDefaultMapMethod(
+                typeof(object).ToString(),
+                NullableAnnotation.Annotated,
+                typeof(string).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodes(1)
+                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
                         {
-                            classDeclarationSyntaxAssertions
-                                .HaveModifiers(SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword)
-                                .HaveMethods(1)
-                                .HaveMethod(
-                                    typeof(object),
-                                    NullableAnnotation.Annotated,
-                                    "Map",
-                                    new[] { (typeof(string), NullableAnnotation.NotAnnotated, "input") },
-                                    methodDeclarationSyntaxAssertions =>
-                                    {
-                                        methodDeclarationSyntaxAssertions
-                                            .HaveGeneratedCodeAttribute(attributeSyntaxAssertions => attributeSyntaxAssertions.BeMappaGeneratedCodeAttribute())
-                                            .HaveModifiers(SyntaxKind.PartialKeyword, SyntaxKind.PublicKeyword)
-                                            .HaveBody(blockSyntaxAssertions =>
-                                            {
-                                                blockSyntaxAssertions
-                                                    .HasSyntaxNodes(1)
-                                                    .HasNextSyntaxNode(nodeAssertions =>
-                                                    {
-                                                        nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
-                                                        {
-                                                            expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
-                                                        });
-                                                    });
-                                            });
-                                    });
-                        });
-            });
+                            expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
+                        }));
+                });
     }
 
     /// <summary>
@@ -754,43 +541,20 @@ public sealed class IdentityStrategyIntegrationTests
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .HaveCommentHeader()
-            .HaveFileScopedNamespace(fileScopedNamespaceDeclarationSyntaxAssertions =>
-            {
-                fileScopedNamespaceDeclarationSyntaxAssertions
-                    .HaveNamespaceIdentifier("Mappa.Generator.Tests.UnitTests.SourceCode")
-                    .HaveClasses(1)
-                    .HaveClass(
-                        "Mapper",
-                        classDeclarationSyntaxAssertions =>
+            .HaveDefaultMapMethod(
+                typeof(string).ToString(),
+                NullableAnnotation.Annotated,
+                typeof(string).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodes(1)
+                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
                         {
-                            classDeclarationSyntaxAssertions
-                                .HaveModifiers(SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword)
-                                .HaveMethods(1)
-                                .HaveMethod(
-                                    typeof(string),
-                                    NullableAnnotation.Annotated,
-                                    "Map",
-                                    new[] { (typeof(string), NullableAnnotation.NotAnnotated, "input") },
-                                    methodDeclarationSyntaxAssertions =>
-                                    {
-                                        methodDeclarationSyntaxAssertions
-                                            .HaveGeneratedCodeAttribute(attributeSyntaxAssertions => attributeSyntaxAssertions.BeMappaGeneratedCodeAttribute())
-                                            .HaveModifiers(SyntaxKind.PartialKeyword, SyntaxKind.PublicKeyword)
-                                            .HaveBody(blockSyntaxAssertions =>
-                                            {
-                                                blockSyntaxAssertions
-                                                    .HasSyntaxNodes(1)
-                                                    .HasNextSyntaxNode(nodeAssertions =>
-                                                    {
-                                                        nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
-                                                        {
-                                                            expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
-                                                        });
-                                                    });
-                                            });
-                                    });
-                        });
-            });
+                            expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
+                        }));
+                });
     }
 
     /// <summary>
@@ -826,43 +590,20 @@ public sealed class IdentityStrategyIntegrationTests
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .HaveCommentHeader()
-            .HaveFileScopedNamespace(fileScopedNamespaceDeclarationSyntaxAssertions =>
-            {
-                fileScopedNamespaceDeclarationSyntaxAssertions
-                    .HaveNamespaceIdentifier("Mappa.Generator.Tests.UnitTests.SourceCode")
-                    .HaveClasses(1)
-                    .HaveClass(
-                        "Mapper",
-                        classDeclarationSyntaxAssertions =>
+            .HaveDefaultMapMethod(
+                typeof(object).ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(string).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodes(1)
+                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
                         {
-                            classDeclarationSyntaxAssertions
-                                .HaveModifiers(SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword)
-                                .HaveMethods(1)
-                                .HaveMethod(
-                                    typeof(object),
-                                    NullableAnnotation.NotAnnotated,
-                                    "Map",
-                                    new[] { (typeof(string), NullableAnnotation.NotAnnotated, "input") },
-                                    methodDeclarationSyntaxAssertions =>
-                                    {
-                                        methodDeclarationSyntaxAssertions
-                                            .HaveGeneratedCodeAttribute(attributeSyntaxAssertions => attributeSyntaxAssertions.BeMappaGeneratedCodeAttribute())
-                                            .HaveModifiers(SyntaxKind.PartialKeyword, SyntaxKind.PublicKeyword)
-                                            .HaveBody(blockSyntaxAssertions =>
-                                            {
-                                                blockSyntaxAssertions
-                                                    .HasSyntaxNodes(1)
-                                                    .HasNextSyntaxNode(nodeAssertions =>
-                                                    {
-                                                        nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
-                                                        {
-                                                            expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
-                                                        });
-                                                    });
-                                            });
-                                    });
-                        });
-            });
+                            expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
+                        }));
+                });
     }
 
     /// <summary>
@@ -898,42 +639,19 @@ public sealed class IdentityStrategyIntegrationTests
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .HaveCommentHeader()
-            .HaveFileScopedNamespace(fileScopedNamespaceDeclarationSyntaxAssertions =>
-            {
-                fileScopedNamespaceDeclarationSyntaxAssertions
-                    .HaveNamespaceIdentifier("Mappa.Generator.Tests.UnitTests.SourceCode")
-                    .HaveClasses(1)
-                    .HaveClass(
-                        "Mapper",
-                        classDeclarationSyntaxAssertions =>
+            .HaveDefaultMapMethod(
+                typeof(long).ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(int).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodes(1)
+                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
                         {
-                            classDeclarationSyntaxAssertions
-                                .HaveModifiers(SyntaxKind.InternalKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword)
-                                .HaveMethods(1)
-                                .HaveMethod(
-                                    typeof(long),
-                                    NullableAnnotation.NotAnnotated,
-                                    "Map",
-                                    new[] { (typeof(int), NullableAnnotation.NotAnnotated, "input") },
-                                    methodDeclarationSyntaxAssertions =>
-                                    {
-                                        methodDeclarationSyntaxAssertions
-                                            .HaveGeneratedCodeAttribute(attributeSyntaxAssertions => attributeSyntaxAssertions.BeMappaGeneratedCodeAttribute())
-                                            .HaveModifiers(SyntaxKind.PartialKeyword, SyntaxKind.InternalKeyword)
-                                            .HaveBody(blockSyntaxAssertions =>
-                                            {
-                                                blockSyntaxAssertions
-                                                    .HasSyntaxNodes(1)
-                                                    .HasNextSyntaxNode(nodeAssertions =>
-                                                    {
-                                                        nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
-                                                        {
-                                                            expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
-                                                        });
-                                                    });
-                                            });
-                                    });
-                        });
-            });
+                            expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
+                        }));
+                });
     }
 }
