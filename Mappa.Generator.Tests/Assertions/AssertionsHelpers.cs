@@ -22,6 +22,13 @@ internal static class AssertionsHelpers
         ArgumentNullException.ThrowIfNull(compilation);
         ArgumentException.ThrowIfNullOrWhiteSpace(type);
 
+        if (type.EndsWith("[]", StringComparison.Ordinal))
+        {
+            var elementType = compilation.GetTypeByMetadataName(type.Replace("[]", string.Empty, StringComparison.Ordinal));
+            var arraySymbol = compilation.CreateArrayTypeSymbol(elementType!, 1);
+            return arraySymbol;
+        }
+
         var typeParts = type.Split("[");
         var namedTypeSymbol = compilation.GetTypeByMetadataName(typeParts[0])!;
         if (typeParts.Length > 1)

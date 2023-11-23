@@ -5,6 +5,7 @@
 using Mappa.Generator.Models.Strategies;
 using Mappa.Generator.Tests.Abstractions;
 using Mappa.Generator.Tests.Assertions;
+using Mappa.Generator.Tests.Assertions.Extensions;
 
 namespace Mappa.Generator.Tests;
 
@@ -28,30 +29,48 @@ public class ArrayOrListToArrayMapStrategyIntegrationTests
 
                                   namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
-                                  public enum TestEnum
-                                  {
-                                      One,
-                                      Two,
-                                      Three,
-                                  }
-
                                   [Mappa]
                                   public sealed partial class Mapper
                                   {
-                                      public partial int[] Map(TestEnum[] input);
+                                      public partial long[] Map(int[] input);
                                   }
                                   """;
 
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
-        var compilationUnitSyntaxAssertions = generatedResults.Should()
+        // Assert
+        generatedResults.Should()
             .NotHaveDiagnostics()
             .HaveGeneratedSourceCode()
-            .WithCompilationUnit();
-
-        // TODO [#42] Add correct assertions.
-        compilationUnitSyntaxAssertions.NotBeNull();
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                typeof(long[]).ToString(),
+                NullableAnnotation.None,
+                typeof(int[]).ToString(),
+                NullableAnnotation.None,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodes(4)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            // TODO [#42] Add correct assertions.
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            // TODO [#42] Add correct assertions.
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            // TODO [#42] Add correct assertions.
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_2"));
+                        });
+                });
     }
 
     /// <summary>
@@ -70,17 +89,10 @@ public class ArrayOrListToArrayMapStrategyIntegrationTests
 
                                   namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
-                                  public enum TestEnum
-                                  {
-                                      One,
-                                      Two,
-                                      Three,
-                                  }
-
                                   [Mappa]
                                   public sealed partial class Mapper
                                   {
-                                      public partial int[] Map(IList<TestEnum> input);
+                                      public partial long[] Map(IList<int> input);
                                   }
                                   """;
 
@@ -112,17 +124,10 @@ public class ArrayOrListToArrayMapStrategyIntegrationTests
 
                                   namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
-                                  public enum TestEnum
-                                  {
-                                      One,
-                                      Two,
-                                      Three,
-                                  }
-
                                   [Mappa]
                                   public sealed partial class Mapper
                                   {
-                                      public partial int[] Map(List<TestEnum> input);
+                                      public partial long[] Map(List<int> input);
                                   }
                                   """;
 

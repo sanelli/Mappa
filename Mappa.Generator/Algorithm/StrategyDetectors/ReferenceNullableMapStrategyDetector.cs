@@ -39,6 +39,7 @@ internal sealed class ReferenceNullableMapStrategyDetector
         mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
         if (!this.context.IsNullableEnabled())
         {
+            // TODO [#46] If nullable is not enabled we need to handle the scenario S -> T as S? -> T?.
             return false;
         }
 
