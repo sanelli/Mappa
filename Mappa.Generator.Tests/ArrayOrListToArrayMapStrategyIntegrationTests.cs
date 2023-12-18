@@ -56,11 +56,20 @@ public class ArrayOrListToArrayMapStrategyIntegrationTests
                         .HasSyntaxNodes(4)
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
-                            // TODO [#42] Add correct assertions.
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(typeof(int).ToString(), "__mappa_tmp_1", expressionSyntaxAssertions =>
+                            {
+                                expressionSyntaxAssertions.BeMemberAccessExpressionSyntax("input.Length");
+                            });
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
-                            // TODO [#42] Add correct assertions.
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(typeof(long[]).ToString(), "__mappa_tmp_2", expressionSyntaxAssertions =>
+                            {
+                                expressionSyntaxAssertions.BeArrayCreationExpressionSyntax(typeof(long).ToString(), sizeAssertion =>
+                                {
+                                    sizeAssertion.BeIdentifierNameSyntax("__mappa_tmp_1");
+                                });
+                            });
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {

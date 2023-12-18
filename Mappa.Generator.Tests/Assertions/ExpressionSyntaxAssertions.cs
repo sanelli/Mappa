@@ -122,7 +122,7 @@ public sealed class ExpressionSyntaxAssertions
     }
 
     /// <summary>
-    /// Assert that the expression is an identifier name expression.
+    /// Assert that the expression is an invocation expression.
     /// </summary>
     /// <param name="memberAccess">The name of the method being invoked.</param>
     /// <param name="assertArguments">Assertions on the arguments.</param>
@@ -143,6 +143,35 @@ public sealed class ExpressionSyntaxAssertions
         {
             assertArguments[index](new ExpressionSyntaxAssertions(invocationExpressionSyntax.ArgumentList.Arguments[index].Expression, this.SemanticModel, this.Compilation));
         }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Assert that the expression is an array creation expression.
+    /// </summary>
+    /// <param name="type">The type being created.</param>
+    /// <param name="sizeAssertion">The assertions on the size expression.</param>
+    /// <returns>The assertion.</returns>
+    public ExpressionSyntaxAssertions BeArrayCreationExpressionSyntax(string type, Action<ExpressionSyntaxAssertions> sizeAssertion)
+    {
+        ArgumentNullException.ThrowIfNull(sizeAssertion);
+
+        this.Subject.Should().BeOfType<ArrayCreationExpressionSyntax>();
+        var arrayCreationExpressionSyntax = (ArrayCreationExpressionSyntax)this.Subject;
+
+        var expectedType = this.Compilation.GetTypeSymbol(type);
+        var localSymbol = this.Compilation.GetTypeSymbol(arrayCreationExpressionSyntax.Type.ElementType.ToString());
+
+        SymbolEqualityComparer
+            .Default
+            .Equals(localSymbol, expectedType)
+            .Should().BeTrue();
+
+        arrayCreationExpressionSyntax.Type.RankSpecifiers.Should().HaveCount(1);
+        arrayCreationExpressionSyntax.Type.RankSpecifiers[0].Sizes.Should().HaveCount(1);
+        var size = arrayCreationExpressionSyntax.Type.RankSpecifiers[0].Sizes[0];
+        sizeAssertion(new ExpressionSyntaxAssertions(size, this.SemanticModel, this.Compilation));
 
         return this;
     }

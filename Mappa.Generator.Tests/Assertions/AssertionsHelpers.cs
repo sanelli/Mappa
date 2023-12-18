@@ -30,12 +30,13 @@ internal static class AssertionsHelpers
         }
 
         var typeParts = type.Split("[");
-        var namedTypeSymbol = compilation.GetTypeByMetadataName(typeParts[0])!;
+        var namedTypeSymbol = compilation.GetTypeByMetadataName(NormalizeType(typeParts[0]))!;
         if (typeParts.Length > 1)
         {
             var typeArguments = typeParts[^1]
                 .Replace("]", string.Empty, StringComparison.Ordinal)
                 .Split(",")
+                .Select(NormalizeType)
                 .Select(compilation.GetTypeByMetadataName)
                 .Where(t => t is not null)
                 .OfType<ITypeSymbol>()
@@ -79,4 +80,22 @@ internal static class AssertionsHelpers
                 _ => throw new ArgumentException($"Unknown switch label of type {statement.GetType().FullName}"),
             })
             .ToArray();
+
+    private static string NormalizeType(string type)
+        => type switch
+        {
+            "sbyte" => typeof(sbyte).ToString(),
+            "short" => typeof(short).ToString(),
+            "int" => typeof(int).ToString(),
+            "long" => typeof(long).ToString(),
+            "byte" => typeof(byte).ToString(),
+            "ushort" => typeof(ushort).ToString(),
+            "uint" => typeof(uint).ToString(),
+            "ulong" => typeof(ulong).ToString(),
+            "float" => typeof(float).ToString(),
+            "double" => typeof(double).ToString(),
+            "string" => typeof(string).ToString(),
+            "char" => typeof(char).ToString(),
+            _ => type,
+        };
 }
