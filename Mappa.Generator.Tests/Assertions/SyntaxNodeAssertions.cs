@@ -235,4 +235,82 @@ public sealed class SyntaxNodeAssertions
 
         return this;
     }
+
+    /// <summary>
+    /// Assert that the syntax node is a for statement.
+    /// </summary>
+    /// <param name="declarationAssertion">Assertions on the variables declaration.</param>
+    /// <param name="conditionAssertion">Assertions on the condition.</param>
+    /// <param name="incrementorAssertion">Assertions on the incrementor expression.</param>
+    /// <param name="statementAssertion">Assertion on the statement.</param>
+    /// <returns>The assertions.</returns>
+    public SyntaxNodeAssertions BeForStatementSyntax(
+        Action<VariableDeclarationSyntaxAssertions>? declarationAssertion,
+        Action<ExpressionSyntaxAssertions>? conditionAssertion,
+        Action<ExpressionSyntaxAssertions>? incrementorAssertion,
+        Action<IStatementSyntaxBaseAssertions> statementAssertion)
+        => this.BeForStatementSyntax(
+            declarationAssertion,
+            conditionAssertion,
+            incrementorAssertion is null ? null : new[] { incrementorAssertion },
+            statementAssertion);
+
+    /// <summary>
+    /// Assert that the syntax node is a for statement.
+    /// </summary>
+    /// <param name="declarationAssertion">Assertions on the variables declaration.</param>
+    /// <param name="conditionAssertion">Assertions on the condition.</param>
+    /// <param name="incrementorAssertions">Assertions on the incrementor expressions.</param>
+    /// <param name="statementAssertion">Assertion on the statement.</param>
+    /// <returns>The assertions.</returns>
+    public SyntaxNodeAssertions BeForStatementSyntax(
+        Action<VariableDeclarationSyntaxAssertions>? declarationAssertion,
+        Action<ExpressionSyntaxAssertions>? conditionAssertion,
+        Action<ExpressionSyntaxAssertions>[]? incrementorAssertions,
+        Action<IStatementSyntaxBaseAssertions> statementAssertion)
+    {
+        ArgumentNullException.ThrowIfNull(statementAssertion);
+
+        this.Subject.Should().BeOfType<ForStatementSyntax>();
+        var forStatementSyntax = (ForStatementSyntax)this.Subject;
+
+        if (declarationAssertion is null)
+        {
+            forStatementSyntax.Declaration.Should().BeNull();
+        }
+        else
+        {
+            forStatementSyntax.Declaration.Should().NotBeNull();
+            declarationAssertion(new VariableDeclarationSyntaxAssertions(forStatementSyntax.Declaration!));
+        }
+
+        if (conditionAssertion is null)
+        {
+            forStatementSyntax.Condition.Should().BeNull();
+        }
+        else
+        {
+            forStatementSyntax.Condition.Should().NotBeNull();
+            conditionAssertion(new ExpressionSyntaxAssertions(forStatementSyntax.Condition!, this.SemanticModel, this.Compilation));
+        }
+
+        if (incrementorAssertions is null)
+        {
+            forStatementSyntax.Incrementors.Should().BeNullOrEmpty();
+        }
+        else
+        {
+            forStatementSyntax.Incrementors.Should().NotBeNull();
+            forStatementSyntax.Incrementors.Should().HaveCount(incrementorAssertions.Length);
+
+            for (int index = 0; index < incrementorAssertions.Length; ++index)
+            {
+                incrementorAssertions[index](new ExpressionSyntaxAssertions(forStatementSyntax.Incrementors[index], this.SemanticModel, this.Compilation));
+            }
+        }
+
+        statementAssertion(forStatementSyntax.Statement.ToAssertion(this.SemanticModel, this.Compilation));
+
+        return this;
+    }
 }

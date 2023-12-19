@@ -73,7 +73,23 @@ public class ArrayOrListToArrayMapStrategyIntegrationTests
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
-                            // TODO [#42] Add correct assertions.
+                            syntaxNodeAssertions.BeForStatementSyntax(
+                                declarationAssertions =>
+                                {
+                                    // TODO [#42] Add correct assertions.
+                                },
+                                conditionAssertion =>
+                                {
+                                    // TODO [#42] Add correct assertions.
+                                },
+                                conditionAssertion =>
+                                {
+                                    // TODO [#42] Add correct assertions.
+                                },
+                                conditionAssertion =>
+                                {
+                                    // TODO [#42] Add correct assertions.
+                                });
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {

@@ -51,17 +51,27 @@ internal static class AssertionsHelpers
     /// <summary>
     /// Obtain the correct list of assertions for a list of statement.
     /// </summary>
+    /// <param name="statement">The list of statements.</param>
+    /// <param name="semanticModel">The semantic model.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The list of assertions for the statement.</returns>
+    internal static IStatementSyntaxBaseAssertions ToAssertion(this StatementSyntax statement, SemanticModel semanticModel, Compilation compilation)
+        => statement switch
+            {
+                BlockSyntax blockSyntax => new BlockSyntaxAssertions(blockSyntax, semanticModel, compilation),
+                _ => new StatementSyntaxAssertions(statement, semanticModel, compilation),
+            };
+
+    /// <summary>
+    /// Obtain the correct list of assertions for a list of statement.
+    /// </summary>
     /// <param name="statements">The list of statements.</param>
     /// <param name="semanticModel">The semantic model.</param>
     /// <param name="compilation">The compilation.</param>
     /// <returns>The list of assertions for the statement.</returns>
     internal static IStatementSyntaxBaseAssertions[] ToAssertions(this IEnumerable<StatementSyntax> statements, SemanticModel semanticModel, Compilation compilation)
         => statements
-            .Select(statement => statement switch
-            {
-                BlockSyntax blockSyntax => (IStatementSyntaxBaseAssertions)new BlockSyntaxAssertions(blockSyntax, semanticModel, compilation),
-                _ => new StatementSyntaxAssertions(statement, semanticModel, compilation),
-            })
+            .Select(statement => ToAssertion(statement, semanticModel, compilation))
             .ToArray();
 
     /// <summary>
