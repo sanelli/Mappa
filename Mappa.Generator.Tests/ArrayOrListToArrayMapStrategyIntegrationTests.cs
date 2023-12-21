@@ -76,19 +76,49 @@ public class ArrayOrListToArrayMapStrategyIntegrationTests
                             syntaxNodeAssertions.BeForStatementSyntax(
                                 declarationAssertions =>
                                 {
-                                    // TODO [#42] Add correct assertions.
+                                    declarationAssertions.BeAssignmentFromConstant(typeof(int).ToString(), "__mappa_tmp_3", 0);
                                 },
                                 conditionAssertion =>
                                 {
-                                    // TODO [#42] Add correct assertions.
+                                    conditionAssertion.BeBinaryExpressionSyntax(
+                                        leftExpressionAssertions => leftExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_3"),
+                                        SyntaxKind.LessThanToken,
+                                        rightExpressionAssertions => rightExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_1"));
                                 },
-                                conditionAssertion =>
+                                incrementorAssertions =>
                                 {
-                                    // TODO [#42] Add correct assertions.
+                                    incrementorAssertions.BePrefixUnaryExpressionSyntax(
+                                        SyntaxKind.PlusPlusToken,
+                                        operandAssertions => operandAssertions.BeIdentifierNameSyntax("__mappa_tmp_3"));
                                 },
-                                conditionAssertion =>
+                                statementSyntaxBaseAssertions =>
                                 {
-                                    // TODO [#42] Add correct assertions.
+                                    statementSyntaxBaseAssertions
+                                        .IsBlockStatement()
+                                        .AsBlock()
+                                        .HasSyntaxNodes(2)
+                                        .HasNextSyntaxNode(forStatement =>
+                                        {
+                                            forStatement.BeLocalDeclarationStatementSyntax(
+                                                typeof(int).ToString(),
+                                                "__mappa_tmp_4",
+                                                expressionAssertions =>
+                                                {
+                                                    expressionAssertions.BeElementAccessExpressionSyntaxWithIdentifierNameSyntax("input", "__mappa_tmp_3");
+                                                });
+                                        })
+                                        .HasNextSyntaxNode(forStatement =>
+                                        {
+                                            forStatement.BeAssignmentExpressionStatement(
+                                                leftExpressionAssertions =>
+                                                {
+                                                    leftExpressionAssertions.BeElementAccessExpressionSyntaxWithIdentifierNameSyntax("__mappa_tmp_2", "__mappa_tmp_3");
+                                                },
+                                                rightExpressionAssertions =>
+                                                {
+                                                    rightExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_4");
+                                                });
+                                        });
                                 });
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>

@@ -192,18 +192,30 @@ public sealed class SyntaxNodeAssertions
     public SyntaxNodeAssertions BeAssignmentExpressionStatement(string identifierName, Action<ExpressionSyntaxAssertions> assert)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(identifierName);
-        ArgumentNullException.ThrowIfNull(assert);
+
+        return this.BeAssignmentExpressionStatement(
+            identifierAssertion => identifierAssertion.BeIdentifierNameSyntax(identifierName),
+            assert);
+    }
+
+    /// <summary>
+    /// Assert that that the syntax node is an assignment.
+    /// </summary>
+    /// <param name="leftExpressionAssertions">The left expression assertions.</param>
+    /// <param name="rightExpressionAssertions">The right expression assertions.</param>
+    /// <returns>The assertions.</returns>
+    public SyntaxNodeAssertions BeAssignmentExpressionStatement(Action<ExpressionSyntaxAssertions> leftExpressionAssertions, Action<ExpressionSyntaxAssertions> rightExpressionAssertions)
+    {
+        ArgumentNullException.ThrowIfNull(leftExpressionAssertions);
+        ArgumentNullException.ThrowIfNull(rightExpressionAssertions);
 
         this.Subject.Should().BeOfType<ExpressionStatementSyntax>();
         var expressionStatementSyntax = (ExpressionStatementSyntax)this.Subject;
         expressionStatementSyntax.Expression.Should().BeOfType<AssignmentExpressionSyntax>();
         var assignmentExpressionSyntax = (AssignmentExpressionSyntax)expressionStatementSyntax.Expression;
 
-        assignmentExpressionSyntax.Left.Should().BeOfType<IdentifierNameSyntax>();
-        var identifier = (IdentifierNameSyntax)assignmentExpressionSyntax.Left;
-        identifier.Identifier.Text.Should().Be(identifierName);
-
-        assert(new ExpressionSyntaxAssertions(assignmentExpressionSyntax.Right, this.SemanticModel, this.Compilation));
+        leftExpressionAssertions(new ExpressionSyntaxAssertions(assignmentExpressionSyntax.Left, this.SemanticModel, this.Compilation));
+        rightExpressionAssertions(new ExpressionSyntaxAssertions(assignmentExpressionSyntax.Right, this.SemanticModel, this.Compilation));
 
         return this;
     }
@@ -281,7 +293,7 @@ public sealed class SyntaxNodeAssertions
         else
         {
             forStatementSyntax.Declaration.Should().NotBeNull();
-            declarationAssertion(new VariableDeclarationSyntaxAssertions(forStatementSyntax.Declaration!));
+            declarationAssertion(new VariableDeclarationSyntaxAssertions(forStatementSyntax.Declaration!, this.SemanticModel, this.Compilation));
         }
 
         if (conditionAssertion is null)

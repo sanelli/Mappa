@@ -175,4 +175,77 @@ public sealed class ExpressionSyntaxAssertions
 
         return this;
     }
+
+    /// <summary>
+    /// Assert that the expression in a element access expression syntax having
+    /// identifier name syntax for accessing both the array and the index.
+    /// </summary>
+    /// <param name="arrayName">The name of the array.</param>
+    /// <param name="indexVariableName">The name of the index variable.</param>
+    /// <returns>The assertions.</returns>
+    public ExpressionSyntaxAssertions BeElementAccessExpressionSyntaxWithIdentifierNameSyntax(string arrayName, string indexVariableName)
+    {
+        this.Subject.Should().BeOfType<ElementAccessExpressionSyntax>();
+
+        var elementAccessExpressionSyntax = (ElementAccessExpressionSyntax)this.Subject;
+        var expression = elementAccessExpressionSyntax.Expression;
+        expression.Should().BeOfType<IdentifierNameSyntax>();
+        var arrayAccess = (IdentifierNameSyntax)expression;
+        arrayAccess.Identifier.ToString().Should().Be(arrayName);
+
+        var argumentList = elementAccessExpressionSyntax.ArgumentList;
+        argumentList.Arguments.Should().HaveCount(1);
+        argumentList.Arguments[0].Expression.Should().BeOfType<IdentifierNameSyntax>();
+        var indexExpression = (IdentifierNameSyntax)argumentList.Arguments[0].Expression;
+        indexExpression.Identifier.ToString().Should().Be(indexVariableName);
+
+        return this;
+    }
+
+    /// <summary>
+    /// Assert that the expression is a binary expression.
+    /// </summary>
+    /// <param name="leftExpressionAssertions">The left expression assertion.</param>
+    /// <param name="operator">The operator token.</param>
+    /// <param name="rightExpressionAssertions">The right expression assertion.</param>
+    /// <returns>The assertions.</returns>
+    public ExpressionSyntaxAssertions BeBinaryExpressionSyntax(
+        Action<ExpressionSyntaxAssertions> leftExpressionAssertions,
+        SyntaxKind @operator,
+        Action<ExpressionSyntaxAssertions> rightExpressionAssertions)
+    {
+        ArgumentNullException.ThrowIfNull(leftExpressionAssertions);
+        ArgumentNullException.ThrowIfNull(rightExpressionAssertions);
+
+        this.Subject.Should().BeOfType<BinaryExpressionSyntax>();
+        var binaryExpressionSyntax = (BinaryExpressionSyntax)this.Subject;
+
+        binaryExpressionSyntax.OperatorToken.Kind().Should().Be(@operator);
+
+        leftExpressionAssertions(new ExpressionSyntaxAssertions(binaryExpressionSyntax.Left, this.SemanticModel, this.Compilation));
+        rightExpressionAssertions(new ExpressionSyntaxAssertions(binaryExpressionSyntax.Right, this.SemanticModel, this.Compilation));
+
+        return this;
+    }
+
+    /// <summary>
+    /// Assert that the expression is a prefix unary expression syntax.
+    /// </summary>
+    /// <param name="operator">The operator token.</param>
+    /// <param name="operandAssertions">The operand expression assertion.</param>
+    /// <returns>The assertions.</returns>
+    public ExpressionSyntaxAssertions BePrefixUnaryExpressionSyntax(
+        SyntaxKind @operator,
+        Action<ExpressionSyntaxAssertions> operandAssertions)
+    {
+        ArgumentNullException.ThrowIfNull(operandAssertions);
+
+        this.Subject.Should().BeOfType<PrefixUnaryExpressionSyntax>();
+        var prefixUnaryExpressionSyntax = (PrefixUnaryExpressionSyntax)this.Subject;
+
+        prefixUnaryExpressionSyntax.OperatorToken.Kind().Should().Be(@operator);
+        operandAssertions(new ExpressionSyntaxAssertions(prefixUnaryExpressionSyntax.Operand, this.SemanticModel, this.Compilation));
+
+        return this;
+    }
 }

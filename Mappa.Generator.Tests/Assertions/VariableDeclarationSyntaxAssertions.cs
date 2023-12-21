@@ -19,8 +19,48 @@ public sealed class VariableDeclarationSyntaxAssertions
     /// Initializes a new instance of the <see cref="VariableDeclarationSyntaxAssertions"/> class.
     /// </summary>
     /// <param name="value">The target of the assertion.</param>
-    public VariableDeclarationSyntaxAssertions(VariableDeclarationSyntax value)
+    /// <param name="semanticModel">The semantic model.</param>
+    /// <param name="compilation">The compilation.</param>
+    public VariableDeclarationSyntaxAssertions(VariableDeclarationSyntax value, SemanticModel semanticModel, Compilation compilation)
         : base(value)
     {
+        this.SemanticModel = semanticModel;
+        this.Compilation = compilation;
+    }
+
+    /// <summary>
+    /// Gets the semantic model.
+    /// </summary>
+    public SemanticModel SemanticModel { get; }
+
+    /// <summary>
+    /// Gets the compilation.
+    /// </summary>
+    public Compilation Compilation { get; }
+
+    /// <summary>
+    /// Assert the declaration syntax is for a single variable initialized by a constant.
+    /// </summary>
+    /// <param name="type">The type of the variable.</param>
+    /// <param name="identifier">The variable identifier.</param>
+    /// <param name="value">The constant value.</param>
+    /// <returns>The assertions.</returns>
+    public VariableDeclarationSyntaxAssertions BeAssignmentFromConstant(string type, string identifier, object value)
+    {
+        var expectedType = this.Compilation.GetTypeSymbol(type);
+        var actualSymbol = this.Compilation.GetTypeSymbol(this.Subject.Type.ToString());
+
+        SymbolEqualityComparer
+            .Default
+            .Equals(actualSymbol, expectedType)
+            .Should().BeTrue();
+
+        this.Subject.Variables.Should().HaveCount(1);
+        this.Subject.Variables[0].Identifier.Text.Should().Be(identifier);
+        this.Subject.Variables[0].Initializer.Should().NotBeNull();
+
+        var valueExpression = this.Subject.Variables[0].Initializer!.Value;
+        new ExpressionSyntaxAssertions(valueExpression, this.SemanticModel, this.Compilation).BeLiteralExpressionSyntax(value);
+        return this;
     }
 }
