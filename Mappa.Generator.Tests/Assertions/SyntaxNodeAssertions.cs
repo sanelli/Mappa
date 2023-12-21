@@ -325,4 +325,35 @@ public sealed class SyntaxNodeAssertions
 
         return this;
     }
+
+    /// <summary>
+    /// Assert that that the syntax node is an assignment.
+    /// </summary>
+    /// <param name="accessIdentifier">Describe the access to the method.</param>
+    /// <param name="argumentExpressionAssertions">The assertions on the arguments.</param>
+    /// <returns>The assertions.</returns>
+    public SyntaxNodeAssertions BeInvocationExpressionSyntaxStatement(
+        string accessIdentifier,
+        params Action<ExpressionSyntaxAssertions>[] argumentExpressionAssertions)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(accessIdentifier);
+        ArgumentNullException.ThrowIfNull(argumentExpressionAssertions);
+
+        this.Subject.Should().BeOfType<ExpressionStatementSyntax>();
+        var expressionStatementSyntax = (ExpressionStatementSyntax)this.Subject;
+
+        expressionStatementSyntax.Expression.Should().BeOfType<InvocationExpressionSyntax>();
+        var invocationExpressionSyntax = (InvocationExpressionSyntax)expressionStatementSyntax.Expression;
+
+        new ExpressionSyntaxAssertions(invocationExpressionSyntax.Expression, this.SemanticModel, this.Compilation)
+            .BeMemberAccessExpressionSyntax(accessIdentifier);
+
+        invocationExpressionSyntax.ArgumentList.Arguments.Should().HaveCount(argumentExpressionAssertions.Length);
+        for (int index = 0; index < argumentExpressionAssertions.Length; ++index)
+        {
+            argumentExpressionAssertions[index](new ExpressionSyntaxAssertions(invocationExpressionSyntax.ArgumentList.Arguments[index].Expression, this.SemanticModel, this.Compilation));
+        }
+
+        return this;
+    }
 }

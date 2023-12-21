@@ -69,7 +69,13 @@ public sealed class ExpressionSyntaxAssertions
         this.Subject.Should().BeOfType<CastExpressionSyntax>();
         var castExpressionSyntax = (CastExpressionSyntax)this.Subject;
 
-        castExpressionSyntax.Type.ToString().Should().Be(type);
+        var expectedType = this.Compilation.GetTypeSymbol(type);
+        var actualType = this.Compilation.GetTypeSymbol(castExpressionSyntax.Type.ToString());
+
+        SymbolEqualityComparer
+            .Default
+            .Equals(actualType, expectedType)
+            .Should().BeTrue();
 
         assert(new ExpressionSyntaxAssertions(castExpressionSyntax.Expression, this.SemanticModel, this.Compilation));
         return this;
@@ -245,6 +251,47 @@ public sealed class ExpressionSyntaxAssertions
 
         prefixUnaryExpressionSyntax.OperatorToken.Kind().Should().Be(@operator);
         operandAssertions(new ExpressionSyntaxAssertions(prefixUnaryExpressionSyntax.Operand, this.SemanticModel, this.Compilation));
+
+        return this;
+    }
+
+    /// <summary>
+    /// Assert that the expression is an object creation expression.
+    /// </summary>
+    /// <param name="type">The type being created.</param>
+    /// <param name="argumentExpressionAssertions">The assertions on the argument expressions.</param>
+    /// <returns>The assertions.</returns>
+    public ExpressionSyntaxAssertions BeObjectCreationExpressionSyntax(
+        string type,
+        params Action<ExpressionSyntaxAssertions>[] argumentExpressionAssertions)
+    {
+        ArgumentNullException.ThrowIfNull(argumentExpressionAssertions);
+
+        this.Subject.Should().BeOfType<ObjectCreationExpressionSyntax>();
+        var objectCreationExpressionSyntax = (ObjectCreationExpressionSyntax)this.Subject;
+
+        var expectedType = this.Compilation.GetTypeSymbol(type);
+        var actualType = this.Compilation.GetTypeSymbol(objectCreationExpressionSyntax.Type.ToString());
+
+        SymbolEqualityComparer
+            .Default
+            .Equals(actualType, expectedType)
+            .Should().BeTrue();
+
+        if (argumentExpressionAssertions.Length == 0)
+        {
+            objectCreationExpressionSyntax.ArgumentList.Should().BeNull();
+        }
+        else
+        {
+            objectCreationExpressionSyntax.ArgumentList.Should().NotBeNull();
+            objectCreationExpressionSyntax.ArgumentList!.Arguments.Should().HaveCount(argumentExpressionAssertions.Length);
+
+            for (var argumentIndex = 0; argumentIndex < argumentExpressionAssertions.Length; ++argumentIndex)
+            {
+                argumentExpressionAssertions[argumentIndex](new ExpressionSyntaxAssertions(objectCreationExpressionSyntax.ArgumentList.Arguments[argumentIndex].Expression, this.SemanticModel, this.Compilation));
+            }
+        }
 
         return this;
     }

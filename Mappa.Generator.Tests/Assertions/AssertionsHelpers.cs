@@ -29,20 +29,48 @@ internal static class AssertionsHelpers
             return arraySymbol;
         }
 
-        var typeParts = type.Split("[");
-        var namedTypeSymbol = compilation.GetTypeByMetadataName(NormalizeType(typeParts[0]))!;
-        if (typeParts.Length > 1)
+        // NOTE: This does not work for nested generic types
+        INamedTypeSymbol namedTypeSymbol;
+        if (type.Contains('[', StringComparison.OrdinalIgnoreCase))
         {
-            var typeArguments = typeParts[^1]
-                .Replace("]", string.Empty, StringComparison.Ordinal)
-                .Split(",")
-                .Select(NormalizeType)
-                .Select(compilation.GetTypeByMetadataName)
-                .Where(t => t is not null)
-                .OfType<ITypeSymbol>()
-                .ToArray();
-            var constructedGenericType = namedTypeSymbol.Construct(typeArguments);
-            return constructedGenericType;
+            var typeParts = type.Split("[");
+            namedTypeSymbol = compilation.GetTypeByMetadataName(NormalizeType(typeParts[0]))!;
+            if (typeParts.Length > 1)
+            {
+                var typeArguments = typeParts[^1]
+                    .Replace("]", string.Empty, StringComparison.Ordinal)
+                    .Split(",")
+                    .Select(NormalizeType)
+                    .Select(compilation.GetTypeByMetadataName)
+                    .Where(t => t is not null)
+                    .OfType<ITypeSymbol>()
+                    .ToArray();
+                var constructedGenericType = namedTypeSymbol.Construct(typeArguments);
+                return constructedGenericType;
+            }
+        }
+        else if (type.Contains('<', StringComparison.OrdinalIgnoreCase))
+        {
+            var typeParts = type.Split("<");
+            int count = typeParts[1].Split(",").Length;
+            namedTypeSymbol = compilation.GetTypeByMetadataName(NormalizeType($"{typeParts[0]}`{count}"))!;
+            if (typeParts.Length > 1)
+            {
+                var typeArguments = typeParts[^1]
+                    .Replace(">", string.Empty, StringComparison.Ordinal)
+                    .Split(",")
+                    .Select(NormalizeType)
+                    .Select(compilation.GetTypeByMetadataName)
+                    .Where(t => t is not null)
+                    .OfType<ITypeSymbol>()
+                    .ToArray();
+                var constructedGenericType = namedTypeSymbol.Construct(typeArguments);
+                return constructedGenericType;
+            }
+        }
+        else
+        {
+            namedTypeSymbol = compilation.GetTypeByMetadataName(NormalizeType(type))!;
         }
 
         return namedTypeSymbol;
