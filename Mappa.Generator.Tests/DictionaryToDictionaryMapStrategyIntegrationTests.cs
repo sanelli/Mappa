@@ -11,8 +11,6 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Integration tests for <see cref="DictionaryToDictionaryMapStrategy"/> strategy.
 /// </summary>
-// TODO [#42] Add missing test IDictionary -> Dictionary.
-// TODO [#42] Add missing test Dictionary -> IDictionary.
 public sealed class DictionaryToDictionaryMapStrategyIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {
@@ -32,17 +30,45 @@ public sealed class DictionaryToDictionaryMapStrategyIntegrationTests
 
                                   namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
-                                  public enum TestEnum
+                                  [Mappa]
+                                  public sealed partial class Mapper
                                   {
-                                      One,
-                                      Two,
-                                      Three,
+                                      public partial Dictionary<string, long> Map(Dictionary<int, long> input);
                                   }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        var compilationUnitSyntaxAssertions = generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit();
+
+        // TODO [#42] Add correct assertions.
+        compilationUnitSyntaxAssertions.NotBeNull();
+    }
+
+    /// <summary>
+    /// Test a mapping can be created from <see cref="Dictionary{TKey,TValue}"/>
+    /// to <see cref="IDictionary{TKey,TValue}"/>.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapDictionaryToIDictionary()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  using Mappa.Attributes;
+                                  using System.Collections.Generic;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
                                   [Mappa]
                                   public sealed partial class Mapper
                                   {
-                                      public partial Dictionary<string, string> Map(Dictionary<int, TestEnum> input);
+                                      public partial IDictionary<string, long> Map(Dictionary<int, int> input);
                                   }
                                   """;
 
@@ -74,17 +100,45 @@ public sealed class DictionaryToDictionaryMapStrategyIntegrationTests
 
                                   namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
-                                  public enum TestEnum
+                                  [Mappa]
+                                  public sealed partial class Mapper
                                   {
-                                      One,
-                                      Two,
-                                      Three,
+                                      public partial IDictionary<string, long> Map(IDictionary<int, int> input);
                                   }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        var compilationUnitSyntaxAssertions = generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit();
+
+        // TODO [#42] Add correct assertions.
+        compilationUnitSyntaxAssertions.NotBeNull();
+    }
+
+    /// <summary>
+    /// Test a mapping can be created from <see cref="IDictionary{TKey,TValue}"/>
+    /// to <see cref="Dictionary{TKey,TValue}"/>.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapIDictionaryToDictionary()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  using Mappa.Attributes;
+                                  using System.Collections.Generic;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
                                   [Mappa]
                                   public sealed partial class Mapper
                                   {
-                                      public partial IDictionary<string, string> Map(IDictionary<int, TestEnum> input);
+                                      public partial Dictionary<string, long> Map(IDictionary<int, int> input);
                                   }
                                   """;
 
