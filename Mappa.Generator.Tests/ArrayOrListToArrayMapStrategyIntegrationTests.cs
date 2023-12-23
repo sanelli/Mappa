@@ -53,7 +53,7 @@ public class ArrayOrListToArrayMapStrategyIntegrationTests
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
-                        .HasSyntaxNodes(4)
+                        .HasSyntaxNodesCount(4)
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
                             syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(typeof(int).ToString(), "__mappa_tmp_1", expressionSyntaxAssertions =>
@@ -96,7 +96,7 @@ public class ArrayOrListToArrayMapStrategyIntegrationTests
                                     statementSyntaxBaseAssertions
                                         .IsBlockStatement()
                                         .AsBlock()
-                                        .HasSyntaxNodes(2)
+                                        .HasSyntaxNodesCount(2)
                                         .HasNextSyntaxNode(forStatement =>
                                         {
                                             forStatement.BeLocalDeclarationStatementSyntax(
@@ -168,7 +168,7 @@ public class ArrayOrListToArrayMapStrategyIntegrationTests
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
-                        .HasSyntaxNodes(4)
+                        .HasSyntaxNodesCount(4)
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
                             syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(typeof(int).ToString(), "__mappa_tmp_1", expressionSyntaxAssertions =>
@@ -211,7 +211,7 @@ public class ArrayOrListToArrayMapStrategyIntegrationTests
                                     statementSyntaxBaseAssertions
                                         .IsBlockStatement()
                                         .AsBlock()
-                                        .HasSyntaxNodes(2)
+                                        .HasSyntaxNodesCount(2)
                                         .HasNextSyntaxNode(forStatement =>
                                         {
                                             forStatement.BeLocalDeclarationStatementSyntax(
@@ -283,7 +283,7 @@ public class ArrayOrListToArrayMapStrategyIntegrationTests
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
-                        .HasSyntaxNodes(4)
+                        .HasSyntaxNodesCount(4)
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
                             syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(typeof(int).ToString(), "__mappa_tmp_1", expressionSyntaxAssertions =>
@@ -326,7 +326,7 @@ public class ArrayOrListToArrayMapStrategyIntegrationTests
                                     statementSyntaxBaseAssertions
                                         .IsBlockStatement()
                                         .AsBlock()
-                                        .HasSyntaxNodes(2)
+                                        .HasSyntaxNodesCount(2)
                                         .HasNextSyntaxNode(forStatement =>
                                         {
                                             forStatement.BeLocalDeclarationStatementSyntax(

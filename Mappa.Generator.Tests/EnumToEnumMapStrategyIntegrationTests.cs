@@ -64,7 +64,7 @@ public sealed class EnumToEnumMapStrategyIntegrationTests
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
-                        .HasSyntaxNodes(3)
+                        .HasSyntaxNodesCount(3)
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
                             syntaxNodeAssertions.BeLocalDeclarationStatementSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.TestTargetEnum", "__mappa_tmp_1");
@@ -81,7 +81,7 @@ public sealed class EnumToEnumMapStrategyIntegrationTests
                                     statementAssertions.Should().HaveCount(1);
                                     statementAssertions[0].IsBlockStatement();
                                     statementAssertions[0].AsBlock()
-                                        .HasSyntaxNodes(2)
+                                        .HasSyntaxNodesCount(2)
                                         .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeAssignmentExpressionStatement("__mappa_tmp_1", assert => assert.BeMemberAccessExpressionSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.TestTargetEnum.Three")))
                                         .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeBreakStatement());
                                 },
@@ -93,7 +93,7 @@ public sealed class EnumToEnumMapStrategyIntegrationTests
                                     statementAssertions.Should().HaveCount(1);
                                     statementAssertions[0].IsBlockStatement();
                                     statementAssertions[0].AsBlock()
-                                        .HasSyntaxNodes(2)
+                                        .HasSyntaxNodesCount(2)
                                         .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeAssignmentExpressionStatement("__mappa_tmp_1", assert => assert.BeMemberAccessExpressionSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.TestTargetEnum.Two")))
                                         .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeBreakStatement());
                                 },
@@ -104,7 +104,7 @@ public sealed class EnumToEnumMapStrategyIntegrationTests
                                     statementAssertions.Should().HaveCount(1);
                                     statementAssertions[0].IsBlockStatement();
                                     statementAssertions[0].AsBlock()
-                                        .HasSyntaxNodes(1)
+                                        .HasSyntaxNodesCount(1)
                                         .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeThrowStatementSyntax<ArgumentOutOfRangeException>(
                                             assertion => assertion.BeLiteralExpressionSyntax("input")));
                                 });

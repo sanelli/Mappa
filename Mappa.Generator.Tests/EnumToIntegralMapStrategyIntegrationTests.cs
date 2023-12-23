@@ -58,7 +58,7 @@ public sealed class EnumToIntegralMapStrategyIntegrationTests
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
-                        .HasSyntaxNodes(3)
+                        .HasSyntaxNodesCount(3)
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
                             syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(typeof(int).ToString(), "__mappa_tmp_1");
@@ -75,7 +75,7 @@ public sealed class EnumToIntegralMapStrategyIntegrationTests
                                     statementAssertions.Should().HaveCount(1);
                                     statementAssertions[0].IsBlockStatement();
                                     statementAssertions[0].AsBlock()
-                                        .HasSyntaxNodes(2)
+                                        .HasSyntaxNodesCount(2)
                                         .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeAssignmentExpressionStatement("__mappa_tmp_1", assert => assert.BeLiteralExpressionSyntax(0)))
                                         .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeBreakStatement());
                                 },
@@ -87,7 +87,7 @@ public sealed class EnumToIntegralMapStrategyIntegrationTests
                                     statementAssertions.Should().HaveCount(1);
                                     statementAssertions[0].IsBlockStatement();
                                     statementAssertions[0].AsBlock()
-                                        .HasSyntaxNodes(2)
+                                        .HasSyntaxNodesCount(2)
                                         .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeAssignmentExpressionStatement("__mappa_tmp_1", assert => assert.BeLiteralExpressionSyntax(1)))
                                         .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeBreakStatement());
                                 },
@@ -99,7 +99,7 @@ public sealed class EnumToIntegralMapStrategyIntegrationTests
                                     statementAssertions.Should().HaveCount(1);
                                     statementAssertions[0].IsBlockStatement();
                                     statementAssertions[0].AsBlock()
-                                        .HasSyntaxNodes(2)
+                                        .HasSyntaxNodesCount(2)
                                         .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeAssignmentExpressionStatement("__mappa_tmp_1", assert => assert.BeLiteralExpressionSyntax(2)))
                                         .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeBreakStatement());
                                 },
@@ -110,7 +110,7 @@ public sealed class EnumToIntegralMapStrategyIntegrationTests
                                     statementAssertions.Should().HaveCount(1);
                                     statementAssertions[0].IsBlockStatement();
                                     statementAssertions[0].AsBlock()
-                                        .HasSyntaxNodes(1)
+                                        .HasSyntaxNodesCount(1)
                                         .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeThrowStatementSyntax<ArgumentOutOfRangeException>(
                                             assertion => assertion.BeLiteralExpressionSyntax("input")));
                                 });

@@ -57,7 +57,7 @@ public sealed class StringToDateTimeMapStrategyIntegrationTests
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
-                        .HasSyntaxNodes(2)
+                        .HasSyntaxNodesCount(2)
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
                             syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(

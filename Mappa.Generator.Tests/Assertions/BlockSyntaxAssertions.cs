@@ -41,7 +41,7 @@ public sealed class BlockSyntaxAssertions
     /// </summary>
     /// <param name="count">The number of expected syntax nodes in the code block.</param>
     /// <returns>The assertion.</returns>
-    public BlockSyntaxAssertions HasSyntaxNodes(int count)
+    public BlockSyntaxAssertions HasSyntaxNodesCount(int count)
     {
         this.Subject.ChildNodes().Should().HaveCount(count);
         return this;

@@ -55,7 +55,7 @@ public sealed class IdentityStrategyIntegrationTests
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
-                        .HasSyntaxNodes(1)
+                        .HasSyntaxNodesCount(1)
                         .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
                         {
                             expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
@@ -104,7 +104,7 @@ public sealed class IdentityStrategyIntegrationTests
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
-                        .HasSyntaxNodes(1)
+                        .HasSyntaxNodesCount(1)
                         .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
                         {
                             expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
@@ -153,7 +153,7 @@ public sealed class IdentityStrategyIntegrationTests
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
-                        .HasSyntaxNodes(1)
+                        .HasSyntaxNodesCount(1)
                         .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
                         {
                             expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
@@ -202,7 +202,7 @@ public sealed class IdentityStrategyIntegrationTests
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
-                        .HasSyntaxNodes(1)
+                        .HasSyntaxNodesCount(1)
                         .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
                         {
                             expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
@@ -252,7 +252,7 @@ public sealed class IdentityStrategyIntegrationTests
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
-                        .HasSyntaxNodes(1)
+                        .HasSyntaxNodesCount(1)
                         .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
                         {
                             expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
@@ -302,7 +302,7 @@ public sealed class IdentityStrategyIntegrationTests
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
-                        .HasSyntaxNodes(1)
+                        .HasSyntaxNodesCount(1)
                         .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
                         {
                             expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
@@ -351,7 +351,7 @@ public sealed class IdentityStrategyIntegrationTests
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
-                        .HasSyntaxNodes(1)
+                        .HasSyntaxNodesCount(1)
                         .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
                         {
                             expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
@@ -401,7 +401,7 @@ public sealed class IdentityStrategyIntegrationTests
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
-                        .HasSyntaxNodes(1)
+                        .HasSyntaxNodesCount(1)
                         .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
                         {
                             expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
@@ -450,7 +450,7 @@ public sealed class IdentityStrategyIntegrationTests
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
-                        .HasSyntaxNodes(1)
+                        .HasSyntaxNodesCount(1)
                         .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
                         {
                             expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
@@ -499,7 +499,7 @@ public sealed class IdentityStrategyIntegrationTests
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
-                        .HasSyntaxNodes(1)
+                        .HasSyntaxNodesCount(1)
                         .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
                         {
                             expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
@@ -549,7 +549,7 @@ public sealed class IdentityStrategyIntegrationTests
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
-                        .HasSyntaxNodes(1)
+                        .HasSyntaxNodesCount(1)
                         .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
                         {
                             expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
@@ -598,7 +598,7 @@ public sealed class IdentityStrategyIntegrationTests
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
-                        .HasSyntaxNodes(1)
+                        .HasSyntaxNodesCount(1)
                         .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
                         {
                             expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
@@ -647,7 +647,7 @@ public sealed class IdentityStrategyIntegrationTests
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
-                        .HasSyntaxNodes(1)
+                        .HasSyntaxNodesCount(1)
                         .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
                         {
                             expressionSyntaxAssertions.BeIdentifierNameSyntax("input");

@@ -5,6 +5,7 @@
 using Mappa.Generator.Models.Strategies;
 using Mappa.Generator.Tests.Abstractions;
 using Mappa.Generator.Tests.Assertions;
+using Mappa.Generator.Tests.Assertions.Extensions;
 
 namespace Mappa.Generator.Tests;
 
@@ -30,30 +31,48 @@ public sealed class EnumerableOrCollectionToArrayMapStrategyIntegrationTests
 
                                   namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
-                                  public enum TestEnum
-                                  {
-                                      One,
-                                      Two,
-                                      Three,
-                                  }
-
                                   [Mappa]
                                   public sealed partial class Mapper
                                   {
-                                      public partial int[] Map(ICollection<TestEnum> input);
+                                      public partial long[] Map(ICollection<int> input);
                                   }
                                   """;
 
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
-        var compilationUnitSyntaxAssertions = generatedResults.Should()
+        // Assert
+        generatedResults.Should()
             .NotHaveDiagnostics()
             .HaveGeneratedSourceCode()
-            .WithCompilationUnit();
-
-        // TODO [#42] Add correct assertions.
-        compilationUnitSyntaxAssertions.NotBeNull();
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                typeof(long[]).ToString(),
+                NullableAnnotation.None,
+                typeof(ICollection<int>).ToString(),
+                NullableAnnotation.None,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(4)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            // TODO [#42] Add correct assertions.
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            // TODO [#42] Add correct assertions.
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            // TODO [#42] Add correct assertions.
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            // TODO [#42] Add correct assertions.
+                        });
+                });
     }
 
     /// <summary>

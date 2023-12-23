@@ -61,7 +61,7 @@ public sealed class EnumToStringMapStrategyIntegrationTests
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
-                        .HasSyntaxNodes(3)
+                        .HasSyntaxNodesCount(3)
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
                             syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(typeof(string).ToString(), "__mappa_tmp_1");
@@ -78,7 +78,7 @@ public sealed class EnumToStringMapStrategyIntegrationTests
                                     statementAssertions.Should().HaveCount(1);
                                     statementAssertions[0].IsBlockStatement();
                                     statementAssertions[0].AsBlock()
-                                        .HasSyntaxNodes(2)
+                                        .HasSyntaxNodesCount(2)
                                         .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeAssignmentExpressionStatement("__mappa_tmp_1", assert => assert.BeNameofWithMemberAccess("Mappa.Generator.Tests.UnitTests.SourceCode.TestEnum.One")))
                                         .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeBreakStatement());
                                 },
@@ -90,7 +90,7 @@ public sealed class EnumToStringMapStrategyIntegrationTests
                                     statementAssertions.Should().HaveCount(1);
                                     statementAssertions[0].IsBlockStatement();
                                     statementAssertions[0].AsBlock()
-                                        .HasSyntaxNodes(2)
+                                        .HasSyntaxNodesCount(2)
                                         .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeAssignmentExpressionStatement("__mappa_tmp_1", assert => assert.BeNameofWithMemberAccess("Mappa.Generator.Tests.UnitTests.SourceCode.TestEnum.Two")))
                                         .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeBreakStatement());
                                 },
@@ -102,7 +102,7 @@ public sealed class EnumToStringMapStrategyIntegrationTests
                                     statementAssertions.Should().HaveCount(1);
                                     statementAssertions[0].IsBlockStatement();
                                     statementAssertions[0].AsBlock()
-                                        .HasSyntaxNodes(2)
+                                        .HasSyntaxNodesCount(2)
                                         .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeAssignmentExpressionStatement("__mappa_tmp_1", assert => assert.BeNameofWithMemberAccess("Mappa.Generator.Tests.UnitTests.SourceCode.TestEnum.Three")))
                                         .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeBreakStatement());
                                 },
@@ -113,7 +113,7 @@ public sealed class EnumToStringMapStrategyIntegrationTests
                                     statementAssertions.Should().HaveCount(1);
                                     statementAssertions[0].IsBlockStatement();
                                     statementAssertions[0].AsBlock()
-                                        .HasSyntaxNodes(1)
+                                        .HasSyntaxNodesCount(1)
                                         .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeThrowStatementSyntax<ArgumentOutOfRangeException>(
                                             assertion => assertion.BeLiteralExpressionSyntax("input")));
                                 });
