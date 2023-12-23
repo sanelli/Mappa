@@ -280,7 +280,8 @@ public sealed class ExpressionSyntaxAssertions
 
         if (argumentExpressionAssertions.Length == 0)
         {
-            objectCreationExpressionSyntax.ArgumentList.Should().BeNull();
+            objectCreationExpressionSyntax.ArgumentList.Should().NotBeNull();
+            objectCreationExpressionSyntax.ArgumentList!.Arguments.Should().BeNullOrEmpty();
         }
         else
         {

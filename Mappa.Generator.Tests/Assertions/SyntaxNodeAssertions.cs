@@ -356,4 +356,41 @@ public sealed class SyntaxNodeAssertions
 
         return this;
     }
+
+    /// <summary>
+    /// Assert that the statement is a <c>foreach</c> statement.
+    /// </summary>
+    /// <param name="type">The type of the identifier being defined.</param>
+    /// <param name="identifier">The identifier used in the for loop.</param>
+    /// <param name="expressionAssertions">The expression assertions.</param>
+    /// <param name="statementAssertions">Assertions on the statement.</param>
+    /// <returns>The assertions.</returns>
+    public SyntaxNodeAssertions BeForEachStatementSyntax(
+        string type,
+        string identifier,
+        Action<ExpressionSyntaxAssertions> expressionAssertions,
+        Action<IStatementSyntaxBaseAssertions> statementAssertions)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(type);
+        ArgumentException.ThrowIfNullOrWhiteSpace(identifier);
+        ArgumentNullException.ThrowIfNull(expressionAssertions);
+        ArgumentNullException.ThrowIfNull(statementAssertions);
+
+        this.Subject.Should().BeOfType<ForEachStatementSyntax>();
+        var forEachStatementSyntax = (ForEachStatementSyntax)this.Subject;
+
+        var expectedType = this.Compilation.GetTypeSymbol(forEachStatementSyntax.Type.ToString());
+        var actualType = this.Compilation.GetTypeSymbol(forEachStatementSyntax.Type.ToString());
+
+        SymbolEqualityComparer
+            .Default
+            .Equals(actualType, expectedType)
+            .Should().BeTrue();
+
+        forEachStatementSyntax.Identifier.Text.Should().Be(identifier);
+        expressionAssertions(new ExpressionSyntaxAssertions(forEachStatementSyntax.Expression, this.SemanticModel, this.Compilation));
+        statementAssertions(forEachStatementSyntax.Statement.ToAssertion(this.SemanticModel, this.Compilation));
+
+        return this;
+    }
 }

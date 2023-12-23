@@ -58,19 +58,47 @@ public sealed class EnumerableOrCollectionToArrayMapStrategyIntegrationTests
                         .HasSyntaxNodesCount(4)
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
-                            // TODO [#42] Add correct assertions.
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(List<long>).ToString(),
+                                "__mappa_tmp_1",
+                                initializationAssertions => initializationAssertions.BeObjectCreationExpressionSyntax(typeof(List<long>).ToString()));
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
-                            // TODO [#42] Add correct assertions.
+                            syntaxNodeAssertions.BeForEachStatementSyntax(
+                                typeof(int).ToString(),
+                                "__mappa_tmp_2",
+                                expressionAssertions =>
+                                {
+                                    expressionAssertions.BeIdentifierNameSyntax("input");
+                                },
+                                statementAssertions =>
+                                {
+                                    statementAssertions
+                                        .IsBlockStatement()
+                                        .AsBlock()
+                                        .HasSyntaxNodesCount(1)
+                                        .HasNextSyntaxNode(forStatementAssertions =>
+                                        {
+                                            forStatementAssertions.BeInvocationExpressionSyntaxStatement(
+                                                $"__mappa_tmp_1.{nameof(List<long>.Add)}",
+                                                parameterAssertions => parameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_2"));
+                                        });
+                                });
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
-                            // TODO [#42] Add correct assertions.
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(long[]).ToString(),
+                                "__mappa_tmp_3",
+                                initializationAssertions =>
+                                {
+                                    initializationAssertions.BeInvocationExpressionSyntax($"__mappa_tmp_1.{nameof(List<long>.ToArray)}");
+                                });
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
-                            // TODO [#42] Add correct assertions.
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_3"));
                         });
                 });
     }
