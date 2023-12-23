@@ -21,17 +21,17 @@ public sealed class StringToNumberMapStrategyIntegrationTests
     /// <returns>The test data for <see cref="CanMapStringToNumber"/>.</returns>
     public static IEnumerable<object[]> CanMapStringToNumberTestData()
     {
-        yield return new object[] { "sbyte", typeof(sbyte).ToString() };
-        yield return new object[] { "byte", typeof(byte).ToString() };
-        yield return new object[] { "short", typeof(short).ToString() };
-        yield return new object[] { "ushort", typeof(ushort).ToString() };
-        yield return new object[] { "int", typeof(int).ToString() };
-        yield return new object[] { "uint", typeof(uint).ToString() };
-        yield return new object[] { "long", typeof(long).ToString() };
-        yield return new object[] { "ulong", typeof(ulong).ToString() };
-        yield return new object[] { "float", typeof(float).ToString() };
-        yield return new object[] { "double", typeof(double).ToString() };
-        yield return new object[] { "decimal", typeof(decimal).ToString() };
+        yield return ["sbyte", typeof(sbyte).ToString()];
+        yield return ["byte", typeof(byte).ToString()];
+        yield return ["short", typeof(short).ToString()];
+        yield return ["ushort", typeof(ushort).ToString()];
+        yield return ["int", typeof(int).ToString()];
+        yield return ["uint", typeof(uint).ToString()];
+        yield return ["long", typeof(long).ToString()];
+        yield return ["ulong", typeof(ulong).ToString()];
+        yield return ["float", typeof(float).ToString()];
+        yield return ["double", typeof(double).ToString()];
+        yield return ["decimal", typeof(decimal).ToString()];
     }
 
     /// <summary>
