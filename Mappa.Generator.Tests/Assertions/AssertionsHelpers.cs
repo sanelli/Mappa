@@ -40,6 +40,7 @@ internal static class AssertionsHelpers
                 var typeArguments = typeParts[^1]
                     .Replace("]", string.Empty, StringComparison.Ordinal)
                     .Split(",")
+                    .Select(x => x.Trim())
                     .Select(NormalizeType)
                     .Select(compilation.GetTypeByMetadataName)
                     .Where(t => t is not null)
@@ -59,6 +60,7 @@ internal static class AssertionsHelpers
                 var typeArguments = typeParts[^1]
                     .Replace(">", string.Empty, StringComparison.Ordinal)
                     .Split(",")
+                    .Select(x => x.Trim())
                     .Select(NormalizeType)
                     .Select(compilation.GetTypeByMetadataName)
                     .Where(t => t is not null)

@@ -154,7 +154,7 @@ public class ArrayOrListToArrayMapStrategyIntegrationTests
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
-       // Assert
+        // Assert
         generatedResults.Should()
             .NotHaveDiagnostics()
             .HaveGeneratedSourceCode()
