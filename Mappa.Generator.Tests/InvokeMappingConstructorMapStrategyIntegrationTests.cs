@@ -109,40 +109,62 @@ public sealed class InvokeMappingConstructorMapStrategyIntegrationTests
 
                                   namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
-                                  public enum Source
-                                  {
-                                      One,
-                                      Two,
-                                      Three,
-                                  }
-
                                   public class Target
                                   {
-                                      public Target(int source)
+                                      public Target(string source)
                                       {
-                                          this.TargetProperty = (Source)source;
+                                          this.TargetProperty = int.Parse(source);
                                       }
                                   
-                                      public Source TargetProperty { get; };
+                                      public int TargetProperty { get; };
                                   }
 
                                   [Mappa]
                                   public sealed partial class Mapper
                                   {
-                                      public partial Target Map(Source input);
+                                      public partial Target Map(int input);
                                   }
                                   """;
 
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
-        var compilationUnitSyntaxAssertions = generatedResults.Should()
+        // Assert
+        generatedResults.Should()
             .NotHaveDiagnostics()
             .HaveGeneratedSourceCode()
-            .WithCompilationUnit();
-
-        // TODO [#42] Add correct assertions.
-        compilationUnitSyntaxAssertions.NotBeNull();
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                NullableAnnotation.None,
+                typeof(int).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .IsBlockStatement()
+                        .AsBlock()
+                        .HasSyntaxNodesCount(4)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(int).ToString(),
+                                "__mappa_tmp_1",
+                                expressionSyntaxAssertions => expressionSyntaxAssertions.BeIdentifierNameSyntax("input")))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(string).ToString(),
+                                "__mappa_tmp_2",
+                                expressionSyntaxAssertions => expressionSyntaxAssertions.BeInvocationExpressionSyntax($"__mappa_tmp_1.{nameof(this.ToString)}")))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                "__mappa_tmp_3",
+                                expressionSyntaxAssertions => expressionSyntaxAssertions.BeObjectCreationExpressionSyntax(
+                                    "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                    parameterAssertions => parameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_2"))))
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement(expression => expression.BeIdentifierNameSyntax("__mappa_tmp_3")));
+                });
     }
 
     /// <summary>
