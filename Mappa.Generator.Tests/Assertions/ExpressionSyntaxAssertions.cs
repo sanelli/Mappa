@@ -259,12 +259,15 @@ public sealed class ExpressionSyntaxAssertions
     /// </summary>
     /// <param name="type">The type being created.</param>
     /// <param name="argumentExpressionAssertions">The assertions on the argument expressions.</param>
+    /// <param name="initializationAssertions">The assertions on the initialization expressions.</param>
     /// <returns>The assertions.</returns>
     public ExpressionSyntaxAssertions BeObjectCreationExpressionSyntax(
         string type,
-        params Action<ExpressionSyntaxAssertions>[] argumentExpressionAssertions)
+        Action<ExpressionSyntaxAssertions>[] argumentExpressionAssertions,
+        (string PropertyName, Action<ExpressionSyntaxAssertions> Assertions)[] initializationAssertions)
     {
         ArgumentNullException.ThrowIfNull(argumentExpressionAssertions);
+        ArgumentNullException.ThrowIfNull(initializationAssertions);
 
         this.Subject.Should().BeOfType<ObjectCreationExpressionSyntax>();
         var objectCreationExpressionSyntax = (ObjectCreationExpressionSyntax)this.Subject;
@@ -293,8 +296,61 @@ public sealed class ExpressionSyntaxAssertions
             }
         }
 
+        if (initializationAssertions.Length == 0)
+        {
+            objectCreationExpressionSyntax.Initializer.Should().NotBeNull();
+            objectCreationExpressionSyntax.Initializer!.Expressions.Should().BeNullOrEmpty();
+        }
+        else
+        {
+            objectCreationExpressionSyntax.Initializer.Should().NotBeNull();
+            objectCreationExpressionSyntax.Initializer!.Expressions.Should().HaveCount(initializationAssertions.Length);
+
+            for (var initializerIndex = 0; initializerIndex < initializationAssertions.Length; ++initializerIndex)
+            {
+                objectCreationExpressionSyntax.Initializer!.Expressions[initializerIndex].Should().BeOfType<AssignmentExpressionSyntax>();
+                var assignmentExpression = (AssignmentExpressionSyntax)objectCreationExpressionSyntax.Initializer!.Expressions[initializerIndex];
+
+                assignmentExpression.Left.Should().BeOfType<IdentifierNameSyntax>();
+                var leftExpression = (IdentifierNameSyntax)assignmentExpression.Left;
+                leftExpression.Identifier.Text.Should().Be(initializationAssertions[initializerIndex].PropertyName);
+
+                initializationAssertions[initializerIndex].Assertions(new ExpressionSyntaxAssertions(assignmentExpression.Right, this.SemanticModel, this.Compilation));
+            }
+        }
+
         return this;
     }
+
+    /// <summary>
+    /// Assert that the expression is an object creation expression.
+    /// </summary>
+    /// <param name="type">The type being created.</param>
+    /// <param name="argumentExpressionAssertions">The assertions on the argument expressions.</param>
+    /// <returns>The assertions.</returns>
+    public ExpressionSyntaxAssertions BeObjectCreationExpressionSyntax(
+        string type,
+        params Action<ExpressionSyntaxAssertions>[] argumentExpressionAssertions)
+        => this.BeObjectCreationExpressionSyntax(type, argumentExpressionAssertions, Array.Empty<(string PropertyName, Action<ExpressionSyntaxAssertions> Assertions)>());
+
+    /// <summary>
+    /// Assert that the expression is an object creation expression.
+    /// </summary>
+    /// <param name="type">The type being created.</param>
+    /// <param name="initializationAssertions">The assertions on the initialization expressions.</param>
+    /// <returns>The assertions.</returns>
+    public ExpressionSyntaxAssertions BeObjectCreationExpressionSyntax(
+        string type,
+        params (string PropertyName, Action<ExpressionSyntaxAssertions> Assertions)[] initializationAssertions)
+        => this.BeObjectCreationExpressionSyntax(type, Array.Empty<Action<ExpressionSyntaxAssertions>>(), initializationAssertions);
+
+    /// <summary>
+    /// Assert that the expression is an object creation expression.
+    /// </summary>
+    /// <param name="type">The type being created.</param>
+    /// <returns>The assertions.</returns>
+    public ExpressionSyntaxAssertions BeObjectCreationExpressionSyntax(string type)
+        => this.BeObjectCreationExpressionSyntax(type, Array.Empty<Action<ExpressionSyntaxAssertions>>(), Array.Empty<(string PropertyName, Action<ExpressionSyntaxAssertions> Assertions)>());
 
     /// <summary>
     /// Assert that the expression is an <c>is</c> pattern expression.
