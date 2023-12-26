@@ -88,6 +88,7 @@ public sealed class SyntaxNodeAssertions
     /// <returns>The assertion.</returns>
     public SyntaxNodeAssertions BeLocalDeclarationStatementSyntax(string type, string[] names, Action<ExpressionSyntaxAssertions>[]? assertInitializations)
     {
+        ArgumentNullException.ThrowIfNull(type);
         ArgumentNullException.ThrowIfNull(names);
 
         if (assertInitializations is not null)
@@ -106,6 +107,9 @@ public sealed class SyntaxNodeAssertions
             .Should()
             .BeEquivalentTo(names);
 
+        var isTypeNullable = type.EndsWith('?');
+        type = type.Replace("?", string.Empty, StringComparison.Ordinal);
+
         var expectedType = this.Compilation.GetTypeSymbol(type);
         var localSymbol = this.SemanticModel.GetDeclaredSymbol(localDeclarationStatementSyntax.Declaration.Variables[0]) as ILocalSymbol;
 
@@ -115,6 +119,15 @@ public sealed class SyntaxNodeAssertions
             .Default
             .Equals(localSymbol!.Type, expectedType)
             .Should().BeTrue();
+
+        if (isTypeNullable)
+        {
+            localSymbol.NullableAnnotation.Should().Be(NullableAnnotation.Annotated);
+        }
+        else
+        {
+            localSymbol.NullableAnnotation.Should().BeOneOf([NullableAnnotation.None, NullableAnnotation.NotAnnotated]);
+        }
 
         if (assertInitializations is null)
         {
@@ -390,6 +403,40 @@ public sealed class SyntaxNodeAssertions
         forEachStatementSyntax.Identifier.Text.Should().Be(identifier);
         expressionAssertions(new ExpressionSyntaxAssertions(forEachStatementSyntax.Expression, this.SemanticModel, this.Compilation));
         statementAssertions(forEachStatementSyntax.Statement.ToAssertion(this.SemanticModel, this.Compilation));
+
+        return this;
+    }
+
+    /// <summary>
+    /// Assert the statement is an <c>if</c> statement.
+    /// </summary>
+    /// <param name="conditionAssertions">The assertions on the if condition.</param>
+    /// <param name="ifStatementAssertions">The assertions on the if statement.</param>
+    /// <param name="elseStatementAssertions">The assertions on the else condition.</param>
+    /// <returns>The assertions.</returns>
+    public SyntaxNodeAssertions BeIfStatementSyntax(
+        Action<ExpressionSyntaxAssertions> conditionAssertions,
+        Action<IStatementSyntaxBaseAssertions> ifStatementAssertions,
+        Action<IStatementSyntaxBaseAssertions>? elseStatementAssertions = null)
+    {
+        ArgumentNullException.ThrowIfNull(conditionAssertions);
+        ArgumentNullException.ThrowIfNull(ifStatementAssertions);
+
+        this.Subject.Should().BeOfType<IfStatementSyntax>();
+        var ifStatementSyntax = (IfStatementSyntax)this.Subject;
+
+        conditionAssertions(new ExpressionSyntaxAssertions(ifStatementSyntax.Condition, this.SemanticModel, this.Compilation));
+        ifStatementAssertions(ifStatementSyntax.Statement.ToAssertion(this.SemanticModel, this.Compilation));
+
+        if (elseStatementAssertions is null)
+        {
+            ifStatementSyntax.Else.Should().BeNull();
+        }
+        else
+        {
+            ifStatementSyntax.Else.Should().NotBeNull();
+            elseStatementAssertions(ifStatementSyntax.Else!.Statement.ToAssertion(this.SemanticModel, this.Compilation));
+        }
 
         return this;
     }

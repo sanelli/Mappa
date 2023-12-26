@@ -100,12 +100,11 @@ public sealed class ExpressionSyntaxAssertions
     /// </summary>
     /// <param name="value">The expected value of the expression.</param>
     /// <returns>The expression.</returns>
-    public ExpressionSyntaxAssertions BeLiteralExpressionSyntax(object value)
+    public ExpressionSyntaxAssertions BeLiteralExpressionSyntax(object? value)
     {
         this.Subject.Should().BeOfType<LiteralExpressionSyntax>();
         var literalExpressionSyntax = (LiteralExpressionSyntax)this.Subject;
         literalExpressionSyntax.Token.Should().BeOfType<SyntaxToken>();
-        literalExpressionSyntax.Token.Value.Should().NotBeNull();
         literalExpressionSyntax.Token.Value.Should().Be(value);
         return this;
     }
@@ -293,6 +292,28 @@ public sealed class ExpressionSyntaxAssertions
                 argumentExpressionAssertions[argumentIndex](new ExpressionSyntaxAssertions(objectCreationExpressionSyntax.ArgumentList.Arguments[argumentIndex].Expression, this.SemanticModel, this.Compilation));
             }
         }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Assert that the expression is an <c>is</c> pattern expression.
+    /// </summary>
+    /// <param name="expressionAssertions">The assertions for the expression on the left side of the <c>is</c>.</param>
+    /// <param name="patternAssertions">The assertions on the pattern.</param>
+    /// <returns>The assertions.</returns>
+    public ExpressionSyntaxAssertions IsIsPatternExpressionSyntax(
+        Action<ExpressionSyntaxAssertions> expressionAssertions,
+        Action<PatternSyntaxAssertions> patternAssertions)
+    {
+        ArgumentNullException.ThrowIfNull(expressionAssertions);
+        ArgumentNullException.ThrowIfNull(patternAssertions);
+
+        this.Subject.Should().BeOfType<IsPatternExpressionSyntax>();
+        var isPatternExpressionSyntax = (IsPatternExpressionSyntax)this.Subject;
+
+        expressionAssertions(new ExpressionSyntaxAssertions(isPatternExpressionSyntax.Expression, this.SemanticModel, this.Compilation));
+        patternAssertions(new PatternSyntaxAssertions(isPatternExpressionSyntax.Pattern, this.SemanticModel, this.Compilation));
 
         return this;
     }

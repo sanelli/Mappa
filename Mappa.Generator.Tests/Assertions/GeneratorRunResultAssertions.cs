@@ -76,7 +76,6 @@ public sealed class GeneratorRunResultAssertions
         params object?[] parameters)
     {
         ArgumentNullException.ThrowIfNull(diagnosticDescriptor);
-        #pragma warning disable
         try
         {
             var expectedMessage = string.Format(
@@ -87,7 +86,9 @@ public sealed class GeneratorRunResultAssertions
                 diagnostic.Descriptor.Equals(diagnosticDescriptor) &&
                 diagnostic.GetMessage(CultureInfo.CurrentCulture).Equals(expectedMessage, StringComparison.Ordinal));
         }
-        catch (Exception e)
+ #pragma warning disable CA1031
+        catch
+ #pragma warning restore CA1031
         {
             // Skip it
         }
