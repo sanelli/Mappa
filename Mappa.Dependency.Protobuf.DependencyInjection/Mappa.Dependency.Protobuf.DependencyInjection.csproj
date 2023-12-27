@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-    <Import Project="$(MSBuildThisFileDirectory)../MappaVersion.targets"/>
+    <Import Project="$(MSBuildThisFileDirectory)../MappaVersion.targets" />
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -20,8 +20,8 @@
         <Company>Stefano Anelli</Company>
         <NeutralLanguage>en</NeutralLanguage>
         <Copyright>Stefano Anelli</Copyright>
-        <PackageId>Mappa.Dependency.Protobuf</PackageId>
-        <Product>Mappa.Dependency.Protobuf</Product>
+        <PackageId>Mappa.Dependency.Protobuf.DependencyIngection</PackageId>
+        <Product>Mappa.Dependency.Protobuf.DependencyIngection</Product>
         <Description>gRPC mapping method for default types.</Description>
         <PackageLicense>https://github.com/sanelli/Mappa/blob/main/LICENSE</PackageLicense>
         <PackageProjectUrl>https://github.com/sanelli/Mappa</PackageProjectUrl>
@@ -35,6 +35,7 @@
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
         <PackageReference Include="Google.Protobuf" Version="3.25.1" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
         <PackageReference Include="StyleCop.Analyzers.Unstable" Version="1.2.0.556">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -43,6 +44,7 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
+        <PackageReference Include="Mappa.Dependency.Protobuf" Version="$(MappaVersion)" />
     </ItemGroup>
     <ItemGroup>
         <None Include="README.md" Pack="true" PackagePath="\" />
