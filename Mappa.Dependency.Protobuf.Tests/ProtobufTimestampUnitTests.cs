@@ -35,6 +35,22 @@ public sealed class ProtobufTimestampUnitTests
     }
 
     /// <summary>
+    /// Test that <see cref="MappaProtobufMapper.MapFromTimestampToDateTime"/>
+    /// throws when input is null.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void MapFromTimestampToDateTimeThrowsIfInputIsNull()
+    {
+        // Arrange
+        var mapper = new MappaProtobufMapper();
+        var action = () => mapper.MapFromTimestampToDateTime(null!);
+
+        // Assert
+        action.Should().Throw<ArgumentNullException>();
+    }
+
+    /// <summary>
     /// Test <see cref="MappaProtobufMapper.MapFromTimestampToDateTimeOffset"/>.
     /// </summary>
     [Fact]
@@ -51,6 +67,22 @@ public sealed class ProtobufTimestampUnitTests
 
         // Assert
         actual.Should().Be(expected);
+    }
+
+    /// <summary>
+    /// Test that <see cref="MappaProtobufMapper.MapFromTimestampToDateTimeOffset"/>
+    /// throws when input is null.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void MapFromTimestampToDateTimeOffsetThrowsIfInputIsNull()
+    {
+        // Arrange
+        var mapper = new MappaProtobufMapper();
+        var action = () => mapper.MapFromTimestampToDateTimeOffset(null!);
+
+        // Assert
+        action.Should().Throw<ArgumentNullException>();
     }
 
     /// <summary>
@@ -73,6 +105,22 @@ public sealed class ProtobufTimestampUnitTests
     }
 
     /// <summary>
+    /// Test that <see cref="MappaProtobufMapper.MapFromTimestampToDateOnly"/>
+    /// throws when input is null.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void MapFromTimestampToDateOnlyThrowsIfInputIsNull()
+    {
+        // Arrange
+        var mapper = new MappaProtobufMapper();
+        var action = () => mapper.MapFromTimestampToDateOnly(null!);
+
+        // Assert
+        action.Should().Throw<ArgumentNullException>();
+    }
+
+    /// <summary>
     /// Test <see cref="MappaProtobufMapper.MapFromTimestampToTimeOnly"/>.
     /// </summary>
     [Fact]
@@ -90,6 +138,22 @@ public sealed class ProtobufTimestampUnitTests
 
         // Assert
         DateOnly.FromDateTime(now).ToDateTime(actual, DateTimeKind.Utc).Should().Be(expected);
+    }
+
+    /// <summary>
+    /// Test that <see cref="MappaProtobufMapper.MapFromTimestampToTimeOnly"/>
+    /// throws when input is null.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void MapFromTimestampToTimeOnlyThrowsIfInputIsNull()
+    {
+        // Arrange
+        var mapper = new MappaProtobufMapper();
+        var action = () => mapper.MapFromTimestampToTimeOnly(null!);
+
+        // Assert
+        action.Should().Throw<ArgumentNullException>();
     }
 
     /// <summary>
