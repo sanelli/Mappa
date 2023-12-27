@@ -91,4 +91,59 @@ public sealed class ProtobufTimestampUnitTests
         // Assert
         DateOnly.FromDateTime(now).ToDateTime(actual, DateTimeKind.Utc).Should().Be(expected);
     }
+
+    /// <summary>
+    /// Test <see cref="MappaProtobufMapper.MapFromDateTimeToTimestamp"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromDateTimeToTimestamp()
+    {
+        // Arrange
+        var expected = DateTime.UtcNow;
+        var mapper = new MappaProtobufMapper();
+
+        // Act
+        var actual = mapper.MapFromDateTimeToTimestamp(expected);
+
+        // Assert
+        actual.ToDateTime().Should().Be(expected);
+    }
+
+    /// <summary>
+    /// Test <see cref="MappaProtobufMapper.MapFromDateTimeOffsetToTimestamp"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromDateTimeOffsetToTimestamp()
+    {
+        // Arrange
+        var expected = DateTimeOffset.UtcNow;
+        var mapper = new MappaProtobufMapper();
+
+        // Act
+        var actual = mapper.MapFromDateTimeOffsetToTimestamp(expected);
+
+        // Assert
+        actual.ToDateTimeOffset().Should().Be(expected);
+    }
+
+    /// <summary>
+    /// Test <see cref="MappaProtobufMapper.MapFromDateOnlyToTimestamp"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromDateOnlyToTimestamp()
+    {
+        // Arrange
+        var now = DateTime.UtcNow;
+        var dateOnly = DateOnly.FromDateTime(now);
+        var mapper = new MappaProtobufMapper();
+
+        // Act
+        var actual = mapper.MapFromDateOnlyToTimestamp(dateOnly);
+
+        // Assert
+        DateOnly.FromDateTime(actual.ToDateTime()).Should().Be(dateOnly);
+    }
 }

@@ -27,4 +27,16 @@ public sealed class MappaProtobufMapper
     /// <inheritdoc />
     public TimeOnly MapFromTimestampToTimeOnly(Timestamp timestamp)
         => TimeOnly.FromDateTime(timestamp?.ToDateTime() ?? throw new ArgumentNullException(nameof(timestamp)));
+
+    /// <inheritdoc/>
+    public Timestamp MapFromDateTimeToTimestamp(DateTime datetime)
+        => Timestamp.FromDateTime(datetime.ToUniversalTime());
+
+    /// <inheritdoc/>
+    public Timestamp MapFromDateTimeOffsetToTimestamp(DateTimeOffset datetime)
+        => Timestamp.FromDateTimeOffset(datetime.ToUniversalTime());
+
+    /// <inheritdoc/>
+    public Timestamp MapFromDateOnlyToTimestamp(DateOnly value)
+        => Timestamp.FromDateTime(value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc).ToUniversalTime());
 }

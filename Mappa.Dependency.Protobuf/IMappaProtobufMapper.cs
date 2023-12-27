@@ -39,4 +39,25 @@ public interface IMappaProtobufMapper
     /// <param name="timestamp">The timestamp to be converted.</param>
     /// <returns>The corresponding date.</returns>
     TimeOnly MapFromTimestampToTimeOnly(Timestamp timestamp);
+
+    /// <summary>
+    /// Map from <see cref="DateTime"/> to <see cref="Timestamp"/>.
+    /// </summary>
+    /// <param name="datetime">The datetime to be converted.</param>
+    /// <returns>The corresponding date.</returns>
+    Timestamp MapFromDateTimeToTimestamp(DateTime datetime);
+
+    /// <summary>
+    /// Map from <see cref="DateTimeOffset"/> to <see cref="Timestamp"/>.
+    /// </summary>
+    /// <param name="datetime">The datetime to be converted.</param>
+    /// <returns>The corresponding date.</returns>
+    Timestamp MapFromDateTimeOffsetToTimestamp(DateTimeOffset datetime);
+
+    /// <summary>
+    /// Map from <see cref="DateOnly"/> to <see cref="Timestamp"/>.
+    /// </summary>
+    /// <param name="value">The date to be converted.</param>
+    /// <returns>The corresponding date.</returns>
+    Timestamp MapFromDateOnlyToTimestamp(DateOnly value);
 }
