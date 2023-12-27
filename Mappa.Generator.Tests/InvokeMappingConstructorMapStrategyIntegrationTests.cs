@@ -26,6 +26,7 @@ public sealed class InvokeMappingConstructorMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
                                   using Mappa.Attributes;
 
                                   namespace Mappa.Generator.Tests.UnitTests.SourceCode;
@@ -68,9 +69,9 @@ public sealed class InvokeMappingConstructorMapStrategyIntegrationTests
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -105,6 +106,7 @@ public sealed class InvokeMappingConstructorMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
                                   using Mappa.Attributes;
 
                                   namespace Mappa.Generator.Tests.UnitTests.SourceCode;
@@ -137,7 +139,7 @@ public sealed class InvokeMappingConstructorMapStrategyIntegrationTests
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 typeof(int).ToString(),
                 NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
@@ -179,6 +181,7 @@ public sealed class InvokeMappingConstructorMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
                                   using Mappa.Attributes;
 
                                   namespace Mappa.Generator.Tests.UnitTests.SourceCode;
@@ -223,7 +226,7 @@ public sealed class InvokeMappingConstructorMapStrategyIntegrationTests
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
                 NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>

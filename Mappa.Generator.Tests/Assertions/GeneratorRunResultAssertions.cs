@@ -61,7 +61,7 @@ public sealed class GeneratorRunResultAssertions
     /// <returns>The assertions itself.</returns>
     public GeneratorRunResultAssertions HaveDiagnostics(int count)
     {
-        this.Subject.Diagnostics.Should().HaveCount(1);
+        this.Subject.Diagnostics.Should().HaveCount(count);
         return this;
     }
 

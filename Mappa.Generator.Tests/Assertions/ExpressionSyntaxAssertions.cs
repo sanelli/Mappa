@@ -64,18 +64,28 @@ public sealed class ExpressionSyntaxAssertions
         string type,
         Action<ExpressionSyntaxAssertions> assert)
     {
+        ArgumentNullException.ThrowIfNull(type);
         ArgumentNullException.ThrowIfNull(assert);
 
         this.Subject.Should().BeOfType<CastExpressionSyntax>();
         var castExpressionSyntax = (CastExpressionSyntax)this.Subject;
 
+        var isTypeNullable = type.EndsWith('?');
+        type = type.Replace("?", string.Empty, StringComparison.Ordinal);
+
+        var actualStringType = castExpressionSyntax.Type.ToString();
+        var isActualTypeNullable = actualStringType!.EndsWith('?');
+        actualStringType = actualStringType.Replace("?", string.Empty, StringComparison.Ordinal);
+
         var expectedType = this.Compilation.GetTypeSymbol(type);
-        var actualType = this.Compilation.GetTypeSymbol(castExpressionSyntax.Type.ToString());
+        var actualType = this.Compilation.GetTypeSymbol(actualStringType);
 
         SymbolEqualityComparer
             .Default
             .Equals(actualType, expectedType)
             .Should().BeTrue();
+
+        isTypeNullable.Should().Be(isActualTypeNullable);
 
         assert(new ExpressionSyntaxAssertions(castExpressionSyntax.Expression, this.SemanticModel, this.Compilation));
         return this;

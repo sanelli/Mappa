@@ -86,7 +86,10 @@ internal sealed class ReferenceNullableMapStrategyDetector
             return false;
         }
 
-        return this.TryGetStrategyWithReferenceNullableDisabled(out mapStrategy);
+        var isSourceNullable = this.context.SourceType.IsReferenceType;
+        var isTargetNullable = this.context.TargetType.IsReferenceType;
+
+        return isSourceNullable && isTargetNullable && this.TryGetStrategyWithReferenceNullableDisabled(out mapStrategy);
     }
 
     private bool CanMapReferenceNullableToReferenceNullable(out IMapStrategy mapStrategy)
