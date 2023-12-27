@@ -37,14 +37,18 @@ internal sealed class ReferenceNullableMapStrategyDetector
     public bool TryDetect(out IMapStrategy mapStrategy)
     {
         mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
-        if (!this.context.IsNullableEnabled())
+
+        // 01. (nullable disabled) S -> T : ReferenceNullableToReferenceNullableStrategy( IMapStrategy(T, S) )
+        if (this.CanMapReferenceToReferenceWhenNullableIsEnabled(out var referenceToReferenceWhenNullableIsDisabledStrategy))
         {
-            // TODO [#46] If nullable is not enabled we need to handle the scenario S -> T as S? -> T?.
-            return false;
+            mapStrategy = new ReferenceNullableToReferenceNullableMapStrategy(
+                this.context.TargetType,
+                this.context.SourceType,
+                referenceToReferenceWhenNullableIsDisabledStrategy);
         }
 
-        // 01. (nullable enabled) S? -> T? : ReferenceNullableToReferenceNullableStrategy( IMapStrategy(T, S) )
-        if (this.CanMapReferenceNullableToReferenceNullable(out var nullableToNullableInnerStrategy))
+        // 02. (nullable enabled) S? -> T? : ReferenceNullableToReferenceNullableStrategy( IMapStrategy(T, S) )
+        else if (this.CanMapReferenceNullableToReferenceNullable(out var nullableToNullableInnerStrategy))
         {
             mapStrategy = new ReferenceNullableToReferenceNullableMapStrategy(
                 this.context.TargetType,
@@ -52,7 +56,7 @@ internal sealed class ReferenceNullableMapStrategyDetector
                 nullableToNullableInnerStrategy);
         }
 
-        // 02. (nullable enabled) S? -> T : SourceReferenceNullableStrategy ( IMapStrategy(T ,S) )
+        // 03. (nullable enabled) S? -> T : SourceReferenceNullableStrategy ( IMapStrategy(T ,S) )
         else if (this.CanMapFromReferenceNullable(out var fromNullableInnerStrategy))
         {
             mapStrategy = new FromReferenceNullableMapStrategy(
@@ -61,7 +65,7 @@ internal sealed class ReferenceNullableMapStrategyDetector
                 fromNullableInnerStrategy);
         }
 
-        // 03. (nullable enabled) S -> T? : TargetReferenceNullableStrategy ( IMapStrategy(T, S) )
+        // 04. (nullable enabled) S -> T? : TargetReferenceNullableStrategy ( IMapStrategy(T, S) )
         else if (this.CanMapToReferenceNullable(out var toNullableInnerStrategy))
         {
             mapStrategy = new ToReferenceNullableMapStrategy(
@@ -71,6 +75,18 @@ internal sealed class ReferenceNullableMapStrategyDetector
         }
 
         return mapStrategy is not NoMapStrategy;
+    }
+
+    private bool CanMapReferenceToReferenceWhenNullableIsEnabled(out IMapStrategy mapStrategy)
+    {
+        mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
+
+        if (this.context.IsNullableEnabled())
+        {
+            return false;
+        }
+
+        return this.TryGetStrategyWithReferenceNullableDisabled(out mapStrategy);
     }
 
     private bool CanMapReferenceNullableToReferenceNullable(out IMapStrategy mapStrategy)
