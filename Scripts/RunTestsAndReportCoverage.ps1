@@ -2,10 +2,10 @@ $MappaTestsAndCoveragePath = ".mappa-tests-and-coverage"
 
 if (Test-Path $MappaTestsAndCoveragePath)
 {
-    Remove-Item -Recurse -Force $MappaTestsAndCoveragePath > $null
+    Remove-Item -Recurse -Force $MappaTestsAndCoveragePath
 }
 
-dotnet publish -c Release --self-contained ./Mappa.Samples.Aot/ > $null
+dotnet publish -c Release --self-contained ./Mappa.Samples.Aot/
 if(-not $?)
 {
     Write-Host "Cannot generate native code" -ForegroundColor Red
