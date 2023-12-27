@@ -15,7 +15,7 @@
         <PackageProjectUrl>https://github.com/sanelli/Mappa</PackageProjectUrl>
         <RepositoryUrl>https://github.com/sanelli/Mappa</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
-        <PackageTags>Mappa,Mapper,Mapping,SourceGenerator</PackageTags>
+        <PackageTags>Mappa;Mapper;Mapping;SourceGenerator</PackageTags>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Mappa" Version="$(MappaVersion)" GeneratePathProperty="true" PrivateAssets="all" />
