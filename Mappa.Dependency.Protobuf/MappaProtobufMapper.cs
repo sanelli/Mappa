@@ -39,4 +39,12 @@ public sealed class MappaProtobufMapper
     /// <inheritdoc/>
     public Timestamp MapFromDateOnlyToTimestamp(DateOnly value)
         => Timestamp.FromDateTime(value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc).ToUniversalTime());
+
+    /// <inheritdoc />
+    public TimeSpan MapFromDurationToTimeSpan(Duration duration)
+        => duration?.ToTimeSpan() ?? throw new ArgumentNullException(nameof(duration));
+
+    /// <inheritdoc />
+    public Duration MapFromTimeSpanToDuration(TimeSpan timespan)
+        => Duration.FromTimeSpan(timespan);
 }

@@ -60,4 +60,18 @@ public interface IMappaProtobufMapper
     /// <param name="value">The date to be converted.</param>
     /// <returns>The corresponding date.</returns>
     Timestamp MapFromDateOnlyToTimestamp(DateOnly value);
+
+    /// <summary>
+    /// Map from <see cref="Duration"/> to <see cref="TimeSpan"/>.
+    /// </summary>
+    /// <param name="duration">The duration to be converted.</param>
+    /// <returns>The corresponding date.</returns>
+    TimeSpan MapFromDurationToTimeSpan(Duration duration);
+
+    /// <summary>
+    /// Map from <see cref="TimeSpan"/> to <see cref="Duration"/>.
+    /// </summary>
+    /// <param name="timespan">The time-span to be converted.</param>
+    /// <returns>The corresponding date.</returns>
+    Duration MapFromTimeSpanToDuration(TimeSpan timespan);
 }
