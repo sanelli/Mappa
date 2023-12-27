@@ -298,8 +298,7 @@ public sealed class ExpressionSyntaxAssertions
 
         if (initializationAssertions.Length == 0)
         {
-            objectCreationExpressionSyntax.Initializer.Should().NotBeNull();
-            objectCreationExpressionSyntax.Initializer!.Expressions.Should().BeNullOrEmpty();
+            objectCreationExpressionSyntax.Initializer.Should().BeNull();
         }
         else
         {
