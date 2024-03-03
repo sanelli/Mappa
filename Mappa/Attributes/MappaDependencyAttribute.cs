@@ -10,6 +10,4 @@ namespace Mappa.Attributes;
 /// </summary>
 [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
 public sealed class MappaDependencyAttribute
-    : Attribute
-{
-}
+    : Attribute;

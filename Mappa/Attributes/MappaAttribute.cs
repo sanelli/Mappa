@@ -9,6 +9,4 @@ namespace Mappa.Attributes;
 /// </summary>
 [AttributeUsage(AttributeTargets.Class, Inherited = false)]
 public sealed class MappaAttribute
-    : Attribute
-{
-}
+    : Attribute;
