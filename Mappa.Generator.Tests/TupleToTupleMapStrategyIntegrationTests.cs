@@ -5,6 +5,7 @@
 using Mappa.Generator.Models.Strategies;
 using Mappa.Generator.Tests.Abstractions;
 using Mappa.Generator.Tests.Assertions;
+using Mappa.Generator.Tests.Assertions.Extensions;
 
 namespace Mappa.Generator.Tests;
 
@@ -21,8 +22,8 @@ public sealed class TupleToTupleMapStrategyIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {
     /// <summary>
-    /// Test a mapping can be created from <see cref="Tuple{T1,T2,T3}"/>
-    /// to <see cref="Tuple{T1,T2,T3}"/>.
+    /// Test a mapping can be created from <see cref="Tuple{T1,T2}"/>
+    /// to <see cref="Tuple{T1,T2}"/>.
     /// </summary>
     /// <returns>The async task.</returns>
     [Fact]
@@ -36,30 +37,61 @@ public sealed class TupleToTupleMapStrategyIntegrationTests
 
                                   namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
-                                  public enum TestEnum
-                                  {
-                                      One,
-                                      Two,
-                                      Three,
-                                  }
-
                                   [Mappa]
                                   public sealed partial class Mapper
                                   {
-                                      public partial Tuple<string, string, string> Map(Tuple<int, TestEnum, long> input);
+                                      public partial Tuple<string, string> Map(Tuple<int, string> input);
                                   }
                                   """;
 
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
-        var compilationUnitSyntaxAssertions = generatedResults.Should()
+        // Assert
+        generatedResults.Should()
             .NotHaveDiagnostics()
             .HaveGeneratedSourceCode()
-            .WithCompilationUnit();
-
-        // TODO [#42] Add correct assertions.
-        compilationUnitSyntaxAssertions.NotBeNull();
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                typeof(Tuple<string, string>).ToString(),
+                NullableAnnotation.None,
+                typeof(Tuple<int, string>).ToString(),
+                NullableAnnotation.None,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(5)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax("int", "__mappa_tmp_1", initializationAssertions => initializationAssertions.BeMemberAccessExpressionSyntax("input.Item1"));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax("string", "__mappa_tmp_2", initializationAssertions => initializationAssertions.BeInvocationExpressionSyntax("__mappa_tmp_1.ToString"));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax("string", "__mappa_tmp_3", initializationAssertions => initializationAssertions.BeMemberAccessExpressionSyntax("input.Item2"));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(Tuple<string, string>).ToString(),
+                                "__mappa_tmp_4",
+                                initializationAssertions => initializationAssertions.BeObjectCreationExpressionSyntax(
+                                    typeof(Tuple<string, string>).ToString(),
+                                    [
+                                        parametersAssertions => parametersAssertions.BeIdentifierNameSyntax("__mappa_tmp_2"),
+                                        parametersAssertions => parametersAssertions.BeIdentifierNameSyntax("__mappa_tmp_3"),
+                                    ],
+                                    []));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_4"));
+                        });
+                });
     }
 
     /// <summary>
@@ -78,17 +110,10 @@ public sealed class TupleToTupleMapStrategyIntegrationTests
 
                                   namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
-                                  public enum TestEnum
-                                  {
-                                      One,
-                                      Two,
-                                      Three,
-                                  }
-
                                   [Mappa]
                                   public sealed partial class Mapper
                                   {
-                                      public partial (string, string, string) Map((int, TestEnum, long) input);
+                                      public partial (string, string) Map((int, string) input);
                                   }
                                   """;
 
@@ -106,7 +131,7 @@ public sealed class TupleToTupleMapStrategyIntegrationTests
 
     /// <summary>
     /// Test a mapping can be created between two tuple
-    /// with names elements.
+    /// with named elements.
     /// </summary>
     /// <returns>The async task.</returns>
     [Fact]
@@ -120,17 +145,10 @@ public sealed class TupleToTupleMapStrategyIntegrationTests
 
                                   namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
-                                  public enum TestEnum
-                                  {
-                                      One,
-                                      Two,
-                                      Three,
-                                  }
-
                                   [Mappa]
                                   public sealed partial class Mapper
                                   {
-                                      public partial (string First, string Second, string Third) Map((int Alfa, TestEnum Beta, long Gamma) input);
+                                      public partial (string First, string Second) Map((int Alfa, string Beta) input);
                                   }
                                   """;
 
