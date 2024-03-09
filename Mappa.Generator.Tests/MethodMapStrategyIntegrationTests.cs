@@ -82,11 +82,59 @@ public sealed class MethodMapStrategyIntegrationTests
                                 },
                                 ifStatementAssertions =>
                                 {
-                                    // TODO [#42] Implement me.
+                                    ifStatementAssertions
+                                        .IsBlockStatement()
+                                        .AsBlock()
+                                        .HasSyntaxNodesCount(5)
+                                        .HasNextSyntaxNode(ifSyntaxNodeAssertions =>
+                                        {
+                                            ifSyntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                                "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
+                                                "__mappa_tmp_2",
+                                                initializationAssertions => initializationAssertions.BeIdentifierNameSyntax("input"));
+                                        })
+                                        .HasNextSyntaxNode(ifSyntaxNodeAssertions =>
+                                        {
+                                            ifSyntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                                "Mappa.Generator.Tests.UnitTests.SourceCode.InnerSource",
+                                                "__mappa_tmp_3",
+                                                initializationAssertions => initializationAssertions.BeMemberAccessExpressionSyntax("__mappa_tmp_2.Property"));
+                                        })
+                                        .HasNextSyntaxNode(ifSyntaxNodeAssertions =>
+                                        {
+                                            ifSyntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                                "Mappa.Generator.Tests.UnitTests.SourceCode.InnerTarget",
+                                                "__mappa_tmp_4",
+                                                initializationAssertions =>
+                                                {
+                                                    initializationAssertions.BeInvocationExpressionSyntax(
+                                                        "this.Map",
+                                                        argumentAssertions => argumentAssertions.BeIdentifierNameSyntax("__mappa_tmp_3"));
+                                                });
+                                        })
+                                        .HasNextSyntaxNode(ifSyntaxNodeAssertions =>
+                                        {
+                                            ifSyntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                                "__mappa_tmp_5",
+                                                initializationAssertions =>
+                                                {
+                                                    initializationAssertions.BeObjectCreationExpressionSyntax(
+                                                        "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                                        ("Property", expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_4")));
+                                                });
+                                        })
+                                        .HasNextSyntaxNode(ifSyntaxNodeAssertions =>
+                                        {
+                                            ifSyntaxNodeAssertions.BeAssignmentExpressionStatement(
+                                                leftExpressionAssertions => leftExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_1"),
+                                                rightExpressionAssertions => rightExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_5"));
+                                        });
                                 },
                                 elseStatementAssertions =>
                                 {
                                     elseStatementAssertions
+                                        .IsBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(1)
                                         .HasNextSyntaxNode(elseSyntaxNodeAssertions =>
