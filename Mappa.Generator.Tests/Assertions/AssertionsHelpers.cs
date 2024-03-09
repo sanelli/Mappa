@@ -2,6 +2,9 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using System.Collections.Immutable;
+using System.Text.RegularExpressions;
+
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Mappa.Generator.Tests.Assertions;
@@ -9,7 +12,7 @@ namespace Mappa.Generator.Tests.Assertions;
 /// <summary>
 /// Assertions helpers.
 /// </summary>
-internal static class AssertionsHelpers
+internal static partial class AssertionsHelpers
 {
     /// <summary>
     /// Extract a symbol from the type name.
@@ -21,6 +24,31 @@ internal static class AssertionsHelpers
     {
         ArgumentNullException.ThrowIfNull(compilation);
         ArgumentException.ThrowIfNullOrWhiteSpace(type);
+
+        // Manually handle named tuples
+        if (type.StartsWith('(') && ContainSpacesRegex().Count(type) > 0)
+        {
+            var typeWithoutParenthesis = type.Substring(1, type.Length - 2);
+            var elementTypes = typeWithoutParenthesis.Split(',');
+            var elementTypeSymbols = new List<ITypeSymbol>();
+            var elementTypeNames = new List<string?>();
+            var elementLocations = new List<Location?>();
+            foreach (var elementType in elementTypes)
+            {
+                var elementTypeAndName = ContainSpacesRegex().Split(elementType.Trim());
+                var actualElementType = elementTypeAndName[0];
+                elementTypeSymbols.Add(compilation.GetTypeSymbol(actualElementType));
+                elementTypeNames.Add(elementTypeAndName.Length > 1 ? elementTypeAndName[1] : null);
+                elementLocations.Add(Location.None);
+            }
+
+            var tupleType = compilation.CreateTupleTypeSymbol(
+                elementTypeSymbols.ToImmutableArray(),
+                elementTypeNames.ToImmutableArray(),
+                elementLocations.ToImmutableArray());
+
+            return tupleType;
+        }
 
         if (type.EndsWith("[]", StringComparison.Ordinal))
         {
@@ -138,4 +166,7 @@ internal static class AssertionsHelpers
             "char" => typeof(char).ToString(),
             _ => type,
         };
+
+    [GeneratedRegex("\\s+")]
+    private static partial Regex ContainSpacesRegex();
 }
