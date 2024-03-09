@@ -382,4 +382,29 @@ public sealed class ExpressionSyntaxAssertions
 
         return this;
     }
+
+    /// <summary>
+    /// Assert that an expression is a tuple expression syntax.
+    /// </summary>
+    /// <param name="argumentAssertions">The arguments of the tuple.</param>
+    /// <returns>The assertions.</returns>
+    public ExpressionSyntaxAssertions BeTupleExpressionSyntax(params Action<ExpressionSyntaxAssertions>[] argumentAssertions)
+    {
+        ArgumentNullException.ThrowIfNull(argumentAssertions);
+
+        this.Subject.Should().BeOfType<TupleExpressionSyntax>();
+        var tupleExpressionSyntax = (TupleExpressionSyntax)this.Subject;
+
+        tupleExpressionSyntax.Arguments.Should().HaveCount(argumentAssertions.Length);
+        for (var argumentIndex = 0; argumentIndex < argumentAssertions.Length; ++argumentIndex)
+        {
+            var expressionSyntaxAssertions = new ExpressionSyntaxAssertions(
+                tupleExpressionSyntax.Arguments[argumentIndex].Expression,
+                this.SemanticModel,
+                this.Compilation);
+            argumentAssertions[argumentIndex](expressionSyntaxAssertions);
+        }
+
+        return this;
+    }
 }

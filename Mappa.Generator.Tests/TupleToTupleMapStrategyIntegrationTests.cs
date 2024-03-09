@@ -120,13 +120,47 @@ public sealed class TupleToTupleMapStrategyIntegrationTests
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
-        var compilationUnitSyntaxAssertions = generatedResults.Should()
+        // Assert
+        generatedResults.Should()
             .NotHaveDiagnostics()
             .HaveGeneratedSourceCode()
-            .WithCompilationUnit();
-
-        // TODO [#42] Add correct assertions.
-        compilationUnitSyntaxAssertions.NotBeNull();
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                typeof((string, string)).ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof((int, string)).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(5)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax("int", "__mappa_tmp_1", initializationAssertions => initializationAssertions.BeMemberAccessExpressionSyntax("input.Item1"));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax("string", "__mappa_tmp_2", initializationAssertions => initializationAssertions.BeInvocationExpressionSyntax("__mappa_tmp_1.ToString"));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax("string", "__mappa_tmp_3", initializationAssertions => initializationAssertions.BeMemberAccessExpressionSyntax("input.Item2"));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof((string, string)).ToString(),
+                                "__mappa_tmp_4",
+                                initializationAssertions => initializationAssertions.BeTupleExpressionSyntax(
+                                        parametersAssertions => parametersAssertions.BeIdentifierNameSyntax("__mappa_tmp_2"),
+                                        parametersAssertions => parametersAssertions.BeIdentifierNameSyntax("__mappa_tmp_3")));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_4"));
+                        });
+                });
     }
 
     /// <summary>
