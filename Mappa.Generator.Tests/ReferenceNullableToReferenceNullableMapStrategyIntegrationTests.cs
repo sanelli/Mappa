@@ -78,9 +78,9 @@ public class ReferenceNullableToReferenceNullableMapStrategyIntegrationTests
                             syntaxNodeAssertions.BeIfStatementSyntax(
                                 conditionAssertions =>
                                 {
-                                    conditionAssertions.IsIsPatternExpressionSyntax(
+                                    conditionAssertions.BeIsPatternExpressionSyntax(
                                         expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("input"),
-                                        patternAssertions => patternAssertions.IsUnaryPatternSyntax(SyntaxKind.NotKeyword, argumentAssertions => argumentAssertions.IsConstantPatternSyntax(null)));
+                                        patternAssertions => patternAssertions.BeUnaryPatternSyntax(SyntaxKind.NotKeyword, argumentAssertions => argumentAssertions.BeConstantPatternSyntax(null)));
                                 },
                                 ifStatementAssertions =>
                                 {
@@ -204,9 +204,9 @@ public class ReferenceNullableToReferenceNullableMapStrategyIntegrationTests
                             syntaxNodeAssertions.BeIfStatementSyntax(
                                 conditionAssertions =>
                                 {
-                                    conditionAssertions.IsIsPatternExpressionSyntax(
+                                    conditionAssertions.BeIsPatternExpressionSyntax(
                                         expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("input"),
-                                        patternAssertions => patternAssertions.IsUnaryPatternSyntax(SyntaxKind.NotKeyword, argumentAssertions => argumentAssertions.IsConstantPatternSyntax(null)));
+                                        patternAssertions => patternAssertions.BeUnaryPatternSyntax(SyntaxKind.NotKeyword, argumentAssertions => argumentAssertions.BeConstantPatternSyntax(null)));
                                 },
                                 ifStatementAssertions =>
                                 {

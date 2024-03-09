@@ -1,4 +1,5 @@
 dotnet build -c Release ./Mappa
 dotnet build -c Release ./Mappa.Generator
 dotnet build -c Release ./Mappa.Samples
+dotnet build -c Release ./Mappa.Samples.Aot
 dotnet build -c Release ./Mappa.Benchmark

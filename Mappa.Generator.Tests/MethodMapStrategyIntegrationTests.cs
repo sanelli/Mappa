@@ -5,6 +5,7 @@
 using Mappa.Generator.Models.Strategies;
 using Mappa.Generator.Tests.Abstractions;
 using Mappa.Generator.Tests.Assertions;
+using Mappa.Generator.Tests.Assertions.Extensions;
 
 namespace Mappa.Generator.Tests;
 
@@ -49,13 +50,58 @@ public sealed class MethodMapStrategyIntegrationTests
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
-        var compilationUnitSyntaxAssertions = generatedResults.Should()
+        // Assert
+        generatedResults.Should()
             .NotHaveDiagnostics()
             .HaveGeneratedSourceCode()
-            .WithCompilationUnit();
-
-        // TODO [#42] Add correct assertions.
-        compilationUnitSyntaxAssertions.NotBeNull();
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                NullableAnnotation.None,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
+                NullableAnnotation.None,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(3)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                "__mappa_tmp_1");
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeIfStatementSyntax(
+                                conditionAssertions =>
+                                {
+                                    conditionAssertions.BeIsPatternExpressionSyntax(
+                                        identifierAssertions => identifierAssertions.BeIdentifierNameSyntax("input"),
+                                        patternAssertions => patternAssertions.BeUnaryPatternSyntax(SyntaxKind.NotKeyword, argumentAssertions => argumentAssertions.BeConstantPatternSyntax(null)));
+                                },
+                                ifStatementAssertions =>
+                                {
+                                    // TODO [#42] Implement me.
+                                },
+                                elseStatementAssertions =>
+                                {
+                                    elseStatementAssertions
+                                        .AsBlock()
+                                        .HasSyntaxNodesCount(1)
+                                        .HasNextSyntaxNode(elseSyntaxNodeAssertions =>
+                                        {
+                                            elseSyntaxNodeAssertions.BeAssignmentExpressionStatement(
+                                                leftExpressionAssertions => leftExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_1"),
+                                                rightExpressionAssertions => rightExpressionAssertions.BeCastExpressionSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.Target", assertions => assertions.BeLiteralExpressionSyntax(null)));
+                                        });
+                                });
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_1"));
+                        });
+                });
     }
 
     /// <summary>

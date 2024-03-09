@@ -20,28 +20,28 @@ public static class Program
         ArrayOrListToArrayMapper arrayOrListToArrayMapper = new();
         Title(nameof(ArrayOrListToArrayMapper), true);
         Printout(arrayOrListToArrayMapper.Map(new[] { CountingValues.One, CountingValues.Two }));
-        Printout(arrayOrListToArrayMapper.Map(new CountingValues?[] { CountingValues.One, null, CountingValues.Two }));
+        Printout(arrayOrListToArrayMapper.Map([CountingValues.One, null, CountingValues.Two]));
         Printout(arrayOrListToArrayMapper.Map(new List<CountingValues> { CountingValues.One, CountingValues.Two }));
         Printout(arrayOrListToArrayMapper.Map((IList<CountingValues>)new List<CountingValues> { CountingValues.One, CountingValues.Two }));
 
         // -- ArrayOrListToCollectionMapper --
         ArrayOrListToCollectionMapper arrayOrListToCollectionMapper = new();
         Title(nameof(ArrayOrListToCollectionMapper));
-        Printout(arrayOrListToCollectionMapper.MapArrayToIList(new[] { CountingValues.One, CountingValues.Two }));
-        Printout(arrayOrListToCollectionMapper.MapArrayToList(new[] { CountingValues.One, CountingValues.Two }));
-        Printout(arrayOrListToCollectionMapper.MapArrayToICollection(new[] { CountingValues.One, CountingValues.Two }));
-        Printout(arrayOrListToCollectionMapper.MapArrayToIReadOnlyCollection(new[] { CountingValues.One, CountingValues.Two }));
-        Printout(arrayOrListToCollectionMapper.MapArrayToIEnumerable(new[] { CountingValues.One, CountingValues.Two }));
+        Printout(arrayOrListToCollectionMapper.MapArrayToIList([CountingValues.One, CountingValues.Two]));
+        Printout(arrayOrListToCollectionMapper.MapArrayToList([CountingValues.One, CountingValues.Two]));
+        Printout(arrayOrListToCollectionMapper.MapArrayToICollection([CountingValues.One, CountingValues.Two]));
+        Printout(arrayOrListToCollectionMapper.MapArrayToIReadOnlyCollection([CountingValues.One, CountingValues.Two]));
+        Printout(arrayOrListToCollectionMapper.MapArrayToIEnumerable([CountingValues.One, CountingValues.Two]));
         Printout(arrayOrListToCollectionMapper.MapIListToIList(new List<CountingValues> { CountingValues.One, CountingValues.Two }));
         Printout(arrayOrListToCollectionMapper.MapIListToList(new List<CountingValues> { CountingValues.One, CountingValues.Two }));
         Printout(arrayOrListToCollectionMapper.MapIListToICollection(new List<CountingValues> { CountingValues.One, CountingValues.Two }));
         Printout(arrayOrListToCollectionMapper.MapIListToIReadOnlyCollection(new List<CountingValues> { CountingValues.One, CountingValues.Two }));
         Printout(arrayOrListToCollectionMapper.MapIListToIEnumerable(new List<CountingValues> { CountingValues.One, CountingValues.Two }));
-        Printout(arrayOrListToCollectionMapper.MapListToIList(new List<CountingValues> { CountingValues.One, CountingValues.Two }));
-        Printout(arrayOrListToCollectionMapper.MapListToList(new List<CountingValues> { CountingValues.One, CountingValues.Two }));
-        Printout(arrayOrListToCollectionMapper.MapListToICollection(new List<CountingValues> { CountingValues.One, CountingValues.Two }));
-        Printout(arrayOrListToCollectionMapper.MapListToIReadOnlyCollection(new List<CountingValues> { CountingValues.One, CountingValues.Two }));
-        Printout(arrayOrListToCollectionMapper.MapListToIEnumerable(new List<CountingValues> { CountingValues.One, CountingValues.Two }));
+        Printout(arrayOrListToCollectionMapper.MapListToIList([CountingValues.One, CountingValues.Two]));
+        Printout(arrayOrListToCollectionMapper.MapListToList([CountingValues.One, CountingValues.Two]));
+        Printout(arrayOrListToCollectionMapper.MapListToICollection([CountingValues.One, CountingValues.Two]));
+        Printout(arrayOrListToCollectionMapper.MapListToIReadOnlyCollection([CountingValues.One, CountingValues.Two]));
+        Printout(arrayOrListToCollectionMapper.MapListToIEnumerable([CountingValues.One, CountingValues.Two]));
 
         // -- DictionaryToDictionaryMapper --
         DictionaryToDictionaryMapper dictionaryToDictionaryMapper = new();

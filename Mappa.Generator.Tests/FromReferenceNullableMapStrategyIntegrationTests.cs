@@ -76,13 +76,13 @@ public class FromReferenceNullableMapStrategyIntegrationTests
                             syntaxNodeAssertions.BeIfStatementSyntax(
                                 conditionAssertions =>
                                 {
-                                    conditionAssertions.IsIsPatternExpressionSyntax(
+                                    conditionAssertions.BeIsPatternExpressionSyntax(
                                         expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("input"),
                                         patternAssertions =>
                                         {
-                                            patternAssertions.IsUnaryPatternSyntax(
+                                            patternAssertions.BeUnaryPatternSyntax(
                                                 SyntaxKind.NotKeyword,
-                                                unaryPatternSyntax => unaryPatternSyntax.IsConstantPatternSyntax(null));
+                                                unaryPatternSyntax => unaryPatternSyntax.BeConstantPatternSyntax(null));
                                         });
                                 },
                                 ifStatementAssertions =>

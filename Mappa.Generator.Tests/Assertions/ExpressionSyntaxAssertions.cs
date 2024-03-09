@@ -367,7 +367,7 @@ public sealed class ExpressionSyntaxAssertions
     /// <param name="expressionAssertions">The assertions for the expression on the left side of the <c>is</c>.</param>
     /// <param name="patternAssertions">The assertions on the pattern.</param>
     /// <returns>The assertions.</returns>
-    public ExpressionSyntaxAssertions IsIsPatternExpressionSyntax(
+    public ExpressionSyntaxAssertions BeIsPatternExpressionSyntax(
         Action<ExpressionSyntaxAssertions> expressionAssertions,
         Action<PatternSyntaxAssertions> patternAssertions)
     {

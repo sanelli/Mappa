@@ -41,7 +41,7 @@ public sealed class PatternSyntaxAssertions
     /// <param name="kind">The kind of the unary pattern.</param>
     /// <param name="argumentAssertions">Assertions on the argument expression.</param>
     /// <returns>The assertions.</returns>
-    public PatternSyntaxAssertions IsUnaryPatternSyntax(SyntaxKind kind, Action<PatternSyntaxAssertions> argumentAssertions)
+    public PatternSyntaxAssertions BeUnaryPatternSyntax(SyntaxKind kind, Action<PatternSyntaxAssertions> argumentAssertions)
     {
         ArgumentNullException.ThrowIfNull(argumentAssertions);
 
@@ -60,7 +60,7 @@ public sealed class PatternSyntaxAssertions
     /// </summary>
     /// <param name="value">The value of the constant.</param>
     /// <returns>The assertions.</returns>
-    public PatternSyntaxAssertions IsConstantPatternSyntax(object? value)
+    public PatternSyntaxAssertions BeConstantPatternSyntax(object? value)
     {
         this.Subject.Should().BeOfType<ConstantPatternSyntax>();
         var constantPatternSyntax = (ConstantPatternSyntax)this.Subject;
