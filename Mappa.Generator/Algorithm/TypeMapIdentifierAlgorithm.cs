@@ -55,8 +55,8 @@ internal class TypeMapIdentifierAlgorithm
     /// <returns>The strategy computed.</returns>
     internal virtual IMapStrategy GetStrategy()
     {
-        IMapStrategyDetector[] detectors =
-        {
+        IMapStrategyDetector[] detectors = [
+
             // 01. Identity strategy.
             new IdentityMapStrategyDetector(this.Context, this.Compilation),
 
@@ -80,7 +80,7 @@ internal class TypeMapIdentifierAlgorithm
 
             // 08. Constructor related strategies.
             new ConstructorMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
-        };
+        ];
 
         foreach (var detector in detectors)
         {
