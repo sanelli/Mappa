@@ -46,6 +46,7 @@ internal sealed class StringMapStrategyDetector
                 this.context.SourceType);
         }
 
+        // TODO [#50] Support mapping string -> Guid/TimeOnly/DateOnly.
         // 03. S -> string : InvokeToStringStrategy
         else if (this.CanMapToString())
         {
