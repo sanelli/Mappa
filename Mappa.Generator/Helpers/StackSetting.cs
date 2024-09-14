@@ -1,4 +1,4 @@
-// <copyright file="StackSettings.cs" company="Stefano Anelli">
+// <copyright file="StackSetting.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -8,16 +8,19 @@ namespace Mappa.Generator.Helpers;
 /// Describe settings that can be pushed or pulled.
 /// </summary>
 /// <typeparam name="TSettings">The type of the settings.</typeparam>
-internal sealed class StackSettings<TSettings>
+internal sealed class StackSetting<TSettings>
+    : IStackSetting
 {
     private readonly Stack<TSettings> stack;
+    private readonly TSettings @default;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="StackSettings{TSettings}"/> class.
+    /// Initializes a new instance of the <see cref="StackSetting{TSettings}"/> class.
     /// </summary>
     /// <param name="default">The default value of the settings.</param>
-    public StackSettings(TSettings @default)
+    public StackSetting(TSettings @default)
     {
+        this.@default = @default;
         this.stack = new Stack<TSettings>();
         this.stack.Push(@default);
     }
@@ -30,9 +33,16 @@ internal sealed class StackSettings<TSettings>
     /// <summary>
     /// Convert the settings to the current settings value.
     /// </summary>
-    /// <param name="settings">The settings.</param>
+    /// <param name="setting">The settings.</param>
     /// <returns>The current settings value.</returns>
-    public static implicit operator TSettings(StackSettings<TSettings> settings) => settings.CurrentValue;
+    public static implicit operator TSettings(StackSetting<TSettings> setting) => setting.CurrentValue;
+
+    /// <inheritdoc />
+    public void Pop() => this.stack.Pop();
+
+    /// <inheritdoc />
+    public IDisposable ApplyDefault()
+        => new StackSettingsDisposable<TSettings>(this, this.@default);
 
     /// <summary>
     /// Push a new value on top of the stack overriding the current value.
@@ -41,35 +51,29 @@ internal sealed class StackSettings<TSettings>
     internal void Push(TSettings value) => this.stack.Push(value);
 
     /// <summary>
-    /// Pop the current value from the stack
-    /// making sure that the new value is the last value used.
-    /// </summary>
-    internal void Pop() => this.stack.Pop();
-
-    /// <summary>
     /// Push the <paramref name="value"/>.
     /// Value will be popped using the <see cref="IDisposable"/>
     /// pattern.
     /// </summary>
     /// <param name="value">The value to be pushed on the stack.</param>
-    /// <returns>A disposable object that will pop the value from stack upon disposal.</returns>
+    /// <returns>An <see cref="IDisposable"/> object that will pop the value from stack upon disposal.</returns>
     internal IDisposable Apply(TSettings value)
         => new StackSettingsDisposable<TSettings>(this, value);
 
     private sealed class StackSettingsDisposable<T>
         : IDisposable
     {
-        private readonly StackSettings<T> stackSettings;
+        private readonly StackSetting<T> stackSetting;
 
-        public StackSettingsDisposable(StackSettings<T> stackSettings, T value)
+        public StackSettingsDisposable(StackSetting<T> stackSetting, T value)
         {
-            this.stackSettings = stackSettings;
-            this.stackSettings.Push(value);
+            this.stackSetting = stackSetting;
+            this.stackSetting.Push(value);
         }
 
         public void Dispose()
         {
-            this.stackSettings.Pop();
+            this.stackSetting.Pop();
         }
     }
 }

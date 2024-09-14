@@ -21,7 +21,7 @@ internal sealed class MappaMapAlgorithmContextSettings
     /// we are looking for a strategy to match a constructor
     /// with single parameter.
     /// </remarks>
-    internal StackSettings<bool> UseConstructorMapStrategyDetector { get; } = new(true);
+    internal StackSetting<bool> UseConstructorMapStrategyDetector { get; } = new(true);
 
     /// <summary>
     /// Gets the stack settings that enable or disable the algorithm
@@ -32,7 +32,7 @@ internal sealed class MappaMapAlgorithmContextSettings
     /// Typically the nullable reference strategy won't be applied if
     /// we are looking for a strategy to match a nullable reference strategy.
     /// </remarks>
-    internal StackSettings<bool> UseReferenceNullableMapStrategyDetector { get; } = new(true);
+    internal StackSetting<bool> UseReferenceNullableMapStrategyDetector { get; } = new(true);
 
     /// <summary>
     /// Apply default values.
@@ -44,15 +44,19 @@ internal sealed class MappaMapAlgorithmContextSettings
     private sealed class MappaMapAlgorithmContextSettingsDefaults
         : IDisposable
     {
-        private readonly IDisposable[] disposables;
+        private readonly List<IDisposable> disposables = new();
 
         internal MappaMapAlgorithmContextSettingsDefaults(MappaMapAlgorithmContextSettings settings)
         {
-            this.disposables = new[]
+            this.disposables.Clear();
+            foreach (IStackSetting stackSetting in new[]
+                     {
+                         settings.UseConstructorMapStrategyDetector,
+                         settings.UseReferenceNullableMapStrategyDetector,
+                     })
             {
-                settings.UseConstructorMapStrategyDetector.Apply(true),
-                settings.UseReferenceNullableMapStrategyDetector.Apply(true),
-            };
+                this.disposables.Add(stackSetting.ApplyDefault());
+            }
         }
 
         public void Dispose()
