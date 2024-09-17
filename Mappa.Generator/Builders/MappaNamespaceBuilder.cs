@@ -40,6 +40,8 @@ internal sealed class MappaNamespaceBuilder
     {
         var builder = new PrettyCode.StringBuilder();
         var @namespace = this.ClassContext.ClassSymbol.ContainingNamespace.ToDisplayString();
+
+        // TODO [#51] Generate the same type of namespace as the source.
         var fileScopedNamespace = (this.ClassContext.Compilation as CSharpCompilation)?.LanguageVersion >= LanguageVersion.CSharp10;
         if (fileScopedNamespace)
         {

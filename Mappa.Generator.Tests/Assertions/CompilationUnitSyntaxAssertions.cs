@@ -15,6 +15,9 @@ namespace Mappa.Generator.Tests.Assertions;
 public sealed class CompilationUnitSyntaxAssertions
     : ObjectAssertions<CompilationUnitSyntax, CompilationUnitSyntaxAssertions>
 {
+    private readonly SemanticModel semanticModel;
+    private readonly Compilation compilation;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="CompilationUnitSyntaxAssertions"/> class.
     /// </summary>
@@ -27,19 +30,9 @@ public sealed class CompilationUnitSyntaxAssertions
         Compilation compilation)
         : base(value)
     {
-        this.SemanticModel = semanticModel;
-        this.Compilation = compilation;
+        this.semanticModel = semanticModel;
+        this.compilation = compilation;
     }
-
-    /// <summary>
-    /// Gets the semantic model.
-    /// </summary>
-    public SemanticModel SemanticModel { get; }
-
-    /// <summary>
-    /// Gets the compilation.
-    /// </summary>
-    public Compilation Compilation { get; }
 
     /// <summary>
     /// Assert the compilation unit contains a file scoped namespace.
@@ -56,8 +49,28 @@ public sealed class CompilationUnitSyntaxAssertions
 
         assert(new FileScopedNamespaceDeclarationSyntaxAssertions(
             fileScopedNamespaceDeclarationSyntaxes.Single(),
-            this.SemanticModel,
-            this.Compilation));
+            this.semanticModel,
+            this.compilation));
+
+        return this;
+    }
+
+    /// <summary>
+    /// Assert the compilation unit contains a file scoped namespace.
+    /// </summary>
+    /// <returns>The file scoped namespace declaration syntax assertions.</returns>
+    public CompilationUnitSyntaxAssertions HaveFileScopedNamespace()
+        => this.HaveFileScopedNamespace(_ => { /* Nothing else to test */ });
+
+    /// <summary>
+    /// Assert the compilation unit contains a namespace (non file scoped).
+    /// </summary>
+    /// <returns>The namespace declaration syntax assertions.</returns>
+    public CompilationUnitSyntaxAssertions HaveNamespaceDeclarationSyntax()
+    {
+        var namespaceDeclarationSyntaxes =
+            this.Subject.ChildNodes().OfType<NamespaceDeclarationSyntax>().ToArray();
+        namespaceDeclarationSyntaxes.Should().HaveCount(1);
 
         return this;
     }
