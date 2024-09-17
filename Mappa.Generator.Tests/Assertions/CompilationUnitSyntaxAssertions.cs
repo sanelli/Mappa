@@ -74,4 +74,17 @@ public sealed class CompilationUnitSyntaxAssertions
 
         return this;
     }
+
+    /// <summary>
+    /// Assert the compilation unit contains a namespace (non file scoped).
+    /// </summary>
+    /// <returns>The namespace declaration syntax assertions.</returns>
+    public CompilationUnitSyntaxAssertions HaveNoNamespaceDeclarationSyntax()
+    {
+        var namespaceDeclarationSyntaxes =
+            this.Subject.ChildNodes().OfType<BaseNamespaceDeclarationSyntax>().ToArray();
+        namespaceDeclarationSyntaxes.Should().BeEmpty();
+
+        return this;
+    }
 }

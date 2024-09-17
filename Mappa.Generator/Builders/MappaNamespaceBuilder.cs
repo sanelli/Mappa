@@ -4,7 +4,7 @@
 
 using Mappa.Generator.Models;
 
-using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Mappa.Generator.Builders;
 
@@ -41,21 +41,28 @@ internal sealed class MappaNamespaceBuilder
         var builder = new PrettyCode.StringBuilder();
         var @namespace = this.ClassContext.ClassSymbol.ContainingNamespace.ToDisplayString();
 
-        // TODO [#51] Generate the same type of namespace as the source.
-        var fileScopedNamespace = (this.ClassContext.Compilation as CSharpCompilation)?.LanguageVersion >= LanguageVersion.CSharp10;
-        if (fileScopedNamespace)
+        // File scoped namespace
+        if (this.ClassContext.ClassDeclarationSyntax.Parent is FileScopedNamespaceDeclarationSyntax)
         {
             builder.AppendLine($"namespace {@namespace};");
             builder.AppendEmptyLine();
             builder.AppendLine(this.ClassSourceCode);
         }
-        else
+
+        // Standard namespace block
+        else if (this.ClassContext.ClassDeclarationSyntax.Parent is NamespaceDeclarationSyntax)
         {
             builder.AppendLine($"namespace {@namespace}");
             using (builder.CurlyBracesBlock())
             {
                 builder.AppendLine(this.ClassSourceCode);
             }
+        }
+
+        // No namespace at all
+        else
+        {
+            builder.AppendLine(this.ClassSourceCode);
         }
 
         return builder.ToString();

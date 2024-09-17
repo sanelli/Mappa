@@ -63,7 +63,7 @@ internal sealed class MappaClassGeneratorContext
     internal SemanticModel SemanticModel { get; }
 
     /// <summary>
-    /// Gets the class declarationsyntax of the mapper class begin processed.
+    /// Gets the class declaration syntax of the mapper class begin processed.
     /// </summary>
     internal ClassDeclarationSyntax ClassDeclarationSyntax { get; }
 

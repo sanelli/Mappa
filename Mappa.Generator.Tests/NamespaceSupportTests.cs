@@ -54,7 +54,7 @@ public sealed class NamespaceSupportTests
     /// Test a mapping can be added to a file without file-scoped namespaces.
     /// </summary>
     /// <returns>The async task.</returns>
-    [Fact(Skip = "#51 - No support for non file-scoped namespaces.")]
+    [Fact]
     [IntegrationTest]
     public async Task CanPerformMappingWithoutFileNamespace()
     {
@@ -86,5 +86,40 @@ public sealed class NamespaceSupportTests
             .NotBeNull().And
             .HaveCommentHeader()
             .HaveNamespaceDeclarationSyntax();
+    }
+
+    /// <summary>
+    /// Test a mapping can be added to a file without namespace.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanPerformMappingWithoutAnyNamespace()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable disable
+                                  using Mappa.Attributes;
+                                  
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial string Map(string input);
+                                  }
+
+                                  #nullable restore
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveCommentHeader()
+            .HaveNoNamespaceDeclarationSyntax();
     }
 }
