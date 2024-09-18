@@ -21,14 +21,14 @@ internal sealed class InvokeConstructorMapStrategy
     /// <param name="targetType">The source type.</param>
     /// <param name="sourceType">The target type.</param>
     /// <param name="constructor">Gets the constructor.</param>
-    /// <param name="argumentsStrategies">The strategies to be applied via constructor parameters.</param>
+    /// <param name="parametersMapStrategies">The strategies to be applied via constructor parameters.</param>
     /// <param name="initializerStrategies">The strategies to be applied via initializers.</param>
     public InvokeConstructorMapStrategy(
         MappaAlgorithmRule rule,
         ITypeSymbol targetType,
         ITypeSymbol sourceType,
         IMethodSymbol constructor,
-        PropertyMapStrategy[] argumentsStrategies,
+        ParameterMapStrategy[] parametersMapStrategies,
         PropertyMapStrategy[] initializerStrategies)
     {
         if (rule is not MappaAlgorithmRule.InvokeEmptyConstructor and not MappaAlgorithmRule.InvokeConstructor)
@@ -40,7 +40,7 @@ internal sealed class InvokeConstructorMapStrategy
         this.TargetType = targetType;
         this.SourceType = sourceType;
         this.Constructor = constructor;
-        this.ArgumentsStrategies = argumentsStrategies;
+        this.ParametersMapStrategies = parametersMapStrategies;
         this.InitializerStrategies = initializerStrategies;
     }
 
@@ -58,7 +58,7 @@ internal sealed class InvokeConstructorMapStrategy
     /// <summary>
     /// Gets the strategies that can be applied via constructor parameters.
     /// </summary>
-    public PropertyMapStrategy[] ArgumentsStrategies { get; }
+    public ParameterMapStrategy[] ParametersMapStrategies { get; }
 
     /// <summary>
     /// Gets the strategies that can be applied via initializers.

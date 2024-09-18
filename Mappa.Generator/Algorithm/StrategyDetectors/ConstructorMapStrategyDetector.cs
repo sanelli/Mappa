@@ -59,9 +59,102 @@ internal sealed class ConstructorMapStrategyDetector
             mapStrategy = emptyConstructorStrategy;
         }
 
-        // 03. If there is not empty constructor try identifying the best one -> InvokeConstructorMapStrategy( IMapStrategy[] parameters, IMapStrategy[] initProperties )
-        // TODO [#2] Implement me.
+        // 03. If there is no empty constructor try identifying the best one -> InvokeConstructorMapStrategy( IMapStrategy[] parameters, IMapStrategy[] initProperties )
+        else if (this.CanInvokeNonEmptyConstructor(out var nonEmptyConstructorStrategy))
+        {
+            mapStrategy = nonEmptyConstructorStrategy;
+        }
+
         return mapStrategy is not NoMapStrategy;
+    }
+
+    private bool CanInvokeNonEmptyConstructor(out IMapStrategy strategy)
+    {
+        var noMapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
+        strategy = noMapStrategy;
+
+        // Detect all constructors that:
+        // - Have at least one argument
+        // - Are accessible
+        // - Have a mapping for all parameters
+        // We sort them in ascending order by number of parameters.
+        var constructors = this.context.TargetType.GetAccessibleConstructors(this.compilation, this.context.ParentSymbol)
+            .Where(constructor => constructor.Parameters.Length >= 1)
+            .OrderByDescending(constructor => constructor.Parameters.Length)
+            .ToArray();
+
+        // If there is at least one constructor.
+        if (constructors.Length > 0)
+        {
+            // Gets the source properties.
+            var sourceProperties = this.context.SourceType.GetTypeProperties()
+
+                // Ignore indexer properties.
+                // Ignore properties without a setter.
+                // TODO [#7] Ensure property getter method is accessible.
+                .Where(property => !property.IsIndexer && property.GetMethod is not null)
+                .ToArray();
+
+            // For each constructor identifier we get all the arguments,
+            // and we try to match with a property of the source.
+            var constructorsWithMappings = constructors.Select(methodSymbol =>
+                {
+                    // For each argument of the constructor
+                    (IParameterSymbol Parameter, IPropertySymbol Property, IMapStrategy Strategy)[] strategiesForEachParameter = methodSymbol.Parameters
+                        .Select<IParameterSymbol, (IParameterSymbol Parameter,  IPropertySymbol Property, IMapStrategy Strategy)>(targetParameter =>
+                        {
+                            // TODO [#8] Allow property mapping where source property name differ from target parameter name using an attribute.
+                            var sourceProperty = Array.Find(sourceProperties, property => property.Name.Equals(targetParameter.Name, StringComparison.OrdinalIgnoreCase));
+                            if (sourceProperty is null)
+                            {
+                                return (targetParameter, null!, noMapStrategy);
+                            }
+
+                            var targetParameterType = targetParameter.Type;
+                            var sourcePropertyType = sourceProperty.Type;
+
+                            // Prevent circular mapping if the target type of the parameter
+                            // is the same type of the current type being mapped.
+                            if (SymbolEqualityComparer.Default.Equals(targetParameterType, this.context.TargetType))
+                            {
+                                return (targetParameter, null!, noMapStrategy);
+                            }
+
+                            // Get a strategy from source to target
+                            if (this.TryGetStrategyBetweenTypes(targetParameterType, sourcePropertyType, true, out var propertyStrategy))
+                            {
+                                var parameterMapStrategy = new ParameterMapStrategy(targetParameter, sourceProperty, propertyStrategy);
+                                return (targetParameter, sourceProperty, parameterMapStrategy);
+                            }
+
+                            // There is no mapping from source property to target parameter.
+                            return (targetParameter, null!, noMapStrategy);
+                        })
+                        .ToArray();
+
+                    return (methodSymbol, strategiesForEachParameter);
+                })
+
+                // Only select constructor for which all parameters are mapped
+                .Where(constructorsAndMappings => Array.TrueForAll(constructorsAndMappings.strategiesForEachParameter, parameterAndStrategy => parameterAndStrategy.Strategy is not NoMapStrategy))
+                .ToArray();
+
+            // If there is more than one constructor we pick up the first one
+            // because we sorted the constructors by number of parameters
+            // so we can pick up the one with the highest number of parameters.
+            if (constructorsWithMappings.Length > 0)
+            {
+                strategy = new InvokeConstructorMapStrategy(
+                    MappaAlgorithmRule.InvokeConstructor,
+                    this.context.TargetType,
+                    this.context.SourceType,
+                    constructorsWithMappings[0].methodSymbol,
+                    constructorsWithMappings[0].strategiesForEachParameter.Select(parameterAndStrategy => new ParameterMapStrategy(parameterAndStrategy.Parameter, parameterAndStrategy.Property, parameterAndStrategy.Strategy)).ToArray(),
+                    []);
+            }
+        }
+
+        return strategy is not NoMapStrategy;
     }
 
     private bool CanInvokeMappingConstructor(out IMethodSymbol constructor, out IMapStrategy strategy)
@@ -208,7 +301,7 @@ internal sealed class ConstructorMapStrategyDetector
                         this.context.TargetType,
                         this.context.SourceType,
                         constructors.Single(),
-                        Array.Empty<PropertyMapStrategy>(),
+                        [],
                         initializerStrategies);
                 }
             }

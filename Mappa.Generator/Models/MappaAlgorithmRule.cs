@@ -157,4 +157,9 @@ public enum MappaAlgorithmRule
     /// Map from a reference nullable.
     /// </summary>
     FromReferenceNullable,
+
+    /// <summary>
+    /// Map from to an argument.
+    /// </summary>
+    ArgumentStrategy,
 }
