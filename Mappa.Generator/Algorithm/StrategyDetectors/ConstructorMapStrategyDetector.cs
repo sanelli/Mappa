@@ -60,7 +60,7 @@ internal sealed class ConstructorMapStrategyDetector
         }
 
         // 03. If there is no empty constructor try identifying the best one -> InvokeConstructorMapStrategy( IMapStrategy[] parameters, IMapStrategy[] initProperties )
-        else if (this.CanInvokeNonEmptyConstructor(out var nonEmptyConstructorStrategy))
+        else if (this.CanInvokeConstructorWithParameters(out var nonEmptyConstructorStrategy))
         {
             mapStrategy = nonEmptyConstructorStrategy;
         }
@@ -68,7 +68,7 @@ internal sealed class ConstructorMapStrategyDetector
         return mapStrategy is not NoMapStrategy;
     }
 
-    private bool CanInvokeNonEmptyConstructor(out IMapStrategy strategy)
+    private bool CanInvokeConstructorWithParameters(out IMapStrategy strategy)
     {
         var noMapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
         strategy = noMapStrategy;

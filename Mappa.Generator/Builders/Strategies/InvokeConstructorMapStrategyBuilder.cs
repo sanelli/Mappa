@@ -31,7 +31,21 @@ internal sealed class InvokeConstructorMapStrategyBuilder
         var builder = new PrettyCode.StringBuilder();
 
         // Handle arguments mappings
-        // TODO [#10] Add support for mapping arguments.
+        var parametersVariableNames = new List<string>();
+        foreach (var parameterMapStrategy in this.strategy.ParametersMapStrategies)
+        {
+            var parameterTemporary = context.NextTemporary();
+            builder.AppendLine($"{parameterMapStrategy.SourceType.ToDisplayString()} {parameterTemporary} = {source}.{parameterMapStrategy.SourceProperty.Name};");
+            var (parameterTargetTemporary, parameterCode) = parameterMapStrategy.GetBuilder().BuildSource(parameterTemporary, context, mappaGlobalOptions);
+            if (!string.IsNullOrWhiteSpace(parameterCode))
+            {
+                builder.AppendLine(parameterCode);
+                builder.AppendEmptyLine();
+            }
+
+            parametersVariableNames.Add(parameterTargetTemporary);
+        }
+
         // Handle initializer properties
         var propertyInitializersMappings = new List<(string TargetPropertyName, string TemporaryName)>();
         foreach (var propertyMapStrategy in this.strategy.InitializerStrategies)
@@ -47,13 +61,19 @@ internal sealed class InvokeConstructorMapStrategyBuilder
             }
         }
 
+        var hasPropertyInitializers = propertyInitializersMappings.Count > 0;
+
         var resultTemporary = context.NextTemporary();
-        builder.AppendLine($"{this.strategy.TargetType.ToDisplayString()} {resultTemporary} = new {this.strategy.TargetType.ToDisplayNameWithoutNullableAnnotation()}()");
-        using (builder.CurlyBracesBlock(trailingSemicolon: true, indent: false))
+        var initializerCodeLine = $"{this.strategy.TargetType.ToDisplayString()} {resultTemporary} = new {this.strategy.TargetType.ToDisplayNameWithoutNullableAnnotation()}({string.Join(", ", parametersVariableNames)}){(hasPropertyInitializers ? string.Empty : ";")}";
+        builder.AppendLine(initializerCodeLine);
+        if (hasPropertyInitializers)
         {
-            foreach (var propertyInitializersMapping in propertyInitializersMappings)
+            using (builder.CurlyBracesBlock(trailingSemicolon: true, indent: false))
             {
-                builder.AppendLine($"{propertyInitializersMapping.TargetPropertyName} = {propertyInitializersMapping.TemporaryName},");
+                foreach (var propertyInitializersMapping in propertyInitializersMappings)
+                {
+                    builder.AppendLine($"{propertyInitializersMapping.TargetPropertyName} = {propertyInitializersMapping.TemporaryName},");
+                }
             }
         }
 

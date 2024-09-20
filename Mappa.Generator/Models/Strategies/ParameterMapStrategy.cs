@@ -52,8 +52,5 @@ internal sealed class ParameterMapStrategy
     public MappaAlgorithmRule Rule => MappaAlgorithmRule.ArgumentStrategy;
 
     /// <inheritdoc/>
-    public IMappaStrategyBuilder GetBuilder()
-    {
-        throw new NotImplementedException();
-    }
+    public IMappaStrategyBuilder GetBuilder() => this.MapStrategy.GetBuilder();
 }
