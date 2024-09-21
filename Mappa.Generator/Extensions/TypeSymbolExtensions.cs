@@ -27,6 +27,8 @@ internal static class TypeSymbolExtensions
     private static readonly string DictionaryFullName = typeof(Dictionary<,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Dictionary<,>)}");
     private static readonly string DictionaryInterfaceFullName = typeof(IDictionary<,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(IDictionary<,>)}");
     private static readonly string ListFullName = typeof(List<>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(List<>)}");
+    private static readonly string TimeSpanFullName = typeof(TimeSpan).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(TimeSpan)}");
+    private static readonly string UriFullName = typeof(Uri).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Uri)}");
 
     /// <summary>
     /// Check if the type is <see cref="Void"/>.
@@ -420,5 +422,57 @@ internal static class TypeSymbolExtensions
         return typeSymbol.NullableAnnotation == NullableAnnotation.Annotated
             ? displayString.Substring(0, displayString.Length - 1)
             : displayString;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="TimeSpan"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="TimeSpan"/>.</returns>
+    internal static bool IsTimeSpan(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var timeSpanName = compilation.GetTypeByMetadataName(TimeSpanFullName);
+        var isTimeSpan = SymbolEqualityComparer.Default.Equals(timeSpanName, typeSymbol.OriginalDefinition);
+        return isTimeSpan;
+    }
+
+    /// <summary>
+    /// Check if the type is TimeOnly.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is TimeOnly.</returns>
+    internal static bool IsTimeOnly(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var timeOnlyType = compilation.GetTypeByMetadataName("System.TimeOnly");
+        var isTimeOnly = SymbolEqualityComparer.Default.Equals(timeOnlyType, typeSymbol.OriginalDefinition);
+        return isTimeOnly;
+    }
+
+    /// <summary>
+    /// Check if the type is DateOnly.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is DateOnly.</returns>
+    internal static bool IsDateOnly(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var dateOnlyType = compilation.GetTypeByMetadataName("System.DateOnly");
+        var isDateOnly = SymbolEqualityComparer.Default.Equals(dateOnlyType, typeSymbol.OriginalDefinition);
+        return isDateOnly;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="Uri"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="Uri"/>.</returns>
+    internal static bool IsUri(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var uriType = compilation.GetTypeByMetadataName(UriFullName);
+        var isUri = SymbolEqualityComparer.Default.Equals(uriType, typeSymbol.OriginalDefinition);
+        return isUri;
     }
 }
