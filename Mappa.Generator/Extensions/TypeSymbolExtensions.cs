@@ -29,6 +29,7 @@ internal static class TypeSymbolExtensions
     private static readonly string ListFullName = typeof(List<>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(List<>)}");
     private static readonly string TimeSpanFullName = typeof(TimeSpan).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(TimeSpan)}");
     private static readonly string UriFullName = typeof(Uri).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Uri)}");
+    private static readonly string GuidFullName = typeof(Guid).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Guid)}");
 
     /// <summary>
     /// Check if the type is <see cref="Void"/>.
@@ -472,6 +473,19 @@ internal static class TypeSymbolExtensions
     internal static bool IsUri(this ITypeSymbol typeSymbol, Compilation compilation)
     {
         var uriType = compilation.GetTypeByMetadataName(UriFullName);
+        var isUri = SymbolEqualityComparer.Default.Equals(uriType, typeSymbol.OriginalDefinition);
+        return isUri;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="Guid"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="Guid"/>.</returns>
+    internal static bool IsGuid(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var uriType = compilation.GetTypeByMetadataName(GuidFullName);
         var isUri = SymbolEqualityComparer.Default.Equals(uriType, typeSymbol.OriginalDefinition);
         return isUri;
     }

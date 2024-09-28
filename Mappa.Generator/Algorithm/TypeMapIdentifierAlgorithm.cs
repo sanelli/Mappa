@@ -64,7 +64,7 @@ internal class TypeMapIdentifierAlgorithm
             new EnumMapStrategyDetector(this.Context, this.Compilation),
 
             // 03. String related strategies.
-            new StringMapStrategyDetector(this.Context),
+            new StringMapStrategyDetector(this.Context, this.Compilation),
 
             // 04. Nullable related strategies.
             new NullableMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),

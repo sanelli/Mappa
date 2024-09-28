@@ -162,4 +162,29 @@ public enum MappaAlgorithmRule
     /// Map from to an argument.
     /// </summary>
     ArgumentStrategy,
+
+    /// <summary>
+    /// Map from <see cref="string"/> to <see cref="TimeSpan"/>.
+    /// </summary>
+    StringToTimeSpan,
+
+    /// <summary>
+    /// Map from <see cref="string"/> to TimeOnly.
+    /// </summary>
+    StringToTimeOnly,
+
+    /// <summary>
+    /// Map from <see cref="string"/> to DateOnly.
+    /// </summary>
+    StringToDateOnly,
+
+    /// <summary>
+    /// Map from <see cref="string"/> to <see cref="Guid"/>.
+    /// </summary>
+    StringToGuid,
+
+    /// <summary>
+    /// Map from <see cref="string"/> to <see cref="Uri"/>.
+    /// </summary>
+    StringToUri,
 }
