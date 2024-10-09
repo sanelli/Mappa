@@ -264,6 +264,22 @@ internal static class TypeSymbolExtensions
     }
 
     /// <summary>
+    /// Check if the type is <see cref="long"/> type.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <returns><c>true</c> if the type symbol is numeric.</returns>
+    internal static bool IsLong(this ITypeSymbol typeSymbol)
+    {
+        switch (typeSymbol.SpecialType)
+        {
+            case SpecialType.System_Int64:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /// <summary>
     /// Check if the type is <see cref="DateTime"/>.
     /// </summary>
     /// <param name="typeSymbol">The type symbol.</param>

@@ -5,7 +5,8 @@
 namespace Mappa.Attributes;
 
 /// <summary>
-/// Specify the class represents a <see cref="Mappa"/> mapper.
+/// Attribute used to mark the classes for which
+/// <see cref="Mappa"/> mapper methods should be generated.
 /// </summary>
 [AttributeUsage(AttributeTargets.Class, Inherited = false)]
 public sealed class MappaAttribute

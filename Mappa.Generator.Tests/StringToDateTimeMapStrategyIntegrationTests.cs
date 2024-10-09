@@ -16,7 +16,7 @@ public sealed class StringToDateTimeMapStrategyIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {
     /// <summary>
-    /// Test a mapping can be created when mapping a string
+    /// Test a mapping can be created when mapping a <see cref="string"/>
     /// to a <see cref="DateTime"/> object.
     /// </summary>
     /// <returns>The async task.</returns>

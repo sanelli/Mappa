@@ -187,4 +187,44 @@ public enum MappaAlgorithmRule
     /// Map from <see cref="string"/> to <see cref="Uri"/>.
     /// </summary>
     StringToUri,
+
+    /// <summary>
+    /// Map <see cref="DateTime"/> to DateOnly.
+    /// </summary>
+    DateTimeToDateOnly,
+
+    /// <summary>
+    /// Map <see cref="DateTime"/> to TimeOnly.
+    /// </summary>
+    DateTimeToTimeOnly,
+
+    /// <summary>
+    /// Map DateOnly to <see cref="DateTime"/>.
+    /// </summary>
+    DateOnlyToDateTime,
+
+    /// <summary>
+    /// Map <see cref="DateTime"/> to <see cref="long"/>.
+    /// </summary>
+    DateTimeToLong,
+
+    /// <summary>
+    /// Map DateOnly to <see cref="long"/>.
+    /// </summary>
+    DateOnlyToLong,
+
+    /// <summary>
+    /// Map <see cref="long"/> to <see cref="DateTime"/>.
+    /// </summary>
+    LongToDateTime,
+
+    /// <summary>
+    /// Map <see cref="TimeSpan"/> to <see cref="double"/>.
+    /// </summary>
+    TimeSpanDouble,
+
+    /// <summary>
+    /// Map <see cref="double"/> to <see cref="TimeSpan"/>.
+    /// </summary>
+    DoubleTimeSpan,
 }

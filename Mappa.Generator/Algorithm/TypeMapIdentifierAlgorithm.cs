@@ -75,10 +75,13 @@ internal class TypeMapIdentifierAlgorithm
             // 06. Tuple related strategies.
             new TupleMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
 
-            // 07. Reference nullable related strategies.
+            // 07. Date and time related strategies.
+            new DateAndTimeMapStrategyDetector(this.Context, this.Compilation),
+
+            // 08. Reference nullable related strategies.
             new ReferenceNullableMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
 
-            // 08. Constructor related strategies.
+            // 09. Constructor related strategies.
             new ConstructorMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
         ];
 
