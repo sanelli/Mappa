@@ -42,7 +42,7 @@ internal static class AttributeSyntaxExtensions
     /// <param name="semanticModel">The semantic model.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <typeparam name="TAttribute">The type of the attribute.</typeparam>
-    /// <returns>The the attributes of type <typeparamref name="TAttribute"/>.</returns>
+    /// <returns>The attributes of type <typeparamref name="TAttribute"/>.</returns>
     internal static IEnumerable<AttributeSyntax> GetAttributes<TAttribute>(this SyntaxList<AttributeListSyntax> attributeLists, SemanticModel semanticModel, CancellationToken cancellationToken)
         where TAttribute : Attribute
     {
