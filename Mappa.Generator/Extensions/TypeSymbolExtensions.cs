@@ -267,12 +267,78 @@ internal static class TypeSymbolExtensions
     /// Check if the type is <see cref="long"/> type.
     /// </summary>
     /// <param name="typeSymbol">The type symbol.</param>
-    /// <returns><c>true</c> if the type symbol is numeric.</returns>
+    /// <returns><c>true</c> if the type symbol is <see cref="long"/>, <c>false</c> otherwise.</returns>
     internal static bool IsLong(this ITypeSymbol typeSymbol)
     {
         switch (typeSymbol.SpecialType)
         {
             case SpecialType.System_Int64:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="double"/> type.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="double"/>, <c>false</c> otherwise.</returns>
+    internal static bool IsDouble(this ITypeSymbol typeSymbol)
+    {
+        switch (typeSymbol.SpecialType)
+        {
+            case SpecialType.System_Double:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="double"/> type
+    /// or a numeric type implicitly convertible.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="double"/> or implicitply convertible to <see cref="double"/>, <c>false</c> otherwise.</returns>
+    internal static bool IsDoubleOrNumericImplicitlyConvertible(this ITypeSymbol typeSymbol)
+    {
+        switch (typeSymbol.SpecialType)
+        {
+            case SpecialType.System_Byte:
+            case SpecialType.System_SByte:
+            case SpecialType.System_Int16:
+            case SpecialType.System_UInt16:
+            case SpecialType.System_Int32:
+            case SpecialType.System_UInt32:
+            case SpecialType.System_Int64:
+            case SpecialType.System_UInt64:
+            case SpecialType.System_Single:
+            case SpecialType.System_Double:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="long"/> type or a compatible smaller
+    /// numeric type.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="long"/> type or a compatible smaller
+    /// numeric type, <c>false</c> otherwise.</returns>
+    internal static bool IsLongOrNumericCanBeImplictlyCastedToLong(this ITypeSymbol typeSymbol)
+    {
+        switch (typeSymbol.SpecialType)
+        {
+            case SpecialType.System_Int64:
+            case SpecialType.System_Int32:
+            case SpecialType.System_UInt32:
+            case SpecialType.System_Int16:
+            case SpecialType.System_UInt16:
+            case SpecialType.System_SByte:
+            case SpecialType.System_Byte:
                 return true;
             default:
                 return false;

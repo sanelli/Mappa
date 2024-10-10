@@ -221,10 +221,10 @@ public enum MappaAlgorithmRule
     /// <summary>
     /// Map <see cref="TimeSpan"/> to <see cref="double"/>.
     /// </summary>
-    TimeSpanDouble,
+    TimeSpanToDouble,
 
     /// <summary>
     /// Map <see cref="double"/> to <see cref="TimeSpan"/>.
     /// </summary>
-    DoubleTimeSpan,
+    DoubleToTimeSpan,
 }

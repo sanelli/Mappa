@@ -69,10 +69,38 @@ internal sealed class DateAndTimeMapStrategyDetector
                 this.context.SourceType);
         }
 
-        // TODO [#44] long -> DateTime.
-        // TODO [#44] DateOnly -> long.
-        // TODO [#44] TimeSpan -> double.
-        // TODO [#44] double -> TimeSpan.
+        // 05. long -> DateTime.
+        if (this.CanMapLongOrSmallerNumericTypeToDateTime())
+        {
+            mapStrategy = new LongToDateTimeMapStrategy(
+                this.context.TargetType,
+                this.context.SourceType);
+        }
+
+        // 06. DateOnly -> long.
+        if (this.CanMapDateOnlyToLong())
+        {
+            mapStrategy = new DateOnlyToLongMapStrategy(
+                this.context.TargetType,
+                this.context.SourceType);
+        }
+
+        // 07. TimeSpan -> double.
+        if (this.CanMapTimeSpanToDouble())
+        {
+            mapStrategy = new TimeSpanToDoubleMapStrategy(
+                this.context.TargetType,
+                this.context.SourceType);
+        }
+
+        // 07. double -> TimeSpan.
+        if (this.CanMapDoubleToTimeSpan())
+        {
+            mapStrategy = new DoubleToTimeSpanMapStrategy(
+                this.context.TargetType,
+                this.context.SourceType);
+        }
+
         // TODO [#44] DateTimeOffset -> DateOnly.
         // TODO [#44] DateTimeOffset -> TimeOnly.
         // TODO [#44] DateTimeOffset -> long.
@@ -106,5 +134,33 @@ internal sealed class DateAndTimeMapStrategyDetector
         var sourceIsDateTime = this.context.SourceType.IsDateTime();
         var targetIsLong = this.context.TargetType.IsLong();
         return sourceIsDateTime && targetIsLong;
+    }
+
+    private bool CanMapLongOrSmallerNumericTypeToDateTime()
+    {
+        var sourceIsLongOrSmallerNumericType = this.context.SourceType.IsLongOrNumericCanBeImplictlyCastedToLong();
+        var targetIsDateTime = this.context.TargetType.IsDateTime();
+        return sourceIsLongOrSmallerNumericType && targetIsDateTime;
+    }
+
+    private bool CanMapDateOnlyToLong()
+    {
+        var sourceIsDateOnly = this.context.SourceType.IsDateOnly(this.compilation);
+        var targetIsLong = this.context.TargetType.IsLong();
+        return sourceIsDateOnly && targetIsLong;
+    }
+
+    private bool CanMapTimeSpanToDouble()
+    {
+        var sourceIsDateOnly = this.context.SourceType.IsTimeSpan(this.compilation);
+        var targetIsLong = this.context.TargetType.IsDouble();
+        return sourceIsDateOnly && targetIsLong;
+    }
+
+    private bool CanMapDoubleToTimeSpan()
+    {
+        var targetIsTimeSpan = this.context.TargetType.IsTimeSpan(this.compilation);
+        var sourceIsDouble = this.context.SourceType.IsDoubleOrNumericImplicitlyConvertible();
+        return targetIsTimeSpan && sourceIsDouble;
     }
 }
