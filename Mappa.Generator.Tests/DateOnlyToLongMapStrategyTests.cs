@@ -66,7 +66,7 @@ public sealed class DateOnlyToLongMapStrategyTests
                                 expressionSyntaxAssertions =>
                                 expressionSyntaxAssertions.BeCastExpressionSyntax(
                                     typeof(long).ToString(),
-                                    castAssertions => castAssertions.BeMemberAccessExpressionSyntax("new System.DateTime(input, System.TimeOnly.MinValue).ToUniversalTime().Subtract(System.DateOnly.UnixEpoch).TotalSeconds")));
+                                    castAssertions => castAssertions.BeMemberAccessExpressionSyntax("new System.DateTime(input, System.TimeOnly.MinValue, System.DateTimeKind.Utc).ToUniversalTime().Subtract(System.DateTime.UnixEpoch).TotalSeconds")));
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {

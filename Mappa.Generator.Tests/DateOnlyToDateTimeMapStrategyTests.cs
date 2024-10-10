@@ -66,7 +66,8 @@ public sealed class DateOnlyToDateTimeMapStrategyTests
                                 expressionSyntaxAssertions => expressionSyntaxAssertions.BeObjectCreationExpressionSyntax(
                                     typeof(DateTime).ToString(),
                                     firstParameterAssertions => firstParameterAssertions.BeIdentifierNameSyntax("input"),
-                                    secondParameterAssertions => secondParameterAssertions.BeMemberAccessExpressionSyntax("System.TimeOnly.MinValue")));
+                                    secondParameterAssertions => secondParameterAssertions.BeMemberAccessExpressionSyntax("System.TimeOnly.MinValue"),
+                                    thirdParameterAssertions => thirdParameterAssertions.BeMemberAccessExpressionSyntax("System.DateTimeKind.Utc")));
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {

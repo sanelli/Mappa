@@ -28,7 +28,7 @@ internal sealed class DateOnlyToLongMapStrategyBuilder
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
         var temporary = context.NextTemporary();
-        var code = $"long {temporary} = (long)new System.DateTime({source}, System.TimeOnly.MinValue).ToUniversalTime().Subtract(System.DateOnly.UnixEpoch).TotalSeconds;";
+        var code = $"long {temporary} = (long)new System.DateTime({source}, System.TimeOnly.MinValue, System.DateTimeKind.Utc).ToUniversalTime().Subtract(System.DateTime.UnixEpoch).TotalSeconds;";
 
         var ruleComment = mappaGlobalOptions.MappaDebugComments
             ? $"/* Mappa Rule: {this.strategy.Rule} */ "

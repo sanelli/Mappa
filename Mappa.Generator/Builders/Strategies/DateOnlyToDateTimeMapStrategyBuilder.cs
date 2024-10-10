@@ -28,7 +28,7 @@ internal sealed class DateOnlyToDateTimeMapStrategyBuilder
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
         var temporary = context.NextTemporary();
-        var code = $"System.DateTime {temporary} = new System.DateTime({source}, System.TimeOnly.MinValue);";
+        var code = $"System.DateTime {temporary} = new System.DateTime({source}, System.TimeOnly.MinValue, System.DateTimeKind.Utc);";
 
         var ruleComment = mappaGlobalOptions.MappaDebugComments
             ? $"/* Mappa Rule: {this.strategy.Rule} */ "
