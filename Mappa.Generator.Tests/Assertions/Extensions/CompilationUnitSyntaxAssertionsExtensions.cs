@@ -38,49 +38,58 @@ internal static class CompilationUnitSyntaxAssertionsExtensions
     }
 
     /// <summary>
-    /// Assert that the compilation unit has a mapper method.
+    /// Assert that the compilation unit has a mapper method using default values.
     /// </summary>
-    /// <param name="this">The compilation unit syntax assertions.</param>
-    /// <param name="className">The name of the class.</param>
-    /// <param name="classModifiers">The class modifiers.</param>
-    /// <param name="methodName">The name of the method.</param>
-    /// <param name="methodModifiers">The method modifiers.</param>
+    /// <param name="this">The compilation unit assertions.</param>
     /// <param name="returnType">The return type of the method.</param>
-    /// <param name="returnTypeNullableAnnotation">The nullable annotation on the return type.</param>
-    /// <param name="parameterName">The name of the parameter.</param>
+    /// <param name="returnTypeNullableAnnotation">The return type nullable annotation.</param>
     /// <param name="parameterType">The parameter type of the method.</param>
-    /// <param name="parameterNullableAnnotation">The nullable annotation of the parameter.</param>
+    /// <param name="parameterNullableAnnotation">The parameter nullable annotation.</param>
+    /// <param name="expectedGeneratedMethodsCount">The expected number of generated methods.</param>
     /// <param name="bodyAssertion">The assertions on the body of the method.</param>
     /// <returns>The input compilation unit syntax assertions.</returns>
-    public static CompilationUnitSyntaxAssertions HaveMapMethod(
+    public static CompilationUnitSyntaxAssertions HaveDefaultMapMethod(
         this CompilationUnitSyntaxAssertions @this,
-        string className,
-        SyntaxKind[] classModifiers,
-        string methodName,
-        SyntaxKind[] methodModifiers,
-        Type returnType,
+        string returnType,
         NullableAnnotation returnTypeNullableAnnotation,
-        string parameterName,
-        Type parameterType,
+        string parameterType,
         NullableAnnotation parameterNullableAnnotation,
+        int expectedGeneratedMethodsCount,
         Action<BlockSyntaxAssertions> bodyAssertion)
-    {
-        ArgumentNullException.ThrowIfNull(returnType);
-        ArgumentNullException.ThrowIfNull(parameterType);
-
-        return @this.HaveMapMethod(
-            className,
-            classModifiers,
-            methodName,
-            methodModifiers,
-            returnType.ToString(),
+        => @this.HaveDefaultMapMethod(
+            returnType,
             returnTypeNullableAnnotation,
-            parameterName,
-            parameterType.ToString(),
+            parameterType,
             parameterNullableAnnotation,
+            expectedGeneratedMethodsCount,
+            false,
+            bodyAssertion);
+
+    /// <summary>
+    /// Assert that the compilation unit has a mapper method using default values.
+    /// </summary>
+    /// <param name="this">The compilation unit assertions.</param>
+    /// <param name="returnType">The return type of the method.</param>
+    /// <param name="parameterType">The parameter type of the method.</param>
+    /// <param name="bodyAssertion">The assertions on the body of the method.</param>
+    /// <returns>The input compilation unit syntax assertions.</returns>
+    public static CompilationUnitSyntaxAssertions HaveDefaultMapMethod(
+        this CompilationUnitSyntaxAssertions @this,
+        string returnType,
+        string parameterType,
+        Action<BlockSyntaxAssertions> bodyAssertion)
+        => @this.HaveMapMethod(
+            "Mapper",
+            new[] { SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword },
+            "Map",
+            new[] { SyntaxKind.PublicKeyword, SyntaxKind.PartialKeyword },
+            returnType,
+            NullableAnnotation.NotAnnotated,
+            "input",
+            parameterType,
+            NullableAnnotation.NotAnnotated,
             1,
             bodyAssertion);
-    }
 
     /// <summary>
     /// Assert that the compilation unit has a mapper method using default values.
@@ -102,62 +111,67 @@ internal static class CompilationUnitSyntaxAssertionsExtensions
         => HaveDefaultMapMethod(@this, returnType, returnTypeNullableAnnotation, parameterType, parameterNullableAnnotation, 1, bodyAssertion);
 
     /// <summary>
-    /// Assert that the compilation unit has a mapper method using default values.
+    /// Assert that the compilation unit has a mapper method.
     /// </summary>
-    /// <param name="this">The compilation unit assertions.</param>
+    /// <param name="this">The compilation unit syntax assertions.</param>
+    /// <param name="className">The name of the class.</param>
+    /// <param name="classModifiers">The class modifiers.</param>
+    /// <param name="methodName">The name of the method.</param>
+    /// <param name="methodModifiers">The method modifiers.</param>
+    /// <param name="isExtensionMethod">The method is an extension method.</param>
     /// <param name="returnType">The return type of the method.</param>
-    /// <param name="returnTypeNullableAnnotation">The return type nullable annotation.</param>
+    /// <param name="returnTypeNullableAnnotation">The nullable annotation on the return type.</param>
+    /// <param name="parameterName">The name of the parameter.</param>
     /// <param name="parameterType">The parameter type of the method.</param>
-    /// <param name="parameterNullableAnnotation">The parameter nullable annotation.</param>
-    /// <param name="expctedGeneratedMethodsCount">The expected number of generated methods.</param>
+    /// <param name="parameterNullableAnnotation">The nullable annotation of the parameter.</param>
+    /// <param name="expectedGeneratedCount">The number of expected methods generated.</param>
     /// <param name="bodyAssertion">The assertions on the body of the method.</param>
     /// <returns>The input compilation unit syntax assertions.</returns>
-    public static CompilationUnitSyntaxAssertions HaveDefaultMapMethod(
+    public static CompilationUnitSyntaxAssertions HaveMapMethod(
         this CompilationUnitSyntaxAssertions @this,
+        string className,
+        SyntaxKind[] classModifiers,
+        string methodName,
+        SyntaxKind[] methodModifiers,
+        bool isExtensionMethod,
         string returnType,
         NullableAnnotation returnTypeNullableAnnotation,
+        string parameterName,
         string parameterType,
         NullableAnnotation parameterNullableAnnotation,
-        int expctedGeneratedMethodsCount,
+        int expectedGeneratedCount,
         Action<BlockSyntaxAssertions> bodyAssertion)
-        => @this.HaveMapMethod(
-            "Mapper",
-            new[] { SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword },
-            "Map",
-            new[] { SyntaxKind.PublicKeyword, SyntaxKind.PartialKeyword },
-            returnType,
-            returnTypeNullableAnnotation,
-            "input",
-            parameterType,
-            parameterNullableAnnotation,
-            expctedGeneratedMethodsCount,
-            bodyAssertion);
+    {
+        ArgumentNullException.ThrowIfNull(@this);
 
-    /// <summary>
-    /// Assert that the compilation unit has a mapper method using default values.
-    /// </summary>
-    /// <param name="this">The compilation unit assertions.</param>
-    /// <param name="returnType">The return type of the method.</param>
-    /// <param name="parameterType">The parameter type of the method.</param>
-    /// <param name="bodyAssertion">The assertions on the body of the method.</param>
-    /// <returns>The input compilation unit syntax assertions.</returns>
-    public static CompilationUnitSyntaxAssertions HaveDefaultMapMethod(
-        this CompilationUnitSyntaxAssertions @this,
-        string returnType,
-        string parameterType,
-        Action<BlockSyntaxAssertions> bodyAssertion)
-        => @this.HaveMapMethod(
-            "Mapper",
-            new[] { SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword },
-            "Map",
-            new[] { SyntaxKind.PublicKeyword, SyntaxKind.PartialKeyword },
-            returnType,
-            NullableAnnotation.NotAnnotated,
-            "input",
-            parameterType,
-            NullableAnnotation.NotAnnotated,
-            1,
-            bodyAssertion);
+        return @this.HaveCommentHeader()
+            .HaveFileScopedNamespace(fileScopedNamespaceDeclarationSyntaxAssertions =>
+            {
+                fileScopedNamespaceDeclarationSyntaxAssertions
+                    .HaveClasses(1)
+                    .HaveClass(
+                        className,
+                        classDeclarationSyntaxAssertions =>
+                        {
+                            classDeclarationSyntaxAssertions
+                                .HaveModifiers(classModifiers)
+                                .HaveMethods(expectedGeneratedCount)
+                                .HaveMethod(
+                                    returnType,
+                                    returnTypeNullableAnnotation,
+                                    methodName,
+                                    isExtensionMethod,
+                                    new[] { (parameterType, nullableAnnotation: parameterNullableAnnotation, parameterName) },
+                                    methodDeclarationSyntaxAssertions =>
+                                    {
+                                        methodDeclarationSyntaxAssertions
+                                            .HaveGeneratedCodeAttribute(attributeSyntaxAssertions => attributeSyntaxAssertions.BeMappaGeneratedCodeAttribute())
+                                            .HaveModifiers(methodModifiers)
+                                            .HaveBody(bodyAssertion);
+                                    });
+                        });
+            });
+    }
 
     /// <summary>
     /// Assert that the compilation unit has a mapper method.
@@ -188,34 +202,52 @@ internal static class CompilationUnitSyntaxAssertionsExtensions
         NullableAnnotation parameterNullableAnnotation,
         int expectedGeneratedCount,
         Action<BlockSyntaxAssertions> bodyAssertion)
-    {
-        ArgumentNullException.ThrowIfNull(@this);
+        => @this.HaveMapMethod(
+            className,
+            classModifiers,
+            methodName,
+            methodModifiers,
+            false,
+            returnType,
+            returnTypeNullableAnnotation,
+            parameterName,
+            parameterType,
+            parameterNullableAnnotation,
+            expectedGeneratedCount,
+            bodyAssertion);
 
-        return @this.HaveCommentHeader()
-            .HaveFileScopedNamespace(fileScopedNamespaceDeclarationSyntaxAssertions =>
-            {
-                fileScopedNamespaceDeclarationSyntaxAssertions
-                    .HaveClasses(1)
-                    .HaveClass(
-                        className,
-                        classDeclarationSyntaxAssertions =>
-                        {
-                            classDeclarationSyntaxAssertions
-                                .HaveModifiers(classModifiers)
-                                .HaveMethods(expectedGeneratedCount)
-                                .HaveMethod(
-                                    returnType,
-                                    returnTypeNullableAnnotation,
-                                    methodName,
-                                    new[] { (parameterType, nullableAnnotation: parameterNullableAnnotation, parameterName) },
-                                    methodDeclarationSyntaxAssertions =>
-                                    {
-                                        methodDeclarationSyntaxAssertions
-                                            .HaveGeneratedCodeAttribute(attributeSyntaxAssertions => attributeSyntaxAssertions.BeMappaGeneratedCodeAttribute())
-                                            .HaveModifiers(methodModifiers)
-                                            .HaveBody(bodyAssertion);
-                                    });
-                        });
-            });
-    }
+    /// <summary>
+    /// Assert that the compilation unit has a mapper method using default values.
+    /// </summary>
+    /// <param name="this">The compilation unit assertions.</param>
+    /// <param name="returnType">The return type of the method.</param>
+    /// <param name="returnTypeNullableAnnotation">The return type nullable annotation.</param>
+    /// <param name="parameterType">The parameter type of the method.</param>
+    /// <param name="parameterNullableAnnotation">The parameter nullable annotation.</param>
+    /// <param name="expectedGeneratedMethodsCount">The expected number of generated methods.</param>
+    /// <param name="isExtensionMethod">The method is an extension method.</param>
+    /// <param name="bodyAssertion">The assertions on the body of the method.</param>
+    /// <returns>The input compilation unit syntax assertions.</returns>
+    private static CompilationUnitSyntaxAssertions HaveDefaultMapMethod(
+        this CompilationUnitSyntaxAssertions @this,
+        string returnType,
+        NullableAnnotation returnTypeNullableAnnotation,
+        string parameterType,
+        NullableAnnotation parameterNullableAnnotation,
+        int expectedGeneratedMethodsCount,
+        bool isExtensionMethod,
+        Action<BlockSyntaxAssertions> bodyAssertion)
+        => @this.HaveMapMethod(
+            "Mapper",
+            [SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword],
+            "Map",
+            [SyntaxKind.PublicKeyword, SyntaxKind.PartialKeyword],
+            isExtensionMethod,
+            returnType,
+            returnTypeNullableAnnotation,
+            "input",
+            parameterType,
+            parameterNullableAnnotation,
+            expectedGeneratedMethodsCount,
+            bodyAssertion);
 }

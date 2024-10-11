@@ -69,7 +69,8 @@ internal sealed class MappaMethodBuilder
             this.MapMethod.TargetType.ToDisplayString())
             .Trim();
 
-        var parameters = $"{this.MapMethod.SourceType.ToDisplayString()} {this.MapMethod.SourceParameterName}";
+        var extensionMethod = this.MapMethod.MethodSymbol.IsExtensionMethod ? "this " : string.Empty;
+        var parameters = $"{extensionMethod}{this.MapMethod.SourceType.ToDisplayString()} {this.MapMethod.SourceParameterName}";
 
         var signature = $"{modifiersWithReturnType} {this.MapMethod.MethodName}({parameters})";
 

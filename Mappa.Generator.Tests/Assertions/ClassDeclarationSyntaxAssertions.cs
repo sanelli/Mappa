@@ -112,6 +112,31 @@ public sealed class ClassDeclarationSyntaxAssertions
         string name,
         (string Type, NullableAnnotation NullableAnnotation, string Name)[] parameters,
         Action<MethodDeclarationSyntaxAssertions> assert)
+        => this.HaveMethod(
+            returnType,
+            returnTypeNullableAnnotation,
+            name,
+            false,
+            parameters,
+            assert);
+
+    /// <summary>
+    /// Assert that the class has a method with a specific signature.
+    /// </summary>
+    /// <param name="returnType">The return type of the method.</param>
+    /// <param name="returnTypeNullableAnnotation"><c>true</c> if the method has been annotated with nullability.</param>
+    /// <param name="name">The method name.</param>
+    /// <param name="isExtensionMethod">The method is an extension method.</param>
+    /// <param name="parameters">The expected parameters of the method.</param>
+    /// <param name="assert">The assertion on the method.</param>
+    /// <returns>The method declaration syntax assertions.</returns>
+    public ClassDeclarationSyntaxAssertions HaveMethod(
+        string returnType,
+        NullableAnnotation returnTypeNullableAnnotation,
+        string name,
+        bool isExtensionMethod,
+        (string Type, NullableAnnotation NullableAnnotation, string Name)[] parameters,
+        Action<MethodDeclarationSyntaxAssertions> assert)
     {
         ArgumentNullException.ThrowIfNull(assert);
 
@@ -128,6 +153,11 @@ public sealed class ClassDeclarationSyntaxAssertions
                                    ?? throw new MappaGeneratorException(
                                        $"Cannot obtain symbol from method \"{methodDeclarationSyntax.Identifier}\".");
                 var expectedReturnType = this.Compilation.GetTypeSymbol(returnType);
+
+                if (methodSymbol.IsExtensionMethod != isExtensionMethod)
+                {
+                    return false;
+                }
 
                 if (!SymbolEqualityComparer.Default.Equals(methodSymbol.ReturnType, expectedReturnType))
                 {
