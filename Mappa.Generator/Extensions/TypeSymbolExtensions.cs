@@ -30,6 +30,7 @@ internal static class TypeSymbolExtensions
     private static readonly string TimeSpanFullName = typeof(TimeSpan).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(TimeSpan)}");
     private static readonly string UriFullName = typeof(Uri).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Uri)}");
     private static readonly string GuidFullName = typeof(Guid).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Guid)}");
+    private static readonly string DateTimeOffset = typeof(DateTimeOffset).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(DateTimeOffset)}");
 
     /// <summary>
     /// Check if the type is <see cref="Void"/>.
@@ -354,6 +355,19 @@ internal static class TypeSymbolExtensions
         => typeSymbol.SpecialType == SpecialType.System_DateTime;
 
     /// <summary>
+    /// Check if the type is <see cref="DateTime"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="DateTime"/>.</returns>
+    internal static bool IsDateTimeOffset(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var dateTimeOffsetType = compilation.GetTypeByMetadataName(DateTimeOffset);
+        var isDateTimeOffsetType = SymbolEqualityComparer.Default.Equals(dateTimeOffsetType, typeSymbol.OriginalDefinition);
+        return isDateTimeOffsetType;
+    }
+
+    /// <summary>
     /// Check if the type is <see cref="Nullable{T}"/>.
     /// </summary>
     /// <param name="typeSymbol">The type symbol.</param>
@@ -567,8 +581,8 @@ internal static class TypeSymbolExtensions
     /// <returns><c>true</c> if the type symbol is <see cref="Guid"/>.</returns>
     internal static bool IsGuid(this ITypeSymbol typeSymbol, Compilation compilation)
     {
-        var uriType = compilation.GetTypeByMetadataName(GuidFullName);
-        var isUri = SymbolEqualityComparer.Default.Equals(uriType, typeSymbol.OriginalDefinition);
-        return isUri;
+        var guidType = compilation.GetTypeByMetadataName(GuidFullName);
+        var isGuid = SymbolEqualityComparer.Default.Equals(guidType, typeSymbol.OriginalDefinition);
+        return isGuid;
     }
 }

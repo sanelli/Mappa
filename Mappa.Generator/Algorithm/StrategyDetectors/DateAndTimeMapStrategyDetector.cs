@@ -46,7 +46,7 @@ internal sealed class DateAndTimeMapStrategyDetector
         }
 
         // 02. DateTime -> TimeOnly
-        if (this.CanMapDateTimeToTimeOnly())
+        else if (this.CanMapDateTimeToTimeOnly())
         {
             mapStrategy = new DateTimeToTimeOnlyMapStrategy(
                 this.context.TargetType,
@@ -54,7 +54,7 @@ internal sealed class DateAndTimeMapStrategyDetector
         }
 
         // 03. DateOnly -> DateTime
-        if (this.CanMapDateOnlyToDateTime())
+        else if (this.CanMapDateOnlyToDateTime())
         {
             mapStrategy = new DateOnlyToDateTimeMapStrategy(
                 this.context.TargetType,
@@ -62,7 +62,7 @@ internal sealed class DateAndTimeMapStrategyDetector
         }
 
         // 04. DateTime -> long.
-        if (this.CanMapDateTimeToLong())
+        else if (this.CanMapDateTimeToLong())
         {
             mapStrategy = new DateTimeToLongMapStrategy(
                 this.context.TargetType,
@@ -70,7 +70,7 @@ internal sealed class DateAndTimeMapStrategyDetector
         }
 
         // 05. long -> DateTime.
-        if (this.CanMapLongOrSmallerNumericTypeToDateTime())
+        else if (this.CanMapLongOrSmallerNumericTypeToDateTime())
         {
             mapStrategy = new LongToDateTimeMapStrategy(
                 this.context.TargetType,
@@ -78,7 +78,7 @@ internal sealed class DateAndTimeMapStrategyDetector
         }
 
         // 06. DateOnly -> long.
-        if (this.CanMapDateOnlyToLong())
+        else if (this.CanMapDateOnlyToLong())
         {
             mapStrategy = new DateOnlyToLongMapStrategy(
                 this.context.TargetType,
@@ -86,25 +86,62 @@ internal sealed class DateAndTimeMapStrategyDetector
         }
 
         // 07. TimeSpan -> double.
-        if (this.CanMapTimeSpanToDouble())
+        else if (this.CanMapTimeSpanToDouble())
         {
             mapStrategy = new TimeSpanToDoubleMapStrategy(
                 this.context.TargetType,
                 this.context.SourceType);
         }
 
-        // 07. double -> TimeSpan.
-        if (this.CanMapDoubleToTimeSpan())
+        // 08. double -> TimeSpan.
+        else if (this.CanMapDoubleToTimeSpan())
         {
             mapStrategy = new DoubleToTimeSpanMapStrategy(
                 this.context.TargetType,
                 this.context.SourceType);
         }
 
-        // TODO [#44] DateTimeOffset -> DateOnly.
-        // TODO [#44] DateTimeOffset -> TimeOnly.
-        // TODO [#44] DateTimeOffset -> long.
-        // TODO [#44] long -> DateTimeOffset.
+        // 09. DateTime -> DateOnly.
+        else if (this.CanMapDateTimeOffsetToDateOnly())
+        {
+            mapStrategy = new DateTimeOffsetToDateOnlyMapStrategy(
+                this.context.TargetType,
+                this.context.SourceType);
+        }
+
+        // 10. DateTime -> TimeOnly
+        else if (this.CanMapDateTimeOffsetToTimeOnly())
+        {
+            mapStrategy = new DateTimeOffsetToTimeOnlyMapStrategy(
+                this.context.TargetType,
+                this.context.SourceType);
+        }
+
+        // 11. DateTime -> long.
+        else if (this.CanMapDateTimeOffsetToLong())
+        {
+            mapStrategy = new DateTimeOffsetToLongMapStrategy(
+                this.context.TargetType,
+                this.context.SourceType);
+        }
+
+        // 12. long -> DateTime.
+        else if (this.CanMapLongOrSmallerNumericTypeToDateTimeOffset())
+        {
+            mapStrategy = new LongToDateTimeOffsetMapStrategy(
+                this.context.TargetType,
+                this.context.SourceType);
+        }
+
+        // 13. DateTimeOffset -> DateTime.
+        // NOTE: The reverse is handled by the identity strategy.
+        else if (this.CanMapDateTimeOffsetToDateTime())
+        {
+            mapStrategy = new DateTimeOffsetToDateTimeMapStrategy(
+                this.context.TargetType,
+                this.context.SourceType);
+        }
+
         return mapStrategy is not NoMapStrategy;
     }
 
@@ -162,5 +199,40 @@ internal sealed class DateAndTimeMapStrategyDetector
         var targetIsTimeSpan = this.context.TargetType.IsTimeSpan(this.compilation);
         var sourceIsDouble = this.context.SourceType.IsDoubleOrNumericImplicitlyConvertible();
         return targetIsTimeSpan && sourceIsDouble;
+    }
+
+    private bool CanMapDateTimeOffsetToDateOnly()
+    {
+        var sourceIsDateTimeOffset = this.context.SourceType.IsDateTimeOffset(this.compilation);
+        var targetIsDateOnly = this.context.TargetType.IsDateOnly(this.compilation);
+        return sourceIsDateTimeOffset && targetIsDateOnly;
+    }
+
+    private bool CanMapDateTimeOffsetToTimeOnly()
+    {
+        var sourceIsDateTimeOffset = this.context.SourceType.IsDateTimeOffset(this.compilation);
+        var targetIsTimeOnly = this.context.TargetType.IsTimeOnly(this.compilation);
+        return sourceIsDateTimeOffset && targetIsTimeOnly;
+    }
+
+    private bool CanMapDateTimeOffsetToLong()
+    {
+        var sourceIsDateTimeOffset = this.context.SourceType.IsDateTimeOffset(this.compilation);
+        var targetIsLong = this.context.TargetType.IsLong();
+        return sourceIsDateTimeOffset && targetIsLong;
+    }
+
+    private bool CanMapLongOrSmallerNumericTypeToDateTimeOffset()
+    {
+        var sourceIsLongOrSmallerNumericType = this.context.SourceType.IsLongOrNumericCanBeImplictlyCastedToLong();
+        var targetIsDateTimeOffset = this.context.TargetType.IsDateTimeOffset(this.compilation);
+        return sourceIsLongOrSmallerNumericType && targetIsDateTimeOffset;
+    }
+
+    private bool CanMapDateTimeOffsetToDateTime()
+    {
+        var sourceIsDateTimeOffset = this.context.SourceType.IsDateTimeOffset(this.compilation);
+        var targetIsDateTime = this.context.TargetType.IsDateTime();
+        return sourceIsDateTimeOffset && targetIsDateTime;
     }
 }

@@ -1,4 +1,4 @@
-// <copyright file="DateTimeToDateOnlyMapStrategyBuilder.cs" company="Stefano Anelli">
+// <copyright file="DateTimeOffsetToTimeOnlyMapStrategyBuilder.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -8,18 +8,18 @@ using Mappa.Generator.Models.Strategies;
 namespace Mappa.Generator.Builders.Strategies;
 
 /// <summary>
-/// Builder for <see cref="DateTimeToDateOnlyMapStrategy"/> strategy.
+/// Builder for <see cref="DateTimeOffsetToTimeOnlyMapStrategy"/> strategy.
 /// </summary>
-internal sealed class DateTimeToDateOnlyMapStrategyBuilder
+internal sealed class DateTimeOffsetToTimeOnlyMapStrategyBuilder
    : IMappaStrategyBuilder
 {
-    private readonly DateTimeToDateOnlyMapStrategy strategy;
+    private readonly DateTimeOffsetToTimeOnlyMapStrategy strategy;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DateTimeToDateOnlyMapStrategyBuilder"/> class.
+    /// Initializes a new instance of the <see cref="DateTimeOffsetToTimeOnlyMapStrategyBuilder"/> class.
     /// </summary>
     /// <param name="strategy">The strategy.</param>
-    public DateTimeToDateOnlyMapStrategyBuilder(DateTimeToDateOnlyMapStrategy strategy)
+    public DateTimeOffsetToTimeOnlyMapStrategyBuilder(DateTimeOffsetToTimeOnlyMapStrategy strategy)
     {
         this.strategy = strategy;
     }
@@ -28,7 +28,7 @@ internal sealed class DateTimeToDateOnlyMapStrategyBuilder
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
         var temporary = context.NextTemporary();
-        var code = $"System.DateOnly {temporary} = System.DateOnly.FromDateTime({source});";
+        var code = $"System.TimeOnly {temporary} = System.TimeOnly.FromDateTime({source}.DateTime);";
 
         var ruleComment = mappaGlobalOptions.MappaDebugComments
             ? $"/* Mappa Rule: {this.strategy.Rule} */ "

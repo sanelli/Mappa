@@ -110,6 +110,7 @@ internal sealed class IdentityMapStrategyDetector
 
     private bool CanMapUsingImplicitConversion()
     {
-        return this.compilation.HasImplicitConversion(this.context.SourceType, this.context.TargetType);
+        var hasImplicitConversion = this.compilation.HasImplicitConversion(this.context.SourceType, this.context.TargetType);
+        return hasImplicitConversion;
     }
 }

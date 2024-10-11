@@ -227,4 +227,29 @@ public enum MappaAlgorithmRule
     /// Map <see cref="double"/> to <see cref="TimeSpan"/>.
     /// </summary>
     DoubleToTimeSpan,
+
+    /// <summary>
+    /// Map from <see cref="DateTimeOffset"/> to DateOnly.
+    /// </summary>
+    DateTimeOffsetToDateOnly,
+
+    /// <summary>
+    /// Map from <see cref="DateTimeOffset"/> to TimeOnly.
+    /// </summary>
+    DateTimeOffsetToTimeOnly,
+
+    /// <summary>
+    /// Map <see cref="DateTimeOffset"/> to <see cref="long"/>.
+    /// </summary>
+    DateTimeOffsetToLong,
+
+    /// <summary>
+    /// Map <see cref="long"/> to <see cref="DateTimeOffset"/>.
+    /// </summary>
+    LongToDateTimeOffset,
+
+    /// <summary>
+    /// Map <see cref="DateTimeOffset"/> to <see cref="DateTime"/>.
+    /// </summary>
+    DateTimeOffsetToDateTime,
 }
