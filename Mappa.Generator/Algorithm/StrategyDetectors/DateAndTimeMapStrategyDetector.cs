@@ -101,7 +101,7 @@ internal sealed class DateAndTimeMapStrategyDetector
                 this.context.SourceType);
         }
 
-        // 09. DateTime -> DateOnly.
+        // 09. DateTimeOffset -> DateOnly.
         else if (this.CanMapDateTimeOffsetToDateOnly())
         {
             mapStrategy = new DateTimeOffsetToDateOnlyMapStrategy(
@@ -109,7 +109,7 @@ internal sealed class DateAndTimeMapStrategyDetector
                 this.context.SourceType);
         }
 
-        // 10. DateTime -> TimeOnly
+        // 10. DateTimeOffset -> TimeOnly
         else if (this.CanMapDateTimeOffsetToTimeOnly())
         {
             mapStrategy = new DateTimeOffsetToTimeOnlyMapStrategy(
@@ -117,7 +117,7 @@ internal sealed class DateAndTimeMapStrategyDetector
                 this.context.SourceType);
         }
 
-        // 11. DateTime -> long.
+        // 11. DateTimeOffset -> long.
         else if (this.CanMapDateTimeOffsetToLong())
         {
             mapStrategy = new DateTimeOffsetToLongMapStrategy(
@@ -125,7 +125,7 @@ internal sealed class DateAndTimeMapStrategyDetector
                 this.context.SourceType);
         }
 
-        // 12. long -> DateTime.
+        // 12. long -> DateTimeOffset.
         else if (this.CanMapLongOrSmallerNumericTypeToDateTimeOffset())
         {
             mapStrategy = new LongToDateTimeOffsetMapStrategy(

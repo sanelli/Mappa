@@ -382,4 +382,180 @@ public sealed class DateAndTimeMapperTests
         // Assert
         actual.Should().Be(TimeSpan.FromSeconds(input));
     }
+
+    /// <summary>
+    /// Unit test for <see cref="DateAndTimeMapper.MapDateTimeOffsetToDateOnly"/>.
+    /// </summary>
+    [Fact]
+    public void CanMapFromDateTimeOffsetToDateOnly()
+    {
+        // Arrange
+        var input = DateTimeOffset.UtcNow;
+
+        // Act
+        var actual = this.mapper.MapDateTimeOffsetToDateOnly(input);
+
+        // Assert
+        actual.Should().Be(DateOnly.FromDateTime(input.DateTime));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="DateAndTimeMapper.MapDateTimeOffsetToTimeOnly"/>.
+    /// </summary>
+    [Fact]
+    public void CanMapFromDateTimeOffsetToTimeOnly()
+    {
+        // Arrange
+        var input = DateTimeOffset.UtcNow;
+
+        // Act
+        var actual = this.mapper.MapDateTimeOffsetToTimeOnly(input);
+
+        // Assert
+        actual.Should().Be(TimeOnly.FromDateTime(input.DateTime));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="DateAndTimeMapper.MapDateTimeOffsetToLong"/>.
+    /// </summary>
+    [Fact]
+    public void CanMapFromDateTimeOffsetToLong()
+    {
+        // Arrange
+        var input = DateTimeOffset.UtcNow;
+
+        // Act
+        var actual = this.mapper.MapDateTimeOffsetToLong(input);
+
+        // Assert
+        actual.Should().Be(input.ToUnixTimeSeconds());
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="DateAndTimeMapper.MapLongToDateTimeOffset"/>.
+    /// </summary>
+    [Fact]
+    public void CanMapFromLongToDateTimeOffset()
+    {
+        // Arrange
+        const long input = 100L;
+
+        // Act
+        var actual = this.mapper.MapLongToDateTimeOffset(input);
+
+        // Assert
+        actual.Should().Be(DateTimeOffset.UnixEpoch.AddSeconds(input));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="DateAndTimeMapper.MapUintToDateTimeOffset"/>.
+    /// </summary>
+    [Fact]
+    public void CanMapFromUintToDateTimeOffset()
+    {
+        // Arrange
+        const uint input = 100;
+
+        // Act
+        var actual = this.mapper.MapUintToDateTimeOffset(input);
+
+        // Assert
+        actual.Should().Be(DateTimeOffset.UnixEpoch.AddSeconds(input));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="DateAndTimeMapper.MapIntToDateTimeOffset"/>.
+    /// </summary>
+    [Fact]
+    public void CanMapFromIntToDateTimeOffset()
+    {
+        // Arrange
+        const int input = 100;
+
+        // Act
+        var actual = this.mapper.MapIntToDateTimeOffset(input);
+
+        // Assert
+        actual.Should().Be(DateTimeOffset.UnixEpoch.AddSeconds(input));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="DateAndTimeMapper.MapUShortToDateTimeOffset"/>.
+    /// </summary>
+    [Fact]
+    public void CanMapFromUShortToDateTimeOffset()
+    {
+        // Arrange
+        const ushort input = 100;
+
+        // Act
+        var actual = this.mapper.MapUShortToDateTimeOffset(input);
+
+        // Assert
+        actual.Should().Be(DateTimeOffset.UnixEpoch.AddSeconds(input));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="DateAndTimeMapper.MapShortToDateTimeOffset"/>.
+    /// </summary>
+    [Fact]
+    public void CanMapFromShortToDateTimeOffset()
+    {
+        // Arrange
+        const short input = 100;
+
+        // Act
+        var actual = this.mapper.MapShortToDateTimeOffset(input);
+
+        // Assert
+        actual.Should().Be(DateTimeOffset.UnixEpoch.AddSeconds(input));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="DateAndTimeMapper.MapSByteToDateTimeOffset"/>.
+    /// </summary>
+    [Fact]
+    public void CanMapFromSByteToDateTimeOffset()
+    {
+        // Arrange
+        const sbyte input = 100;
+
+        // Act
+        var actual = this.mapper.MapSByteToDateTimeOffset(input);
+
+        // Assert
+        actual.Should().Be(DateTimeOffset.UnixEpoch.AddSeconds(input));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="DateAndTimeMapper.MapByteToDateTimeOffset"/>.
+    /// </summary>
+    [Fact]
+    public void CanMapFromByteToDateTimeOffset()
+    {
+        // Arrange
+        const byte input = 100;
+
+        // Act
+        var actual = this.mapper.MapByteToDateTimeOffset(input);
+
+        // Assert
+        actual.Should().Be(DateTimeOffset.UnixEpoch.AddSeconds(input));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="DateAndTimeMapper.MapDateTimeOffsetToDateTime"/>.
+    /// </summary>
+    [Fact]
+    public void CanMapFromDateTimeOffsetToDateTime()
+    {
+        // Arrange
+        var input = DateTimeOffset.UtcNow;
+
+        // Act
+        var actual = this.mapper.MapDateTimeOffsetToDateTime(input);
+
+        // Assert
+        actual.Should().Be(input.DateTime);
+    }
 }

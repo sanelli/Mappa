@@ -173,4 +173,81 @@ public sealed partial class DateAndTimeMapper
     /// <param name="input">The input <see cref="byte"/> value.</param>
     /// <returns>The mapped <see cref="TimeSpan"/> value.</returns>
     public partial TimeSpan MapByteToTimeSpan(byte input);
+
+    /// <summary>
+    /// Map <see cref="DateTimeOffset"/> to <see cref="DateOnly"/>.
+    /// </summary>
+    /// <param name="input">The input <see cref="DateTime"/> value.</param>
+    /// <returns>The mapped <see cref="DateOnly"/> value.</returns>
+    public partial DateOnly MapDateTimeOffsetToDateOnly(DateTimeOffset input);
+
+    /// <summary>
+    /// Map <see cref="DateTimeOffset"/> to <see cref="TimeOnly"/>.
+    /// </summary>
+    /// <param name="input">The input <see cref="DateTime"/> value.</param>
+    /// <returns>The mapped <see cref="TimeOnly"/> value.</returns>
+    public partial TimeOnly MapDateTimeOffsetToTimeOnly(DateTimeOffset input);
+
+    /// <summary>
+    /// Map <see cref="DateTimeOffset"/> to <see cref="long"/>.
+    /// </summary>
+    /// <param name="input">The input <see cref="DateTime"/> value.</param>
+    /// <returns>The mapped <see cref="long"/> value.</returns>
+    public partial long MapDateTimeOffsetToLong(DateTimeOffset input);
+
+     /// <summary>
+    /// Map <see cref="long"/> to <see cref="DateTimeOffset"/>.
+    /// </summary>
+    /// <param name="input">The input <see cref="long"/> value.</param>
+    /// <returns>The mapped <see cref="DateTimeOffset"/> value.</returns>
+    public partial DateTimeOffset MapLongToDateTimeOffset(long input);
+
+    /// <summary>
+    /// Map <see cref="uint"/> to <see cref="DateTimeOffset"/>.
+    /// </summary>
+    /// <param name="input">The input <see cref="uint"/> value.</param>
+    /// <returns>The mapped <see cref="DateTimeOffset"/> value.</returns>
+    public partial DateTimeOffset MapUintToDateTimeOffset(uint input);
+
+    /// <summary>
+    /// Map <see cref="int"/> to <see cref="DateTimeOffset"/>.
+    /// </summary>
+    /// <param name="input">The input <see cref="int"/> value.</param>
+    /// <returns>The mapped <see cref="DateTimeOffset"/> value.</returns>
+    public partial DateTimeOffset MapIntToDateTimeOffset(int input);
+
+    /// <summary>
+    /// Map <see cref="ushort"/> to <see cref="DateTimeOffset"/>.
+    /// </summary>
+    /// <param name="input">The input <see cref="ushort"/> value.</param>
+    /// <returns>The mapped <see cref="DateTimeOffset"/> value.</returns>
+    public partial DateTimeOffset MapUShortToDateTimeOffset(ushort input);
+
+    /// <summary>
+    /// Map <see cref="short"/> to <see cref="DateTimeOffset"/>.
+    /// </summary>
+    /// <param name="input">The input <see cref="short"/> value.</param>
+    /// <returns>The mapped <see cref="DateTimeOffset"/> value.</returns>
+    public partial DateTimeOffset MapShortToDateTimeOffset(short input);
+
+    /// <summary>
+    /// Map <see cref="sbyte"/> to <see cref="DateTimeOffset"/>.
+    /// </summary>
+    /// <param name="input">The input <see cref="sbyte"/> value.</param>
+    /// <returns>The mapped <see cref="DateTimeOffset"/> value.</returns>
+    public partial DateTimeOffset MapSByteToDateTimeOffset(sbyte input);
+
+    /// <summary>
+    /// Map <see cref="byte"/> to <see cref="DateTimeOffset"/>.
+    /// </summary>
+    /// <param name="input">The input <see cref="byte"/> value.</param>
+    /// <returns>The mapped <see cref="DateTimeOffset"/> value.</returns>
+    public partial DateTimeOffset MapByteToDateTimeOffset(byte input);
+
+    /// <summary>
+    /// Map <see cref="DateTimeOffset"/> to <see cref="DateTime"/>.
+    /// </summary>
+    /// <param name="input">The input <see cref="DateTimeOffset"/> value.</param>
+    /// <returns>The mapped <see cref="DateTime"/> value.</returns>
+    public partial DateTime MapDateTimeOffsetToDateTime(DateTimeOffset input);
 }
