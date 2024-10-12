@@ -155,7 +155,7 @@ internal sealed class MappaGeneratorClassAlgorithm
         {
             if (propertyDeclarationSyntax.AccessorList is not null && propertyDeclarationSyntax.AccessorList.Accessors.Any(accessor => accessor.Kind() == SyntaxKind.GetAccessorDeclaration))
             {
-                if (propertyDeclarationSyntax.AttributeLists.GetMappaDependencyAttribute(classContext.SemanticModel, cancellationToken) is null)
+                if (propertyDeclarationSyntax.AttributeLists.GetMappaDependencyAttributeSyntax(classContext.SemanticModel, cancellationToken) is null)
                 {
                     continue;
                 }
@@ -176,8 +176,7 @@ internal sealed class MappaGeneratorClassAlgorithm
                             propertyDeclarationSyntax,
                             method,
                             accessFieldName,
-                            classContext,
-                            cancellationToken);
+                            classContext);
                     }
                 }
             }
@@ -186,7 +185,7 @@ internal sealed class MappaGeneratorClassAlgorithm
         // Get all accessible properties that have MappaDependency attribute
         foreach (var fieldDeclarationSyntax in classDeclarationSyntax.ChildNodes().OfType<FieldDeclarationSyntax>())
         {
-            if (fieldDeclarationSyntax.AttributeLists.GetMappaDependencyAttribute(classContext.SemanticModel, cancellationToken) is null)
+            if (fieldDeclarationSyntax.AttributeLists.GetMappaDependencyAttributeSyntax(classContext.SemanticModel, cancellationToken) is null)
             {
                 continue;
             }
@@ -211,8 +210,7 @@ internal sealed class MappaGeneratorClassAlgorithm
                             fieldDeclarationSyntax,
                             method,
                             accessFieldName,
-                            classContext,
-                            cancellationToken);
+                            classContext);
                     }
                 }
             }
@@ -304,8 +302,7 @@ internal sealed class MappaGeneratorClassAlgorithm
         SyntaxNode referenceSyntaxNode,
         IMethodSymbol method,
         string accessFieldName,
-        MappaClassGeneratorContext classContext,
-        CancellationToken cancellationToken)
+        MappaClassGeneratorContext classContext)
     {
         // TODO [#37] Allow to skip method using MappaIgnore attribute.
         if (!this.Compilation.IsSymbolAccessibleWithin(method, classContext.ClassSymbol))
@@ -331,8 +328,7 @@ internal sealed class MappaGeneratorClassAlgorithm
         var mapMethod = new MapMethod(
             method,
             accessFieldName,
-            classContext.IsNullableEnabled(referenceSyntaxNode),
-            cancellationToken);
+            classContext.IsNullableEnabled(referenceSyntaxNode));
 
         // If the method cannot be added it is OK:
         // method defined in the class takes precedence if they
