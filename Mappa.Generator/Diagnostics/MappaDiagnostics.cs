@@ -80,4 +80,37 @@ internal static class MappaDiagnostics
             location,
             sourceType.ToDisplayString(),
             targetType.ToDisplayString());
+
+    /// <summary>
+    /// Diagnostic to report the fact that multiple attributes are targeting the same property.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="propertyOrParameterName">The name of the property or constructor parameter for which multiple mapping attributes have been defined.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MultipleAttributesTargetTheSamePropertyOrParameter(MethodDeclarationSyntax methodDeclarationSyntax, string propertyOrParameterName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MultipleAttributesTargetTheSamePropertyOrParameter,
+            methodDeclarationSyntax.GetLocation(),
+            methodDeclarationSyntax.Identifier.ToFullString(),
+            propertyOrParameterName);
+
+    /// <summary>
+    /// Diagnostic to report the fact that it is not possible identify a suitable method to invoke.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="propertyOrParameterName">The name of the property or constructor parameter for which multiple mapping attributes have been defined.</param>
+    /// <param name="methodName">The name of the method to invoke.</param>
+    /// <param name="typeName">The type on which the method is being looked for.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic CannotDetectSuitableMethodToInvoke(
+        MethodDeclarationSyntax methodDeclarationSyntax,
+        string propertyOrParameterName,
+        string methodName,
+        string typeName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.CannotDetectSuitableMethodToInvoke,
+            methodDeclarationSyntax.GetLocation(),
+            methodName,
+            typeName,
+            propertyOrParameterName);
 }

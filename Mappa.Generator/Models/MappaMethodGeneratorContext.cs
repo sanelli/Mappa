@@ -30,26 +30,24 @@ internal sealed class MappaMethodGeneratorContext
     /// </summary>
     internal MappaClassGeneratorContext ClassContext { get; }
 
-    /// <summary>
-    /// Gets the method declaration syntax.
-    /// </summary>
-    internal MapMethod MapMethod { get; }
+    /// <inheritdoc/>
+    internal override MapMethod? MapMethod { get; }
 
     /// <inheritdoc/>
-    internal override ISymbol ParentSymbol => this.MapMethod.MethodSymbol.ContainingSymbol;
+    internal override ISymbol ParentSymbol => this.GetMapMethod().MethodSymbol.ContainingSymbol;
 
     /// <inheritdoc/>
-    internal override ITypeSymbol SourceType => this.MapMethod.SourceType;
+    internal override ITypeSymbol SourceType => this.GetMapMethod().SourceType;
 
     /// <inheritdoc/>
-    internal override ITypeSymbol TargetType => this.MapMethod.TargetType;
+    internal override ITypeSymbol TargetType => this.GetMapMethod().TargetType;
 
     /// <inheritdoc/>
     internal override MappaMapAlgorithmContextSettings Settings { get; } = new();
 
     /// <inheritdoc/>
     internal override bool IsNullableEnabled()
-        => this.MapMethod.NullableEnabled;
+        => this.GetMapMethod().NullableEnabled;
 
     /// <inheritdoc/>
     internal override bool TryGetMethod(ITypeSymbol targetType, ITypeSymbol sourceType, out MapMethod mapMethod)
@@ -61,5 +59,5 @@ internal sealed class MappaMethodGeneratorContext
 
     /// <inheritdoc/>
     internal override Location? GetLocation()
-        => this.MapMethod.Location;
+        => this.GetMapMethod().Location;
 }

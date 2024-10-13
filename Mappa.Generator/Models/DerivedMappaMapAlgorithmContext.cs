@@ -45,6 +45,9 @@ internal sealed class DerivedMappaMapAlgorithmContext
         => this.parent.Settings;
 
     /// <inheritdoc/>
+    internal override MapMethod? MapMethod => null;
+
+    /// <inheritdoc/>
     internal override bool IsNullableEnabled()
         => this.parent.IsNullableEnabled();
 

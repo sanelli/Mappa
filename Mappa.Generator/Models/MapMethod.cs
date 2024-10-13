@@ -36,6 +36,7 @@ internal sealed class MapMethod
         bool nullableEnabled,
         CancellationToken cancellationToken)
     {
+        this.MethodDeclarationSyntax = methodDeclarationSyntax;
         this.AccessFieldName = methodDeclarationSyntax.IsStatic() ? string.Empty : "this";
         this.MethodName = methodDeclarationSyntax.Identifier.ToFullString();
         this.MethodSymbol = semanticModel.GetDeclaredSymbol(methodDeclarationSyntax, cancellationToken)
@@ -63,6 +64,7 @@ internal sealed class MapMethod
         string accessFiledName,
         bool nullableEnabled)
     {
+        this.MethodDeclarationSyntax = null;
         this.AccessFieldName = accessFiledName;
         this.MethodName = methodSymbol.Name;
         this.MethodSymbol = methodSymbol;
@@ -118,6 +120,11 @@ internal sealed class MapMethod
     /// Gets the location.
     /// </summary>
     internal Location? Location { get; }
+
+    /// <summary>
+    /// Gets the method declaration syntax.
+    /// </summary>
+    internal MethodDeclarationSyntax? MethodDeclarationSyntax { get; }
 
     /// <summary>
     /// Gets the method strategy.

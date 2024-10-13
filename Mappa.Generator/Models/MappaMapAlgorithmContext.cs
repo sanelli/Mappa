@@ -2,6 +2,8 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Exceptions;
+
 using Microsoft.CodeAnalysis;
 
 namespace Mappa.Generator.Models;
@@ -26,6 +28,11 @@ internal abstract class MappaMapAlgorithmContext
     /// Gets the target type.
     /// </summary>
     internal abstract ITypeSymbol TargetType { get; }
+
+    /// <summary>
+    /// Gets the method declaration syntax.
+    /// </summary>
+    internal abstract MapMethod? MapMethod { get; }
 
     /// <summary>
     /// Gets the context settings.
@@ -59,4 +66,19 @@ internal abstract class MappaMapAlgorithmContext
     /// </summary>
     /// <returns>The location being mapped.</returns>
     internal abstract Location? GetLocation();
+
+    /// <summary>
+    /// Gets the map method.
+    /// </summary>
+    /// <returns>The map method <see cref="MapMethod"/>.</returns>
+    /// <exception cref="MappaGeneratorException">When <see cref="MapMethod"/> is <c>null</c>.</exception>
+    internal MapMethod GetMapMethod()
+    {
+        if (this.MapMethod is null)
+        {
+            throw new MappaGeneratorException("Map method is not defined.");
+        }
+
+        return this.MapMethod;
+    }
 }

@@ -2,6 +2,9 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Attributes;
+using Mappa.Generator.Diagnostics;
+using Mappa.Generator.Exceptions;
 using Mappa.Generator.Extensions;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
@@ -101,35 +104,37 @@ internal sealed class ConstructorMapStrategyDetector
                 {
                     // For each argument of the constructor
                     (IParameterSymbol Parameter, IPropertySymbol Property, IMapStrategy Strategy)[] strategiesForEachParameter = methodSymbol.Parameters
-                        .Select<IParameterSymbol, (IParameterSymbol Parameter,  IPropertySymbol Property, IMapStrategy Strategy)>(targetParameter =>
-                        {
-                            // TODO [#8] Allow property mapping where source property name differ from target parameter name using an attribute.
-                            var sourceProperty = Array.Find(sourceProperties, property => property.Name.Equals(targetParameter.Name, StringComparison.OrdinalIgnoreCase));
-                            if (sourceProperty is null)
+                        .Select<IParameterSymbol, (IParameterSymbol Parameter, IPropertySymbol Property, IMapStrategy Strategy)>(
+                            targetParameter =>
                             {
+                                // TODO [#8] Allow property mapping where source property name differ from target parameter name using an attribute.
+                                // TODO [#54] Allow using the MappaInvokeMethodAttribute.
+                                var sourceProperty = Array.Find(sourceProperties, property => property.Name.Equals(targetParameter.Name, StringComparison.OrdinalIgnoreCase));
+                                if (sourceProperty is null)
+                                {
+                                    return (targetParameter, null!, noMapStrategy);
+                                }
+
+                                var targetParameterType = targetParameter.Type;
+                                var sourcePropertyType = sourceProperty.Type;
+
+                                // Prevent circular mapping if the target type of the parameter
+                                // is the same type of the current type being mapped.
+                                if (SymbolEqualityComparer.Default.Equals(targetParameterType, this.context.TargetType))
+                                {
+                                    return (targetParameter, null!, noMapStrategy);
+                                }
+
+                                // Get a strategy from source to target
+                                if (this.TryGetStrategyBetweenTypes(targetParameterType, sourcePropertyType, true, out var propertyStrategy))
+                                {
+                                    var parameterMapStrategy = new ParameterMapStrategy(targetParameter, sourceProperty, propertyStrategy);
+                                    return (targetParameter, sourceProperty, parameterMapStrategy);
+                                }
+
+                                // There is no mapping from source property to target parameter.
                                 return (targetParameter, null!, noMapStrategy);
-                            }
-
-                            var targetParameterType = targetParameter.Type;
-                            var sourcePropertyType = sourceProperty.Type;
-
-                            // Prevent circular mapping if the target type of the parameter
-                            // is the same type of the current type being mapped.
-                            if (SymbolEqualityComparer.Default.Equals(targetParameterType, this.context.TargetType))
-                            {
-                                return (targetParameter, null!, noMapStrategy);
-                            }
-
-                            // Get a strategy from source to target
-                            if (this.TryGetStrategyBetweenTypes(targetParameterType, sourcePropertyType, true, out var propertyStrategy))
-                            {
-                                var parameterMapStrategy = new ParameterMapStrategy(targetParameter, sourceProperty, propertyStrategy);
-                                return (targetParameter, sourceProperty, parameterMapStrategy);
-                            }
-
-                            // There is no mapping from source property to target parameter.
-                            return (targetParameter, null!, noMapStrategy);
-                        })
+                            })
                         .ToArray();
 
                     return (methodSymbol, strategiesForEachParameter);
@@ -265,7 +270,24 @@ internal sealed class ConstructorMapStrategyDetector
                         {
                             // TODO [#8] Allow property mapping where source property name differ from target property name using an attribute.
                             // TODO [#9] Allow property mapping regardless of casing using an attribute.
-                            if (!sourceProperties.TryGetValue(targetProperty.Name, out var sourceProperty))
+                            // Try to get a matching property
+                            var hasSourceProperty = sourceProperties.TryGetValue(targetProperty.Name, out var sourceProperty);
+
+                            // Look for any attribute action that can be applied
+                            if (this.context.MapMethod is not null &&
+                                this.TryGetStrategyForPropertyOrArgumentUsingAttributesOnMethod(
+                                    targetProperty.Name,
+                                    targetProperty.Type,
+                                    this.context.SourceType,
+                                    hasSourceProperty ? sourceProperty : null,
+                                    StringComparison.Ordinal,
+                                    out var propertyStrategyFromAttribute))
+                            {
+                                return new PropertyMapStrategy(targetProperty, null!, propertyStrategyFromAttribute);
+                            }
+
+                            // Look for a matching source property
+                            if (!hasSourceProperty || sourceProperty is null)
                             {
                                 return new PropertyMapStrategy(targetProperty, null!, noMapStrategy);
                             }
@@ -329,6 +351,152 @@ internal sealed class ConstructorMapStrategyDetector
             var algorithm = new TypeMapIdentifierWithMapMethodAlgorithm(derivedContext, this.compilation, this.cancellationToken);
             elementStrategy = algorithm.GetStrategy();
             return elementStrategy is not NoMapStrategy;
+        }
+    }
+
+    private bool TryGetStrategyForPropertyOrArgumentUsingAttributesOnMethod(
+        string targetName,
+        ITypeSymbol targetType,
+        ITypeSymbol sourceClassType,
+        IPropertySymbol? sourceProperty,
+        StringComparison stringComparison,
+        out IMapStrategy strategy)
+    {
+        strategy = new NoMapStrategy(targetType, null!);
+
+        if (this.context.MapMethod is null)
+        {
+            throw new MappaGeneratorException("Map method needs to be defined.");
+        }
+
+        var matchingAttributes = this.context.MapMethod
+            .GetAttributes<Attribute>()
+            .OfType<IMappaTargetPropertyNameAttribute>()
+            .Where(attribute => attribute.TargetPropertyName.Equals(targetName, stringComparison))
+            .ToArray();
+
+        // No such attribute.
+        if (matchingAttributes.Length <= 0)
+        {
+            return false;
+        }
+
+        // Too many attributes!
+        if (matchingAttributes.Length > 1)
+        {
+            this.context.ReportDiagnostic(MappaDiagnostics.MultipleAttributesTargetTheSamePropertyOrParameter(
+                this.context.MapMethod.MethodDeclarationSyntax ?? throw new MappaGeneratorException("Method declarations syntax has not been defined."),
+                targetName));
+            return false;
+        }
+
+        // Apply the unique attribute that has been discovered.
+        var attribute = matchingAttributes.Single();
+        switch (attribute)
+        {
+            case MappaInvokeMethodAttribute mappaInvokeMethodAttribute:
+                this.TryGetStrategyUsingMappaInvokeMethodAttribute(
+                    targetName,
+                    targetType,
+                    sourceClassType,
+                    sourceProperty,
+                    mappaInvokeMethodAttribute,
+                    out strategy);
+                break;
+        }
+
+        return strategy is not NoMapStrategy;
+    }
+
+    private void TryGetStrategyUsingMappaInvokeMethodAttribute(
+        string targetName,
+        ITypeSymbol targetType,
+        ITypeSymbol sourceClassType,
+        IPropertySymbol? sourceProperty,
+        MappaInvokeMethodAttribute mappaInvokeMethodAttribute,
+        out IMapStrategy strategy)
+    {
+        strategy = new NoMapStrategy(targetType, null!);
+
+        if (mappaInvokeMethodAttribute.FieldName is not null)
+        {
+            // TODO [#54] Implement the scenario where field name is provided.
+            throw new NotImplementedException("#54 Implement the scenario where field name is provided.");
+        }
+
+        if (mappaInvokeMethodAttribute.ClassType is not null)
+        {
+            // TODO [#54] Implement the scenario where class type is provided.
+            throw new NotImplementedException("#54 Implement the scenario where class type is provided.");
+        }
+
+        // At this point we look for a method (static or not static in the same class the method is defined)
+        var mapMethod = this.context.MapMethod ?? throw new MappaGeneratorException("Map method needs to be defined.");
+        var classSymbol = (INamedTypeSymbol)mapMethod.MethodSymbol.ContainingSymbol;
+        var method = GetBestMethodSymbol(
+            this.compilation,
+            classSymbol.GetMembers().OfType<IMethodSymbol>().ToArray(),
+            mappaInvokeMethodAttribute.MethodName,
+            targetType,
+            sourceClassType,
+            sourceProperty,
+            this.context.IsNullableEnabled());
+        if (method is null)
+        {
+            this.context.ReportDiagnostic(MappaDiagnostics.CannotDetectSuitableMethodToInvoke(
+                mapMethod.MethodDeclarationSyntax ?? throw new MappaGeneratorException("Method declaration syntax has not been defined."),
+                targetName,
+                mappaInvokeMethodAttribute.MethodName,
+                classSymbol.ToDisplayString()));
+            return;
+        }
+
+        static IMethodSymbol? GetBestMethodSymbol(
+            Compilation compilation,
+            IMethodSymbol[] methods,
+            string methodName,
+            ITypeSymbol targetType,
+            ITypeSymbol sourceClassType,
+            IPropertySymbol? sourceProperty,
+            bool nullableEnabled)
+        {
+            var methodsWithTheRightNameAndReturnType = methods
+                .Where(method => method.Name.Equals(methodName, StringComparison.Ordinal))
+                .Where(method =>
+                    method.ReturnType.IsEqualTo(targetType, nullableEnabled) ||
+                    compilation.HasImplicitConversion(method.ReturnType, targetType))
+                .ToArray();
+
+            // If not method can be found too bad.
+            if (methodsWithTheRightNameAndReturnType.Length == 0)
+            {
+                return null;
+            }
+
+            // If only one method has been found happy days!
+            if (methodsWithTheRightNameAndReturnType.Length == 1)
+            {
+                return methodsWithTheRightNameAndReturnType.Single();
+            }
+
+            // TODO [#54] Continue from here.
+            // If multiple methods are available first look for one having
+            // two parameters, first one being type source class
+            // and the second being the source property
+            // TODO [#54] Implement me.
+
+            // If multiple methods are available first look for one having
+            // one parameter being type source class.
+            // TODO [#54] Implement me.
+
+            // If multiple methods are available first look for one having
+            // one parameter being type source property type.
+            // TODO [#54] Implement me.
+
+            // If multiple methods are available first look for one having
+            // no parameters.
+            // TODO [#54] Implement me.
+            return null;
         }
     }
 }
