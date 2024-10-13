@@ -451,6 +451,8 @@ internal sealed class ConstructorMapStrategyDetector
             return;
         }
 
+        // TODO [#54] Remove pragma.
+        #pragma warning disable S1172
         static IMethodSymbol? GetBestMethodSymbol(
             Compilation compilation,
             IMethodSymbol[] methods,
