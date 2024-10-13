@@ -451,6 +451,8 @@ internal sealed class ConstructorMapStrategyDetector
             return;
         }
 
+        strategy = new MappaInvokeMethodAttributeStrategy(targetType, mappaInvokeMethodAttribute, method, sourceProperty);
+
         // TODO [#54] Remove pragma.
         #pragma warning disable S1172
         static IMethodSymbol? GetBestMethodSymbol(
@@ -489,7 +491,14 @@ internal sealed class ConstructorMapStrategyDetector
 
             // If multiple methods are available first look for one having
             // one parameter being type source class.
-            // TODO [#54] Implement me.
+            var methodWithOneParaOfTypeClassType = Array
+                .Find(
+                    methodsWithTheRightNameAndReturnType,
+                    method => method.Parameters.Length == 1 && method.Parameters[0].Type.IsEqualTo(sourceClassType, nullableEnabled));
+            if (methodWithOneParaOfTypeClassType is not null)
+            {
+                return methodWithOneParaOfTypeClassType;
+            }
 
             // If multiple methods are available first look for one having
             // one parameter being type source property type.
@@ -498,6 +507,8 @@ internal sealed class ConstructorMapStrategyDetector
             // If multiple methods are available first look for one having
             // no parameters.
             // TODO [#54] Implement me.
+
+            // No method has been identified.
             return null;
         }
     }
