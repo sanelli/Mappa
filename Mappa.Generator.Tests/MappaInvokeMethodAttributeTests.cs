@@ -80,7 +80,7 @@ public sealed class MappaInvokeMethodAttributeTests
                             syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
                                 typeof(string).ToString(),
                                 "__mappa_tmp_1",
-                                initializationAssertions => initializationAssertions.BeInvocationExpressionSyntax(
+                                initializationAssertions => initializationAssertions.BeInvocationExpressionUsingIdentifierNameSyntax(
                                     "CustomMapPropertyA",
                                     firstParameterAssertions => firstParameterAssertions.BeIdentifierNameSyntax("input")));
                         })

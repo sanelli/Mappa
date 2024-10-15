@@ -63,6 +63,6 @@ internal sealed class MappaInvokeMethodAttributeStrategy
     /// <inheritdoc/>
     public IMappaStrategyBuilder GetBuilder()
     {
-        throw new NotImplementedException();
+        return new MappaInvokeMethodAttributeStrategyBuilder(this);
     }
 }

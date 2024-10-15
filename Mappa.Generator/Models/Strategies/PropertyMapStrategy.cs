@@ -52,5 +52,5 @@ internal sealed class PropertyMapStrategy
     public MappaAlgorithmRule Rule => MappaAlgorithmRule.PropertyStrategy;
 
     /// <inheritdoc/>
-    public IMappaStrategyBuilder GetBuilder() => this.PropertyStrategy.GetBuilder();
+    public IMappaStrategyBuilder GetBuilder() => new PropertyMapStrategyBuilder(this);
 }

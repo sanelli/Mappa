@@ -50,15 +50,12 @@ internal sealed class InvokeConstructorMapStrategyBuilder
         var propertyInitializersMappings = new List<(string TargetPropertyName, string TemporaryName)>();
         foreach (var propertyMapStrategy in this.strategy.InitializerStrategies)
         {
-            var initializerPropertyTemporary = context.NextTemporary();
-            builder.AppendLine($"{propertyMapStrategy.SourceType.ToDisplayString()} {initializerPropertyTemporary} = {source}.{propertyMapStrategy.SourceProperty.Name};");
-            var (initializerPropertyTargetTemporary, initializerPropertyCode) = propertyMapStrategy.GetBuilder().BuildSource(initializerPropertyTemporary, context, mappaGlobalOptions);
-            propertyInitializersMappings.Add((propertyMapStrategy.TargetProperty.Name, initializerPropertyTargetTemporary));
-            if (!string.IsNullOrWhiteSpace(initializerPropertyCode))
-            {
-                builder.AppendLine(initializerPropertyCode);
-                builder.AppendEmptyLine();
-            }
+                var (initializerPropertyTargetTemporary, initializerPropertyCode) = propertyMapStrategy.GetBuilder().BuildSource(source, context, mappaGlobalOptions);
+                propertyInitializersMappings.Add((propertyMapStrategy.TargetProperty.Name, initializerPropertyTargetTemporary));
+                if (!string.IsNullOrWhiteSpace(initializerPropertyCode))
+                {
+                    builder.AppendLine(initializerPropertyCode);
+                }
         }
 
         var hasPropertyInitializers = propertyInitializersMappings.Count > 0;
