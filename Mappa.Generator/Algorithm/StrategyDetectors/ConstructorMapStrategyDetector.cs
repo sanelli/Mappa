@@ -508,8 +508,7 @@ internal sealed class ConstructorMapStrategyDetector
 
             // If multiple methods are available first look for one having
             // one parameter being type source class.
-            var methodWithOneParaOfTypeClassType = Array
-                .Find(
+            var methodWithOneParaOfTypeClassType = Array.Find(
                     methodsWithTheRightNameAndReturnType,
                     method => method.Parameters.Length == 1 && method.Parameters[0].Type.IsEqualTo(sourceClassType, nullableEnabled));
             if (methodWithOneParaOfTypeClassType is not null)
@@ -523,7 +522,13 @@ internal sealed class ConstructorMapStrategyDetector
 
             // If multiple methods are available first look for one having
             // no parameters.
-            // TODO [#54] Implement me.
+            var methodWithNoParameters = Array.Find(
+                 methodsWithTheRightNameAndReturnType,
+                 method => method.Parameters.Length == 0);
+            if (methodWithNoParameters is not null)
+            {
+                return methodWithOneParaOfTypeClassType;
+            }
 
             // No method has been identified.
             return null;
