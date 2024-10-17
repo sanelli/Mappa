@@ -28,7 +28,8 @@ internal sealed class MappaInvokeMethodAttributeStrategyBuilder
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
         var targetTemporary = context.NextTemporary();
-        var code = $"{this.strategy.TargetType.ToDisplayString()} {targetTemporary} = {this.strategy.Method.Name}({source});";
+        var accessor = this.strategy.Method.IsStatic ? string.Empty : "this.";
+        var code = $"{this.strategy.TargetType.ToDisplayString()} {targetTemporary} = {accessor}{this.strategy.Method.Name}({source});";
         return (targetTemporary, code);
     }
 }
