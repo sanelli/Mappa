@@ -34,13 +34,10 @@ internal sealed class InvokeConstructorMapStrategyBuilder
         var parametersVariableNames = new List<string>();
         foreach (var parameterMapStrategy in this.strategy.ParametersMapStrategies)
         {
-            var parameterTemporary = context.NextTemporary();
-            builder.AppendLine($"{parameterMapStrategy.SourceType.ToDisplayString()} {parameterTemporary} = {source}.{parameterMapStrategy.SourceProperty.Name};");
-            var (parameterTargetTemporary, parameterCode) = parameterMapStrategy.GetBuilder().BuildSource(parameterTemporary, context, mappaGlobalOptions);
+            var (parameterTargetTemporary, parameterCode) = parameterMapStrategy.GetBuilder().BuildSource(source, context, mappaGlobalOptions);
             if (!string.IsNullOrWhiteSpace(parameterCode))
             {
                 builder.AppendLine(parameterCode);
-                builder.AppendEmptyLine();
             }
 
             parametersVariableNames.Add(parameterTargetTemporary);

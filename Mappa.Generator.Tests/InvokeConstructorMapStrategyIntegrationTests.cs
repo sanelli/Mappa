@@ -234,7 +234,7 @@ public sealed class InvokeConstructorMapStrategyIntegrationTests
                 });
     }
 
-     /// <summary>
+    /// <summary>
     /// Test a mapping from two classes can happen using the
     /// constructor with arguments.
     /// </summary>

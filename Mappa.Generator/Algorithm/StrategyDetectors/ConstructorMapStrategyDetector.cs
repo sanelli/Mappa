@@ -108,8 +108,22 @@ internal sealed class ConstructorMapStrategyDetector
                             targetParameter =>
                             {
                                 // TODO [#8] Allow property mapping where source property name differ from target parameter name using an attribute.
-                                // TODO [#54] Allow using the MappaInvokeMethodAttribute.
-                                var sourceProperty = Array.Find(sourceProperties, property => property.Name.Equals(targetParameter.Name, StringComparison.OrdinalIgnoreCase));
+                                IPropertySymbol? sourceProperty = Array.Find(sourceProperties, property => property.Name.Equals(targetParameter.Name, StringComparison.OrdinalIgnoreCase));
+
+                                // Look for any attribute action that can be applied
+                                if (this.context.MapMethod is not null &&
+                                    this.TryGetStrategyForPropertyOrArgumentUsingAttributesOnMethod(
+                                        targetParameter.Name,
+                                        targetParameter.Type,
+                                        this.context.SourceType,
+                                        sourceProperty,
+                                        StringComparison.OrdinalIgnoreCase,
+                                        out var propertyStrategyFromAttribute))
+                                {
+                                    var strategy = new ParameterMapStrategy(targetParameter, sourceProperty!, propertyStrategyFromAttribute);
+                                    return (targetParameter, sourceProperty!, strategy);
+                                }
+
                                 if (sourceProperty is null)
                                 {
                                     return (targetParameter, null!, noMapStrategy);
@@ -154,7 +168,9 @@ internal sealed class ConstructorMapStrategyDetector
                     this.context.TargetType,
                     this.context.SourceType,
                     constructorsWithMappings[0].methodSymbol,
-                    constructorsWithMappings[0].strategiesForEachParameter.Select(parameterAndStrategy => new ParameterMapStrategy(parameterAndStrategy.Parameter, parameterAndStrategy.Property, parameterAndStrategy.Strategy)).ToArray(),
+                    constructorsWithMappings[0].strategiesForEachParameter
+                        .Select(parameterAndStrategy => (ParameterMapStrategy)parameterAndStrategy.Strategy)
+                        .ToArray(),
                     []);
             }
         }
@@ -283,7 +299,7 @@ internal sealed class ConstructorMapStrategyDetector
                                     StringComparison.Ordinal,
                                     out var propertyStrategyFromAttribute))
                             {
-                                return new PropertyMapStrategy(targetProperty, null!, propertyStrategyFromAttribute);
+                                return new PropertyMapStrategy(targetProperty, sourceProperty!, propertyStrategyFromAttribute);
                             }
 
                             // Look for a matching source property
