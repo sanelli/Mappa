@@ -507,7 +507,12 @@ internal sealed class ConstructorMapStrategyDetector
             // TODO [#54] Implement me.
 
             // If multiple methods are available first look for one having
-            // one parameter being type source class.
+            // two parameters, first one being implicitly convertible from source class
+            // and the second being implicitly convertible from source property
+            // TODO [#54] Implement me.
+
+            // If multiple methods are available first look for one having
+            // one parameter being equal to the type of source class.
             var methodWithOneParaOfTypeClassType = Array.Find(
                     methodsWithTheRightNameAndReturnType,
                     method => method.Parameters.Length == 1 && method.Parameters[0].Type.IsEqualTo(sourceClassType, nullableEnabled));
@@ -517,7 +522,15 @@ internal sealed class ConstructorMapStrategyDetector
             }
 
             // If multiple methods are available first look for one having
-            // one parameter being type source property type.
+            // one parameter being implicitly convertible to the type of source class.
+            // TODO [#54] Implement me.
+
+            // If multiple methods are available first look for one having
+            // one parameter being equal to the type of the source property.
+            // TODO [#54] Implement me.
+
+            // If multiple methods are available first look for one having
+            // one parameter being implicitly convertible from the type of the source property.
             // TODO [#54] Implement me.
 
             // If multiple methods are available first look for one having

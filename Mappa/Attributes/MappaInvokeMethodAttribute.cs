@@ -18,8 +18,11 @@ namespace Mappa.Attributes;
 /// The method can have the following set of parameters:
 /// <list type="bullet">
 /// <item><description>Two parameters: the first one of the same type of the source <c>class</c>/<c>struct</c>/<c>record</c>, and the second one of the same type of the source property.</description></item>
+/// <item><description>Two parameters: the first one of the same type of (or implicitly convertible from) the source <c>class</c>/<c>struct</c>/<c>record</c>, and the second one of the same type of (or implicitly convertible from) the source property.</description></item>
 /// <item><description>One parameter of the same type of the source <c>class</c>/<c>struct</c>/<c>record</c>.</description></item>
+/// <item><description>One parameter with type implicitly convertible from the source type.</description></item>
 /// <item><description>One parameter of the same type of the source property.</description></item>
+/// <item><description>One parameter with type implicitly convertible from the source property type.</description></item>
 /// <item><description>No parameters.</description></item>
 /// </list>
 /// If multiple matching methods exist the method is
@@ -81,7 +84,7 @@ public sealed class MappaInvokeMethodAttribute
 
     /// <summary>
     /// Gets the name of the field inside the class this attribute is used
-    /// on which the method <see cref="MethodName"/> should be invoked.
+    /// on which the non-<c>static</c> method <see cref="MethodName"/> should be invoked.
     /// </summary>
     public string? FieldName { get; }
 }
