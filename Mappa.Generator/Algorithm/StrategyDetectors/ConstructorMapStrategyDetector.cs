@@ -467,7 +467,12 @@ internal sealed class ConstructorMapStrategyDetector
             return;
         }
 
-        strategy = new MappaInvokeMethodAttributeStrategy(targetType, mappaInvokeMethodAttribute, method, sourceProperty);
+        strategy = new MappaInvokeMethodAttributeStrategy(
+            targetType,
+            mappaInvokeMethodAttribute,
+            method,
+            sourceProperty,
+            this.context.MapMethod.NullableEnabled);
 
         // TODO [#54] Remove pragma.
         #pragma warning disable S1172
@@ -493,7 +498,7 @@ internal sealed class ConstructorMapStrategyDetector
                 return null;
             }
 
-            // If only one method has been found happy days!
+            // If only one method has been been found we can return it.
             if (methodsWithTheRightNameAndReturnType.Length == 1)
             {
                 // TODO [#54] Even if only 1 method is available might not be suitable (e.g. method has 2 params - source and property - but source property is not available.
@@ -506,41 +511,51 @@ internal sealed class ConstructorMapStrategyDetector
             // and the second being the source property
             // TODO [#54] Implement me.
 
-            // If multiple methods are available first look for one having
+            // Then look for one having
             // two parameters, first one being implicitly convertible from source class
             // and the second being implicitly convertible from source property
             // TODO [#54] Implement me.
 
-            // If multiple methods are available first look for one having
+            // Then look for one having
             // one parameter being equal to the type of source class.
-            var methodWithOneParaOfTypeClassType = Array.Find(
+            var methodWithOneParamOfTypeClassType = Array.Find(
                     methodsWithTheRightNameAndReturnType,
                     method => method.Parameters.Length == 1 && method.Parameters[0].Type.IsEqualTo(sourceClassType, nullableEnabled));
-            if (methodWithOneParaOfTypeClassType is not null)
+            if (methodWithOneParamOfTypeClassType is not null)
             {
-                return methodWithOneParaOfTypeClassType;
+                return methodWithOneParamOfTypeClassType;
             }
 
-            // If multiple methods are available first look for one having
+            // Then look for one having
             // one parameter being implicitly convertible to the type of source class.
             // TODO [#54] Implement me.
 
-            // If multiple methods are available first look for one having
+            // Then look for one having
             // one parameter being equal to the type of the source property.
-            // TODO [#54] Implement me.
+            if (sourceProperty is not null)
+            {
+                var methodWithOneParamOfTypeSourceType = Array.Find(
+                    methodsWithTheRightNameAndReturnType,
+                    method => method.Parameters.Length == 1 &&
+                              method.Parameters[0].Type.IsEqualTo(sourceProperty.Type, nullableEnabled));
+                if (methodWithOneParamOfTypeSourceType is not null)
+                {
+                    return methodWithOneParamOfTypeSourceType;
+                }
+            }
 
-            // If multiple methods are available first look for one having
+            // Then look for one having
             // one parameter being implicitly convertible from the type of the source property.
             // TODO [#54] Implement me.
 
-            // If multiple methods are available first look for one having
+            // Then look for one having
             // no parameters.
             var methodWithNoParameters = Array.Find(
                  methodsWithTheRightNameAndReturnType,
                  method => method.Parameters.Length == 0);
             if (methodWithNoParameters is not null)
             {
-                return methodWithOneParaOfTypeClassType;
+                return methodWithOneParamOfTypeClassType;
             }
 
             // No method has been identified.

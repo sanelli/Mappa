@@ -23,17 +23,20 @@ internal sealed class MappaInvokeMethodAttributeStrategy
     /// <param name="attribute">The attribute, as specified by the user on the mapper method.</param>
     /// <param name="method">The method to be invoked.</param>
     /// <param name="sourceProperty">The optional source property to be used by the method.</param>
+    /// <param name="isNullableEnabled"><c>true</c> if nullable is enabled at this invocation point.</param>
     public MappaInvokeMethodAttributeStrategy(
         ITypeSymbol targetType,
         MappaInvokeMethodAttribute attribute,
         IMethodSymbol method,
-        IPropertySymbol? sourceProperty)
+        IPropertySymbol? sourceProperty,
+        bool isNullableEnabled)
     {
         this.TargetType = targetType;
         this.SourceType = null!;
         this.Attribute = attribute;
         this.Method = method;
         this.SourceProperty = sourceProperty;
+        this.IsNullableEnabled = isNullableEnabled;
     }
 
     /// <inheritdoc/>
@@ -59,6 +62,11 @@ internal sealed class MappaInvokeMethodAttributeStrategy
     /// Gets the attribute as specified by the user.
     /// </summary>
     internal MappaInvokeMethodAttribute Attribute { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether <c>nullable</c> is enabled for reference types.
+    /// </summary>
+    internal bool IsNullableEnabled { get; }
 
     /// <inheritdoc/>
     public IMappaStrategyBuilder GetBuilder()

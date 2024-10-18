@@ -3,6 +3,7 @@
 // </copyright>
 
 using Mappa.Generator.Exceptions;
+using Mappa.Generator.Extensions;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -48,7 +49,15 @@ internal sealed class MappaInvokeMethodAttributeStrategyBuilder
             case 0:
                 return string.Empty;
             case 1:
-                return source;
+                {
+                    if (this.strategy.SourceProperty is not null &&
+                        this.strategy.Method.Parameters[0].Type.IsEqualTo(this.strategy.SourceProperty.Type, this.strategy.IsNullableEnabled))
+                    {
+                        return $"{source}.{this.strategy.SourceProperty.Name}";
+                    }
+
+                    return source;
+                }
         }
 
         throw new MappaGeneratorException("Unexpected number of parameters.");
