@@ -474,8 +474,6 @@ internal sealed class ConstructorMapStrategyDetector
             sourceProperty,
             this.context.MapMethod.NullableEnabled);
 
-        // TODO [#54] Remove pragma.
-        #pragma warning disable S1172
         static IMethodSymbol? GetBestMethodSymbol(
             Compilation compilation,
             IMethodSymbol[] methods,
@@ -498,18 +496,28 @@ internal sealed class ConstructorMapStrategyDetector
                 return null;
             }
 
-            // If only one method has been been found we can return it.
+            // If only one method has been found we can return it.
             if (methodsWithTheRightNameAndReturnType.Length == 1)
             {
                 // TODO [#54] Even if only 1 method is available might not be suitable (e.g. method has 2 params - source and property - but source property is not available.
                 return methodsWithTheRightNameAndReturnType.Single();
             }
 
-            // TODO [#54] Continue from here.
             // If multiple methods are available first look for one having
             // two parameters, first one being type source class
             // and the second being the source property
-            // TODO [#54] Implement me.
+            if (sourceProperty is not null)
+            {
+                var methodWithTwoParameters = Array.Find(
+                    methodsWithTheRightNameAndReturnType,
+                    method => method.Parameters.Length == 2 &&
+                                method.Parameters[0].Type.IsEqualTo(sourceClassType, nullableEnabled) &&
+                                method.Parameters[1].Type.IsEqualTo(sourceProperty.Type, nullableEnabled));
+                if (methodWithTwoParameters is not null)
+                {
+                    return methodWithTwoParameters;
+                }
+            }
 
             // Then look for one having
             // two parameters, first one being implicitly convertible from source class
