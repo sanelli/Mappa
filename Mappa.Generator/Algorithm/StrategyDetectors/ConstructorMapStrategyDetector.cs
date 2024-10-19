@@ -496,13 +496,6 @@ internal sealed class ConstructorMapStrategyDetector
                 return null;
             }
 
-            // If only one method has been found we can return it.
-            if (methodsWithTheRightNameAndReturnType.Length == 1)
-            {
-                // TODO [#54] Even if only 1 method is available might not be suitable (e.g. method has 2 params - source and property - but source property is not available.
-                return methodsWithTheRightNameAndReturnType.Single();
-            }
-
             // If multiple methods are available first look for one having
             // two parameters, first one being type source class
             // and the second being the source property
