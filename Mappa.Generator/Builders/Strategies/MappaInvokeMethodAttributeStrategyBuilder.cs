@@ -50,6 +50,13 @@ internal sealed class MappaInvokeMethodAttributeStrategyBuilder
                 return string.Empty;
 
             case 1:
+
+                if (this.strategy.Method.Parameters[0].Type.IsEqualTo(this.strategy.SourceType, this.strategy.IsNullableEnabled) ||
+                    context.Compilation.HasImplicitConversion(this.strategy.SourceType, this.strategy.Method.Parameters[0].Type))
+                {
+                    return source;
+                }
+
                 if (this.strategy.SourceProperty is not null &&
                     (this.strategy.Method.Parameters[0].Type.IsEqualTo(this.strategy.SourceProperty.Type, this.strategy.IsNullableEnabled) ||
                     context.Compilation.HasImplicitConversion(this.strategy.SourceProperty.Type, this.strategy.Method.Parameters[0].Type)))
@@ -57,7 +64,7 @@ internal sealed class MappaInvokeMethodAttributeStrategyBuilder
                     return $"{source}.{this.strategy.SourceProperty.Name}";
                 }
 
-                return source;
+                throw new MappaGeneratorException("Unexpected parameter type");
 
             case 2:
                 if (this.strategy.SourceProperty is not null)
@@ -68,6 +75,6 @@ internal sealed class MappaInvokeMethodAttributeStrategyBuilder
                 break;
         }
 
-        throw new MappaGeneratorException("Unexpected number of parameters.");
+        throw new MappaGeneratorException("Unsupported number of parameters.");
     }
 }

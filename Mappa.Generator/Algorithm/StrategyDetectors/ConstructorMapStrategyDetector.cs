@@ -469,6 +469,7 @@ internal sealed class ConstructorMapStrategyDetector
 
         strategy = new MappaInvokeMethodAttributeStrategy(
             targetType,
+            sourceClassType,
             mappaInvokeMethodAttribute,
             method,
             sourceProperty,

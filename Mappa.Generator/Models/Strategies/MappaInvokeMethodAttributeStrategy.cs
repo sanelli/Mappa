@@ -20,19 +20,21 @@ internal sealed class MappaInvokeMethodAttributeStrategy
     /// Initializes a new instance of the <see cref="MappaInvokeMethodAttributeStrategy"/> class.
     /// </summary>
     /// <param name="targetType">The type of the target.</param>
+    /// <param name="sourceClassType">The type of the source.</param>
     /// <param name="attribute">The attribute, as specified by the user on the mapper method.</param>
     /// <param name="method">The method to be invoked.</param>
     /// <param name="sourceProperty">The optional source property to be used by the method.</param>
     /// <param name="isNullableEnabled"><c>true</c> if nullable is enabled at this invocation point.</param>
     public MappaInvokeMethodAttributeStrategy(
         ITypeSymbol targetType,
+        ITypeSymbol sourceClassType,
         MappaInvokeMethodAttribute attribute,
         IMethodSymbol method,
         IPropertySymbol? sourceProperty,
         bool isNullableEnabled)
     {
         this.TargetType = targetType;
-        this.SourceType = null!;
+        this.SourceType = sourceClassType;
         this.Attribute = attribute;
         this.Method = method;
         this.SourceProperty = sourceProperty;
