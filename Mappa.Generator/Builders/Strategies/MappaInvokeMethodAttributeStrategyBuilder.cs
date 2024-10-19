@@ -31,7 +31,7 @@ internal sealed class MappaInvokeMethodAttributeStrategyBuilder
     {
         var targetTemporary = context.NextTemporary();
         var accessor = this.GetAccessor();
-        var parameters = this.GetParameters(source);
+        var parameters = this.GetParameters(source, context);
         var code = $"{this.strategy.TargetType.ToDisplayString()} {targetTemporary} = {accessor}{this.strategy.Method.Name}({parameters});";
         return (targetTemporary, code);
     }
@@ -42,7 +42,7 @@ internal sealed class MappaInvokeMethodAttributeStrategyBuilder
         return accessor;
     }
 
-    private string GetParameters(string source)
+    private string GetParameters(string source, MappaBuilderContext context)
     {
         switch (this.strategy.Method.Parameters.Length)
         {
@@ -51,7 +51,8 @@ internal sealed class MappaInvokeMethodAttributeStrategyBuilder
 
             case 1:
                 if (this.strategy.SourceProperty is not null &&
-                    this.strategy.Method.Parameters[0].Type.IsEqualTo(this.strategy.SourceProperty.Type, this.strategy.IsNullableEnabled))
+                    (this.strategy.Method.Parameters[0].Type.IsEqualTo(this.strategy.SourceProperty.Type, this.strategy.IsNullableEnabled) ||
+                    context.Compilation.HasImplicitConversion(this.strategy.SourceProperty.Type, this.strategy.Method.Parameters[0].Type)))
                 {
                     return $"{source}.{this.strategy.SourceProperty.Name}";
                 }
