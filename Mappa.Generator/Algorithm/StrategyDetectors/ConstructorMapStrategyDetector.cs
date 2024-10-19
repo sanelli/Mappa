@@ -530,7 +530,14 @@ internal sealed class ConstructorMapStrategyDetector
 
             // Then look for one having
             // one parameter being implicitly convertible to the type of source class.
-            // TODO [#54] Implement me.
+            var methodWithOneParamOfTypeImplicitConvertibleClassType = Array.Find(
+                methodsWithTheRightNameAndReturnType,
+                method => method.Parameters.Length == 1 &&
+                          compilation.HasImplicitConversion(sourceClassType, method.Parameters[0].Type));
+            if (methodWithOneParamOfTypeImplicitConvertibleClassType is not null)
+            {
+                return methodWithOneParamOfTypeImplicitConvertibleClassType;
+            }
 
             // Then look for one having
             // one parameter being equal to the type of the source property.
