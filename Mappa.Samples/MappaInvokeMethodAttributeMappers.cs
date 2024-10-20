@@ -398,6 +398,10 @@ public sealed partial class MapEmptyConstructorWithTypeLocatedMethodWithSourceCl
     public partial TargetClassModel Map(SourceClassModel source);
 }
 
+// TODO [#54] Add missing tests to cover TypeAccess tests with all variants
+// TODO [#54] Add missing tests to cover field tests with all variants
+// TODO [#54] Add missing tests to cover property tests with all variants
+
 /// <summary>
 /// Mapper helper method that can be invoked by other classes.
 /// </summary>
@@ -409,7 +413,7 @@ public sealed class MapperDependencyHelper
     /// <param name="source">The source.</param>
     /// <param name="property">The property.</param>
     /// <returns>The mapped string.</returns>
-    public static string StaticMap1(SourceRecordModel source, int property)
+    public static string StaticMap1(SourceClassModel source, int property)
     {
         ArgumentNullException.ThrowIfNull(source);
         return $"{nameof(StaticMap1)}/{source.ParamA}/{source.ParamB}/{property}";
@@ -433,7 +437,7 @@ public sealed class MapperDependencyHelper
     /// <param name="source">The source.</param>
     /// <param name="property">The property.</param>
     /// <returns>The mapped string.</returns>
-    public static string StaticMap3(SourceRecordModel source, long property)
+    public static string StaticMap3(SourceClassModel source, long property)
     {
         ArgumentNullException.ThrowIfNull(source);
         return $"{nameof(StaticMap3)}/{source.ParamA}/{source.ParamB}/{property}";
@@ -456,7 +460,7 @@ public sealed class MapperDependencyHelper
     /// </summary>
     /// <param name="source">The source.</param>
     /// <returns>The mapped string.</returns>
-    public static string StaticMap5(SourceRecordModel source)
+    public static string StaticMap5(SourceClassModel source)
     {
         ArgumentNullException.ThrowIfNull(source);
         return $"{nameof(StaticMap5)}/{source.ParamA}/{source.ParamB}";
@@ -508,10 +512,10 @@ public sealed class MapperDependencyHelper
     /// <param name="source">The source.</param>
     /// <param name="property">The property.</param>
     /// <returns>The mapped string.</returns>
-    public static string Map1(SourceRecordModel source, int property)
+    public string Map1(SourceClassModel source, int property)
     {
         ArgumentNullException.ThrowIfNull(source);
-        return $"{nameof(Map1)}/{source.ParamA}/{source.ParamB}/{property}";
+        return $"{nameof(this.Map1)}/{source.ParamA}/{source.ParamB}/{property}";
     }
 
     /// <summary>
@@ -520,10 +524,10 @@ public sealed class MapperDependencyHelper
     /// <param name="source">The source.</param>
     /// <param name="property">The property.</param>
     /// <returns>The mapped string.</returns>
-    public static string Map2(object source, int property)
+    public string Map2(object source, int property)
     {
         ArgumentNullException.ThrowIfNull(source);
-        return $"{nameof(Map2)}/{source}/{property}";
+        return $"{nameof(this.Map2)}/{source}/{property}";
     }
 
     /// <summary>
@@ -532,10 +536,10 @@ public sealed class MapperDependencyHelper
     /// <param name="source">The source.</param>
     /// <param name="property">The property.</param>
     /// <returns>The mapped string.</returns>
-    public static string Map3(SourceRecordModel source, long property)
+    public string Map3(SourceClassModel source, long property)
     {
         ArgumentNullException.ThrowIfNull(source);
-        return $"{nameof(Map3)}/{source.ParamA}/{source.ParamB}/{property}";
+        return $"{nameof(this.Map3)}/{source.ParamA}/{source.ParamB}/{property}";
     }
 
     /// <summary>
@@ -544,10 +548,10 @@ public sealed class MapperDependencyHelper
     /// <param name="source">The source.</param>
     /// <param name="property">The property.</param>
     /// <returns>The mapped string.</returns>
-    public static string Map4(object source, long property)
+    public string Map4(object source, long property)
     {
         ArgumentNullException.ThrowIfNull(source);
-        return $"{nameof(Map4)}/{source}/{property}";
+        return $"{nameof(this.Map4)}/{source}/{property}";
     }
 
     /// <summary>
@@ -555,10 +559,10 @@ public sealed class MapperDependencyHelper
     /// </summary>
     /// <param name="source">The source.</param>
     /// <returns>The mapped string.</returns>
-    public static string Map5(SourceRecordModel source)
+    public string Map5(SourceClassModel source)
     {
         ArgumentNullException.ThrowIfNull(source);
-        return $"{nameof(Map5)}/{source.ParamA}/{source.ParamB}";
+        return $"{nameof(this.Map5)}/{source.ParamA}/{source.ParamB}";
     }
 
     /// <summary>
@@ -566,10 +570,10 @@ public sealed class MapperDependencyHelper
     /// </summary>
     /// <param name="source">The source.</param>
     /// <returns>The mapped string.</returns>
-    public static string Map6(object source)
+    public string Map6(object source)
     {
         ArgumentNullException.ThrowIfNull(source);
-        return $"{nameof(Map6)}/{source}";
+        return $"{nameof(this.Map6)}/{source}";
     }
 
     /// <summary>
@@ -577,9 +581,9 @@ public sealed class MapperDependencyHelper
     /// </summary>
     /// <param name="property">The property.</param>
     /// <returns>The mapped string.</returns>
-    public static string Map7(int property)
+    public string Map7(int property)
     {
-        return $"{nameof(Map7)}/{property}";
+        return $"{nameof(this.Map7)}/{property}";
     }
 
     /// <summary>
@@ -587,17 +591,17 @@ public sealed class MapperDependencyHelper
     /// </summary>
     /// <param name="property">The property.</param>
     /// <returns>The mapped string.</returns>
-    public static string Map8(long property)
+    public string Map8(long property)
     {
-        return $"{nameof(Map8)}/{property}";
+        return $"{nameof(this.Map8)}/{property}";
     }
 
     /// <summary>
     /// Map to a <see cref="string"/>.
     /// </summary>
     /// <returns>The mapped string.</returns>
-    public static string Map9()
+    public string Map9()
     {
-        return $"{nameof(Map9)}";
+        return $"{nameof(this.Map9)}";
     }
 }

@@ -241,7 +241,7 @@ public sealed class MappaInvokeMethodAttributeMappersTests
         var actual = mapper.Map(source);
 
         // Assert
-        actual.ParamA.Should().Be($"{nameof(MapperDependencyHelper.StaticMap1)}/{source.ParamA}/{source.ParamB}/{source.ParamA})");
+        actual.ParamA.Should().Be($"{nameof(MapperDependencyHelper.StaticMap1)}/{source.ParamA}/{source.ParamB}/{source.ParamA}");
         actual.ParamB.Should().Be((int)source.ParamB);
     }
 }

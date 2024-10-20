@@ -1031,7 +1031,7 @@ public sealed class MappaInvokeMethodAttributeTests
                                       public long PropertyB { get; set; }
                                   }
                                   
-                                  public static class Helper
+                                  public sealed class Helper
                                   {
                                       public static string CustomMapPropertyA(Source source)
                                       {
@@ -1074,6 +1074,107 @@ public sealed class MappaInvokeMethodAttributeTests
                                 initializationAssertions => initializationAssertions.BeInvocationExpressionSyntax(
                                     "Mappa.Generator.Tests.UnitTests.SourceCode.Helper.CustomMapPropertyA",
                                     firstParameterAssertions => firstParameterAssertions.BeIdentifierNameSyntax("input")));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(int).ToString(),
+                                "__mappa_tmp_2",
+                                initializationAssertions => initializationAssertions.BeMemberAccessExpressionSyntax("input.PropertyB"));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                "__mappa_tmp_3",
+                                initializationAssertions =>
+                                {
+                                    initializationAssertions.BeObjectCreationExpressionSyntax(
+                                        "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                        ("PropertyA", initAssertions => initAssertions.BeIdentifierNameSyntax("__mappa_tmp_1")),
+                                        ("PropertyB", initAssertions => initAssertions.BeIdentifierNameSyntax("__mappa_tmp_2")));
+                                });
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_3"));
+                        });
+                });
+    }
+
+    /// <summary>
+    /// Test <see cref="MappaInvokeMethodAttribute"/> targeting
+    /// a <c>static</c> method on the type specified in the attribute
+    /// with two parameters.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapUsingStaticMethodOnSpecifiedTypeWithTwoParameters()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                                  
+                                  public class Source
+                                  {
+                                      public int PropertyA { get; set; }
+                                      public int PropertyB { get; set; }
+                                  }
+
+                                  public class Target
+                                  {
+                                      public string PropertyA { get; set; }
+                                      public long PropertyB { get; set; }
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaInvokeMethodAttribute(nameof(Target.PropertyA), typeof(Helper), nameof(Helper.CustomMapPropertyA))]
+                                      public partial Target Map(Source input);
+                                  }
+                                  
+                                  public sealed class Helper
+                                  {
+                                      public static string CustomMapPropertyA(Source source, int property)
+                                      {
+                                         return $"{source.PropertyA} - {source.PropertyB} - {property}";
+                                      }
+                                  }
+                                  #nullable restore
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                NullableAnnotation.NotAnnotated,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(4)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(string).ToString(),
+                                "__mappa_tmp_1",
+                                initializationAssertions => initializationAssertions.BeInvocationExpressionSyntax(
+                                    "Mappa.Generator.Tests.UnitTests.SourceCode.Helper.CustomMapPropertyA",
+                                    firstParameterAssertions => firstParameterAssertions.BeIdentifierNameSyntax("input"),
+                                    secondParameterAssertions => secondParameterAssertions.BeMemberAccessExpressionSyntax("input.PropertyA")));
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
