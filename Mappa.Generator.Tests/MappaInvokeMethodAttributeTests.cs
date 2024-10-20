@@ -38,7 +38,7 @@ public sealed class MappaInvokeMethodAttributeTests
                                   [Mappa]
                                   public sealed partial class Mapper
                                   {
-                                     [MappaInvokeMethodAttribute(nameof(Source.PropertyA), nameof(CustomMapPropertyA))]
+                                     [MappaInvokeMethodAttribute(nameof(Target.PropertyA), nameof(CustomMapPropertyA))]
                                      public partial Target Map(Source input);
                                   
                                      public string CustomMapPropertyA(Source source)
@@ -136,7 +136,7 @@ public sealed class MappaInvokeMethodAttributeTests
                                   [Mappa]
                                   public sealed partial class Mapper
                                   {
-                                      [MappaInvokeMethodAttribute(nameof(Source.PropertyA), nameof(CustomMapPropertyA))]
+                                      [MappaInvokeMethodAttribute(nameof(Target.PropertyA), nameof(CustomMapPropertyA))]
                                       public partial Target Map(Source input);
                                       
                                       public string CustomMapPropertyA(Source source)
@@ -234,7 +234,7 @@ public sealed class MappaInvokeMethodAttributeTests
                                   [Mappa]
                                   public sealed partial class Mapper
                                   {
-                                      [MappaInvokeMethodAttribute(nameof(Source.PropertyA), nameof(CustomMapPropertyA))]
+                                      [MappaInvokeMethodAttribute(nameof(Target.PropertyA), nameof(CustomMapPropertyA))]
                                       public partial Target Map(Source input);
                                       
                                       public string CustomMapPropertyA(Source source)
@@ -336,7 +336,7 @@ public sealed class MappaInvokeMethodAttributeTests
                                   [Mappa]
                                   public sealed partial class Mapper
                                   {
-                                      [MappaInvokeMethodAttribute(nameof(Source.PropertyA), nameof(CustomMapPropertyA))]
+                                      [MappaInvokeMethodAttribute(nameof(Target.PropertyA), nameof(CustomMapPropertyA))]
                                       public partial Target Map(Source input);
                                       
                                       public static string CustomMapPropertyA(Source source)
@@ -432,7 +432,7 @@ public sealed class MappaInvokeMethodAttributeTests
                                   [Mappa]
                                   public sealed partial class Mapper
                                   {
-                                      [MappaInvokeMethodAttribute(nameof(Source.PropertyA), nameof(CustomMapPropertyA))]
+                                      [MappaInvokeMethodAttribute(nameof(Target.PropertyA), nameof(CustomMapPropertyA))]
                                       public partial Target Map(Source input);
                                       
                                       public static string CustomMapPropertyA()
@@ -527,7 +527,7 @@ public sealed class MappaInvokeMethodAttributeTests
                                   [Mappa]
                                   public sealed partial class Mapper
                                   {
-                                      [MappaInvokeMethodAttribute(nameof(Source.PropertyA), nameof(CustomMapPropertyA))]
+                                      [MappaInvokeMethodAttribute(nameof(Target.PropertyA), nameof(CustomMapPropertyA))]
                                       public partial Target Map(Source input);
                                       
                                       public string CustomMapPropertyA(int input)
@@ -623,7 +623,7 @@ public sealed class MappaInvokeMethodAttributeTests
                                   [Mappa]
                                   public sealed partial class Mapper
                                   {
-                                      [MappaInvokeMethodAttribute(nameof(Source.PropertyA), nameof(CustomMapPropertyA))]
+                                      [MappaInvokeMethodAttribute(nameof(Target.PropertyA), nameof(CustomMapPropertyA))]
                                       public partial Target Map(Source input);
                                       
                                       public string CustomMapPropertyA(Source input, int propertyA)
@@ -721,7 +721,7 @@ public sealed class MappaInvokeMethodAttributeTests
                                   [Mappa]
                                   public sealed partial class Mapper
                                   {
-                                      [MappaInvokeMethodAttribute(nameof(Source.PropertyA), nameof(CustomMapPropertyA))]
+                                      [MappaInvokeMethodAttribute(nameof(Target.PropertyA), nameof(CustomMapPropertyA))]
                                       public partial Target Map(Source input);
                                       
                                       public string CustomMapPropertyA(long input)
@@ -823,7 +823,7 @@ public sealed class MappaInvokeMethodAttributeTests
                                   [Mappa]
                                   public sealed partial class Mapper
                                   {
-                                      [MappaInvokeMethodAttribute(nameof(Source.PropertyA), nameof(CustomMapPropertyA))]
+                                      [MappaInvokeMethodAttribute(nameof(Target.PropertyA), nameof(CustomMapPropertyA))]
                                       public partial Target Map(Source input);
                                       
                                       public static string CustomMapPropertyA(ISource source)
@@ -936,7 +936,7 @@ public sealed class MappaInvokeMethodAttributeTests
                            [Mappa]
                            public sealed partial class Mapper
                            {
-                               [MappaInvokeMethodAttribute(nameof(Source.PropertyA), nameof(CustomMapPropertyA))]
+                               [MappaInvokeMethodAttribute(nameof(Target.PropertyA), nameof(CustomMapPropertyA))]
                                public partial Target Map(Source input);
                            
                                public string CustomMapPropertyA({{sourceType}} input, {{propertyType}} propertyA)
@@ -1042,7 +1042,7 @@ public sealed class MappaInvokeMethodAttributeTests
                                   [Mappa]
                                   public sealed partial class Mapper
                                   {
-                                      [MappaInvokeMethodAttribute(nameof(Source.PropertyA), typeof(Helper), nameof(Helper.CustomMapPropertyA))]
+                                      [MappaInvokeMethodAttribute(nameof(Target.PropertyA), typeof(Helper), nameof(Helper.CustomMapPropertyA))]
                                       public partial Target Map(Source input);
                                   }
                                   #nullable restore
@@ -1144,7 +1144,7 @@ public sealed class MappaInvokeMethodAttributeTests
                                   {
                                       private Helper Dependency => new();
                                   
-                                      [MappaInvokeMethodAttribute(nameof(Source.PropertyA), nameof(Dependency), nameof(Helper.CustomMapPropertyA))]
+                                      [MappaInvokeMethodAttribute(nameof(Target.PropertyA), nameof(Dependency), nameof(Helper.CustomMapPropertyA))]
                                       public partial Target Map(Source input);
                                   }
                                   #nullable restore
@@ -1246,7 +1246,7 @@ public sealed class MappaInvokeMethodAttributeTests
                                   {
                                       private Helper dependency = new();
                                   
-                                      [MappaInvokeMethodAttribute(nameof(Source.PropertyA), nameof(dependency), nameof(Helper.CustomMapPropertyA))]
+                                      [MappaInvokeMethodAttribute(nameof(Target.PropertyA), nameof(dependency), nameof(Helper.CustomMapPropertyA))]
                                       public partial Target Map(Source input);
                                   }
                                   #nullable restore
