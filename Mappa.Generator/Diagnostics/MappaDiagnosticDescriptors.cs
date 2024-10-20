@@ -21,6 +21,7 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? cannotIdentifyStrategy;
     private static DiagnosticDescriptor? multipleAttributesTargetTheSamePropertyOrParameter;
     private static DiagnosticDescriptor? cannotDetectSuitableMethodToInvoke;
+    private static DiagnosticDescriptor? cannotDetectType;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -77,6 +78,14 @@ internal static class MappaDiagnosticDescriptors
         => cannotDetectSuitableMethodToInvoke ??= BuildError(
             MappaDiagnosticsKind.CannotDetectSuitableMethodToInvoke,
             "Cannot identify a method with name '{0}' in class '{1}' for target property or constructor parameter '{2}'.");
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.CannotDetectType"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor CannotDetectType
+        => cannotDetectType ??= BuildError(
+            MappaDiagnosticsKind.CannotDetectType,
+            "Cannot identify type '{0}'.");
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(

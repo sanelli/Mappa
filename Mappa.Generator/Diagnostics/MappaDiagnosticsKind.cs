@@ -48,4 +48,9 @@ internal enum MappaDiagnosticsKind
     /// Cannot identify a suitable method to invoke.
     /// </summary>
     CannotDetectSuitableMethodToInvoke,
+
+    /// <summary>
+    /// The type cannot be identified.
+    /// </summary>
+    CannotDetectType,
 }

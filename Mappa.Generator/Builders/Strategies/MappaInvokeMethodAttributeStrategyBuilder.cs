@@ -38,7 +38,16 @@ internal sealed class MappaInvokeMethodAttributeStrategyBuilder
 
     private string GetAccessor()
     {
-        var accessor = this.strategy.Method.IsStatic ? string.Empty : "this.";
+        string accessor;
+        if (this.strategy.Attribute.ClassType is not null)
+        {
+            accessor = $"{this.strategy.Attribute.ClassType.FullName ?? throw new MappaGeneratorException($"Cannot detect name for type {this.strategy.Attribute.ClassType}")}.";
+        }
+        else
+        {
+            accessor = this.strategy.Method.IsStatic ? string.Empty : "this.";
+        }
+
         return accessor;
     }
 

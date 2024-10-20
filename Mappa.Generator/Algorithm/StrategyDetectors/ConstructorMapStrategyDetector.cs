@@ -40,6 +40,13 @@ internal sealed class ConstructorMapStrategyDetector
         this.compilation = compilation;
     }
 
+    private enum MethodDetectorMethodStaticRequirement
+    {
+        StaticOrNotStatic,
+        Static,
+        NotStatic,
+    }
+
     /// <inheritdoc/>
     // TODO [#1] if nullable is not enabled we might want to throw if input is null.
     public bool TryDetect(out IMapStrategy mapStrategy)
@@ -434,37 +441,61 @@ internal sealed class ConstructorMapStrategyDetector
     {
         strategy = new NoMapStrategy(targetType, null!);
 
+        IMethodSymbol? method;
+        var mapMethod = this.context.MapMethod ?? throw new MappaGeneratorException("Map method needs to be defined.");
+        var mapMethodMethodDeclarationSyntax = mapMethod.MethodDeclarationSyntax ?? throw new MappaGeneratorException("Method declaration syntax has not been defined.");
+        var mapMethodClass = (INamedTypeSymbol)mapMethod.MethodSymbol.ContainingSymbol;
+
         if (mappaInvokeMethodAttribute.FieldName is not null)
         {
             // TODO [#54] Implement the scenario where field name is provided.
             throw new NotImplementedException("#54 Implement the scenario where field name is provided.");
         }
-
-        if (mappaInvokeMethodAttribute.ClassType is not null)
+        else if (mappaInvokeMethodAttribute.ClassType is not null)
         {
-            // TODO [#54] Implement the scenario where class type is provided.
-            throw new NotImplementedException("#54 Implement the scenario where class type is provided.");
+            var className = this.compilation.GetTypeByMetadataName(
+                mappaInvokeMethodAttribute.ClassType.FullName ?? throw new MappaGeneratorException("Cannot detect type full name"));
+            if (className is null)
+            {
+                this.context.ReportDiagnostic(MappaDiagnostics.CannotDetectType(
+                    mapMethodMethodDeclarationSyntax,
+                    mappaInvokeMethodAttribute.ClassType));
+                return;
+            }
+
+            method = GetBestMethodSymbol(
+                this.compilation,
+                mapMethodClass,
+                className.GetMembers().OfType<IMethodSymbol>().ToArray(),
+                mappaInvokeMethodAttribute.MethodName,
+                targetType,
+                sourceClassType,
+                sourceProperty,
+                this.context.IsNullableEnabled(),
+                MethodDetectorMethodStaticRequirement.StaticOrNotStatic);
+        }
+        else
+        {
+            // At this point we look for a method (static or not static in the same class the method is defined)
+            method = GetBestMethodSymbol(
+                this.compilation,
+                mapMethodClass,
+                mapMethodClass.GetMembers().OfType<IMethodSymbol>().ToArray(),
+                mappaInvokeMethodAttribute.MethodName,
+                targetType,
+                sourceClassType,
+                sourceProperty,
+                this.context.IsNullableEnabled(),
+                MethodDetectorMethodStaticRequirement.StaticOrNotStatic);
         }
 
-        // At this point we look for a method (static or not static in the same class the method is defined)
-        var mapMethod = this.context.MapMethod ?? throw new MappaGeneratorException("Map method needs to be defined.");
-        var classSymbol = (INamedTypeSymbol)mapMethod.MethodSymbol.ContainingSymbol;
-        var method = GetBestMethodSymbol(
-            this.compilation,
-            (ITypeSymbol)this.context.ParentSymbol,
-            classSymbol.GetMembers().OfType<IMethodSymbol>().ToArray(),
-            mappaInvokeMethodAttribute.MethodName,
-            targetType,
-            sourceClassType,
-            sourceProperty,
-            this.context.IsNullableEnabled());
         if (method is null)
         {
             this.context.ReportDiagnostic(MappaDiagnostics.CannotDetectSuitableMethodToInvoke(
-                mapMethod.MethodDeclarationSyntax ?? throw new MappaGeneratorException("Method declaration syntax has not been defined."),
+                mapMethodMethodDeclarationSyntax,
                 targetName,
                 mappaInvokeMethodAttribute.MethodName,
-                classSymbol.ToDisplayString()));
+                mapMethodClass.ToDisplayString()));
             return;
         }
 
@@ -484,14 +515,21 @@ internal sealed class ConstructorMapStrategyDetector
             ITypeSymbol targetType,
             ITypeSymbol sourceClassType,
             IPropertySymbol? sourceProperty,
-            bool nullableEnabled)
+            bool nullableEnabled,
+            MethodDetectorMethodStaticRequirement isStatic)
         {
             var methodsWithTheRightNameAndReturnType = methods
-                .Where(method => method.Name.Equals(methodName, StringComparison.Ordinal))
                 .Where(method =>
-                    method.ReturnType.IsEqualTo(targetType, nullableEnabled) ||
-                    compilation.HasImplicitConversion(method.ReturnType, targetType))
-                .Where(method => compilation.IsSymbolAccessibleWithin(method, mapClass))
+                    method.Name.Equals(methodName, StringComparison.Ordinal) &&
+                    compilation.IsSymbolAccessibleWithin(method, mapClass) &&
+                    (method.ReturnType.IsEqualTo(targetType, nullableEnabled) || compilation.HasImplicitConversion(method.ReturnType, targetType)) &&
+                    isStatic switch
+                    {
+                        MethodDetectorMethodStaticRequirement.StaticOrNotStatic => true,
+                        MethodDetectorMethodStaticRequirement.Static => method.IsStatic,
+                        MethodDetectorMethodStaticRequirement.NotStatic => !method.IsStatic,
+                        _ => throw new MappaGeneratorException($"'isStatic' attribute is not valid (value: {isStatic})"),
+                    })
                 .ToArray();
 
             // No method found :( .

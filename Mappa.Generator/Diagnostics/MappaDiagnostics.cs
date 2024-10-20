@@ -113,4 +113,18 @@ internal static class MappaDiagnostics
             methodName,
             typeName,
             propertyOrParameterName);
+
+    /// <summary>
+    /// Diagnostic to report the fact that it is not possible identify a suitable method to invoke.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="type">The type that cannot be found.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic CannotDetectType(
+        MethodDeclarationSyntax methodDeclarationSyntax,
+        Type type)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.CannotDetectType,
+            methodDeclarationSyntax.GetLocation(),
+            type);
 }
