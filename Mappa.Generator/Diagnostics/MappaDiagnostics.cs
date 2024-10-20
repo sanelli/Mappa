@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace Mappa.Generator.Diagnostics;
 
 /// <summary>
-/// Diagnostics reported by the the Mappa generator.
+/// Diagnostics reported by the Mappa generator.
 /// </summary>
 internal static class MappaDiagnostics
 {
@@ -115,16 +115,30 @@ internal static class MappaDiagnostics
             propertyOrParameterName);
 
     /// <summary>
-    /// Diagnostic to report the fact that it is not possible identify a suitable method to invoke.
+    /// Diagnostic to report the fact that it is not possible identify a suitable type for the method to invoke.
     /// </summary>
     /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
     /// <param name="type">The type that cannot be found.</param>
     /// <returns>The diagnostic.</returns>
     internal static Diagnostic CannotDetectType(
         MethodDeclarationSyntax methodDeclarationSyntax,
-        Type type)
+        string type)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.CannotDetectType,
             methodDeclarationSyntax.GetLocation(),
             type);
+
+    /// <summary>
+    /// Diagnostic to report the fact that it is not possible identify a suitable field or property.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="fieldName">The type that cannot be found.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic CannotFindFieldOrProperty(
+        MethodDeclarationSyntax methodDeclarationSyntax,
+        string fieldName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.CannotFindFieldOrProperty,
+            methodDeclarationSyntax.GetLocation(),
+            fieldName);
 }

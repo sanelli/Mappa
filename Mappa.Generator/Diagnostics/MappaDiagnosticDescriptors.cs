@@ -22,6 +22,7 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? multipleAttributesTargetTheSamePropertyOrParameter;
     private static DiagnosticDescriptor? cannotDetectSuitableMethodToInvoke;
     private static DiagnosticDescriptor? cannotDetectType;
+    private static DiagnosticDescriptor? cannotFindFieldOrProperty;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -86,6 +87,14 @@ internal static class MappaDiagnosticDescriptors
         => cannotDetectType ??= BuildError(
             MappaDiagnosticsKind.CannotDetectType,
             "Cannot identify type '{0}'.");
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.CannotFindFieldOrProperty"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor CannotFindFieldOrProperty
+        => cannotFindFieldOrProperty ??= BuildError(
+            MappaDiagnosticsKind.CannotFindFieldOrProperty,
+            "Cannot identify field or property '{0}'.");
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(

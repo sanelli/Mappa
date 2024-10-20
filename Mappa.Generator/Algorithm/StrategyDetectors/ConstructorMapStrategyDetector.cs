@@ -448,8 +448,36 @@ internal sealed class ConstructorMapStrategyDetector
 
         if (mappaInvokeMethodAttribute.FieldName is not null)
         {
-            // TODO [#54] Implement the scenario where field name is provided.
-            throw new NotImplementedException("#54 Implement the scenario where field name is provided.");
+            var classMembers = mapMethodClass.GetMembers();
+            var targets = classMembers
+                .OfType<IPropertySymbol>()
+                .Where(property => property.Name.Equals(mappaInvokeMethodAttribute.FieldName, StringComparison.Ordinal))
+                .Select(property => property.Type)
+                .Concat(classMembers
+                    .OfType<IFieldSymbol>()
+                    .Where(field => field.Name.Equals(mappaInvokeMethodAttribute.FieldName, StringComparison.Ordinal))
+                    .Select(field => field.Type))
+                .OfType<INamedTypeSymbol>()
+                .ToArray();
+
+            if (targets.Length != 1)
+            {
+                this.context.ReportDiagnostic(MappaDiagnostics.CannotFindFieldOrProperty(
+                    mapMethodMethodDeclarationSyntax,
+                    mappaInvokeMethodAttribute.FieldName));
+                return;
+            }
+
+            method = GetBestMethodSymbol(
+                this.compilation,
+                mapMethodClass,
+                targets.Single().GetMembers().OfType<IMethodSymbol>().ToArray(),
+                mappaInvokeMethodAttribute.MethodName,
+                targetType,
+                sourceClassType,
+                sourceProperty,
+                this.context.IsNullableEnabled(),
+                MethodDetectorMethodStaticRequirement.NotStatic);
         }
         else if (mappaInvokeMethodAttribute.ClassType is not null)
         {
@@ -459,7 +487,7 @@ internal sealed class ConstructorMapStrategyDetector
             {
                 this.context.ReportDiagnostic(MappaDiagnostics.CannotDetectType(
                     mapMethodMethodDeclarationSyntax,
-                    mappaInvokeMethodAttribute.ClassType));
+                    mappaInvokeMethodAttribute.ClassType.FullName!));
                 return;
             }
 

@@ -53,4 +53,9 @@ internal enum MappaDiagnosticsKind
     /// The type cannot be identified.
     /// </summary>
     CannotDetectType,
+
+    /// <summary>
+    /// The field or properties cannot be identified.
+    /// </summary>
+    CannotFindFieldOrProperty,
 }
