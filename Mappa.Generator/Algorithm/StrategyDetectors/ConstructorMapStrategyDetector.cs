@@ -451,6 +451,7 @@ internal sealed class ConstructorMapStrategyDetector
         var classSymbol = (INamedTypeSymbol)mapMethod.MethodSymbol.ContainingSymbol;
         var method = GetBestMethodSymbol(
             this.compilation,
+            (ITypeSymbol)this.context.ParentSymbol,
             classSymbol.GetMembers().OfType<IMethodSymbol>().ToArray(),
             mappaInvokeMethodAttribute.MethodName,
             targetType,
@@ -477,6 +478,7 @@ internal sealed class ConstructorMapStrategyDetector
 
         static IMethodSymbol? GetBestMethodSymbol(
             Compilation compilation,
+            ITypeSymbol mapClass,
             IMethodSymbol[] methods,
             string methodName,
             ITypeSymbol targetType,
@@ -489,9 +491,10 @@ internal sealed class ConstructorMapStrategyDetector
                 .Where(method =>
                     method.ReturnType.IsEqualTo(targetType, nullableEnabled) ||
                     compilation.HasImplicitConversion(method.ReturnType, targetType))
+                .Where(method => compilation.IsSymbolAccessibleWithin(method, mapClass))
                 .ToArray();
 
-            // If not method can be found too bad.
+            // No method found :( .
             if (methodsWithTheRightNameAndReturnType.Length == 0)
             {
                 return null;
@@ -516,7 +519,18 @@ internal sealed class ConstructorMapStrategyDetector
             // Then look for one having
             // two parameters, first one being implicitly convertible from source class
             // and the second being implicitly convertible from source property
-            // TODO [#54] Implement me.
+            if (sourceProperty is not null)
+            {
+                var methodWithTwoParameters = Array.Find(
+                    methodsWithTheRightNameAndReturnType,
+                    method => method.Parameters.Length == 2 &&
+                              (method.Parameters[0].Type.IsEqualTo(sourceClassType, nullableEnabled) || compilation.HasImplicitConversion(sourceClassType, method.Parameters[0].Type)) &&
+                              (method.Parameters[1].Type.IsEqualTo(sourceProperty.Type, nullableEnabled) || compilation.HasImplicitConversion(sourceProperty.Type, method.Parameters[1].Type)));
+                if (methodWithTwoParameters is not null)
+                {
+                    return methodWithTwoParameters;
+                }
+            }
 
             // Then look for one having
             // one parameter being equal to the type of source class.

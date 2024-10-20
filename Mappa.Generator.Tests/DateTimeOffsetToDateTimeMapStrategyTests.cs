@@ -27,7 +27,7 @@ public sealed class DateTimeOffsetToDateTimeMapStrategyTests
         const string identifierName = "__mappa_tmp_1";
 
         // Arrange
-        var sourceCode = $$"""
+        var sourceCode = """
                           using System;
                           using Mappa.Attributes;
 
