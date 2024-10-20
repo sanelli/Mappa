@@ -365,6 +365,7 @@ internal sealed class ConstructorMapStrategyDetector
         bool useConstructorMapStrategyDetector,
         out IMapStrategy elementStrategy)
     {
+        // TODO [#54] Prevent usage of the MappaInvokeMethodAttribute on sub-structures thta could have the same property names.
         using (this.context.Settings.UseConstructorMapStrategyDetector.Apply(useConstructorMapStrategyDetector))
         {
             var derivedContext = new DerivedMappaMapAlgorithmContext(
