@@ -374,7 +374,7 @@ public sealed partial class MapEmptyConstructorWithLocalMethodWithNoParameters
 /// using:
 /// <list type="table">
 /// <item><term>Mapping mode</term><description>Empty constructor.</description></item>
-/// <item><term>Custom method location</term><description><see cref="MapEmptyConstructorWithTypeLocatedMethodWithSourceClassAndPropertyInput"/>.</description></item>
+/// <item><term>Custom method location</term><description><see cref="MapperDependencyHelper"/>.</description></item>
 /// <item><term>Custom method is static</term><description><c>true</c>.</description></item>
 /// <item><term>Custom method input(s)</term><description><see cref="SourceClassModel"/> and <see cref="int"/>.</description></item>
 /// </list>
@@ -394,13 +394,71 @@ public sealed partial class MapEmptyConstructorWithTypeLocatedMethodWithSourceCl
     /// </summary>
     /// <param name="source">The source model to map.</param>
     /// <returns>The mapped object.</returns>
-    [MappaInvokeMethod(nameof(TargetClassModel.ParamA), typeof(MapperDependencyHelper), nameof(MapperDependencyHelper.StaticMap1))]
+    [MappaInvokeMethod(nameof(TargetClassModel.ParamA), typeof(MapperDependencyHelper), nameof(MapperDependencyHelper.StaticMap))]
     public partial TargetClassModel Map(SourceClassModel source);
 }
 
-// TODO [#54] Add missing tests to cover TypeAccess tests with all variants
-// TODO [#54] Add missing tests to cover field tests with all variants
-// TODO [#54] Add missing tests to cover property tests with all variants
+/// <summary>
+/// Map from <see cref="SourceClassModel"/> to <see cref="TargetClassModel"/>
+/// using:
+/// <list type="table">
+/// <item><term>Mapping mode</term><description>Empty constructor.</description></item>
+/// <item><term>Custom method location</term><description><see cref="MapperDependencyHelper"/>.</description></item>
+/// <item><term>Custom method is static</term><description><c>true</c>.</description></item>
+/// <item><term>Custom method input(s)</term><description><see cref="SourceClassModel"/> and <see cref="int"/>.</description></item>
+/// </list>
+/// </summary>
+[Mappa]
+public sealed partial class MapEmptyConstructorWithFieldLocatedMethodWithSourceClassAndPropertyInput
+{
+    private MapperDependencyHelper helper = new();
+
+    /// <summary>
+    /// Map from <see cref="SourceClassModel"/> to <see cref="TargetClassModel"/>
+    /// using:
+    /// <list type="table">
+    /// <item><term>Mapping mode</term><description>Empty constructor.</description></item>
+    /// <item><term>Custom method location</term><description>Field of type <see cref="MapperDependencyHelper"/>.</description></item>
+    /// <item><term>Custom method is static</term><description><c>false</c>.</description></item>
+    /// <item><term>Custom method input(s)</term><description><see cref="SourceClassModel"/> and <see cref="int"/>.</description></item>
+    /// </list>
+    /// </summary>
+    /// <param name="source">The source model to map.</param>
+    /// <returns>The mapped object.</returns>
+    [MappaInvokeMethod(nameof(TargetClassModel.ParamA), nameof(this.helper), nameof(MapperDependencyHelper.Map))]
+    public partial TargetClassModel Map(SourceClassModel source);
+}
+
+/// <summary>
+/// Map from <see cref="SourceClassModel"/> to <see cref="TargetClassModel"/>
+/// using:
+/// <list type="table">
+/// <item><term>Mapping mode</term><description>Empty constructor.</description></item>
+/// <item><term>Custom method location</term><description>Property of type <see cref="MapperDependencyHelper"/>.</description></item>
+/// <item><term>Custom method is static</term><description><c>true</c>.</description></item>
+/// <item><term>Custom method input(s)</term><description><see cref="SourceClassModel"/> and <see cref="int"/>.</description></item>
+/// </list>
+/// </summary>
+[Mappa]
+public sealed partial class MapEmptyConstructorWithPropertyLocatedMethodWithSourceClassAndPropertyInput
+{
+    private MapperDependencyHelper Helper { get; } = new();
+
+    /// <summary>
+    /// Map from <see cref="SourceClassModel"/> to <see cref="TargetClassModel"/>
+    /// using:
+    /// <list type="table">
+    /// <item><term>Mapping mode</term><description>Empty constructor.</description></item>
+    /// <item><term>Custom method location</term><description><see cref="MapperDependencyHelper"/>.</description></item>
+    /// <item><term>Custom method is static</term><description><c>false</c>.</description></item>
+    /// <item><term>Custom method input(s)</term><description><see cref="SourceClassModel"/> and <see cref="int"/>.</description></item>
+    /// </list>
+    /// </summary>
+    /// <param name="source">The source model to map.</param>
+    /// <returns>The mapped object.</returns>
+    [MappaInvokeMethod(nameof(TargetClassModel.ParamA), nameof(this.Helper), nameof(MapperDependencyHelper.Map))]
+    public partial TargetClassModel Map(SourceClassModel source);
+}
 
 /// <summary>
 /// Mapper helper method that can be invoked by other classes.
@@ -413,97 +471,10 @@ public sealed class MapperDependencyHelper
     /// <param name="source">The source.</param>
     /// <param name="property">The property.</param>
     /// <returns>The mapped string.</returns>
-    public static string StaticMap1(SourceClassModel source, int property)
+    public static string StaticMap(SourceClassModel source, int property)
     {
         ArgumentNullException.ThrowIfNull(source);
-        return $"{nameof(StaticMap1)}/{source.ParamA}/{source.ParamB}/{property}";
-    }
-
-    /// <summary>
-    /// Static map to a <see cref="string"/>.
-    /// </summary>
-    /// <param name="source">The source.</param>
-    /// <param name="property">The property.</param>
-    /// <returns>The mapped string.</returns>
-    public static string StaticMap2(object source, int property)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-        return $"{nameof(StaticMap2)}/{source}/{property}";
-    }
-
-    /// <summary>
-    /// Static map to a <see cref="string"/>.
-    /// </summary>
-    /// <param name="source">The source.</param>
-    /// <param name="property">The property.</param>
-    /// <returns>The mapped string.</returns>
-    public static string StaticMap3(SourceClassModel source, long property)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-        return $"{nameof(StaticMap3)}/{source.ParamA}/{source.ParamB}/{property}";
-    }
-
-    /// <summary>
-    /// Static map to a <see cref="string"/>.
-    /// </summary>
-    /// <param name="source">The source.</param>
-    /// <param name="property">The property.</param>
-    /// <returns>The mapped string.</returns>
-    public static string StaticMap4(object source, long property)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-        return $"{nameof(StaticMap4)}/{source}/{property}";
-    }
-
-    /// <summary>
-    /// Static map to a <see cref="string"/>.
-    /// </summary>
-    /// <param name="source">The source.</param>
-    /// <returns>The mapped string.</returns>
-    public static string StaticMap5(SourceClassModel source)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-        return $"{nameof(StaticMap5)}/{source.ParamA}/{source.ParamB}";
-    }
-
-    /// <summary>
-    /// Static map to a <see cref="string"/>.
-    /// </summary>
-    /// <param name="source">The source.</param>
-    /// <returns>The mapped string.</returns>
-    public static string StaticMap6(object source)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-        return $"{nameof(StaticMap6)}/{source}";
-    }
-
-    /// <summary>
-    /// Static map to a <see cref="string"/>.
-    /// </summary>
-    /// <param name="property">The property.</param>
-    /// <returns>The mapped string.</returns>
-    public static string StaticMap7(int property)
-    {
-        return $"{nameof(StaticMap7)}/{property}";
-    }
-
-    /// <summary>
-    /// Static map to a <see cref="string"/>.
-    /// </summary>
-    /// <param name="property">The property.</param>
-    /// <returns>The mapped string.</returns>
-    public static string StaticMap8(long property)
-    {
-        return $"{nameof(StaticMap8)}/{property}";
-    }
-
-    /// <summary>
-    /// Static map to a <see cref="string"/>.
-    /// </summary>
-    /// <returns>The mapped string.</returns>
-    public static string StaticMap9()
-    {
-        return $"{nameof(StaticMap9)}";
+        return $"{nameof(StaticMap)}/{source.ParamA}/{source.ParamB}/{property}";
     }
 
     /// <summary>
@@ -512,96 +483,9 @@ public sealed class MapperDependencyHelper
     /// <param name="source">The source.</param>
     /// <param name="property">The property.</param>
     /// <returns>The mapped string.</returns>
-    public string Map1(SourceClassModel source, int property)
+    public string Map(SourceClassModel source, int property)
     {
         ArgumentNullException.ThrowIfNull(source);
-        return $"{nameof(this.Map1)}/{source.ParamA}/{source.ParamB}/{property}";
-    }
-
-    /// <summary>
-    /// Map to a <see cref="string"/>.
-    /// </summary>
-    /// <param name="source">The source.</param>
-    /// <param name="property">The property.</param>
-    /// <returns>The mapped string.</returns>
-    public string Map2(object source, int property)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-        return $"{nameof(this.Map2)}/{source}/{property}";
-    }
-
-    /// <summary>
-    /// Map to a <see cref="string"/>.
-    /// </summary>
-    /// <param name="source">The source.</param>
-    /// <param name="property">The property.</param>
-    /// <returns>The mapped string.</returns>
-    public string Map3(SourceClassModel source, long property)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-        return $"{nameof(this.Map3)}/{source.ParamA}/{source.ParamB}/{property}";
-    }
-
-    /// <summary>
-    /// Map to a <see cref="string"/>.
-    /// </summary>
-    /// <param name="source">The source.</param>
-    /// <param name="property">The property.</param>
-    /// <returns>The mapped string.</returns>
-    public string Map4(object source, long property)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-        return $"{nameof(this.Map4)}/{source}/{property}";
-    }
-
-    /// <summary>
-    /// Map to a <see cref="string"/>.
-    /// </summary>
-    /// <param name="source">The source.</param>
-    /// <returns>The mapped string.</returns>
-    public string Map5(SourceClassModel source)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-        return $"{nameof(this.Map5)}/{source.ParamA}/{source.ParamB}";
-    }
-
-    /// <summary>
-    /// Map to a <see cref="string"/>.
-    /// </summary>
-    /// <param name="source">The source.</param>
-    /// <returns>The mapped string.</returns>
-    public string Map6(object source)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-        return $"{nameof(this.Map6)}/{source}";
-    }
-
-    /// <summary>
-    /// Map to a <see cref="string"/>.
-    /// </summary>
-    /// <param name="property">The property.</param>
-    /// <returns>The mapped string.</returns>
-    public string Map7(int property)
-    {
-        return $"{nameof(this.Map7)}/{property}";
-    }
-
-    /// <summary>
-    /// Map to a <see cref="string"/>.
-    /// </summary>
-    /// <param name="property">The property.</param>
-    /// <returns>The mapped string.</returns>
-    public string Map8(long property)
-    {
-        return $"{nameof(this.Map8)}/{property}";
-    }
-
-    /// <summary>
-    /// Map to a <see cref="string"/>.
-    /// </summary>
-    /// <returns>The mapped string.</returns>
-    public string Map9()
-    {
-        return $"{nameof(this.Map9)}";
+        return $"{nameof(this.Map)}/{source.ParamA}/{source.ParamB}/{property}";
     }
 }

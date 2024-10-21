@@ -241,7 +241,45 @@ public sealed class MappaInvokeMethodAttributeMappersTests
         var actual = mapper.Map(source);
 
         // Assert
-        actual.ParamA.Should().Be($"{nameof(MapperDependencyHelper.StaticMap1)}/{source.ParamA}/{source.ParamB}/{source.ParamA}");
+        actual.ParamA.Should().Be($"{nameof(MapperDependencyHelper.StaticMap)}/{source.ParamA}/{source.ParamB}/{source.ParamA}");
+        actual.ParamB.Should().Be((int)source.ParamB);
+    }
+
+    /// <summary>
+    /// Test for <see cref="MapEmptyConstructorWithFieldLocatedMethodWithSourceClassAndPropertyInput"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void TestMapEmptyConstructorWithFieldLocatedMethodWithSourceClassAndPropertyInput()
+    {
+        // Arrange
+        var mapper = new MapEmptyConstructorWithFieldLocatedMethodWithSourceClassAndPropertyInput();
+        var source = new SourceClassModel { ParamA = 10, ParamB = CountingValues.Three };
+
+        // Act
+        var actual = mapper.Map(source);
+
+        // Assert
+        actual.ParamA.Should().Be($"{nameof(MapperDependencyHelper.Map)}/{source.ParamA}/{source.ParamB}/{source.ParamA}");
+        actual.ParamB.Should().Be((int)source.ParamB);
+    }
+
+    /// <summary>
+    /// Test for <see cref="MapEmptyConstructorWithPropertyLocatedMethodWithSourceClassAndPropertyInput"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void TestMapEmptyConstructorWithPropertyLocatedMethodWithSourceClassAndPropertyInput()
+    {
+        // Arrange
+        var mapper = new MapEmptyConstructorWithPropertyLocatedMethodWithSourceClassAndPropertyInput();
+        var source = new SourceClassModel { ParamA = 10, ParamB = CountingValues.Three };
+
+        // Act
+        var actual = mapper.Map(source);
+
+        // Assert
+        actual.ParamA.Should().Be($"{nameof(MapperDependencyHelper.Map)}/{source.ParamA}/{source.ParamB}/{source.ParamA}");
         actual.ParamB.Should().Be((int)source.ParamB);
     }
 }
