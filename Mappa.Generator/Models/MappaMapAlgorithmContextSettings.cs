@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Attributes;
 using Mappa.Generator.Helpers;
 
 namespace Mappa.Generator.Models;
@@ -11,6 +12,23 @@ namespace Mappa.Generator.Models;
 /// </summary>
 internal sealed class MappaMapAlgorithmContextSettings
 {
+    /// <summary>
+    /// Define the actions available to use or not use
+    /// mappa attributes in the constructor strategies detector.
+    /// </summary>
+    internal enum MappaAttributesForConstructorDetectorSettings
+    {
+        /// <summary>
+        /// Use the attributes.
+        /// </summary>
+        Enable,
+
+        /// <summary>
+        /// Do not use the attributes.
+        /// </summary>
+        Disable,
+    }
+
     /// <summary>
     /// Gets the stack settings that enable or disable the algorithm
     /// in making sure if a constructor map strategy can be
@@ -35,10 +53,22 @@ internal sealed class MappaMapAlgorithmContextSettings
     internal StackSetting<bool> UseReferenceNullableMapStrategyDetector { get; } = new(true);
 
     /// <summary>
+    /// Gets the stack settings that enable or disable the usage
+    /// of mappa attributes when performing a constructor mapping.
+    /// </summary>
+    /// <remarks>
+    /// This is used to prevent mappa attribute such as <see cref="MappaInvokeMethodAttribute"/>
+    /// to be used on types used by properties/arguments during
+    /// the constructor strategy detector.
+    /// Defaults of this are not applied by <see cref="ApplyAlgorithmContextDefaults"/>.
+    /// </remarks>
+    internal StackSetting<MappaAttributesForConstructorDetectorSettings> UseAttributesForConstructorDetectorSettings { get; } = new(MappaAttributesForConstructorDetectorSettings.Enable);
+
+    /// <summary>
     /// Apply default values.
     /// </summary>
     /// <returns>The disposable object that once dispose will restore default values.</returns>
-    internal IDisposable ApplyDefaults()
+    internal IDisposable ApplyAlgorithmContextDefaults()
         => new MappaMapAlgorithmContextSettingsDefaults(this);
 
     private sealed class MappaMapAlgorithmContextSettingsDefaults

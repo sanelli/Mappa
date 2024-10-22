@@ -9,6 +9,8 @@ using Mappa.Generator.Tests.Assertions.Extensions;
 
 namespace Mappa.Generator.Tests;
 
+// TODO [#54] Test UseAttributesForConstructorDetectorSettings being disabled.
+
 /// <summary>
 /// Integration tests for <see cref="InvokeMappingConstructorMapStrategy"/> strategy.
 /// </summary>

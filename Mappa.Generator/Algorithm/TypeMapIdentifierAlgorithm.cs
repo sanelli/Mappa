@@ -94,16 +94,16 @@ internal class TypeMapIdentifierAlgorithm
                 // Skip the constructor strategy in order to avoid infinite loops
                 // in the case this algorithm is run inside the constructor strategy
                 // detector itself.
-                case ConstructorMapStrategyDetector when !this.Context.Settings.UseConstructorMapStrategyDetector:
+                case ConstructorMapStrategyDetector when !this.Context.AlgorithmSettings.UseConstructorMapStrategyDetector:
 
                 // Skip the nullable reference strategy in order to avoid infinite loops
                 // in the case this algorithm is run inside the nullable reference strategy
                 // detector itself.
-                case ReferenceNullableMapStrategyDetector when !this.Context.Settings.UseReferenceNullableMapStrategyDetector:
+                case ReferenceNullableMapStrategyDetector when !this.Context.AlgorithmSettings.UseReferenceNullableMapStrategyDetector:
                     continue;
             }
 
-            using (this.Context.Settings.ApplyDefaults())
+            using (this.Context.AlgorithmSettings.ApplyAlgorithmContextDefaults())
             {
                 if (detector.TryDetect(out var detectedStrategy))
                 {

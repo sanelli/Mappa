@@ -37,7 +37,7 @@ internal abstract class MappaMapAlgorithmContext
     /// <summary>
     /// Gets the context settings.
     /// </summary>
-    internal abstract MappaMapAlgorithmContextSettings Settings { get; }
+    internal abstract MappaMapAlgorithmContextSettings AlgorithmSettings { get; }
 
     /// <summary>
     /// Gets a value indicating weather the nullable flag

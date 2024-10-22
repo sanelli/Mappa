@@ -60,6 +60,23 @@ internal sealed class StackSetting<TSettings>
     internal IDisposable Apply(TSettings value)
         => new StackSettingsDisposable<TSettings>(this, value);
 
+    /// <summary>
+    /// Check if <see cref="CurrentValue"/> is equal to
+    /// <paramref name="expectedValue"/>.
+    /// </summary>
+    /// <param name="expectedValue">The expected value.</param>
+    /// <returns><c>true</c> if <see cref="CurrentValue"/> is equal to
+    /// <paramref name="expectedValue"/>, <c>false</c> otherwise.</returns>
+    internal bool Equals(TSettings expectedValue)
+    {
+        if (expectedValue == null)
+        {
+            return false;
+        }
+
+        return expectedValue.Equals(this.CurrentValue);
+    }
+
     private sealed class StackSettingsDisposable<T>
         : IDisposable
     {

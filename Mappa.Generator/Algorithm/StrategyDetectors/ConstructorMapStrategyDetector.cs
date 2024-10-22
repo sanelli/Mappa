@@ -365,16 +365,18 @@ internal sealed class ConstructorMapStrategyDetector
         bool useConstructorMapStrategyDetector,
         out IMapStrategy elementStrategy)
     {
-        // TODO [#54] Prevent usage of the MappaInvokeMethodAttribute on sub-structures thta could have the same property names.
-        using (this.context.Settings.UseConstructorMapStrategyDetector.Apply(useConstructorMapStrategyDetector))
+        using (this.context.AlgorithmSettings.UseConstructorMapStrategyDetector.Apply(useConstructorMapStrategyDetector))
         {
-            var derivedContext = new DerivedMappaMapAlgorithmContext(
-                this.context,
-                targetType,
-                sourceType);
-            var algorithm = new TypeMapIdentifierWithMapMethodAlgorithm(derivedContext, this.compilation, this.cancellationToken);
-            elementStrategy = algorithm.GetStrategy();
-            return elementStrategy is not NoMapStrategy;
+            using (this.context.AlgorithmSettings.UseAttributesForConstructorDetectorSettings.Apply(MappaMapAlgorithmContextSettings.MappaAttributesForConstructorDetectorSettings.Disable))
+            {
+                var derivedContext = new DerivedMappaMapAlgorithmContext(
+                    this.context,
+                    targetType,
+                    sourceType);
+                var algorithm = new TypeMapIdentifierWithMapMethodAlgorithm(derivedContext, this.compilation, this.cancellationToken);
+                elementStrategy = algorithm.GetStrategy();
+                return elementStrategy is not NoMapStrategy;
+            }
         }
     }
 
@@ -387,6 +389,12 @@ internal sealed class ConstructorMapStrategyDetector
         out IMapStrategy strategy)
     {
         strategy = new NoMapStrategy(targetType, null!);
+
+        if (this.context.AlgorithmSettings.UseAttributesForConstructorDetectorSettings
+            .Equals(MappaMapAlgorithmContextSettings.MappaAttributesForConstructorDetectorSettings.Disable))
+        {
+            return false;
+        }
 
         if (this.context.MapMethod is null)
         {
