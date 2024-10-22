@@ -2,6 +2,8 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Attributes;
+
 namespace Mappa.Generator.Models;
 
 /// <summary>
@@ -252,4 +254,9 @@ public enum MappaAlgorithmRule
     /// Map <see cref="DateTimeOffset"/> to <see cref="DateTime"/>.
     /// </summary>
     DateTimeOffsetToDateTime,
+
+    /// <summary>
+    /// A method is being invoked as instructed by the <see cref="MappaInvokeMethodAttribute"/>.
+    /// </summary>
+    InvokeMethodFromAttribute,
 }

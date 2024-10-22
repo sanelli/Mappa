@@ -126,7 +126,7 @@ internal sealed class ReferenceNullableMapStrategyDetector
             this.context,
             this.context.TargetType,
             this.context.SourceType);
-        using (this.context.Settings.UseReferenceNullableMapStrategyDetector.Apply(false))
+        using (this.context.AlgorithmSettings.UseReferenceNullableMapStrategyDetector.Apply(false))
         {
             // Do not attempt to obtain a method: we would obtain the very same.
             var algorithm = new TypeMapIdentifierAlgorithm(derivedContext, this.compilation, this.cancellationToken);

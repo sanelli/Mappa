@@ -35,7 +35,7 @@ internal static class ClassDeclarationSyntaxExtensions
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The <see cref="MappaAttribute"/> attribute, or <c>null</c> if the attribute does not exist.</returns>
     internal static AttributeSyntax? GetMappaAttribute(this ClassDeclarationSyntax classDeclarationSyntax, SemanticModel semanticModel, CancellationToken cancellationToken)
-        => classDeclarationSyntax.AttributeLists.GetMappaAttribute(semanticModel, cancellationToken);
+        => classDeclarationSyntax.AttributeLists.GetMappaAttributeSyntax(semanticModel, cancellationToken);
 
     /// <summary>
     /// Check if the class contains the <see cref="MappaAttribute"/>.

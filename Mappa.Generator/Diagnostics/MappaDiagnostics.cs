@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace Mappa.Generator.Diagnostics;
 
 /// <summary>
-/// Diagnostics reported by the the Mappa generator.
+/// Diagnostics reported by the Mappa generator.
 /// </summary>
 internal static class MappaDiagnostics
 {
@@ -80,4 +80,65 @@ internal static class MappaDiagnostics
             location,
             sourceType.ToDisplayString(),
             targetType.ToDisplayString());
+
+    /// <summary>
+    /// Diagnostic to report the fact that multiple attributes are targeting the same property.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="propertyOrParameterName">The name of the property or constructor parameter for which multiple mapping attributes have been defined.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MultipleAttributesTargetTheSamePropertyOrParameter(MethodDeclarationSyntax methodDeclarationSyntax, string propertyOrParameterName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MultipleAttributesTargetTheSamePropertyOrParameter,
+            methodDeclarationSyntax.GetLocation(),
+            methodDeclarationSyntax.Identifier.ToFullString(),
+            propertyOrParameterName);
+
+    /// <summary>
+    /// Diagnostic to report the fact that it is not possible identify a suitable method to invoke.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="propertyOrParameterName">The name of the property or constructor parameter for which multiple mapping attributes have been defined.</param>
+    /// <param name="methodName">The name of the method to invoke.</param>
+    /// <param name="typeName">The type on which the method is being looked for.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic CannotDetectSuitableMethodToInvoke(
+        MethodDeclarationSyntax methodDeclarationSyntax,
+        string propertyOrParameterName,
+        string methodName,
+        string typeName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.CannotDetectSuitableMethodToInvoke,
+            methodDeclarationSyntax.GetLocation(),
+            methodName,
+            typeName,
+            propertyOrParameterName);
+
+    /// <summary>
+    /// Diagnostic to report the fact that it is not possible identify a suitable type for the method to invoke.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="type">The type that cannot be found.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic CannotDetectType(
+        MethodDeclarationSyntax methodDeclarationSyntax,
+        string type)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.CannotDetectType,
+            methodDeclarationSyntax.GetLocation(),
+            type);
+
+    /// <summary>
+    /// Diagnostic to report the fact that it is not possible identify a suitable field or property.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="fieldName">The type that cannot be found.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic CannotFindFieldOrProperty(
+        MethodDeclarationSyntax methodDeclarationSyntax,
+        string fieldName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.CannotFindFieldOrProperty,
+            methodDeclarationSyntax.GetLocation(),
+            fieldName);
 }

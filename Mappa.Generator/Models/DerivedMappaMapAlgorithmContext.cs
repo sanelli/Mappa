@@ -41,8 +41,11 @@ internal sealed class DerivedMappaMapAlgorithmContext
     internal override ITypeSymbol TargetType { get; }
 
     /// <inheritdoc/>
-    internal override MappaMapAlgorithmContextSettings Settings
-        => this.parent.Settings;
+    internal override MappaMapAlgorithmContextSettings AlgorithmSettings
+        => this.parent.AlgorithmSettings;
+
+    /// <inheritdoc/>
+    internal override MapMethod? MapMethod => null;
 
     /// <inheritdoc/>
     internal override bool IsNullableEnabled()

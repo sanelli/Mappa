@@ -34,13 +34,10 @@ internal sealed class InvokeConstructorMapStrategyBuilder
         var parametersVariableNames = new List<string>();
         foreach (var parameterMapStrategy in this.strategy.ParametersMapStrategies)
         {
-            var parameterTemporary = context.NextTemporary();
-            builder.AppendLine($"{parameterMapStrategy.SourceType.ToDisplayString()} {parameterTemporary} = {source}.{parameterMapStrategy.SourceProperty.Name};");
-            var (parameterTargetTemporary, parameterCode) = parameterMapStrategy.GetBuilder().BuildSource(parameterTemporary, context, mappaGlobalOptions);
+            var (parameterTargetTemporary, parameterCode) = parameterMapStrategy.GetBuilder().BuildSource(source, context, mappaGlobalOptions);
             if (!string.IsNullOrWhiteSpace(parameterCode))
             {
                 builder.AppendLine(parameterCode);
-                builder.AppendEmptyLine();
             }
 
             parametersVariableNames.Add(parameterTargetTemporary);
@@ -50,15 +47,12 @@ internal sealed class InvokeConstructorMapStrategyBuilder
         var propertyInitializersMappings = new List<(string TargetPropertyName, string TemporaryName)>();
         foreach (var propertyMapStrategy in this.strategy.InitializerStrategies)
         {
-            var initializerPropertyTemporary = context.NextTemporary();
-            builder.AppendLine($"{propertyMapStrategy.SourceType.ToDisplayString()} {initializerPropertyTemporary} = {source}.{propertyMapStrategy.SourceProperty.Name};");
-            var (initializerPropertyTargetTemporary, initializerPropertyCode) = propertyMapStrategy.GetBuilder().BuildSource(initializerPropertyTemporary, context, mappaGlobalOptions);
-            propertyInitializersMappings.Add((propertyMapStrategy.TargetProperty.Name, initializerPropertyTargetTemporary));
-            if (!string.IsNullOrWhiteSpace(initializerPropertyCode))
-            {
-                builder.AppendLine(initializerPropertyCode);
-                builder.AppendEmptyLine();
-            }
+                var (initializerPropertyTargetTemporary, initializerPropertyCode) = propertyMapStrategy.GetBuilder().BuildSource(source, context, mappaGlobalOptions);
+                propertyInitializersMappings.Add((propertyMapStrategy.TargetProperty.Name, initializerPropertyTargetTemporary));
+                if (!string.IsNullOrWhiteSpace(initializerPropertyCode))
+                {
+                    builder.AppendLine(initializerPropertyCode);
+                }
         }
 
         var hasPropertyInitializers = propertyInitializersMappings.Count > 0;

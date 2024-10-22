@@ -28,4 +28,23 @@ internal static class MethodSymbolExtensions
     /// <returns><c>true</c> if the method returns <c>void</c>.</returns>
     internal static bool ReturnsAnyTaskType(this IMethodSymbol methodSymbol, Compilation compilation)
         => methodSymbol.ReturnType.IsAnyTaskType(compilation);
+
+    /// <summary>
+    /// Return a list of non-inherited attributes applied to the method.
+    /// </summary>
+    /// <param name="methodSymbol">The method symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>A list of mappa attributes applied to the method that can impact the mapping.</returns>
+    internal static Attribute[] GetMethodMappaAttributes(this IMethodSymbol methodSymbol, Compilation compilation)
+    {
+        var result = new List<Attribute>();
+
+        // Mappa Invoke Method Attributes
+        var invokeMethodAttributesSyntax = methodSymbol
+            .GetInvokeMethodAttributes(compilation);
+        result.AddRange(invokeMethodAttributesSyntax);
+
+        // All done.
+        return [.. result];
+    }
 }

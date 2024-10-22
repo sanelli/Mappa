@@ -19,12 +19,12 @@ internal sealed class ParameterMapStrategy
     /// </summary>
     /// <param name="targetParameter">The target parameter.</param>
     /// <param name="sourceProperty">The source property.</param>
-    /// <param name="mapStrategy">The strategy to map from source to target.</param>
-    public ParameterMapStrategy(IParameterSymbol targetParameter, IPropertySymbol sourceProperty, IMapStrategy mapStrategy)
+    /// <param name="parameterStrategy">The strategy to map from source to target.</param>
+    public ParameterMapStrategy(IParameterSymbol targetParameter, IPropertySymbol sourceProperty, IMapStrategy parameterStrategy)
     {
         this.TargetParameter = targetParameter;
         this.SourceProperty = sourceProperty;
-        this.MapStrategy = mapStrategy;
+        this.ParameterStrategy = parameterStrategy;
     }
 
     /// <summary>
@@ -40,7 +40,7 @@ internal sealed class ParameterMapStrategy
     /// <summary>
     /// Gets the mapping strategy.
     /// </summary>
-    public IMapStrategy MapStrategy { get; }
+    public IMapStrategy ParameterStrategy { get; }
 
     /// <inheritdoc/>
     public ITypeSymbol TargetType => this.TargetParameter.Type;
@@ -52,5 +52,5 @@ internal sealed class ParameterMapStrategy
     public MappaAlgorithmRule Rule => MappaAlgorithmRule.ArgumentStrategy;
 
     /// <inheritdoc/>
-    public IMappaStrategyBuilder GetBuilder() => this.MapStrategy.GetBuilder();
+    public IMappaStrategyBuilder GetBuilder() => new ParameterMapStrategyBuilder(this);
 }

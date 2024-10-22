@@ -17,6 +17,7 @@ namespace Mappa.Generator.Models;
 /// </summary>
 internal sealed class MapMethod
 {
+    private readonly Attribute[] attributes;
     private MethodParameterMapStrategy? methodParameterMapStrategy;
 
     /// <summary>
@@ -35,6 +36,7 @@ internal sealed class MapMethod
         bool nullableEnabled,
         CancellationToken cancellationToken)
     {
+        this.MethodDeclarationSyntax = methodDeclarationSyntax;
         this.AccessFieldName = methodDeclarationSyntax.IsStatic() ? string.Empty : "this";
         this.MethodName = methodDeclarationSyntax.Identifier.ToFullString();
         this.MethodSymbol = semanticModel.GetDeclaredSymbol(methodDeclarationSyntax, cancellationToken)
@@ -45,6 +47,7 @@ internal sealed class MapMethod
         this.Mapped = false;
         this.Location = methodDeclarationSyntax.GetLocation();
         this.NullableEnabled = nullableEnabled;
+        this.attributes = this.MethodSymbol.GetMethodMappaAttributes(semanticModel.Compilation);
     }
 
     /// <summary>
@@ -53,16 +56,15 @@ internal sealed class MapMethod
     /// <param name="methodSymbol">The method symbol.</param>
     /// <param name="accessFiledName">The name of the field or property that can be used to access the method.</param>
     /// <param name="nullableEnabled"><c>true</c> if reference nullable is enabled.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
     /// <remarks>
     /// The method is already considered mapped.
     /// </remarks>
     public MapMethod(
         IMethodSymbol methodSymbol,
         string accessFiledName,
-        bool nullableEnabled,
-        CancellationToken cancellationToken)
+        bool nullableEnabled)
     {
+        this.MethodDeclarationSyntax = null;
         this.AccessFieldName = accessFiledName;
         this.MethodName = methodSymbol.Name;
         this.MethodSymbol = methodSymbol;
@@ -71,6 +73,7 @@ internal sealed class MapMethod
         this.SourceParameterName = this.MethodSymbol.Parameters.First().Name;
         this.Mapped = true;
         this.NullableEnabled = nullableEnabled;
+        this.attributes = [];
     }
 
     /// <summary>
@@ -109,7 +112,7 @@ internal sealed class MapMethod
     internal string SourceParameterName { get; }
 
     /// <summary>
-    /// Gets a value indicating whether the.
+    /// Gets a value indicating whether the method has been mapped.
     /// </summary>
     internal bool Mapped { get; private set; }
 
@@ -117,6 +120,11 @@ internal sealed class MapMethod
     /// Gets the location.
     /// </summary>
     internal Location? Location { get; }
+
+    /// <summary>
+    /// Gets the method declaration syntax.
+    /// </summary>
+    internal MethodDeclarationSyntax? MethodDeclarationSyntax { get; }
 
     /// <summary>
     /// Gets the method strategy.
@@ -165,5 +173,17 @@ internal sealed class MapMethod
             : SymbolEqualityComparer.Default;
 
         return comparer.Equals(targetType, this.TargetType) && comparer.Equals(sourceType, this.SourceType);
+    }
+
+    /// <summary>
+    /// Gets all the attributes of type <typeparamref name="TAttribute"/>
+    /// applied to the method.
+    /// </summary>
+    /// <typeparam name="TAttribute">The type of the attribute required.</typeparam>
+    /// <returns>The attributes of type <typeparamref name="TAttribute"/> applied to the method.</returns>
+    internal TAttribute[] GetAttributes<TAttribute>()
+        where TAttribute : Attribute
+    {
+        return this.attributes.OfType<TAttribute>().ToArray();
     }
 }

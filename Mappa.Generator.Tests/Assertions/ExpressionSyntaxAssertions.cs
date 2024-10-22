@@ -163,6 +163,32 @@ public sealed class ExpressionSyntaxAssertions
     }
 
     /// <summary>
+    /// Assert that the expression is an invocation expression.
+    /// </summary>
+    /// <param name="memberAccess">The name of the method being invoked.</param>
+    /// <param name="assertArguments">Assertions on the arguments.</param>
+    /// <returns>The assertion.</returns>
+    public ExpressionSyntaxAssertions BeInvocationExpressionUsingIdentifierNameSyntax(
+        string memberAccess,
+        params Action<ExpressionSyntaxAssertions>[] assertArguments)
+    {
+        ArgumentNullException.ThrowIfNull(assertArguments);
+
+        this.Subject.Should().BeOfType<InvocationExpressionSyntax>();
+        var invocationExpressionSyntax = (InvocationExpressionSyntax)this.Subject;
+        new ExpressionSyntaxAssertions(invocationExpressionSyntax.Expression, this.SemanticModel, this.Compilation)
+            .BeIdentifierNameSyntax(memberAccess);
+        invocationExpressionSyntax.ArgumentList.Arguments.Should().HaveCount(assertArguments.Length);
+
+        for (int index = 0; index < assertArguments.Length; ++index)
+        {
+            assertArguments[index](new ExpressionSyntaxAssertions(invocationExpressionSyntax.ArgumentList.Arguments[index].Expression, this.SemanticModel, this.Compilation));
+        }
+
+        return this;
+    }
+
+    /// <summary>
     /// Assert that the expression is an array creation expression.
     /// </summary>
     /// <param name="type">The type being created.</param>

@@ -38,4 +38,24 @@ internal enum MappaDiagnosticsKind
     /// A mapping strategy cannot be identifier.
     /// </summary>
     CannotIdentifyStrategy,
+
+    /// <summary>
+    /// Multiple attributes target the same property or parameter.
+    /// </summary>
+    MultipleAttributesTargetTheSamePropertyOrParameter,
+
+    /// <summary>
+    /// Cannot identify a suitable method to invoke.
+    /// </summary>
+    CannotDetectSuitableMethodToInvoke,
+
+    /// <summary>
+    /// The type cannot be identified.
+    /// </summary>
+    CannotDetectType,
+
+    /// <summary>
+    /// The field or properties cannot be identified.
+    /// </summary>
+    CannotFindFieldOrProperty,
 }
