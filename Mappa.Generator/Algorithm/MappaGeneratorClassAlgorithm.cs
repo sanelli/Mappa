@@ -258,7 +258,12 @@ internal sealed class MappaGeneratorClassAlgorithm
         MappaClassGeneratorContext classContext,
         CancellationToken cancellationToken)
     {
-        // TODO [#37] Allow to skip method using MappaIgnore attribute.
+        if (methodDeclarationSyntax.AttributeLists
+            .GetMappaIgnoreAttributeSyntax(classContext.SemanticModel, cancellationToken) is not null)
+        {
+            return false;
+        }
+
         if (!methodDeclarationSyntax.IsPartial())
         {
             return false;
@@ -304,7 +309,11 @@ internal sealed class MappaGeneratorClassAlgorithm
         string accessFieldName,
         MappaClassGeneratorContext classContext)
     {
-        // TODO [#37] Allow to skip method using MappaIgnore attribute.
+        if (method.GetMappaIgnoreAttribute(this.Compilation) is not null)
+        {
+            return;
+        }
+
         if (!this.Compilation.IsSymbolAccessibleWithin(method, classContext.ClassSymbol))
         {
             return;

@@ -36,6 +36,16 @@ internal static class AttributeSyntaxExtensions
         => attributeLists.GetAttributes<MappaDependencyAttribute>(semanticModel, cancellationToken).SingleOrDefault();
 
     /// <summary>
+    /// Obtain the <see cref="MappaIgnoreAttribute"/>.
+    /// </summary>
+    /// <param name="attributeLists">The attributes list to query.</param>
+    /// <param name="semanticModel">The semantic model.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The <see cref="MappaIgnoreAttribute"/> attribute, or <c>null</c> if the attribute does not exist.</returns>
+    internal static AttributeSyntax? GetMappaIgnoreAttributeSyntax(this SyntaxList<AttributeListSyntax> attributeLists, SemanticModel semanticModel, CancellationToken cancellationToken)
+        => attributeLists.GetAttributes<MappaIgnoreAttribute>(semanticModel, cancellationToken).SingleOrDefault();
+
+    /// <summary>
     /// Obtain the attributes with the specified type.
     /// </summary>
     /// <param name="attributeLists">The attributes list to query.</param>
