@@ -18,13 +18,14 @@ namespace Mappa.Generator.Extensions;
 internal static class AttributeDataExtensions
 {
     private static readonly string MappaInvokeMethodAttributeFullName = typeof(MappaInvokeMethodAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaInvokeMethodAttribute)}");
+    private static readonly string MappaIgnoreAttributeFullName = typeof(MappaIgnoreAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaIgnoreAttribute)}");
 
     /// <summary>
     /// Gets the <see cref="MappaInvokeMethodAttribute"/>s applied to the method.
     /// </summary>
     /// <param name="methodSymbol">The method.</param>
     /// <param name="compilation">The compilation.</param>
-    /// <returns>The <see cref="MappaInvokeMethodAttribute"/> applied to the class.</returns>
+    /// <returns>The <see cref="MappaInvokeMethodAttribute"/> applied to the method.</returns>
     internal static MappaInvokeMethodAttribute[] GetInvokeMethodAttributes(this IMethodSymbol methodSymbol, Compilation compilation)
     {
         var mappaInvokeMethodAttributeSymbol = compilation.GetTypeByMetadataName(MappaInvokeMethodAttributeFullName);
@@ -69,6 +70,21 @@ internal static class AttributeDataExtensions
         }
 
         return [.. results];
+    }
+
+    /// <summary>
+    /// Gets the <see cref="MappaIgnoreAttribute"/> applied to the method, if any.
+    /// </summary>
+    /// <param name="methodSymbol">The method.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The <see cref="MappaIgnoreAttribute"/> applied to the method, or <c>null</c> if it does not exist.</returns>
+    internal static MappaIgnoreAttribute? GetMappaIgnoreAttribute(this IMethodSymbol methodSymbol, Compilation compilation)
+    {
+        var mappaInvokeMethodAttributeSymbol = compilation.GetTypeByMetadataName(MappaIgnoreAttributeFullName);
+        var exists = methodSymbol
+            .GetAttributes()
+            .Any(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, mappaInvokeMethodAttributeSymbol));
+        return exists ? new() : null;
     }
 
     private sealed class FakeType(string fullName) : Type

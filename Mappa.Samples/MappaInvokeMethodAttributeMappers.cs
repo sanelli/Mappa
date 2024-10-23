@@ -2,11 +2,12 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+#pragma warning disable SA1402 // File may only contain a single type
+#pragma warning disable S1118 // Utility classes should not have public constructors
+
 using Mappa.Attributes;
 using Mappa.Samples.Models;
 
-#pragma warning disable SA1402 // File may only contain a single type
-#pragma warning disable S1118 // Utility classes should not have public constructors
 namespace Mappa.Samples;
 
 /// <summary>
