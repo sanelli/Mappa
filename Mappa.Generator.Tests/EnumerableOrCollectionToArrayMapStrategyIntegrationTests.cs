@@ -26,6 +26,8 @@ public sealed class EnumerableOrCollectionToArrayMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
+                                  
                                   using Mappa.Attributes;
                                   using System.Collections.Generic;
 
@@ -36,6 +38,8 @@ public sealed class EnumerableOrCollectionToArrayMapStrategyIntegrationTests
                                   {
                                       public partial long[] Map(ICollection<int> input);
                                   }
+                                  
+                                  #nullable restore
                                   """;
 
         // Act
@@ -49,9 +53,9 @@ public sealed class EnumerableOrCollectionToArrayMapStrategyIntegrationTests
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 typeof(long[]).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 typeof(ICollection<int>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -114,6 +118,8 @@ public sealed class EnumerableOrCollectionToArrayMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
+                                  
                                   using Mappa.Attributes;
                                   using System.Collections.Generic;
 
@@ -124,6 +130,8 @@ public sealed class EnumerableOrCollectionToArrayMapStrategyIntegrationTests
                                   {
                                       public partial long[] Map(IReadOnlyCollection<int> input);
                                   }
+                                  
+                                  #nullable restore
                                   """;
 
         // Act
@@ -137,9 +145,9 @@ public sealed class EnumerableOrCollectionToArrayMapStrategyIntegrationTests
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 typeof(long[]).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 typeof(IReadOnlyCollection<int>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -202,6 +210,8 @@ public sealed class EnumerableOrCollectionToArrayMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
+                                  
                                   using Mappa.Attributes;
                                   using System.Collections.Generic;
 
@@ -212,6 +222,8 @@ public sealed class EnumerableOrCollectionToArrayMapStrategyIntegrationTests
                                   {
                                       public partial long[] Map(IEnumerable<int> input);
                                   }
+                                  
+                                  #nullable restore
                                   """;
 
         // Act
@@ -225,9 +237,9 @@ public sealed class EnumerableOrCollectionToArrayMapStrategyIntegrationTests
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 typeof(long[]).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 typeof(IEnumerable<int>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions

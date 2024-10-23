@@ -26,6 +26,8 @@ public sealed class TupleToTupleMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
+                                  
                                   using Mappa.Attributes;
                                   using System;
 
@@ -36,6 +38,8 @@ public sealed class TupleToTupleMapStrategyIntegrationTests
                                   {
                                       public partial Tuple<string, string> Map(Tuple<int, string> input);
                                   }
+                                  
+                                  #nullable restore
                                   """;
 
         // Act
@@ -49,9 +53,9 @@ public sealed class TupleToTupleMapStrategyIntegrationTests
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 typeof(Tuple<string, string>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 typeof(Tuple<int, string>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions

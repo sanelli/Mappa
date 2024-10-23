@@ -25,6 +25,8 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
     {
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
+                                  
                                   using Mappa.Attributes;
                                   using System.Collections.Generic;
 
@@ -35,6 +37,8 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
                                   {
                                       public partial ICollection<long> Map(ICollection<int> input);
                                   }
+                                  
+                                  #nullable restore
                                   """;
 
         // Act
@@ -48,9 +52,9 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 typeof(ICollection<long>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 typeof(ICollection<int>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -102,6 +106,8 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
     {
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
+                                  
                                   using Mappa.Attributes;
                                   using System.Collections.Generic;
 
@@ -112,6 +118,8 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
                                   {
                                       public partial IEnumerable<long> Map(IEnumerable<int> input);
                                   }
+                                  
+                                  #nullable restore
                                   """;
 
         // Act
@@ -125,9 +133,9 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 typeof(IEnumerable<long>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 typeof(IEnumerable<int>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -179,6 +187,8 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
     {
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
+                                  
                                   using Mappa.Attributes;
                                   using System.Collections.Generic;
 
@@ -189,6 +199,8 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
                                   {
                                       public partial IReadOnlyCollection<long> Map(IReadOnlyCollection<int> input);
                                   }
+                                  
+                                  #nullable restore
                                   """;
 
         // Act
@@ -202,9 +214,9 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 typeof(IReadOnlyCollection<long>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 typeof(IReadOnlyCollection<int>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -257,6 +269,8 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
     {
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
+                                  
                                   using Mappa.Attributes;
                                   using System.Collections.Generic;
 
@@ -267,6 +281,8 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
                                   {
                                       public partial IEnumerable<long> Map(ICollection<int> input);
                                   }
+                                  
+                                  #nullable restore
                                   """;
 
         // Act
@@ -280,9 +296,9 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 typeof(IEnumerable<long>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 typeof(ICollection<int>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -335,6 +351,8 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
     {
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
+                                  
                                   using Mappa.Attributes;
                                   using System.Collections.Generic;
 
@@ -345,6 +363,8 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
                                   {
                                       public partial IReadOnlyCollection<long> Map(ICollection<int> input);
                                   }
+                                  
+                                  #nullable restore
                                   """;
 
         // Act
@@ -358,9 +378,9 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 typeof(IReadOnlyCollection<long>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 typeof(ICollection<int>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -413,6 +433,8 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
     {
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
+                                  
                                   using Mappa.Attributes;
                                   using System.Collections.Generic;
 
@@ -423,6 +445,8 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
                                   {
                                       public partial ICollection<long> Map(IEnumerable<int> input);
                                   }
+                                  
+                                  #nullable restore
                                   """;
 
         // Act
@@ -436,9 +460,9 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 typeof(ICollection<long>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 typeof(IEnumerable<int>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -491,6 +515,8 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
     {
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
+                                  
                                   using Mappa.Attributes;
                                   using System.Collections.Generic;
 
@@ -501,6 +527,8 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
                                   {
                                       public partial IReadOnlyCollection<long> Map(IEnumerable<int> input);
                                   }
+                                  
+                                  #nullable restore
                                   """;
 
         // Act
@@ -514,9 +542,9 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 typeof(IReadOnlyCollection<long>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 typeof(IEnumerable<int>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -569,6 +597,8 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
     {
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
+                                  
                                   using Mappa.Attributes;
                                   using System.Collections.Generic;
 
@@ -579,6 +609,8 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
                                   {
                                       public partial IEnumerable<long> Map(IReadOnlyCollection<int> input);
                                   }
+                                  
+                                  #nullable restore
                                   """;
 
         // Act
@@ -592,9 +624,9 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 typeof(IEnumerable<long>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 typeof(IReadOnlyCollection<int>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -647,6 +679,8 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
     {
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
+                                  
                                   using Mappa.Attributes;
                                   using System.Collections.Generic;
 
@@ -657,6 +691,8 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
                                   {
                                       public partial ICollection<long> Map(IReadOnlyCollection<int> input);
                                   }
+                                  
+                                  #nullable restore
                                   """;
 
         // Act
@@ -670,9 +706,9 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 typeof(ICollection<long>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 typeof(IReadOnlyCollection<int>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -725,6 +761,8 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
     {
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
+                                  
                                   using Mappa.Attributes;
                                   using System.Collections.Generic;
 
@@ -735,6 +773,8 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
                                   {
                                       public partial IList<long> Map(ICollection<int> input);
                                   }
+                                  
+                                  #nullable restore
                                   """;
 
         // Act
@@ -748,9 +788,9 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 typeof(IList<long>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 typeof(ICollection<int>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -803,6 +843,8 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
     {
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
+                                  
                                   using Mappa.Attributes;
                                   using System.Collections.Generic;
 
@@ -813,6 +855,8 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
                                   {
                                       public partial IList<long> Map(IEnumerable<int> input);
                                   }
+                                  
+                                  #nullable restore
                                   """;
 
         // Act
@@ -826,9 +870,9 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 typeof(IList<long>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 typeof(IEnumerable<int>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -881,6 +925,8 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
     {
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
+                                  
                                   using Mappa.Attributes;
                                   using System.Collections.Generic;
 
@@ -891,6 +937,8 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
                                   {
                                       public partial IList<long> Map(IReadOnlyCollection<int> input);
                                   }
+                                  
+                                  #nullable restore
                                   """;
 
         // Act
@@ -904,9 +952,9 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 typeof(IList<long>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 typeof(IReadOnlyCollection<int>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions

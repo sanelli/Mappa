@@ -28,6 +28,8 @@ public sealed class StringToUriMapStrategyIntegrationTests
 
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
+                                  
                                   using System;
                                   using Mappa.Attributes;
 
@@ -38,6 +40,8 @@ public sealed class StringToUriMapStrategyIntegrationTests
                                   {
                                       public partial Uri Map(string input);
                                   }
+                                  
+                                  #nullable restore
                                   """;
 
         // Act
@@ -51,9 +55,9 @@ public sealed class StringToUriMapStrategyIntegrationTests
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 typeof(Uri).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 typeof(string).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions

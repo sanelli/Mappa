@@ -25,6 +25,7 @@ public class ArrayOrListToArrayMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
                                   using Mappa.Attributes;
 
                                   namespace Mappa.Generator.Tests.UnitTests.SourceCode;
@@ -34,6 +35,7 @@ public class ArrayOrListToArrayMapStrategyIntegrationTests
                                   {
                                       public partial long[] Map(int[] input);
                                   }
+                                  #nullable restore
                                   """;
 
         // Act
@@ -47,9 +49,9 @@ public class ArrayOrListToArrayMapStrategyIntegrationTests
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 typeof(long[]).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 typeof(int[]).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -139,6 +141,7 @@ public class ArrayOrListToArrayMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
                                   using Mappa.Attributes;
                                   using System.Collections.Generic;
 
@@ -149,6 +152,8 @@ public class ArrayOrListToArrayMapStrategyIntegrationTests
                                   {
                                       public partial long[] Map(IList<int> input);
                                   }
+                                  
+                                  #nullable restore
                                   """;
 
         // Act
@@ -162,9 +167,9 @@ public class ArrayOrListToArrayMapStrategyIntegrationTests
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 typeof(long[]).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 typeof(IList<int>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -254,6 +259,8 @@ public class ArrayOrListToArrayMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
+                                  
                                   using Mappa.Attributes;
                                   using System.Collections.Generic;
 
@@ -264,6 +271,8 @@ public class ArrayOrListToArrayMapStrategyIntegrationTests
                                   {
                                       public partial long[] Map(List<int> input);
                                   }
+                                  
+                                  #nullable restore
                                   """;
 
         // Act
@@ -277,9 +286,9 @@ public class ArrayOrListToArrayMapStrategyIntegrationTests
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 typeof(long[]).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 typeof(List<int>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
