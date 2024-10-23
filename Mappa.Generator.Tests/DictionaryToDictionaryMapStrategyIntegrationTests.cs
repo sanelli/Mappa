@@ -26,6 +26,8 @@ public sealed class DictionaryToDictionaryMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
+                                  
                                   using Mappa.Attributes;
                                   using System.Collections.Generic;
 
@@ -36,6 +38,8 @@ public sealed class DictionaryToDictionaryMapStrategyIntegrationTests
                                   {
                                       public partial Dictionary<int, long> Map(Dictionary<short, int> input);
                                   }
+                                  
+                                  #nullable restore
                                   """;
 
         // Act
@@ -49,9 +53,9 @@ public sealed class DictionaryToDictionaryMapStrategyIntegrationTests
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 typeof(Dictionary<int, long>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 typeof(Dictionary<short, int>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -104,6 +108,8 @@ public sealed class DictionaryToDictionaryMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
+                                  
                                   using Mappa.Attributes;
                                   using System.Collections.Generic;
 
@@ -114,6 +120,8 @@ public sealed class DictionaryToDictionaryMapStrategyIntegrationTests
                                   {
                                       public partial IDictionary<int, long> Map(Dictionary<short, int> input);
                                   }
+                                  
+                                  #nullable restore
                                   """;
 
         // Act
@@ -127,9 +135,9 @@ public sealed class DictionaryToDictionaryMapStrategyIntegrationTests
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 typeof(IDictionary<int, long>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 typeof(Dictionary<short, int>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -182,6 +190,8 @@ public sealed class DictionaryToDictionaryMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
+                                  
                                   using Mappa.Attributes;
                                   using System.Collections.Generic;
 
@@ -192,6 +202,8 @@ public sealed class DictionaryToDictionaryMapStrategyIntegrationTests
                                   {
                                       public partial IDictionary<int, long> Map(IDictionary<short, int> input);
                                   }
+                                  
+                                  #nullable restore
                                   """;
 
         // Act
@@ -205,9 +217,9 @@ public sealed class DictionaryToDictionaryMapStrategyIntegrationTests
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 typeof(IDictionary<int, long>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 typeof(IDictionary<short, int>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -260,6 +272,8 @@ public sealed class DictionaryToDictionaryMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
+                                  
                                   using Mappa.Attributes;
                                   using System.Collections.Generic;
 
@@ -270,6 +284,8 @@ public sealed class DictionaryToDictionaryMapStrategyIntegrationTests
                                   {
                                       public partial Dictionary<int, long> Map(IDictionary<short, int> input);
                                   }
+                                  
+                                  #nullable restore
                                   """;
 
         // Act
@@ -283,9 +299,9 @@ public sealed class DictionaryToDictionaryMapStrategyIntegrationTests
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 typeof(Dictionary<int, long>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 typeof(IDictionary<short, int>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions

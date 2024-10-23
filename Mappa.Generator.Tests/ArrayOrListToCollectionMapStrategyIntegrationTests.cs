@@ -60,21 +60,22 @@ public sealed class ArrayOrListToCollectionMapStrategyIntegrationTests
         bool isSourceArray)
     {
         // Arrange
-        var sourceCode = """
-                                  using Mappa.Attributes;
-                                  using System.Collections.Generic;
+        var sourceCode = $$"""
+                           #nullable enable
 
-                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                           using Mappa.Attributes;
+                           using System.Collections.Generic;
 
-                                  [Mappa]
-                                  public sealed partial class Mapper
-                                  {
-                                      public partial %target-type% Map(%param-type% input);
-                                  }
-                                  """
-                .Replace("%target-type%", targetListRepresentation, StringComparison.Ordinal)
-                .Replace("%param-type%", sourceListRepresentation, StringComparison.Ordinal)
-            ;
+                           namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                           [Mappa]
+                           public sealed partial class Mapper
+                           {
+                               public partial {{targetListRepresentation}} Map({{sourceListRepresentation}} input);
+                           }
+
+                           #nullable restore
+                           """;
 
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
@@ -87,9 +88,9 @@ public sealed class ArrayOrListToCollectionMapStrategyIntegrationTests
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 targetListType,
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 sourceListType,
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions

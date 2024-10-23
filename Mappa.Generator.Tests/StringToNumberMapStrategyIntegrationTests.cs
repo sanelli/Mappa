@@ -49,7 +49,7 @@ public sealed class StringToNumberMapStrategyIntegrationTests
         const string identifierName = "__mappa_tmp_1";
 
         // Arrange
-        var sourceCode = """
+        var sourceCode = $$"""
                          using Mappa.Attributes;
 
                          namespace Mappa.Generator.Tests.UnitTests.SourceCode;
@@ -57,9 +57,9 @@ public sealed class StringToNumberMapStrategyIntegrationTests
                          [Mappa]
                          public sealed partial class Mapper
                          {
-                             public partial %numeric-type% Map(string input);
+                             public partial {{aliasNumericType}} Map(string input);
                          }
-                         """.Replace("%numeric-type%", aliasNumericType, StringComparison.Ordinal);
+                         """;
 
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
