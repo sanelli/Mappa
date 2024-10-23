@@ -60,26 +60,26 @@ internal class TypeMapIdentifierAlgorithm
             // 01. Identity strategy.
             new IdentityMapStrategyDetector(this.Context, this.Compilation),
 
-            // 02. Enum related strategies.
-            new EnumMapStrategyDetector(this.Context, this.Compilation),
-
-            // 03. String related strategies.
-            new StringMapStrategyDetector(this.Context, this.Compilation),
-
-            // 04. Nullable related strategies.
+            // 02. Nullable related strategies.
             new NullableMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
 
-            // 05. Container related strategies.
-            new ContainerMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
+            // 03. Reference nullable related strategies.
+            new ReferenceNullableMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
 
-            // 06. Tuple related strategies.
-            new TupleMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
+            // 04. Enum related strategies.
+            new EnumMapStrategyDetector(this.Context, this.Compilation),
 
-            // 07. Date and time related strategies.
+            // 05. String related strategies.
+            new StringMapStrategyDetector(this.Context, this.Compilation),
+
+            // 06. Date and time related strategies.
             new DateAndTimeMapStrategyDetector(this.Context, this.Compilation),
 
-            // 08. Reference nullable related strategies.
-            new ReferenceNullableMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
+            // 07. Container related strategies.
+            new ContainerMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
+
+            // 08. Tuple related strategies.
+            new TupleMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
 
             // 09. Constructor related strategies.
             new ConstructorMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
