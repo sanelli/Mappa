@@ -350,7 +350,12 @@ internal sealed class MappaGeneratorClassAlgorithm
         MappaClassGeneratorContext classContext,
         CancellationToken cancellationToken)
     {
-        // TODO [#37] Allow to skip method using MappaIgnore attribute.
+        if (methodDeclarationSyntax.AttributeLists
+                .GetMappaIgnoreAttributeSyntax(classContext.SemanticModel, cancellationToken) is not null)
+        {
+            return;
+        }
+
         if (methodDeclarationSyntax.IsPartial())
         {
             return;
