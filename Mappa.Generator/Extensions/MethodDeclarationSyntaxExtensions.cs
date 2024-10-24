@@ -35,6 +35,6 @@ internal static class MethodDeclarationSyntaxExtensions
     /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
     /// <param name="arity">The number of parameters.</param>
     /// <returns><c>true</c> is the method is partial.</returns>
-    internal static bool HasArity(this MethodDeclarationSyntax methodDeclarationSyntax, int arity)
-        => methodDeclarationSyntax.ParameterList.Parameters.Count == arity;
+    internal static bool HasArity(this MethodDeclarationSyntax methodDeclarationSyntax, params int[] arity)
+        => arity.Contains(methodDeclarationSyntax.ParameterList.Parameters.Count);
 }

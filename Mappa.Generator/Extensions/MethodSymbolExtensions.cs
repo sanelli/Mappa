@@ -2,6 +2,8 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Exceptions;
+
 using Microsoft.CodeAnalysis;
 
 namespace Mappa.Generator.Extensions;
@@ -11,6 +13,8 @@ namespace Mappa.Generator.Extensions;
 /// </summary>
 internal static class MethodSymbolExtensions
 {
+    private static readonly string MappaContextTypeFullName = typeof(MappaContext).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} from {typeof(MappaContext)}.");
+
     /// <summary>
     /// Returns <c>true</c> if the method returns <c>void</c>.
     /// </summary>
@@ -46,5 +50,22 @@ internal static class MethodSymbolExtensions
 
         // All done.
         return [.. result];
+    }
+
+    /// <summary>
+    /// Returns <c>true</c> if the second parameter of the method is
+    /// of type <see cref="MappaContext"/>.
+    /// </summary>
+    /// <param name="methodSymbol">The method to validate.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the second parameter of the method is
+    /// of type <see cref="MappaContext"/>, <c>false</c> otherwise.</returns>
+    internal static bool SecondParameterIsMappaContext(
+        this IMethodSymbol methodSymbol,
+        Compilation compilation)
+    {
+        var secondParameterType = methodSymbol.Parameters[1];
+        var mappaContextType = compilation.GetTypeByMetadataName(MappaContextTypeFullName);
+        return SymbolEqualityComparer.Default.Equals(mappaContextType, secondParameterType);
     }
 }

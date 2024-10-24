@@ -42,8 +42,8 @@ internal sealed class MapMethod
         this.MethodSymbol = semanticModel.GetDeclaredSymbol(methodDeclarationSyntax, cancellationToken)
             ?? throw new MappaGeneratorException($"Cannot obtain the method symbol for method \"{methodDeclarationSyntax.Identifier}\" syntax node.", methodDeclarationSyntax.GetLocation());
         this.TargetType = this.MethodSymbol.ReturnType;
-        this.SourceType = this.MethodSymbol.Parameters.First().Type;
-        this.SourceParameterName = this.MethodSymbol.Parameters.First().Name;
+        this.SourceType = this.MethodSymbol.Parameters[0].Type;
+        this.SourceParameterName = this.MethodSymbol.Parameters[0].Name;
         this.Mapped = false;
         this.Location = methodDeclarationSyntax.GetLocation();
         this.NullableEnabled = nullableEnabled;
@@ -69,8 +69,8 @@ internal sealed class MapMethod
         this.MethodName = methodSymbol.Name;
         this.MethodSymbol = methodSymbol;
         this.TargetType = this.MethodSymbol.ReturnType;
-        this.SourceType = this.MethodSymbol.Parameters.First().Type;
-        this.SourceParameterName = this.MethodSymbol.Parameters.First().Name;
+        this.SourceType = this.MethodSymbol.Parameters[0].Type;
+        this.SourceParameterName = this.MethodSymbol.Parameters[0].Name;
         this.Mapped = true;
         this.NullableEnabled = nullableEnabled;
         this.attributes = [];

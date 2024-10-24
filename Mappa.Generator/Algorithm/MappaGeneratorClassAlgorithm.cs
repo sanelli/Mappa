@@ -269,8 +269,7 @@ internal sealed class MappaGeneratorClassAlgorithm
             return false;
         }
 
-        // TODO [#55] Accept method with MappaContext.
-        if (!methodDeclarationSyntax.HasArity(1))
+        if (!methodDeclarationSyntax.HasArity(1, 2))
         {
             classContext.ReportDiagnostic(MappaDiagnostics.MethodHasInvalidNumberOfParameters(methodDeclarationSyntax));
             return false;
@@ -281,6 +280,12 @@ internal sealed class MappaGeneratorClassAlgorithm
             classContext.SemanticModel,
             classContext.IsNullableEnabled(methodDeclarationSyntax),
             cancellationToken);
+
+        if (methodDeclarationSyntax.HasArity(2)
+            && !mapMethod.MethodSymbol.SecondParameterIsMappaContext(this.Compilation))
+        {
+            return false;
+        }
 
         if (mapMethod.MethodSymbol.IsVoid())
         {
@@ -310,7 +315,6 @@ internal sealed class MappaGeneratorClassAlgorithm
         string accessFieldName,
         MappaClassGeneratorContext classContext)
     {
-        // TODO [#55] Accept method with MappaContext.
         if (method.GetMappaIgnoreAttribute(this.Compilation) is not null)
         {
             return;
@@ -321,7 +325,14 @@ internal sealed class MappaGeneratorClassAlgorithm
             return;
         }
 
-        if (method.Parameters.Length != 1)
+        if (method.Parameters.Length != 1
+            && method.Parameters.Length != 2)
+        {
+            return;
+        }
+
+        if (method.Parameters.Length == 2
+            && !method.SecondParameterIsMappaContext(this.Compilation))
         {
             return;
         }
@@ -363,8 +374,7 @@ internal sealed class MappaGeneratorClassAlgorithm
             return;
         }
 
-        // TODO [#55] Accept method with MappaContext.
-        if (!methodDeclarationSyntax.HasArity(1))
+        if (!methodDeclarationSyntax.HasArity(1, 2))
         {
             return;
         }
@@ -374,6 +384,12 @@ internal sealed class MappaGeneratorClassAlgorithm
             classContext.SemanticModel,
             classContext.IsNullableEnabled(methodDeclarationSyntax),
             cancellationToken);
+
+        if (methodDeclarationSyntax.HasArity(2)
+            && !mapMethod.MethodSymbol.SecondParameterIsMappaContext(this.Compilation))
+        {
+            return;
+        }
 
         if (mapMethod.MethodSymbol.IsVoid())
         {
