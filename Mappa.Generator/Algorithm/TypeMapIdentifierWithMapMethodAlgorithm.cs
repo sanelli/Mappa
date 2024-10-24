@@ -36,12 +36,16 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
     {
         this.CancellationToken.ThrowIfCancellationRequested();
 
-        // TODO [#55] Handle scenario where the invoking method require a MappaContext.
         // TODO [#13] `GetStrategy` should also allow to get compatible methods in some scenarios.
         // This will require identifying a mapping between input & target parameter.
         if (this.Context.TryGetMethod(this.Context.TargetType, this.Context.SourceType, out var mapMethod))
         {
-            return new MethodMapStrategy(MappaAlgorithmRule.MapUsingExistingMethod, mapMethod);
+            var mapMethodRequireMappaContext = mapMethod.RequireMappaContextWhenInvoked();
+            var callerMethodProvideMappaContext = this.Context.MapMethod?.ProvideMappaContextWhenInvoked() ?? false;
+            if (!mapMethodRequireMappaContext || /* mapMethodRequireMappaContext && */ callerMethodProvideMappaContext)
+            {
+                return new MethodMapStrategy(MappaAlgorithmRule.MapUsingExistingMethod, mapMethod);
+            }
         }
 
         return base.GetStrategy();

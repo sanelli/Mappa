@@ -186,4 +186,22 @@ internal sealed class MapMethod
     {
         return this.attributes.OfType<TAttribute>().ToArray();
     }
+
+    /// <summary>
+    /// Returns <c>true</c> when the method require a mappa context to be invoked.
+    /// </summary>
+    /// <returns><c>true</c> when the method require a mappa context to be invoked, <c>false</c> otherwise.</returns>
+    internal bool RequireMappaContextWhenInvoked()
+    {
+        return this.MethodSymbol.Parameters.Length == 2;
+    }
+
+    /// <summary>
+    /// Returns <c>true</c> when the method provide a mappa context.
+    /// </summary>
+    /// <returns><c>true</c> when the method provide a mappa context, <c>false</c> otherwise.</returns>
+    internal bool ProvideMappaContextWhenInvoked()
+    {
+        return this.MethodSymbol.Parameters.Length == 2;
+    }
 }
