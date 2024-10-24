@@ -38,6 +38,7 @@ internal sealed class MethodMapStrategyBuilder
             methodName = $"{this.strategy.MapMethod.AccessFieldName}.{methodName}";
         }
 
+        // TODO [#55] Support method with MappaContext.
         var code = $"{this.strategy.TargetType.ToDisplayString()} {temporary} = {methodName}({source});";
 
         return ($"{ruleComment}{temporary}", code);

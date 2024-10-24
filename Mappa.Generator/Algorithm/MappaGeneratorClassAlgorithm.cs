@@ -269,6 +269,7 @@ internal sealed class MappaGeneratorClassAlgorithm
             return false;
         }
 
+        // TODO [#55] Accept method with MappaContext.
         if (!methodDeclarationSyntax.HasArity(1))
         {
             classContext.ReportDiagnostic(MappaDiagnostics.MethodHasInvalidNumberOfParameters(methodDeclarationSyntax));
@@ -309,6 +310,7 @@ internal sealed class MappaGeneratorClassAlgorithm
         string accessFieldName,
         MappaClassGeneratorContext classContext)
     {
+        // TODO [#55] Accept method with MappaContext.
         if (method.GetMappaIgnoreAttribute(this.Compilation) is not null)
         {
             return;
@@ -361,6 +363,7 @@ internal sealed class MappaGeneratorClassAlgorithm
             return;
         }
 
+        // TODO [#55] Accept method with MappaContext.
         if (!methodDeclarationSyntax.HasArity(1))
         {
             return;

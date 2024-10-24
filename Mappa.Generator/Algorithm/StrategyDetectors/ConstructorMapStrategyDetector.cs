@@ -440,6 +440,7 @@ internal sealed class ConstructorMapStrategyDetector
         return strategy is not NoMapStrategy;
     }
 
+    // TODO [#55] Support method with MappaContext.
     private void TryGetStrategyUsingMappaInvokeMethodAttribute(
         string targetName,
         ITypeSymbol targetType,
