@@ -44,7 +44,7 @@ internal sealed class MappaClassBuilder
             // Build all map methods.
             foreach (var mapMethod in this.ClassContext.MapMethods.Where(mapMethod => mapMethod.HasStrategy))
             {
-                var methodBuilder = new MappaMethodBuilder(this.ClassContext, mapMethod);
+                var methodBuilder = new MappaMethodBuilder(mapMethod);
                 var methodSourceCode = methodBuilder.BuildSource(context, mappaGlobalOptions);
                 builder.AppendLine(methodSourceCode);
             }
