@@ -44,9 +44,12 @@ internal static class MethodSymbolExtensions
         var result = new List<Attribute>();
 
         // Mappa Invoke Method Attributes
-        var invokeMethodAttributesSyntax = methodSymbol
-            .GetInvokeMethodAttributes(compilation);
-        result.AddRange(invokeMethodAttributesSyntax);
+        var invokeMethodAttributes = methodSymbol.GetInvokeMethodAttributes(compilation);
+        result.AddRange(invokeMethodAttributes);
+
+        // Mappa Assign From Context Attributes
+        var assignFromContextAttributes = methodSymbol.GetMappaAssignFromContextAttributes(compilation);
+        result.AddRange(assignFromContextAttributes);
 
         // All done.
         return [.. result];
