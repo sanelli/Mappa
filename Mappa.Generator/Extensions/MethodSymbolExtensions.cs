@@ -64,7 +64,7 @@ internal static class MethodSymbolExtensions
         this IMethodSymbol methodSymbol,
         Compilation compilation)
     {
-        var secondParameterType = methodSymbol.Parameters[1];
+        var secondParameterType = methodSymbol.Parameters[1].Type;
         var mappaContextType = compilation.GetTypeByMetadataName(MappaContextTypeFullName);
         return SymbolEqualityComparer.Default.Equals(mappaContextType, secondParameterType);
     }
