@@ -41,10 +41,12 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
         if (this.Context.TryGetMethod(this.Context.TargetType, this.Context.SourceType, out var mapMethod))
         {
             var mapMethodRequireMappaContext = mapMethod.RequireMappaContextWhenInvoked();
-            var callerMethodProvideMappaContext = this.Context.MapMethod?.ProvideMappaContextWhenInvoked() ?? false;
+            var rootMapMethod = this.Context.GetRootMapMethod();
+            var callerMethodProvideMappaContext = rootMapMethod.ProvideMappaContextWhenInvoked();
+
             if (!mapMethodRequireMappaContext || /* mapMethodRequireMappaContext && */ callerMethodProvideMappaContext)
             {
-                return new MethodMapStrategy(MappaAlgorithmRule.MapUsingExistingMethod, mapMethod);
+                return new MethodMapStrategy(MappaAlgorithmRule.MapUsingExistingMethod, mapMethod, rootMapMethod.MaybeGetMappaContextParameterName());
             }
         }
 

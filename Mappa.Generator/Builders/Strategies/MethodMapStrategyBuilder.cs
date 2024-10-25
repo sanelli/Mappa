@@ -38,8 +38,14 @@ internal sealed class MethodMapStrategyBuilder
             methodName = $"{this.strategy.MapMethod.AccessFieldName}.{methodName}";
         }
 
-        // TODO [#55] Support method with MappaContext.
-        var code = $"{this.strategy.TargetType.ToDisplayString()} {temporary} = {methodName}({source});";
+        var contextParameter = string.Empty;
+        if (this.strategy.MapMethod.RequireMappaContextWhenInvoked() &&
+            this.strategy.ContextParameterName is not null)
+        {
+            contextParameter = $", {this.strategy.ContextParameterName}";
+        }
+
+        var code = $"{this.strategy.TargetType.ToDisplayString()} {temporary} = {methodName}({source}{contextParameter});";
 
         return ($"{ruleComment}{temporary}", code);
     }

@@ -211,10 +211,17 @@ internal sealed class MapMethod
     /// <returns>The name of the mappa context parameter.</returns>
     /// <exception cref="MappaGenerator">When the method does not have a mappa context parameter.</exception>
     internal string GetMappaContextParameterName()
+        => this.MaybeGetMappaContextParameterName() ?? throw new MappaGeneratorException("Method does not have a mappa context parameter.");
+
+    /// <summary>
+    /// Gets the name of the mappa context parameter, returns <c>null</c> if not present.
+    /// </summary>
+    /// <returns>The name of the mappa context parameter, or <c>null</c> if not present.</returns>
+    internal string? MaybeGetMappaContextParameterName()
     {
         if (this.MethodSymbol.Parameters.Length < 2)
         {
-            throw new MappaGeneratorException("Method does not have a mappa context parameter.");
+            return null;
         }
 
         return this.MethodSymbol.Parameters[1].Name;
