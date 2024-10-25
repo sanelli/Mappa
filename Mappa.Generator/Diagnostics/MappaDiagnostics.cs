@@ -27,6 +27,19 @@ internal static class MappaDiagnostics
 
     /// <summary>
     /// Diagnostic to report the fact that the method described by syntax
+    /// <paramref name="methodDeclarationSyntax"/> require a second parameter
+    /// of type <see cref="MappaContext"/>.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MethodHasInvalidMappaContextParameter(MethodDeclarationSyntax methodDeclarationSyntax)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MethodHasInvalidMappaContextParameter,
+            methodDeclarationSyntax.GetLocation(),
+            methodDeclarationSyntax.Identifier.ToFullString());
+
+    /// <summary>
+    /// Diagnostic to report the fact that the method described by syntax
     /// <paramref name="methodDeclarationSyntax"/> returns <c>void</c>.
     /// </summary>
     /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>

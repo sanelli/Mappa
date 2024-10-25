@@ -284,6 +284,7 @@ internal sealed class MappaGeneratorClassAlgorithm
         if (methodDeclarationSyntax.HasArity(2)
             && !mapMethod.MethodSymbol.SecondParameterIsMappaContext(this.Compilation))
         {
+            classContext.ReportDiagnostic(MappaDiagnostics.MethodHasInvalidNumberOfParameters(methodDeclarationSyntax));
             return false;
         }
 

@@ -15,6 +15,7 @@ internal static class MappaDiagnosticDescriptors
     private const string Category = "Mappa.Generator";
 
     private static DiagnosticDescriptor? methodHasInvalidNumberOfParameters;
+    private static DiagnosticDescriptor? methodHasInvalidMappaContextParameter;
     private static DiagnosticDescriptor? methodIsVoid;
     private static DiagnosticDescriptor? methodReturnsTaskType;
     private static DiagnosticDescriptor? duplicateMapping;
@@ -31,6 +32,14 @@ internal static class MappaDiagnosticDescriptors
         => methodHasInvalidNumberOfParameters ??= BuildError(
             MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters,
             "Method '{0}' cannot be used for mapping because it has an unsupported number of parameters.");
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidMappaContextParameter"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MethodHasInvalidMappaContextParameter
+        => methodHasInvalidMappaContextParameter ??= BuildError(
+            MappaDiagnosticsKind.MethodHasInvalidMappaContextParameter,
+            "Method '{0}' cannot be used for mapping because the second parameter is not of type MappaContext.");
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodIsVoid"/>.

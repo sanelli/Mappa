@@ -20,6 +20,11 @@ internal enum MappaDiagnosticsKind
     MethodHasInvalidNumberOfParameters = 1,
 
     /// <summary>
+    /// The method second parameter is not of type MappaContext.
+    /// </summary>
+    MethodHasInvalidMappaContextParameter,
+
+    /// <summary>
     /// The method returns void.
     /// </summary>
     MethodIsVoid,
