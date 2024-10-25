@@ -63,10 +63,9 @@ internal sealed class MappaMethodBuilder
         var sourceParameter = $"{extensionMethod}{this.mapMethod.SourceType.ToDisplayString()} {this.mapMethod.SourceParameterName}";
 
         var contextParameter = string.Empty;
-        if (this.mapMethod.MethodDeclarationSyntax is not null &&
-            this.mapMethod.MethodDeclarationSyntax.HasArity(2))
+        if (this.mapMethod.RequireMappaContextWhenInvoked())
         {
-            contextParameter = $", {typeof(MappaContext).FullName} {this.mapMethod.MethodDeclarationSyntax.ParameterList.Parameters[1].Identifier.ToFullString()}";
+            contextParameter = $", {typeof(MappaContext).FullName} {this.mapMethod.GetMappaContextParameterName()}";
         }
 
         var signature = $"{modifiersWithReturnType} {this.mapMethod.MethodName}({sourceParameter}{contextParameter})";
