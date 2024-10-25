@@ -306,13 +306,13 @@ internal sealed class ConstructorMapStrategyDetector
                                     StringComparison.Ordinal,
                                     out var propertyStrategyFromAttribute))
                             {
-                                return new PropertyMapStrategy(targetProperty, sourceProperty!, propertyStrategyFromAttribute);
+                                return new PropertyMapStrategy(targetProperty, sourceProperty, propertyStrategyFromAttribute);
                             }
 
                             // Look for a matching source property
                             if (!hasSourceProperty || sourceProperty is null)
                             {
-                                return new PropertyMapStrategy(targetProperty, null!, noMapStrategy);
+                                return new PropertyMapStrategy(targetProperty, null, noMapStrategy);
                             }
 
                             var targetPropertyType = targetProperty.Type;
@@ -323,7 +323,7 @@ internal sealed class ConstructorMapStrategyDetector
                                 return new PropertyMapStrategy(targetProperty, sourceProperty, propertyStrategy);
                             }
 
-                            return new PropertyMapStrategy(targetProperty, null!, noMapStrategy);
+                            return new PropertyMapStrategy(targetProperty, null, noMapStrategy);
                         })
                     .ToArray();
 
@@ -436,12 +436,42 @@ internal sealed class ConstructorMapStrategyDetector
                     mappaInvokeMethodAttribute,
                     out strategy);
                 break;
+            case MappaAssignFromContextAttribute mappaAssignFromContextAttribute:
+                this.TryGetStrategyUsingMappaAssignFromContextAttribute(
+                    targetName,
+                    targetType,
+                    mappaAssignFromContextAttribute,
+                    out strategy);
+                break;
         }
 
         return strategy is not NoMapStrategy;
     }
 
-    // TODO [#55] Support method with MappaContext.
+    private void TryGetStrategyUsingMappaAssignFromContextAttribute(
+        string targetName,
+        ITypeSymbol targetType,
+        MappaAssignFromContextAttribute attribute,
+        out IMapStrategy strategy)
+    {
+        strategy = new NoMapStrategy(targetType, null!);
+
+        var mapMethod = this.context.MapMethod ?? throw new MappaGeneratorException("Map method needs to be defined.");
+        var mapMethodMethodDeclarationSyntax = mapMethod.MethodDeclarationSyntax ?? throw new MappaGeneratorException("Method declaration syntax has not been defined.");
+
+        var rootMapMethod = this.context.GetRootMapMethod();
+        if (rootMapMethod.ProvideMappaContextWhenInvoked())
+        {
+            strategy = new MappaAssignFromContextAttributeStrategy(targetType, attribute, rootMapMethod.GetMappaContextParameterName());
+        }
+        else
+        {
+            this.context.ReportDiagnostic(MappaDiagnostics.CannotUseMappaAssignFromContextAttributeWithoutContextParameter(
+                mapMethodMethodDeclarationSyntax,
+                targetName));
+        }
+    }
+
     private void TryGetStrategyUsingMappaInvokeMethodAttribute(
         string targetName,
         ITypeSymbol targetType,

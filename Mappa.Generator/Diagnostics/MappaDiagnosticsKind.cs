@@ -2,6 +2,8 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Attributes;
+
 namespace Mappa.Generator.Diagnostics;
 
 /// <summary>
@@ -63,4 +65,10 @@ internal enum MappaDiagnosticsKind
     /// The field or properties cannot be identified.
     /// </summary>
     CannotFindFieldOrProperty,
+
+    /// <summary>
+    /// The <see cref="MappaAssignFromContextAttribute"/> cannot be used
+    /// because the <see cref="MappaContext"/> parameter is missing.
+    /// </summary>
+    CannotUseMappaAssignFromContextAttributeWithoutContextParameter,
 }

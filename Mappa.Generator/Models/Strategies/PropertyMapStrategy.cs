@@ -20,7 +20,7 @@ internal sealed class PropertyMapStrategy
     /// <param name="targetProperty">The target property.</param>
     /// <param name="sourceProperty">The source property.</param>
     /// <param name="propertyStrategy">The strategy between these properties.</param>
-    public PropertyMapStrategy(IPropertySymbol targetProperty, IPropertySymbol sourceProperty, IMapStrategy propertyStrategy)
+    public PropertyMapStrategy(IPropertySymbol targetProperty, IPropertySymbol? sourceProperty, IMapStrategy propertyStrategy)
     {
         this.TargetProperty = targetProperty;
         this.SourceProperty = sourceProperty;
@@ -35,7 +35,7 @@ internal sealed class PropertyMapStrategy
     /// <summary>
     /// Gets the source property.
     /// </summary>
-    public IPropertySymbol SourceProperty { get; }
+    public IPropertySymbol? SourceProperty { get; }
 
     /// <summary>
     /// Gets the strategy to be applied between the two properties.
@@ -46,7 +46,7 @@ internal sealed class PropertyMapStrategy
     public ITypeSymbol TargetType => this.TargetProperty.Type;
 
     /// <inheritdoc/>
-    public ITypeSymbol SourceType => this.SourceProperty.Type;
+    public ITypeSymbol SourceType => this.SourceProperty?.Type ?? throw new InvalidOperationException();
 
     /// <inheritdoc/>
     public MappaAlgorithmRule Rule => MappaAlgorithmRule.PropertyStrategy;

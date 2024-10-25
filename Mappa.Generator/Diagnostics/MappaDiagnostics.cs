@@ -2,6 +2,8 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Attributes;
+
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -152,6 +154,21 @@ internal static class MappaDiagnostics
         string fieldName)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.CannotFindFieldOrProperty,
+            methodDeclarationSyntax.GetLocation(),
+            fieldName);
+
+    /// <summary>
+    /// Diagnostic to report the fact that it is not use the <see cref="MappaAssignFromContextAttribute"/>
+    /// because the method does not have a <see cref="MappaContext"/> parameter.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="fieldName">The type that cannot be found.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic CannotUseMappaAssignFromContextAttributeWithoutContextParameter(
+        MethodDeclarationSyntax methodDeclarationSyntax,
+        string fieldName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.CannotUseMappaAssignFromContextAttributeWithoutContextParameter,
             methodDeclarationSyntax.GetLocation(),
             fieldName);
 }

@@ -259,4 +259,9 @@ public enum MappaAlgorithmRule
     /// A method is being invoked as instructed by the <see cref="MappaInvokeMethodAttribute"/>.
     /// </summary>
     InvokeMethodFromAttribute,
+
+    /// <summary>
+    /// The attribute or parameter is being mapped using the <see cref="MappaContext"/> parameter.
+    /// </summary>
+    AssignFromContextAttribute,
 }

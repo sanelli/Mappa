@@ -24,6 +24,7 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? cannotDetectSuitableMethodToInvoke;
     private static DiagnosticDescriptor? cannotDetectType;
     private static DiagnosticDescriptor? cannotFindFieldOrProperty;
+    private static DiagnosticDescriptor? cannotUseMappaAssignFromContextAttributeWithoutContextParameter;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -104,6 +105,14 @@ internal static class MappaDiagnosticDescriptors
         => cannotFindFieldOrProperty ??= BuildError(
             MappaDiagnosticsKind.CannotFindFieldOrProperty,
             "Cannot identify field or property '{0}'.");
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.CannotUseMappaAssignFromContextAttributeWithoutContextParameter"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor CannotUseMappaAssignFromContextAttributeWithoutContextParameter
+        => cannotUseMappaAssignFromContextAttributeWithoutContextParameter ??= BuildError(
+            MappaDiagnosticsKind.CannotUseMappaAssignFromContextAttributeWithoutContextParameter,
+            "Cannot use attribute MappaAssignFromContextAttribute for field, property or parameter '{0}': the method does not provide a MappaContext parameter.");
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(
