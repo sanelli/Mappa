@@ -269,7 +269,7 @@ internal sealed class MappaGeneratorClassAlgorithm
             return false;
         }
 
-        if (!methodDeclarationSyntax.HasArity(1))
+        if (!methodDeclarationSyntax.HasArity(1, 2))
         {
             classContext.ReportDiagnostic(MappaDiagnostics.MethodHasInvalidNumberOfParameters(methodDeclarationSyntax));
             return false;
@@ -280,6 +280,13 @@ internal sealed class MappaGeneratorClassAlgorithm
             classContext.SemanticModel,
             classContext.IsNullableEnabled(methodDeclarationSyntax),
             cancellationToken);
+
+        if (methodDeclarationSyntax.HasArity(2)
+            && !mapMethod.MethodSymbol.SecondParameterIsMappaContext(this.Compilation))
+        {
+            classContext.ReportDiagnostic(MappaDiagnostics.MethodHasInvalidMappaContextParameter(methodDeclarationSyntax));
+            return false;
+        }
 
         if (mapMethod.MethodSymbol.IsVoid())
         {
@@ -319,7 +326,14 @@ internal sealed class MappaGeneratorClassAlgorithm
             return;
         }
 
-        if (method.Parameters.Length != 1)
+        if (method.Parameters.Length != 1
+            && method.Parameters.Length != 2)
+        {
+            return;
+        }
+
+        if (method.Parameters.Length == 2
+            && !method.SecondParameterIsMappaContext(this.Compilation))
         {
             return;
         }
@@ -361,7 +375,7 @@ internal sealed class MappaGeneratorClassAlgorithm
             return;
         }
 
-        if (!methodDeclarationSyntax.HasArity(1))
+        if (!methodDeclarationSyntax.HasArity(1, 2))
         {
             return;
         }
@@ -371,6 +385,12 @@ internal sealed class MappaGeneratorClassAlgorithm
             classContext.SemanticModel,
             classContext.IsNullableEnabled(methodDeclarationSyntax),
             cancellationToken);
+
+        if (methodDeclarationSyntax.HasArity(2)
+            && !mapMethod.MethodSymbol.SecondParameterIsMappaContext(this.Compilation))
+        {
+            return;
+        }
 
         if (mapMethod.MethodSymbol.IsVoid())
         {

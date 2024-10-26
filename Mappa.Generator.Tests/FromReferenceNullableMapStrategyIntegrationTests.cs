@@ -34,11 +34,12 @@ public class FromReferenceNullableMapStrategyIntegrationTests
 
                                   public class Source
                                   {
+                                    public int Property { get; set; }
                                   }
 
                                   public class Target
                                   {
-                                     public Target(Source source) { }
+                                     public int Property { get; set; }
                                   }
 
                                   [Mappa]
@@ -85,9 +86,9 @@ public class FromReferenceNullableMapStrategyIntegrationTests
                                                 unaryPatternSyntax => unaryPatternSyntax.BeConstantPatternSyntax(null));
                                         });
                                 },
-                                ifStatementAssertions =>
+                                thenBranchAssertions =>
                                 {
-                                    ifStatementAssertions
+                                    thenBranchAssertions
                                         .IsBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(4)
@@ -97,7 +98,7 @@ public class FromReferenceNullableMapStrategyIntegrationTests
                                         })
                                         .HasNextSyntaxNode(statementAssertions =>
                                         {
-                                            statementAssertions.BeLocalDeclarationStatementSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.Source?", "__mappa_tmp_3", initExpressionAssertions => initExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_2"));
+                                            statementAssertions.BeLocalDeclarationStatementSyntax(typeof(int).ToString(), "__mappa_tmp_3", initExpressionAssertions => initExpressionAssertions.BeMemberAccessExpressionSyntax("__mappa_tmp_2.Property"));
                                         })
                                         .HasNextSyntaxNode(statementAssertions =>
                                         {
@@ -106,7 +107,7 @@ public class FromReferenceNullableMapStrategyIntegrationTests
                                                 "__mappa_tmp_4",
                                                 initExpressionAssertions => initExpressionAssertions.BeObjectCreationExpressionSyntax(
                                                     "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
-                                                    parameterAssertions => parameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_3")));
+                                                    ("Property", parameterAssertions => parameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_3"))));
                                         })
                                         .HasNextSyntaxNode(statementAssertions =>
                                         {

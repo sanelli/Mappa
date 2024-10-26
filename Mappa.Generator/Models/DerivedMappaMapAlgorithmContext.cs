@@ -12,27 +12,30 @@ namespace Mappa.Generator.Models;
 internal sealed class DerivedMappaMapAlgorithmContext
     : MappaMapAlgorithmContext
 {
-    private readonly MappaMapAlgorithmContext parent;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="DerivedMappaMapAlgorithmContext"/> class.
     /// </summary>
-    /// <param name="parent">The parent context.</param>
+    /// <param name="parentContext">The parent context.</param>
     /// <param name="targetType">The target type.</param>
     /// <param name="sourceType">The source type.</param>
     public DerivedMappaMapAlgorithmContext(
-        MappaMapAlgorithmContext parent,
+        MappaMapAlgorithmContext parentContext,
         ITypeSymbol targetType,
         ITypeSymbol sourceType)
     {
-        this.parent = parent;
+        this.ParentContext = parentContext;
         this.SourceType = sourceType;
         this.TargetType = targetType;
     }
 
+    /// <summary>
+    /// Gets the parent context.
+    /// </summary>
+    internal MappaMapAlgorithmContext ParentContext { get; }
+
     /// <inheritdoc/>
     internal override ISymbol ParentSymbol
-        => this.parent.ParentSymbol;
+        => this.ParentContext.ParentSymbol;
 
     /// <inheritdoc/>
     internal override ITypeSymbol SourceType { get; }
@@ -42,24 +45,24 @@ internal sealed class DerivedMappaMapAlgorithmContext
 
     /// <inheritdoc/>
     internal override MappaMapAlgorithmContextSettings AlgorithmSettings
-        => this.parent.AlgorithmSettings;
+        => this.ParentContext.AlgorithmSettings;
 
     /// <inheritdoc/>
     internal override MapMethod? MapMethod => null;
 
     /// <inheritdoc/>
     internal override bool IsNullableEnabled()
-        => this.parent.IsNullableEnabled();
+        => this.ParentContext.IsNullableEnabled();
 
     /// <inheritdoc/>
     internal override bool TryGetMethod(ITypeSymbol targetType, ITypeSymbol sourceType, out MapMethod mapMethod)
-        => this.parent.TryGetMethod(targetType, sourceType, out mapMethod);
+        => this.ParentContext.TryGetMethod(targetType, sourceType, out mapMethod);
 
     /// <inheritdoc/>
     internal override void ReportDiagnostic(Diagnostic diagnostic)
-        => this.parent.ReportDiagnostic(diagnostic);
+        => this.ParentContext.ReportDiagnostic(diagnostic);
 
     /// <inheritdoc/>
     internal override Location? GetLocation()
-        => this.parent.GetLocation();
+        => this.ParentContext.GetLocation();
 }

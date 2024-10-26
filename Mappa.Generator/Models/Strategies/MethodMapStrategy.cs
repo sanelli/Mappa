@@ -19,10 +19,12 @@ internal sealed class MethodMapStrategy
     /// </summary>
     /// <param name="rule">The rule used to generate this strategy.</param>
     /// <param name="mapMethod">The method to be used for the mapping.</param>
-    public MethodMapStrategy(MappaAlgorithmRule rule, MapMethod mapMethod)
+    /// <param name="contextParameterName">The name of the context parameter.</param>
+    public MethodMapStrategy(MappaAlgorithmRule rule, MapMethod mapMethod, string? contextParameterName)
     {
         this.MapMethod = mapMethod;
         this.Rule = rule;
+        this.ContextParameterName = contextParameterName;
     }
 
     /// <inheritdoc/>
@@ -38,6 +40,11 @@ internal sealed class MethodMapStrategy
     /// Gets the method used for the mapping.
     /// </summary>
     public MapMethod MapMethod { get; }
+
+    /// <summary>
+    /// Gets the name of the context parameter.
+    /// </summary>
+    internal string? ContextParameterName { get; }
 
     /// <inheritdoc/>
     public IMappaStrategyBuilder GetBuilder() => new MethodMapStrategyBuilder(this);

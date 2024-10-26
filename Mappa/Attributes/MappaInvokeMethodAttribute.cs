@@ -28,7 +28,7 @@ namespace Mappa.Attributes;
 /// If multiple matching methods exist the method is
 /// picked up following the order in the above list.
 /// </summary>
-[AttributeUsage(AttributeTargets.Method)]
+[AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 public sealed class MappaInvokeMethodAttribute
     : Attribute, IMappaTargetPropertyNameAttribute
 {

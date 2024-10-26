@@ -23,14 +23,6 @@ public sealed partial class InvokeMappingConstructorStrategyMapper
 
     /// <summary>
     /// Map from <see cref="SourceClassModel"/>
-    /// to <see cref="TargetClassModelWithSingleMapperConstructorRequiringAMappingStrategy"/>.
-    /// </summary>
-    /// <param name="input">The source enum value.</param>
-    /// <returns>The target model.</returns>
-    public partial TargetClassModelWithSingleMapperConstructorRequiringAMappingStrategy MapToClassWithSingleMappingConstructorRequiringStrategy(CountingValues input);
-
-    /// <summary>
-    /// Map from <see cref="SourceClassModel"/>
     /// to <see cref="TargetClassModelWithMultipleMapperConstructors"/>.
     /// </summary>
     /// <param name="input">The source enum value.</param>

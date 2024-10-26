@@ -13,32 +13,22 @@ namespace Mappa.Generator.Builders;
 internal sealed class MappaMethodBuilder
     : IMappaBuilder
 {
+    private readonly MapMethod mapMethod;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaMethodBuilder"/> class.
     /// </summary>
-    /// <param name="classContext">The class generator context.</param>
     /// <param name="mapMethod">THe method to be generated.</param>
-    public MappaMethodBuilder(MappaClassGeneratorContext classContext, MapMethod mapMethod)
+    public MappaMethodBuilder(MapMethod mapMethod)
     {
-        this.ClassContext = classContext;
-        this.MapMethod = mapMethod;
+        this.mapMethod = mapMethod;
     }
-
-    /// <summary>
-    /// Gets the class generator context.
-    /// </summary>
-    private MappaClassGeneratorContext ClassContext { get; }
-
-    /// <summary>
-    /// Gets the map method.
-    /// </summary>
-    private MapMethod MapMethod { get; }
 
     /// <inheritdoc/>
     public string BuildSource(MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
         var builder = new PrettyCode.StringBuilder();
-        var isNullableEnabled = this.MapMethod.NullableEnabled;
+        var isNullableEnabled = this.mapMethod.NullableEnabled;
         using (builder.NullableDirective(isNullableEnabled))
         {
             builder
@@ -46,7 +36,7 @@ internal sealed class MappaMethodBuilder
                 .AppendLine(this.GetSignature());
             using (builder.CurlyBracesBlock())
             {
-                var (strategySource, header) = this.MapMethod.Strategy.GetBuilder().BuildSource(this.MapMethod.SourceParameterName, context, mappaGlobalOptions);
+                var (strategySource, header) = this.mapMethod.Strategy.GetBuilder().BuildSource(this.mapMethod.SourceParameterName, context, mappaGlobalOptions);
                 if (!string.IsNullOrWhiteSpace(header))
                 {
                     builder.AppendLine(header);
@@ -64,15 +54,21 @@ internal sealed class MappaMethodBuilder
     {
         var modifiersWithReturnType = string.Join(
             " ",
-            this.MapMethod.MethodSymbol.GetSymbolModifiers(),
+            this.mapMethod.MethodSymbol.GetSymbolModifiers(),
             "partial",
-            this.MapMethod.TargetType.ToDisplayString())
+            this.mapMethod.TargetType.ToDisplayString())
             .Trim();
 
-        var extensionMethod = this.MapMethod.MethodSymbol.IsExtensionMethod ? "this " : string.Empty;
-        var parameters = $"{extensionMethod}{this.MapMethod.SourceType.ToDisplayString()} {this.MapMethod.SourceParameterName}";
+        var extensionMethod = this.mapMethod.MethodSymbol.IsExtensionMethod ? "this " : string.Empty;
+        var sourceParameter = $"{extensionMethod}{this.mapMethod.SourceType.ToDisplayString()} {this.mapMethod.SourceParameterName}";
 
-        var signature = $"{modifiersWithReturnType} {this.MapMethod.MethodName}({parameters})";
+        var contextParameter = string.Empty;
+        if (this.mapMethod.RequireMappaContextWhenInvoked())
+        {
+            contextParameter = $", {typeof(MappaContext).FullName} {this.mapMethod.GetMappaContextParameterName()}";
+        }
+
+        var signature = $"{modifiersWithReturnType} {this.mapMethod.MethodName}({sourceParameter}{contextParameter})";
 
         return signature;
     }

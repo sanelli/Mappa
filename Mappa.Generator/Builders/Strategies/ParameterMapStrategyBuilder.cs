@@ -38,8 +38,13 @@ internal sealed class ParameterMapStrategyBuilder
 
         // It is not a specific builder: go on to create a source temporary and the code
         // for the property specific builder.
-        var sourcePropertyTemporary = context.NextTemporary();
-        builder.AppendLine($"{this.strategy.ParameterStrategy.SourceType.ToDisplayString()} {sourcePropertyTemporary} = {source}.{this.strategy.SourceProperty.Name};");
+        var sourcePropertyTemporary = string.Empty;
+        if (this.strategy.SourceProperty is not null)
+        {
+            sourcePropertyTemporary = context.NextTemporary();
+            builder.AppendLine($"{this.strategy.ParameterStrategy.SourceType.ToDisplayString()} {sourcePropertyTemporary} = {source}.{this.strategy.SourceProperty.Name};");
+        }
+
         (string targetTemporary, string code) = this.strategy.ParameterStrategy.GetBuilder().BuildSource(sourcePropertyTemporary, context, mappaGlobalOptions);
         if (!string.IsNullOrWhiteSpace(code))
         {

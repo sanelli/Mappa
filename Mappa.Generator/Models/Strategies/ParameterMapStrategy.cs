@@ -20,7 +20,7 @@ internal sealed class ParameterMapStrategy
     /// <param name="targetParameter">The target parameter.</param>
     /// <param name="sourceProperty">The source property.</param>
     /// <param name="parameterStrategy">The strategy to map from source to target.</param>
-    public ParameterMapStrategy(IParameterSymbol targetParameter, IPropertySymbol sourceProperty, IMapStrategy parameterStrategy)
+    public ParameterMapStrategy(IParameterSymbol targetParameter, IPropertySymbol? sourceProperty, IMapStrategy parameterStrategy)
     {
         this.TargetParameter = targetParameter;
         this.SourceProperty = sourceProperty;
@@ -35,7 +35,7 @@ internal sealed class ParameterMapStrategy
     /// <summary>
     /// Gets the source property.
     /// </summary>
-    public IPropertySymbol SourceProperty { get; }
+    public IPropertySymbol? SourceProperty { get; }
 
     /// <summary>
     /// Gets the mapping strategy.
@@ -46,7 +46,7 @@ internal sealed class ParameterMapStrategy
     public ITypeSymbol TargetType => this.TargetParameter.Type;
 
     /// <inheritdoc/>
-    public ITypeSymbol SourceType => this.SourceProperty.Type;
+    public ITypeSymbol SourceType => this.SourceProperty?.Type ?? throw new InvalidOperationException();
 
     /// <inheritdoc/>
     public MappaAlgorithmRule Rule => MappaAlgorithmRule.ArgumentStrategy;

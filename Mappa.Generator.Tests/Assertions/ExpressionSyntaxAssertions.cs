@@ -222,9 +222,9 @@ public sealed class ExpressionSyntaxAssertions
     /// identifier name syntax for accessing both the array and the index.
     /// </summary>
     /// <param name="arrayName">The name of the array.</param>
-    /// <param name="indexVariableName">The name of the index variable.</param>
+    /// <param name="stringLiteral">The name of the index variable.</param>
     /// <returns>The assertions.</returns>
-    public ExpressionSyntaxAssertions BeElementAccessExpressionSyntaxWithIdentifierNameSyntax(string arrayName, string indexVariableName)
+    public ExpressionSyntaxAssertions BeElementAccessExpressionSyntaxWithIdentifierNameSyntax(string arrayName, string stringLiteral)
     {
         this.Subject.Should().BeOfType<ElementAccessExpressionSyntax>();
 
@@ -238,7 +238,33 @@ public sealed class ExpressionSyntaxAssertions
         argumentList.Arguments.Should().HaveCount(1);
         argumentList.Arguments[0].Expression.Should().BeOfType<IdentifierNameSyntax>();
         var indexExpression = (IdentifierNameSyntax)argumentList.Arguments[0].Expression;
-        indexExpression.Identifier.ToString().Should().Be(indexVariableName);
+        indexExpression.Identifier.ToString().Should().Be(stringLiteral);
+
+        return this;
+    }
+
+    /// <summary>
+    /// Assert that the expression in a element access expression syntax having
+    /// lister syntax for accessing both the array and the index.
+    /// </summary>
+    /// <param name="arrayName">The name of the array.</param>
+    /// <param name="stringLiteral">The name of the index variable.</param>
+    /// <returns>The assertions.</returns>
+    public ExpressionSyntaxAssertions BeElementAccessExpressionSyntaxWithLiteralSyntax(string arrayName, string stringLiteral)
+    {
+        this.Subject.Should().BeOfType<ElementAccessExpressionSyntax>();
+
+        var elementAccessExpressionSyntax = (ElementAccessExpressionSyntax)this.Subject;
+        var expression = elementAccessExpressionSyntax.Expression;
+        expression.Should().BeOfType<IdentifierNameSyntax>();
+        var arrayAccess = (IdentifierNameSyntax)expression;
+        arrayAccess.Identifier.ToString().Should().Be(arrayName);
+
+        var argumentList = elementAccessExpressionSyntax.ArgumentList;
+        argumentList.Arguments.Should().HaveCount(1);
+        argumentList.Arguments[0].Expression.Should().BeOfType<LiteralExpressionSyntax>();
+        var literalExpressionSyntax = (LiteralExpressionSyntax)argumentList.Arguments[0].Expression;
+        literalExpressionSyntax.Token.Value.Should().Be(stringLiteral);
 
         return this;
     }

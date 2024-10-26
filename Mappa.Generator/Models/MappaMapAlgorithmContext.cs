@@ -81,4 +81,20 @@ internal abstract class MappaMapAlgorithmContext
 
         return this.MapMethod;
     }
+
+    /// <summary>
+    /// Gets the root map method which is acrtually being mapped.
+    /// </summary>
+    /// <returns>The map method from the root chain of calls.</returns>
+    /// <exception cref="MappaGeneratorException">When the map method cannot be obtained.</exception>
+    internal MapMethod GetRootMapMethod()
+    {
+        MappaMapAlgorithmContext context = this;
+        while (context is DerivedMappaMapAlgorithmContext algorithmContext)
+        {
+            context = algorithmContext.ParentContext;
+        }
+
+        return context.GetMapMethod();
+    }
 }

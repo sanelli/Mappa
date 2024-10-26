@@ -2,6 +2,8 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Attributes;
+
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -22,6 +24,19 @@ internal static class MappaDiagnostics
     internal static Diagnostic MethodHasInvalidNumberOfParameters(MethodDeclarationSyntax methodDeclarationSyntax)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.MethodHasInvalidNumberOfParameters,
+            methodDeclarationSyntax.GetLocation(),
+            methodDeclarationSyntax.Identifier.ToFullString());
+
+    /// <summary>
+    /// Diagnostic to report the fact that the method described by syntax
+    /// <paramref name="methodDeclarationSyntax"/> require a second parameter
+    /// of type <see cref="MappaContext"/>.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MethodHasInvalidMappaContextParameter(MethodDeclarationSyntax methodDeclarationSyntax)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MethodHasInvalidMappaContextParameter,
             methodDeclarationSyntax.GetLocation(),
             methodDeclarationSyntax.Identifier.ToFullString());
 
@@ -139,6 +154,21 @@ internal static class MappaDiagnostics
         string fieldName)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.CannotFindFieldOrProperty,
+            methodDeclarationSyntax.GetLocation(),
+            fieldName);
+
+    /// <summary>
+    /// Diagnostic to report the fact that it is not use the <see cref="MappaAssignFromContextAttribute"/>
+    /// because the method does not have a <see cref="MappaContext"/> parameter.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="fieldName">The type that cannot be found.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic CannotUseMappaAssignFromContextAttributeWithoutContextParameter(
+        MethodDeclarationSyntax methodDeclarationSyntax,
+        string fieldName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.CannotUseMappaAssignFromContextAttributeWithoutContextParameter,
             methodDeclarationSyntax.GetLocation(),
             fieldName);
 }

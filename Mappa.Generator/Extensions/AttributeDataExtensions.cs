@@ -19,6 +19,7 @@ internal static class AttributeDataExtensions
 {
     private static readonly string MappaInvokeMethodAttributeFullName = typeof(MappaInvokeMethodAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaInvokeMethodAttribute)}");
     private static readonly string MappaIgnoreAttributeFullName = typeof(MappaIgnoreAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaIgnoreAttribute)}");
+    private static readonly string MappaAssignFromContextAttribute = typeof(MappaAssignFromContextAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaAssignFromContextAttribute)}");
 
     /// <summary>
     /// Gets the <see cref="MappaInvokeMethodAttribute"/>s applied to the method.
@@ -70,6 +71,32 @@ internal static class AttributeDataExtensions
         }
 
         return [.. results];
+    }
+
+    /// <summary>
+    /// Gets the <see cref="MappaAssignFromContextAttribute"/>s applied to the method.
+    /// </summary>
+    /// <param name="methodSymbol">The method.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The <see cref="MappaAssignFromContextAttribute"/> applied to the method.</returns>
+    internal static MappaAssignFromContextAttribute[] GetMappaAssignFromContextAttributes(this IMethodSymbol methodSymbol, Compilation compilation)
+    {
+        var mappaInvokeMethodAttributeSymbol = compilation.GetTypeByMetadataName(MappaAssignFromContextAttribute);
+        List<MappaAssignFromContextAttribute> results = new();
+        foreach (var constructorArguments in methodSymbol
+                     .GetAttributes()
+                     .Where(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, mappaInvokeMethodAttributeSymbol))
+                     .Select(attributeData => attributeData.ConstructorArguments))
+        {
+            if (constructorArguments.Length == 2 &&
+                constructorArguments[0].Value is string targetParameterName &&
+                constructorArguments[1].Value is string itemName)
+            {
+                results.Add(new MappaAssignFromContextAttribute(targetParameterName, itemName));
+            }
+        }
+
+        return [..results];
     }
 
     /// <summary>

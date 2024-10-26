@@ -42,8 +42,8 @@ internal sealed class MapMethod
         this.MethodSymbol = semanticModel.GetDeclaredSymbol(methodDeclarationSyntax, cancellationToken)
             ?? throw new MappaGeneratorException($"Cannot obtain the method symbol for method \"{methodDeclarationSyntax.Identifier}\" syntax node.", methodDeclarationSyntax.GetLocation());
         this.TargetType = this.MethodSymbol.ReturnType;
-        this.SourceType = this.MethodSymbol.Parameters.First().Type;
-        this.SourceParameterName = this.MethodSymbol.Parameters.First().Name;
+        this.SourceType = this.MethodSymbol.Parameters[0].Type;
+        this.SourceParameterName = this.MethodSymbol.Parameters[0].Name;
         this.Mapped = false;
         this.Location = methodDeclarationSyntax.GetLocation();
         this.NullableEnabled = nullableEnabled;
@@ -69,8 +69,8 @@ internal sealed class MapMethod
         this.MethodName = methodSymbol.Name;
         this.MethodSymbol = methodSymbol;
         this.TargetType = this.MethodSymbol.ReturnType;
-        this.SourceType = this.MethodSymbol.Parameters.First().Type;
-        this.SourceParameterName = this.MethodSymbol.Parameters.First().Name;
+        this.SourceType = this.MethodSymbol.Parameters[0].Type;
+        this.SourceParameterName = this.MethodSymbol.Parameters[0].Name;
         this.Mapped = true;
         this.NullableEnabled = nullableEnabled;
         this.attributes = [];
@@ -185,5 +185,45 @@ internal sealed class MapMethod
         where TAttribute : Attribute
     {
         return this.attributes.OfType<TAttribute>().ToArray();
+    }
+
+    /// <summary>
+    /// Returns <c>true</c> when the method require a mappa context to be invoked.
+    /// </summary>
+    /// <returns><c>true</c> when the method require a mappa context to be invoked, <c>false</c> otherwise.</returns>
+    internal bool RequireMappaContextWhenInvoked()
+    {
+        return this.MethodSymbol.Parameters.Length == 2;
+    }
+
+    /// <summary>
+    /// Returns <c>true</c> when the method provide a mappa context.
+    /// </summary>
+    /// <returns><c>true</c> when the method provide a mappa context, <c>false</c> otherwise.</returns>
+    internal bool ProvideMappaContextWhenInvoked()
+    {
+        return this.MethodSymbol.Parameters.Length == 2;
+    }
+
+    /// <summary>
+    /// Gets the name of the mappa context parameter.
+    /// </summary>
+    /// <returns>The name of the mappa context parameter.</returns>
+    /// <exception cref="MappaGenerator">When the method does not have a mappa context parameter.</exception>
+    internal string GetMappaContextParameterName()
+        => this.MaybeGetMappaContextParameterName() ?? throw new MappaGeneratorException("Method does not have a mappa context parameter.");
+
+    /// <summary>
+    /// Gets the name of the mappa context parameter, returns <c>null</c> if not present.
+    /// </summary>
+    /// <returns>The name of the mappa context parameter, or <c>null</c> if not present.</returns>
+    internal string? MaybeGetMappaContextParameterName()
+    {
+        if (this.MethodSymbol.Parameters.Length < 2)
+        {
+            return null;
+        }
+
+        return this.MethodSymbol.Parameters[1].Name;
     }
 }

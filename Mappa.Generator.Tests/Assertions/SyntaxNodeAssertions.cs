@@ -411,22 +411,22 @@ public sealed class SyntaxNodeAssertions
     /// Assert the statement is an <c>if</c> statement.
     /// </summary>
     /// <param name="conditionAssertions">The assertions on the if condition.</param>
-    /// <param name="ifStatementAssertions">The assertions on the if statement.</param>
+    /// <param name="thenStatementAssertions">The assertions on the then statement.</param>
     /// <param name="elseStatementAssertions">The assertions on the else condition.</param>
     /// <returns>The assertions.</returns>
     public SyntaxNodeAssertions BeIfStatementSyntax(
         Action<ExpressionSyntaxAssertions> conditionAssertions,
-        Action<IStatementSyntaxBaseAssertions> ifStatementAssertions,
+        Action<IStatementSyntaxBaseAssertions> thenStatementAssertions,
         Action<IStatementSyntaxBaseAssertions>? elseStatementAssertions = null)
     {
         ArgumentNullException.ThrowIfNull(conditionAssertions);
-        ArgumentNullException.ThrowIfNull(ifStatementAssertions);
+        ArgumentNullException.ThrowIfNull(thenStatementAssertions);
 
         this.Subject.Should().BeOfType<IfStatementSyntax>();
         var ifStatementSyntax = (IfStatementSyntax)this.Subject;
 
         conditionAssertions(new ExpressionSyntaxAssertions(ifStatementSyntax.Condition, this.SemanticModel, this.Compilation));
-        ifStatementAssertions(ifStatementSyntax.Statement.ToAssertion(this.SemanticModel, this.Compilation));
+        thenStatementAssertions(ifStatementSyntax.Statement.ToAssertion(this.SemanticModel, this.Compilation));
 
         if (elseStatementAssertions is null)
         {
