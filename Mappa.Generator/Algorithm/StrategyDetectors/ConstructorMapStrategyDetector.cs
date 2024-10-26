@@ -380,7 +380,7 @@ internal sealed class ConstructorMapStrategyDetector
         }
     }
 
-    // TODO [#55] Add support for MappaAssignFromContext.
+    // TODO [#70] Add support for MappaAssignFromContext.
     private bool TryGetStrategyForPropertyOrArgumentUsingAttributesOnMethod(
         string targetName,
         ITypeSymbol targetType,
