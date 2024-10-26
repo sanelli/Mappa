@@ -123,7 +123,7 @@ internal sealed class ConstructorMapStrategyDetector
                                         targetParameter.Name,
                                         targetParameter.Type,
                                         this.context.SourceType,
-                                        sourceProperty,
+                                        ref sourceProperty,
                                         StringComparison.OrdinalIgnoreCase,
                                         out var propertyStrategyFromAttribute))
                                 {
@@ -297,13 +297,20 @@ internal sealed class ConstructorMapStrategyDetector
                             // Try to get a matching property
                             var hasSourceProperty = sourceProperties.TryGetValue(targetProperty.Name, out var sourceProperty);
 
+                            // Just to be sure force source property to null
+                            // since there seems to be no guarantee on the valuer returned.
+                            if (!hasSourceProperty)
+                            {
+                                sourceProperty = null;
+                            }
+
                             // Look for any attribute action that can be applied
                             if (this.context.MapMethod is not null &&
                                 this.TryGetStrategyForPropertyOrArgumentUsingAttributesOnMethod(
                                     targetProperty.Name,
                                     targetProperty.Type,
                                     this.context.SourceType,
-                                    hasSourceProperty ? sourceProperty : null,
+                                    ref sourceProperty,
                                     StringComparison.Ordinal,
                                     out var propertyStrategyFromAttribute))
                             {
@@ -386,7 +393,7 @@ internal sealed class ConstructorMapStrategyDetector
         string targetName,
         ITypeSymbol targetType,
         ITypeSymbol sourceClassType,
-        IPropertySymbol? sourceProperty,
+        ref IPropertySymbol? sourceProperty,
         StringComparison stringComparison,
         out IMapStrategy strategy)
     {
@@ -442,6 +449,7 @@ internal sealed class ConstructorMapStrategyDetector
                     targetName,
                     targetType,
                     mappaAssignFromContextAttribute,
+                    ref sourceProperty,
                     out strategy);
                 break;
         }
@@ -453,6 +461,7 @@ internal sealed class ConstructorMapStrategyDetector
         string targetName,
         ITypeSymbol targetType,
         MappaAssignFromContextAttribute attribute,
+        ref IPropertySymbol? sourceProperty,
         out IMapStrategy strategy)
     {
         strategy = new NoMapStrategy(targetType, null!);
@@ -463,6 +472,7 @@ internal sealed class ConstructorMapStrategyDetector
         var rootMapMethod = this.context.GetRootMapMethod();
         if (rootMapMethod.ProvideMappaContextWhenInvoked())
         {
+            sourceProperty = null; // Ignore any input property.
             strategy = new MappaAssignFromContextAttributeStrategy(targetType, attribute, rootMapMethod.GetMappaContextParameterName());
         }
         else
