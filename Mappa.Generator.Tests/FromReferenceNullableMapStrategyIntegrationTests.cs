@@ -25,6 +25,8 @@ public class FromReferenceNullableMapStrategyIntegrationTests
     [IntegrationTest]
     public async Task CanMapFromReferenceNullable()
     {
+        // TODO [#55] Fix this test that is failing after fixing the map using constructor mapping strategy.
+
         // Arrange
         const string sourceCode = """
                                   #nullable enable

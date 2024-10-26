@@ -200,9 +200,10 @@ internal sealed class ConstructorMapStrategyDetector
             {
                 var constructorParameterType = constructor.Parameters.Single().Type;
 
-                if (this.TryGetStrategyBetweenTypes(constructorParameterType, this.context.SourceType, false, out var constructorParameterStrategy))
+                // Only use this strategy when they are the same type
+                if (constructorParameterType.IsEqualTo(this.context.SourceType, this.context.GetRootMapMethod().NullableEnabled))
                 {
-                    return (constructor, constructorParameterStrategy);
+                    return (constructor, new IdentityMapStrategy(MappaAlgorithmRule.ImplicitConversion, constructorParameterType, this.context.SourceType));
                 }
 
                 return (constructor, noMapStrategy);
