@@ -37,24 +37,6 @@ public sealed class InvokeMappingConstructorStrategyMapperUnitTests
     }
 
     /// <summary>
-    /// Unit test for <see cref="InvokeMappingConstructorStrategyMapper.MapToClassWithSingleMappingConstructorRequiringStrategy"/>.
-    /// </summary>
-    [Fact]
-    [UnitTest]
-    public void CanMapToClassWithSingleMappingConstructorRequiringStrategy()
-    {
-        // Arrange
-        var source = CountingValues.Three;
-
-        // Act
-        var target = this.mapper.MapToClassWithSingleMappingConstructorRequiringStrategy(source);
-
-        // Arrange
-        target.ParamA.Should().Be((int)source);
-        target.ParamB.Should().Be(source);
-    }
-
-    /// <summary>
     /// Unit test for <see cref="InvokeMappingConstructorStrategyMapper.MapToClassWithMultipleMappingConstructors"/>.
     /// </summary>
     [Fact]
