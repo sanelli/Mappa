@@ -10,6 +10,8 @@ using Microsoft.CodeAnalysis;
 
 namespace Mappa.Generator.Algorithm.StrategyDetectors;
 
+// TODO [#56] Use MappaUserSettings when creating the strategies and update strategies builder to use the settings.
+
 /// <summary>
 /// Detector for string related strategies.
 /// </summary>

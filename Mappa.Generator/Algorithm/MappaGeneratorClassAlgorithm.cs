@@ -117,6 +117,7 @@ internal sealed class MappaGeneratorClassAlgorithm
         }
     }
 
+    // TODO [#56] Update the MappaUserSettings by appliying the attribute applied on the class (if any).
     private void ExecuteForSingleClass(
         ClassDeclarationSyntax classDeclarationSyntax,
         MappaGlobalOptions options,
@@ -253,6 +254,7 @@ internal sealed class MappaGeneratorClassAlgorithm
         this.Context.AddSource(hintName, sourceFile);
     }
 
+    // TODO [#56] Update the MappaUserSettings by appliying the attribute applied on the method (if any).
     private bool AcceptMapMethod(
         MethodDeclarationSyntax methodDeclarationSyntax,
         MappaClassGeneratorContext classContext,

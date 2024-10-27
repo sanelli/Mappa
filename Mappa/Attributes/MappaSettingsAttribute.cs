@@ -16,13 +16,8 @@ public sealed class MappaSettingsAttribute
     /// <summary>
     /// The type of <see cref="CultureInfo"/> to apply.
     /// </summary>
-    public enum CultureInfoSettigs
+    public enum CultureInfoSettings
     {
-        /// <summary>
-        /// Unspecified.
-        /// </summary>
-        None,
-
         /// <summary>
         /// Use the <see cref="CultureInfo.CurrentCulture"/>.
         /// </summary>
@@ -43,6 +38,11 @@ public sealed class MappaSettingsAttribute
     /// Gets or sets the format when using <see cref="DateTime.ToString(string,System.IFormatProvider)"/> or <see cref="DateTime.ParseExact(string,string,System.IFormatProvider)"/>.
     /// </summary>
     public string? DateTimeFormat { get; set; }
+
+    /// <summary>
+    /// Gets or sets the format when using <see cref="DateTimeOffset.ToString(string,System.IFormatProvider)"/> or <see cref="DateTimeOffset.ParseExact(string,string,System.IFormatProvider)"/>.
+    /// </summary>
+    public string? DateTimeOffsetFormat { get; set; }
 
     /// <summary>
     /// Gets or sets the format when using <c>DateOnly.ToString(string,System.IFormatProvider)</c> or <c>DateOnly.ParseExact(string,string,System.IFormatProvider)</c>.
@@ -67,10 +67,10 @@ public sealed class MappaSettingsAttribute
     /// <summary>
     /// Gets or sets the <see cref="CultureInfo"/> to use when converting to string or parsing form string.
     /// </summary>
-    public CultureInfoSettigs CultureInfoSetting { get; set; } = CultureInfoSettigs.CurrentCulture;
+    public CultureInfoSettings? CultureInfoSetting { get; set; }
 
     /// <summary>
-    /// Gets or sets the culture name when <see cref="CultureInfoSetting"/> is <see cref="CultureInfoSettigs.UserDefined"/>.
+    /// Gets or sets the culture name when <see cref="CultureInfoSetting"/> is <see cref="CultureInfoSettings.UserDefined"/>.
     /// </summary>
     public string? CultureName { get; set; }
 }
