@@ -188,6 +188,18 @@ internal sealed class MapMethod
     }
 
     /// <summary>
+    /// Gets the attribute of type <typeparamref name="TAttribute"/>
+    /// applied to the method, or <c>null</c> if the attribute does not exist.
+    /// </summary>
+    /// <typeparam name="TAttribute">The type of the attribute required.</typeparam>
+    /// <returns>The attribute of type <typeparamref name="TAttribute"/> applied to the method, or <c>null</c> if the attribute does not exist.</returns>
+    internal TAttribute? GetAttribute<TAttribute>()
+        where TAttribute : Attribute
+    {
+        return this.attributes.OfType<TAttribute>().FirstOrDefault();
+    }
+
+    /// <summary>
     /// Returns <c>true</c> when the method require a mappa context to be invoked.
     /// </summary>
     /// <returns><c>true</c> when the method require a mappa context to be invoked, <c>false</c> otherwise.</returns>

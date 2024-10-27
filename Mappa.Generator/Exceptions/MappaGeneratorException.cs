@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis;
 namespace Mappa.Generator.Exceptions;
 
 /// <summary>
-/// An exception occurred while generting the mapper.
+/// An exception occurred while generating the map methods.
 /// </summary>
 [Serializable]
 public sealed class MappaGeneratorException

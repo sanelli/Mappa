@@ -27,8 +27,16 @@ internal sealed class StringToGuidMapStrategyBuilder
     /// <inheritdoc/>
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
+        var parameters = source;
+        var parseMethod = nameof(Guid.Parse);
+        if (!string.IsNullOrWhiteSpace(this.strategy.UserSettings.GuidFormat))
+        {
+            parseMethod = nameof(Guid.ParseExact);
+            parameters = $"{parameters}, \"{this.strategy.UserSettings.GuidFormat}\"";
+        }
+
         var temporary = context.NextTemporary();
-        var code = $"System.Guid {temporary} = System.Guid.Parse({source});";
+        var code = $"System.Guid {temporary} = System.Guid.{parseMethod}({parameters});";
 
         var ruleComment = mappaGlobalOptions.MappaDebugComments
             ? $"/* Mappa Rule: {this.strategy.Rule} */ "

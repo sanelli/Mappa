@@ -40,6 +40,11 @@ internal abstract class MappaMapAlgorithmContext
     internal abstract MappaMapAlgorithmContextSettings AlgorithmSettings { get; }
 
     /// <summary>
+    /// Gets the user settings built up to this point.
+    /// </summary>
+    internal abstract MappaUserSettings MappaUserSettings { get; }
+
+    /// <summary>
     /// Gets a value indicating weather the nullable flag
     /// is enabled in the current context.
     /// </summary>

@@ -9,6 +9,9 @@ using Mappa.Generator.Tests.Assertions.Extensions;
 
 namespace Mappa.Generator.Tests;
 
+// TODO [#56] Test when the Guid format is setup on the class.
+// TODO [#56] Test when the Guid format is setup on the method.
+
 /// <summary>
 /// Integration tests for the <see cref="StringToGuidMapStrategy"/>.
 /// </summary>

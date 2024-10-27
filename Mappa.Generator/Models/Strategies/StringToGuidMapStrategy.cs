@@ -20,10 +20,12 @@ internal sealed class StringToGuidMapStrategy
     /// </summary>
     /// <param name="targetType">The target type.</param>
     /// <param name="sourceType">The source type.</param>
-    public StringToGuidMapStrategy(ITypeSymbol targetType, ITypeSymbol sourceType)
+    /// <param name="userSettings">The user settings.</param>
+    public StringToGuidMapStrategy(ITypeSymbol targetType, ITypeSymbol sourceType, IMappaUserSettings userSettings)
     {
         this.TargetType = targetType;
         this.SourceType = sourceType;
+        this.UserSettings = userSettings;
     }
 
     /// <inheritdoc/>
@@ -31,6 +33,11 @@ internal sealed class StringToGuidMapStrategy
 
     /// <inheritdoc/>
     public ITypeSymbol SourceType { get; }
+
+    /// <summary>
+    /// Gets the user settings.
+    /// </summary>
+    public IMappaUserSettings UserSettings { get; }
 
     /// <inheritdoc/>
     public MappaAlgorithmRule Rule => MappaAlgorithmRule.StringToGuid;

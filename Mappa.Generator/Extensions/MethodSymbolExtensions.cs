@@ -51,6 +51,8 @@ internal static class MethodSymbolExtensions
         var assignFromContextAttributes = methodSymbol.GetMappaAssignFromContextAttributes(compilation);
         result.AddRange(assignFromContextAttributes);
 
+        // TODO [#56] Allow to read the MappaSettingsAttribute.
+
         // All done.
         return [.. result];
     }

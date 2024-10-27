@@ -16,13 +16,16 @@ internal sealed class MappaMethodGeneratorContext
     /// Initializes a new instance of the <see cref="MappaMethodGeneratorContext"/> class.
     /// </summary>
     /// <param name="classContext">The context of the parent class.</param>
+    /// <param name="mappaUserSettings">The user settings.</param>
     /// <param name="mapMethod">The method to be mapped.</param>
     public MappaMethodGeneratorContext(
         MappaClassGeneratorContext classContext,
+        MappaUserSettings mappaUserSettings,
         MapMethod mapMethod)
     {
         this.ClassContext = classContext;
         this.MapMethod = mapMethod;
+        this.MappaUserSettings = mappaUserSettings;
     }
 
     /// <summary>
@@ -44,6 +47,9 @@ internal sealed class MappaMethodGeneratorContext
 
     /// <inheritdoc/>
     internal override MappaMapAlgorithmContextSettings AlgorithmSettings { get; } = new();
+
+    /// <inheritdoc/>
+    internal override MappaUserSettings MappaUserSettings { get; }
 
     /// <inheritdoc/>
     internal override bool IsNullableEnabled()

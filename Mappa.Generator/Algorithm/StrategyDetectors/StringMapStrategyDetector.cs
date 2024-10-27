@@ -84,7 +84,8 @@ internal sealed class StringMapStrategyDetector
         {
             mapStrategy = new StringToGuidMapStrategy(
                 this.context.TargetType,
-                this.context.SourceType);
+                this.context.SourceType,
+                this.context.MappaUserSettings.Freeze());
         }
 
         // 07. string -> Uri : ParseUriStrategy

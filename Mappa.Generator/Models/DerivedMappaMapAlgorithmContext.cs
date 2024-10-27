@@ -48,6 +48,9 @@ internal sealed class DerivedMappaMapAlgorithmContext
         => this.ParentContext.AlgorithmSettings;
 
     /// <inheritdoc/>
+    internal override MappaUserSettings MappaUserSettings => this.ParentContext.MappaUserSettings;
+
+    /// <inheritdoc/>
     internal override MapMethod? MapMethod => null;
 
     /// <inheritdoc/>
