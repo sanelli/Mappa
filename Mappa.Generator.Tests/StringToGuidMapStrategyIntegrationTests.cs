@@ -9,8 +9,6 @@ using Mappa.Generator.Tests.Assertions.Extensions;
 
 namespace Mappa.Generator.Tests;
 
-// TODO [#56] Test when the Guid format is setup on the class.
-
 /// <summary>
 /// Integration tests for the <see cref="StringToGuidMapStrategy"/>.
 /// </summary>
@@ -78,7 +76,70 @@ public sealed class StringToGuidMapStrategyIntegrationTests
 
     /// <summary>
     /// Test a mapping can be created when mapping a string
-    /// to a <see cref="Guid"/> object.
+    /// to a <see cref="Guid"/> object using the format specified
+    /// on the class via <see cref="MappaSettingsAttribute"/>.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapStringToGuidUsingMappaSettingsAttributeOnClass()
+    {
+        const string identifierName = "__mappa_tmp_1";
+
+        // Arrange
+        const string sourceCode = """
+                                  using System;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  [Mappa]
+                                  [MappaSettings(GuidFormat = "N")]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial Guid Map(string input);
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                typeof(Guid).ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(string).ToString(),
+                NullableAnnotation.None,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(2)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(Guid).ToString(),
+                                identifierName,
+                                expressionSyntaxAssertions => expressionSyntaxAssertions.BeInvocationExpressionSyntax(
+                                    "System.Guid.ParseExact",
+                                    firstParameterAssertions => firstParameterAssertions.BeIdentifierNameSyntax("input"),
+                                    secondParameterAssertions => secondParameterAssertions.BeLiteralExpressionSyntax("N")));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax(identifierName));
+                        });
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping can be created when mapping a string
+    /// to a <see cref="Guid"/> object using the format specified
+    /// on the method via <see cref="MappaSettingsAttribute"/>.
     /// </summary>
     /// <returns>The async task.</returns>
     [Fact]
@@ -129,6 +190,132 @@ public sealed class StringToGuidMapStrategyIntegrationTests
                                     "System.Guid.ParseExact",
                                     firstParameterAssertions => firstParameterAssertions.BeIdentifierNameSyntax("input"),
                                     secondParameterAssertions => secondParameterAssertions.BeLiteralExpressionSyntax("N")));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax(identifierName));
+                        });
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping can be created when mapping a string
+    /// to a <see cref="Guid"/> object using the format specified
+    /// on the method via <see cref="MappaSettingsAttribute"/>
+    /// and this setting take precedence over class settings.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapStringToGuidAndSettingsOnMethodTakePrecedence()
+    {
+        const string identifierName = "__mappa_tmp_1";
+
+        // Arrange
+        const string sourceCode = """
+                                  using System;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  [Mappa]
+                                  [MappaSettings(GuidFormat = "N")]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaSettings(GuidFormat = "D")]
+                                      public partial Guid Map(string input);
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                typeof(Guid).ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(string).ToString(),
+                NullableAnnotation.None,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(2)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(Guid).ToString(),
+                                identifierName,
+                                expressionSyntaxAssertions => expressionSyntaxAssertions.BeInvocationExpressionSyntax(
+                                    "System.Guid.ParseExact",
+                                    firstParameterAssertions => firstParameterAssertions.BeIdentifierNameSyntax("input"),
+                                    secondParameterAssertions => secondParameterAssertions.BeLiteralExpressionSyntax("D")));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax(identifierName));
+                        });
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping can be created when mapping a string
+    /// to a <see cref="Guid"/> object by resetting the GUID
+    /// format.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapStringToGuidByResettingTheGuidFormatOnMethod()
+    {
+        const string identifierName = "__mappa_tmp_1";
+
+        // Arrange
+        const string sourceCode = """
+                                  using System;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  [Mappa]
+                                  [MappaSettings(GuidFormat = "N")]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaSettings(GuidFormat = "")]
+                                      public partial Guid Map(string input);
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                typeof(Guid).ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(string).ToString(),
+                NullableAnnotation.None,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(2)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(Guid).ToString(),
+                                identifierName,
+                                expressionSyntaxAssertions => expressionSyntaxAssertions.BeInvocationExpressionSyntax(
+                                    "System.Guid.Parse",
+                                    syntaxAssertions => syntaxAssertions.BeIdentifierNameSyntax("input")));
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {

@@ -224,7 +224,7 @@ internal sealed class MappaGeneratorClassAlgorithm
         }
 
         var mappaUserSettings = new MappaUserSettings(options);
-        var mappaSettingsAttribute = new MappaSettingsAttribute(); // TODO [#56] Read the setting from context.
+        var mappaSettingsAttribute = classContext.ClassSymbol.GetAttributes().GetMappaSettingsAttribute(this.Compilation);
 
         using (mappaUserSettings.Apply(mappaSettingsAttribute))
         {

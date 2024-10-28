@@ -10,7 +10,6 @@ using Mappa.Generator.Tests.Assertions.Extensions;
 namespace Mappa.Generator.Tests;
 
 // TODO [#56] Test when the Guid format is setup on the class.
-// TODO [#56] Test when the Guid format is setup on the method.
 // TODO [#56] Test ToString for other specific methods.
 
 /// <summary>
