@@ -8,6 +8,8 @@ namespace Mappa.Attributes;
 
 /// <summary>
 /// Allow to specify advanced settings for fine-tuning the mappings.
+/// A <c>null</c> value means that the setting is ignored and to use previous
+/// values (if any). An empty string value means do not use the setting.
 /// </summary>
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
 public sealed class MappaSettingsAttribute

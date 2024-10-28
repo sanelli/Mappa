@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using System.Collections.Immutable;
 using System.Globalization;
 using System.Reflection;
 
@@ -19,20 +20,20 @@ internal static class AttributeDataExtensions
 {
     private static readonly string MappaInvokeMethodAttributeFullName = typeof(MappaInvokeMethodAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaInvokeMethodAttribute)}");
     private static readonly string MappaIgnoreAttributeFullName = typeof(MappaIgnoreAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaIgnoreAttribute)}");
-    private static readonly string MappaAssignFromContextAttribute = typeof(MappaAssignFromContextAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaAssignFromContextAttribute)}");
+    private static readonly string MappaAssignFromContextAttributeFullName = typeof(MappaAssignFromContextAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaAssignFromContextAttribute)}");
+    private static readonly string MappaSettingsAttributeFullName = typeof(MappaSettingsAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaSettingsAttribute)}");
 
     /// <summary>
     /// Gets the <see cref="MappaInvokeMethodAttribute"/>s applied to the method.
     /// </summary>
-    /// <param name="methodSymbol">The method.</param>
+    /// <param name="attributes">The attributes.</param>
     /// <param name="compilation">The compilation.</param>
-    /// <returns>The <see cref="MappaInvokeMethodAttribute"/> applied to the method.</returns>
-    internal static MappaInvokeMethodAttribute[] GetInvokeMethodAttributes(this IMethodSymbol methodSymbol, Compilation compilation)
+    /// <returns>The <see cref="MappaInvokeMethodAttribute"/>s.</returns>
+    internal static MappaInvokeMethodAttribute[] GetInvokeMethodAttributes(this ImmutableArray<AttributeData> attributes, Compilation compilation)
     {
         var mappaInvokeMethodAttributeSymbol = compilation.GetTypeByMetadataName(MappaInvokeMethodAttributeFullName);
         List<MappaInvokeMethodAttribute> results = new();
-        foreach (var constructorArguments in methodSymbol
-                     .GetAttributes()
+        foreach (var constructorArguments in attributes
                      .Where(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, mappaInvokeMethodAttributeSymbol))
                      .Select(attributeData => attributeData.ConstructorArguments))
         {
@@ -74,17 +75,16 @@ internal static class AttributeDataExtensions
     }
 
     /// <summary>
-    /// Gets the <see cref="MappaAssignFromContextAttribute"/>s applied to the method.
+    /// Gets the <see cref="MappaAssignFromContextAttributeFullName"/>s applied.
     /// </summary>
-    /// <param name="methodSymbol">The method.</param>
+    /// <param name="attributes">The attributes.</param>
     /// <param name="compilation">The compilation.</param>
-    /// <returns>The <see cref="MappaAssignFromContextAttribute"/> applied to the method.</returns>
-    internal static MappaAssignFromContextAttribute[] GetMappaAssignFromContextAttributes(this IMethodSymbol methodSymbol, Compilation compilation)
+    /// <returns>The <see cref="MappaAssignFromContextAttributeFullName"/> applied.</returns>
+    internal static MappaAssignFromContextAttribute[] GetMappaAssignFromContextAttributes(this ImmutableArray<AttributeData> attributes, Compilation compilation)
     {
-        var mappaInvokeMethodAttributeSymbol = compilation.GetTypeByMetadataName(MappaAssignFromContextAttribute);
+        var mappaInvokeMethodAttributeSymbol = compilation.GetTypeByMetadataName(MappaAssignFromContextAttributeFullName);
         List<MappaAssignFromContextAttribute> results = new();
-        foreach (var constructorArguments in methodSymbol
-                     .GetAttributes()
+        foreach (var constructorArguments in attributes
                      .Where(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, mappaInvokeMethodAttributeSymbol))
                      .Select(attributeData => attributeData.ConstructorArguments))
         {
@@ -102,16 +102,73 @@ internal static class AttributeDataExtensions
     /// <summary>
     /// Gets the <see cref="MappaIgnoreAttribute"/> applied to the method, if any.
     /// </summary>
-    /// <param name="methodSymbol">The method.</param>
+    /// <param name="attributes">The attributes.</param>
     /// <param name="compilation">The compilation.</param>
-    /// <returns>The <see cref="MappaIgnoreAttribute"/> applied to the method, or <c>null</c> if it does not exist.</returns>
-    internal static MappaIgnoreAttribute? GetMappaIgnoreAttribute(this IMethodSymbol methodSymbol, Compilation compilation)
+    /// <returns>The <see cref="MappaIgnoreAttribute"/> applied, or <c>null</c> if it does not exist.</returns>
+    internal static MappaIgnoreAttribute? GetMappaIgnoreAttribute(this ImmutableArray<AttributeData> attributes, Compilation compilation)
     {
         var mappaInvokeMethodAttributeSymbol = compilation.GetTypeByMetadataName(MappaIgnoreAttributeFullName);
-        var exists = methodSymbol
-            .GetAttributes()
+        var exists = attributes
             .Any(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, mappaInvokeMethodAttributeSymbol));
         return exists ? new() : null;
+    }
+
+    /// <summary>
+    /// Gets the <see cref="MappaSettingsAttribute"/> applied to the method, if any.
+    /// </summary>
+    /// <param name="attributes">The attributes.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The <see cref="MappaSettingsAttribute"/> applied, or <c>null</c> if it does not exist.</returns>
+    internal static MappaSettingsAttribute? GetMappaSettingsAttribute(this ImmutableArray<AttributeData> attributes, Compilation compilation)
+    {
+        var mappaInvokeMethodAttributeSymbol = compilation.GetTypeByMetadataName(MappaSettingsAttributeFullName);
+        var attributeData = attributes
+            .SingleOrDefault(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, mappaInvokeMethodAttributeSymbol));
+        if (attributeData is null)
+        {
+            return null;
+        }
+
+        var attribute = new MappaSettingsAttribute();
+        foreach (var namedArgument in attributeData.NamedArguments)
+        {
+            switch (namedArgument.Key)
+            {
+                case nameof(MappaSettingsAttribute.DateTimeFormat) when namedArgument.Value.Value is string value:
+                    attribute.DateTimeFormat = value;
+                    break;
+
+                case nameof(MappaSettingsAttribute.DateTimeOffsetFormat) when namedArgument.Value.Value is string value:
+                    attribute.DateTimeOffsetFormat = value;
+                    break;
+
+                case nameof(MappaSettingsAttribute.DateOnlyFormat) when namedArgument.Value.Value is string value:
+                    attribute.DateOnlyFormat = value;
+                    break;
+
+                case nameof(MappaSettingsAttribute.TimeOnlyFormat) when namedArgument.Value.Value is string value:
+                    attribute.TimeOnlyFormat = value;
+                    break;
+
+                case nameof(MappaSettingsAttribute.TimeSpanFormat) when namedArgument.Value.Value is string value:
+                    attribute.TimeSpanFormat = value;
+                    break;
+
+                case nameof(MappaSettingsAttribute.GuidFormat) when namedArgument.Value.Value is string value:
+                    attribute.GuidFormat = value;
+                    break;
+
+                case nameof(MappaSettingsAttribute.CultureName) when namedArgument.Value.Value is string value:
+                    attribute.CultureName = value;
+                    break;
+
+                case nameof(MappaSettingsAttribute.CultureInfoSetting) when namedArgument.Value.Value is MappaSettingsAttribute.CultureInfoSettings value:
+                    attribute.CultureInfoSetting = value;
+                    break;
+            }
+        }
+
+        return attribute;
     }
 
     private sealed class FakeType(string fullName) : Type
