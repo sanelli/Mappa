@@ -171,4 +171,18 @@ internal static class MappaDiagnostics
             MappaDiagnosticDescriptors.CannotUseMappaAssignFromContextAttributeWithoutContextParameter,
             methodDeclarationSyntax.GetLocation(),
             fieldName);
+
+    /// <summary>
+    /// Diagnostic to report the fact that user defined settings are using the
+    /// <see cref="MappaSettingsAttribute.CultureInfoSettings.UserDefined"/> culture
+    /// but the culture name is not properly defined.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic UserDefinedCultureIsMissingCultureName(
+        MethodDeclarationSyntax methodDeclarationSyntax)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.UserDefinedCultureIsMissingCultureName,
+            methodDeclarationSyntax.GetLocation(),
+            methodDeclarationSyntax.Identifier.ToFullString());
 }

@@ -2,6 +2,8 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Attributes;
+using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Extensions;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
@@ -99,12 +101,66 @@ internal sealed class StringMapStrategyDetector
         // 08. S -> string : InvokeToStringStrategy
         else if (this.CanMapToString())
         {
+            var formatAndCulture = this.IdentifyFormatAndCulture();
             mapStrategy = new InvokeToStringMapStrategy(
                 this.context.TargetType,
-                this.context.SourceType);
+                this.context.SourceType,
+                formatAndCulture.Format,
+                formatAndCulture.CultureInfoSetting,
+                formatAndCulture.CultureName);
         }
 
         return mapStrategy is not NoMapStrategy;
+    }
+
+    private (string? Format, MappaSettingsAttribute.CultureInfoSettings CultureInfoSetting, string? CultureName) IdentifyFormatAndCulture()
+    {
+        var settings = this.context.MappaUserSettings.Freeze();
+
+        MappaSettingsAttribute.CultureInfoSettings cultureInfoSettings;
+        string? cultureName;
+        if (settings.CultureInfoSetting is MappaSettingsAttribute.CultureInfoSettings.UserDefined
+            && string.IsNullOrWhiteSpace(settings.CultureName))
+        {
+            this.context.ReportDiagnostic(MappaDiagnostics.UserDefinedCultureIsMissingCultureName(
+                this.context.GetRootMapMethod().MethodDeclarationSyntax!));
+
+            cultureInfoSettings = MappaSettingsAttribute.CultureInfoSettings.None;
+            cultureName = null;
+        }
+        else
+        {
+            cultureInfoSettings = settings.CultureInfoSetting ?? MappaSettingsAttribute.CultureInfoSettings.None;
+            cultureName = settings.CultureName;
+        }
+
+        string? format = null;
+        if (this.context.SourceType.IsGuid(this.compilation))
+        {
+            format = settings.GuidFormat;
+        }
+        else if (this.context.SourceType.IsDateTime())
+        {
+            format = settings.DateTimeFormat;
+        }
+        else if (this.context.SourceType.IsDateTimeOffset(this.compilation))
+        {
+            format = settings.DateTimeOffsetFormat;
+        }
+        else if (this.context.SourceType.IsDateOnly(this.compilation))
+        {
+            format = settings.DateOnlyFormat;
+        }
+        else if (this.context.SourceType.IsTimeOnly(this.compilation))
+        {
+            format = settings.TimeOnlyFormat;
+        }
+        else if (this.context.SourceType.IsTimeSpan(this.compilation))
+        {
+            format = settings.TimeSpanFormat;
+        }
+
+        return (format, cultureInfoSettings, cultureName);
     }
 
     private bool CanMapStringToNumber()

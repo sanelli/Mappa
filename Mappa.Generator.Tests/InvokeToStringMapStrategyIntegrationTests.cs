@@ -76,4 +76,63 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
                         });
                 });
     }
+
+    /// <summary>
+    /// Test a mapping can be created from <see cref="Guid"/> to <see cref="string"/>
+    /// by using the <see cref="Guid.ToString()"/>.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapGuidToString()
+    {
+        const string identifierName = "__mappa_tmp_1";
+
+        // Arrange
+        const string sourceCode = """
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial string Map(System.Guid input);
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                typeof(string).ToString(),
+                NullableAnnotation.None,
+                typeof(int).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(2)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(string).ToString(),
+                                identifierName,
+                                expressionSyntaxAssertions =>
+                                {
+                                    expressionSyntaxAssertions.BeInvocationExpressionSyntax("input.ToString");
+                                });
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax(identifierName));
+                        });
+                });
+    }
 }

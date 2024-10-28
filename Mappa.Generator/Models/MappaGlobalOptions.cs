@@ -132,6 +132,11 @@ internal sealed class MappaGlobalOptions
         {
             if (cultureInfoSettings.Equals(nameof(MappaSettingsAttribute.CultureInfoSettings.CurrentCulture), StringComparison.OrdinalIgnoreCase))
             {
+                return MappaSettingsAttribute.CultureInfoSettings.None;
+            }
+
+            if (cultureInfoSettings.Equals(nameof(MappaSettingsAttribute.CultureInfoSettings.CurrentCulture), StringComparison.OrdinalIgnoreCase))
+            {
                 return MappaSettingsAttribute.CultureInfoSettings.CurrentCulture;
             }
 
@@ -145,7 +150,7 @@ internal sealed class MappaGlobalOptions
                 return MappaSettingsAttribute.CultureInfoSettings.UserDefined;
             }
 
-            return MappaSettingsAttribute.CultureInfoSettings.UserDefined;
+            return MappaSettingsAttribute.CultureInfoSettings.None;
         }
     }
 
@@ -168,7 +173,7 @@ internal sealed class MappaGlobalOptions
     public string? GuidFormat { get; }
 
     /// <inheritdoc />
-    public MappaSettingsAttribute.CultureInfoSettings CultureInfoSetting { get; }
+    public MappaSettingsAttribute.CultureInfoSettings? CultureInfoSetting { get; }
 
     /// <inheritdoc />
     public string? CultureName { get; }

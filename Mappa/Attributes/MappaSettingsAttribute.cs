@@ -21,6 +21,14 @@ public sealed class MappaSettingsAttribute
     public enum CultureInfoSettings
     {
         /// <summary>
+        /// Do not use any culture.
+        /// If no culture is provided but it is required
+        /// then <see cref="CultureInfo.CurrentCulture"/> will
+        /// be used.
+        /// </summary>
+        None,
+
+        /// <summary>
         /// Use the <see cref="CultureInfo.CurrentCulture"/>.
         /// </summary>
         CurrentCulture,

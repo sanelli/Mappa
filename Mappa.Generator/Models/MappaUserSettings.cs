@@ -89,7 +89,7 @@ internal sealed class MappaUserSettings
     public string? GuidFormat => this.guidFormat;
 
     /// <inheritdoc />
-    public MappaSettingsAttribute.CultureInfoSettings CultureInfoSetting => this.cultureInfoSetting;
+    public MappaSettingsAttribute.CultureInfoSettings? CultureInfoSetting => this.cultureInfoSetting;
 
     /// <inheritdoc />
     public string? CultureName => this.cultureName;
@@ -168,7 +168,7 @@ internal sealed class MappaUserSettings
             this.TimeOnlyFormat = other.TimeOnlyFormat;
             this.TimeSpanFormat = other.TimeSpanFormat;
             this.GuidFormat = other.GuidFormat;
-            this.CultureInfoSetting = Correct(other.CultureInfoSetting, other.CultureName);
+            this.CultureInfoSetting = other.CultureInfoSetting;
             this.CultureName = other.CultureName;
         }
 
@@ -184,19 +184,8 @@ internal sealed class MappaUserSettings
 
         public string? GuidFormat { get; }
 
-        public MappaSettingsAttribute.CultureInfoSettings CultureInfoSetting { get; }
+        public MappaSettingsAttribute.CultureInfoSettings? CultureInfoSetting { get; }
 
         public string? CultureName { get; }
-
-        private static MappaSettingsAttribute.CultureInfoSettings Correct(MappaSettingsAttribute.CultureInfoSettings cultureInfoSetting, string? cultureName)
-        {
-            if (cultureInfoSetting == MappaSettingsAttribute.CultureInfoSettings.UserDefined
-                && string.IsNullOrWhiteSpace(cultureName))
-            {
-                return MappaSettingsAttribute.CultureInfoSettings.CurrentCulture;
-            }
-
-            return cultureInfoSetting;
-        }
     }
 }
