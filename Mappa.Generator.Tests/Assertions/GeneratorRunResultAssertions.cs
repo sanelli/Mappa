@@ -34,6 +34,19 @@ public sealed class GeneratorRunResultAssertions
     }
 
     /// <summary>
+    /// Assert that the generator results have only one warning message.
+    /// </summary>
+    /// <param name="warningId">The warning identifier.</param>
+    /// <returns>The assertions itself.</returns>
+    public GeneratorRunResultAssertions HaveOneWarning(string warningId)
+    {
+        this.Subject.Diagnostics.Should().HaveCount(1);
+        this.Subject.Diagnostics[0].Severity.Should().Be(DiagnosticSeverity.Warning);
+        this.Subject.Diagnostics[0].Id.Should().Be(warningId);
+        return this;
+    }
+
+    /// <summary>
     /// Assert that the generator results have no sources.
     /// </summary>
     /// <returns>The assertions itself.</returns>

@@ -138,6 +138,6 @@ internal static class MappaDiagnosticDescriptors
             Title,
             message,
             Category,
-            DiagnosticSeverity.Error,
+            DiagnosticSeverity.Warning,
             true);
 }
