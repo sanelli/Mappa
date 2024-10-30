@@ -144,12 +144,12 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
 
     /// <summary>
     /// Test a mapping can be created from <see cref="Guid"/> to <see cref="string"/>
-    /// by using the <see cref="Guid.ToString(string)"/>.
+    /// by using the <see cref="Guid.ToString(string)"/> and format defined on method.
     /// </summary>
     /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
-    public async Task CanMapGuidToStringWithFormat()
+    public async Task CanMapGuidToStringWithFormatDefinedOnMethod()
     {
         const string identifierName = "__mappa_tmp_1";
 
@@ -163,6 +163,68 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
                                   public sealed partial class Mapper
                                   {
                                       [MappaSettings(GuidFormat = "N"]
+                                      public partial string Map(System.Guid input);
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                typeof(string).ToString(),
+                NullableAnnotation.None,
+                typeof(Guid).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(2)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(string).ToString(),
+                                identifierName,
+                                expressionSyntaxAssertions =>
+                                {
+                                    expressionSyntaxAssertions.BeInvocationExpressionSyntax(
+                                        "input.ToString",
+                                        firstParameterAssertions => firstParameterAssertions.BeLiteralExpressionSyntax("N"));
+                                });
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax(identifierName));
+                        });
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping can be created from <see cref="Guid"/> to <see cref="string"/>
+    /// by using the <see cref="Guid.ToString(string)"/> and format defined on class.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapGuidToStringWithFormatDefinedOnClass()
+    {
+        const string identifierName = "__mappa_tmp_1";
+
+        // Arrange
+        const string sourceCode = """
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  [Mappa]
+                                  [MappaSettings(GuidFormat = "N"]
+                                  public sealed partial class Mapper
+                                  {
                                       public partial string Map(System.Guid input);
                                   }
                                   """;
