@@ -123,7 +123,6 @@ internal sealed class MappaGeneratorClassAlgorithm
         }
     }
 
-    // TODO [#56] Update the MappaUserSettings by appliying the attribute applied on the class (if any).
     private void ExecuteForSingleClass(
         ClassDeclarationSyntax classDeclarationSyntax,
         MappaGlobalOptions options,

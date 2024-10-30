@@ -8,8 +8,6 @@ using Mappa.Generator.Models.Strategies;
 
 namespace Mappa.Generator.Builders.Strategies;
 
-// TODO [#56] Add support to use format and culture when building the ToString.
-
 /// <summary>
 /// Builder for <see cref="InvokeToStringMapStrategy"/> strategy.
 /// </summary>
