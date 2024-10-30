@@ -30,14 +30,16 @@ internal sealed class InvokeToStringMapStrategyBuilder
     {
         var temporary = context.NextTemporary();
         string parameters;
-        if (this.strategy.CultureInfoSetting is not null && this.strategy.CultureInfoSetting is not MappaSettingsAttribute.CultureInfoSettings.None
-            && !string.IsNullOrWhiteSpace(this.strategy.Format))
+        if (this.strategy.CultureInfoSetting is not MappaSettingsAttribute.CultureInfoSettings.Undefined &&
+            this.strategy.CultureInfoSetting is not MappaSettingsAttribute.CultureInfoSettings.None &&
+            !string.IsNullOrWhiteSpace(this.strategy.Format))
         {
-            parameters = $"\"{this.strategy.Format}\", {GetCulture(this.strategy.CultureInfoSetting.Value, this.strategy.CultureName)}";
+            parameters = $"\"{this.strategy.Format}\", {GetCulture(this.strategy.CultureInfoSetting, this.strategy.CultureName)}";
         }
-        else if (this.strategy.CultureInfoSetting is not null && this.strategy.CultureInfoSetting is not MappaSettingsAttribute.CultureInfoSettings.None)
+        else if (this.strategy.CultureInfoSetting is not MappaSettingsAttribute.CultureInfoSettings.Undefined &&
+                 this.strategy.CultureInfoSetting is not MappaSettingsAttribute.CultureInfoSettings.None)
         {
-            parameters = $"\"{GetCulture(this.strategy.CultureInfoSetting.Value, this.strategy.CultureName)}";
+            parameters = $"\"{GetCulture(this.strategy.CultureInfoSetting, this.strategy.CultureName)}";
         }
         else if (!string.IsNullOrWhiteSpace(this.strategy.Format))
         {
@@ -60,7 +62,6 @@ internal sealed class InvokeToStringMapStrategyBuilder
     private static string GetCulture(MappaSettingsAttribute.CultureInfoSettings cultureInfoSettings, string? cultureName)
         => cultureInfoSettings switch
         {
-            MappaSettingsAttribute.CultureInfoSettings.None => string.Empty,
             MappaSettingsAttribute.CultureInfoSettings.CurrentCulture => "System.Globalization.CultureInfo.CurrentCulture",
             MappaSettingsAttribute.CultureInfoSettings.InvariantCulture => "System.Globalization.CultureInfo.InvariantCulture",
             MappaSettingsAttribute.CultureInfoSettings.UserDefined => $"System.Globalization.CultureInfo.GetCultureInfo(\"{cultureName ?? string.Empty}\")",

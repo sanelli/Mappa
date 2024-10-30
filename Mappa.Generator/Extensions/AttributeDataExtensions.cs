@@ -162,8 +162,8 @@ internal static class AttributeDataExtensions
                     attribute.CultureName = value;
                     break;
 
-                case nameof(MappaSettingsAttribute.CultureInfoSetting) when namedArgument.Value.Value is MappaSettingsAttribute.CultureInfoSettings value:
-                    attribute.CultureInfoSetting = value;
+                case nameof(MappaSettingsAttribute.CultureInfoSetting) when namedArgument.Value.Value is int value:
+                    attribute.CultureInfoSetting = (MappaSettingsAttribute.CultureInfoSettings)value;
                     break;
             }
         }

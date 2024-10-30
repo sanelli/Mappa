@@ -46,7 +46,7 @@ internal interface IMappaUserSettings
     /// <summary>
     /// Gets the <see cref="CultureInfo"/> to use when converting to string or parsing form string.
     /// </summary>
-    MappaSettingsAttribute.CultureInfoSettings? CultureInfoSetting { get; }
+    MappaSettingsAttribute.CultureInfoSettings CultureInfoSetting { get; }
 
     /// <summary>
     /// Gets the culture name when <see cref="CultureInfoSetting"/> is <see cref="Mappa.Attributes.MappaSettingsAttribute.CultureInfoSettings.UserDefined"/>.

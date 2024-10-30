@@ -158,7 +158,7 @@ internal sealed class StringMapStrategyDetector
             }
             else
             {
-                cultureInfoSettings = settings.CultureInfoSetting ?? MappaSettingsAttribute.CultureInfoSettings.None;
+                cultureInfoSettings = settings.CultureInfoSetting;
                 cultureName = settings.CultureName;
             }
         }

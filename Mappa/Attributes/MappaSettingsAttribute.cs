@@ -21,10 +21,16 @@ public sealed class MappaSettingsAttribute
     public enum CultureInfoSettings
     {
         /// <summary>
-        /// Do not use any culture.
-        /// If no culture is provided but it is required
-        /// then <see cref="CultureInfo.CurrentCulture"/> will
-        /// be used.
+        /// Ignore the setting from the application of this
+        /// (similar to applying a <c>null</c> to a format).
+        /// This mean this setting will be ignored and previous
+        /// settings will be accepted.
+        /// </summary>
+        Undefined,
+
+        /// <summary>
+        /// Do not apply any culture.
+        /// (Similar to applying an empty string to a format).
         /// </summary>
         None,
 
@@ -77,7 +83,7 @@ public sealed class MappaSettingsAttribute
     /// <summary>
     /// Gets or sets the <see cref="CultureInfo"/> to use when converting to string or parsing form string.
     /// </summary>
-    public CultureInfoSettings? CultureInfoSetting { get; set; }
+    public CultureInfoSettings CultureInfoSetting { get; set; } = CultureInfoSettings.Undefined;
 
     /// <summary>
     /// Gets or sets the culture name when <see cref="CultureInfoSetting"/> is <see cref="CultureInfoSettings.UserDefined"/>.

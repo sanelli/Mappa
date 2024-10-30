@@ -28,7 +28,7 @@ internal sealed class InvokeToStringMapStrategy
         ITypeSymbol targetType,
         ITypeSymbol sourceType,
         string? format,
-        MappaSettingsAttribute.CultureInfoSettings? cultureInfoSetting,
+        MappaSettingsAttribute.CultureInfoSettings cultureInfoSetting,
         string? cultureName)
     {
         this.TargetType = targetType;
@@ -55,7 +55,7 @@ internal sealed class InvokeToStringMapStrategy
     /// <summary>
     /// gets the (optional) culture info settings.
     /// </summary>
-    internal MappaSettingsAttribute.CultureInfoSettings? CultureInfoSetting { get; }
+    internal MappaSettingsAttribute.CultureInfoSettings CultureInfoSetting { get; }
 
     /// <summary>
     /// gets the (optional) culture name.

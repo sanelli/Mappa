@@ -57,7 +57,7 @@ internal sealed class MappaUserSettings
         string? timeOnlyFormat,
         string? timeSpanFormat,
         string? guidFormat,
-        MappaSettingsAttribute.CultureInfoSettings? cultureInfoSetting,
+        MappaSettingsAttribute.CultureInfoSettings cultureInfoSetting,
         string? cultureName)
     {
         this.dateTimeFormat = new(dateTimeFormat);
@@ -66,7 +66,7 @@ internal sealed class MappaUserSettings
         this.timeOnlyFormat = new(timeOnlyFormat);
         this.timeSpanFormat = new(timeSpanFormat);
         this.guidFormat = new(guidFormat);
-        this.cultureInfoSetting = new(cultureInfoSetting ?? MappaSettingsAttribute.CultureInfoSettings.None);
+        this.cultureInfoSetting = new(cultureInfoSetting);
         this.cultureName = new(cultureName);
     }
 
@@ -89,7 +89,7 @@ internal sealed class MappaUserSettings
     public string? GuidFormat => this.guidFormat;
 
     /// <inheritdoc />
-    public MappaSettingsAttribute.CultureInfoSettings? CultureInfoSetting => this.cultureInfoSetting;
+    public MappaSettingsAttribute.CultureInfoSettings CultureInfoSetting => this.cultureInfoSetting;
 
     /// <inheritdoc />
     public string? CultureName => this.cultureName;
@@ -110,14 +110,14 @@ internal sealed class MappaUserSettings
 
         return new PopActionDisposable(
         [
- #pragma warning disable CA2000
+#pragma warning disable CA2000 // Call System. IDisposable. Dispose on object created by '...' before all references to it are out of scope
             this.dateTimeFormat.Apply(mappaSettingsAttribute.DateTimeFormat ?? this.dateTimeFormat),
             this.dateTimeOffsetFormat.Apply(mappaSettingsAttribute.DateTimeOffsetFormat ?? this.dateTimeOffsetFormat),
             this.dateOnlyFormat.Apply(mappaSettingsAttribute.DateOnlyFormat ?? this.dateOnlyFormat),
             this.timeOnlyFormat.Apply(mappaSettingsAttribute.TimeOnlyFormat ?? this.timeOnlyFormat),
             this.timeSpanFormat.Apply(mappaSettingsAttribute.TimeSpanFormat ?? this.timeSpanFormat),
             this.guidFormat.Apply(mappaSettingsAttribute.GuidFormat ?? this.guidFormat),
-            this.cultureInfoSetting.Apply(mappaSettingsAttribute.CultureInfoSetting ?? this.cultureInfoSetting),
+            this.cultureInfoSetting.Apply(mappaSettingsAttribute.CultureInfoSetting is not MappaSettingsAttribute.CultureInfoSettings.Undefined ? mappaSettingsAttribute.CultureInfoSetting : this.cultureInfoSetting),
             this.cultureName.Apply(mappaSettingsAttribute.CultureName ?? this.cultureName),
  #pragma warning restore CA2000
         ]);
@@ -184,7 +184,7 @@ internal sealed class MappaUserSettings
 
         public string? GuidFormat { get; }
 
-        public MappaSettingsAttribute.CultureInfoSettings? CultureInfoSetting { get; }
+        public MappaSettingsAttribute.CultureInfoSettings CultureInfoSetting { get; }
 
         public string? CultureName { get; }
     }

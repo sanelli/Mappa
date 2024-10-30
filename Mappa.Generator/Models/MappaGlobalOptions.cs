@@ -173,7 +173,7 @@ internal sealed class MappaGlobalOptions
     public string? GuidFormat { get; }
 
     /// <inheritdoc />
-    public MappaSettingsAttribute.CultureInfoSettings? CultureInfoSetting { get; }
+    public MappaSettingsAttribute.CultureInfoSettings CultureInfoSetting { get; }
 
     /// <inheritdoc />
     public string? CultureName { get; }
