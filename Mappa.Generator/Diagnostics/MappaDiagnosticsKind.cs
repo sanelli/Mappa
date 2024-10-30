@@ -73,7 +73,7 @@ internal enum MappaDiagnosticsKind
     CannotUseMappaAssignFromContextAttributeWithoutContextParameter,
 
     /// User defined settings are using the
-    /// <see cref="MappaSettingsAttribute.CultureInfoSettings.UserDefined"/> culture
+    /// <see cref="CultureInfoSetting.UserDefined"/> culture
     /// but the culture name is not properly defined.
     UserDefinedCultureIsMissingCultureName,
 }

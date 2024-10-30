@@ -2,7 +2,6 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using Mappa.Attributes;
 using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Extensions;
 using Mappa.Generator.Models;
@@ -113,7 +112,7 @@ internal sealed class StringMapStrategyDetector
         return mapStrategy is not NoMapStrategy;
     }
 
-    private (string? Format, MappaSettingsAttribute.CultureInfoSettings CultureInfoSetting, string? CultureName) IdentifyFormatAndCulture()
+    private (string? Format, CultureInfoSetting CultureInfoSetting, string? CultureName) IdentifyFormatAndCulture()
     {
         var settings = this.context.MappaUserSettings.Freeze();
 
@@ -146,11 +145,11 @@ internal sealed class StringMapStrategyDetector
             format = settings.TimeSpanFormat;
         }
 
-        MappaSettingsAttribute.CultureInfoSettings cultureInfoSettings = MappaSettingsAttribute.CultureInfoSettings.None;
+        CultureInfoSetting cultureInfoSettings = CultureInfoSetting.None;
         string? cultureName = null;
         if (acceptFormatProviderOnly || !string.IsNullOrWhiteSpace(format))
         {
-            if (settings.CultureInfoSetting is MappaSettingsAttribute.CultureInfoSettings.UserDefined
+            if (settings.CultureInfoSetting is CultureInfoSetting.UserDefined
                 && string.IsNullOrWhiteSpace(settings.CultureName))
             {
                 this.context.ReportDiagnostic(MappaDiagnostics.UserDefinedCultureIsMissingCultureName(

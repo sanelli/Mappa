@@ -174,7 +174,7 @@ internal static class MappaDiagnostics
 
     /// <summary>
     /// Diagnostic to report the fact that user defined settings are using the
-    /// <see cref="MappaSettingsAttribute.CultureInfoSettings.UserDefined"/> culture
+    /// <see cref="CultureInfoSetting.UserDefined"/> culture
     /// but the culture name is not properly defined.
     /// </summary>
     /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>

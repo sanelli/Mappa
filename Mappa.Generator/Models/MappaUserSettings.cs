@@ -19,7 +19,7 @@ internal sealed class MappaUserSettings
     private readonly StackSetting<string?> timeOnlyFormat;
     private readonly StackSetting<string?> timeSpanFormat;
     private readonly StackSetting<string?> guidFormat;
-    private readonly StackSetting<MappaSettingsAttribute.CultureInfoSettings> cultureInfoSetting;
+    private readonly StackSetting<CultureInfoSetting> cultureInfoSetting;
     private readonly StackSetting<string?> cultureName;
 
     /// <summary>
@@ -57,7 +57,7 @@ internal sealed class MappaUserSettings
         string? timeOnlyFormat,
         string? timeSpanFormat,
         string? guidFormat,
-        MappaSettingsAttribute.CultureInfoSettings cultureInfoSetting,
+        CultureInfoSetting cultureInfoSetting,
         string? cultureName)
     {
         this.dateTimeFormat = new(dateTimeFormat);
@@ -89,7 +89,7 @@ internal sealed class MappaUserSettings
     public string? GuidFormat => this.guidFormat;
 
     /// <inheritdoc />
-    public MappaSettingsAttribute.CultureInfoSettings CultureInfoSetting => this.cultureInfoSetting;
+    public CultureInfoSetting CultureInfoSetting => this.cultureInfoSetting;
 
     /// <inheritdoc />
     public string? CultureName => this.cultureName;
@@ -117,7 +117,7 @@ internal sealed class MappaUserSettings
             this.timeOnlyFormat.Apply(mappaSettingsAttribute.TimeOnlyFormat ?? this.timeOnlyFormat),
             this.timeSpanFormat.Apply(mappaSettingsAttribute.TimeSpanFormat ?? this.timeSpanFormat),
             this.guidFormat.Apply(mappaSettingsAttribute.GuidFormat ?? this.guidFormat),
-            this.cultureInfoSetting.Apply(mappaSettingsAttribute.CultureInfoSetting is not MappaSettingsAttribute.CultureInfoSettings.Undefined ? mappaSettingsAttribute.CultureInfoSetting : this.cultureInfoSetting),
+            this.cultureInfoSetting.Apply(mappaSettingsAttribute.CultureInfoSetting is not CultureInfoSetting.Undefined ? mappaSettingsAttribute.CultureInfoSetting : this.cultureInfoSetting),
             this.cultureName.Apply(mappaSettingsAttribute.CultureName ?? this.cultureName),
  #pragma warning restore CA2000
         ]);
@@ -184,7 +184,7 @@ internal sealed class MappaUserSettings
 
         public string? GuidFormat { get; }
 
-        public MappaSettingsAttribute.CultureInfoSettings CultureInfoSetting { get; }
+        public CultureInfoSetting CultureInfoSetting { get; }
 
         public string? CultureName { get; }
     }

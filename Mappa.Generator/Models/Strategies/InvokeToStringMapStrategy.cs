@@ -2,7 +2,6 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using Mappa.Attributes;
 using Mappa.Generator.Builders.Strategies;
 
 using Microsoft.CodeAnalysis;
@@ -28,7 +27,7 @@ internal sealed class InvokeToStringMapStrategy
         ITypeSymbol targetType,
         ITypeSymbol sourceType,
         string? format,
-        MappaSettingsAttribute.CultureInfoSettings cultureInfoSetting,
+        CultureInfoSetting cultureInfoSetting,
         string? cultureName)
     {
         this.TargetType = targetType;
@@ -55,7 +54,7 @@ internal sealed class InvokeToStringMapStrategy
     /// <summary>
     /// gets the (optional) culture info settings.
     /// </summary>
-    internal MappaSettingsAttribute.CultureInfoSettings CultureInfoSetting { get; }
+    internal CultureInfoSetting CultureInfoSetting { get; }
 
     /// <summary>
     /// gets the (optional) culture name.

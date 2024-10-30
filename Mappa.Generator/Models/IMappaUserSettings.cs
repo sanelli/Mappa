@@ -4,8 +4,6 @@
 
 using System.Globalization;
 
-using Mappa.Attributes;
-
 namespace Mappa.Generator.Models;
 
 /// <summary>
@@ -46,10 +44,10 @@ internal interface IMappaUserSettings
     /// <summary>
     /// Gets the <see cref="CultureInfo"/> to use when converting to string or parsing form string.
     /// </summary>
-    MappaSettingsAttribute.CultureInfoSettings CultureInfoSetting { get; }
+    CultureInfoSetting CultureInfoSetting { get; }
 
     /// <summary>
-    /// Gets the culture name when <see cref="CultureInfoSetting"/> is <see cref="Mappa.Attributes.MappaSettingsAttribute.CultureInfoSettings.UserDefined"/>.
+    /// Gets the culture name when <see cref="CultureInfoSetting"/> is <see cref="Mappa.CultureInfoSetting.UserDefined"/>.
     /// </summary>
     string? CultureName { get; }
 }

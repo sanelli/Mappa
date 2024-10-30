@@ -2,8 +2,6 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using Mappa.Attributes;
-
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 
@@ -47,7 +45,7 @@ namespace Mappa.Generator.Models;
 ///     </item>
 ///     <item>
 ///         <term><c>mappa.cultureinfosettings</c></term>
-///         <description>Set the default culture info settings. Valid values are the values of the <see cref="MappaSettingsAttribute.CultureInfoSettings"/>.</description>
+///         <description>Set the default culture info settings. Valid values are the values of the <see cref="CultureInfoSetting"/>.</description>
 ///     </item>
 ///     <item>
 ///         <term><c>mappa.culturename</c></term>
@@ -126,31 +124,31 @@ internal sealed class MappaGlobalOptions
         this.CultureInfoSetting = options.TryGetValue(GetOptionName(MappaSettingsCultureInfoSettings), out var cultureInfoSettings)
                                   && !string.IsNullOrWhiteSpace(cultureInfoSettings)
             ? FromString(cultureInfoSettings)
-            : MappaSettingsAttribute.CultureInfoSettings.None;
+            : CultureInfoSetting.None;
 
-        static MappaSettingsAttribute.CultureInfoSettings FromString(string cultureInfoSettings)
+        static CultureInfoSetting FromString(string cultureInfoSettings)
         {
-            if (cultureInfoSettings.Equals(nameof(MappaSettingsAttribute.CultureInfoSettings.CurrentCulture), StringComparison.OrdinalIgnoreCase))
+            if (cultureInfoSettings.Equals(nameof(CultureInfoSetting.CurrentCulture), StringComparison.OrdinalIgnoreCase))
             {
-                return MappaSettingsAttribute.CultureInfoSettings.None;
+                return CultureInfoSetting.None;
             }
 
-            if (cultureInfoSettings.Equals(nameof(MappaSettingsAttribute.CultureInfoSettings.CurrentCulture), StringComparison.OrdinalIgnoreCase))
+            if (cultureInfoSettings.Equals(nameof(CultureInfoSetting.CurrentCulture), StringComparison.OrdinalIgnoreCase))
             {
-                return MappaSettingsAttribute.CultureInfoSettings.CurrentCulture;
+                return CultureInfoSetting.CurrentCulture;
             }
 
-            if (cultureInfoSettings.Equals(nameof(MappaSettingsAttribute.CultureInfoSettings.InvariantCulture), StringComparison.OrdinalIgnoreCase))
+            if (cultureInfoSettings.Equals(nameof(CultureInfoSetting.InvariantCulture), StringComparison.OrdinalIgnoreCase))
             {
-                return MappaSettingsAttribute.CultureInfoSettings.InvariantCulture;
+                return CultureInfoSetting.InvariantCulture;
             }
 
-            if (cultureInfoSettings.Equals(nameof(MappaSettingsAttribute.CultureInfoSettings.UserDefined), StringComparison.OrdinalIgnoreCase))
+            if (cultureInfoSettings.Equals(nameof(CultureInfoSetting.UserDefined), StringComparison.OrdinalIgnoreCase))
             {
-                return MappaSettingsAttribute.CultureInfoSettings.UserDefined;
+                return CultureInfoSetting.UserDefined;
             }
 
-            return MappaSettingsAttribute.CultureInfoSettings.None;
+            return CultureInfoSetting.None;
         }
     }
 
@@ -173,7 +171,7 @@ internal sealed class MappaGlobalOptions
     public string? GuidFormat { get; }
 
     /// <inheritdoc />
-    public MappaSettingsAttribute.CultureInfoSettings CultureInfoSetting { get; }
+    public CultureInfoSetting CultureInfoSetting { get; }
 
     /// <inheritdoc />
     public string? CultureName { get; }

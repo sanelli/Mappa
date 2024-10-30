@@ -213,6 +213,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
 
         // Arrange
         const string sourceCode = """
+                                  using Mappa;
                                   using Mappa.Attributes;
 
                                   namespace Mappa.Generator.Tests.UnitTests.SourceCode;
@@ -220,7 +221,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
                                   [Mappa]
                                   public sealed partial class Mapper
                                   {
-                                      [MappaSettings(GuidFormat = "N", CultureInfoSetting = MappaSettingsAttribute.CultureInfoSettings.InvariantCulture)]
+                                      [MappaSettings(GuidFormat = "N", CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
                                       public partial string Map(System.Guid input);
                                   }
                                   """;
@@ -277,6 +278,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
 
         // Arrange
         const string sourceCode = """
+                                  using Mappa;
                                   using Mappa.Attributes;
 
                                   namespace Mappa.Generator.Tests.UnitTests.SourceCode;
@@ -284,7 +286,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
                                   [Mappa]
                                   public sealed partial class Mapper
                                   {
-                                      [MappaSettings(GuidFormat = "N", CultureInfoSetting = MappaSettingsAttribute.CultureInfoSettings.CurrentCulture)]
+                                      [MappaSettings(GuidFormat = "N", CultureInfoSetting = CultureInfoSetting.CurrentCulture)]
                                       public partial string Map(System.Guid input);
                                   }
                                   """;

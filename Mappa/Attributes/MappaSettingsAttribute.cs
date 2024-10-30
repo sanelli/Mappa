@@ -16,41 +16,6 @@ public sealed class MappaSettingsAttribute
     : Attribute
 {
     /// <summary>
-    /// The type of <see cref="CultureInfo"/> to apply.
-    /// </summary>
-    public enum CultureInfoSettings
-    {
-        /// <summary>
-        /// Ignore the setting from the application of this
-        /// (similar to applying a <c>null</c> to a format).
-        /// This mean this setting will be ignored and previous
-        /// settings will be accepted.
-        /// </summary>
-        Undefined,
-
-        /// <summary>
-        /// Do not apply any culture.
-        /// (Similar to applying an empty string to a format).
-        /// </summary>
-        None,
-
-        /// <summary>
-        /// Use the <see cref="CultureInfo.CurrentCulture"/>.
-        /// </summary>
-        CurrentCulture,
-
-        /// <summary>
-        /// Use the <see cref="CultureInfo.CurrentCulture"/>.
-        /// </summary>
-        InvariantCulture,
-
-        /// <summary>
-        /// Allow to user to specify a culture setting via <see cref="CultureName"/>.
-        /// </summary>
-        UserDefined,
-    }
-
-    /// <summary>
     /// Gets or sets the format when using <see cref="DateTime.ToString(string,System.IFormatProvider)"/> or <see cref="DateTime.ParseExact(string,string,System.IFormatProvider)"/>.
     /// </summary>
     public string? DateTimeFormat { get; set; }
@@ -83,10 +48,10 @@ public sealed class MappaSettingsAttribute
     /// <summary>
     /// Gets or sets the <see cref="CultureInfo"/> to use when converting to string or parsing form string.
     /// </summary>
-    public CultureInfoSettings CultureInfoSetting { get; set; } = CultureInfoSettings.Undefined;
+    public CultureInfoSetting CultureInfoSetting { get; set; } = CultureInfoSetting.Undefined;
 
     /// <summary>
-    /// Gets or sets the culture name when <see cref="CultureInfoSetting"/> is <see cref="CultureInfoSettings.UserDefined"/>.
+    /// Gets or sets the culture name when <see cref="CultureInfoSetting"/> is <see cref="CultureInfoSetting.UserDefined"/>.
     /// </summary>
     public string? CultureName { get; set; }
 }

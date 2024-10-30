@@ -2,7 +2,6 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using Mappa.Attributes;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -30,14 +29,14 @@ internal sealed class InvokeToStringMapStrategyBuilder
     {
         var temporary = context.NextTemporary();
         string parameters;
-        if (this.strategy.CultureInfoSetting is not MappaSettingsAttribute.CultureInfoSettings.Undefined &&
-            this.strategy.CultureInfoSetting is not MappaSettingsAttribute.CultureInfoSettings.None &&
+        if (this.strategy.CultureInfoSetting is not CultureInfoSetting.Undefined &&
+            this.strategy.CultureInfoSetting is not CultureInfoSetting.None &&
             !string.IsNullOrWhiteSpace(this.strategy.Format))
         {
             parameters = $"\"{this.strategy.Format}\", {GetCulture(this.strategy.CultureInfoSetting, this.strategy.CultureName)}";
         }
-        else if (this.strategy.CultureInfoSetting is not MappaSettingsAttribute.CultureInfoSettings.Undefined &&
-                 this.strategy.CultureInfoSetting is not MappaSettingsAttribute.CultureInfoSettings.None)
+        else if (this.strategy.CultureInfoSetting is not CultureInfoSetting.Undefined &&
+                 this.strategy.CultureInfoSetting is not CultureInfoSetting.None)
         {
             parameters = $"\"{GetCulture(this.strategy.CultureInfoSetting, this.strategy.CultureName)}";
         }
@@ -59,12 +58,12 @@ internal sealed class InvokeToStringMapStrategyBuilder
         return ($"{ruleComment}{temporary}", code);
     }
 
-    private static string GetCulture(MappaSettingsAttribute.CultureInfoSettings cultureInfoSettings, string? cultureName)
+    private static string GetCulture(CultureInfoSetting cultureInfoSettings, string? cultureName)
         => cultureInfoSettings switch
         {
-            MappaSettingsAttribute.CultureInfoSettings.CurrentCulture => "System.Globalization.CultureInfo.CurrentCulture",
-            MappaSettingsAttribute.CultureInfoSettings.InvariantCulture => "System.Globalization.CultureInfo.InvariantCulture",
-            MappaSettingsAttribute.CultureInfoSettings.UserDefined => $"System.Globalization.CultureInfo.GetCultureInfo(\"{cultureName ?? string.Empty}\")",
+            CultureInfoSetting.CurrentCulture => "System.Globalization.CultureInfo.CurrentCulture",
+            CultureInfoSetting.InvariantCulture => "System.Globalization.CultureInfo.InvariantCulture",
+            CultureInfoSetting.UserDefined => $"System.Globalization.CultureInfo.GetCultureInfo(\"{cultureName ?? string.Empty}\")",
             _ => throw new ArgumentOutOfRangeException(nameof(cultureInfoSettings), cultureInfoSettings, null),
         };
 }
