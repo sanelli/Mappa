@@ -119,7 +119,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
             .HaveDefaultMapMethod(
                 typeof(string).ToString(),
                 NullableAnnotation.None,
-                typeof(int).ToString(),
+                typeof(Guid).ToString(),
                 NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
@@ -151,7 +151,6 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
     [IntegrationTest]
     public async Task CanMapGuidToStringWithFormat()
     {
-        // TODO [#56] Fix tests.
         const string identifierName = "__mappa_tmp_1";
 
         // Arrange
@@ -180,7 +179,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
             .HaveDefaultMapMethod(
                 typeof(string).ToString(),
                 NullableAnnotation.None,
-                typeof(int).ToString(),
+                typeof(Guid).ToString(),
                 NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {

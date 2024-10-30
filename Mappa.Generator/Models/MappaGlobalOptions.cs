@@ -126,7 +126,7 @@ internal sealed class MappaGlobalOptions
         this.CultureInfoSetting = options.TryGetValue(GetOptionName(MappaSettingsCultureInfoSettings), out var cultureInfoSettings)
                                   && !string.IsNullOrWhiteSpace(cultureInfoSettings)
             ? FromString(cultureInfoSettings)
-            : MappaSettingsAttribute.CultureInfoSettings.CurrentCulture;
+            : MappaSettingsAttribute.CultureInfoSettings.None;
 
         static MappaSettingsAttribute.CultureInfoSettings FromString(string cultureInfoSettings)
         {

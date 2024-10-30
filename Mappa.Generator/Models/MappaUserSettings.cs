@@ -66,7 +66,7 @@ internal sealed class MappaUserSettings
         this.timeOnlyFormat = new(timeOnlyFormat);
         this.timeSpanFormat = new(timeSpanFormat);
         this.guidFormat = new(guidFormat);
-        this.cultureInfoSetting = new(cultureInfoSetting ?? MappaSettingsAttribute.CultureInfoSettings.CurrentCulture);
+        this.cultureInfoSetting = new(cultureInfoSetting ?? MappaSettingsAttribute.CultureInfoSettings.None);
         this.cultureName = new(cultureName);
     }
 
