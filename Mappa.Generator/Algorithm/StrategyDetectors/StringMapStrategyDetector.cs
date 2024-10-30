@@ -117,26 +117,11 @@ internal sealed class StringMapStrategyDetector
     {
         var settings = this.context.MappaUserSettings.Freeze();
 
-        MappaSettingsAttribute.CultureInfoSettings cultureInfoSettings;
-        string? cultureName;
-        if (settings.CultureInfoSetting is MappaSettingsAttribute.CultureInfoSettings.UserDefined
-            && string.IsNullOrWhiteSpace(settings.CultureName))
-        {
-            this.context.ReportDiagnostic(MappaDiagnostics.UserDefinedCultureIsMissingCultureName(
-                this.context.GetRootMapMethod().MethodDeclarationSyntax!));
-
-            cultureInfoSettings = MappaSettingsAttribute.CultureInfoSettings.None;
-            cultureName = null;
-        }
-        else
-        {
-            cultureInfoSettings = settings.CultureInfoSetting ?? MappaSettingsAttribute.CultureInfoSettings.None;
-            cultureName = settings.CultureName;
-        }
-
         string? format = null;
+        bool acceptFormatProviderOnly = true; // Some types do not have a ToString(string, IFormatProvider).
         if (this.context.SourceType.IsGuid(this.compilation))
         {
+            acceptFormatProviderOnly = false;
             format = settings.GuidFormat;
         }
         else if (this.context.SourceType.IsDateTime())
@@ -157,7 +142,25 @@ internal sealed class StringMapStrategyDetector
         }
         else if (this.context.SourceType.IsTimeSpan(this.compilation))
         {
+            acceptFormatProviderOnly = false;
             format = settings.TimeSpanFormat;
+        }
+
+        MappaSettingsAttribute.CultureInfoSettings cultureInfoSettings = MappaSettingsAttribute.CultureInfoSettings.None;
+        string? cultureName = null;
+        if (acceptFormatProviderOnly || !string.IsNullOrWhiteSpace(format))
+        {
+            if (settings.CultureInfoSetting is MappaSettingsAttribute.CultureInfoSettings.UserDefined
+                && string.IsNullOrWhiteSpace(settings.CultureName))
+            {
+                this.context.ReportDiagnostic(MappaDiagnostics.UserDefinedCultureIsMissingCultureName(
+                    this.context.GetRootMapMethod().MethodDeclarationSyntax!));
+            }
+            else
+            {
+                cultureInfoSettings = settings.CultureInfoSetting ?? MappaSettingsAttribute.CultureInfoSettings.None;
+                cultureName = settings.CultureName;
+            }
         }
 
         return (format, cultureInfoSettings, cultureName);
