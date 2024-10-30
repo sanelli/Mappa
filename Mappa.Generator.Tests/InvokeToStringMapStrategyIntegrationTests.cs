@@ -4,7 +4,6 @@
 
 using System.Globalization;
 
-using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Models.Strategies;
 using Mappa.Generator.Tests.Abstractions;
 using Mappa.Generator.Tests.Assertions;
@@ -463,6 +462,68 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
 
     /// <summary>
     /// Test a mapping can be created from <see cref="Guid"/> to <see cref="string"/>
+    /// by using the <see cref="Guid.ToString()"/> when only culture info is setup.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapGuidToStringWithoutFormatInvokesPlainToString()
+    {
+        const string identifierName = "__mappa_tmp_1";
+
+        // Arrange
+        const string sourceCode = """
+                                  using Mappa;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaSettings(CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
+                                      public partial string Map(System.Guid input);
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                typeof(string).ToString(),
+                NullableAnnotation.None,
+                typeof(Guid).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(2)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(string).ToString(),
+                                identifierName,
+                                expressionSyntaxAssertions =>
+                                {
+                                    expressionSyntaxAssertions.BeInvocationExpressionSyntax(
+                                        "input.ToString");
+                                });
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax(identifierName));
+                        });
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping can be created from <see cref="Guid"/> to <see cref="string"/>
     /// by using the <see cref="Guid.ToString(string)"/> and format defined on class.
     /// </summary>
     /// <returns>The async task.</returns>
@@ -523,7 +584,137 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
                 });
     }
 
-    // TODO [#56] Test when the Guid.ToString(string,IFormatProvider) is setup from class.
-    // TODO [#56] Test when the Guid.ToString(string,IFormatProvider) is setup from class but superseded by method settings.
-    // TODO [#56] Test that Guid.ToString() is invoked when only culture is setup.
+    /// <summary>
+    /// Test a mapping can be created from <see cref="Guid"/> to <see cref="string"/>
+    /// by using the <see cref="Guid.ToString(string,IFormatProvider)"/> and format defined on method
+    /// override the format and culture name defined on class.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapGuidToStringWithFormatAndCultureNameDefinedOnMethodOverrideTheSetupOnClass()
+    {
+        const string identifierName = "__mappa_tmp_1";
+
+        // Arrange
+        const string sourceCode = """
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  [Mappa]
+                                  [MappaSettings(GuidFormat = "D", CultureInfoSetting = CultureInfoSetting.UserDefined, CultureName = "en-US")]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaSettings(GuidFormat = "N", CultureInfoSetting = CultureInfoSetting.UserDefined, CultureName = "it-IT")]
+                                      public partial string Map(System.Guid input);
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                typeof(string).ToString(),
+                NullableAnnotation.None,
+                typeof(Guid).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(2)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(string).ToString(),
+                                identifierName,
+                                expressionSyntaxAssertions =>
+                                {
+                                    expressionSyntaxAssertions.BeInvocationExpressionSyntax(
+                                        "input.ToString",
+                                        firstParameterAssertions => firstParameterAssertions.BeLiteralExpressionSyntax("N"),
+                                        secondParameterAssertions => secondParameterAssertions.BeInvocationExpressionSyntax(
+                                            "System.Globalization.CultureInfo.GetCultureInfo",
+                                            getCultureParametersAssertions => getCultureParametersAssertions.BeLiteralExpressionSyntax("it-IT")));
+                                });
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax(identifierName));
+                        });
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping can be created from <see cref="Guid"/> to <see cref="string"/>
+    /// by using the <see cref="Guid.ToString(string,IFormatProvider)"/> and culture into setting defined on method
+    /// override the culture info setting name defined on class.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapGuidToStringWithCultureInfoSettingDefinedOnMethodOverrideTheSetupOnClass()
+    {
+        const string identifierName = "__mappa_tmp_1";
+
+        // Arrange
+        const string sourceCode = """
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  [Mappa]
+                                  [MappaSettings(GuidFormat = "D", CultureInfoSetting = CultureInfoSetting.CurrentCulture)]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaSettings(GuidFormat = "N", CultureInfoSetting = CultureInfoSetting.UserDefined, CultureName = "it-IT")]
+                                      public partial string Map(System.Guid input);
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                typeof(string).ToString(),
+                NullableAnnotation.None,
+                typeof(Guid).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(2)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(string).ToString(),
+                                identifierName,
+                                expressionSyntaxAssertions =>
+                                {
+                                    expressionSyntaxAssertions.BeInvocationExpressionSyntax(
+                                        "input.ToString",
+                                        firstParameterAssertions => firstParameterAssertions.BeLiteralExpressionSyntax("N"),
+                                        secondParameterAssertions => secondParameterAssertions.BeInvocationExpressionSyntax(
+                                            "System.Globalization.CultureInfo.GetCultureInfo",
+                                            getCultureParametersAssertions => getCultureParametersAssertions.BeLiteralExpressionSyntax("it-IT")));
+                                });
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax(identifierName));
+                        });
+                });
+    }
 }
