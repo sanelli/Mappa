@@ -9,13 +9,6 @@ using Mappa.Generator.Tests.Assertions.Extensions;
 
 namespace Mappa.Generator.Tests;
 
-// TODO [#56] Test when the Guid.ToString(string) setup from class.
-// TODO [#56] Test when the Guid.ToString(string,IFormatProvider) setup from method using user defined culture.
-// TODO [#56] Test when the Guid.ToString(string,IFormatProvider) setup from method using invariant culture.
-// TODO [#56] Test when the Guid.ToString(string,IFormatProvider) setup from method using current culture.
-// TODO [#56] Test when the Guid.ToString(string,IFormatProvider) setup from class.
-// TODO [#56] Test that Guid.ToString() is invoked when only culture is setup.
-
 // TODO [#56] Test ToString for other specific methods.
 
 /// <summary>
@@ -265,4 +258,10 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
                         });
                 });
     }
+
+    // TODO [#56] Test when the Guid.ToString(string,IFormatProvider) setup from method using user defined culture.
+    // TODO [#56] Test when the Guid.ToString(string,IFormatProvider) setup from method using invariant culture.
+    // TODO [#56] Test when the Guid.ToString(string,IFormatProvider) setup from method using current culture.
+    // TODO [#56] Test when the Guid.ToString(string,IFormatProvider) setup from class.
+    // TODO [#56] Test that Guid.ToString() is invoked when only culture is setup.
 }
