@@ -38,7 +38,7 @@ internal sealed class InvokeToStringMapStrategyBuilder
         else if (this.strategy.CultureInfoSetting is not CultureInfoSetting.Undefined &&
                  this.strategy.CultureInfoSetting is not CultureInfoSetting.None)
         {
-            parameters = $"\"{GetCulture(this.strategy.CultureInfoSetting, this.strategy.CultureName)}";
+            parameters = $"{GetCulture(this.strategy.CultureInfoSetting, this.strategy.CultureName)}";
         }
         else if (!string.IsNullOrWhiteSpace(this.strategy.Format))
         {
