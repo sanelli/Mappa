@@ -50,7 +50,7 @@ internal sealed class MappaUserSettings
     /// <param name="guidFormat">The default format for <see cref="Guid"/>.</param>
     /// <param name="cultureInfoSetting">The type of culture info settings to be provided.</param>
     /// <param name="cultureName">The default culture info to use to generate a format provider.</param>
-    internal MappaUserSettings(
+    private MappaUserSettings(
         string? dateTimeFormat,
         string? dateTimeOffsetFormat,
         string? dateOnlyFormat,
@@ -123,12 +123,6 @@ internal sealed class MappaUserSettings
         ]);
     }
 
-    /// <summary>
-    /// Gets a non-mutable version of these settings.
-    /// </summary>
-    /// <returns>A non-mutable version of these settings.</returns>
-    internal IMappaUserSettings Freeze() => new FrozenMappaUserSettings(this);
-
     private sealed class PopActionDisposable
         : IDisposable
     {
@@ -155,37 +149,5 @@ internal sealed class MappaUserSettings
         {
             // Nothing to dispose.
         }
-    }
-
-    private sealed class FrozenMappaUserSettings
-        : IMappaUserSettings
-    {
-        internal FrozenMappaUserSettings(IMappaUserSettings other)
-        {
-            this.DateTimeFormat = other.DateTimeFormat;
-            this.DateTimeOffsetFormat = other.DateTimeOffsetFormat;
-            this.DateOnlyFormat = other.DateOnlyFormat;
-            this.TimeOnlyFormat = other.TimeOnlyFormat;
-            this.TimeSpanFormat = other.TimeSpanFormat;
-            this.GuidFormat = other.GuidFormat;
-            this.CultureInfoSetting = other.CultureInfoSetting;
-            this.CultureName = other.CultureName;
-        }
-
-        public string? DateTimeFormat { get; }
-
-        public string? DateTimeOffsetFormat { get; }
-
-        public string? DateOnlyFormat { get; }
-
-        public string? TimeOnlyFormat { get; }
-
-        public string? TimeSpanFormat { get; }
-
-        public string? GuidFormat { get; }
-
-        public CultureInfoSetting CultureInfoSetting { get; }
-
-        public string? CultureName { get; }
     }
 }

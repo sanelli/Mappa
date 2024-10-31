@@ -29,10 +29,10 @@ internal sealed class StringToGuidMapStrategyBuilder
     {
         var parameters = source;
         var parseMethod = nameof(Guid.Parse);
-        if (!string.IsNullOrWhiteSpace(this.strategy.UserSettings.GuidFormat))
+        if (!string.IsNullOrWhiteSpace(this.strategy.Format))
         {
             parseMethod = nameof(Guid.ParseExact);
-            parameters = $"{parameters}, \"{this.strategy.UserSettings.GuidFormat}\"";
+            parameters = $"{parameters}, \"{this.strategy.Format}\"";
         }
 
         var temporary = context.NextTemporary();

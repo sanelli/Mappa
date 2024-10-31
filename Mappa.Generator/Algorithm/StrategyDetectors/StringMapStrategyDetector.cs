@@ -11,7 +11,11 @@ using Microsoft.CodeAnalysis;
 
 namespace Mappa.Generator.Algorithm.StrategyDetectors;
 
-// TODO [#56] Use MappaUserSettings when creating the strategies and update strategies builder to use the settings.
+// TODO [#56] Add missing String -> DateTimeOffset.
+// TODO [#56] Use MappaUserSettings for TimeSpan.
+// TODO [#56] Use MappaUserSettings for DateTime.
+// TODO [#56] Use MappaUserSettings for DateOnly.
+// TODO [#56] Use MappaUserSettings for TimeOnly.
 
 /// <summary>
 /// Detector for string related strategies.
@@ -86,7 +90,7 @@ internal sealed class StringMapStrategyDetector
             mapStrategy = new StringToGuidMapStrategy(
                 this.context.TargetType,
                 this.context.SourceType,
-                this.context.MappaUserSettings.Freeze());
+                this.context.MappaUserSettings.GuidFormat);
         }
 
         // 07. string -> Uri : ParseUriStrategy
@@ -114,7 +118,7 @@ internal sealed class StringMapStrategyDetector
 
     private (string? Format, CultureInfoSetting CultureInfoSetting, string? CultureName) IdentifyFormatAndCulture()
     {
-        var settings = this.context.MappaUserSettings.Freeze();
+        var settings = this.context.MappaUserSettings;
 
         string? format = null;
         bool acceptFormatProviderOnly = true; // Some types do not have a ToString(string, IFormatProvider).
