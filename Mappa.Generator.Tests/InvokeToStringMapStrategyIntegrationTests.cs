@@ -39,18 +39,18 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
 
         const string identifierName = "__mappa_tmp_1";
 
-        // Arrange
+        // Arrangets
         var sourceCode = $$"""
-                                  using Mappa.Attributes;
+                          using Mappa.Attributes;
 
-                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                          namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
-                                  [Mappa]
-                                  public sealed partial class Mapper
-                                  {
-                                      public partial string Map({{sourceType}} input);
-                                  }
-                                  """;
+                          [Mappa]
+                          public sealed partial class Mapper
+                          {
+                              public partial string Map({{sourceType}} input);
+                          }
+                          """;
 
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
@@ -406,7 +406,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
     [InlineData(typeof(TimeOnly), "t")]
     [InlineData(typeof(TimeSpan), "c")]
     [IntegrationTest]
-    public async Task CanMapGuidToStringWithFormatAndUserDefinedCultureButCultureNameIsMissingDefinedOnMethod(Type sourceType, string format)
+    public async Task CanMapToStringWithFormatAndUserDefinedCultureButCultureNameIsMissingDefinedOnMethod(Type sourceType, string format)
     {
         ArgumentNullException.ThrowIfNull(sourceType);
         ArgumentException.ThrowIfNullOrWhiteSpace(format);
@@ -475,7 +475,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
     [InlineData(typeof(Guid))]
     [InlineData(typeof(TimeSpan))]
     [IntegrationTest]
-    public async Task CanMapGuidToStringWithoutFormatInvokesPlainToString(Type sourceType)
+    public async Task CanMapdToStringWithoutFormatInvokesPlainToString(Type sourceType)
     {
         ArgumentNullException.ThrowIfNull(sourceType);
 
@@ -544,7 +544,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
     [InlineData(typeof(DateOnly))]
     [InlineData(typeof(TimeOnly))]
     [IntegrationTest]
-    public async Task CanMapGuidToStringWithOnlyFormatProviderInvokesToStringWithFormatProviderOnly(Type sourceType)
+    public async Task CanMapToStringWithOnlyFormatProviderInvokesToStringWithFormatProviderOnly(Type sourceType)
     {
         ArgumentNullException.ThrowIfNull(sourceType);
 
@@ -602,32 +602,41 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
                 });
     }
 
-    // TODO [#56] Make subsequent tests Theory so they can re-use the same tests for all the different supported types.
-
     /// <summary>
-    /// Test a mapping can be created from <see cref="Guid"/> to <see cref="string"/>
-    /// by using the <see cref="Guid.ToString(string)"/> and format defined on class.
+    /// Test a mapping can be created to <see cref="string"/>
+    /// by using the <c>T.ToString(string)</c> and format defined on class.
     /// </summary>
+    /// <param name="sourceType">The type of the source.</param>
+    /// <param name="format">The format.</param>
     /// <returns>The async task.</returns>
-    [Fact]
+    [Theory]
+    [InlineData(typeof(Guid), "N")]
+    [InlineData(typeof(DateTime), "d")]
+    [InlineData(typeof(DateTimeOffset), "d")]
+    [InlineData(typeof(DateOnly), "d")]
+    [InlineData(typeof(TimeOnly), "t")]
+    [InlineData(typeof(TimeSpan), "c")]
     [IntegrationTest]
-    public async Task CanMapGuidToStringWithFormatDefinedOnClass()
+    public async Task CanMapToStringWithFormatDefinedOnClass(Type sourceType, string format)
     {
+        ArgumentNullException.ThrowIfNull(sourceType);
+        ArgumentNullException.ThrowIfNull(format);
+
         const string identifierName = "__mappa_tmp_1";
 
         // Arrange
-        const string sourceCode = """
-                                  using Mappa.Attributes;
+        var sourceCode = $$"""
+                          using Mappa.Attributes;
 
-                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                          namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
-                                  [Mappa]
-                                  [MappaSettings(GuidFormat = "N"]
-                                  public sealed partial class Mapper
-                                  {
-                                      public partial string Map(System.Guid input);
-                                  }
-                                  """;
+                          [Mappa]
+                          [MappaSettings({{sourceType.ToString().Split(".")[^1]}}Format = "{{format}}"]
+                          public sealed partial class Mapper
+                          {
+                              public partial string Map({{sourceType}} input);
+                          }
+                          """;
 
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
@@ -641,7 +650,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
             .HaveDefaultMapMethod(
                 typeof(string).ToString(),
                 NullableAnnotation.None,
-                typeof(Guid).ToString(),
+                sourceType.ToString(),
                 NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
@@ -656,7 +665,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
                                 {
                                     expressionSyntaxAssertions.BeInvocationExpressionSyntax(
                                         "input.ToString",
-                                        firstParameterAssertions => firstParameterAssertions.BeLiteralExpressionSyntax("N"));
+                                        firstParameterAssertions => firstParameterAssertions.BeLiteralExpressionSyntax(format));
                                 });
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
@@ -667,31 +676,42 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
     }
 
     /// <summary>
-    /// Test a mapping can be created from <see cref="Guid"/> to <see cref="string"/>
-    /// by using the <see cref="Guid.ToString(string,IFormatProvider)"/> and format defined on method
+    /// Test a mapping can be created to <see cref="string"/>
+    /// by using the <c>T.ToString(string,IFormatProvider)</c> and format defined on method
     /// override the format and culture name defined on class.
     /// </summary>
+    /// <param name="sourceType">The type of the source.</param>
+    /// <param name="format">The format.</param>
     /// <returns>The async task.</returns>
-    [Fact]
+    [Theory]
+    [InlineData(typeof(Guid), "N")]
+    [InlineData(typeof(DateTime), "d")]
+    [InlineData(typeof(DateTimeOffset), "d")]
+    [InlineData(typeof(DateOnly), "d")]
+    [InlineData(typeof(TimeOnly), "t")]
+    [InlineData(typeof(TimeSpan), "c")]
     [IntegrationTest]
-    public async Task CanMapGuidToStringWithFormatAndCultureNameDefinedOnMethodOverrideTheSetupOnClass()
+    public async Task CanMapToStringWithFormatAndCultureNameDefinedOnMethodOverrideTheSetupOnClass(Type sourceType, string format)
     {
+        ArgumentNullException.ThrowIfNull(sourceType);
+        ArgumentNullException.ThrowIfNull(format);
+
         const string identifierName = "__mappa_tmp_1";
 
         // Arrange
-        const string sourceCode = """
-                                  using Mappa.Attributes;
+        var sourceCode = $$"""
+                           using Mappa.Attributes;
 
-                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                           namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
-                                  [Mappa]
-                                  [MappaSettings(GuidFormat = "D", CultureInfoSetting = CultureInfoSetting.UserDefined, CultureName = "en-US")]
-                                  public sealed partial class Mapper
-                                  {
-                                      [MappaSettings(GuidFormat = "N", CultureInfoSetting = CultureInfoSetting.UserDefined, CultureName = "it-IT")]
-                                      public partial string Map(System.Guid input);
-                                  }
-                                  """;
+                           [Mappa]
+                           [MappaSettings({{sourceType.ToString().Split(".")[^1]}}Format = "X", CultureInfoSetting = CultureInfoSetting.UserDefined, CultureName = "en-US")]
+                           public sealed partial class Mapper
+                           {
+                               [MappaSettings({{sourceType.ToString().Split(".")[^1]}}Format = "{{format}}", CultureInfoSetting = CultureInfoSetting.UserDefined, CultureName = "it-IT")]
+                               public partial string Map({{sourceType}} input);
+                           }
+                           """;
 
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
@@ -705,7 +725,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
             .HaveDefaultMapMethod(
                 typeof(string).ToString(),
                 NullableAnnotation.None,
-                typeof(Guid).ToString(),
+                sourceType.ToString(),
                 NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
@@ -720,7 +740,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
                                 {
                                     expressionSyntaxAssertions.BeInvocationExpressionSyntax(
                                         "input.ToString",
-                                        firstParameterAssertions => firstParameterAssertions.BeLiteralExpressionSyntax("N"),
+                                        firstParameterAssertions => firstParameterAssertions.BeLiteralExpressionSyntax(format),
                                         secondParameterAssertions => secondParameterAssertions.BeInvocationExpressionSyntax(
                                             "System.Globalization.CultureInfo.GetCultureInfo",
                                             getCultureParametersAssertions => getCultureParametersAssertions.BeLiteralExpressionSyntax("it-IT")));
@@ -734,31 +754,42 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
     }
 
     /// <summary>
-    /// Test a mapping can be created from <see cref="Guid"/> to <see cref="string"/>
-    /// by using the <see cref="Guid.ToString(string,IFormatProvider)"/> and culture into setting defined on method
+    /// Test a mapping can be created to <see cref="string"/>
+    /// by using the <c>T.ToString(string,IFormatProvider)</c> and culture into setting defined on method
     /// override the culture info setting name defined on class.
     /// </summary>
+    /// <param name="sourceType">The type of the source.</param>
+    /// <param name="format">The format.</param>
     /// <returns>The async task.</returns>
-    [Fact]
+    [Theory]
+    [InlineData(typeof(Guid), "N")]
+    [InlineData(typeof(DateTime), "d")]
+    [InlineData(typeof(DateTimeOffset), "d")]
+    [InlineData(typeof(DateOnly), "d")]
+    [InlineData(typeof(TimeOnly), "t")]
+    [InlineData(typeof(TimeSpan), "c")]
     [IntegrationTest]
-    public async Task CanMapGuidToStringWithCultureInfoSettingDefinedOnMethodOverrideTheSetupOnClass()
+    public async Task CanGuidToStringWithCultureInfoSettingDefinedOnMethodOverrideTheSetupOnClass(Type sourceType, string format)
     {
+        ArgumentNullException.ThrowIfNull(sourceType);
+        ArgumentNullException.ThrowIfNull(format);
+
         const string identifierName = "__mappa_tmp_1";
 
         // Arrange
-        const string sourceCode = """
-                                  using Mappa.Attributes;
+        var sourceCode = $$"""
+                           using Mappa.Attributes;
 
-                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                           namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
-                                  [Mappa]
-                                  [MappaSettings(GuidFormat = "D", CultureInfoSetting = CultureInfoSetting.CurrentCulture)]
-                                  public sealed partial class Mapper
-                                  {
-                                      [MappaSettings(GuidFormat = "N", CultureInfoSetting = CultureInfoSetting.UserDefined, CultureName = "it-IT")]
-                                      public partial string Map(System.Guid input);
-                                  }
-                                  """;
+                           [Mappa]
+                           [MappaSettings({{sourceType.ToString().Split(".")[^1]}}Format = "X", CultureInfoSetting = CultureInfoSetting.CurrentCulture)]
+                           public sealed partial class Mapper
+                           {
+                               [MappaSettings({{sourceType.ToString().Split(".")[^1]}}Format = "{{format}}", CultureInfoSetting = CultureInfoSetting.UserDefined, CultureName = "it-IT")]
+                               public partial string Map({{sourceType}} input);
+                           }
+                           """;
 
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
@@ -772,7 +803,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
             .HaveDefaultMapMethod(
                 typeof(string).ToString(),
                 NullableAnnotation.None,
-                typeof(Guid).ToString(),
+                sourceType.ToString(),
                 NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
@@ -787,7 +818,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
                                 {
                                     expressionSyntaxAssertions.BeInvocationExpressionSyntax(
                                         "input.ToString",
-                                        firstParameterAssertions => firstParameterAssertions.BeLiteralExpressionSyntax("N"),
+                                        firstParameterAssertions => firstParameterAssertions.BeLiteralExpressionSyntax(format),
                                         secondParameterAssertions => secondParameterAssertions.BeInvocationExpressionSyntax(
                                             "System.Globalization.CultureInfo.GetCultureInfo",
                                             getCultureParametersAssertions => getCultureParametersAssertions.BeLiteralExpressionSyntax("it-IT")));
