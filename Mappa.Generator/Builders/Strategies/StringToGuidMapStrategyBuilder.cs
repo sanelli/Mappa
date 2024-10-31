@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Exceptions;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -34,9 +35,34 @@ internal sealed class StringToGuidMapStrategyBuilder
             parseMethod = nameof(Guid.ParseExact);
             parameters = $"{parameters}, \"{this.strategy.Format}\"";
         }
+        else if (this.strategy.CultureInfoSetting is not CultureInfoSetting.Undefined &&
+                   this.strategy.CultureInfoSetting is not CultureInfoSetting.None)
+        {
+            switch (this.strategy.CultureInfoSetting)
+            {
+                case CultureInfoSetting.Undefined:
+                case CultureInfoSetting.None:
+                    break;
+                case CultureInfoSetting.CurrentCulture:
+                    parameters = $"{parameters}, System.Globalization.CultureInfo.CurrentCulture";
+                    break;
+                case CultureInfoSetting.InvariantCulture:
+                    parameters = $"{parameters}, System.Globalization.CultureInfo.InvariantCulture";
+                    break;
+                case CultureInfoSetting.UserDefined:
+                    if (!string.IsNullOrWhiteSpace(this.strategy.CultureName))
+                    {
+                        parameters = $"{parameters}, System.Globalization.CultureInfo.GetCultureInfo(\"{this.strategy.CultureName}\")";
+                    }
+
+                    break;
+                default:
+                    throw new MappaGeneratorException($"Unexpected culture info setting '{this.strategy.CultureInfoSetting}'.");
+            }
+        }
 
         var temporary = context.NextTemporary();
-        var code = $"System.Guid {temporary} = System.Guid.{parseMethod}({parameters});";
+        var code = $"{this.strategy.TargetType.ToDisplayString()} {temporary} = {this.strategy.TargetType.ToDisplayString()}.{parseMethod}({parameters});";
 
         var ruleComment = mappaGlobalOptions.MappaDebugComments
             ? $"/* Mappa Rule: {this.strategy.Rule} */ "

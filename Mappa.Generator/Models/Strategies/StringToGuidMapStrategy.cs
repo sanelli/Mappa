@@ -21,11 +21,20 @@ internal sealed class StringToGuidMapStrategy
     /// <param name="targetType">The target type.</param>
     /// <param name="sourceType">The source type.</param>
     /// <param name="format">The format to apply.</param>
-    public StringToGuidMapStrategy(ITypeSymbol targetType, ITypeSymbol sourceType, string? format)
+    /// <param name="cultureInfoSetting">The culture info settings.</param>
+    /// <param name="cultureName">The culture name when the culture info settings are user defined.</param>
+    public StringToGuidMapStrategy(
+        ITypeSymbol targetType,
+        ITypeSymbol sourceType,
+        string? format,
+        CultureInfoSetting cultureInfoSetting,
+        string? cultureName)
     {
         this.TargetType = targetType;
         this.SourceType = sourceType;
         this.Format = format;
+        this.CultureInfoSetting = cultureInfoSetting;
+        this.CultureName = cultureName;
     }
 
     /// <inheritdoc/>
@@ -38,6 +47,16 @@ internal sealed class StringToGuidMapStrategy
     /// Gets the format specified by the user.
     /// </summary>
     public string? Format { get; }
+
+    /// <summary>
+    /// Gets the culture info settings.
+    /// </summary>
+    public CultureInfoSetting CultureInfoSetting { get; }
+
+    /// <summary>
+    /// Gets the culture name.
+    /// </summary>
+    public string? CultureName { get; }
 
     /// <inheritdoc/>
     public MappaAlgorithmRule Rule => MappaAlgorithmRule.StringToGuid;

@@ -90,7 +90,9 @@ internal sealed class StringMapStrategyDetector
             mapStrategy = new StringToGuidMapStrategy(
                 this.context.TargetType,
                 this.context.SourceType,
-                this.context.MappaUserSettings.GuidFormat);
+                this.context.MappaUserSettings.GuidFormat,
+                this.context.MappaUserSettings.CultureInfoSetting,
+                this.context.MappaUserSettings.CultureName);
         }
 
         // 07. string -> Uri : ParseUriStrategy
