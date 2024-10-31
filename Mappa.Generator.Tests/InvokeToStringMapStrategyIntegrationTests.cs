@@ -39,7 +39,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
 
         const string identifierName = "__mappa_tmp_1";
 
-        // Arrangets
+        // Arrange
         var sourceCode = $$"""
                           using Mappa.Attributes;
 
