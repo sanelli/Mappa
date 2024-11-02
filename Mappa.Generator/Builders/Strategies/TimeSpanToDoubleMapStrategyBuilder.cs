@@ -8,7 +8,7 @@ using Mappa.Generator.Models.Strategies;
 namespace Mappa.Generator.Builders.Strategies;
 
 /// <summary>
-/// Builder for <see cref="StringToTimeSpanMapStrategy"/> strategy.
+/// Builder for <see cref="TimeSpanToDoubleMapStrategy"/> strategy.
 /// </summary>
 internal sealed class TimeSpanToDoubleMapStrategyBuilder
    : IMappaStrategyBuilder

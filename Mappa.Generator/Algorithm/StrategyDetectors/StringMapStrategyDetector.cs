@@ -11,12 +11,6 @@ using Microsoft.CodeAnalysis;
 
 namespace Mappa.Generator.Algorithm.StrategyDetectors;
 
-// TODO [#56] Add missing String -> DateTimeOffset.
-// TODO [#56] Use MappaUserSettings for TimeSpan.
-// TODO [#56] Use MappaUserSettings for DateTime.
-// TODO [#56] Use MappaUserSettings for DateOnly.
-// TODO [#56] Use MappaUserSettings for TimeOnly.
-
 /// <summary>
 /// Detector for string related strategies.
 /// </summary>
@@ -52,39 +46,67 @@ internal sealed class StringMapStrategyDetector
                 this.context.SourceType);
         }
 
-        // 02. string -> DateTime : ParseDateTimeStrategy
+        // 02. string -> DateTime : InvokeParseStringWithFormatMapStrategy
         else if (this.CanMapStringToDateTime())
         {
-            mapStrategy = new StringToDateTimeMapStrategy(
+            mapStrategy = new InvokeParseStringWithFormatMapStrategy(
                 this.context.TargetType,
-                this.context.SourceType);
+                this.context.SourceType,
+                MappaAlgorithmRule.StringToDateTime,
+                this.context.MappaUserSettings.DateTimeFormat,
+                this.context.MappaUserSettings.CultureInfoSetting,
+                this.context.MappaUserSettings.CultureName);
         }
 
-        // 03. string -> TimeSpan : ParseTimeStampStrategy
+        // 03. string -> DateTimeOffset : InvokeParseStringWithFormatMapStrategy
+        else if (this.CanMapStringToDateTimeOffset())
+        {
+            mapStrategy = new InvokeParseStringWithFormatMapStrategy(
+                this.context.TargetType,
+                this.context.SourceType,
+                MappaAlgorithmRule.StringToDateTimeOffset,
+                this.context.MappaUserSettings.DateTimeOffsetFormat,
+                this.context.MappaUserSettings.CultureInfoSetting,
+                this.context.MappaUserSettings.CultureName);
+        }
+
+        // 04. string -> TimeSpan : InvokeParseStringWithFormatMapStrategy
         else if (this.CanMapStringToTimeSpan())
         {
-            mapStrategy = new StringToTimeSpanMapStrategy(
+            mapStrategy = new InvokeParseStringWithFormatMapStrategy(
                 this.context.TargetType,
-                this.context.SourceType);
+                this.context.SourceType,
+                MappaAlgorithmRule.StringToTimeSpan,
+                this.context.MappaUserSettings.TimeSpanFormat,
+                this.context.MappaUserSettings.CultureInfoSetting,
+                this.context.MappaUserSettings.CultureName);
         }
 
-        // 04. string -> TimeOnly : ParseTimeOnlyStrategy
+        // 05. string -> TimeOnly : InvokeParseStringWithFormatMapStrategy
         else if (this.CanMapStringToTimeOnly())
         {
-            mapStrategy = new StringToTimeOnlyMapStrategy(
+            mapStrategy = new InvokeParseStringWithFormatMapStrategy(
                 this.context.TargetType,
-                this.context.SourceType);
+                this.context.SourceType,
+                MappaAlgorithmRule.StringToTimeOnly,
+                this.context.MappaUserSettings.TimeOnlyFormat,
+                this.context.MappaUserSettings.CultureInfoSetting,
+                this.context.MappaUserSettings.CultureName);
         }
 
-        // 05. string -> DateOnly : ParseDateOnlyStrategy
+        // 06. string -> DateOnly : InvokeParseStringWithFormatMapStrategy
         else if (this.CanMapStringToDateOnly())
         {
-            mapStrategy = new StringToDateOnlyMapStrategy(
+            mapStrategy = new InvokeParseStringWithFormatMapStrategy(
                 this.context.TargetType,
-                this.context.SourceType);
+                this.context.SourceType,
+                MappaAlgorithmRule.StringToDateOnly,
+                this.context.MappaUserSettings.DateOnlyFormat,
+                this.context.MappaUserSettings.CultureInfoSetting,
+                this.context.MappaUserSettings.CultureName);
         }
 
-        // 06. string -> Guid : ParseGuidStrategy
+        // 07. string -> Guid : ParseGuidStrategy
         else if (this.CanMapStringToGuid())
         {
             mapStrategy = new StringToGuidMapStrategy(
@@ -95,7 +117,7 @@ internal sealed class StringMapStrategyDetector
                 this.context.MappaUserSettings.CultureName);
         }
 
-        // 07. string -> Uri : ParseUriStrategy
+        // 08. string -> Uri : ParseUriStrategy
         else if (this.CanMapStringToUri())
         {
             mapStrategy = new StringToUriMapStrategy(
@@ -103,7 +125,7 @@ internal sealed class StringMapStrategyDetector
                 this.context.SourceType);
         }
 
-        // 08. S -> string : InvokeToStringStrategy
+        // 09. S -> string : InvokeToStringStrategy
         else if (this.CanMapToString())
         {
             var formatAndCulture = this.IdentifyFormatAndCulture();
@@ -118,6 +140,7 @@ internal sealed class StringMapStrategyDetector
         return mapStrategy is not NoMapStrategy;
     }
 
+    // TODO [#56] This method does not work as it might use cultureInfo on toString for types other then the specified ones.
     private (string? Format, CultureInfoSetting CultureInfoSetting, string? CultureName) IdentifyFormatAndCulture()
     {
         var settings = this.context.MappaUserSettings;
@@ -183,6 +206,13 @@ internal sealed class StringMapStrategyDetector
         var isTargetDateTime = this.context.TargetType.IsDateTime();
         var isSourceString = this.context.SourceType.IsString();
         return isTargetDateTime && isSourceString;
+    }
+
+    private bool CanMapStringToDateTimeOffset()
+    {
+        var isTargetDateTimeOffset = this.context.TargetType.IsDateTimeOffset(this.compilation);
+        var isSourceString = this.context.SourceType.IsString();
+        return isTargetDateTimeOffset && isSourceString;
     }
 
     private bool CanMapToString()

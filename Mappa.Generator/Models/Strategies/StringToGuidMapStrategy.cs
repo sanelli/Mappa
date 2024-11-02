@@ -10,7 +10,7 @@ namespace Mappa.Generator.Models.Strategies;
 
 /// <summary>
 /// Strategy to map a <see cref="string"/> to
-/// a numeric value.
+/// a <see cref="Guid"/> value.
 /// </summary>
 internal sealed class StringToGuidMapStrategy
     : IMapStrategy

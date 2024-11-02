@@ -8,7 +8,7 @@ using Mappa.Generator.Models.Strategies;
 namespace Mappa.Generator.Builders.Strategies;
 
 /// <summary>
-/// Builder for <see cref="StringToDateTimeMapStrategy"/> strategy.
+/// Builder for <see cref="DateOnlyToDateTimeMapStrategy"/> strategy.
 /// </summary>
 internal sealed class DateOnlyToDateTimeMapStrategyBuilder
    : IMappaStrategyBuilder

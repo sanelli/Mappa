@@ -72,6 +72,11 @@ public enum MappaAlgorithmRule
     StringToDateTime,
 
     /// <summary>
+    /// Map a <see cref="string"/> to a <see cref="DateTimeOffset"/>.
+    /// </summary>
+    StringToDateTimeOffset,
+
+    /// <summary>
     /// Map to <see cref="string"/> by invoking <see cref="object.ToString()"/>.
     /// </summary>
     InvokeToString,

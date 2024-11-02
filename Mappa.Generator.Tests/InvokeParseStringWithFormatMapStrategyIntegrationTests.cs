@@ -1,0 +1,875 @@
+// <copyright file="InvokeParseStringWithFormatMapStrategyIntegrationTests.cs" company="Stefano Anelli">
+// Copyright (c) Stefano Anelli. All rights reserved.
+// </copyright>
+
+using Mappa.Generator.Models.Strategies;
+using Mappa.Generator.Tests.Abstractions;
+using Mappa.Generator.Tests.Assertions;
+using Mappa.Generator.Tests.Assertions.Extensions;
+
+namespace Mappa.Generator.Tests;
+
+/// <summary>
+/// Integration tests for the <see cref="InvokeParseStringWithFormatMapStrategy"/>.
+/// </summary>
+public sealed class InvokeParseStringWithFormatMapStrategyIntegrationTests
+    : MappaGeneratorAbstractUnitTests
+{
+    /// <summary>
+    /// Test a mapping can be created when mapping a <see cref="string"/>
+    /// to a <paramref name="targetType"/>.
+    /// </summary>
+    /// <param name="targetType">The target of the mapping.</param>
+    /// <returns>The async task.</returns>
+    [Theory]
+    [InlineData(typeof(DateTime))]
+    [InlineData(typeof(DateTimeOffset))]
+    [InlineData(typeof(DateOnly))]
+    [InlineData(typeof(TimeOnly))]
+    [InlineData(typeof(TimeSpan))]
+    [IntegrationTest]
+    public async Task CanMapStringToTargetTypeWithoutSettings(Type targetType)
+    {
+        ArgumentNullException.ThrowIfNull(targetType);
+
+        const string identifierName = "__mappa_tmp_1";
+
+        // Arrange
+        var sourceCode = $$"""
+                          using System;
+                          using Mappa.Attributes;
+
+                          namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                          [Mappa]
+                          public sealed partial class Mapper
+                          {
+                              public partial {{targetType}} Map(string input);
+                          }
+                          """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                targetType.ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(string).ToString(),
+                NullableAnnotation.None,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(2)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                targetType.ToString(),
+                                identifierName,
+                                expressionSyntaxAssertions => expressionSyntaxAssertions.BeInvocationExpressionSyntax(
+                                    $"{targetType.FullName}.Parse",
+                                    syntaxAssertions => syntaxAssertions.BeIdentifierNameSyntax("input")));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax(identifierName));
+                        });
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping can be created when mapping a <see cref="string"/>
+    /// to a <paramref name="targetType"/> with only culture settings.
+    /// </summary>
+    /// <param name="targetType">The target of the mapping.</param>
+    /// <returns>The async task.</returns>
+    [Theory]
+    [InlineData(typeof(DateTime))]
+    [InlineData(typeof(DateTimeOffset))]
+    [InlineData(typeof(DateOnly))]
+    [InlineData(typeof(TimeOnly))]
+    [InlineData(typeof(TimeSpan))]
+    [IntegrationTest]
+    public async Task CanMapStringToTargetTypeWithCultureSettings(Type targetType)
+    {
+        ArgumentNullException.ThrowIfNull(targetType);
+
+        const string identifierName = "__mappa_tmp_1";
+
+        // Arrange
+        var sourceCode = $$"""
+                          using System;
+                          using Mappa.Attributes;
+
+                          namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                          [Mappa]
+                          public sealed partial class Mapper
+                          {
+                              [MappaSettings(CultureInfoSetting = CultureInfoSetting.CurrentCulture)]
+                              public partial {{targetType}} Map(string input);
+                          }
+                          """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                targetType.ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(string).ToString(),
+                NullableAnnotation.None,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(2)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                targetType.ToString(),
+                                identifierName,
+                                expressionSyntaxAssertions => expressionSyntaxAssertions.BeInvocationExpressionSyntax(
+                                    $"{targetType.FullName}.Parse",
+                                    firstArgument => firstArgument.BeIdentifierNameSyntax("input"),
+                                    secondArgument => secondArgument.BeMemberAccessExpressionSyntax("System.Globalization.CultureInfo.CurrentCulture")));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax(identifierName));
+                        });
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping can be created when mapping a <see cref="string"/>
+    /// to a <paramref name="targetType"/> with only format.
+    /// </summary>
+    /// <param name="targetType">The target of the mapping.</param>
+    /// <param name="format">The format.</param>
+    /// <returns>The async task.</returns>
+    [Theory]
+    [InlineData(typeof(DateTime), "d")]
+    [InlineData(typeof(DateTimeOffset), "d")]
+    [InlineData(typeof(DateOnly), "d")]
+    [InlineData(typeof(TimeOnly), "t")]
+    [InlineData(typeof(TimeSpan), "c")]
+    [IntegrationTest]
+    public async Task CanMapStringToTargetUsingStandardParseWhenOnlyFormatIsProvided(Type targetType, string format)
+    {
+        ArgumentNullException.ThrowIfNull(targetType);
+
+        const string identifierName = "__mappa_tmp_1";
+
+        // Arrange
+        var sourceCode = $$"""
+                          using System;
+                          using Mappa.Attributes;
+
+                          namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                          [Mappa]
+                          public sealed partial class Mapper
+                          {
+                              [MappaSettings({{targetType.ToString().Split(".")[^1]}}Format = "{{format}}")]
+                              public partial {{targetType}} Map(string input);
+                          }
+                          """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                targetType.ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(string).ToString(),
+                NullableAnnotation.None,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(2)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                targetType.ToString(),
+                                identifierName,
+                                expressionSyntaxAssertions => expressionSyntaxAssertions.BeInvocationExpressionSyntax(
+                                    $"{targetType.FullName}.Parse",
+                                    syntaxAssertions => syntaxAssertions.BeIdentifierNameSyntax("input")));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax(identifierName));
+                        });
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping can be created when mapping a <see cref="string"/>
+    /// to a <paramref name="targetType"/> with only format provided
+    /// on class attribute.
+    /// </summary>
+    /// <param name="targetType">The target of the mapping.</param>
+    /// <param name="format">The format.</param>
+    /// <returns>The async task.</returns>
+    [Theory]
+    [InlineData(typeof(DateTime), "d")]
+    [InlineData(typeof(DateTimeOffset), "d")]
+    [InlineData(typeof(DateOnly), "d")]
+    [InlineData(typeof(TimeOnly), "t")]
+    [InlineData(typeof(TimeSpan), "c")]
+    [IntegrationTest]
+    public async Task CanMapStringToTargetUsingStandardParseWhenOnlyFormatIsProvidedOnClass(Type targetType, string format)
+    {
+        ArgumentNullException.ThrowIfNull(targetType);
+
+        const string identifierName = "__mappa_tmp_1";
+
+        // Arrange
+        var sourceCode = $$"""
+                          using System;
+                          using Mappa.Attributes;
+
+                          namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                          [Mappa]
+                          [MappaSettings({{targetType.ToString().Split(".")[^1]}}Format = "{{format}}")]
+                          public sealed partial class Mapper
+                          {
+                              public partial {{targetType}} Map(string input);
+                          }
+                          """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                targetType.ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(string).ToString(),
+                NullableAnnotation.None,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(2)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                targetType.ToString(),
+                                identifierName,
+                                expressionSyntaxAssertions => expressionSyntaxAssertions.BeInvocationExpressionSyntax(
+                                    $"{targetType.FullName}.Parse",
+                                    syntaxAssertions => syntaxAssertions.BeIdentifierNameSyntax("input")));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax(identifierName));
+                        });
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping can be created when mapping a <see cref="string"/>
+    /// to a <paramref name="targetType"/> with format on method that replace
+    /// format on class.
+    /// </summary>
+    /// <param name="targetType">The target of the mapping.</param>
+    /// <param name="format">The format.</param>
+    /// <returns>The async task.</returns>
+    [Theory]
+    [InlineData(typeof(DateTime), "d")]
+    [InlineData(typeof(DateTimeOffset), "d")]
+    [InlineData(typeof(DateOnly), "d")]
+    [InlineData(typeof(TimeOnly), "t")]
+    [InlineData(typeof(TimeSpan), "c")]
+    [IntegrationTest]
+    public async Task CanMapStringToTargetAndFormatOnMethodReplaceFormatOnClass(Type targetType, string format)
+    {
+        ArgumentNullException.ThrowIfNull(targetType);
+
+        const string identifierName = "__mappa_tmp_1";
+
+        // Arrange
+        var sourceCode = $$"""
+                          using System;
+                          using Mappa.Attributes;
+
+                          namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                          [Mappa]
+                          [MappaSettings({{targetType.ToString().Split(".")[^1]}}Format = "bad")]
+                          public sealed partial class Mapper
+                          {
+                              [MappaSettings({{targetType.ToString().Split(".")[^1]}}Format = "{{format}}", CultureInfoSetting = CultureInfoSetting.CurrentCulture)]
+                              public partial {{targetType}} Map(string input);
+                          }
+                          """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                targetType.ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(string).ToString(),
+                NullableAnnotation.None,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(2)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                targetType.ToString(),
+                                identifierName,
+                                expressionSyntaxAssertions => expressionSyntaxAssertions.BeInvocationExpressionSyntax(
+                                    $"{targetType.FullName}.ParseExact",
+                                    firstParameter => firstParameter.BeIdentifierNameSyntax("input"),
+                                    secondParameter => secondParameter.BeLiteralExpressionSyntax(format),
+                                    thirdParameter => thirdParameter.BeMemberAccessExpressionSyntax("System.Globalization.CultureInfo.CurrentCulture")));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax(identifierName));
+                        });
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping can be created when mapping a <see cref="string"/>
+    /// to a <paramref name="targetType"/> with format on method that replace
+    /// format on class. Format on method is empty forcing to use
+    /// <c>Parse(string,IFormatProvider)</c>.
+    /// </summary>
+    /// <param name="targetType">The target of the mapping.</param>
+    /// <param name="format">The format.</param>
+    /// <returns>The async task.</returns>
+    [Theory]
+    [InlineData(typeof(DateTime), "d")]
+    [InlineData(typeof(DateTimeOffset), "d")]
+    [InlineData(typeof(DateOnly), "d")]
+    [InlineData(typeof(TimeOnly), "t")]
+    [InlineData(typeof(TimeSpan), "c")]
+    [IntegrationTest]
+    public async Task CanMapStringToTargetAndEmptyFormatOnMethodReplaceFormatOnClassAndForceUsageOfParse(Type targetType, string format)
+    {
+        ArgumentNullException.ThrowIfNull(targetType);
+
+        const string identifierName = "__mappa_tmp_1";
+
+        // Arrange
+        var sourceCode = $$"""
+                          using System;
+                          using Mappa.Attributes;
+
+                          namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                          [Mappa]
+                          [MappaSettings({{targetType.ToString().Split(".")[^1]}}Format = "{{format}}")]
+                          public sealed partial class Mapper
+                          {
+                              [MappaSettings({{targetType.ToString().Split(".")[^1]}}Format = "", CultureInfoSetting = CultureInfoSetting.CurrentCulture)]
+                              public partial {{targetType}} Map(string input);
+                          }
+                          """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                targetType.ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(string).ToString(),
+                NullableAnnotation.None,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(2)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                targetType.ToString(),
+                                identifierName,
+                                expressionSyntaxAssertions => expressionSyntaxAssertions.BeInvocationExpressionSyntax(
+                                    $"{targetType.FullName}.Parse",
+                                    firstParameter => firstParameter.BeIdentifierNameSyntax("input"),
+                                    secondParameter => secondParameter.BeMemberAccessExpressionSyntax("System.Globalization.CultureInfo.CurrentCulture")));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax(identifierName));
+                        });
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping can be created when mapping a <see cref="string"/>
+    /// to a <paramref name="targetType"/> with format and current culture.
+    /// </summary>
+    /// <param name="targetType">The target of the mapping.</param>
+    /// <param name="format">The format.</param>
+    /// <returns>The async task.</returns>
+    [Theory]
+    [InlineData(typeof(DateTime), "d")]
+    [InlineData(typeof(DateTimeOffset), "d")]
+    [InlineData(typeof(DateOnly), "d")]
+    [InlineData(typeof(TimeOnly), "t")]
+    [InlineData(typeof(TimeSpan), "c")]
+    [IntegrationTest]
+    public async Task CanMapStringToTargetUsingParseExactAndCurrentCulture(Type targetType, string format)
+    {
+        ArgumentNullException.ThrowIfNull(targetType);
+
+        const string identifierName = "__mappa_tmp_1";
+
+        // Arrange
+        var sourceCode = $$"""
+                          using System;
+                          using Mappa.Attributes;
+
+                          namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                          [Mappa]
+                          public sealed partial class Mapper
+                          {
+                              [MappaSettings({{targetType.ToString().Split(".")[^1]}}Format = "{{format}}", CultureInfoSetting = CultureInfoSetting.CurrentCulture)]
+                              public partial {{targetType}} Map(string input);
+                          }
+                          """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                targetType.ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(string).ToString(),
+                NullableAnnotation.None,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(2)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                targetType.ToString(),
+                                identifierName,
+                                expressionSyntaxAssertions => expressionSyntaxAssertions.BeInvocationExpressionSyntax(
+                                    $"{targetType.FullName}.ParseExact",
+                                    firstParameter => firstParameter.BeIdentifierNameSyntax("input"),
+                                    secondParameter => secondParameter.BeLiteralExpressionSyntax(format),
+                                    thirdParameter => thirdParameter.BeMemberAccessExpressionSyntax("System.Globalization.CultureInfo.CurrentCulture")));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax(identifierName));
+                        });
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping can be created when mapping a <see cref="string"/>
+    /// to a <paramref name="targetType"/> with format and invariant culture.
+    /// </summary>
+    /// <param name="targetType">The target of the mapping.</param>
+    /// <param name="format">The format.</param>
+    /// <returns>The async task.</returns>
+    [Theory]
+    [InlineData(typeof(DateTime), "d")]
+    [InlineData(typeof(DateTimeOffset), "d")]
+    [InlineData(typeof(DateOnly), "d")]
+    [InlineData(typeof(TimeOnly), "t")]
+    [InlineData(typeof(TimeSpan), "c")]
+    [IntegrationTest]
+    public async Task CanMapStringToTargetUsingParseExactAndInvariantCulture(Type targetType, string format)
+    {
+        ArgumentNullException.ThrowIfNull(targetType);
+
+        const string identifierName = "__mappa_tmp_1";
+
+        // Arrange
+        var sourceCode = $$"""
+                          using System;
+                          using Mappa.Attributes;
+
+                          namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                          [Mappa]
+                          public sealed partial class Mapper
+                          {
+                              [MappaSettings({{targetType.ToString().Split(".")[^1]}}Format = "{{format}}", CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
+                              public partial {{targetType}} Map(string input);
+                          }
+                          """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                targetType.ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(string).ToString(),
+                NullableAnnotation.None,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(2)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                targetType.ToString(),
+                                identifierName,
+                                expressionSyntaxAssertions => expressionSyntaxAssertions.BeInvocationExpressionSyntax(
+                                    $"{targetType.FullName}.ParseExact",
+                                    firstParameter => firstParameter.BeIdentifierNameSyntax("input"),
+                                    secondParameter => secondParameter.BeLiteralExpressionSyntax(format),
+                                    thirdParameter => thirdParameter.BeMemberAccessExpressionSyntax("System.Globalization.CultureInfo.InvariantCulture")));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax(identifierName));
+                        });
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping can be created when mapping a <see cref="string"/>
+    /// to a <paramref name="targetType"/> with format and user defined culture.
+    /// </summary>
+    /// <param name="targetType">The target of the mapping.</param>
+    /// <param name="format">The format.</param>
+    /// <returns>The async task.</returns>
+    [Theory]
+    [InlineData(typeof(DateTime), "d")]
+    [InlineData(typeof(DateTimeOffset), "d")]
+    [InlineData(typeof(DateOnly), "d")]
+    [InlineData(typeof(TimeOnly), "t")]
+    [InlineData(typeof(TimeSpan), "c")]
+    [IntegrationTest]
+    public async Task CanMapStringToTargetUsingParseExactAndUserDefinedCulture(Type targetType, string format)
+    {
+        ArgumentNullException.ThrowIfNull(targetType);
+
+        const string identifierName = "__mappa_tmp_1";
+
+        // Arrange
+        var sourceCode = $$"""
+                          using System;
+                          using Mappa.Attributes;
+
+                          namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                          [Mappa]
+                          public sealed partial class Mapper
+                          {
+                              [MappaSettings({{targetType.ToString().Split(".")[^1]}}Format = "{{format}}", CultureInfoSetting = CultureInfoSetting.UserDefined, CultureName = "it-IT")]
+                              public partial {{targetType}} Map(string input);
+                          }
+                          """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                targetType.ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(string).ToString(),
+                NullableAnnotation.None,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(2)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                targetType.ToString(),
+                                identifierName,
+                                expressionSyntaxAssertions => expressionSyntaxAssertions.BeInvocationExpressionSyntax(
+                                    $"{targetType.FullName}.ParseExact",
+                                    firstParameter => firstParameter.BeIdentifierNameSyntax("input"),
+                                    secondParameter => secondParameter.BeLiteralExpressionSyntax(format),
+                                    thirdParameter => thirdParameter.BeInvocationExpressionSyntax(
+                                        "System.Globalization.CultureInfo.GetCultureInfo",
+                                        getCultureInfoParameter => getCultureInfoParameter.BeLiteralExpressionSyntax("it-IT"))));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax(identifierName));
+                        });
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping can be created when mapping a <see cref="string"/>
+    /// to a <paramref name="targetType"/> with format and user defined culture
+    /// but without culture name, resulting in current culture being used.
+    /// </summary>
+    /// <param name="targetType">The target of the mapping.</param>
+    /// <param name="format">The format.</param>
+    /// <returns>The async task.</returns>
+    [Theory]
+    [InlineData(typeof(DateTime), "d")]
+    [InlineData(typeof(DateTimeOffset), "d")]
+    [InlineData(typeof(DateOnly), "d")]
+    [InlineData(typeof(TimeOnly), "t")]
+    [InlineData(typeof(TimeSpan), "c")]
+    [IntegrationTest]
+    public async Task CanMapStringToTargetUsingParseExactAndUserDefinedCultureWithoutCultureName(Type targetType, string format)
+    {
+        ArgumentNullException.ThrowIfNull(targetType);
+
+        const string identifierName = "__mappa_tmp_1";
+
+        // Arrange
+        var sourceCode = $$"""
+                          using System;
+                          using Mappa.Attributes;
+
+                          namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                          [Mappa]
+                          public sealed partial class Mapper
+                          {
+                              [MappaSettings({{targetType.ToString().Split(".")[^1]}}Format = "{{format}}", CultureInfoSetting = CultureInfoSetting.UserDefined)]
+                              public partial {{targetType}} Map(string input);
+                          }
+                          """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                targetType.ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(string).ToString(),
+                NullableAnnotation.None,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(2)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                targetType.ToString(),
+                                identifierName,
+                                expressionSyntaxAssertions => expressionSyntaxAssertions.BeInvocationExpressionSyntax(
+                                    $"{targetType.FullName}.ParseExact",
+                                    firstParameter => firstParameter.BeIdentifierNameSyntax("input"),
+                                    secondParameter => secondParameter.BeLiteralExpressionSyntax(format),
+                                    thirdParameter => thirdParameter.BeMemberAccessExpressionSyntax("System.Globalization.CultureInfo.CurrentCulture")));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax(identifierName));
+                        });
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping can be created when mapping a <see cref="string"/>
+    /// to a <paramref name="targetType"/> with format and user defined culture.
+    /// Culture info settings on method override culture info settings on class.
+    /// </summary>
+    /// <param name="targetType">The target of the mapping.</param>
+    /// <param name="format">The format.</param>
+    /// <returns>The async task.</returns>
+    [Theory]
+    [InlineData(typeof(DateTime), "d")]
+    [InlineData(typeof(DateTimeOffset), "d")]
+    [InlineData(typeof(DateOnly), "d")]
+    [InlineData(typeof(TimeOnly), "t")]
+    [InlineData(typeof(TimeSpan), "c")]
+    [IntegrationTest]
+    public async Task CanMapStringToTargetAndMethodClassInfoOverridesClassClassInfo(Type targetType, string format)
+    {
+        ArgumentNullException.ThrowIfNull(targetType);
+
+        const string identifierName = "__mappa_tmp_1";
+
+        // Arrange
+        var sourceCode = $$"""
+                          using System;
+                          using Mappa.Attributes;
+
+                          namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                          [Mappa]
+                          [MappaSettings({{targetType.ToString().Split(".")[^1]}}Format = "{{format}}", CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
+                          public sealed partial class Mapper
+                          {
+                              [MappaSettings(CultureInfoSetting = CultureInfoSetting.UserDefined, CultureName = "it-IT")]
+                              public partial {{targetType}} Map(string input);
+                          }
+                          """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                targetType.ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(string).ToString(),
+                NullableAnnotation.None,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(2)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                targetType.ToString(),
+                                identifierName,
+                                expressionSyntaxAssertions => expressionSyntaxAssertions.BeInvocationExpressionSyntax(
+                                    $"{targetType.FullName}.ParseExact",
+                                    firstParameter => firstParameter.BeIdentifierNameSyntax("input"),
+                                    secondParameter => secondParameter.BeLiteralExpressionSyntax(format),
+                                    thirdParameter => thirdParameter.BeInvocationExpressionSyntax(
+                                        "System.Globalization.CultureInfo.GetCultureInfo",
+                                        getCultureInfoParameter => getCultureInfoParameter.BeLiteralExpressionSyntax("it-IT"))));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax(identifierName));
+                        });
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping can be created when mapping a <see cref="string"/>
+    /// to a <paramref name="targetType"/> with format and user defined culture.
+    /// Culture name on method overrides culture name on class.
+    /// </summary>
+    /// <param name="targetType">The target of the mapping.</param>
+    /// <param name="format">The format.</param>
+    /// <returns>The async task.</returns>
+    [Theory]
+    [InlineData(typeof(DateTime), "d")]
+    [InlineData(typeof(DateTimeOffset), "d")]
+    [InlineData(typeof(DateOnly), "d")]
+    [InlineData(typeof(TimeOnly), "t")]
+    [InlineData(typeof(TimeSpan), "c")]
+    [IntegrationTest]
+    public async Task CanMapStringToTargetAndMethodCultureNameOverridesClassCultureName(Type targetType, string format)
+    {
+        ArgumentNullException.ThrowIfNull(targetType);
+
+        const string identifierName = "__mappa_tmp_1";
+
+        // Arrange
+        var sourceCode = $$"""
+                          using System;
+                          using Mappa.Attributes;
+
+                          namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                          [Mappa]
+                          [MappaSettings({{targetType.ToString().Split(".")[^1]}}Format = "{{format}}", CultureInfoSetting = CultureInfoSetting.UserDefined, CultureName = "de-DE")]
+                          public sealed partial class Mapper
+                          {
+                              [MappaSettings(CultureInfoSetting = CultureInfoSetting.UserDefined, CultureName = "it-IT")]
+                              public partial {{targetType}} Map(string input);
+                          }
+                          """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                targetType.ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(string).ToString(),
+                NullableAnnotation.None,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(2)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                targetType.ToString(),
+                                identifierName,
+                                expressionSyntaxAssertions => expressionSyntaxAssertions.BeInvocationExpressionSyntax(
+                                    $"{targetType.FullName}.ParseExact",
+                                    firstParameter => firstParameter.BeIdentifierNameSyntax("input"),
+                                    secondParameter => secondParameter.BeLiteralExpressionSyntax(format),
+                                    thirdParameter => thirdParameter.BeInvocationExpressionSyntax(
+                                        "System.Globalization.CultureInfo.GetCultureInfo",
+                                        getCultureInfoParameter => getCultureInfoParameter.BeLiteralExpressionSyntax("it-IT"))));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax(identifierName));
+                        });
+                });
+    }
+}
