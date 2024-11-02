@@ -71,6 +71,7 @@ internal sealed class InvokeParseStringWithFormatMapStrategyBuilder
                         return $"System.Globalization.CultureInfo.GetCultureInfo(\"{strategy.CultureName}\")";
                     }
 
+                    // TODO [#56] This case should generate a warning and we should returning an empty string that will be ignored by the caller.
                     return "System.Globalization.CultureInfo.CurrentCulture";
             }
 

@@ -55,6 +55,7 @@ internal sealed class StringToGuidMapStrategyBuilder
                         parameters = $"{parameters}, System.Globalization.CultureInfo.GetCultureInfo(\"{this.strategy.CultureName}\")";
                     }
 
+                    // TODO [#56] This case should generate a warning.
                     break;
                 default:
                     throw new MappaGeneratorException($"Unexpected culture info setting '{this.strategy.CultureInfoSetting}'.");
