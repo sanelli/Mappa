@@ -140,58 +140,64 @@ internal sealed class StringMapStrategyDetector
         return mapStrategy is not NoMapStrategy;
     }
 
-    // TODO [#56] This method does not work as it might use cultureInfo on toString for types other then the specified ones.
     private (string? Format, CultureInfoSetting CultureInfoSetting, string? CultureName) IdentifyFormatAndCulture()
     {
         var settings = this.context.MappaUserSettings;
 
         string? format = null;
-        bool acceptFormatProviderOnly = true; // Some types do not have a ToString(string, IFormatProvider).
+        CultureInfoSetting cultureInfoSettings = CultureInfoSetting.None;
+        string? cultureName = null;
+
         if (this.context.SourceType.IsGuid(this.compilation))
         {
-            acceptFormatProviderOnly = false;
             format = settings.GuidFormat;
+            UpdateCultureSettingsAndName(false);
         }
         else if (this.context.SourceType.IsDateTime())
         {
             format = settings.DateTimeFormat;
+            UpdateCultureSettingsAndName();
         }
         else if (this.context.SourceType.IsDateTimeOffset(this.compilation))
         {
             format = settings.DateTimeOffsetFormat;
+            UpdateCultureSettingsAndName();
         }
         else if (this.context.SourceType.IsDateOnly(this.compilation))
         {
             format = settings.DateOnlyFormat;
+            UpdateCultureSettingsAndName();
         }
         else if (this.context.SourceType.IsTimeOnly(this.compilation))
         {
             format = settings.TimeOnlyFormat;
+            UpdateCultureSettingsAndName();
         }
         else if (this.context.SourceType.IsTimeSpan(this.compilation))
         {
-            acceptFormatProviderOnly = false;
             format = settings.TimeSpanFormat;
-        }
-
-        CultureInfoSetting cultureInfoSettings = CultureInfoSetting.None;
-        string? cultureName = null;
-        if (acceptFormatProviderOnly || !string.IsNullOrWhiteSpace(format))
-        {
-            if (settings.CultureInfoSetting is CultureInfoSetting.UserDefined
-                && string.IsNullOrWhiteSpace(settings.CultureName))
-            {
-                this.context.ReportDiagnostic(MappaDiagnostics.UserDefinedCultureIsMissingCultureName(
-                    this.context.GetRootMapMethod().MethodDeclarationSyntax!));
-            }
-            else
-            {
-                cultureInfoSettings = settings.CultureInfoSetting;
-                cultureName = settings.CultureName;
-            }
+            UpdateCultureSettingsAndName(false);
         }
 
         return (format, cultureInfoSettings, cultureName);
+
+        void UpdateCultureSettingsAndName(bool acceptFormatProviderOnly = true)
+        {
+            if (acceptFormatProviderOnly || !string.IsNullOrWhiteSpace(format))
+            {
+                if (settings.CultureInfoSetting is CultureInfoSetting.UserDefined
+                    && string.IsNullOrWhiteSpace(settings.CultureName))
+                {
+                    this.context.ReportDiagnostic(MappaDiagnostics.UserDefinedCultureIsMissingCultureName(
+                        this.context.GetRootMapMethod().MethodDeclarationSyntax!));
+                }
+                else
+                {
+                    cultureInfoSettings = settings.CultureInfoSetting;
+                    cultureName = settings.CultureName;
+                }
+            }
+        }
     }
 
     private bool CanMapStringToNumber()
