@@ -55,7 +55,7 @@ internal sealed class StringMapStrategyDetector
                 this.context.SourceType,
                 MappaAlgorithmRule.StringToDateTime,
                 this.context.MappaUserSettings.DateTimeFormat,
-                this.context.MappaUserSettings.CultureInfoSetting,
+                this.GetActualCultureSettingsInfo(),
                 this.context.MappaUserSettings.CultureName);
         }
 
@@ -67,7 +67,7 @@ internal sealed class StringMapStrategyDetector
                 this.context.SourceType,
                 MappaAlgorithmRule.StringToDateTimeOffset,
                 this.context.MappaUserSettings.DateTimeOffsetFormat,
-                this.context.MappaUserSettings.CultureInfoSetting,
+                this.GetActualCultureSettingsInfo(),
                 this.context.MappaUserSettings.CultureName);
         }
 
@@ -79,7 +79,7 @@ internal sealed class StringMapStrategyDetector
                 this.context.SourceType,
                 MappaAlgorithmRule.StringToTimeSpan,
                 this.context.MappaUserSettings.TimeSpanFormat,
-                this.context.MappaUserSettings.CultureInfoSetting,
+                this.GetActualCultureSettingsInfo(),
                 this.context.MappaUserSettings.CultureName);
         }
 
@@ -91,7 +91,7 @@ internal sealed class StringMapStrategyDetector
                 this.context.SourceType,
                 MappaAlgorithmRule.StringToTimeOnly,
                 this.context.MappaUserSettings.TimeOnlyFormat,
-                this.context.MappaUserSettings.CultureInfoSetting,
+                this.GetActualCultureSettingsInfo(),
                 this.context.MappaUserSettings.CultureName);
         }
 
@@ -103,27 +103,18 @@ internal sealed class StringMapStrategyDetector
                 this.context.SourceType,
                 MappaAlgorithmRule.StringToDateOnly,
                 this.context.MappaUserSettings.DateOnlyFormat,
-                this.context.MappaUserSettings.CultureInfoSetting,
+                this.GetActualCultureSettingsInfo(),
                 this.context.MappaUserSettings.CultureName);
         }
 
         // 07. string -> Guid : ParseGuidStrategy
         else if (this.CanMapStringToGuid())
         {
-            var cultureSettingsInfo = this.context.MappaUserSettings.CultureInfoSetting;
-            if (cultureSettingsInfo is CultureInfoSetting.UserDefined
-                && string.IsNullOrWhiteSpace(this.context.MappaUserSettings.CultureName))
-            {
-                cultureSettingsInfo = CultureInfoSetting.None;
-                this.context.ReportDiagnostic(MappaDiagnostics.UserDefinedCultureIsMissingCultureName(
-                    this.context.GetRootMapMethod().MethodDeclarationSyntax ?? throw new MappaGeneratorException("Method declaration syntax is missing")));
-            }
-
             mapStrategy = new StringToGuidMapStrategy(
                 this.context.TargetType,
                 this.context.SourceType,
                 this.context.MappaUserSettings.GuidFormat,
-                cultureSettingsInfo,
+                this.GetActualCultureSettingsInfo(),
                 this.context.MappaUserSettings.CultureName);
         }
 
@@ -148,6 +139,20 @@ internal sealed class StringMapStrategyDetector
         }
 
         return mapStrategy is not NoMapStrategy;
+    }
+
+    private CultureInfoSetting GetActualCultureSettingsInfo()
+    {
+        var cultureSettingsInfo = this.context.MappaUserSettings.CultureInfoSetting;
+        if (cultureSettingsInfo is CultureInfoSetting.UserDefined
+            && string.IsNullOrWhiteSpace(this.context.MappaUserSettings.CultureName))
+        {
+            cultureSettingsInfo = CultureInfoSetting.None;
+            this.context.ReportDiagnostic(MappaDiagnostics.UserDefinedCultureIsMissingCultureName(
+                this.context.GetRootMapMethod().MethodDeclarationSyntax ?? throw new MappaGeneratorException("Method declaration syntax is missing")));
+        }
+
+        return cultureSettingsInfo;
     }
 
     private (string? Format, CultureInfoSetting CultureInfoSetting, string? CultureName) IdentifyFormatAndCulture()

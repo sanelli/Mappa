@@ -692,7 +692,7 @@ public sealed class InvokeParseStringWithFormatMapStrategyIntegrationTests
 
         // Assert
         generatedResults.Should()
-            .NotHaveDiagnostics()
+            .HaveOneWarning("MP00012")
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .NotBeNull().And
@@ -711,10 +711,8 @@ public sealed class InvokeParseStringWithFormatMapStrategyIntegrationTests
                                 targetType.ToString(),
                                 identifierName,
                                 expressionSyntaxAssertions => expressionSyntaxAssertions.BeInvocationExpressionSyntax(
-                                    $"{targetType.FullName}.ParseExact",
-                                    firstParameter => firstParameter.BeIdentifierNameSyntax("input"),
-                                    secondParameter => secondParameter.BeLiteralExpressionSyntax(format),
-                                    thirdParameter => thirdParameter.BeMemberAccessExpressionSyntax("System.Globalization.CultureInfo.CurrentCulture")));
+                                    $"{targetType.FullName}.Parse",
+                                    firstParameter => firstParameter.BeIdentifierNameSyntax("input")));
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
