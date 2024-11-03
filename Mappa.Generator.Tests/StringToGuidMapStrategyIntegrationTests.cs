@@ -544,7 +544,7 @@ public sealed class StringToGuidMapStrategyIntegrationTests
 
         // Assert
         generatedResults.Should()
-            .NotHaveDiagnostics()
+            .HaveOneWarning("MP00012")
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .NotBeNull().And

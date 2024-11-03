@@ -54,8 +54,11 @@ internal sealed class StringToGuidMapStrategyBuilder
                     {
                         parameters = $"{parameters}, System.Globalization.CultureInfo.GetCultureInfo(\"{this.strategy.CultureName}\")";
                     }
+                    else
+                    {
+                        throw new MappaGeneratorException("Reached the scenario where we are trying to build using user defined custom culture without culture name.");
+                    }
 
-                    // TODO [#56] This case should generate a warning.
                     break;
                 default:
                     throw new MappaGeneratorException($"Unexpected culture info setting '{this.strategy.CultureInfoSetting}'.");

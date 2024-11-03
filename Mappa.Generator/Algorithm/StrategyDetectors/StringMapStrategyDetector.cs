@@ -3,6 +3,7 @@
 // </copyright>
 
 using Mappa.Generator.Diagnostics;
+using Mappa.Generator.Exceptions;
 using Mappa.Generator.Extensions;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
@@ -109,11 +110,20 @@ internal sealed class StringMapStrategyDetector
         // 07. string -> Guid : ParseGuidStrategy
         else if (this.CanMapStringToGuid())
         {
+            var cultureSettingsInfo = this.context.MappaUserSettings.CultureInfoSetting;
+            if (cultureSettingsInfo is CultureInfoSetting.UserDefined
+                && string.IsNullOrWhiteSpace(this.context.MappaUserSettings.CultureName))
+            {
+                cultureSettingsInfo = CultureInfoSetting.None;
+                this.context.ReportDiagnostic(MappaDiagnostics.UserDefinedCultureIsMissingCultureName(
+                    this.context.GetRootMapMethod().MethodDeclarationSyntax ?? throw new MappaGeneratorException("Method declaration syntax is missing")));
+            }
+
             mapStrategy = new StringToGuidMapStrategy(
                 this.context.TargetType,
                 this.context.SourceType,
                 this.context.MappaUserSettings.GuidFormat,
-                this.context.MappaUserSettings.CultureInfoSetting,
+                cultureSettingsInfo,
                 this.context.MappaUserSettings.CultureName);
         }
 
