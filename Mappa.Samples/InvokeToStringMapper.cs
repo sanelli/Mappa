@@ -8,7 +8,7 @@ namespace Mappa.Samples;
 #pragma warning disable SA1402 // File may only contain a single type
 
 /// <summary>
-/// Mapper using the invoke-to-string strategy.
+/// Mapper using the invoke-to-string strategy with no other settings.
 /// No other setting is applied.
 /// </summary>
 [Mappa]
@@ -100,10 +100,15 @@ public static class InvokeToStringStrategySettings
     /// The <see cref="Guid"/> format applied.
     /// </summary>
     public const string GuidFormat = "N";
+
+    /// <summary>
+    /// The culture name to be applied.
+    /// </summary>
+    public const string CultureName = "it-IT";
 }
 
 /// <summary>
-/// Mapper using the invoke-to-string strategy.
+/// Mapper using the invoke-to-string strategy with string format.
 /// Settings are applied on the method.
 /// </summary>
 [Mappa]
@@ -159,7 +164,7 @@ public sealed partial class InvokeToStringMapperWithFormatSettingsOnMethod
 }
 
 /// <summary>
-/// Mapper using the invoke-to-string strategy.
+/// Mapper using the invoke-to-string strategy with string format and invariant culture.
 /// Settings are applied on the method.
 /// </summary>
 [Mappa]
@@ -215,7 +220,7 @@ public sealed partial class InvokeToStringMapperWithFormatAndInvariantCultureSet
 }
 
 /// <summary>
-/// Mapper using the invoke-to-string strategy.
+/// Mapper using the invoke-to-string strategy with invariant culture.
 /// Settings are applied on the method.
 /// </summary>
 [Mappa]
@@ -270,8 +275,118 @@ public sealed partial class InvokeToStringMapperWithInvariantCultureSettingsOnMe
     public partial string MapGuid(Guid input);
 }
 
-// TODO [#56] DateTime -> String current culture on method
-// TODO [#56] DateTime -> String custom culture on method
+/// <summary>
+/// Mapper using the invoke-to-string strategy with current culture.
+/// Settings are applied on the method.
+/// </summary>
+[Mappa]
+public sealed partial class InvokeToStringMapperWithCurrentCultureSettingsOnMethod
+{
+    /// <summary>
+    /// Map <see cref="DateTime"/> to <see cref="string"/>.
+    /// </summary>
+    /// <param name="input">The value to convert to string.</param>
+    /// <returns>The string mapped from the input.</returns>
+    [MappaSettings(CultureInfoSetting = CultureInfoSetting.CurrentCulture)]
+    public partial string MapDateTime(DateTime input);
+
+    /// <summary>
+    /// Map <see cref="DateTimeOffset"/> to <see cref="string"/>.
+    /// </summary>
+    /// <param name="input">The value to convert to string.</param>
+    /// <returns>The string mapped from the input.</returns>
+    [MappaSettings(CultureInfoSetting = CultureInfoSetting.CurrentCulture)]
+    public partial string MapDateTimeOffset(DateTimeOffset input);
+
+    /// <summary>
+    /// Map <see cref="DateOnly"/> to <see cref="string"/>.
+    /// </summary>
+    /// <param name="input">The value to convert to string.</param>
+    /// <returns>The string mapped from the input.</returns>
+    [MappaSettings(CultureInfoSetting = CultureInfoSetting.CurrentCulture)]
+    public partial string MapDateOnly(DateOnly input);
+
+    /// <summary>
+    /// Map <see cref="TimeOnly"/> to <see cref="string"/>.
+    /// </summary>
+    /// <param name="input">The value to convert to string.</param>
+    /// <returns>The string mapped from the input.</returns>
+    [MappaSettings(CultureInfoSetting = CultureInfoSetting.CurrentCulture)]
+    public partial string MapTimeOnly(TimeOnly input);
+
+    /// <summary>
+    /// Map <see cref="TimeSpan"/> to <see cref="string"/>.
+    /// </summary>
+    /// <param name="input">The value to convert to string.</param>
+    /// <returns>The string mapped from the input.</returns>
+    [MappaSettings(CultureInfoSetting = CultureInfoSetting.CurrentCulture)]
+    public partial string MapTimeSpan(TimeSpan input);
+
+    /// <summary>
+    /// Map <see cref="Guid"/> to <see cref="string"/>.
+    /// </summary>
+    /// <param name="input">The value to convert to string.</param>
+    /// <returns>The string mapped from the input.</returns>
+    [MappaSettings(CultureInfoSetting = CultureInfoSetting.CurrentCulture)]
+    public partial string MapGuid(Guid input);
+}
+
+/// <summary>
+/// Mapper using the invoke-to-string strategy with user defined culture.
+/// Settings are applied on the method.
+/// </summary>
+[Mappa]
+public sealed partial class InvokeToStringMapperWithCustomCultureSettingsOnMethod
+{
+    /// <summary>
+    /// Map <see cref="DateTime"/> to <see cref="string"/>.
+    /// </summary>
+    /// <param name="input">The value to convert to string.</param>
+    /// <returns>The string mapped from the input.</returns>
+    [MappaSettings(CultureInfoSetting = CultureInfoSetting.UserDefined, CultureName = InvokeToStringStrategySettings.CultureName)]
+    public partial string MapDateTime(DateTime input);
+
+    /// <summary>
+    /// Map <see cref="DateTimeOffset"/> to <see cref="string"/>.
+    /// </summary>
+    /// <param name="input">The value to convert to string.</param>
+    /// <returns>The string mapped from the input.</returns>
+    [MappaSettings(CultureInfoSetting = CultureInfoSetting.UserDefined, CultureName = InvokeToStringStrategySettings.CultureName)]
+    public partial string MapDateTimeOffset(DateTimeOffset input);
+
+    /// <summary>
+    /// Map <see cref="DateOnly"/> to <see cref="string"/>.
+    /// </summary>
+    /// <param name="input">The value to convert to string.</param>
+    /// <returns>The string mapped from the input.</returns>
+    [MappaSettings(CultureInfoSetting = CultureInfoSetting.UserDefined, CultureName = InvokeToStringStrategySettings.CultureName)]
+    public partial string MapDateOnly(DateOnly input);
+
+    /// <summary>
+    /// Map <see cref="TimeOnly"/> to <see cref="string"/>.
+    /// </summary>
+    /// <param name="input">The value to convert to string.</param>
+    /// <returns>The string mapped from the input.</returns>
+    [MappaSettings(CultureInfoSetting = CultureInfoSetting.UserDefined, CultureName = InvokeToStringStrategySettings.CultureName)]
+    public partial string MapTimeOnly(TimeOnly input);
+
+    /// <summary>
+    /// Map <see cref="TimeSpan"/> to <see cref="string"/>.
+    /// </summary>
+    /// <param name="input">The value to convert to string.</param>
+    /// <returns>The string mapped from the input.</returns>
+    [MappaSettings(CultureInfoSetting = CultureInfoSetting.UserDefined, CultureName = InvokeToStringStrategySettings.CultureName)]
+    public partial string MapTimeSpan(TimeSpan input);
+
+    /// <summary>
+    /// Map <see cref="Guid"/> to <see cref="string"/>.
+    /// </summary>
+    /// <param name="input">The value to convert to string.</param>
+    /// <returns>The string mapped from the input.</returns>
+    [MappaSettings(CultureInfoSetting = CultureInfoSetting.UserDefined, CultureName = InvokeToStringStrategySettings.CultureName)]
+    public partial string MapGuid(Guid input);
+}
+
 // TODO [#56] DateTime -> String format on class
 // TODO [#56] DateTime -> String format and invariant culture on class
 // TODO [#56] DateTime -> String invariant culture on class

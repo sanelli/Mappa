@@ -19,6 +19,8 @@ public sealed class InvokeToStringMapperUnitTest
     private readonly InvokeToStringMapperWithFormatSettingsOnMethod mapperWithFormatSettingsOnMethod = new();
     private readonly InvokeToStringMapperWithFormatAndInvariantCultureSettingsOnMethod mapperWithFormatAndInvariantCultureSettingsOnMethod = new();
     private readonly InvokeToStringMapperWithInvariantCultureSettingsOnMethod mapperWithInvariantCultureSettingsOnMethod = new();
+    private readonly InvokeToStringMapperWithCurrentCultureSettingsOnMethod mapperWithCurrentCultureSettingsOnMethod = new();
+    private readonly InvokeToStringMapperWithCustomCultureSettingsOnMethod mapperWithCustomCultureSettingsOnMethod = new();
 
     /// <summary>
     /// Unit test for <see cref="InvokeToStringMapper.MapInt"/>.
@@ -419,6 +421,176 @@ public sealed class InvokeToStringMapperUnitTest
 
         // Act
         var actual = this.mapperWithInvariantCultureSettingsOnMethod.MapGuid(input);
+
+        // Assert
+        actual.Should().Be(input.ToString());
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="InvokeToStringMapperWithCurrentCultureSettingsOnMethod.MapDateTime"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDateTimeToStringWithCurrentCultureSettingsOnMethod()
+    {
+        // Arrange
+        var input = DateTime.UtcNow;
+
+        // Act
+        var actual = this.mapperWithCurrentCultureSettingsOnMethod.MapDateTime(input);
+
+        // Assert
+        actual.Should().Be(input.ToString(CultureInfo.CurrentCulture));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="InvokeToStringMapperWithCurrentCultureSettingsOnMethod.MapDateTimeOffset"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDateTimeOffsetToStringWithCurrentCultureSettingsOnMethod()
+    {
+        // Arrange
+        var input = DateTimeOffset.UtcNow;
+
+        // Act
+        var actual = this.mapperWithCurrentCultureSettingsOnMethod.MapDateTimeOffset(input);
+
+        // Assert
+        actual.Should().Be(input.ToString(CultureInfo.CurrentCulture));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="InvokeToStringMapperWithCurrentCultureSettingsOnMethod.MapDateOnly"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDateOnlyToStringWithCurrentCultureSettingsOnMethod()
+    {
+        // Arrange
+        var input = DateOnly.FromDateTime(DateTime.UtcNow);
+
+        // Act
+        var actual = this.mapperWithCurrentCultureSettingsOnMethod.MapDateOnly(input);
+
+        // Assert
+        actual.Should().Be(input.ToString(CultureInfo.CurrentCulture));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="InvokeToStringMapperWithCurrentCultureSettingsOnMethod.MapTimeSpan"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapTimeSpanToStringWithCurrentCultureSettingsOnMethod()
+    {
+        // Arrange
+        var input = TimeSpan.FromHours(1).Add(TimeSpan.FromMinutes(2)).Add(TimeSpan.FromSeconds(3));
+
+        // Act
+        var actual = this.mapperWithCurrentCultureSettingsOnMethod.MapTimeSpan(input);
+
+        // Assert
+        actual.Should().Be(input.ToString());
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="InvokeToStringMapperWithCurrentCultureSettingsOnMethod.MapGuid"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapGuidToStringWithCurrentCultureSettingsOnMethod()
+    {
+        // Arrange
+        var input = Guid.NewGuid();
+
+        // Act
+        var actual = this.mapperWithCurrentCultureSettingsOnMethod.MapGuid(input);
+
+        // Assert
+        actual.Should().Be(input.ToString());
+    }
+
+     /// <summary>
+    /// Unit test for <see cref="InvokeToStringMapperWithCustomCultureSettingsOnMethod.MapDateTime"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDateTimeToStringWithCustomCultureSettingsOnMethod()
+    {
+        // Arrange
+        var input = DateTime.UtcNow;
+
+        // Act
+        var actual = this.mapperWithCustomCultureSettingsOnMethod.MapDateTime(input);
+
+        // Assert
+        actual.Should().Be(input.ToString(CultureInfo.GetCultureInfo(InvokeToStringStrategySettings.CultureName)));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="InvokeToStringMapperWithCustomCultureSettingsOnMethod.MapDateTimeOffset"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDateTimeOffsetToStringWithCustomCultureSettingsOnMethod()
+    {
+        // Arrange
+        var input = DateTimeOffset.UtcNow;
+
+        // Act
+        var actual = this.mapperWithCustomCultureSettingsOnMethod.MapDateTimeOffset(input);
+
+        // Assert
+        actual.Should().Be(input.ToString(CultureInfo.GetCultureInfo(InvokeToStringStrategySettings.CultureName)));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="InvokeToStringMapperWithCustomCultureSettingsOnMethod.MapDateOnly"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDateOnlyToStringWithCustomCultureSettingsOnMethod()
+    {
+        // Arrange
+        var input = DateOnly.FromDateTime(DateTime.UtcNow);
+
+        // Act
+        var actual = this.mapperWithCustomCultureSettingsOnMethod.MapDateOnly(input);
+
+        // Assert
+        actual.Should().Be(input.ToString(CultureInfo.GetCultureInfo(InvokeToStringStrategySettings.CultureName)));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="InvokeToStringMapperWithCustomCultureSettingsOnMethod.MapTimeSpan"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapTimeSpanToStringWithCustomCultureSettingsOnMethod()
+    {
+        // Arrange
+        var input = TimeSpan.FromHours(1).Add(TimeSpan.FromMinutes(2)).Add(TimeSpan.FromSeconds(3));
+
+        // Act
+        var actual = this.mapperWithCustomCultureSettingsOnMethod.MapTimeSpan(input);
+
+        // Assert
+        actual.Should().Be(input.ToString());
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="InvokeToStringMapperWithCustomCultureSettingsOnMethod.MapGuid"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapGuidToStringWithCustomCultureSettingsOnMethod()
+    {
+        // Arrange
+        var input = Guid.NewGuid();
+
+        // Act
+        var actual = this.mapperWithCustomCultureSettingsOnMethod.MapGuid(input);
 
         // Assert
         actual.Should().Be(input.ToString());
