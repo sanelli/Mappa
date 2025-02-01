@@ -100,9 +100,58 @@ public sealed partial class ParseUriMapper
     /// <summary>
     /// Map <see cref="string"/> to <see cref="Uri"/>.
     /// </summary>
-    /// <param name="input"></param>
-    /// <returns></returns>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
     public partial Uri Map(string input);
+}
+
+/// <summary>
+/// Mapper mapping string to some specific classes.
+/// </summary>
+[Mappa]
+public sealed partial class ParseMapperWithoutAnySettings
+{
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="DateTime"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial DateTime MapDateTime(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="DateTimeOffset"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial DateTimeOffset MapDateTimeOffset(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="DateOnly"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial DateOnly MapDateOnly(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="TimeOnly"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial TimeOnly MapTimeOnly(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="TimeSpan"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial TimeSpan MapTimeSpan(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="Guid"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial Guid MapGuid(string input);
 }
 
 // TODO String -> * : On Method : Format

@@ -9,14 +9,16 @@ using Xunit.Categories;
 namespace Mappa.Samples.Tests;
 
 #pragma warning disable CA1305 // Specify IFormatProvider
+#pragma warning disable S6580 // Use a format provider when parsing date and time.
 
 /// <summary>
 /// Tests for parsing using the <c>ToParse</c> method.
 /// </summary>
 public sealed class InvokeParseMapperUnitTest
 {
-    private readonly ParseNumericMapper parseNumericMapper = new();
-    private readonly ParseUriMapper parseUriMapper = new();
+    private readonly ParseNumericMapper numericMapper = new();
+    private readonly ParseUriMapper uriMapper = new();
+    private readonly ParseMapperWithoutAnySettings mapperWithoutAnySettings = new();
 
     /// <summary>
     /// Unit test for <see cref="ParseNumericMapper.MapToSignedByte"/>.
@@ -29,7 +31,7 @@ public sealed class InvokeParseMapperUnitTest
         const string input = "100";
 
         // Act
-        var actual = this.parseNumericMapper.MapToSignedByte(input);
+        var actual = this.numericMapper.MapToSignedByte(input);
 
         // Assert
         actual.Should().Be(sbyte.Parse(input));
@@ -46,7 +48,7 @@ public sealed class InvokeParseMapperUnitTest
         const string input = "100";
 
         // Act
-        var actual = this.parseNumericMapper.MapToShort(input);
+        var actual = this.numericMapper.MapToShort(input);
 
         // Assert
         actual.Should().Be(short.Parse(input));
@@ -63,7 +65,7 @@ public sealed class InvokeParseMapperUnitTest
         const string input = "100";
 
         // Act
-        var actual = this.parseNumericMapper.MapToInteger(input);
+        var actual = this.numericMapper.MapToInteger(input);
 
         // Assert
         actual.Should().Be(int.Parse(input));
@@ -80,7 +82,7 @@ public sealed class InvokeParseMapperUnitTest
         const string input = "100";
 
         // Act
-        var actual = this.parseNumericMapper.MapToLong(input);
+        var actual = this.numericMapper.MapToLong(input);
 
         // Assert
         actual.Should().Be(long.Parse(input));
@@ -97,7 +99,7 @@ public sealed class InvokeParseMapperUnitTest
         const string input = "100";
 
         // Act
-        var actual = this.parseNumericMapper.MapToByte(input);
+        var actual = this.numericMapper.MapToByte(input);
 
         // Assert
         actual.Should().Be(byte.Parse(input));
@@ -114,7 +116,7 @@ public sealed class InvokeParseMapperUnitTest
         const string input = "100";
 
         // Act
-        var actual = this.parseNumericMapper.MapToUnsignedShort(input);
+        var actual = this.numericMapper.MapToUnsignedShort(input);
 
         // Assert
         actual.Should().Be(ushort.Parse(input));
@@ -131,7 +133,7 @@ public sealed class InvokeParseMapperUnitTest
         const string input = "100";
 
         // Act
-        var actual = this.parseNumericMapper.MapToUnsignedInteger(input);
+        var actual = this.numericMapper.MapToUnsignedInteger(input);
 
         // Assert
         actual.Should().Be(uint.Parse(input));
@@ -148,7 +150,7 @@ public sealed class InvokeParseMapperUnitTest
         const string input = "100";
 
         // Act
-        var actual = this.parseNumericMapper.MapToUnsignedLong(input);
+        var actual = this.numericMapper.MapToUnsignedLong(input);
 
         // Assert
         actual.Should().Be(ulong.Parse(input));
@@ -165,7 +167,7 @@ public sealed class InvokeParseMapperUnitTest
         const string input = "100";
 
         // Act
-        var actual = this.parseNumericMapper.MapToFloat(input);
+        var actual = this.numericMapper.MapToFloat(input);
 
         // Assert
         actual.Should().Be(float.Parse(input));
@@ -182,7 +184,7 @@ public sealed class InvokeParseMapperUnitTest
         const string input = "100";
 
         // Act
-        var actual = this.parseNumericMapper.MapToDouble(input);
+        var actual = this.numericMapper.MapToDouble(input);
 
         // Assert
         actual.Should().Be(double.Parse(input));
@@ -199,7 +201,7 @@ public sealed class InvokeParseMapperUnitTest
         const string input = "100";
 
         // Act
-        var actual = this.parseNumericMapper.MapToDecimal(input);
+        var actual = this.numericMapper.MapToDecimal(input);
 
         // Assert
         actual.Should().Be(decimal.Parse(input));
@@ -216,9 +218,111 @@ public sealed class InvokeParseMapperUnitTest
         const string input = "http://localhost:5000";
 
         // Act
-        var actual = this.parseUriMapper.Map(input);
+        var actual = this.uriMapper.Map(input);
 
         // Assert
         actual.Should().Be(new Uri(input));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithoutAnySettings.MapDateTime"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDateTimeToStringWithoutAnySettings()
+    {
+        // Arrange
+        const string input = "2025-02-01 22:17:34";
+
+        // Act
+        var actual = this.mapperWithoutAnySettings.MapDateTime(input);
+
+        // Assert
+        actual.Should().Be(DateTime.Parse(input));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithoutAnySettings.MapDateTimeOffset"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDateTimeOffsetToStringWithoutAnySettings()
+    {
+        // Arrange
+        const string input = "2025-02-01 22:17:34";
+
+        // Act
+        var actual = this.mapperWithoutAnySettings.MapDateTimeOffset(input);
+
+        // Assert
+        actual.Should().Be(DateTimeOffset.Parse(input));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithoutAnySettings.MapDateOnly"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDateOnlyToStringWithoutAnySettings()
+    {
+        // Arrange
+        const string input = "2025-02-01";
+
+        // Act
+        var actual = this.mapperWithoutAnySettings.MapDateOnly(input);
+
+        // Assert
+        actual.Should().Be(DateOnly.Parse(input));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithoutAnySettings.MapTimeOnly"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapTimeOnlyToStringWithoutAnySettings()
+    {
+        // Arrange
+        const string input = "22:20:05";
+
+        // Act
+        var actual = this.mapperWithoutAnySettings.MapTimeOnly(input);
+
+        // Assert
+        actual.Should().Be(TimeOnly.Parse(input));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithoutAnySettings.MapTimeSpan"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapTimeSpanToStringWithoutAnySettings()
+    {
+        // Arrange
+        const string input = "22:20:05";
+
+        // Act
+        var actual = this.mapperWithoutAnySettings.MapTimeSpan(input);
+
+        // Assert
+        actual.Should().Be(TimeSpan.Parse(input));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithoutAnySettings.MapGuid"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapGuidToStringWithoutAnySettings()
+    {
+        // Arrange
+        string input = Guid.NewGuid().ToString("N");
+
+        // Act
+        var actual = this.mapperWithoutAnySettings.MapGuid(input);
+
+        // Assert
+        actual.Should().Be(Guid.Parse(input));
     }
 }
