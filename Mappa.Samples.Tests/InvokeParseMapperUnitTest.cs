@@ -19,6 +19,7 @@ public sealed class InvokeParseMapperUnitTest
     private readonly ParseNumericMapper numericMapper = new();
     private readonly ParseUriMapper uriMapper = new();
     private readonly ParseMapperWithoutAnySettings mapperWithoutAnySettings = new();
+    private readonly ParseMapperWithFormatSettingsOnMethod mapperWithFormatSettingsOnMethod = new();
 
     /// <summary>
     /// Unit test for <see cref="ParseNumericMapper.MapToSignedByte"/>.
@@ -321,6 +322,108 @@ public sealed class InvokeParseMapperUnitTest
 
         // Act
         var actual = this.mapperWithoutAnySettings.MapGuid(input);
+
+        // Assert
+        actual.Should().Be(Guid.Parse(input));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithFormatSettingsOnMethod.MapDateTime"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDateTimeToStringWithFormatSettingsOnMethod()
+    {
+        // Arrange
+        const string input = "2025-02-01 22:17:34";
+
+        // Act
+        var actual = this.mapperWithFormatSettingsOnMethod.MapDateTime(input);
+
+        // Assert
+        actual.Should().Be(DateTime.Parse(input));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithFormatSettingsOnMethod.MapDateTimeOffset"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDateTimeOffsetToStringWithFormatSettingsOnMethod()
+    {
+        // Arrange
+        const string input = "2025-02-01 22:17:34";
+
+        // Act
+        var actual = this.mapperWithFormatSettingsOnMethod.MapDateTimeOffset(input);
+
+        // Assert
+        actual.Should().Be(DateTimeOffset.Parse(input));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithFormatSettingsOnMethod.MapDateOnly"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDateOnlyToStringWithFormatSettingsOnMethod()
+    {
+        // Arrange
+        const string input = "2025-02-01";
+
+        // Act
+        var actual = this.mapperWithFormatSettingsOnMethod.MapDateOnly(input);
+
+        // Assert
+        actual.Should().Be(DateOnly.Parse(input));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithFormatSettingsOnMethod.MapTimeOnly"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapTimeOnlyToStringWithFormatSettingsOnMethod()
+    {
+        // Arrange
+        const string input = "22:20:05";
+
+        // Act
+        var actual = this.mapperWithFormatSettingsOnMethod.MapTimeOnly(input);
+
+        // Assert
+        actual.Should().Be(TimeOnly.Parse(input));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithFormatSettingsOnMethod.MapTimeSpan"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapTimeSpanToStringWithFormatSettingsOnMethod()
+    {
+        // Arrange
+        const string input = "0:18:30:00.0000000";
+
+        // Act
+        var actual = this.mapperWithFormatSettingsOnMethod.MapTimeSpan(input);
+
+        // Assert
+        actual.Should().Be(TimeSpan.Parse(input));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithFormatSettingsOnMethod.MapGuid"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapGuidToStringWithFormatSettingsOnMethod()
+    {
+        // Arrange
+        string input = Guid.NewGuid().ToString(InvokeParseStrategySettings.GuidFormat);
+
+        // Act
+        var actual = this.mapperWithFormatSettingsOnMethod.MapGuid(input);
 
         // Assert
         actual.Should().Be(Guid.Parse(input));
