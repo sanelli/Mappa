@@ -1,6 +1,8 @@
 // <copyright file="InvokeToStringMapperUnitTest.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
+using System.Globalization;
+
 using FluentAssertions;
 
 using Xunit;
@@ -15,6 +17,7 @@ public sealed class InvokeToStringMapperUnitTest
 {
     private readonly InvokeToStringMapper mapper = new();
     private readonly InvokeToStringMapperWithFormatSettingsOnMethod mapperWithFormatSettingsOnMethod = new();
+    private readonly InvokeToStringMapperWithFormatAndInvariantCultureSettingsOnMethod mapperWithFormatAndInvariantCultureSettingsOnMethod = new();
 
     /// <summary>
     /// Unit test for <see cref="InvokeToStringMapper.MapInt"/>.
@@ -248,5 +251,90 @@ public sealed class InvokeToStringMapperUnitTest
 
         // Assert
         actual.Should().Be(input.ToString(InvokeToStringStrategySettings.GuidFormat));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="InvokeToStringMapperWithFormatAndInvariantCultureSettingsOnMethod.MapDateTime"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDateTimeToStringWithFormatAndInvariantCultureSettingsOnMethod()
+    {
+        // Arrange
+        var input = DateTime.UtcNow;
+
+        // Act
+        var actual = this.mapperWithFormatAndInvariantCultureSettingsOnMethod.MapDateTime(input);
+
+        // Assert
+        actual.Should().Be(input.ToString(InvokeToStringStrategySettings.DateTimeFormat, CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="InvokeToStringMapperWithFormatAndInvariantCultureSettingsOnMethod.MapDateTimeOffset"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDateTimeOffsetToStringWithFormatAndInvariantCultureSettingsOnMethod()
+    {
+        // Arrange
+        var input = DateTimeOffset.UtcNow;
+
+        // Act
+        var actual = this.mapperWithFormatAndInvariantCultureSettingsOnMethod.MapDateTimeOffset(input);
+
+        // Assert
+        actual.Should().Be(input.ToString(InvokeToStringStrategySettings.DateTimeOffsetFormat, CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="InvokeToStringMapperWithFormatAndInvariantCultureSettingsOnMethod.MapDateOnly"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDateOnlyToStringWithFormatAndInvariantCultureSettingsOnMethod()
+    {
+        // Arrange
+        var input = DateOnly.FromDateTime(DateTime.UtcNow);
+
+        // Act
+        var actual = this.mapperWithFormatAndInvariantCultureSettingsOnMethod.MapDateOnly(input);
+
+        // Assert
+        actual.Should().Be(input.ToString(InvokeToStringStrategySettings.DateOnlyFormat, CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="InvokeToStringMapperWithFormatAndInvariantCultureSettingsOnMethod.MapTimeSpan"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapTimeSpanToStringWithFormatAndInvariantCultureSettingsOnMethod()
+    {
+        // Arrange
+        var input = TimeSpan.FromHours(1).Add(TimeSpan.FromMinutes(2)).Add(TimeSpan.FromSeconds(3));
+
+        // Act
+        var actual = this.mapperWithFormatAndInvariantCultureSettingsOnMethod.MapTimeSpan(input);
+
+        // Assert
+        actual.Should().Be(input.ToString(InvokeToStringStrategySettings.TimeSpanFormat, CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="InvokeToStringMapperWithFormatAndInvariantCultureSettingsOnMethod.MapGuid"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapGuidToStringWithFormatAndInvariantCultureSettingsOnMethod()
+    {
+        // Arrange
+        var input = Guid.NewGuid();
+
+        // Act
+        var actual = this.mapperWithFormatAndInvariantCultureSettingsOnMethod.MapGuid(input);
+
+        // Assert
+        actual.Should().Be(input.ToString(InvokeToStringStrategySettings.GuidFormat, CultureInfo.InvariantCulture));
     }
 }
