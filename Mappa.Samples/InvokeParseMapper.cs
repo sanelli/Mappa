@@ -1,4 +1,4 @@
-// <copyright file="StringToNumberMapper.cs" company="Stefano Anelli">
+// <copyright file="InvokeParseMapper.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 using Mappa.Attributes;
@@ -9,7 +9,7 @@ namespace Mappa.Samples;
 /// Mapper using the string-to-number strategy.
 /// </summary>
 [Mappa]
-public sealed partial class StringToNumberMapper
+public sealed partial class ParseNumericMapper
 {
     /// <summary>
     /// Map a string to integer.
@@ -60,3 +60,17 @@ public sealed partial class StringToNumberMapper
     /// <returns>The mapped numeric value value.</returns>
     public partial double MapToDouble(string input);
 }
+
+// TODO String -> unsigned numeric types
+// TODO String -> Uri
+// TODO String -> * : On Method : Format
+// TODO String -> * : On Method : Format + Invariant culture
+// TODO String -> * : On Method : Invariant culture
+// TODO String -> * : On Method : Current culture
+// TODO String -> * : On Method : Custom culture
+// TODO String -> * : On Class : Format
+// TODO String -> * : On Class : Format + Invariant culture
+// TODO String -> * : On Class : Invariant culture
+// TODO String -> * : On Class : Current culture
+// TODO String -> * : On Class : Custom culture
+// TODO String -> * : On Method override On Class
