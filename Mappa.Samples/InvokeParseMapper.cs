@@ -5,6 +5,8 @@ using Mappa.Attributes;
 
 namespace Mappa.Samples;
 
+#pragma warning disable SA1402 // File may only contain a single type
+
 /// <summary>
 /// Mapper using the string-to-number strategy.
 /// </summary>
@@ -12,57 +14,97 @@ namespace Mappa.Samples;
 public sealed partial class ParseNumericMapper
 {
     /// <summary>
-    /// Map a string to integer.
+    /// Map a <see cref="string"/> to <see cref="sbyte"/>.
     /// </summary>
     /// <param name="input">The input string value.</param>
     /// <returns>The mapped numeric value value.</returns>
-    public partial byte MapToByte(string input);
+    public partial sbyte MapToSignedByte(string input);
 
     /// <summary>
-    /// Map a string to integer.
+    /// Map a <see cref="string"/> to <see cref="short"/>.
     /// </summary>
     /// <param name="input">The input string value.</param>
     /// <returns>The mapped numeric value value.</returns>
     public partial short MapToShort(string input);
 
     /// <summary>
-    /// Map a string to integer.
+    /// Map a <see cref="string"/> to <see cref="int"/>.
     /// </summary>
     /// <param name="input">The input string value.</param>
     /// <returns>The mapped numeric value value.</returns>
     public partial int MapToInteger(string input);
 
     /// <summary>
-    /// Map a string to long.
+    /// Map a <see cref="string"/> to <see cref="long"/>.
     /// </summary>
     /// <param name="input">The input string value.</param>
     /// <returns>The mapped numeric value value.</returns>
     public partial long MapToLong(string input);
 
     /// <summary>
-    /// Map a string to decimal.
+    /// Map a <see cref="string"/> to <see cref="byte"/>.
+    /// </summary>
+    /// <param name="input">The input string value.</param>
+    /// <returns>The mapped numeric value value.</returns>
+    public partial byte MapToByte(string input);
+
+    /// <summary>
+    /// Map a <see cref="string"/> to <see cref="ushort"/>.
+    /// </summary>
+    /// <param name="input">The input string value.</param>
+    /// <returns>The mapped numeric value value.</returns>
+    public partial ushort MapToUnsignedShort(string input);
+
+    /// <summary>
+    /// Map a <see cref="string"/> to <see cref="uint"/>.
+    /// </summary>
+    /// <param name="input">The input string value.</param>
+    /// <returns>The mapped numeric value value.</returns>
+    public partial uint MapToUnsignedInteger(string input);
+
+    /// <summary>
+    /// Map a <see cref="string"/> to <see cref="ulong"/>.
+    /// </summary>
+    /// <param name="input">The input string value.</param>
+    /// <returns>The mapped numeric value value.</returns>
+    public partial ulong MapToUnsignedLong(string input);
+
+    /// <summary>
+    /// Map a <see cref="string"/> to <see cref="decimal"/>.
     /// </summary>
     /// <param name="input">The input string value.</param>
     /// <returns>The mapped numeric value value.</returns>
     public partial decimal MapToDecimal(string input);
 
     /// <summary>
-    /// Map a string to float.
+    /// Map a <see cref="string"/> to <see cref="float"/>.
     /// </summary>
     /// <param name="input">The input string value.</param>
     /// <returns>The mapped numeric value value.</returns>
     public partial float MapToFloat(string input);
 
     /// <summary>
-    /// Map a string to double.
+    /// Map a <see cref="string"/> to <see cref="double"/>.
     /// </summary>
     /// <param name="input">The input string value.</param>
     /// <returns>The mapped numeric value value.</returns>
     public partial double MapToDouble(string input);
 }
 
-// TODO String -> unsigned numeric types
-// TODO String -> Uri
+/// <summary>
+/// Mapper mapping string to URI.
+/// </summary>
+[Mappa]
+public sealed partial class ParseUriMapper
+{
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="Uri"/>.
+    /// </summary>
+    /// <param name="input"></param>
+    /// <returns></returns>
+    public partial Uri Map(string input);
+}
+
 // TODO String -> * : On Method : Format
 // TODO String -> * : On Method : Format + Invariant culture
 // TODO String -> * : On Method : Invariant culture
