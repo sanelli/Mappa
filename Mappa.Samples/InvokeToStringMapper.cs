@@ -72,9 +72,34 @@ public static class InvokeToStringStrategySettings
  #pragma warning restore SA1204
 {
     /// <summary>
-    /// The date time format applied.
+    /// The <see cref="DateTimeOffset"/> format applied.
     /// </summary>
     public const string DateTimeFormat = "yyyy-MM-dd HH:mm:ss";
+
+    /// <summary>
+    /// The <see cref="DateTimeOffset"/> format applied.
+    /// </summary>
+    public const string DateTimeOffsetFormat = "dd-MM-yyyy ss:mm:HH";
+
+    /// <summary>
+    /// The <see cref="DateOnly"/> format applied.
+    /// </summary>
+    public const string DateOnlyFormat = "yyyy+MM+dd";
+
+    /// <summary>
+    /// The <see cref="TimeOnly"/> format applied.
+    /// </summary>
+    public const string TimeOnlyFormat = "HH+mm+ss";
+
+    /// <summary>
+    /// The <see cref="TimeSpan"/> format applied.
+    /// </summary>
+    public const string TimeSpanFormat = "G";
+
+    /// <summary>
+    /// The <see cref="Guid"/> format applied.
+    /// </summary>
+    public const string GuidFormat = "N";
 }
 
 /// <summary>
@@ -91,6 +116,46 @@ public sealed partial class InvokeToStringMapperWithFormatSettingsOnMethod
     /// <returns>The string mapped from the input.</returns>
     [MappaSettings(DateTimeFormat = InvokeToStringStrategySettings.DateTimeFormat)]
     public partial string MapDateTime(DateTime input);
+
+    /// <summary>
+    /// Map <see cref="DateTimeOffset"/> to <see cref="string"/>.
+    /// </summary>
+    /// <param name="input">The value to convert to string.</param>
+    /// <returns>The string mapped from the input.</returns>
+    [MappaSettings(DateTimeOffsetFormat = InvokeToStringStrategySettings.DateTimeOffsetFormat)]
+    public partial string MapDateTimeOffset(DateTimeOffset input);
+
+    /// <summary>
+    /// Map <see cref="DateOnly"/> to <see cref="string"/>.
+    /// </summary>
+    /// <param name="input">The value to convert to string.</param>
+    /// <returns>The string mapped from the input.</returns>
+    [MappaSettings(DateOnlyFormat = InvokeToStringStrategySettings.DateOnlyFormat)]
+    public partial string MapDateOnly(DateOnly input);
+
+    /// <summary>
+    /// Map <see cref="TimeOnly"/> to <see cref="string"/>.
+    /// </summary>
+    /// <param name="input">The value to convert to string.</param>
+    /// <returns>The string mapped from the input.</returns>
+    [MappaSettings(TimeOnlyFormat = InvokeToStringStrategySettings.TimeOnlyFormat)]
+    public partial string MapTimeOnly(TimeOnly input);
+
+    /// <summary>
+    /// Map <see cref="TimeSpan"/> to <see cref="string"/>.
+    /// </summary>
+    /// <param name="input">The value to convert to string.</param>
+    /// <returns>The string mapped from the input.</returns>
+    [MappaSettings(TimeSpanFormat = InvokeToStringStrategySettings.TimeSpanFormat)]
+    public partial string MapTimeSpan(TimeSpan input);
+
+    /// <summary>
+    /// Map <see cref="Guid"/> to <see cref="string"/>.
+    /// </summary>
+    /// <param name="input">The value to convert to string.</param>
+    /// <returns>The string mapped from the input.</returns>
+    [MappaSettings(GuidFormat = InvokeToStringStrategySettings.GuidFormat)]
+    public partial string MapGuid(Guid input);
 }
 
 // TODO [#56] DateTime -> String format and invariant culture on method
