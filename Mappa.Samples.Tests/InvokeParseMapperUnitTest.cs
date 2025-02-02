@@ -381,13 +381,13 @@ public sealed class InvokeParseMapperUnitTest
     public void CanMapDateOnlyToStringWithFormatSettingsOnMethod()
     {
         // Arrange
-        const string input = "2025-02-01";
+        const string input = "2025+02+01";
 
         // Act
         var actual = this.mapperWithFormatSettingsOnMethod.MapDateOnly(input);
 
         // Assert
-        actual.Should().Be(DateOnly.Parse(input));
+        actual.Should().Be(DateOnly.ParseExact(input, InvokeParseStrategySettings.DateOnlyFormat));
     }
 
     /// <summary>
@@ -398,13 +398,13 @@ public sealed class InvokeParseMapperUnitTest
     public void CanMapTimeOnlyToStringWithFormatSettingsOnMethod()
     {
         // Arrange
-        const string input = "22:20:05";
+        const string input = "22+20+05";
 
         // Act
         var actual = this.mapperWithFormatSettingsOnMethod.MapTimeOnly(input);
 
         // Assert
-        actual.Should().Be(TimeOnly.Parse(input));
+        actual.Should().Be(TimeOnly.ParseExact(input, InvokeParseStrategySettings.TimeOnlyFormat));
     }
 
     /// <summary>
@@ -891,13 +891,13 @@ public sealed class InvokeParseMapperUnitTest
     public void CanMapDateOnlyToStringWithFormatSettingsOnClass()
     {
         // Arrange
-        const string input = "2025-02-01";
+        const string input = "2025+02+01";
 
         // Act
         var actual = this.mapperWithFormatSettingsOnClass.MapDateOnly(input);
 
         // Assert
-        actual.Should().Be(DateOnly.Parse(input));
+        actual.Should().Be(DateOnly.ParseExact(input, InvokeParseStrategySettings.DateOnlyFormat));
     }
 
     /// <summary>
@@ -908,13 +908,13 @@ public sealed class InvokeParseMapperUnitTest
     public void CanMapTimeOnlyToStringWithFormatSettingsOnClass()
     {
         // Arrange
-        const string input = "22:20:05";
+        const string input = "22+20+05";
 
         // Act
         var actual = this.mapperWithFormatSettingsOnClass.MapTimeOnly(input);
 
         // Assert
-        actual.Should().Be(TimeOnly.Parse(input));
+        actual.Should().Be(TimeOnly.ParseExact(input, InvokeParseStrategySettings.TimeOnlyFormat));
     }
 
     /// <summary>
