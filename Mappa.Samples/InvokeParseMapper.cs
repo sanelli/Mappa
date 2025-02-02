@@ -6,7 +6,9 @@ using Mappa.Attributes;
 namespace Mappa.Samples;
 
 #pragma warning disable SA1402 // File may only contain a single type
+#pragma warning disable CA2243 // Guid format should be a string that can be parsed into GUID
 
+/// File name must match first type name
 /// <summary>
 /// Mapper using the string-to-number strategy.
 /// </summary>
@@ -198,7 +200,7 @@ public static class InvokeParseStrategySettings
 }
 
 /// <summary>
-/// Mapper mapping string for specific classes with format.
+/// Mapper mapping string for specific classes with format on method.
 /// </summary>
 [Mappa]
 public sealed partial class ParseMapperWithFormatSettingsOnMethod
@@ -253,7 +255,7 @@ public sealed partial class ParseMapperWithFormatSettingsOnMethod
 }
 
 /// <summary>
-/// Mapper mapping string for specific classes with format and invariant culture.
+/// Mapper mapping string for specific classes with format and invariant culture on method.
 /// </summary>
 [Mappa]
 public sealed partial class ParseMapperWithFormatAndInvariantCultureSettingsOnMethod
@@ -308,7 +310,7 @@ public sealed partial class ParseMapperWithFormatAndInvariantCultureSettingsOnMe
 }
 
 /// <summary>
-/// Mapper mapping string for specific classes with invariant culture.
+/// Mapper mapping string for specific classes with invariant culture on method.
 /// </summary>
 [Mappa]
 public sealed partial class ParseMapperWithInvariantCultureSettingsOnMethod
@@ -363,7 +365,7 @@ public sealed partial class ParseMapperWithInvariantCultureSettingsOnMethod
 }
 
 /// <summary>
-/// Mapper mapping string for specific classes with current culture.
+/// Mapper mapping string for specific classes with current culture on method.
 /// </summary>
 [Mappa]
 public sealed partial class ParseMapperWithCurrentCultureSettingsOnMethod
@@ -418,7 +420,7 @@ public sealed partial class ParseMapperWithCurrentCultureSettingsOnMethod
 }
 
 /// <summary>
-/// Mapper mapping string for specific classes with custom culture.
+/// Mapper mapping string for specific classes with custom culture on method.
 /// </summary>
 [Mappa]
 public sealed partial class ParseMapperWithCustomCultureSettingsOnMethod
@@ -472,9 +474,267 @@ public sealed partial class ParseMapperWithCustomCultureSettingsOnMethod
     public partial Guid MapGuid(string input);
 }
 
-// TODO String -> * : On Class : Format
-// TODO String -> * : On Class : Format + Invariant culture
-// TODO String -> * : On Class : Invariant culture
-// TODO String -> * : On Class : Current culture
-// TODO String -> * : On Class : Custom culture
+/// <summary>
+/// Mapper mapping string for specific classes with format on class.
+/// </summary>
+[Mappa]
+[MappaSettings(
+    DateTimeFormat = InvokeToStringStrategySettings.DateTimeFormat,
+    DateTimeOffsetFormat = InvokeToStringStrategySettings.DateTimeOffsetFormat,
+    DateOnlyFormat = InvokeToStringStrategySettings.DateOnlyFormat,
+    TimeOnlyFormat = InvokeToStringStrategySettings.TimeOnlyFormat,
+    TimeSpanFormat = InvokeToStringStrategySettings.TimeSpanFormat,
+    GuidFormat = InvokeToStringStrategySettings.GuidFormat)]
+public sealed partial class ParseMapperWithFormatSettingsOnClass
+{
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="DateTime"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial DateTime MapDateTime(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="DateTimeOffset"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial DateTimeOffset MapDateTimeOffset(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="DateOnly"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial DateOnly MapDateOnly(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="TimeOnly"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial TimeOnly MapTimeOnly(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="TimeSpan"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial TimeSpan MapTimeSpan(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="Guid"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial Guid MapGuid(string input);
+}
+
+/// <summary>
+/// Mapper mapping string for specific classes with format and invariant culture on class.
+/// </summary>
+[Mappa]
+[MappaSettings(
+    DateTimeFormat = InvokeToStringStrategySettings.DateTimeFormat,
+    DateTimeOffsetFormat = InvokeToStringStrategySettings.DateTimeOffsetFormat,
+    DateOnlyFormat = InvokeToStringStrategySettings.DateOnlyFormat,
+    TimeOnlyFormat = InvokeToStringStrategySettings.TimeOnlyFormat,
+    TimeSpanFormat = InvokeToStringStrategySettings.TimeSpanFormat,
+    GuidFormat = InvokeToStringStrategySettings.GuidFormat,
+    CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
+public sealed partial class ParseMapperWithFormatAndInvariantCultureSettingsOnClass
+{
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="DateTime"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial DateTime MapDateTime(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="DateTimeOffset"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial DateTimeOffset MapDateTimeOffset(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="DateOnly"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial DateOnly MapDateOnly(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="TimeOnly"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial TimeOnly MapTimeOnly(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="TimeSpan"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial TimeSpan MapTimeSpan(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="Guid"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial Guid MapGuid(string input);
+}
+
+/// <summary>
+/// Mapper mapping string for specific classes with invariant culture on class.
+/// </summary>
+[Mappa]
+[MappaSettings(CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
+public sealed partial class ParseMapperWithInvariantCultureSettingsOnClass
+{
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="DateTime"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial DateTime MapDateTime(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="DateTimeOffset"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial DateTimeOffset MapDateTimeOffset(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="DateOnly"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial DateOnly MapDateOnly(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="TimeOnly"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial TimeOnly MapTimeOnly(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="TimeSpan"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial TimeSpan MapTimeSpan(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="Guid"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial Guid MapGuid(string input);
+}
+
+/// <summary>
+/// Mapper mapping string for specific classes with current culture on class.
+/// </summary>
+[Mappa]
+[MappaSettings(CultureInfoSetting = CultureInfoSetting.CurrentCulture)]
+public sealed partial class ParseMapperWithCurrentCultureSettingsOnClass
+{
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="DateTime"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial DateTime MapDateTime(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="DateTimeOffset"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial DateTimeOffset MapDateTimeOffset(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="DateOnly"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial DateOnly MapDateOnly(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="TimeOnly"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial TimeOnly MapTimeOnly(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="TimeSpan"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial TimeSpan MapTimeSpan(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="Guid"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial Guid MapGuid(string input);
+}
+
+/// <summary>
+/// Mapper mapping string for specific classes with custom culture on class.
+/// </summary>
+[Mappa]
+[MappaSettings(CultureInfoSetting = CultureInfoSetting.UserDefined, CultureName = InvokeParseStrategySettings.CultureName)]
+public sealed partial class ParseMapperWithCustomCultureSettingsOnClass
+{
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="DateTime"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial DateTime MapDateTime(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="DateTimeOffset"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial DateTimeOffset MapDateTimeOffset(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="DateOnly"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial DateOnly MapDateOnly(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="TimeOnly"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial TimeOnly MapTimeOnly(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="TimeSpan"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial TimeSpan MapTimeSpan(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="Guid"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial Guid MapGuid(string input);
+}
+
 // TODO String -> * : On Method override On Class
