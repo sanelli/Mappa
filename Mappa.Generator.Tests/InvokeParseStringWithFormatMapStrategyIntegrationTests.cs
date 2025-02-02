@@ -157,15 +157,19 @@ public sealed class InvokeParseStringWithFormatMapStrategyIntegrationTests
     /// </summary>
     /// <param name="targetType">The target of the mapping.</param>
     /// <param name="format">The format.</param>
+    /// <param name="parseExact"><c>true</c> if the <paramref name="targetType"/> support <c>ParseExact(string,string)</c>.</param>
     /// <returns>The async task.</returns>
     [Theory]
-    [InlineData(typeof(DateTime), "d")]
-    [InlineData(typeof(DateTimeOffset), "d")]
-    [InlineData(typeof(DateOnly), "d")]
-    [InlineData(typeof(TimeOnly), "t")]
-    [InlineData(typeof(TimeSpan), "c")]
+    [InlineData(typeof(DateTime), "d", false)]
+    [InlineData(typeof(DateTimeOffset), "d", false)]
+    [InlineData(typeof(DateOnly), "d", true)]
+    [InlineData(typeof(TimeOnly), "t", true)]
+    [InlineData(typeof(TimeSpan), "c", false)]
     [IntegrationTest]
-    public async Task CanMapStringToTargetUsingStandardParseWhenOnlyFormatIsProvided(Type targetType, string format)
+    public async Task CanMapStringToTargetUsingStandardParseWhenOnlyFormatIsProvided(
+        Type targetType,
+        string format,
+        bool parseExact)
     {
         ArgumentNullException.ThrowIfNull(targetType);
 
@@ -209,9 +213,22 @@ public sealed class InvokeParseStringWithFormatMapStrategyIntegrationTests
                             syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
                                 targetType.ToString(),
                                 identifierName,
-                                expressionSyntaxAssertions => expressionSyntaxAssertions.BeInvocationExpressionSyntax(
-                                    $"{targetType.FullName}.Parse",
-                                    syntaxAssertions => syntaxAssertions.BeIdentifierNameSyntax("input")));
+                                expressionSyntaxAssertions =>
+                                {
+                                    if (parseExact)
+                                    {
+                                        expressionSyntaxAssertions.BeInvocationExpressionSyntax(
+                                            $"{targetType.FullName}.ParseExact",
+                                            firstParameter => firstParameter.BeIdentifierNameSyntax("input"),
+                                            secondParameter => secondParameter.BeLiteralExpressionSyntax(format));
+                                    }
+                                    else
+                                    {
+                                        expressionSyntaxAssertions.BeInvocationExpressionSyntax(
+                                            $"{targetType.FullName}.Parse",
+                                            firstParameter => firstParameter.BeIdentifierNameSyntax("input"));
+                                    }
+                                });
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
@@ -227,15 +244,19 @@ public sealed class InvokeParseStringWithFormatMapStrategyIntegrationTests
     /// </summary>
     /// <param name="targetType">The target of the mapping.</param>
     /// <param name="format">The format.</param>
+    /// <param name="parseExact"><c>true</c> if the <paramref name="targetType"/> support <c>ParseExact(string,string)</c>.</param>
     /// <returns>The async task.</returns>
     [Theory]
-    [InlineData(typeof(DateTime), "d")]
-    [InlineData(typeof(DateTimeOffset), "d")]
-    [InlineData(typeof(DateOnly), "d")]
-    [InlineData(typeof(TimeOnly), "t")]
-    [InlineData(typeof(TimeSpan), "c")]
+    [InlineData(typeof(DateTime), "d", false)]
+    [InlineData(typeof(DateTimeOffset), "d", false)]
+    [InlineData(typeof(DateOnly), "d", true)]
+    [InlineData(typeof(TimeOnly), "t", true)]
+    [InlineData(typeof(TimeSpan), "c", false)]
     [IntegrationTest]
-    public async Task CanMapStringToTargetUsingStandardParseWhenOnlyFormatIsProvidedOnClass(Type targetType, string format)
+    public async Task CanMapStringToTargetUsingStandardParseWhenOnlyFormatIsProvidedOnClass(
+        Type targetType,
+        string format,
+        bool parseExact)
     {
         ArgumentNullException.ThrowIfNull(targetType);
 
@@ -279,9 +300,22 @@ public sealed class InvokeParseStringWithFormatMapStrategyIntegrationTests
                             syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
                                 targetType.ToString(),
                                 identifierName,
-                                expressionSyntaxAssertions => expressionSyntaxAssertions.BeInvocationExpressionSyntax(
-                                    $"{targetType.FullName}.Parse",
-                                    syntaxAssertions => syntaxAssertions.BeIdentifierNameSyntax("input")));
+                                expressionSyntaxAssertions =>
+                                {
+                                    if (parseExact)
+                                    {
+                                        expressionSyntaxAssertions.BeInvocationExpressionSyntax(
+                                            $"{targetType.FullName}.ParseExact",
+                                            firstParameter => firstParameter.BeIdentifierNameSyntax("input"),
+                                            secondParameter => secondParameter.BeLiteralExpressionSyntax(format));
+                                    }
+                                    else
+                                    {
+                                        expressionSyntaxAssertions.BeInvocationExpressionSyntax(
+                                            $"{targetType.FullName}.Parse",
+                                            firstParameter => firstParameter.BeIdentifierNameSyntax("input"));
+                                    }
+                                });
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
@@ -658,15 +692,19 @@ public sealed class InvokeParseStringWithFormatMapStrategyIntegrationTests
     /// </summary>
     /// <param name="targetType">The target of the mapping.</param>
     /// <param name="format">The format.</param>
+    /// <param name="parseExact"><c>true</c> if the <paramref name="targetType"/> support <c>ParseExact(string,string)</c>.</param>
     /// <returns>The async task.</returns>
     [Theory]
-    [InlineData(typeof(DateTime), "d")]
-    [InlineData(typeof(DateTimeOffset), "d")]
-    [InlineData(typeof(DateOnly), "d")]
-    [InlineData(typeof(TimeOnly), "t")]
-    [InlineData(typeof(TimeSpan), "c")]
+    [InlineData(typeof(DateTime), "d", false)]
+    [InlineData(typeof(DateTimeOffset), "d", false)]
+    [InlineData(typeof(DateOnly), "d", true)]
+    [InlineData(typeof(TimeOnly), "t", true)]
+    [InlineData(typeof(TimeSpan), "c", false)]
     [IntegrationTest]
-    public async Task CanMapStringToTargetUsingParseExactAndUserDefinedCultureWithoutCultureName(Type targetType, string format)
+    public async Task CanMapStringToTargetUsingParseExactAndUserDefinedCultureWithoutCultureName(
+        Type targetType,
+        string format,
+        bool parseExact)
     {
         ArgumentNullException.ThrowIfNull(targetType);
 
@@ -710,9 +748,22 @@ public sealed class InvokeParseStringWithFormatMapStrategyIntegrationTests
                             syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
                                 targetType.ToString(),
                                 identifierName,
-                                expressionSyntaxAssertions => expressionSyntaxAssertions.BeInvocationExpressionSyntax(
-                                    $"{targetType.FullName}.Parse",
-                                    firstParameter => firstParameter.BeIdentifierNameSyntax("input")));
+                                expressionSyntaxAssertions =>
+                                {
+                                    if (parseExact)
+                                    {
+                                        expressionSyntaxAssertions.BeInvocationExpressionSyntax(
+                                            $"{targetType.FullName}.ParseExact",
+                                            firstParameter => firstParameter.BeIdentifierNameSyntax("input"),
+                                            secondParameter => secondParameter.BeLiteralExpressionSyntax(format));
+                                    }
+                                    else
+                                    {
+                                        expressionSyntaxAssertions.BeInvocationExpressionSyntax(
+                                            $"{targetType.FullName}.Parse",
+                                            firstParameter => firstParameter.BeIdentifierNameSyntax("input"));
+                                    }
+                                });
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {

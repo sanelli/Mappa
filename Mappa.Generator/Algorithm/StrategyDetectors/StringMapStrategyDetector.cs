@@ -86,11 +86,10 @@ internal sealed class StringMapStrategyDetector
                 this.context.MappaUserSettings.CultureName);
         }
 
-        // TODO [#80] Add support for TimeOnly.ParseExact(string value,string format).
         // 05. string -> TimeOnly : InvokeParseStringWithFormatMapStrategy
         else if (this.CanMapStringToTimeOnly())
         {
-            mapStrategy = new InvokeParseStringWithFormatMapStrategy(
+            mapStrategy = new InvokeParseStringWithFormatForDateOnlyAndTimeOnlyMapStrategy(
                 this.context.TargetType,
                 this.context.SourceType,
                 MappaAlgorithmRule.StringToTimeOnly,
@@ -99,11 +98,10 @@ internal sealed class StringMapStrategyDetector
                 this.context.MappaUserSettings.CultureName);
         }
 
-        // TODO [#80] Add support for DateOnly.ParseExact(string value,string format).
         // 06. string -> DateOnly : InvokeParseStringWithFormatMapStrategy
         else if (this.CanMapStringToDateOnly())
         {
-            mapStrategy = new InvokeParseStringWithFormatMapStrategy(
+            mapStrategy = new InvokeParseStringWithFormatForDateOnlyAndTimeOnlyMapStrategy(
                 this.context.TargetType,
                 this.context.SourceType,
                 MappaAlgorithmRule.StringToDateOnly,

@@ -1,4 +1,4 @@
-// <copyright file="InvokeParseStringWithFormatMapStrategy.cs" company="Stefano Anelli">
+// <copyright file="InvokeParseStringWithFormatForDateOnlyAndTimeOnlyMapStrategy.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -9,22 +9,14 @@ using Microsoft.CodeAnalysis;
 namespace Mappa.Generator.Models.Strategies;
 
 /// <summary>
-/// Strategy to map a <see cref="string"/> to a specific type
+/// Strategy to map a <see cref="string"/> to a <c>DateOnly</c> or <c>TimeOnly</c>
 /// the <c>Parse</c> or <c>ParseExact</c>.
 /// </summary>
-/// <remarks>
-/// This currently supports the following types:
-/// <list type="bullet">
-/// <item><term><see cref="DateTime"/>;</term></item>
-/// <item><term><see cref="DateTimeOffset"/>;</term></item>
-/// <item><term><see cref="TimeSpan"/>;</term></item>
-/// </list>
-/// </remarks>
-internal sealed class InvokeParseStringWithFormatMapStrategy
+internal sealed class InvokeParseStringWithFormatForDateOnlyAndTimeOnlyMapStrategy
     : IMapStrategy
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="InvokeParseStringWithFormatMapStrategy"/> class.
+    /// Initializes a new instance of the <see cref="InvokeParseStringWithFormatForDateOnlyAndTimeOnlyMapStrategy"/> class.
     /// </summary>
     /// <param name="targetType">The target type.</param>
     /// <param name="sourceType">The source type.</param>
@@ -32,7 +24,7 @@ internal sealed class InvokeParseStringWithFormatMapStrategy
     /// <param name="format">The format to apply.</param>
     /// <param name="cultureInfoSetting">The culture info settings.</param>
     /// <param name="cultureName">The culture name when the culture info settings are user defined.</param>
-    public InvokeParseStringWithFormatMapStrategy(
+    internal InvokeParseStringWithFormatForDateOnlyAndTimeOnlyMapStrategy(
         ITypeSymbol targetType,
         ITypeSymbol sourceType,
         MappaAlgorithmRule rule,
@@ -73,5 +65,5 @@ internal sealed class InvokeParseStringWithFormatMapStrategy
     public MappaAlgorithmRule Rule { get; }
 
     /// <inheritdoc/>
-    public IMappaStrategyBuilder GetBuilder() => new InvokeParseStringWithFormatMapStrategyBuilder(this);
+    public IMappaStrategyBuilder GetBuilder() => new InvokeParseStringWithFormatForDateOnlyAndTimeOnlyMapStrategyBuilder(this);
 }
