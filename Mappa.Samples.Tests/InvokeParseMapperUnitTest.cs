@@ -25,6 +25,7 @@ public sealed class InvokeParseMapperUnitTest
     private readonly ParseMapperWithFormatAndInvariantCultureSettingsOnMethod mapperWithFormatAndInvariantCultureSettingsOnMethod = new();
     private readonly ParseMapperWithInvariantCultureSettingsOnMethod mapperWithInvariantCultureSettingsOnMethod = new();
     private readonly ParseMapperWithCurrentCultureSettingsOnMethod mapperWithCurrentCultureSettingsOnMethod = new();
+    private readonly ParseMapperWithCustomCultureSettingsOnMethod mapperWithCustomCultureSettingsOnMethod = new();
 
     /// <summary>
     /// Unit test for <see cref="ParseNumericMapper.MapToSignedByte"/>.
@@ -738,5 +739,107 @@ public sealed class InvokeParseMapperUnitTest
 
         // Assert
         actual.Should().Be(Guid.Parse(input, CultureInfo.CurrentCulture));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithCustomCultureSettingsOnMethod.MapDateTime"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDateTimeToStringWithCustomCultureSettingsOnMethod()
+    {
+        // Arrange
+        const string input = "2025-02-01 22:17:34";
+
+        // Act
+        var actual = this.mapperWithCustomCultureSettingsOnMethod.MapDateTime(input);
+
+        // Assert
+        actual.Should().Be(DateTime.Parse(input, CultureInfo.GetCultureInfo(InvokeParseStrategySettings.CultureName)));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithCustomCultureSettingsOnMethod.MapDateTimeOffset"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDateTimeOffsetToStringWithCustomCultureSettingsOnMethod()
+    {
+        // Arrange
+        const string input = "2025-02-01 22:17:34";
+
+        // Act
+        var actual = this.mapperWithCustomCultureSettingsOnMethod.MapDateTimeOffset(input);
+
+        // Assert
+        actual.Should().Be(DateTimeOffset.Parse(input, CultureInfo.GetCultureInfo(InvokeParseStrategySettings.CultureName)));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithCustomCultureSettingsOnMethod.MapDateOnly"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDateOnlyToStringWithCustomCultureSettingsOnMethod()
+    {
+        // Arrange
+        const string input = "2025-02-01";
+
+        // Act
+        var actual = this.mapperWithCustomCultureSettingsOnMethod.MapDateOnly(input);
+
+        // Assert
+        actual.Should().Be(DateOnly.Parse(input, CultureInfo.GetCultureInfo(InvokeParseStrategySettings.CultureName)));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithCustomCultureSettingsOnMethod.MapTimeOnly"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapTimeOnlyToStringWithCustomCultureSettingsOnMethod()
+    {
+        // Arrange
+        const string input = "22:20:05";
+
+        // Act
+        var actual = this.mapperWithCustomCultureSettingsOnMethod.MapTimeOnly(input);
+
+        // Assert
+        actual.Should().Be(TimeOnly.Parse(input, CultureInfo.GetCultureInfo(InvokeParseStrategySettings.CultureName)));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithCustomCultureSettingsOnMethod.MapTimeSpan"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapTimeSpanToStringWithCustomCultureSettingsOnMethod()
+    {
+        // Arrange
+        var input = TimeSpan.FromDays(2).Add(TimeSpan.FromHours(1)).Add(TimeSpan.FromMinutes(30)).ToString("G", CultureInfo.GetCultureInfo(InvokeParseStrategySettings.CultureName));
+
+        // Act
+        var actual = this.mapperWithCustomCultureSettingsOnMethod.MapTimeSpan(input);
+
+        // Assert
+        actual.Should().Be(TimeSpan.Parse(input, CultureInfo.GetCultureInfo(InvokeParseStrategySettings.CultureName)));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithCustomCultureSettingsOnMethod.MapGuid"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapGuidToStringWithCustomCultureSettingsOnMethod()
+    {
+        // Arrange
+        string input = Guid.NewGuid().ToString();
+
+        // Act
+        var actual = this.mapperWithCustomCultureSettingsOnMethod.MapGuid(input);
+
+        // Assert
+        actual.Should().Be(Guid.Parse(input, CultureInfo.GetCultureInfo(InvokeParseStrategySettings.CultureName)));
     }
 }

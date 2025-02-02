@@ -363,7 +363,7 @@ public sealed partial class ParseMapperWithInvariantCultureSettingsOnMethod
 }
 
 /// <summary>
-/// Mapper mapping string for specific classes with invariant culture.
+/// Mapper mapping string for specific classes with current culture.
 /// </summary>
 [Mappa]
 public sealed partial class ParseMapperWithCurrentCultureSettingsOnMethod
@@ -417,8 +417,61 @@ public sealed partial class ParseMapperWithCurrentCultureSettingsOnMethod
     public partial Guid MapGuid(string input);
 }
 
-// TODO String -> * : On Method : Current culture
-// TODO String -> * : On Method : Custom culture
+/// <summary>
+/// Mapper mapping string for specific classes with custom culture.
+/// </summary>
+[Mappa]
+public sealed partial class ParseMapperWithCustomCultureSettingsOnMethod
+{
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="DateTime"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    [MappaSettings(CultureInfoSetting = CultureInfoSetting.UserDefined, CultureName = InvokeParseStrategySettings.CultureName)]
+    public partial DateTime MapDateTime(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="DateTimeOffset"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    [MappaSettings(CultureInfoSetting = CultureInfoSetting.UserDefined, CultureName = InvokeParseStrategySettings.CultureName)]
+    public partial DateTimeOffset MapDateTimeOffset(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="DateOnly"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    [MappaSettings(CultureInfoSetting = CultureInfoSetting.UserDefined, CultureName = InvokeParseStrategySettings.CultureName)]
+    public partial DateOnly MapDateOnly(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="TimeOnly"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    [MappaSettings(CultureInfoSetting = CultureInfoSetting.UserDefined, CultureName = InvokeParseStrategySettings.CultureName)]
+    public partial TimeOnly MapTimeOnly(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="TimeSpan"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    [MappaSettings(CultureInfoSetting = CultureInfoSetting.UserDefined, CultureName = InvokeParseStrategySettings.CultureName)]
+    public partial TimeSpan MapTimeSpan(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="Guid"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    [MappaSettings(CultureInfoSetting = CultureInfoSetting.UserDefined, CultureName = InvokeParseStrategySettings.CultureName)]
+    public partial Guid MapGuid(string input);
+}
+
 // TODO String -> * : On Class : Format
 // TODO String -> * : On Class : Format + Invariant culture
 // TODO String -> * : On Class : Invariant culture
