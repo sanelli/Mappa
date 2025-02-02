@@ -31,6 +31,7 @@ public sealed class InvokeParseMapperUnitTest
     private readonly ParseMapperWithInvariantCultureSettingsOnClass mapperWithInvariantCultureSettingsOnClass = new();
     private readonly ParseMapperWithCurrentCultureSettingsOnClass mapperWithCurrentCultureSettingsOnClass = new();
     private readonly ParseMapperWithCustomCultureSettingsOnClass mapperWithCustomCultureSettingsOnClass = new();
+    private readonly ParseMapperWithSettingsOnClassSupersededBySettingsOnMethod mapperWithSettingsOnClassSupersededBySettingsOnMethod = new();
 
     /// <summary>
     /// Unit test for <see cref="ParseNumericMapper.MapToSignedByte"/>.
@@ -1356,5 +1357,107 @@ public sealed class InvokeParseMapperUnitTest
 
         // Assert
         actual.Should().Be(Guid.Parse(input, CultureInfo.GetCultureInfo(InvokeParseStrategySettings.CultureName)));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithSettingsOnClassSupersededBySettingsOnMethod.MapDateTime"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDateTimeToStringWithFormatAndInvariantCultureSettingsOnMethodSupersedsSettingsOnClass()
+    {
+        // Arrange
+        const string input = "2025-02-01 22:17:34";
+
+        // Act
+        var actual = this.mapperWithSettingsOnClassSupersededBySettingsOnMethod.MapDateTime(input);
+
+        // Assert
+        actual.Should().Be(DateTime.Parse(input));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithSettingsOnClassSupersededBySettingsOnMethod.MapDateTimeOffset"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDateTimeOffsetToStringWithFormatAndInvariantCultureSettingsOnMethodSupersedsSettingsOnClass()
+    {
+        // Arrange
+        const string input = "01-02-2025 34:17:22";
+
+        // Act
+        var actual = this.mapperWithSettingsOnClassSupersededBySettingsOnMethod.MapDateTimeOffset(input);
+
+        // Assert
+        actual.Should().Be(DateTimeOffset.ParseExact(input, InvokeParseStrategySettings.DateTimeOffsetFormat, CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithSettingsOnClassSupersededBySettingsOnMethod.MapDateOnly"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDateOnlyToStringWithFormatAndInvariantCultureSettingsOnMethodSupersedsSettingsOnClass()
+    {
+        // Arrange
+        const string input = "2025+02+01";
+
+        // Act
+        var actual = this.mapperWithSettingsOnClassSupersededBySettingsOnMethod.MapDateOnly(input);
+
+        // Assert
+        actual.Should().Be(DateOnly.ParseExact(input, InvokeParseStrategySettings.DateOnlyFormat, CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithSettingsOnClassSupersededBySettingsOnMethod.MapTimeOnly"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapTimeOnlyToStringWithFormatAndInvariantCultureSettingsOnMethodSupersedsSettingsOnClass()
+    {
+        // Arrange
+        const string input = "22+20+05";
+
+        // Act
+        var actual = this.mapperWithSettingsOnClassSupersededBySettingsOnMethod.MapTimeOnly(input);
+
+        // Assert
+        actual.Should().Be(TimeOnly.ParseExact(input, InvokeParseStrategySettings.TimeOnlyFormat, CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithSettingsOnClassSupersededBySettingsOnMethod.MapTimeSpan"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapTimeSpanToStringWithFormatAndInvariantCultureSettingsOnMethodSupersedsSettingsOnClass()
+    {
+        // Arrange
+        const string input = "0:18:30:00.0000000";
+
+        // Act
+        var actual = this.mapperWithSettingsOnClassSupersededBySettingsOnMethod.MapTimeSpan(input);
+
+        // Assert
+        actual.Should().Be(TimeSpan.ParseExact(input, InvokeParseStrategySettings.TimeSpanFormat, CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithSettingsOnClassSupersededBySettingsOnMethod.MapGuid"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapGuidToStringWithFormatAndInvariantCultureSettingsOnMethodSupersedsSettingsOnClass()
+    {
+        // Arrange
+        string input = Guid.NewGuid().ToString(InvokeParseStrategySettings.GuidFormat);
+
+        // Act
+        var actual = this.mapperWithSettingsOnClassSupersededBySettingsOnMethod.MapGuid(input);
+
+        // Assert
+        actual.Should().Be(Guid.ParseExact(input, InvokeParseStrategySettings.GuidFormat));
     }
 }
