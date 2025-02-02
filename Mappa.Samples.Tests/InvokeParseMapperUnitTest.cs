@@ -1,6 +1,8 @@
 // <copyright file="InvokeParseMapperUnitTest.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
+using System.Globalization;
+
 using FluentAssertions;
 
 using Xunit;
@@ -20,6 +22,7 @@ public sealed class InvokeParseMapperUnitTest
     private readonly ParseUriMapper uriMapper = new();
     private readonly ParseMapperWithoutAnySettings mapperWithoutAnySettings = new();
     private readonly ParseMapperWithFormatSettingsOnMethod mapperWithFormatSettingsOnMethod = new();
+    private readonly ParseMapperWithFormatAndInvariantCultureSettingsOnMethod mapperWithFormatAndInvariantCultureSettingsOnMethod = new();
 
     /// <summary>
     /// Unit test for <see cref="ParseNumericMapper.MapToSignedByte"/>.
@@ -426,6 +429,108 @@ public sealed class InvokeParseMapperUnitTest
         var actual = this.mapperWithFormatSettingsOnMethod.MapGuid(input);
 
         // Assert
-        actual.Should().Be(Guid.Parse(input));
+        actual.Should().Be(Guid.ParseExact(input, InvokeParseStrategySettings.GuidFormat));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithFormatAndInvariantCultureSettingsOnMethod.MapDateTime"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDateTimeToStringWithFormatAndInvariantCultureSettingsOnMethod()
+    {
+        // Arrange
+        const string input = "2025-02-01 22:17:34";
+
+        // Act
+        var actual = this.mapperWithFormatAndInvariantCultureSettingsOnMethod.MapDateTime(input);
+
+        // Assert
+        actual.Should().Be(DateTime.Parse(input));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithFormatAndInvariantCultureSettingsOnMethod.MapDateTimeOffset"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDateTimeOffsetToStringWithFormatAndInvariantCultureSettingsOnMethod()
+    {
+        // Arrange
+        const string input = "01-02-2025 34:17:22";
+
+        // Act
+        var actual = this.mapperWithFormatAndInvariantCultureSettingsOnMethod.MapDateTimeOffset(input);
+
+        // Assert
+        actual.Should().Be(DateTimeOffset.ParseExact(input, InvokeParseStrategySettings.DateTimeOffsetFormat, CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithFormatAndInvariantCultureSettingsOnMethod.MapDateOnly"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDateOnlyToStringWithFormatAndInvariantCultureSettingsOnMethod()
+    {
+        // Arrange
+        const string input = "2025+02+01";
+
+        // Act
+        var actual = this.mapperWithFormatAndInvariantCultureSettingsOnMethod.MapDateOnly(input);
+
+        // Assert
+        actual.Should().Be(DateOnly.ParseExact(input, InvokeParseStrategySettings.DateOnlyFormat, CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithFormatAndInvariantCultureSettingsOnMethod.MapTimeOnly"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapTimeOnlyToStringWithFormatAndInvariantCultureSettingsOnMethod()
+    {
+        // Arrange
+        const string input = "22+20+05";
+
+        // Act
+        var actual = this.mapperWithFormatAndInvariantCultureSettingsOnMethod.MapTimeOnly(input);
+
+        // Assert
+        actual.Should().Be(TimeOnly.ParseExact(input, InvokeParseStrategySettings.TimeOnlyFormat, CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithFormatAndInvariantCultureSettingsOnMethod.MapTimeSpan"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapTimeSpanToStringWithFormatAndInvariantCultureSettingsOnMethod()
+    {
+        // Arrange
+        const string input = "0:18:30:00.0000000";
+
+        // Act
+        var actual = this.mapperWithFormatAndInvariantCultureSettingsOnMethod.MapTimeSpan(input);
+
+        // Assert
+        actual.Should().Be(TimeSpan.ParseExact(input, InvokeParseStrategySettings.TimeSpanFormat, CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithFormatAndInvariantCultureSettingsOnMethod.MapGuid"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapGuidToStringWithFormatAndInvariantCultureSettingsOnMethod()
+    {
+        // Arrange
+        string input = Guid.NewGuid().ToString(InvokeParseStrategySettings.GuidFormat);
+
+        // Act
+        var actual = this.mapperWithFormatAndInvariantCultureSettingsOnMethod.MapGuid(input);
+
+        // Assert
+        actual.Should().Be(Guid.ParseExact(input, InvokeParseStrategySettings.GuidFormat));
     }
 }

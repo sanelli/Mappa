@@ -47,6 +47,7 @@ internal sealed class StringMapStrategyDetector
                 this.context.SourceType);
         }
 
+        // TODO [#78] Missing warning when only format is provided.
         // 02. string -> DateTime : InvokeParseStringWithFormatMapStrategy
         else if (this.CanMapStringToDateTime())
         {
@@ -59,6 +60,7 @@ internal sealed class StringMapStrategyDetector
                 this.context.MappaUserSettings.CultureName);
         }
 
+        // TODO [#78] Missing warning when only format is provided.
         // 03. string -> DateTimeOffset : InvokeParseStringWithFormatMapStrategy
         else if (this.CanMapStringToDateTimeOffset())
         {
@@ -71,6 +73,7 @@ internal sealed class StringMapStrategyDetector
                 this.context.MappaUserSettings.CultureName);
         }
 
+        // TODO [#78] Missing warning when only format is provided.
         // 04. string -> TimeSpan : InvokeParseStringWithFormatMapStrategy
         else if (this.CanMapStringToTimeSpan())
         {
@@ -83,6 +86,7 @@ internal sealed class StringMapStrategyDetector
                 this.context.MappaUserSettings.CultureName);
         }
 
+        // TODO [#80] Add support for TimeOnly.ParseExact(string value,string format).
         // 05. string -> TimeOnly : InvokeParseStringWithFormatMapStrategy
         else if (this.CanMapStringToTimeOnly())
         {
@@ -95,6 +99,7 @@ internal sealed class StringMapStrategyDetector
                 this.context.MappaUserSettings.CultureName);
         }
 
+        // TODO [#80] Add support for DateOnly.ParseExact(string value,string format).
         // 06. string -> DateOnly : InvokeParseStringWithFormatMapStrategy
         else if (this.CanMapStringToDateOnly())
         {
