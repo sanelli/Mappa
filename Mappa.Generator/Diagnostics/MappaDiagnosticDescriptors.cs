@@ -130,7 +130,7 @@ internal static class MappaDiagnosticDescriptors
     internal static DiagnosticDescriptor ParseExactDoesNotAcceptOnlyFormat
         => parseExactDoesNotAcceptOnlyFormat ??= BuildWarning(
             MappaDiagnosticsKind.ParseExactDoesNotAcceptOnlyFormat,
-            "Format will be ignore because method {0}.ParseExact(string, string) does not exist; consider defining a culture via MappaSettings.");
+            "Format will be ignored because method {0}.ParseExact(string, string) does not exist; consider defining a culture via MappaSettings.");
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(

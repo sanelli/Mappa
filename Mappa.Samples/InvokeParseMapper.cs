@@ -210,16 +210,20 @@ public sealed partial class ParseMapperWithFormatSettingsOnMethod
     /// </summary>
     /// <param name="input">The input string.</param>
     /// <returns>The input mapped to the target type.</returns>
+#pragma warning disable MP00013 // Format will be ignored
     [MappaSettings(DateTimeFormat = InvokeParseStrategySettings.DateTimeFormat)]
     public partial DateTime MapDateTime(string input);
+#pragma warning restore MP00013
 
     /// <summary>
     /// Map <see cref="string"/> to <see cref="DateTimeOffset"/>.
     /// </summary>
     /// <param name="input">The input string.</param>
     /// <returns>The input mapped to the target type.</returns>
+#pragma warning disable MP00013 // Format will be ignored
     [MappaSettings(DateTimeOffsetFormat = InvokeParseStrategySettings.DateTimeOffsetFormat)]
     public partial DateTimeOffset MapDateTimeOffset(string input);
+#pragma warning restore MP00013
 
     /// <summary>
     /// Map <see cref="string"/> to <see cref="DateOnly"/>.
@@ -242,8 +246,10 @@ public sealed partial class ParseMapperWithFormatSettingsOnMethod
     /// </summary>
     /// <param name="input">The input string.</param>
     /// <returns>The input mapped to the target type.</returns>
+#pragma warning disable MP00013 // Format will be ignored
     [MappaSettings(TimeSpanFormat = InvokeParseStrategySettings.TimeSpanFormat)]
     public partial TimeSpan MapTimeSpan(string input);
+#pragma warning restore MP00013
 
     /// <summary>
     /// Map <see cref="string"/> to <see cref="Guid"/>.
@@ -492,14 +498,18 @@ public sealed partial class ParseMapperWithFormatSettingsOnClass
     /// </summary>
     /// <param name="input">The input string.</param>
     /// <returns>The input mapped to the target type.</returns>
+#pragma warning disable MP00013 // Format will be ignored
     public partial DateTime MapDateTime(string input);
+#pragma warning restore MP00013
 
     /// <summary>
     /// Map <see cref="string"/> to <see cref="DateTimeOffset"/>.
     /// </summary>
     /// <param name="input">The input string.</param>
     /// <returns>The input mapped to the target type.</returns>
+#pragma warning disable MP00013 // Format will be ignored
     public partial DateTimeOffset MapDateTimeOffset(string input);
+#pragma warning restore MP00013
 
     /// <summary>
     /// Map <see cref="string"/> to <see cref="DateOnly"/>.
@@ -520,7 +530,9 @@ public sealed partial class ParseMapperWithFormatSettingsOnClass
     /// </summary>
     /// <param name="input">The input string.</param>
     /// <returns>The input mapped to the target type.</returns>
+#pragma warning disable MP00013 // Format will be ignored
     public partial TimeSpan MapTimeSpan(string input);
+#pragma warning restore MP00013
 
     /// <summary>
     /// Map <see cref="string"/> to <see cref="Guid"/>.
