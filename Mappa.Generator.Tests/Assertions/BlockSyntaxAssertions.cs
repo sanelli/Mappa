@@ -12,7 +12,7 @@ namespace Mappa.Generator.Tests.Assertions;
 /// Assertions for <see cref="BlockSyntax"/>.
 /// </summary>
 [DebuggerNonUserCode]
-public sealed class BlockSyntaxAssertions
+internal sealed class BlockSyntaxAssertions
     : ObjectAssertions<BlockSyntax, BlockSyntaxAssertions>,
         IStatementSyntaxBaseAssertions
 {
@@ -30,7 +30,7 @@ public sealed class BlockSyntaxAssertions
         BlockSyntax value,
         SemanticModel semanticModel,
         Compilation compilation)
-        : base(value)
+        : base(value, FluentAssertions.Execution.AssertionChain.GetOrCreate())
     {
         this.semanticModel = semanticModel;
         this.compilation = compilation;

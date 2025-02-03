@@ -12,7 +12,7 @@ namespace Mappa.Generator.Tests.Assertions;
 /// Assertions for <see cref="FileScopedNamespaceDeclarationSyntax"/>.
 /// </summary>
 [DebuggerNonUserCode]
-public sealed class FileScopedNamespaceDeclarationSyntaxAssertions
+internal sealed class FileScopedNamespaceDeclarationSyntaxAssertions
     : BaseNamespaceDeclarationSyntaxAssertions<FileScopedNamespaceDeclarationSyntax, FileScopedNamespaceDeclarationSyntaxAssertions>
 {
     /// <summary>

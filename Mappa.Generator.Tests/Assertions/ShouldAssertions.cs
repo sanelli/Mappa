@@ -15,7 +15,7 @@ namespace Mappa.Generator.Tests.Assertions;
 /// </summary>
 // TODO [#43] Extract to its own project in a different solution/repo.
 [DebuggerNonUserCode]
-public static class ShouldAssertions
+internal static class ShouldAssertions
 {
     /// <summary>
     /// Begin asserting on an object of type <see cref="GeneratorRunResult"/>.

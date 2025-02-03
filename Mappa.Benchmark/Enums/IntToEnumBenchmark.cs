@@ -15,7 +15,7 @@ namespace Mappa.Benchmark.Enums;
 /// to <see cref="Enum"/> mapper.
 /// </summary>
 [MemoryDiagnoser]
-public class IntToEnumBenchmark
+internal class IntToEnumBenchmark
 {
     private const int Input = (int)StringComparison.InvariantCulture;
 

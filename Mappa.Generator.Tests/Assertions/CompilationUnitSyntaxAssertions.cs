@@ -12,7 +12,7 @@ namespace Mappa.Generator.Tests.Assertions;
 /// Assertions for <see cref="SyntaxTree"/>.
 /// </summary>
 [DebuggerNonUserCode]
-public sealed class CompilationUnitSyntaxAssertions
+internal sealed class CompilationUnitSyntaxAssertions
     : ObjectAssertions<CompilationUnitSyntax, CompilationUnitSyntaxAssertions>
 {
     private readonly SemanticModel semanticModel;
@@ -28,7 +28,7 @@ public sealed class CompilationUnitSyntaxAssertions
         CompilationUnitSyntax value,
         SemanticModel semanticModel,
         Compilation compilation)
-        : base(value)
+        : base(value, FluentAssertions.Execution.AssertionChain.GetOrCreate())
     {
         this.semanticModel = semanticModel;
         this.compilation = compilation;

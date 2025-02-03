@@ -13,7 +13,7 @@ namespace Mappa.Generator.Tests.Assertions;
 /// Assertions for <see cref="AttributeSyntax"/>.
 /// </summary>
 [DebuggerNonUserCode]
-public sealed class AttributeSyntaxAssertions
+internal sealed class AttributeSyntaxAssertions
     : ObjectAssertions<AttributeSyntax, AttributeSyntaxAssertions>
 {
     /// <summary>
@@ -21,7 +21,7 @@ public sealed class AttributeSyntaxAssertions
     /// </summary>
     /// <param name="value">The target of the assertions.</param>
     internal AttributeSyntaxAssertions(AttributeSyntax value)
-        : base(value)
+        : base(value, FluentAssertions.Execution.AssertionChain.GetOrCreate())
     {
     }
 

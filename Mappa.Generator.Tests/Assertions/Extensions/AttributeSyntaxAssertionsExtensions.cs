@@ -11,7 +11,7 @@ namespace Mappa.Generator.Tests.Assertions.Extensions;
 /// Assertion extensions for <see cref="AttributeSyntaxAssertions"/>.
 /// </summary>
 [DebuggerNonUserCode]
-public static class AttributeSyntaxAssertionsExtensions
+internal static class AttributeSyntaxAssertionsExtensions
 {
     /// <summary>
     /// Assert that the attribute is a <see cref="GeneratedCodeAttribute"/>.

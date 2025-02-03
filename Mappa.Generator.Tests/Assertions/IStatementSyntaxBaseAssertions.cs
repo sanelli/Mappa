@@ -9,7 +9,7 @@ namespace Mappa.Generator.Tests.Assertions;
 /// <summary>
 /// Base interface to assert on <see cref="StatementSyntax"/>.
 /// </summary>
-public interface IStatementSyntaxBaseAssertions
+internal interface IStatementSyntaxBaseAssertions
 {
     /// <summary>
     /// Assert the subject is a block statement.

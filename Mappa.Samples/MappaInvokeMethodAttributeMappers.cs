@@ -235,10 +235,12 @@ public sealed partial class MapEmptyConstructorWithLocalNonStaticMethodWithSourc
     [MappaInvokeMethod(nameof(TargetClassModel.ParamA), nameof(CustomMap))]
     public partial TargetClassModel Map(SourceClassModel source);
 
+    #pragma warning disable S2325 // Make 'CustomMap' a static method
     private string CustomMap(SourceClassModel source)
     {
         return $"{nameof(MapEmptyConstructorWithLocalNonStaticMethodWithSourceClassInput)}/not-static/({nameof(SourceClassModel)})/{source.ParamA}/{source.ParamB}";
     }
+    #pragma warning disable S2325
 }
 
 /// <summary>
@@ -262,10 +264,12 @@ public sealed partial class MapEmptyConstructorWithLocalNonStaticMethodWithImpli
     [MappaInvokeMethod(nameof(TargetClassModel.ParamA), nameof(CustomMap))]
     public partial TargetClassModel Map(SourceClassModel source);
 
+    #pragma warning disable S2325 // Make 'CustomMap' a static method
     private string CustomMap(object source)
     {
         return $"{nameof(MapEmptyConstructorWithLocalNonStaticMethodWithImplicitConversionFromSourceClassInput)}/not-static/(object))/{source}";
     }
+    #pragma warning restore S2325
 }
 
 /// <summary>
@@ -484,9 +488,11 @@ public sealed class MapperDependencyHelper
     /// <param name="source">The source.</param>
     /// <param name="property">The property.</param>
     /// <returns>The mapped string.</returns>
+#pragma warning disable S2325 // Make 'Map' a static method
     public string Map(SourceClassModel source, int property)
     {
         ArgumentNullException.ThrowIfNull(source);
         return $"{nameof(this.Map)}/{source.ParamA}/{source.ParamB}/{property}";
     }
+    #pragma warning disable S2325
 }

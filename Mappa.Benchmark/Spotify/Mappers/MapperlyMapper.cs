@@ -10,7 +10,7 @@ namespace Mappa.Benchmark.Spotify.Mappers;
 /// Mapper using <see cref="Riok.Mapperly"/>.
 /// </summary>
 [Riok.Mapperly.Abstractions.Mapper]
-public sealed partial class MapperlyMapper
+internal sealed partial class MapperlyMapper
 {
     /// <summary>
     /// Map from <see cref="SpotifyAlbumDto"/>

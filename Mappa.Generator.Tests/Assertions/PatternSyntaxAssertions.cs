@@ -9,7 +9,7 @@ namespace Mappa.Generator.Tests.Assertions;
 /// <summary>
 /// Assertions on the <see cref="PatternSyntax"/>.
 /// </summary>
-public sealed class PatternSyntaxAssertions
+internal sealed class PatternSyntaxAssertions
  : ObjectAssertions<PatternSyntax, PatternSyntaxAssertions>
 {
     /// <summary>
@@ -19,7 +19,7 @@ public sealed class PatternSyntaxAssertions
     /// <param name="semanticModel">The semantic model.</param>
     /// <param name="compilation">The compilation.</param>
     public PatternSyntaxAssertions(PatternSyntax value, SemanticModel semanticModel, Compilation compilation)
-        : base(value)
+        : base(value, FluentAssertions.Execution.AssertionChain.GetOrCreate())
     {
         this.SemanticModel = semanticModel;
         this.Compilation = compilation;

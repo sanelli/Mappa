@@ -13,7 +13,7 @@ namespace Mappa.Generator.Tests.Assertions;
 /// Assertions for <see cref="MethodDeclarationSyntax"/>.
 /// </summary>
 [DebuggerNonUserCode]
-public sealed class MethodDeclarationSyntaxAssertions
+internal sealed class MethodDeclarationSyntaxAssertions
     : ObjectAssertions<MethodDeclarationSyntax, MethodDeclarationSyntaxAssertions>
 {
     /// <summary>
@@ -26,7 +26,7 @@ public sealed class MethodDeclarationSyntaxAssertions
         MethodDeclarationSyntax value,
         SemanticModel semanticModel,
         Compilation compilation)
-        : base(value)
+        : base(value, FluentAssertions.Execution.AssertionChain.GetOrCreate())
     {
         this.SemanticModel = semanticModel;
         this.Compilation = compilation;
