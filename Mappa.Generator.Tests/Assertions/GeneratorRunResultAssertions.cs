@@ -11,7 +11,7 @@ namespace Mappa.Generator.Tests.Assertions;
 /// Assertions for <see cref="GeneratorRunResult"/>.
 /// </summary>
 [DebuggerNonUserCode]
-public sealed class GeneratorRunResultAssertions
+internal sealed class GeneratorRunResultAssertions
     : ObjectAssertions<GeneratorRunResult, GeneratorRunResultAssertions>
 {
     /// <summary>
@@ -19,7 +19,7 @@ public sealed class GeneratorRunResultAssertions
     /// </summary>
     /// <param name="value">The target of the assertions.</param>
     internal GeneratorRunResultAssertions(GeneratorRunResult value)
-        : base(value)
+        : base(value, FluentAssertions.Execution.AssertionChain.GetOrCreate())
     {
     }
 

@@ -9,7 +9,7 @@ namespace Mappa.Generator.Tests.Assertions;
 /// <summary>
 /// Assertions on <see cref="SwitchLabelSyntax"/>.
 /// </summary>
-public interface ISwitchLabelSyntaxAssertions
+internal interface ISwitchLabelSyntaxAssertions
 {
     /// <summary>
     /// Assert that the syntax is a case.

@@ -12,7 +12,7 @@ namespace Mappa.Generator.Tests.Assertions;
 /// Assertions on <see cref="VariableDeclarationSyntax"/>.
 /// </summary>
 [DebuggerNonUserCode]
-public sealed class VariableDeclarationSyntaxAssertions
+internal sealed class VariableDeclarationSyntaxAssertions
 : ObjectAssertions<VariableDeclarationSyntax, VariableDeclarationSyntaxAssertions>
 {
     /// <summary>
@@ -22,7 +22,7 @@ public sealed class VariableDeclarationSyntaxAssertions
     /// <param name="semanticModel">The semantic model.</param>
     /// <param name="compilation">The compilation.</param>
     public VariableDeclarationSyntaxAssertions(VariableDeclarationSyntax value, SemanticModel semanticModel, Compilation compilation)
-        : base(value)
+        : base(value, FluentAssertions.Execution.AssertionChain.GetOrCreate())
     {
         this.SemanticModel = semanticModel;
         this.Compilation = compilation;

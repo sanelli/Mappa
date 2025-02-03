@@ -9,7 +9,7 @@ namespace Mappa.Generator.Tests.Assertions;
 /// <summary>
 /// Assertions on <see cref="CaseSwitchLabelSyntax"/>.
 /// </summary>
-public sealed class CaseSwitchLabelSyntaxAssertions
+internal sealed class CaseSwitchLabelSyntaxAssertions
     : ObjectAssertions<CaseSwitchLabelSyntax, CaseSwitchLabelSyntaxAssertions>,
         ISwitchLabelSyntaxAssertions
 {
@@ -23,7 +23,7 @@ public sealed class CaseSwitchLabelSyntaxAssertions
         CaseSwitchLabelSyntax value,
         SemanticModel semanticModel,
         Compilation compilation)
-        : base(value)
+        : base(value, FluentAssertions.Execution.AssertionChain.GetOrCreate())
     {
         this.SemanticModel = semanticModel;
         this.Compilation = compilation;

@@ -69,7 +69,7 @@ internal sealed class StackSetting<TSettings>
     /// <paramref name="expectedValue"/>, <c>false</c> otherwise.</returns>
     internal bool Equals(TSettings expectedValue)
     {
-        if (expectedValue == null)
+        if (expectedValue is null)
         {
             return false;
         }

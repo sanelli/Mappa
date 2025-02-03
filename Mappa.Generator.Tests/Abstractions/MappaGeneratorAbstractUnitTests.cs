@@ -10,7 +10,9 @@ namespace Mappa.Generator.Tests.Abstractions;
 /// Base class with helper methods for running tests.
 /// </summary>
 // TODO [#43] Extract to its own project in a different solution/repo.
+ #pragma warning disable CA1515
 public abstract class MappaGeneratorAbstractUnitTests
+ #pragma warning restore CA1515
 {
     /// <summary>
     /// Run the generator on the input source.

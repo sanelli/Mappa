@@ -14,7 +14,7 @@ namespace Mappa.Generator.Tests.Assertions;
 /// <typeparam name="TNamespaceSyntax">The namespace syntax.</typeparam>
 /// <typeparam name="TDerivedAssertion">The derived return type.</typeparam>
 [DebuggerNonUserCode]
-public abstract class BaseNamespaceDeclarationSyntaxAssertions<TNamespaceSyntax, TDerivedAssertion>
+internal abstract class BaseNamespaceDeclarationSyntaxAssertions<TNamespaceSyntax, TDerivedAssertion>
     : ObjectAssertions<TNamespaceSyntax, TDerivedAssertion>
     where TNamespaceSyntax : BaseNamespaceDeclarationSyntax
     where TDerivedAssertion : BaseNamespaceDeclarationSyntaxAssertions<TNamespaceSyntax, TDerivedAssertion>
@@ -29,7 +29,7 @@ public abstract class BaseNamespaceDeclarationSyntaxAssertions<TNamespaceSyntax,
         TNamespaceSyntax value,
         SemanticModel semanticModel,
         Compilation compilation)
-        : base(value)
+        : base(value, FluentAssertions.Execution.AssertionChain.GetOrCreate())
     {
         this.SemanticModel = semanticModel;
         this.Compilation = compilation;

@@ -10,7 +10,7 @@ namespace Mappa.Benchmark.Enums.Mappers;
 /// Mapper using <see cref="Mappa"/>.
 /// </summary>
 [Mapper]
-public sealed partial class MapperlyMapper
+internal sealed partial class MapperlyMapper
 {
     /// <summary>
     /// Map from <see cref="string"/>

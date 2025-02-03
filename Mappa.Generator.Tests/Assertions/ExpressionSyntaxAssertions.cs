@@ -12,7 +12,7 @@ namespace Mappa.Generator.Tests.Assertions;
 /// Assertions for <see cref="ExpressionSyntax"/>.
 /// </summary>
 [DebuggerNonUserCode]
-public sealed class ExpressionSyntaxAssertions
+internal sealed class ExpressionSyntaxAssertions
     : ObjectAssertions<ExpressionSyntax, ExpressionSyntaxAssertions>
 {
     /// <summary>
@@ -25,7 +25,7 @@ public sealed class ExpressionSyntaxAssertions
         ExpressionSyntax value,
         SemanticModel semanticModel,
         Compilation compilation)
-        : base(value)
+        : base(value, FluentAssertions.Execution.AssertionChain.GetOrCreate())
     {
         this.SemanticModel = semanticModel;
         this.Compilation = compilation;

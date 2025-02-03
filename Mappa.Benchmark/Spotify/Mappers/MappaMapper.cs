@@ -11,7 +11,7 @@ namespace Mappa.Benchmark.Spotify.Mappers;
 /// Mapper using <see cref="Mappa"/>.
 /// </summary>
 [Mappa]
-public sealed partial class MappaMapper
+internal sealed partial class MappaMapper
 {
     /// <summary>
     /// Map from <see cref="SpotifyAlbumDto"/>

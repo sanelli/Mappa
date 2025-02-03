@@ -9,7 +9,7 @@ namespace Mappa.Benchmark.Enums.Mappers;
 /// <summary>
 /// The mapper profile for <see cref="AutoMapper"/>.
 /// </summary>
-public sealed class AutomapperMapperProfile
+internal sealed class AutomapperMapperProfile
     : Profile
 {
     /// <summary>

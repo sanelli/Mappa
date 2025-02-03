@@ -9,7 +9,7 @@ namespace Mappa.Generator.Tests.Assertions;
 /// <summary>
 /// Assertions on <see cref="StatementSyntax"/>.
 /// </summary>
-public class StatementSyntaxAssertions
+internal sealed class StatementSyntaxAssertions
     : ObjectAssertions<StatementSyntax, StatementSyntaxAssertions>,
         IStatementSyntaxBaseAssertions
 {
@@ -20,7 +20,7 @@ public class StatementSyntaxAssertions
     /// <param name="semanticModel">The semantic model.</param>
     /// <param name="compilation">The compilation.</param>
     public StatementSyntaxAssertions(StatementSyntax value, SemanticModel semanticModel, Compilation compilation)
-        : base(value)
+        : base(value, FluentAssertions.Execution.AssertionChain.GetOrCreate())
     {
         this.SemanticModel = semanticModel;
         this.Compilation = compilation;

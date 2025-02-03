@@ -9,7 +9,7 @@ namespace Mappa.Samples.Aot;
 /// <summary>
 /// Program class.
 /// </summary>
-public static class Program
+internal static class Program
 {
     /// <summary>
     /// Entrypoint.
