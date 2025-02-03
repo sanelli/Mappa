@@ -28,7 +28,28 @@ internal sealed class InvokeToStringMapStrategyBuilder
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
         var temporary = context.NextTemporary();
-        var code = $"string {temporary} = {source}.ToString();";
+        string parameters;
+        if (this.strategy.CultureInfoSetting is not CultureInfoSetting.Undefined &&
+            this.strategy.CultureInfoSetting is not CultureInfoSetting.None &&
+            !string.IsNullOrWhiteSpace(this.strategy.Format))
+        {
+            parameters = $"\"{this.strategy.Format}\", {GetCulture(this.strategy.CultureInfoSetting, this.strategy.CultureName)}";
+        }
+        else if (this.strategy.CultureInfoSetting is not CultureInfoSetting.Undefined &&
+                 this.strategy.CultureInfoSetting is not CultureInfoSetting.None)
+        {
+            parameters = $"{GetCulture(this.strategy.CultureInfoSetting, this.strategy.CultureName)}";
+        }
+        else if (!string.IsNullOrWhiteSpace(this.strategy.Format))
+        {
+            parameters = $"\"{this.strategy.Format}\"";
+        }
+        else
+        {
+            parameters = string.Empty;
+        }
+
+        var code = $"string {temporary} = {source}.ToString({parameters});";
 
         var ruleComment = mappaGlobalOptions.MappaDebugComments
             ? $"/* Mappa Rule: {this.strategy.Rule} */ "
@@ -36,4 +57,13 @@ internal sealed class InvokeToStringMapStrategyBuilder
 
         return ($"{ruleComment}{temporary}", code);
     }
+
+    private static string GetCulture(CultureInfoSetting cultureInfoSettings, string? cultureName)
+        => cultureInfoSettings switch
+        {
+            CultureInfoSetting.CurrentCulture => "System.Globalization.CultureInfo.CurrentCulture",
+            CultureInfoSetting.InvariantCulture => "System.Globalization.CultureInfo.InvariantCulture",
+            CultureInfoSetting.UserDefined => $"System.Globalization.CultureInfo.GetCultureInfo(\"{cultureName ?? string.Empty}\")",
+            _ => throw new ArgumentOutOfRangeException(nameof(cultureInfoSettings), cultureInfoSettings, null),
+        };
 }

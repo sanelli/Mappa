@@ -25,6 +25,8 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? cannotDetectType;
     private static DiagnosticDescriptor? cannotFindFieldOrProperty;
     private static DiagnosticDescriptor? cannotUseMappaAssignFromContextAttributeWithoutContextParameter;
+    private static DiagnosticDescriptor? userDefinedCultureIsMissingCultureName;
+    private static DiagnosticDescriptor? parseExactDoesNotAcceptOnlyFormat;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -114,6 +116,22 @@ internal static class MappaDiagnosticDescriptors
             MappaDiagnosticsKind.CannotUseMappaAssignFromContextAttributeWithoutContextParameter,
             "Cannot use attribute MappaAssignFromContextAttribute for field, property or parameter '{0}': the method does not provide a MappaContext parameter.");
 
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.UserDefinedCultureIsMissingCultureName"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor UserDefinedCultureIsMissingCultureName
+        => userDefinedCultureIsMissingCultureName ??= BuildWarning(
+            MappaDiagnosticsKind.UserDefinedCultureIsMissingCultureName,
+            "The user defined culture does not define a culture name while mapping method '{0}': no culture will be used.");
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.ParseExactDoesNotAcceptOnlyFormat"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor ParseExactDoesNotAcceptOnlyFormat
+        => parseExactDoesNotAcceptOnlyFormat ??= BuildWarning(
+            MappaDiagnosticsKind.ParseExactDoesNotAcceptOnlyFormat,
+            "Format will be ignored because method {0}.ParseExact(string, string) does not exist; consider defining a culture via MappaSettings.");
+
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(
             kind.ToDiagnosticId(),
@@ -121,5 +139,14 @@ internal static class MappaDiagnosticDescriptors
             message,
             Category,
             DiagnosticSeverity.Error,
+            true);
+
+    private static DiagnosticDescriptor BuildWarning(MappaDiagnosticsKind kind, string message)
+        => new(
+            kind.ToDiagnosticId(),
+            Title,
+            message,
+            Category,
+            DiagnosticSeverity.Warning,
             true);
 }

@@ -2,6 +2,8 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Diagnostics;
+using Mappa.Generator.Exceptions;
 using Mappa.Generator.Extensions;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
@@ -45,47 +47,87 @@ internal sealed class StringMapStrategyDetector
                 this.context.SourceType);
         }
 
-        // 02. string -> DateTime : ParseDateTimeStrategy
+        // 02. string -> DateTime : InvokeParseStringWithFormatMapStrategy
         else if (this.CanMapStringToDateTime())
         {
-            mapStrategy = new StringToDateTimeMapStrategy(
+            var actualCultureSettingsInfo = this.GetActualCultureSettingsInfo();
+            WarnIfOnlyFormatIsProvided(actualCultureSettingsInfo, this.context.MappaUserSettings.DateTimeFormat);
+
+            mapStrategy = new InvokeParseStringWithFormatMapStrategy(
                 this.context.TargetType,
-                this.context.SourceType);
+                this.context.SourceType,
+                MappaAlgorithmRule.StringToDateTime,
+                this.context.MappaUserSettings.DateTimeFormat,
+                actualCultureSettingsInfo,
+                this.context.MappaUserSettings.CultureName);
         }
 
-        // 03. string -> TimeSpan : ParseTimeStampStrategy
+        // 03. string -> DateTimeOffset : InvokeParseStringWithFormatMapStrategy
+        else if (this.CanMapStringToDateTimeOffset())
+        {
+            var actualCultureSettingsInfo = this.GetActualCultureSettingsInfo();
+            WarnIfOnlyFormatIsProvided(actualCultureSettingsInfo, this.context.MappaUserSettings.DateTimeOffsetFormat);
+
+            mapStrategy = new InvokeParseStringWithFormatMapStrategy(
+                this.context.TargetType,
+                this.context.SourceType,
+                MappaAlgorithmRule.StringToDateTimeOffset,
+                this.context.MappaUserSettings.DateTimeOffsetFormat,
+                actualCultureSettingsInfo,
+                this.context.MappaUserSettings.CultureName);
+        }
+
+        // 04. string -> TimeSpan : InvokeParseStringWithFormatMapStrategy
         else if (this.CanMapStringToTimeSpan())
         {
-            mapStrategy = new StringToTimeSpanMapStrategy(
+            var actualCultureSettingsInfo = this.GetActualCultureSettingsInfo();
+            WarnIfOnlyFormatIsProvided(actualCultureSettingsInfo, this.context.MappaUserSettings.TimeSpanFormat);
+
+            mapStrategy = new InvokeParseStringWithFormatMapStrategy(
                 this.context.TargetType,
-                this.context.SourceType);
+                this.context.SourceType,
+                MappaAlgorithmRule.StringToTimeSpan,
+                this.context.MappaUserSettings.TimeSpanFormat,
+                actualCultureSettingsInfo,
+                this.context.MappaUserSettings.CultureName);
         }
 
-        // 04. string -> TimeOnly : ParseTimeOnlyStrategy
+        // 05. string -> TimeOnly : InvokeParseStringWithFormatMapStrategy
         else if (this.CanMapStringToTimeOnly())
         {
-            mapStrategy = new StringToTimeOnlyMapStrategy(
+            mapStrategy = new InvokeParseStringWithFormatForDateOnlyAndTimeOnlyMapStrategy(
                 this.context.TargetType,
-                this.context.SourceType);
+                this.context.SourceType,
+                MappaAlgorithmRule.StringToTimeOnly,
+                this.context.MappaUserSettings.TimeOnlyFormat,
+                this.GetActualCultureSettingsInfo(),
+                this.context.MappaUserSettings.CultureName);
         }
 
-        // 05. string -> DateOnly : ParseDateOnlyStrategy
+        // 06. string -> DateOnly : InvokeParseStringWithFormatMapStrategy
         else if (this.CanMapStringToDateOnly())
         {
-            mapStrategy = new StringToDateOnlyMapStrategy(
+            mapStrategy = new InvokeParseStringWithFormatForDateOnlyAndTimeOnlyMapStrategy(
                 this.context.TargetType,
-                this.context.SourceType);
+                this.context.SourceType,
+                MappaAlgorithmRule.StringToDateOnly,
+                this.context.MappaUserSettings.DateOnlyFormat,
+                this.GetActualCultureSettingsInfo(),
+                this.context.MappaUserSettings.CultureName);
         }
 
-        // 06. string -> Guid : ParseGuidStrategy
+        // 07. string -> Guid : ParseGuidStrategy
         else if (this.CanMapStringToGuid())
         {
             mapStrategy = new StringToGuidMapStrategy(
                 this.context.TargetType,
-                this.context.SourceType);
+                this.context.SourceType,
+                this.context.MappaUserSettings.GuidFormat,
+                this.GetActualCultureSettingsInfo(),
+                this.context.MappaUserSettings.CultureName);
         }
 
-        // 07. string -> Uri : ParseUriStrategy
+        // 08. string -> Uri : ParseUriStrategy
         else if (this.CanMapStringToUri())
         {
             mapStrategy = new StringToUriMapStrategy(
@@ -93,15 +135,108 @@ internal sealed class StringMapStrategyDetector
                 this.context.SourceType);
         }
 
-        // 08. S -> string : InvokeToStringStrategy
+        // 09. S -> string : InvokeToStringStrategy
         else if (this.CanMapToString())
         {
+            var formatAndCulture = this.IdentifyFormatAndCulture();
             mapStrategy = new InvokeToStringMapStrategy(
                 this.context.TargetType,
-                this.context.SourceType);
+                this.context.SourceType,
+                formatAndCulture.Format,
+                formatAndCulture.CultureInfoSetting,
+                formatAndCulture.CultureName);
         }
 
         return mapStrategy is not NoMapStrategy;
+
+        void WarnIfOnlyFormatIsProvided(CultureInfoSetting actualCultureSettingsInfo, string? format)
+        {
+            // If format is provided but not the culture then we have a problem
+            // because some types (DateTime, DateTimeOffset, TimeSpan) does not support
+            // ParseExact(string value, string format) so format will be ignored.
+            if (!string.IsNullOrWhiteSpace(format)
+                && (actualCultureSettingsInfo is CultureInfoSetting.None || actualCultureSettingsInfo is CultureInfoSetting.Undefined))
+            {
+                var rootMethod = this.context.GetRootMapMethod();
+                this.context.ReportDiagnostic(MappaDiagnostics.ParseExactDoesNotAcceptOnlyFormat(
+                    rootMethod.MethodDeclarationSyntax,
+                    this.context.TargetType.ToDisplayString()));
+            }
+        }
+    }
+
+    private CultureInfoSetting GetActualCultureSettingsInfo()
+    {
+        var cultureSettingsInfo = this.context.MappaUserSettings.CultureInfoSetting;
+        if (cultureSettingsInfo is CultureInfoSetting.UserDefined
+            && string.IsNullOrWhiteSpace(this.context.MappaUserSettings.CultureName))
+        {
+            cultureSettingsInfo = CultureInfoSetting.None;
+            this.context.ReportDiagnostic(MappaDiagnostics.UserDefinedCultureIsMissingCultureName(
+                this.context.GetRootMapMethod().MethodDeclarationSyntax ?? throw new MappaGeneratorException("Method declaration syntax is missing")));
+        }
+
+        return cultureSettingsInfo;
+    }
+
+    private (string? Format, CultureInfoSetting CultureInfoSetting, string? CultureName) IdentifyFormatAndCulture()
+    {
+        var settings = this.context.MappaUserSettings;
+
+        string? format = null;
+        CultureInfoSetting cultureInfoSettings = CultureInfoSetting.None;
+        string? cultureName = null;
+
+        if (this.context.SourceType.IsGuid(this.compilation))
+        {
+            format = settings.GuidFormat;
+            UpdateCultureSettingsAndName(false);
+        }
+        else if (this.context.SourceType.IsDateTime())
+        {
+            format = settings.DateTimeFormat;
+            UpdateCultureSettingsAndName();
+        }
+        else if (this.context.SourceType.IsDateTimeOffset(this.compilation))
+        {
+            format = settings.DateTimeOffsetFormat;
+            UpdateCultureSettingsAndName();
+        }
+        else if (this.context.SourceType.IsDateOnly(this.compilation))
+        {
+            format = settings.DateOnlyFormat;
+            UpdateCultureSettingsAndName();
+        }
+        else if (this.context.SourceType.IsTimeOnly(this.compilation))
+        {
+            format = settings.TimeOnlyFormat;
+            UpdateCultureSettingsAndName();
+        }
+        else if (this.context.SourceType.IsTimeSpan(this.compilation))
+        {
+            format = settings.TimeSpanFormat;
+            UpdateCultureSettingsAndName(false);
+        }
+
+        return (format, cultureInfoSettings, cultureName);
+
+        void UpdateCultureSettingsAndName(bool acceptFormatProviderOnly = true)
+        {
+            if (acceptFormatProviderOnly || !string.IsNullOrWhiteSpace(format))
+            {
+                if (settings.CultureInfoSetting is CultureInfoSetting.UserDefined
+                    && string.IsNullOrWhiteSpace(settings.CultureName))
+                {
+                    this.context.ReportDiagnostic(MappaDiagnostics.UserDefinedCultureIsMissingCultureName(
+                        this.context.GetRootMapMethod().MethodDeclarationSyntax!));
+                }
+                else
+                {
+                    cultureInfoSettings = settings.CultureInfoSetting;
+                    cultureName = settings.CultureName;
+                }
+            }
+        }
     }
 
     private bool CanMapStringToNumber()
@@ -116,6 +251,13 @@ internal sealed class StringMapStrategyDetector
         var isTargetDateTime = this.context.TargetType.IsDateTime();
         var isSourceString = this.context.SourceType.IsString();
         return isTargetDateTime && isSourceString;
+    }
+
+    private bool CanMapStringToDateTimeOffset()
+    {
+        var isTargetDateTimeOffset = this.context.TargetType.IsDateTimeOffset(this.compilation);
+        var isSourceString = this.context.SourceType.IsString();
+        return isTargetDateTimeOffset && isSourceString;
     }
 
     private bool CanMapToString()

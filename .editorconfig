@@ -368,5 +368,5 @@ dotnet_diagnostic.IDE0005.severity = error
 # S1135: Track uses of "TODO" tags
 dotnet_diagnostic.S1135.severity = none
 csharp_style_namespace_declarations = file_scoped:error
-mappa.debug = true
-dotnet_diagnostic.MP00000.severity = suggestion
+mappa.debug = false
+dotnet_diagnostic.MP00000.severity = none

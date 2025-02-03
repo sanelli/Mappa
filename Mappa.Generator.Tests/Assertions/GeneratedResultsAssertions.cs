@@ -90,6 +90,18 @@ public sealed class GeneratedResultsAssertions
     }
 
     /// <summary>
+    /// Check it contains only warnings.
+    /// </summary>
+    /// <param name="warningIds">The warning identifiers.</param>
+    /// <returns>The assertions instance.</returns>
+    public GeneratedResultsAssertions HaveOnlyWarnings(params string[] warningIds)
+    {
+        var runResult = this.HaveOneResult();
+        runResult.Should().HaveOnlyWarnings(warningIds);
+        return this;
+    }
+
+    /// <summary>
     /// Gets the assertions for the syntax tree.
     /// </summary>
     /// <returns>The syntax tree assertions instance.</returns>

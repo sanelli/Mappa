@@ -5,8 +5,11 @@ using Mappa.Attributes;
 
 namespace Mappa.Samples;
 
+// TODO [#56] Add tests for DateTimeOffset
+// TODO [#56] Add tests using various combinations of MappaSettings.
+
 /// <summary>
-/// Mapper using the strategies from string to other system entiteis.
+/// Mapper using the strategies from string to other system entities.
 /// </summary>
 [Mappa]
 public sealed partial class StringToSystemEntitiesMapper

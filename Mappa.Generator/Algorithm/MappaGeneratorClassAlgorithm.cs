@@ -4,6 +4,7 @@
 
 using System.Collections.Immutable;
 
+using Mappa.Attributes;
 using Mappa.Generator.Builders;
 using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Diagnostics.Debug;
@@ -94,6 +95,7 @@ internal sealed class MappaGeneratorClassAlgorithm
 
     private void GenerateStrategyForEachMethod(
         MappaClassGeneratorContext classContext,
+        MappaUserSettings mappaUserSettings,
         CancellationToken cancellationToken)
     {
         foreach (var mapMethod in classContext.MapMethods)
@@ -105,15 +107,19 @@ internal sealed class MappaGeneratorClassAlgorithm
                 continue;
             }
 
-            var methodContext = new MappaMethodGeneratorContext(classContext, mapMethod);
-            var typeIdentifierAlgorithm = new TypeMapIdentifierAlgorithm(
-                methodContext,
-                this.Compilation,
-                cancellationToken);
-            var strategy = typeIdentifierAlgorithm.GetStrategy();
-            var methodParameterMapStrategy = new MethodParameterMapStrategy(strategy);
-            mapMethod.SetStrategy(methodParameterMapStrategy);
-            mapMethod.MarkMapped();
+            var mappaSettingsAttribute = mapMethod.GetAttribute<MappaSettingsAttribute>();
+            using (mappaUserSettings.Apply(mappaSettingsAttribute))
+            {
+                var methodContext = new MappaMethodGeneratorContext(classContext, mappaUserSettings, mapMethod);
+                var typeIdentifierAlgorithm = new TypeMapIdentifierAlgorithm(
+                    methodContext,
+                    this.Compilation,
+                    cancellationToken);
+                var strategy = typeIdentifierAlgorithm.GetStrategy();
+                var methodParameterMapStrategy = new MethodParameterMapStrategy(strategy);
+                mapMethod.SetStrategy(methodParameterMapStrategy);
+                mapMethod.MarkMapped();
+            }
         }
     }
 
@@ -216,11 +222,17 @@ internal sealed class MappaGeneratorClassAlgorithm
             }
         }
 
-        // Identify the strategy for each method.
-        // While generating strategies new methods might be found or requested to be generated.
-        while (!classContext.AreAllMethodsMapped())
+        var mappaUserSettings = new MappaUserSettings(options);
+        var mappaSettingsAttribute = classContext.ClassSymbol.GetAttributes().GetMappaSettingsAttribute(this.Compilation);
+
+        using (mappaUserSettings.Apply(mappaSettingsAttribute))
         {
-            this.GenerateStrategyForEachMethod(classContext, cancellationToken);
+            // Identify the strategy for each method.
+            // While generating strategies new methods might be found or requested to be generated.
+            while (!classContext.AreAllMethodsMapped())
+            {
+                this.GenerateStrategyForEachMethod(classContext, mappaUserSettings, cancellationToken);
+            }
         }
 
         // Build the source code (only if there is something to generate)
@@ -316,7 +328,7 @@ internal sealed class MappaGeneratorClassAlgorithm
         string accessFieldName,
         MappaClassGeneratorContext classContext)
     {
-        if (method.GetMappaIgnoreAttribute(this.Compilation) is not null)
+        if (method.GetAttributes().GetMappaIgnoreAttribute(this.Compilation) is not null)
         {
             return;
         }
