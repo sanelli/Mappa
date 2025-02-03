@@ -185,4 +185,20 @@ internal static class MappaDiagnostics
             MappaDiagnosticDescriptors.UserDefinedCultureIsMissingCultureName,
             methodDeclarationSyntax.GetLocation(),
             methodDeclarationSyntax.Identifier.ToFullString());
+
+    /// <summary>
+    /// Diagnostic to report the fact that on mappa settings a format is specified
+    /// but since a ParseExact(string,string) does not exist for the type
+    /// <paramref name="typeName"/>, the format will be ignored.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="typeName">The name of the type to which we are mapping to.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic ParseExactDoesNotAcceptOnlyFormat(
+        MethodDeclarationSyntax? methodDeclarationSyntax,
+        string typeName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.ParseExactDoesNotAcceptOnlyFormat,
+            methodDeclarationSyntax?.GetLocation(),
+            typeName);
 }

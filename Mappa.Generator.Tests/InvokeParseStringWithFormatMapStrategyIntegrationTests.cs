@@ -193,9 +193,11 @@ public sealed class InvokeParseStringWithFormatMapStrategyIntegrationTests
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
+        var warnings = parseExact ? Array.Empty<string>() : new[] { "MP00013" };
+
         // Assert
         generatedResults.Should()
-            .NotHaveDiagnostics()
+            .HaveOnlyWarnings(warnings)
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .NotBeNull().And
@@ -280,9 +282,11 @@ public sealed class InvokeParseStringWithFormatMapStrategyIntegrationTests
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
+        var warnings = parseExact ? Array.Empty<string>() : new[] { "MP00013" };
+
         // Assert
         generatedResults.Should()
-            .NotHaveDiagnostics()
+            .HaveOnlyWarnings(warnings)
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .NotBeNull().And
@@ -728,9 +732,11 @@ public sealed class InvokeParseStringWithFormatMapStrategyIntegrationTests
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
+        var warnings = parseExact ? new[] { "MP00012" } : new[] { "MP00012", "MP00013" };
+
         // Assert
         generatedResults.Should()
-            .HaveOneWarning("MP00012")
+            .HaveOnlyWarnings(warnings)
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .NotBeNull().And

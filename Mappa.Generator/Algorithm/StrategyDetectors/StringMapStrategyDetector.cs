@@ -47,42 +47,48 @@ internal sealed class StringMapStrategyDetector
                 this.context.SourceType);
         }
 
-        // TODO [#78] Missing warning when only format is provided.
         // 02. string -> DateTime : InvokeParseStringWithFormatMapStrategy
         else if (this.CanMapStringToDateTime())
         {
+            var actualCultureSettingsInfo = this.GetActualCultureSettingsInfo();
+            WarnIfOnlyFormatIsProvided(actualCultureSettingsInfo, this.context.MappaUserSettings.DateTimeFormat);
+
             mapStrategy = new InvokeParseStringWithFormatMapStrategy(
                 this.context.TargetType,
                 this.context.SourceType,
                 MappaAlgorithmRule.StringToDateTime,
                 this.context.MappaUserSettings.DateTimeFormat,
-                this.GetActualCultureSettingsInfo(),
+                actualCultureSettingsInfo,
                 this.context.MappaUserSettings.CultureName);
         }
 
-        // TODO [#78] Missing warning when only format is provided.
         // 03. string -> DateTimeOffset : InvokeParseStringWithFormatMapStrategy
         else if (this.CanMapStringToDateTimeOffset())
         {
+            var actualCultureSettingsInfo = this.GetActualCultureSettingsInfo();
+            WarnIfOnlyFormatIsProvided(actualCultureSettingsInfo, this.context.MappaUserSettings.DateTimeOffsetFormat);
+
             mapStrategy = new InvokeParseStringWithFormatMapStrategy(
                 this.context.TargetType,
                 this.context.SourceType,
                 MappaAlgorithmRule.StringToDateTimeOffset,
                 this.context.MappaUserSettings.DateTimeOffsetFormat,
-                this.GetActualCultureSettingsInfo(),
+                actualCultureSettingsInfo,
                 this.context.MappaUserSettings.CultureName);
         }
 
-        // TODO [#78] Missing warning when only format is provided.
         // 04. string -> TimeSpan : InvokeParseStringWithFormatMapStrategy
         else if (this.CanMapStringToTimeSpan())
         {
+            var actualCultureSettingsInfo = this.GetActualCultureSettingsInfo();
+            WarnIfOnlyFormatIsProvided(actualCultureSettingsInfo, this.context.MappaUserSettings.TimeSpanFormat);
+
             mapStrategy = new InvokeParseStringWithFormatMapStrategy(
                 this.context.TargetType,
                 this.context.SourceType,
                 MappaAlgorithmRule.StringToTimeSpan,
                 this.context.MappaUserSettings.TimeSpanFormat,
-                this.GetActualCultureSettingsInfo(),
+                actualCultureSettingsInfo,
                 this.context.MappaUserSettings.CultureName);
         }
 
@@ -142,6 +148,21 @@ internal sealed class StringMapStrategyDetector
         }
 
         return mapStrategy is not NoMapStrategy;
+
+        void WarnIfOnlyFormatIsProvided(CultureInfoSetting actualCultureSettingsInfo, string? format)
+        {
+            // If format is provided but not the culture then we have a problem
+            // because some types (DateTime, DateTimeOffset, TimeSpan) does not support
+            // ParseExact(string value, string format) so format will be ignored.
+            if (!string.IsNullOrWhiteSpace(format)
+                && (actualCultureSettingsInfo is CultureInfoSetting.None || actualCultureSettingsInfo is CultureInfoSetting.Undefined))
+            {
+                var rootMethod = this.context.GetRootMapMethod();
+                this.context.ReportDiagnostic(MappaDiagnostics.ParseExactDoesNotAcceptOnlyFormat(
+                    rootMethod.MethodDeclarationSyntax,
+                    this.context.TargetType.ToDisplayString()));
+            }
+        }
     }
 
     private CultureInfoSetting GetActualCultureSettingsInfo()

@@ -90,14 +90,14 @@ public sealed class GeneratedResultsAssertions
     }
 
     /// <summary>
-    /// Check it contains only one warning.
+    /// Check it contains only warnings.
     /// </summary>
-    /// <param name="warningId">The warning identifier.</param>
+    /// <param name="warningIds">The warning identifiers.</param>
     /// <returns>The assertions instance.</returns>
-    public GeneratedResultsAssertions HaveOneWarning(string warningId)
+    public GeneratedResultsAssertions HaveOnlyWarnings(params string[] warningIds)
     {
         var runResult = this.HaveOneResult();
-        runResult.Should().HaveOneWarning(warningId);
+        runResult.Should().HaveOnlyWarnings(warningIds);
         return this;
     }
 

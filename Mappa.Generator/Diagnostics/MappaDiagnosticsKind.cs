@@ -76,4 +76,11 @@ internal enum MappaDiagnosticsKind
     /// <see cref="CultureInfoSetting.UserDefined"/> culture
     /// but the culture name is not properly defined.
     UserDefinedCultureIsMissingCultureName,
+
+    /// <summary>
+    /// Mappa settings define a format but not a
+    /// culture therefore ParseExact cannot be used
+    /// and format is being ignored.
+    /// </summary>
+    ParseExactDoesNotAcceptOnlyFormat,
 }
