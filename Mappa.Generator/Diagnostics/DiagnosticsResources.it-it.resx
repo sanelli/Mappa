@@ -1,0 +1,29 @@
+<root>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="MethodHasInvalidNumberOfParameters" xml:space="preserve">
+        <value>Il metodo '{0}' non può essere utilizzato per il mapping perché ha un numero di parametri non supportato.</value>
+    </data>
+    <data name="MethodHasInvalidMappaContextParameter" xml:space="preserve">
+        <value>Il metodo '{0}' non può essere utilizzato perché il secondo parametro non è di tipo MappaContext.</value>
+    </data>
+    <data name="MethodIsVoid" xml:space="preserve">
+        <value>Il metodo '{0}' non può essere utilizzato perché ha come tipo di ritorno 'void'</value>
+    </data>
+    <data name="MethodReturnsTaskType" xml:space="preserve">
+        <value>Il metodo '{0}' non può essere utilizzato per il mapping perché ritorna uno dei seguinti tipi: Task, Task&lt;T&gt;, ValueTask o ValueTask&lt;T&gt;.</value>
+    </data>
+    <data name="DuplicatedMapping" xml:space="preserve">
+        <value>Il metodo '{0}' non può essere generator perché un metodo che mappa dal tipo '{1}' al tipo '{2}' esiste già in questa classe.</value>
+    </data>
+</root>
