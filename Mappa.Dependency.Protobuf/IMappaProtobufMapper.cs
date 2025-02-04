@@ -42,6 +42,7 @@ public interface IMappaProtobufMapper
     /// <returns>The corresponding date.</returns>
     DateTimeOffset? MapFromNullableTimestampToNullableDateTimeOffset(Timestamp? timestamp);
 
+    #if NET6_0_OR_GREATER
     /// <summary>
     /// Map from <see cref="Timestamp"/> to <see cref="DateOnly"/>.
     /// </summary>
@@ -71,6 +72,7 @@ public interface IMappaProtobufMapper
     /// <param name="timestamp">The timestamp to be converted.</param>
     /// <returns>The corresponding date.</returns>
     TimeOnly? MapFromNullableTimestampToNullableTimeOnly(Timestamp? timestamp);
+#endif
 
     /// <summary>
     /// Map from <see cref="DateTime"/> to <see cref="Timestamp"/>.
@@ -100,6 +102,7 @@ public interface IMappaProtobufMapper
     /// <returns>The corresponding date.</returns>
     Timestamp? MapFromNullableDateTimeOffsetToNullableTimestamp(DateTimeOffset? datetime);
 
+#if NET6_0_OR_GREATER
     /// <summary>
     /// Map from <see cref="DateOnly"/> to <see cref="Timestamp"/>.
     /// </summary>
@@ -113,6 +116,7 @@ public interface IMappaProtobufMapper
     /// <param name="dateOnly">The date to be converted.</param>
     /// <returns>The corresponding date.</returns>
     Timestamp? MapFromNullableDateOnlyToNullableTimestamp(DateOnly? dateOnly);
+#endif
 
     /// <summary>
     /// Map from <see cref="Duration"/> to <see cref="TimeSpan"/>.

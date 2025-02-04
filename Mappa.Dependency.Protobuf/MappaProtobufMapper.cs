@@ -15,7 +15,15 @@ public sealed class MappaProtobufMapper
     /// <inheritdoc />
     public DateTime MapFromTimestampToDateTime(Timestamp timestamp)
     {
+#if NET6_0_OR_GREATER
         ArgumentNullException.ThrowIfNull(timestamp);
+#else
+        if (timestamp is null)
+        {
+            throw new ArgumentNullException(nameof(timestamp));
+        }
+#endif
+
         return timestamp.ToDateTime();
     }
 
@@ -26,7 +34,15 @@ public sealed class MappaProtobufMapper
     /// <inheritdoc />
     public DateTimeOffset MapFromTimestampToDateTimeOffset(Timestamp timestamp)
     {
+#if NET6_0_OR_GREATER
         ArgumentNullException.ThrowIfNull(timestamp);
+#else
+        if (timestamp is null)
+        {
+            throw new ArgumentNullException(nameof(timestamp));
+        }
+#endif
+
         return timestamp.ToDateTimeOffset();
     }
 
@@ -34,6 +50,7 @@ public sealed class MappaProtobufMapper
     public DateTimeOffset? MapFromNullableTimestampToNullableDateTimeOffset(Timestamp? timestamp)
         => timestamp?.ToDateTime();
 
+#if NET6_0_OR_GREATER
     /// <inheritdoc />
     public DateOnly MapFromTimestampToDateOnly(Timestamp timestamp)
     {
@@ -55,6 +72,7 @@ public sealed class MappaProtobufMapper
     /// <inheritdoc />
     public TimeOnly? MapFromNullableTimestampToNullableTimeOnly(Timestamp? timestamp)
         => timestamp is null ? null : TimeOnly.FromDateTime(timestamp.ToDateTime());
+#endif
 
     /// <inheritdoc/>
     public Timestamp MapFromDateTimeToTimestamp(DateTime datetime)
@@ -72,6 +90,7 @@ public sealed class MappaProtobufMapper
     public Timestamp? MapFromNullableDateTimeOffsetToNullableTimestamp(DateTimeOffset? datetime)
         => datetime is null ? null : Timestamp.FromDateTimeOffset(datetime.Value);
 
+#if NET6_0_OR_GREATER
     /// <inheritdoc/>
     public Timestamp MapFromDateOnlyToTimestamp(DateOnly dateOnly)
         => Timestamp.FromDateTime(dateOnly.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc).ToUniversalTime());
@@ -79,11 +98,20 @@ public sealed class MappaProtobufMapper
     /// <inheritdoc />
     public Timestamp? MapFromNullableDateOnlyToNullableTimestamp(DateOnly? dateOnly)
         => dateOnly is null ? null : Timestamp.FromDateTime(dateOnly.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc).ToUniversalTime());
+#endif
 
     /// <inheritdoc />
     public TimeSpan MapFromDurationToTimeSpan(Duration duration)
     {
+#if NET6_0_OR_GREATER
         ArgumentNullException.ThrowIfNull(duration);
+#else
+        if (duration is null)
+        {
+            throw new ArgumentNullException(nameof(duration));
+        }
+#endif
+
         return duration.ToTimeSpan();
     }
 
