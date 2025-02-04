@@ -11,6 +11,7 @@
         <AnalysisLevel>latest-all</AnalysisLevel>
         <WarningsNotAsErrors>MP00000</WarningsNotAsErrors>
         <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+        <NoWarn>CA1812</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

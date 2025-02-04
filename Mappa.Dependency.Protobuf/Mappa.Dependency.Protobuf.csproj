@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <Import Project="$(MSBuildThisFileDirectory)../MappaVersion.targets"/>
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFrameworks>netstandard2.0;net9.0</TargetFrameworks>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>

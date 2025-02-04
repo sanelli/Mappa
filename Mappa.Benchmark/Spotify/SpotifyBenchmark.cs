@@ -15,7 +15,7 @@ namespace Mappa.Benchmark.Spotify;
 /// Spotify benchmark.
 /// </summary>
 [MemoryDiagnoser]
-internal class SpotifyBenchmark
+internal sealed class SpotifyBenchmark
 {
     private readonly SpotifyAlbumDto spotifyAlbumDto;
     private readonly AutoMapper.IMapper automapperMapper;
