@@ -26,4 +26,28 @@
     <data name="DuplicatedMapping" xml:space="preserve">
         <value>Method '{0}' cannot be generated because mapping from '{1}' to '{2}' already exists in the current class.</value>
     </data>
+    <data name="CannotIdentifyStrategy" xml:space="preserve">
+        <value>Cannot identify a mapping strategy from type '{0}' to type '{1}'.</value>
+    </data>
+    <data name="MultipleAttributesTargetTheSamePropertyOrParameter" xml:space="preserve">
+        <value>Multiple mapping attributes on method '{0}' target property or constructor parameter '{1}'.</value>
+    </data>
+    <data name="CannotDetectSuitableMethodToInvoke" xml:space="preserve">
+        <value>Cannot identify a method with name '{0}' in class '{1}' for target property or constructor parameter '{2}'.</value>
+    </data>
+    <data name="CannotDetectType" xml:space="preserve">
+        <value>Cannot identify type '{0}'.</value>
+    </data>
+    <data name="CannotFindFieldOrProperty" xml:space="preserve">
+        <value>Cannot identify field or property '{0}'</value>
+    </data>
+    <data name="CannotUseMappaAssignFromContextAttributeWithoutContextParameter" xml:space="preserve">
+        <value>Cannot use attribute MappaAssignFromContextAttribute for field, property or parameter '{0}': the method does not provide a MappaContext parameter.</value>
+    </data>
+    <data name="UserDefinedCultureIsMissingCultureName" xml:space="preserve">
+        <value>The user defined culture does not define a culture name while mapping method '{0}': no culture will be used.</value>
+    </data>
+    <data name="ParseExactDoesNotAcceptOnlyFormat" xml:space="preserve">
+        <value>Format will be ignored because method {0}.ParseExact(string, string) does not exist; consider defining a culture via MappaSettings.</value>
+    </data>
 </root>

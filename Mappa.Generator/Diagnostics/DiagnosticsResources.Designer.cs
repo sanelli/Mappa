@@ -74,5 +74,53 @@ namespace Mappa.Generator.Diagnostics {
                 return ResourceManager.GetString("DuplicatedMapping", resourceCulture);
             }
         }
+        
+        internal static string CannotIdentifyStrategy {
+            get {
+                return ResourceManager.GetString("CannotIdentifyStrategy", resourceCulture);
+            }
+        }
+        
+        internal static string MultipleAttributesTargetTheSamePropertyOrParameter {
+            get {
+                return ResourceManager.GetString("MultipleAttributesTargetTheSamePropertyOrParameter", resourceCulture);
+            }
+        }
+        
+        internal static string CannotDetectSuitableMethodToInvoke {
+            get {
+                return ResourceManager.GetString("CannotDetectSuitableMethodToInvoke", resourceCulture);
+            }
+        }
+        
+        internal static string CannotDetectType {
+            get {
+                return ResourceManager.GetString("CannotDetectType", resourceCulture);
+            }
+        }
+        
+        internal static string CannotFindFieldOrProperty {
+            get {
+                return ResourceManager.GetString("CannotFindFieldOrProperty", resourceCulture);
+            }
+        }
+        
+        internal static string CannotUseMappaAssignFromContextAttributeWithoutContextParameter {
+            get {
+                return ResourceManager.GetString("CannotUseMappaAssignFromContextAttributeWithoutContextParameter", resourceCulture);
+            }
+        }
+        
+        internal static string UserDefinedCultureIsMissingCultureName {
+            get {
+                return ResourceManager.GetString("UserDefinedCultureIsMissingCultureName", resourceCulture);
+            }
+        }
+        
+        internal static string ParseExactDoesNotAcceptOnlyFormat {
+            get {
+                return ResourceManager.GetString("ParseExactDoesNotAcceptOnlyFormat", resourceCulture);
+            }
+        }
     }
 }
