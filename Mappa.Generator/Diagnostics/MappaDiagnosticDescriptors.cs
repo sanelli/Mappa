@@ -34,7 +34,7 @@ internal static class MappaDiagnosticDescriptors
     internal static DiagnosticDescriptor MethodHasInvalidNumberOfParameters
         => methodHasInvalidNumberOfParameters ??= BuildError(
             MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters,
-            "Method '{0}' cannot be used for mapping because it has an unsupported number of parameters.");
+            DiagnosticsResources.MethodHasInvalidNumberOfParameters);
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidMappaContextParameter"/>.
@@ -42,7 +42,7 @@ internal static class MappaDiagnosticDescriptors
     internal static DiagnosticDescriptor MethodHasInvalidMappaContextParameter
         => methodHasInvalidMappaContextParameter ??= BuildError(
             MappaDiagnosticsKind.MethodHasInvalidMappaContextParameter,
-            "Method '{0}' cannot be used for mapping because the second parameter is not of type MappaContext.");
+            DiagnosticsResources.MethodHasInvalidMappaContextParameter);
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodIsVoid"/>.
@@ -50,7 +50,7 @@ internal static class MappaDiagnosticDescriptors
     internal static DiagnosticDescriptor MethodIsVoid
         => methodIsVoid ??= BuildError(
             MappaDiagnosticsKind.MethodIsVoid,
-            "Method '{0}' cannot be used for mapping because it returns void.");
+            DiagnosticsResources.MethodIsVoid);
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodReturnsTaskType"/>.
@@ -58,7 +58,7 @@ internal static class MappaDiagnosticDescriptors
     internal static DiagnosticDescriptor MethodReturnsTaskType
         => methodReturnsTaskType ??= BuildError(
             MappaDiagnosticsKind.MethodReturnsTaskType,
-            "Method '{0}' cannot be used for mapping because it returns either Task, Task<T>, ValueTask or ValueTask<T>.");
+            DiagnosticsResources.MethodReturnsTaskType);
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.DuplicatedMapping"/>.
@@ -66,7 +66,7 @@ internal static class MappaDiagnosticDescriptors
     internal static DiagnosticDescriptor DuplicatedMapping
         => duplicateMapping ??= BuildError(
             MappaDiagnosticsKind.DuplicatedMapping,
-            "Method '{0}' cannot be generated because mapping from '{1}' to '{2}' already exists in the current class.");
+            DiagnosticsResources.DuplicatedMapping);
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.CannotIdentifyStrategy"/>.
@@ -74,7 +74,7 @@ internal static class MappaDiagnosticDescriptors
     internal static DiagnosticDescriptor CannotIdentifyStrategy
         => cannotIdentifyStrategy ??= BuildError(
             MappaDiagnosticsKind.CannotIdentifyStrategy,
-            "Cannot identify a mapping strategy from type '{0}' to type: '{1}'.");
+            DiagnosticsResources.CannotIdentifyStrategy);
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MultipleAttributesTargetTheSamePropertyOrParameter"/>.
@@ -82,7 +82,7 @@ internal static class MappaDiagnosticDescriptors
     internal static DiagnosticDescriptor MultipleAttributesTargetTheSamePropertyOrParameter
         => multipleAttributesTargetTheSamePropertyOrParameter ??= BuildError(
             MappaDiagnosticsKind.MultipleAttributesTargetTheSamePropertyOrParameter,
-            "Multiple mapping attributes on method '{0}' target property or constructor parameter '{1}'.");
+            DiagnosticsResources.MultipleAttributesTargetTheSamePropertyOrParameter);
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.CannotDetectSuitableMethodToInvoke"/>.
@@ -90,7 +90,7 @@ internal static class MappaDiagnosticDescriptors
     internal static DiagnosticDescriptor CannotDetectSuitableMethodToInvoke
         => cannotDetectSuitableMethodToInvoke ??= BuildError(
             MappaDiagnosticsKind.CannotDetectSuitableMethodToInvoke,
-            "Cannot identify a method with name '{0}' in class '{1}' for target property or constructor parameter '{2}'.");
+            DiagnosticsResources.CannotDetectSuitableMethodToInvoke);
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.CannotDetectType"/>.
@@ -98,7 +98,7 @@ internal static class MappaDiagnosticDescriptors
     internal static DiagnosticDescriptor CannotDetectType
         => cannotDetectType ??= BuildError(
             MappaDiagnosticsKind.CannotDetectType,
-            "Cannot identify type '{0}'.");
+            DiagnosticsResources.CannotDetectType);
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.CannotFindFieldOrProperty"/>.
@@ -106,7 +106,7 @@ internal static class MappaDiagnosticDescriptors
     internal static DiagnosticDescriptor CannotFindFieldOrProperty
         => cannotFindFieldOrProperty ??= BuildError(
             MappaDiagnosticsKind.CannotFindFieldOrProperty,
-            "Cannot identify field or property '{0}'.");
+            DiagnosticsResources.CannotFindFieldOrProperty);
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.CannotUseMappaAssignFromContextAttributeWithoutContextParameter"/>.
@@ -114,7 +114,7 @@ internal static class MappaDiagnosticDescriptors
     internal static DiagnosticDescriptor CannotUseMappaAssignFromContextAttributeWithoutContextParameter
         => cannotUseMappaAssignFromContextAttributeWithoutContextParameter ??= BuildError(
             MappaDiagnosticsKind.CannotUseMappaAssignFromContextAttributeWithoutContextParameter,
-            "Cannot use attribute MappaAssignFromContextAttribute for field, property or parameter '{0}': the method does not provide a MappaContext parameter.");
+            DiagnosticsResources.CannotUseMappaAssignFromContextAttributeWithoutContextParameter);
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.UserDefinedCultureIsMissingCultureName"/>.
@@ -122,7 +122,7 @@ internal static class MappaDiagnosticDescriptors
     internal static DiagnosticDescriptor UserDefinedCultureIsMissingCultureName
         => userDefinedCultureIsMissingCultureName ??= BuildWarning(
             MappaDiagnosticsKind.UserDefinedCultureIsMissingCultureName,
-            "The user defined culture does not define a culture name while mapping method '{0}': no culture will be used.");
+            DiagnosticsResources.UserDefinedCultureIsMissingCultureName);
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.ParseExactDoesNotAcceptOnlyFormat"/>.
@@ -130,7 +130,7 @@ internal static class MappaDiagnosticDescriptors
     internal static DiagnosticDescriptor ParseExactDoesNotAcceptOnlyFormat
         => parseExactDoesNotAcceptOnlyFormat ??= BuildWarning(
             MappaDiagnosticsKind.ParseExactDoesNotAcceptOnlyFormat,
-            "Format will be ignored because method {0}.ParseExact(string, string) does not exist; consider defining a culture via MappaSettings.");
+            DiagnosticsResources.ParseExactDoesNotAcceptOnlyFormat);
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(

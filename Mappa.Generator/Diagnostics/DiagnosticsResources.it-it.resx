@@ -1,0 +1,53 @@
+<root>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="MethodHasInvalidNumberOfParameters" xml:space="preserve">
+        <value>Il metodo '{0}' non può essere utilizzato per il mapping perché ha un numero di parametri non supportato.</value>
+    </data>
+    <data name="MethodHasInvalidMappaContextParameter" xml:space="preserve">
+        <value>Il metodo '{0}' non può essere utilizzato perché il secondo parametro non è di tipo MappaContext.</value>
+    </data>
+    <data name="MethodIsVoid" xml:space="preserve">
+        <value>Il metodo '{0}' non può essere utilizzato perché ha come tipo di ritorno 'void'</value>
+    </data>
+    <data name="MethodReturnsTaskType" xml:space="preserve">
+        <value>Il metodo '{0}' non può essere utilizzato per il mapping perché ritorna uno dei seguinti tipi: Task, Task&lt;T&gt;, ValueTask o ValueTask&lt;T&gt;.</value>
+    </data>
+    <data name="DuplicatedMapping" xml:space="preserve">
+        <value>Il metodo '{0}' non può essere generator perché un metodo che mappa dal tipo '{1}' al tipo '{2}' esiste già in questa classe.</value>
+    </data>
+    <data name="CannotIdentifyStrategy" xml:space="preserve">
+        <value>Non è possibile identificare una strategia per mappare dal tipo '{0}' al tipo '{1}'.</value>
+    </data>
+    <data name="MultipleAttributesTargetTheSamePropertyOrParameter" xml:space="preserve">
+        <value>Molteplici attributi sul metodo '{0}' sono relativi alla medesima proprietà o parametro del costruttore '{1}'.</value>
+    </data>
+    <data name="CannotDetectSuitableMethodToInvoke" xml:space="preserve">
+        <value>Non è possibile identificare un metodo con nome '{0}' nella classe '{1}' per la priperitè o il parametro '{2}'.</value>
+    </data>
+    <data name="CannotDetectType" xml:space="preserve">
+        <value>Impossibile identificare il tipo '{0}'.</value>
+    </data>
+    <data name="CannotFindFieldOrProperty" xml:space="preserve">
+        <value>Impossibile trovare il campo o la proprietà '{0}'</value>
+    </data>
+    <data name="CannotUseMappaAssignFromContextAttributeWithoutContextParameter" xml:space="preserve">
+        <value>Impossibile utilizzare l'attributo MappaAssignFromContextAttribute per il campo, proprietà o parametro '{0}': il metodo non suporta un parametro di tipo MappaContext.</value>
+    </data>
+    <data name="UserDefinedCultureIsMissingCultureName" xml:space="preserve">
+        <value>La cultura definita dello sviluppatore non definisce un nome via il parametro CultreName mentre stava generando il metodo '{0}': nessuna cultura verrà utilizzata</value>
+    </data>
+    <data name="ParseExactDoesNotAcceptOnlyFormat" xml:space="preserve">
+        <value>Il valore di Format verrrà ignorato perché il metodo ;'0}.ParseExact(string, string)' non esiste; definire una cultura via MappaSettings può risolvere il problema.</value>
+    </data>
+</root>
