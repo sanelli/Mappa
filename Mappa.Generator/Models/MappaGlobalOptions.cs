@@ -45,11 +45,15 @@ namespace Mappa.Generator.Models;
 ///     </item>
 ///     <item>
 ///         <term><c>mappa.cultureinfosettings</c></term>
-///         <description>Set the default culture info settings. Valid values are the values of the <see cref="CultureInfoSetting"/>.</description>
+///         <description>Set the default culture info settings. Valid values are the values of the <see cref="CultureInfoSetting"/> enum.</description>
 ///     </item>
 ///     <item>
 ///         <term><c>mappa.culturename</c></term>
 ///         <description>The name of the default culture to be applied.</description>
+///     </item>
+///     <item>
+///         <term><c>mappa.enableoptional</c></term>
+///         <description>Set the default value to enable or disable the (protobuf) optional setting. Valid values are the values from the <see cref="EnableSetting"/> enum.</description>
 ///     </item>
 /// </list>
 /// </summary>
@@ -67,6 +71,7 @@ internal sealed class MappaGlobalOptions
     private const string MappaSettingsGuidFormat = "guidformat";
     private const string MappaSettingsCultureInfoSettings = "cultureinfosettings";
     private const string MappaSettingsCultureName = "culturename";
+    private const string MappaSettingsEnableOptional = "enableoptional";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaGlobalOptions"/> class.
@@ -123,10 +128,15 @@ internal sealed class MappaGlobalOptions
 
         this.CultureInfoSetting = options.TryGetValue(GetOptionName(MappaSettingsCultureInfoSettings), out var cultureInfoSettings)
                                   && !string.IsNullOrWhiteSpace(cultureInfoSettings)
-            ? FromString(cultureInfoSettings)
+            ? GetCultureInfoSettingsFromString(cultureInfoSettings)
             : CultureInfoSetting.None;
 
-        static CultureInfoSetting FromString(string cultureInfoSettings)
+        this.EnableOptional = options.TryGetValue(GetOptionName(MappaSettingsEnableOptional), out var enableOptional)
+                                  && !string.IsNullOrWhiteSpace(cultureInfoSettings)
+            ? GetEnableSettingsFromString(enableOptional)
+            : EnableSetting.Undefined;
+
+        static CultureInfoSetting GetCultureInfoSettingsFromString(string cultureInfoSettings)
         {
             if (cultureInfoSettings.Equals(nameof(CultureInfoSetting.CurrentCulture), StringComparison.OrdinalIgnoreCase))
             {
@@ -149,6 +159,26 @@ internal sealed class MappaGlobalOptions
             }
 
             return CultureInfoSetting.None;
+        }
+
+        static EnableSetting GetEnableSettingsFromString(string enableSettings)
+        {
+            if (enableSettings.Equals(nameof(EnableSetting.Undefined), StringComparison.OrdinalIgnoreCase))
+            {
+                return EnableSetting.Undefined;
+            }
+
+            if (enableSettings.Equals(nameof(EnableSetting.Enable), StringComparison.OrdinalIgnoreCase))
+            {
+                return EnableSetting.Enable;
+            }
+
+            if (enableSettings.Equals(nameof(EnableSetting.Disable), StringComparison.OrdinalIgnoreCase))
+            {
+                return EnableSetting.Disable;
+            }
+
+            return EnableSetting.Undefined;
         }
     }
 
@@ -175,6 +205,9 @@ internal sealed class MappaGlobalOptions
 
     /// <inheritdoc />
     public string? CultureName { get; }
+
+    /// <inheritdoc/>
+    public EnableSetting EnableOptional { get; }
 
     /// <summary>
     /// Gets a value indicating whether to report debug INFO diagnostics.

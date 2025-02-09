@@ -50,4 +50,9 @@ internal interface IMappaUserSettings
     /// Gets the culture name when <see cref="CultureInfoSetting"/> is <see cref="Mappa.CultureInfoSetting.UserDefined"/>.
     /// </summary>
     string? CultureName { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether the optional feature is enabled when performing mapping.
+    /// </summary>
+    public EnableSetting EnableOptional { get; }
 }
