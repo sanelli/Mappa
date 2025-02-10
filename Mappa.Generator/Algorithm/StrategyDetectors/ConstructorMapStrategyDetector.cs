@@ -127,6 +127,7 @@ internal sealed class ConstructorMapStrategyDetector
                                         StringComparison.OrdinalIgnoreCase,
                                         out var propertyStrategyFromAttribute))
                                 {
+                                    // TODO [#48] Check if optional is enabled & Has<SourceProperty> exists & encapsulate propertyStrategyFromAttribute to a new sourceOptional strategy.
                                     var strategy = new ParameterMapStrategy(targetParameter, sourceProperty!, propertyStrategyFromAttribute);
                                     return (targetParameter, sourceProperty!, strategy);
                                 }
@@ -149,6 +150,7 @@ internal sealed class ConstructorMapStrategyDetector
                                 // Get a strategy from source to target
                                 if (this.TryGetStrategyBetweenTypes(targetParameterType, sourcePropertyType, true, out var propertyStrategy))
                                 {
+                                    // TODO [#48] Check if optional is enabled & Has<SourceProperty> exists & encapsulate propertyStrategyFromAttribute to a new sourceOptional strategy.
                                     var parameterMapStrategy = new ParameterMapStrategy(targetParameter, sourceProperty, propertyStrategy);
                                     return (targetParameter, sourceProperty, parameterMapStrategy);
                                 }
@@ -314,6 +316,8 @@ internal sealed class ConstructorMapStrategyDetector
                                     StringComparison.Ordinal,
                                     out var propertyStrategyFromAttribute))
                             {
+                                // TODO [#48] Check if optional is enabled & Has<SourceProperty> exists & encapsulate propertyStrategyFromAttribute to a new sourceOptional strategy.
+                                // TODO [#48] Check if optional is enabled & Has<TargetProperty> exists & encapsulate PropertyMapStrategy into a new targetOptionalStrategy -> This needs to be handled differently as it needs to be set after the value is created (target should not be init/required).
                                 return new PropertyMapStrategy(targetProperty, sourceProperty, propertyStrategyFromAttribute);
                             }
 
@@ -328,6 +332,8 @@ internal sealed class ConstructorMapStrategyDetector
 
                             if (this.TryGetStrategyBetweenTypes(targetPropertyType, sourcePropertyType, true, out var propertyStrategy))
                             {
+                                // TODO [#48] Check if optional is enabled & Has<SourceProperty> exists & encapsulate propertyStrategyFromAttribute to a new sourceOptional strategy.
+                                // TODO [#48] Check if optional is enabled & Has<TargetProperty> exists & encapsulate PropertyMapStrategy into a new targetOptionalStrategy -> This needs to be handled differently as it needs to be set after the value is created (target should not be init/required).
                                 return new PropertyMapStrategy(targetProperty, sourceProperty, propertyStrategy);
                             }
 
