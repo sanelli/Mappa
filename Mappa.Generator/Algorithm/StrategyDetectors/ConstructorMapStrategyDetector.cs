@@ -187,6 +187,30 @@ internal sealed class ConstructorMapStrategyDetector
         return strategy is not NoMapStrategy;
     }
 
+    private IMapStrategy EncapsulateMapStrategyForSourceOptional(
+        IPropertySymbol sourceProperty,
+        IPropertySymbol[] sourceProperties,
+        IMapStrategy inputStrategy)
+    {
+        if (this.context.MappaUserSettings.EnableOptional is not EnableSetting.Enable)
+        {
+            return inputStrategy;
+        }
+
+        IPropertySymbol? hasProperty = Array.Find(sourceProperties, property => property.Name.Equals($"Has{sourceProperty.Name}", StringComparison.Ordinal));
+        if (hasProperty is null)
+        {
+            return inputStrategy;
+        }
+
+        if (!hasProperty.Type.IsBoolean())
+        {
+            return inputStrategy;
+        }
+
+        return new OptionalSourcePropertyMapStrategy(inputStrategy);
+    }
+
     private bool CanInvokeMappingConstructor(out IMethodSymbol constructor, out IMapStrategy strategy)
     {
         constructor = null!;

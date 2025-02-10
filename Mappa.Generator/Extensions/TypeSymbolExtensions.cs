@@ -265,6 +265,20 @@ internal static class TypeSymbolExtensions
     }
 
     /// <summary>
+    /// Check if the type is a boolean type.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <returns><c>true</c> if the type symbol is boolean.</returns>
+    internal static bool IsBoolean(this ITypeSymbol typeSymbol)
+    {
+        return typeSymbol.SpecialType switch
+        {
+            SpecialType.System_Boolean => true,
+            _ => false,
+        };
+    }
+
+    /// <summary>
     /// Check if the type is <see cref="long"/> type.
     /// </summary>
     /// <param name="typeSymbol">The type symbol.</param>
