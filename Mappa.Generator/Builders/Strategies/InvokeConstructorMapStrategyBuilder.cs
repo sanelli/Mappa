@@ -29,6 +29,7 @@ internal sealed class InvokeConstructorMapStrategyBuilder
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
         var builder = new PrettyCode.StringBuilder();
+        using var sourceDisposable = context.PushSource(source);
 
         // Handle arguments mappings
         var parametersVariableNames = new List<string>();

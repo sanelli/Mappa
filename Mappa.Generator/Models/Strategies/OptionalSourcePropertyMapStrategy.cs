@@ -19,9 +19,11 @@ internal sealed class OptionalSourcePropertyMapStrategy
     /// Initializes a new instance of the <see cref="OptionalSourcePropertyMapStrategy"/> class.
     /// </summary>
     /// <param name="strategy">The strategy to apply.</param>
-    public OptionalSourcePropertyMapStrategy(IMapStrategy strategy)
+    /// <param name="sourceProperty">The source property on which optional is applied.</param>
+    public OptionalSourcePropertyMapStrategy(IMapStrategy strategy, IPropertySymbol sourceProperty)
     {
         this.InnerStrategy = strategy;
+        this.SourceProperty = sourceProperty;
     }
 
     /// <inheritdoc/>
@@ -38,9 +40,11 @@ internal sealed class OptionalSourcePropertyMapStrategy
     /// </summary>
     internal IMapStrategy InnerStrategy { get; }
 
+    /// <summary>
+    /// Gets the optional property details.
+    /// </summary>
+    internal IPropertySymbol SourceProperty { get; }
+
     /// <inheritdoc/>
-    public IMappaStrategyBuilder GetBuilder()
-    {
-        throw new NotImplementedException();
-    }
+    public IMappaStrategyBuilder GetBuilder() => new OptionalSourcePropertyMapStrategyBuilder(this);
 }

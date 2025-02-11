@@ -150,7 +150,7 @@ internal sealed class ConstructorMapStrategyDetector
                                 // Get a strategy from source to target
                                 if (this.TryGetStrategyBetweenTypes(targetParameterType, sourcePropertyType, true, out var propertyStrategy))
                                 {
-                                    // TODO [#48] Check if optional is enabled & Has<SourceProperty> exists & encapsulate propertyStrategyFromAttribute to a new sourceOptional strategy.
+                                    propertyStrategy = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, sourceProperties, propertyStrategy);
                                     var parameterMapStrategy = new ParameterMapStrategy(targetParameter, sourceProperty, propertyStrategy);
                                     return (targetParameter, sourceProperty, parameterMapStrategy);
                                 }
@@ -208,7 +208,7 @@ internal sealed class ConstructorMapStrategyDetector
             return inputStrategy;
         }
 
-        return new OptionalSourcePropertyMapStrategy(inputStrategy);
+        return new OptionalSourcePropertyMapStrategy(inputStrategy, sourceProperty);
     }
 
     private bool CanInvokeMappingConstructor(out IMethodSymbol constructor, out IMapStrategy strategy)

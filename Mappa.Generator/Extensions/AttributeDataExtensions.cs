@@ -166,8 +166,8 @@ internal static class AttributeDataExtensions
                     attribute.CultureInfoSetting = (CultureInfoSetting)value;
                     break;
 
-                case nameof(MappaSettingsAttribute.EnableOptional) when namedArgument.Value.Value is EnableSetting value:
-                    attribute.EnableOptional = value;
+                case nameof(MappaSettingsAttribute.EnableOptional) when namedArgument.Value.Value is int value:
+                    attribute.EnableOptional = (EnableSetting)value;
                     break;
             }
         }
