@@ -34,7 +34,7 @@ public sealed class OptionalStrategyIntegrationTests
                                   public class Source
                                   {
                                       public bool HasPropertyA { get; set; }
-                                      public int? PropertyA { get; set; }
+                                      public int PropertyA { get; set; }
                                   }
 
                                   public class Target
@@ -47,7 +47,6 @@ public sealed class OptionalStrategyIntegrationTests
                                   }
 
                                   [Mappa]
-                                  [MappaSettings(EnableOptional = Mappa.EnableSetting.Enable)]
                                   public sealed partial class Mapper
                                   {
                                       public partial Target Map(Source input);
