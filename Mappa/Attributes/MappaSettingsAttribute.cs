@@ -59,5 +59,5 @@ public sealed class MappaSettingsAttribute
     /// Gets or sets a value indicating whether the optional feature is enabled when performing mapping.
     /// It is not enabled by default.
     /// </summary>
-    public EnableSetting EnableOptional { get; set; } = EnableSetting.Undefined;
+    public BooleanSetting Optional { get; set; } = BooleanSetting.Undefined;
 }

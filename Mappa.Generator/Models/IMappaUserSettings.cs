@@ -54,5 +54,5 @@ internal interface IMappaUserSettings
     /// <summary>
     /// Gets a value indicating whether the optional feature is enabled when performing mapping.
     /// </summary>
-    public EnableSetting EnableOptional { get; }
+    public BooleanSetting Optional { get; }
 }

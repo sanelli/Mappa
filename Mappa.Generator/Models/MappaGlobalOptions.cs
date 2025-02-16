@@ -52,8 +52,8 @@ namespace Mappa.Generator.Models;
 ///         <description>The name of the default culture to be applied.</description>
 ///     </item>
 ///     <item>
-///         <term><c>mappa.enableoptional</c></term>
-///         <description>Set the default value to enable or disable the (protobuf) optional setting. Valid values are the values from the <see cref="EnableSetting"/> enum.</description>
+///         <term><c>mappa.optional</c></term>
+///         <description>Set the default value to enable or disable the (protobuf) optional setting. Valid values are the values from the <see cref="BooleanSetting"/> enum.</description>
 ///     </item>
 /// </list>
 /// </summary>
@@ -131,10 +131,10 @@ internal sealed class MappaGlobalOptions
             ? GetCultureInfoSettingsFromString(cultureInfoSettings)
             : CultureInfoSetting.None;
 
-        this.EnableOptional = options.TryGetValue(GetOptionName(MappaSettingsEnableOptional), out var enableOptional)
+        this.Optional = options.TryGetValue(GetOptionName(MappaSettingsEnableOptional), out var optional)
                                   && !string.IsNullOrWhiteSpace(cultureInfoSettings)
-            ? GetEnableSettingsFromString(enableOptional)
-            : EnableSetting.Undefined;
+            ? GetEnableSettingsFromString(optional)
+            : BooleanSetting.Undefined;
 
         static CultureInfoSetting GetCultureInfoSettingsFromString(string cultureInfoSettings)
         {
@@ -161,24 +161,24 @@ internal sealed class MappaGlobalOptions
             return CultureInfoSetting.None;
         }
 
-        static EnableSetting GetEnableSettingsFromString(string enableSettings)
+        static BooleanSetting GetEnableSettingsFromString(string enableSettings)
         {
-            if (enableSettings.Equals(nameof(EnableSetting.Undefined), StringComparison.OrdinalIgnoreCase))
+            if (enableSettings.Equals(nameof(BooleanSetting.Undefined), StringComparison.OrdinalIgnoreCase))
             {
-                return EnableSetting.Undefined;
+                return BooleanSetting.Undefined;
             }
 
-            if (enableSettings.Equals(nameof(EnableSetting.Enable), StringComparison.OrdinalIgnoreCase))
+            if (enableSettings.Equals(nameof(BooleanSetting.Enable), StringComparison.OrdinalIgnoreCase))
             {
-                return EnableSetting.Enable;
+                return BooleanSetting.Enable;
             }
 
-            if (enableSettings.Equals(nameof(EnableSetting.Disable), StringComparison.OrdinalIgnoreCase))
+            if (enableSettings.Equals(nameof(BooleanSetting.Disable), StringComparison.OrdinalIgnoreCase))
             {
-                return EnableSetting.Disable;
+                return BooleanSetting.Disable;
             }
 
-            return EnableSetting.Undefined;
+            return BooleanSetting.Undefined;
         }
     }
 
@@ -207,7 +207,7 @@ internal sealed class MappaGlobalOptions
     public string? CultureName { get; }
 
     /// <inheritdoc/>
-    public EnableSetting EnableOptional { get; }
+    public BooleanSetting Optional { get; }
 
     /// <summary>
     /// Gets a value indicating whether to report debug INFO diagnostics.

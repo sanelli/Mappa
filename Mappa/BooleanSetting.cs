@@ -1,4 +1,4 @@
-// <copyright file="EnableSetting.cs" company="Stefano Anelli">
+// <copyright file="BooleanSetting.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -7,7 +7,7 @@ namespace Mappa;
 /// <summary>
 /// Enable or disable a specific setting.
 /// </summary>
-public enum EnableSetting
+public enum BooleanSetting
 {
     /// <summary>
     /// Ignore the setting from the application of this.

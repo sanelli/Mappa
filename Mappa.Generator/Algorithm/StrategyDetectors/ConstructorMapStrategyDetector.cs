@@ -192,7 +192,7 @@ internal sealed class ConstructorMapStrategyDetector
         IPropertySymbol[] sourceProperties,
         IMapStrategy inputStrategy)
     {
-        if (this.context.MappaUserSettings.EnableOptional is not EnableSetting.Enable)
+        if (this.context.MappaUserSettings.Optional is not BooleanSetting.Enable)
         {
             return inputStrategy;
         }
