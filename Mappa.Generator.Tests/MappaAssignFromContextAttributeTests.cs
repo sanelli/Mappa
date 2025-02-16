@@ -183,7 +183,7 @@ public sealed class MappaAssignFromContextAttributeTests
     /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
-    public async Task CanInvokeOtherMapperRequiringContextWithNonEmptyCOostructor()
+    public async Task CanInvokeOtherMapperRequiringContextWithNonEmptyConstructor()
     {
         // Arrange
         const string sourceCode = """

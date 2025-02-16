@@ -31,7 +31,7 @@ internal sealed class OptionalSourcePropertyMapStrategyBuilder
         var targetVariable = context.NextTemporary();
 
         builder.AppendLine($"{this.strategy.TargetType} {targetVariable};");
-        builder.AppendLine($"if ({context.GetSource()}.Has{this.strategy.SourceProperty.Name})");
+        builder.AppendLine($"if ({context.GetCompositeTypeSourceName()}.Has{this.strategy.SourceProperty.Name})");
         using (builder.CurlyBracesBlock())
         {
             var (innerVariable, innerCode) = this.strategy.InnerStrategy.GetBuilder().BuildSource(source, context, mappaGlobalOptions);

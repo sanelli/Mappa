@@ -127,7 +127,7 @@ internal sealed class ConstructorMapStrategyDetector
                                         StringComparison.OrdinalIgnoreCase,
                                         out var propertyStrategyFromAttribute))
                                 {
-                                    // TODO [#48] Check if optional is enabled & Has<SourceProperty> exists & encapsulate propertyStrategyFromAttribute to a new sourceOptional strategy.
+                                    propertyStrategyFromAttribute = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, sourceProperties, propertyStrategyFromAttribute);
                                     var strategy = new ParameterMapStrategy(targetParameter, sourceProperty!, propertyStrategyFromAttribute);
                                     return (targetParameter, sourceProperty!, strategy);
                                 }
@@ -188,10 +188,15 @@ internal sealed class ConstructorMapStrategyDetector
     }
 
     private IMapStrategy EncapsulateMapStrategyForSourceOptional(
-        IPropertySymbol sourceProperty,
+        IPropertySymbol? sourceProperty,
         IPropertySymbol[] sourceProperties,
         IMapStrategy inputStrategy)
     {
+        if (sourceProperty is null)
+        {
+            return inputStrategy;
+        }
+
         if (this.context.MappaUserSettings.Optional is not BooleanSetting.Enable)
         {
             return inputStrategy;

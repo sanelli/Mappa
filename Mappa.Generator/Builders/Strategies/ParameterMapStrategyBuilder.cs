@@ -29,20 +29,13 @@ internal sealed class ParameterMapStrategyBuilder
     {
         var builder = new PrettyCode.StringBuilder();
 
-        // For Mappa Invoke Attribute we let that specific builder
-        // build the temporary if needed.
-        if (this.strategy.ParameterStrategy is MappaInvokeMethodAttributeStrategy mappaInvokeMethodAttributeStrategy)
-        {
-            return mappaInvokeMethodAttributeStrategy.GetBuilder().BuildSource(source, context, mappaGlobalOptions);
-        }
-
         // It is not a specific builder: go on to create a source temporary and the code
         // for the property specific builder.
         var sourcePropertyTemporary = string.Empty;
         if (this.strategy.SourceProperty is not null)
         {
             sourcePropertyTemporary = context.NextTemporary();
-            builder.AppendLine($"{this.strategy.ParameterStrategy.SourceType.ToDisplayString()} {sourcePropertyTemporary} = {source}.{this.strategy.SourceProperty.Name};");
+            builder.AppendLine($"{this.strategy.SourceProperty.Type.ToDisplayString()} {sourcePropertyTemporary} = {source}.{this.strategy.SourceProperty.Name};");
         }
 
         (string targetTemporary, string code) = this.strategy.ParameterStrategy.GetBuilder().BuildSource(sourcePropertyTemporary, context, mappaGlobalOptions);

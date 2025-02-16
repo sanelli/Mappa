@@ -68,14 +68,14 @@ internal sealed class MappaInvokeMethodAttributeStrategyBuilder
                 if (this.strategy.Method.Parameters[0].Type.IsEqualTo(this.strategy.SourceType, this.strategy.IsNullableEnabled) ||
                     context.Compilation.HasImplicitConversion(this.strategy.SourceType, this.strategy.Method.Parameters[0].Type))
                 {
-                    return source;
+                    return context.GetCompositeTypeSourceName();
                 }
 
                 if (this.strategy.SourceProperty is not null &&
                     (this.strategy.Method.Parameters[0].Type.IsEqualTo(this.strategy.SourceProperty.Type, this.strategy.IsNullableEnabled) ||
                     context.Compilation.HasImplicitConversion(this.strategy.SourceProperty.Type, this.strategy.Method.Parameters[0].Type)))
                 {
-                    return $"{source}.{this.strategy.SourceProperty.Name}";
+                    return $"{source}";
                 }
 
                 throw new MappaGeneratorException("Unexpected parameter type");
@@ -83,7 +83,7 @@ internal sealed class MappaInvokeMethodAttributeStrategyBuilder
             case 2:
                 if (this.strategy.SourceProperty is not null)
                 {
-                    return $"{source}, {source}.{this.strategy.SourceProperty.Name}";
+                    return $"{context.GetCompositeTypeSourceName()}, {source}";
                 }
 
                 break;
