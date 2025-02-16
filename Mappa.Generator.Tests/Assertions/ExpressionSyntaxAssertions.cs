@@ -120,6 +120,19 @@ internal sealed class ExpressionSyntaxAssertions
     }
 
     /// <summary>
+    /// Assert that the expression is a default literal expression.
+    /// </summary>
+    /// <returns>The expression.</returns>
+    public ExpressionSyntaxAssertions BeDefaultLiteralExpressionSyntax()
+    {
+        this.Subject.Should().BeOfType<LiteralExpressionSyntax>();
+        var literalExpressionSyntax = (LiteralExpressionSyntax)this.Subject;
+        literalExpressionSyntax.Token.Should().BeOfType<SyntaxToken>();
+        literalExpressionSyntax.Token.RawKind.Should().Be((int)SyntaxKind.DefaultKeyword);
+        return this;
+    }
+
+    /// <summary>
     /// Assert that the expression is a <c>nameof</c> expression.
     /// </summary>
     /// <param name="name">The expected value of the expression.</param>

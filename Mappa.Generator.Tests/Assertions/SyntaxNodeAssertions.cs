@@ -120,13 +120,16 @@ internal sealed class SyntaxNodeAssertions
             .Equals(localSymbol!.Type, expectedType)
             .Should().BeTrue();
 
-        if (isTypeNullable)
+        if (expectedType.IsReferenceType)
         {
-            localSymbol.NullableAnnotation.Should().Be(NullableAnnotation.Annotated);
-        }
-        else
-        {
-            localSymbol.NullableAnnotation.Should().BeOneOf([NullableAnnotation.None, NullableAnnotation.NotAnnotated]);
+            if (isTypeNullable)
+            {
+                localSymbol.NullableAnnotation.Should().Be(NullableAnnotation.Annotated);
+            }
+            else
+            {
+                localSymbol.NullableAnnotation.Should().BeOneOf([NullableAnnotation.None, NullableAnnotation.NotAnnotated]);
+            }
         }
 
         if (assertInitializations is null)
