@@ -345,8 +345,8 @@ internal sealed class ConstructorMapStrategyDetector
                                     StringComparison.Ordinal,
                                     out var propertyStrategyFromAttribute))
                             {
-                                // TODO [#48] Check if optional is enabled & Has<SourceProperty> exists & encapsulate propertyStrategyFromAttribute to a new sourceOptional strategy.
                                 // TODO [#48] Check if optional is enabled & Has<TargetProperty> exists & encapsulate PropertyMapStrategy into a new targetOptionalStrategy -> This needs to be handled differently as it needs to be set after the value is created (target should not be init/required).
+                                propertyStrategyFromAttribute = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, sourceProperties.Values.ToArray(), propertyStrategyFromAttribute);
                                 return new PropertyMapStrategy(targetProperty, sourceProperty, propertyStrategyFromAttribute);
                             }
 
@@ -361,8 +361,8 @@ internal sealed class ConstructorMapStrategyDetector
 
                             if (this.TryGetStrategyBetweenTypes(targetPropertyType, sourcePropertyType, true, out var propertyStrategy))
                             {
-                                // TODO [#48] Check if optional is enabled & Has<SourceProperty> exists & encapsulate propertyStrategyFromAttribute to a new sourceOptional strategy.
                                 // TODO [#48] Check if optional is enabled & Has<TargetProperty> exists & encapsulate PropertyMapStrategy into a new targetOptionalStrategy -> This needs to be handled differently as it needs to be set after the value is created (target should not be init/required).
+                                propertyStrategy = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, sourceProperties.Values.ToArray(), propertyStrategy);
                                 return new PropertyMapStrategy(targetProperty, sourceProperty, propertyStrategy);
                             }
 
