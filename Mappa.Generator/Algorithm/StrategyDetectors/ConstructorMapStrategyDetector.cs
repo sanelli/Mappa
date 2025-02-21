@@ -216,6 +216,43 @@ internal sealed class ConstructorMapStrategyDetector
         return new OptionalSourcePropertyMapStrategy(inputStrategy, sourceProperty);
     }
 
+    private IMapStrategy EncapsulateMapStrategyForTargetOptional(
+        IPropertySymbol targetProperty,
+        IPropertySymbol[] targetProperties,
+        IMapStrategy inputStrategy,
+        out bool requirePostConstructorInitialization)
+    {
+        requirePostConstructorInitialization = false;
+        if (this.context.MappaUserSettings.Optional is not BooleanSetting.Enable)
+        {
+            return inputStrategy;
+        }
+
+        if (targetProperty.IsIndexer)
+        {
+            return inputStrategy;
+        }
+
+        if (targetProperty.IsRequired)
+        {
+            return inputStrategy;
+        }
+
+        IPropertySymbol? hasProperty = Array.Find(targetProperties, property => property.Name.Equals($"Has{targetProperty.Name}", StringComparison.Ordinal));
+        if (hasProperty is null)
+        {
+            return inputStrategy;
+        }
+
+        if (!hasProperty.Type.IsBoolean())
+        {
+            return inputStrategy;
+        }
+
+        requirePostConstructorInitialization = true;
+        return new OptionalTargetPropertyMapStrategy(inputStrategy, targetProperty);
+    }
+
     private bool CanInvokeMappingConstructor(out IMethodSymbol constructor, out IMapStrategy strategy)
     {
         constructor = null!;
@@ -345,15 +382,15 @@ internal sealed class ConstructorMapStrategyDetector
                                     StringComparison.Ordinal,
                                     out var propertyStrategyFromAttribute))
                             {
-                                // TODO [#48] Check if optional is enabled & Has<TargetProperty> exists & encapsulate PropertyMapStrategy into a new targetOptionalStrategy -> This needs to be handled differently as it needs to be set after the value is created (target should not be init/required).
-                                propertyStrategyFromAttribute = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, sourceProperties.Values.ToArray(), propertyStrategyFromAttribute);
-                                return new PropertyMapStrategy(targetProperty, sourceProperty, propertyStrategyFromAttribute);
+                                propertyStrategyFromAttribute = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, [.. sourceProperties.Values], propertyStrategyFromAttribute);
+                                propertyStrategyFromAttribute = this.EncapsulateMapStrategyForTargetOptional(targetProperty, targetProperties, propertyStrategyFromAttribute, out var postConstructorInitializer);
+                                return new PropertyMapStrategy(targetProperty, sourceProperty, propertyStrategyFromAttribute, postConstructorInitializer);
                             }
 
                             // Look for a matching source property
                             if (!hasSourceProperty || sourceProperty is null)
                             {
-                                return new PropertyMapStrategy(targetProperty, null, noMapStrategy);
+                                return new PropertyMapStrategy(targetProperty, null, noMapStrategy, false);
                             }
 
                             var targetPropertyType = targetProperty.Type;
@@ -361,12 +398,12 @@ internal sealed class ConstructorMapStrategyDetector
 
                             if (this.TryGetStrategyBetweenTypes(targetPropertyType, sourcePropertyType, true, out var propertyStrategy))
                             {
-                                // TODO [#48] Check if optional is enabled & Has<TargetProperty> exists & encapsulate PropertyMapStrategy into a new targetOptionalStrategy -> This needs to be handled differently as it needs to be set after the value is created (target should not be init/required).
-                                propertyStrategy = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, sourceProperties.Values.ToArray(), propertyStrategy);
-                                return new PropertyMapStrategy(targetProperty, sourceProperty, propertyStrategy);
+                                propertyStrategy = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, [.. sourceProperties.Values], propertyStrategy);
+                                propertyStrategy = this.EncapsulateMapStrategyForTargetOptional(targetProperty, targetProperties, propertyStrategy, out var postConstructorInitializer);
+                                return new PropertyMapStrategy(targetProperty, sourceProperty, propertyStrategy, postConstructorInitializer);
                             }
 
-                            return new PropertyMapStrategy(targetProperty, null, noMapStrategy);
+                            return new PropertyMapStrategy(targetProperty, null, noMapStrategy, false);
                         })
                     .ToArray();
 

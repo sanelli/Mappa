@@ -29,8 +29,6 @@ internal sealed class PropertyMapStrategyBuilder
     {
         var builder = new PrettyCode.StringBuilder();
 
-        // It is not a specific builder: go on to create a source temporary and the code
-        // for the property specific builder.
         var sourcePropertyTemporary = string.Empty;
         if (this.strategy.SourceProperty is not null)
         {

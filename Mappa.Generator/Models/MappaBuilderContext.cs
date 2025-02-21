@@ -13,6 +13,7 @@ namespace Mappa.Generator.Models;
 internal sealed class MappaBuilderContext
 {
     private readonly StackSetting<string> compositeTypeSourceName = new(string.Empty);
+    private readonly StackSetting<string> compositeTypeTargetName = new(string.Empty);
     private uint temporaryCounter;
 
     /// <summary>
@@ -49,4 +50,18 @@ internal sealed class MappaBuilderContext
     /// </summary>
     /// <returns>The current source.</returns>
     internal string GetCompositeTypeSourceName() => this.compositeTypeSourceName.CurrentValue;
+
+    /// <summary>
+    /// Push a new value for the target name for struct, record, classes, etc...
+    /// </summary>
+    /// <param name="sourceName">The name of the target.</param>
+    /// <returns>Disposable value used to remove the target.</returns>
+    internal IDisposable PushCurrentCompositeTypeTargetName(string sourceName)
+        => this.compositeTypeTargetName.Apply(sourceName);
+
+    /// <summary>
+    /// Gets the current value of the target pushed.
+    /// </summary>
+    /// <returns>The current source.</returns>
+    internal string GetCompositeTypeTargetName() => this.compositeTypeTargetName.CurrentValue;
 }
