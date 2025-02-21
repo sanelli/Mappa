@@ -1792,7 +1792,10 @@ public sealed class OptionalStrategyIntegrationTests
     // TODO [#48] Test with optional enabled on method overriding on class targeting optional property.
     // TODO [#48] Test with optional disabled targeting optional property with mapping user defined via attribute.
     // TODO [#48] Test with optional enabled on class targeting optional property with mapping user defined via attribute.
+    // TODO [#48] Test with optional enabled on class targeting optional property with mapping user defined via attribute (method invokation does not have any input parameter in order to test the missing source).
     // TODO [#48] Test with optional enabled on method targeting optional property with mapping user defined via attribute.
     // TODO [#48] Test with optional enabled on method overriding on class targeting optional property with mapping user defined via attribute.
+    // TODO [#48] Test with optional enabled and source is optional and target is optional.
+    // TODO [#48] Test that target optional is not generated when target property is required.
     // TODO [#48] Test with nested struct/classes.
 }

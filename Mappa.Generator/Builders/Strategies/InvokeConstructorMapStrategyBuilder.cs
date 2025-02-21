@@ -77,7 +77,7 @@ internal sealed class InvokeConstructorMapStrategyBuilder
             // Initialise properties after the constructor has been created.
             using (context.PushCurrentCompositeTypeTargetName(resultTemporary))
             {
-                foreach (var propertyMapStrategy in this.strategy.InitializerStrategies.Where(propertyMapStrategy => !propertyMapStrategy.PostConstructorInitializer))
+                foreach (var propertyMapStrategy in this.strategy.InitializerStrategies.Where(propertyMapStrategy => propertyMapStrategy.PostConstructorInitializer))
                 {
                     var (_, initializerPropertyCode) = propertyMapStrategy.GetBuilder().BuildSource(source, context, mappaGlobalOptions);
                     builder.AppendLine(initializerPropertyCode);
