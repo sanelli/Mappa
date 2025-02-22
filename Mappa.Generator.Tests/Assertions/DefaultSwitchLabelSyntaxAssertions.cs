@@ -17,27 +17,11 @@ internal sealed class DefaultSwitchLabelSyntaxAssertions
     /// Initializes a new instance of the <see cref="DefaultSwitchLabelSyntaxAssertions"/> class.
     /// </summary>
     /// <param name="value">The target of the assertions.</param>
-    /// <param name="semanticModel">The semantic model.</param>
-    /// <param name="compilation">The compilation.</param>
     internal DefaultSwitchLabelSyntaxAssertions(
-        DefaultSwitchLabelSyntax value,
-        SemanticModel semanticModel,
-        Compilation compilation)
+        DefaultSwitchLabelSyntax value)
         : base(value, FluentAssertions.Execution.AssertionChain.GetOrCreate())
     {
-        this.SemanticModel = semanticModel;
-        this.Compilation = compilation;
     }
-
-    /// <summary>
-    /// Gets the semantic model.
-    /// </summary>
-    public SemanticModel SemanticModel { get; }
-
-    /// <summary>
-    /// Gets the compilation.
-    /// </summary>
-    public Compilation Compilation { get; }
 
     /// <summary>
     /// Assert that the syntax is a case.

@@ -15,6 +15,9 @@ namespace Mappa.Generator.Tests.Assertions;
 internal sealed class VariableDeclarationSyntaxAssertions
 : ObjectAssertions<VariableDeclarationSyntax, VariableDeclarationSyntaxAssertions>
 {
+    private readonly SemanticModel semanticModel;
+    private readonly Compilation compilation;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="VariableDeclarationSyntaxAssertions"/> class.
     /// </summary>
@@ -24,19 +27,9 @@ internal sealed class VariableDeclarationSyntaxAssertions
     public VariableDeclarationSyntaxAssertions(VariableDeclarationSyntax value, SemanticModel semanticModel, Compilation compilation)
         : base(value, FluentAssertions.Execution.AssertionChain.GetOrCreate())
     {
-        this.SemanticModel = semanticModel;
-        this.Compilation = compilation;
+        this.semanticModel = semanticModel;
+        this.compilation = compilation;
     }
-
-    /// <summary>
-    /// Gets the semantic model.
-    /// </summary>
-    public SemanticModel SemanticModel { get; }
-
-    /// <summary>
-    /// Gets the compilation.
-    /// </summary>
-    public Compilation Compilation { get; }
 
     /// <summary>
     /// Assert the declaration syntax is for a single variable initialized by a constant.
@@ -47,8 +40,8 @@ internal sealed class VariableDeclarationSyntaxAssertions
     /// <returns>The assertions.</returns>
     public VariableDeclarationSyntaxAssertions BeAssignmentFromConstant(string type, string identifier, object value)
     {
-        var expectedType = this.Compilation.GetTypeSymbol(type);
-        var actualSymbol = this.Compilation.GetTypeSymbol(this.Subject.Type.ToString());
+        var expectedType = this.compilation.GetTypeSymbol(type);
+        var actualSymbol = this.compilation.GetTypeSymbol(this.Subject.Type.ToString());
 
         SymbolEqualityComparer
             .Default
@@ -60,7 +53,7 @@ internal sealed class VariableDeclarationSyntaxAssertions
         this.Subject.Variables[0].Initializer.Should().NotBeNull();
 
         var valueExpression = this.Subject.Variables[0].Initializer!.Value;
-        new ExpressionSyntaxAssertions(valueExpression, this.SemanticModel, this.Compilation).BeLiteralExpressionSyntax(value);
+        new ExpressionSyntaxAssertions(valueExpression, this.semanticModel, this.compilation).BeLiteralExpressionSyntax(value);
         return this;
     }
 }

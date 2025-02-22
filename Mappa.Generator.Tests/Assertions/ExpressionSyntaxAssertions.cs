@@ -15,6 +15,9 @@ namespace Mappa.Generator.Tests.Assertions;
 internal sealed class ExpressionSyntaxAssertions
     : ObjectAssertions<ExpressionSyntax, ExpressionSyntaxAssertions>
 {
+    private readonly SemanticModel semanticModel;
+    private readonly Compilation compilation;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ExpressionSyntaxAssertions"/> class.
     /// </summary>
@@ -27,19 +30,9 @@ internal sealed class ExpressionSyntaxAssertions
         Compilation compilation)
         : base(value, FluentAssertions.Execution.AssertionChain.GetOrCreate())
     {
-        this.SemanticModel = semanticModel;
-        this.Compilation = compilation;
+        this.semanticModel = semanticModel;
+        this.compilation = compilation;
     }
-
-    /// <summary>
-    /// Gets the semantic model.
-    /// </summary>
-    public SemanticModel SemanticModel { get; }
-
-    /// <summary>
-    /// Gets the compilation.
-    /// </summary>
-    public Compilation Compilation { get; }
 
     /// <summary>
     /// Assert that the expression is an identifier name expression.
@@ -74,11 +67,11 @@ internal sealed class ExpressionSyntaxAssertions
         type = type.Replace("?", string.Empty, StringComparison.Ordinal);
 
         var actualStringType = castExpressionSyntax.Type.ToString();
-        var isActualTypeNullable = actualStringType!.EndsWith('?');
+        var isActualTypeNullable = actualStringType.EndsWith('?');
         actualStringType = actualStringType.Replace("?", string.Empty, StringComparison.Ordinal);
 
-        var expectedType = this.Compilation.GetTypeSymbol(type);
-        var actualType = this.Compilation.GetTypeSymbol(actualStringType);
+        var expectedType = this.compilation.GetTypeSymbol(type);
+        var actualType = this.compilation.GetTypeSymbol(actualStringType);
 
         SymbolEqualityComparer
             .Default
@@ -87,7 +80,7 @@ internal sealed class ExpressionSyntaxAssertions
 
         isTypeNullable.Should().Be(isActualTypeNullable);
 
-        assert(new ExpressionSyntaxAssertions(castExpressionSyntax.Expression, this.SemanticModel, this.Compilation));
+        assert(new ExpressionSyntaxAssertions(castExpressionSyntax.Expression, this.semanticModel, this.compilation));
         return this;
     }
 
@@ -141,10 +134,10 @@ internal sealed class ExpressionSyntaxAssertions
     {
         this.Subject.Should().BeOfType<InvocationExpressionSyntax>();
         var invocationExpressionSyntax = (InvocationExpressionSyntax)this.Subject;
-        new ExpressionSyntaxAssertions(invocationExpressionSyntax.Expression, this.SemanticModel, this.Compilation)
+        new ExpressionSyntaxAssertions(invocationExpressionSyntax.Expression, this.semanticModel, this.compilation)
             .BeIdentifierNameSyntax("nameof");
         invocationExpressionSyntax.ArgumentList.Arguments.Should().HaveCount(1);
-        new ExpressionSyntaxAssertions(invocationExpressionSyntax.ArgumentList.Arguments[0].Expression, this.SemanticModel, this.Compilation)
+        new ExpressionSyntaxAssertions(invocationExpressionSyntax.ArgumentList.Arguments[0].Expression, this.semanticModel, this.compilation)
             .BeMemberAccessExpressionSyntax(name);
         return this;
     }
@@ -163,13 +156,13 @@ internal sealed class ExpressionSyntaxAssertions
 
         this.Subject.Should().BeOfType<InvocationExpressionSyntax>();
         var invocationExpressionSyntax = (InvocationExpressionSyntax)this.Subject;
-        new ExpressionSyntaxAssertions(invocationExpressionSyntax.Expression, this.SemanticModel, this.Compilation)
+        new ExpressionSyntaxAssertions(invocationExpressionSyntax.Expression, this.semanticModel, this.compilation)
             .BeMemberAccessExpressionSyntax(memberAccess);
         invocationExpressionSyntax.ArgumentList.Arguments.Should().HaveCount(assertArguments.Length);
 
         for (int index = 0; index < assertArguments.Length; ++index)
         {
-            assertArguments[index](new ExpressionSyntaxAssertions(invocationExpressionSyntax.ArgumentList.Arguments[index].Expression, this.SemanticModel, this.Compilation));
+            assertArguments[index](new ExpressionSyntaxAssertions(invocationExpressionSyntax.ArgumentList.Arguments[index].Expression, this.semanticModel, this.compilation));
         }
 
         return this;
@@ -189,13 +182,13 @@ internal sealed class ExpressionSyntaxAssertions
 
         this.Subject.Should().BeOfType<InvocationExpressionSyntax>();
         var invocationExpressionSyntax = (InvocationExpressionSyntax)this.Subject;
-        new ExpressionSyntaxAssertions(invocationExpressionSyntax.Expression, this.SemanticModel, this.Compilation)
+        new ExpressionSyntaxAssertions(invocationExpressionSyntax.Expression, this.semanticModel, this.compilation)
             .BeIdentifierNameSyntax(memberAccess);
         invocationExpressionSyntax.ArgumentList.Arguments.Should().HaveCount(assertArguments.Length);
 
         for (int index = 0; index < assertArguments.Length; ++index)
         {
-            assertArguments[index](new ExpressionSyntaxAssertions(invocationExpressionSyntax.ArgumentList.Arguments[index].Expression, this.SemanticModel, this.Compilation));
+            assertArguments[index](new ExpressionSyntaxAssertions(invocationExpressionSyntax.ArgumentList.Arguments[index].Expression, this.semanticModel, this.compilation));
         }
 
         return this;
@@ -214,8 +207,8 @@ internal sealed class ExpressionSyntaxAssertions
         this.Subject.Should().BeOfType<ArrayCreationExpressionSyntax>();
         var arrayCreationExpressionSyntax = (ArrayCreationExpressionSyntax)this.Subject;
 
-        var expectedType = this.Compilation.GetTypeSymbol(type);
-        var localSymbol = this.Compilation.GetTypeSymbol(arrayCreationExpressionSyntax.Type.ElementType.ToString());
+        var expectedType = this.compilation.GetTypeSymbol(type);
+        var localSymbol = this.compilation.GetTypeSymbol(arrayCreationExpressionSyntax.Type.ElementType.ToString());
 
         SymbolEqualityComparer
             .Default
@@ -225,7 +218,7 @@ internal sealed class ExpressionSyntaxAssertions
         arrayCreationExpressionSyntax.Type.RankSpecifiers.Should().HaveCount(1);
         arrayCreationExpressionSyntax.Type.RankSpecifiers[0].Sizes.Should().HaveCount(1);
         var size = arrayCreationExpressionSyntax.Type.RankSpecifiers[0].Sizes[0];
-        sizeAssertion(new ExpressionSyntaxAssertions(size, this.SemanticModel, this.Compilation));
+        sizeAssertion(new ExpressionSyntaxAssertions(size, this.semanticModel, this.compilation));
 
         return this;
     }
@@ -302,8 +295,8 @@ internal sealed class ExpressionSyntaxAssertions
 
         binaryExpressionSyntax.OperatorToken.Kind().Should().Be(@operator);
 
-        leftExpressionAssertions(new ExpressionSyntaxAssertions(binaryExpressionSyntax.Left, this.SemanticModel, this.Compilation));
-        rightExpressionAssertions(new ExpressionSyntaxAssertions(binaryExpressionSyntax.Right, this.SemanticModel, this.Compilation));
+        leftExpressionAssertions(new ExpressionSyntaxAssertions(binaryExpressionSyntax.Left, this.semanticModel, this.compilation));
+        rightExpressionAssertions(new ExpressionSyntaxAssertions(binaryExpressionSyntax.Right, this.semanticModel, this.compilation));
 
         return this;
     }
@@ -324,7 +317,7 @@ internal sealed class ExpressionSyntaxAssertions
         var prefixUnaryExpressionSyntax = (PrefixUnaryExpressionSyntax)this.Subject;
 
         prefixUnaryExpressionSyntax.OperatorToken.Kind().Should().Be(@operator);
-        operandAssertions(new ExpressionSyntaxAssertions(prefixUnaryExpressionSyntax.Operand, this.SemanticModel, this.Compilation));
+        operandAssertions(new ExpressionSyntaxAssertions(prefixUnaryExpressionSyntax.Operand, this.semanticModel, this.compilation));
 
         return this;
     }
@@ -347,8 +340,8 @@ internal sealed class ExpressionSyntaxAssertions
         this.Subject.Should().BeOfType<ObjectCreationExpressionSyntax>();
         var objectCreationExpressionSyntax = (ObjectCreationExpressionSyntax)this.Subject;
 
-        var expectedType = this.Compilation.GetTypeSymbol(type);
-        var actualType = this.Compilation.GetTypeSymbol(objectCreationExpressionSyntax.Type.ToString());
+        var expectedType = this.compilation.GetTypeSymbol(type);
+        var actualType = this.compilation.GetTypeSymbol(objectCreationExpressionSyntax.Type.ToString());
 
         SymbolEqualityComparer
             .Default
@@ -367,7 +360,7 @@ internal sealed class ExpressionSyntaxAssertions
 
             for (var argumentIndex = 0; argumentIndex < argumentExpressionAssertions.Length; ++argumentIndex)
             {
-                argumentExpressionAssertions[argumentIndex](new ExpressionSyntaxAssertions(objectCreationExpressionSyntax.ArgumentList.Arguments[argumentIndex].Expression, this.SemanticModel, this.Compilation));
+                argumentExpressionAssertions[argumentIndex](new ExpressionSyntaxAssertions(objectCreationExpressionSyntax.ArgumentList.Arguments[argumentIndex].Expression, this.semanticModel, this.compilation));
             }
         }
 
@@ -389,7 +382,7 @@ internal sealed class ExpressionSyntaxAssertions
                 var leftExpression = (IdentifierNameSyntax)assignmentExpression.Left;
                 leftExpression.Identifier.Text.Should().Be(initializationAssertions[initializerIndex].PropertyName);
 
-                initializationAssertions[initializerIndex].Assertions(new ExpressionSyntaxAssertions(assignmentExpression.Right, this.SemanticModel, this.Compilation));
+                initializationAssertions[initializerIndex].Assertions(new ExpressionSyntaxAssertions(assignmentExpression.Right, this.semanticModel, this.compilation));
             }
         }
 
@@ -405,7 +398,7 @@ internal sealed class ExpressionSyntaxAssertions
     public ExpressionSyntaxAssertions BeObjectCreationExpressionSyntax(
         string type,
         params Action<ExpressionSyntaxAssertions>[] argumentExpressionAssertions)
-        => this.BeObjectCreationExpressionSyntax(type, argumentExpressionAssertions, Array.Empty<(string PropertyName, Action<ExpressionSyntaxAssertions> Assertions)>());
+        => this.BeObjectCreationExpressionSyntax(type, argumentExpressionAssertions, []);
 
     /// <summary>
     /// Assert that the expression is an object creation expression.
@@ -416,7 +409,7 @@ internal sealed class ExpressionSyntaxAssertions
     public ExpressionSyntaxAssertions BeObjectCreationExpressionSyntax(
         string type,
         params (string PropertyName, Action<ExpressionSyntaxAssertions> Assertions)[] initializationAssertions)
-        => this.BeObjectCreationExpressionSyntax(type, Array.Empty<Action<ExpressionSyntaxAssertions>>(), initializationAssertions);
+        => this.BeObjectCreationExpressionSyntax(type, [], initializationAssertions);
 
     /// <summary>
     /// Assert that the expression is an object creation expression.
@@ -424,7 +417,7 @@ internal sealed class ExpressionSyntaxAssertions
     /// <param name="type">The type being created.</param>
     /// <returns>The assertions.</returns>
     public ExpressionSyntaxAssertions BeObjectCreationExpressionSyntax(string type)
-        => this.BeObjectCreationExpressionSyntax(type, Array.Empty<Action<ExpressionSyntaxAssertions>>(), Array.Empty<(string PropertyName, Action<ExpressionSyntaxAssertions> Assertions)>());
+        => this.BeObjectCreationExpressionSyntax(type, [], []);
 
     /// <summary>
     /// Assert that the expression is an <c>is</c> pattern expression.
@@ -442,8 +435,8 @@ internal sealed class ExpressionSyntaxAssertions
         this.Subject.Should().BeOfType<IsPatternExpressionSyntax>();
         var isPatternExpressionSyntax = (IsPatternExpressionSyntax)this.Subject;
 
-        expressionAssertions(new ExpressionSyntaxAssertions(isPatternExpressionSyntax.Expression, this.SemanticModel, this.Compilation));
-        patternAssertions(new PatternSyntaxAssertions(isPatternExpressionSyntax.Pattern, this.SemanticModel, this.Compilation));
+        expressionAssertions(new ExpressionSyntaxAssertions(isPatternExpressionSyntax.Expression, this.semanticModel, this.compilation));
+        patternAssertions(new PatternSyntaxAssertions(isPatternExpressionSyntax.Pattern, this.semanticModel, this.compilation));
 
         return this;
     }
@@ -465,8 +458,8 @@ internal sealed class ExpressionSyntaxAssertions
         {
             var expressionSyntaxAssertions = new ExpressionSyntaxAssertions(
                 tupleExpressionSyntax.Arguments[argumentIndex].Expression,
-                this.SemanticModel,
-                this.Compilation);
+                this.semanticModel,
+                this.compilation);
             argumentAssertions[argumentIndex](expressionSyntaxAssertions);
         }
 

@@ -19,6 +19,9 @@ internal abstract class BaseNamespaceDeclarationSyntaxAssertions<TNamespaceSynta
     where TNamespaceSyntax : BaseNamespaceDeclarationSyntax
     where TDerivedAssertion : BaseNamespaceDeclarationSyntaxAssertions<TNamespaceSyntax, TDerivedAssertion>
 {
+    private readonly SemanticModel semanticModel;
+    private readonly Compilation compilation;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="BaseNamespaceDeclarationSyntaxAssertions{TNamespaceSyntax, TDerivedAssertion}"/> class.
     /// </summary>
@@ -31,19 +34,9 @@ internal abstract class BaseNamespaceDeclarationSyntaxAssertions<TNamespaceSynta
         Compilation compilation)
         : base(value, FluentAssertions.Execution.AssertionChain.GetOrCreate())
     {
-        this.SemanticModel = semanticModel;
-        this.Compilation = compilation;
+        this.semanticModel = semanticModel;
+        this.compilation = compilation;
     }
-
-    /// <summary>
-    /// Gets the semantic model.
-    /// </summary>
-    private SemanticModel SemanticModel { get; }
-
-    /// <summary>
-    /// Gets the compilation.
-    /// </summary>
-    private Compilation Compilation { get; }
 
     /// <summary>
     /// Assert that the namespace name is <paramref name="identifier"/>.
@@ -83,7 +76,7 @@ internal abstract class BaseNamespaceDeclarationSyntaxAssertions<TNamespaceSynta
             classDeclarationSyntax.Identifier.ToString().Equals(identifier, StringComparison.Ordinal));
         var classDeclarationSyntax = classDeclarationSyntaxes.Single(classDeclarationSyntax =>
             classDeclarationSyntax.Identifier.ToString().Equals(identifier, StringComparison.Ordinal));
-        assert(new ClassDeclarationSyntaxAssertions(classDeclarationSyntax, this.SemanticModel, this.Compilation));
+        assert(new ClassDeclarationSyntaxAssertions(classDeclarationSyntax, this.semanticModel, this.compilation));
         return (TDerivedAssertion)this;
     }
 }

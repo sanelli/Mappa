@@ -2,7 +2,6 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -43,9 +42,9 @@ internal static partial class AssertionsHelpers
             }
 
             var tupleType = compilation.CreateTupleTypeSymbol(
-                elementTypeSymbols.ToImmutableArray(),
-                elementTypeNames.ToImmutableArray(),
-                elementLocations.ToImmutableArray());
+                [..elementTypeSymbols],
+                [..elementTypeNames],
+                [..elementLocations]);
 
             return tupleType;
         }
@@ -117,7 +116,7 @@ internal static partial class AssertionsHelpers
         => statement switch
             {
                 BlockSyntax blockSyntax => new BlockSyntaxAssertions(blockSyntax, semanticModel, compilation),
-                _ => new StatementSyntaxAssertions(statement, semanticModel, compilation),
+                _ => new StatementSyntaxAssertions(statement),
             };
 
     /// <summary>
@@ -144,7 +143,7 @@ internal static partial class AssertionsHelpers
             .Select(statement => statement switch
             {
                 CaseSwitchLabelSyntax caseSwitchLabelSyntax => (ISwitchLabelSyntaxAssertions)new CaseSwitchLabelSyntaxAssertions(caseSwitchLabelSyntax, semanticModel, compilation),
-                DefaultSwitchLabelSyntax defaultSwitchLabelSyntax => new DefaultSwitchLabelSyntaxAssertions(defaultSwitchLabelSyntax, semanticModel, compilation),
+                DefaultSwitchLabelSyntax defaultSwitchLabelSyntax => new DefaultSwitchLabelSyntaxAssertions(defaultSwitchLabelSyntax),
                 _ => throw new ArgumentException($"Unknown switch label of type {statement.GetType().FullName}"),
             })
             .ToArray();
