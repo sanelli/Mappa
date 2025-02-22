@@ -1866,9 +1866,292 @@ public sealed class OptionalStrategyIntegrationTests
                 });
     }
 
-    // TODO [#48] Test with optional enabled on class targeting optional property.
-    // TODO [#48] Test with optional enabled on method targeting optional property.
-    // TODO [#48] Test with optional enabled on method overriding on class targeting optional property.
+    /// <summary>
+    /// Test a mapping can be created when target property is optional and:
+    /// - when optional is present on the target
+    /// - when optional is enabled on class;
+    /// - when the mapping happens from source to property.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapWithTargetOptionalEnabledOnClassTargetingEmptyConstructor()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class Source
+                                  {
+                                      public int PropertyA { get; set; }
+                                  }
+
+                                  public class Target
+                                  {
+                                      public bool HasPropertyA { get; set; }
+                                      public int PropertyA { get; set; }
+                                  }
+
+                                  [Mappa]
+                                  [MappaSettings(Optional = BooleanSetting.Enable)]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial Target Map(Source input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                NullableAnnotation.NotAnnotated,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(4)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                "__mappa_tmp_1",
+                                initializationAssertions => initializationAssertions.BeObjectCreationExpressionSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.Target"));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(int).ToString(),
+                                "__mappa_tmp_2",
+                                initializationAssertions => initializationAssertions.BeMemberAccessExpressionSyntax("input.PropertyA"));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeIfStatementSyntax(
+                                conditionAssertions => conditionAssertions.BeBinaryExpressionSyntax(
+                                    leftExpressionAssertions => leftExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_2"),
+                                    SyntaxKind.ExclamationEqualsToken,
+                                    leftExpressionAssertions => leftExpressionAssertions.BeDefaultLiteralExpressionSyntax()),
+                                thenStatementAssertions =>
+                                {
+                                    thenStatementAssertions
+                                        .IsBlockStatement()
+                                        .AsBlock()
+                                        .HasSyntaxNodesCount(1)
+                                        .HasNextSyntaxNode(statementAssertions => statementAssertions.BeAssignmentExpressionStatement(
+                                            leftExpressionAssertions => leftExpressionAssertions.BeMemberAccessExpressionSyntax("__mappa_tmp_1.PropertyA"),
+                                            rightExpressionAssertions => rightExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_2")));
+                                });
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_1"));
+                        });
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping can be created when target property is optional and:
+    /// - when optional is present on the target
+    /// - when optional is enabled on method;
+    /// - when the mapping happens from source to property.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapWithTargetOptionalEnabledOnMethodTargetingEmptyConstructor()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class Source
+                                  {
+                                      public int PropertyA { get; set; }
+                                  }
+
+                                  public class Target
+                                  {
+                                      public bool HasPropertyA { get; set; }
+                                      public int PropertyA { get; set; }
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaSettings(Optional = BooleanSetting.Enable)]
+                                      public partial Target Map(Source input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                NullableAnnotation.NotAnnotated,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(4)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                "__mappa_tmp_1",
+                                initializationAssertions => initializationAssertions.BeObjectCreationExpressionSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.Target"));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(int).ToString(),
+                                "__mappa_tmp_2",
+                                initializationAssertions => initializationAssertions.BeMemberAccessExpressionSyntax("input.PropertyA"));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeIfStatementSyntax(
+                                conditionAssertions => conditionAssertions.BeBinaryExpressionSyntax(
+                                    leftExpressionAssertions => leftExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_2"),
+                                    SyntaxKind.ExclamationEqualsToken,
+                                    leftExpressionAssertions => leftExpressionAssertions.BeDefaultLiteralExpressionSyntax()),
+                                thenStatementAssertions =>
+                                {
+                                    thenStatementAssertions
+                                        .IsBlockStatement()
+                                        .AsBlock()
+                                        .HasSyntaxNodesCount(1)
+                                        .HasNextSyntaxNode(statementAssertions => statementAssertions.BeAssignmentExpressionStatement(
+                                            leftExpressionAssertions => leftExpressionAssertions.BeMemberAccessExpressionSyntax("__mappa_tmp_1.PropertyA"),
+                                            rightExpressionAssertions => rightExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_2")));
+                                });
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_1"));
+                        });
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping can be created when target property is optional and:
+    /// - when optional is present on the target
+    /// - when optional is enabled on method overriding class;
+    /// - when the mapping happens from source to property.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapWithTargetOptionalEnabledOnMethodOverridingClassTargetingEmptyConstructor()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class Source
+                                  {
+                                      public int PropertyA { get; set; }
+                                  }
+
+                                  public class Target
+                                  {
+                                      public bool HasPropertyA { get; set; }
+                                      public int PropertyA { get; set; }
+                                  }
+
+                                  [Mappa]
+                                  [MappaSettings(Optional = BooleanSetting.Disable)]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaSettings(Optional = BooleanSetting.Enable)]
+                                      public partial Target Map(Source input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                NullableAnnotation.NotAnnotated,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(4)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                "__mappa_tmp_1",
+                                initializationAssertions => initializationAssertions.BeObjectCreationExpressionSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.Target"));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(int).ToString(),
+                                "__mappa_tmp_2",
+                                initializationAssertions => initializationAssertions.BeMemberAccessExpressionSyntax("input.PropertyA"));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeIfStatementSyntax(
+                                conditionAssertions => conditionAssertions.BeBinaryExpressionSyntax(
+                                    leftExpressionAssertions => leftExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_2"),
+                                    SyntaxKind.ExclamationEqualsToken,
+                                    leftExpressionAssertions => leftExpressionAssertions.BeDefaultLiteralExpressionSyntax()),
+                                thenStatementAssertions =>
+                                {
+                                    thenStatementAssertions
+                                        .IsBlockStatement()
+                                        .AsBlock()
+                                        .HasSyntaxNodesCount(1)
+                                        .HasNextSyntaxNode(statementAssertions => statementAssertions.BeAssignmentExpressionStatement(
+                                            leftExpressionAssertions => leftExpressionAssertions.BeMemberAccessExpressionSyntax("__mappa_tmp_1.PropertyA"),
+                                            rightExpressionAssertions => rightExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_2")));
+                                });
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_1"));
+                        });
+                });
+    }
+
     // TODO [#48] Test with optional disabled targeting optional property with mapping user defined via attribute.
     // TODO [#48] Test with optional enabled on class targeting optional property with mapping user defined via attribute.
     // TODO [#48] Test with optional enabled on class targeting optional property with mapping user defined via attribute (method invokation does not have any input parameter in order to test the missing source).
