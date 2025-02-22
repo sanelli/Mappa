@@ -22,7 +22,7 @@ public sealed class OptionalStrategyIntegrationTests
     /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
-    public async Task CanMapWithOptionalDefaultSettingsTargetingConstructorWithParameter()
+    public async Task CanMapWithSourceOptionalDefaultSettingsTargetingConstructorWithParameter()
     {
         // Arrange
         const string sourceCode = """
@@ -107,7 +107,7 @@ public sealed class OptionalStrategyIntegrationTests
     /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
-    public async Task CanMapWithOptionalEnabledOnMethodTargetingConstructorWithParameter()
+    public async Task CanMapWithSourceOptionalEnabledOnMethodTargetingConstructorWithParameter()
     {
         // Arrange
         const string sourceCode = """
@@ -218,7 +218,7 @@ public sealed class OptionalStrategyIntegrationTests
     /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
-    public async Task CanMapWithOptionalEnabledOnClassTargetingConstructorWithParameter()
+    public async Task CanMapWithSourceOptionalEnabledOnClassTargetingConstructorWithParameter()
     {
         // Arrange
         const string sourceCode = """
@@ -330,7 +330,7 @@ public sealed class OptionalStrategyIntegrationTests
     /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
-    public async Task CanMapWithOptionalDisabledOnClassButEnabledOnMethodTargetingConstructorWithParameter()
+    public async Task CanMapWithSourceOptionalDisabledOnClassButEnabledOnMethodTargetingConstructorWithParameter()
     {
         // Arrange
         const string sourceCode = """
@@ -442,7 +442,7 @@ public sealed class OptionalStrategyIntegrationTests
     /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
-    public async Task CanMapWithOptionalDefaultSettingsTargetingConstructorWithParameterAndCustomMapping()
+    public async Task CanMapWithSourceOptionalDefaultSettingsTargetingConstructorWithParameterAndCustomMapping()
     {
         // Arrange
         const string sourceCode = """
@@ -543,7 +543,7 @@ public sealed class OptionalStrategyIntegrationTests
     /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
-    public async Task CanMapWithOptionalEnabledOnClassTargetingConstructorWithParameterAndCustomMapping()
+    public async Task CanMapWithSourceOptionalEnabledOnClassTargetingConstructorWithParameterAndCustomMapping()
     {
         // Arrange
         const string sourceCode = """
@@ -670,7 +670,7 @@ public sealed class OptionalStrategyIntegrationTests
     /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
-    public async Task CanMapWithOptionalEnabledOnMethodTargetingConstructorWithParameterAndCustomMapping()
+    public async Task CanMapWithSourceOptionalEnabledOnMethodTargetingConstructorWithParameterAndCustomMapping()
     {
         // Arrange
         const string sourceCode = """
@@ -797,7 +797,7 @@ public sealed class OptionalStrategyIntegrationTests
     /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
-    public async Task CanMapWithOptionalEnabledOnMethodOverridingClassTargetingConstructorWithParameterAndCustomMapping()
+    public async Task CanMapWithSourceOptionalEnabledOnMethodOverridingClassTargetingConstructorWithParameterAndCustomMapping()
     {
         // Arrange
         const string sourceCode = """
@@ -924,7 +924,7 @@ public sealed class OptionalStrategyIntegrationTests
     /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
-    public async Task CanMapWithOptionalDefaultSettingsTargetingEmptyConstructor()
+    public async Task CanMapWithSourceOptionalDefaultSettingsTargetingEmptyConstructor()
     {
         // Arrange
         const string sourceCode = """
@@ -1005,7 +1005,7 @@ public sealed class OptionalStrategyIntegrationTests
     /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
-    public async Task CanMapWithOptionalEnabledOnMethodTargetingEmptyConstructor()
+    public async Task CanMapWithSourceOptionalEnabledOnMethodTargetingEmptyConstructor()
     {
         // Arrange
         const string sourceCode = """
@@ -1112,7 +1112,7 @@ public sealed class OptionalStrategyIntegrationTests
     /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
-    public async Task CanMapWithOptionalEnabledOnClassTargetingEmptyConstructor()
+    public async Task CanMapWithSourceOptionalEnabledOnClassTargetingEmptyConstructor()
     {
         // Arrange
         const string sourceCode = """
@@ -1220,7 +1220,7 @@ public sealed class OptionalStrategyIntegrationTests
     /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
-    public async Task CanMapWithOptionalDisabledOnClassButEnabledOnMethodTargetingEmptyConstructor()
+    public async Task CanMapWithSourceOptionalDisabledOnClassButEnabledOnMethodTargetingEmptyConstructor()
     {
         // Arrange
         const string sourceCode = """
@@ -1328,7 +1328,7 @@ public sealed class OptionalStrategyIntegrationTests
     /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
-    public async Task CanMapWithOptionalDefaultSettingsTargetingEmptyConstructorAndCustomMapping()
+    public async Task CanMapWithSourceOptionalDefaultSettingsTargetingEmptyConstructorAndCustomMapping()
     {
         // Arrange
         const string sourceCode = """
@@ -1425,7 +1425,7 @@ public sealed class OptionalStrategyIntegrationTests
     /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
-    public async Task CanMapWithOptionalEnabledOnClassTargetingEmptyConstructorAndCustomMapping()
+    public async Task CanMapWithSourceOptionalEnabledOnClassTargetingEmptyConstructorAndCustomMapping()
     {
         // Arrange
         const string sourceCode = """
@@ -1548,7 +1548,7 @@ public sealed class OptionalStrategyIntegrationTests
     /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
-    public async Task CanMapWithOptionalEnabledOnMethodTargetingEmptyConstructorAndCustomMapping()
+    public async Task CanMapWithSourceOptionalEnabledOnMethodTargetingEmptyConstructorAndCustomMapping()
     {
         // Arrange
         const string sourceCode = """
@@ -1671,7 +1671,7 @@ public sealed class OptionalStrategyIntegrationTests
     /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
-    public async Task CanMapWithOptionalEnabledOnMethodOverridingClassTargetingEmptyConstructorAndCustomMapping()
+    public async Task CanMapWithSourceOptionalEnabledOnMethodOverridingClassTargetingEmptyConstructorAndCustomMapping()
     {
         // Arrange
         const string sourceCode = """
@@ -1786,7 +1786,86 @@ public sealed class OptionalStrategyIntegrationTests
                 });
     }
 
-    // TODO [#48] Test with optional disabled targeting optional property.
+    /// <summary>
+    /// Test a mapping can be created when target property is optional and:
+    /// - when optional is present on the target but optional is not setup (default is disabled);
+    /// - when the mapping happens from source to property.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapWithTargetOptionalDefaultSettingsTargetingEmptyConstructor()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class Source
+                                  {
+                                      public int PropertyA { get; set; }
+                                  }
+
+                                  public class Target
+                                  {
+                                      public bool HasPropertyA { get; set; }
+                                      public int PropertyA { get; set; }
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial Target Map(Source input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                NullableAnnotation.NotAnnotated,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(3)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(int).ToString(),
+                                "__mappa_tmp_1",
+                                initializationAssertions => initializationAssertions.BeMemberAccessExpressionSyntax("input.PropertyA"));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                "__mappa_tmp_2",
+                                initializationAssertions =>
+                                {
+                                    initializationAssertions.BeObjectCreationExpressionSyntax(
+                                        "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                        ("PropertyA", initializerAssertions => initializerAssertions.BeIdentifierNameSyntax("__mappa_tmp_1")));
+                                });
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_2"));
+                        });
+                });
+    }
+
     // TODO [#48] Test with optional enabled on class targeting optional property.
     // TODO [#48] Test with optional enabled on method targeting optional property.
     // TODO [#48] Test with optional enabled on method overriding on class targeting optional property.
