@@ -39,6 +39,11 @@ public sealed class MappaContext
     }
 
     /// <summary>
+    /// Gets the keys.
+    /// </summary>
+    public IEnumerable<string> Keys => this.items.Keys;
+
+    /// <summary>
     /// Get the value for <paramref name="key"/>.
     /// </summary>
     /// <param name="key">The key to be accessed.</param>
@@ -88,4 +93,12 @@ public sealed class MappaContext
     /// <param name="key">The key of the item.</param>
     /// <param name="value">The value of the item.</param>
     public void Add(string key, object value) => this.items.Add(key, value);
+
+    /// <summary>
+    /// Attempt to obtain a value.
+    /// </summary>
+    /// <param name="key">The key of the item.</param>
+    /// <param name="value">The value of the item, if it exists.</param>
+    /// <returns><c>true</c> if the item with key <paramref name="key"/> exists, <c>false</c> otherwise.</returns>
+    public bool TryGetValue(string key, out object value) => this.items.TryGetValue(key, out value);
 }
