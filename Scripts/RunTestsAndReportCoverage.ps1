@@ -21,7 +21,7 @@ if(-not $?)
 }
 
 dotnet tool restore
-dotnet reportgenerator -reports:"$MappaTestsAndCoveragePath/**/*.xml" -targetdir:"$MappaTestsAndCoveragePath" -title:"Mappa" -reporttypes:"Html;MarkdownSummary;XmlSummary" -filefilters:"-*.g.cs" -assemblyfilters:"-Mappa.Samples"
+dotnet reportgenerator -reports:"$MappaTestsAndCoveragePath/**/*.xml" -targetdir:"$MappaTestsAndCoveragePath" -title:"Mappa" -reporttypes:"Html;MarkdownSummary;XmlSummary" -filefilters:"-*.g.cs" -assemblyfilters:"-Mappa.Samples" -classfilters:"-Mappa.Generator.Exceptions.MappaGeneratorException;-Mappa.Generator.Diagnostics.Debug.MappaDebug;-Mappa.Generator.Diagnostics.DiagnosticsResources;-Mappa.Generator.Diagnostics.MappaDiagnosticDescriptors"
 if(-not $?)
 {
     Write-Host "Report failed" -ForegroundColor Red
