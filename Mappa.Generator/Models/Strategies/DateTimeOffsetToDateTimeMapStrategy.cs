@@ -12,29 +12,11 @@ namespace Mappa.Generator.Models.Strategies;
 /// Strategy to map a <see cref="DateTime"/> to
 /// a <see cref="DateTimeOffset"/> value.
 /// </summary>
-internal sealed class DateTimeOffsetToDateTimeMapStrategy
-    : IMapStrategy
+/// <param name="targetType">The target type.</param>
+/// <param name="sourceType">The source type.</param>
+internal sealed class DateTimeOffsetToDateTimeMapStrategy(ITypeSymbol targetType, ITypeSymbol sourceType)
+        : MapStrategy(targetType, sourceType)
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="DateTimeOffsetToDateTimeMapStrategy"/> class.
-    /// </summary>
-    /// <param name="targetType">The target type.</param>
-    /// <param name="sourceType">The source type.</param>
-    public DateTimeOffsetToDateTimeMapStrategy(ITypeSymbol targetType, ITypeSymbol sourceType)
-    {
-        this.TargetType = targetType;
-        this.SourceType = sourceType;
-    }
-
     /// <inheritdoc/>
-    public ITypeSymbol TargetType { get; }
-
-    /// <inheritdoc/>
-    public ITypeSymbol SourceType { get; }
-
-    /// <inheritdoc/>
-    public MappaAlgorithmRule Rule => MappaAlgorithmRule.DateTimeOffsetToDateTime;
-
-    /// <inheritdoc/>
-    public IMappaStrategyBuilder GetBuilder() => new DateTimeOffsetToDateTimeMapStrategyBuilder(this);
+    internal override IMappaStrategyBuilder GetBuilder() => new DateTimeOffsetToDateTimeMapStrategyBuilder();
 }

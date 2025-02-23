@@ -35,7 +35,7 @@ internal sealed class OptionalSourcePropertyMapStrategyBuilder
         using (builder.CurlyBracesBlock())
         {
             var (innerVariable, innerCode) = this.strategy.InnerStrategy.GetBuilder().BuildSource(source, context, mappaGlobalOptions);
-            builder.AppendLine($"{innerCode}");
+            builder.AppendLine(innerCode);
             builder.AppendLine($"{targetVariable} = {innerVariable};");
         }
 

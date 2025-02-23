@@ -13,27 +13,11 @@ namespace Mappa.Generator.Builders.Strategies;
 internal sealed class DateTimeOffsetToLongMapStrategyBuilder
    : IMappaStrategyBuilder
 {
-    private readonly DateTimeOffsetToLongMapStrategy strategy;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="DateTimeOffsetToLongMapStrategyBuilder"/> class.
-    /// </summary>
-    /// <param name="strategy">The strategy.</param>
-    public DateTimeOffsetToLongMapStrategyBuilder(DateTimeOffsetToLongMapStrategy strategy)
-    {
-        this.strategy = strategy;
-    }
-
     /// <inheritdoc/>
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
         var temporary = context.NextTemporary();
         var code = $"long {temporary} = {source}.ToUnixTimeSeconds();";
-
-        var ruleComment = mappaGlobalOptions.MappaDebugComments
-            ? $"/* Mappa Rule: {this.strategy.Rule} */ "
-            : string.Empty;
-
-        return ($"{ruleComment}{temporary}", code);
+        return (temporary, code);
     }
 }

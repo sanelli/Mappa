@@ -12,39 +12,20 @@ namespace Mappa.Generator.Models.Strategies;
 /// Strategy to map a <see cref="Nullable{T}"/> to
 /// another <see cref="Nullable{S}"/>.
 /// </summary>
-internal sealed class NullableToNullableMapStrategy
-    : IMapStrategy
+/// <param name="targetType">The target type.</param>
+/// <param name="sourceType">The source type.</param>
+/// <param name="typeArgumentStrategy">The strategy that map types encapsulated by the nullable types.</param>
+internal sealed class NullableToNullableMapStrategy(
+    ITypeSymbol targetType,
+    ITypeSymbol sourceType,
+    MapStrategy typeArgumentStrategy)
+        : MapStrategy(targetType, sourceType)
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="NullableToNullableMapStrategy"/> class.
-    /// </summary>
-    /// <param name="targetType">The target type.</param>
-    /// <param name="sourceType">The source type.</param>
-    /// <param name="typeArgumentStrategy">The strategy that map types encapsulated by the nullable types.</param>
-    public NullableToNullableMapStrategy(
-        ITypeSymbol targetType,
-        ITypeSymbol sourceType,
-        IMapStrategy typeArgumentStrategy)
-    {
-        this.TargetType = targetType;
-        this.SourceType = sourceType;
-        this.TypeArgumentStrategy = typeArgumentStrategy;
-    }
-
-    /// <inheritdoc/>
-    public ITypeSymbol TargetType { get; }
-
-    /// <inheritdoc/>
-    public ITypeSymbol SourceType { get; }
-
     /// <summary>
     /// Gets the strategy to map the types encapsulated by the nullable struct.
     /// </summary>
-    public IMapStrategy TypeArgumentStrategy { get; }
+    public MapStrategy TypeArgumentStrategy { get; } = typeArgumentStrategy;
 
     /// <inheritdoc/>
-    public MappaAlgorithmRule Rule => MappaAlgorithmRule.NullableToNullable;
-
-    /// <inheritdoc/>
-    public IMappaStrategyBuilder GetBuilder() => new NullableToNullableMapStrategyBuilder(this);
+    internal override IMappaStrategyBuilder GetBuilder() => new NullableToNullableMapStrategyBuilder(this);
 }

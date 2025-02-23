@@ -12,29 +12,11 @@ namespace Mappa.Generator.Models.Strategies;
 /// Strategy to map a <see cref="TimeSpan"/> to
 /// a <see cref="double"/> value.
 /// </summary>
-internal sealed class TimeSpanToDoubleMapStrategy
-    : IMapStrategy
+/// <param name="targetType">The target type.</param>
+/// <param name="sourceType">The source type.</param>
+internal sealed class TimeSpanToDoubleMapStrategy(ITypeSymbol targetType, ITypeSymbol sourceType)
+        : MapStrategy(targetType, sourceType)
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="TimeSpanToDoubleMapStrategy"/> class.
-    /// </summary>
-    /// <param name="targetType">The target type.</param>
-    /// <param name="sourceType">The source type.</param>
-    public TimeSpanToDoubleMapStrategy(ITypeSymbol targetType, ITypeSymbol sourceType)
-    {
-        this.TargetType = targetType;
-        this.SourceType = sourceType;
-    }
-
     /// <inheritdoc/>
-    public ITypeSymbol TargetType { get; }
-
-    /// <inheritdoc/>
-    public ITypeSymbol SourceType { get; }
-
-    /// <inheritdoc/>
-    public MappaAlgorithmRule Rule => MappaAlgorithmRule.TimeSpanToDouble;
-
-    /// <inheritdoc/>
-    public IMappaStrategyBuilder GetBuilder() => new TimeSpanToDoubleMapStrategyBuilder(this);
+    internal override IMappaStrategyBuilder GetBuilder() => new TimeSpanToDoubleMapStrategyBuilder();
 }

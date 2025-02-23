@@ -12,39 +12,20 @@ namespace Mappa.Generator.Models.Strategies;
 /// Strategy to map a <see cref="Nullable{T}"/> to
 /// another <see cref="Nullable{S}"/>.
 /// </summary>
-internal sealed class ToReferenceNullableMapStrategy
-    : IMapStrategy
+/// <param name="targetType">The target type.</param>
+/// <param name="sourceType">The source type.</param>
+/// <param name="innerStrategy">The strategy that map types encapsulated by the nullable types.</param>
+internal sealed class ToReferenceNullableMapStrategy(
+    ITypeSymbol targetType,
+    ITypeSymbol sourceType,
+    MapStrategy innerStrategy)
+        : MapStrategy(targetType, sourceType)
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ToReferenceNullableMapStrategy"/> class.
-    /// </summary>
-    /// <param name="targetType">The target type.</param>
-    /// <param name="sourceType">The source type.</param>
-    /// <param name="innerStrategy">The strategy that map types encapsulated by the nullable types.</param>
-    public ToReferenceNullableMapStrategy(
-        ITypeSymbol targetType,
-        ITypeSymbol sourceType,
-        IMapStrategy innerStrategy)
-    {
-        this.TargetType = targetType;
-        this.SourceType = sourceType;
-        this.InnerStrategy = innerStrategy;
-    }
-
-    /// <inheritdoc/>
-    public ITypeSymbol TargetType { get; }
-
-    /// <inheritdoc/>
-    public ITypeSymbol SourceType { get; }
-
     /// <summary>
     /// Gets the strategy to map the types encapsulated by the nullable struct.
     /// </summary>
-    public IMapStrategy InnerStrategy { get; }
+    public MapStrategy InnerStrategy { get; } = innerStrategy;
 
     /// <inheritdoc/>
-    public MappaAlgorithmRule Rule => MappaAlgorithmRule.ToReferenceNullable;
-
-    /// <inheritdoc/>
-    public IMappaStrategyBuilder GetBuilder() => new ToReferenceNullableMapStrategyBuilder(this);
+    internal override IMappaStrategyBuilder GetBuilder() => new ToReferenceNullableMapStrategyBuilder(this);
 }

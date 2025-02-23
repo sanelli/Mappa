@@ -49,7 +49,7 @@ internal sealed class ConstructorMapStrategyDetector
 
     /// <inheritdoc/>
     // TODO [#1] if nullable is not enabled we might want to throw if input is null.
-    public bool TryDetect(out IMapStrategy mapStrategy)
+    public bool TryDetect(out MapStrategy mapStrategy)
     {
         mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
 
@@ -78,7 +78,7 @@ internal sealed class ConstructorMapStrategyDetector
         return mapStrategy is not NoMapStrategy;
     }
 
-    private bool CanInvokeConstructorWithParameters(out IMapStrategy strategy)
+    private bool CanInvokeConstructorWithParameters(out MapStrategy strategy)
     {
         var noMapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
         strategy = noMapStrategy;
@@ -110,8 +110,8 @@ internal sealed class ConstructorMapStrategyDetector
             var constructorsWithMappings = constructors.Select(methodSymbol =>
                 {
                     // For each argument of the constructor
-                    (IParameterSymbol Parameter, IPropertySymbol Property, IMapStrategy Strategy)[] strategiesForEachParameter = methodSymbol.Parameters
-                        .Select<IParameterSymbol, (IParameterSymbol Parameter, IPropertySymbol Property, IMapStrategy Strategy)>(
+                    (IParameterSymbol Parameter, IPropertySymbol Property, MapStrategy Strategy)[] strategiesForEachParameter = methodSymbol.Parameters
+                        .Select<IParameterSymbol, (IParameterSymbol Parameter, IPropertySymbol Property, MapStrategy Strategy)>(
                             targetParameter =>
                             {
                                 // TODO [#8] Allow property mapping where source property name differ from target parameter name using an attribute.
@@ -173,7 +173,6 @@ internal sealed class ConstructorMapStrategyDetector
             if (constructorsWithMappings.Length > 0)
             {
                 strategy = new InvokeConstructorMapStrategy(
-                    MappaAlgorithmRule.InvokeConstructor,
                     this.context.TargetType,
                     this.context.SourceType,
                     constructorsWithMappings[0].methodSymbol,
@@ -187,10 +186,10 @@ internal sealed class ConstructorMapStrategyDetector
         return strategy is not NoMapStrategy;
     }
 
-    private IMapStrategy EncapsulateMapStrategyForSourceOptional(
+    private MapStrategy EncapsulateMapStrategyForSourceOptional(
         IPropertySymbol? sourceProperty,
         IPropertySymbol[] sourceProperties,
-        IMapStrategy inputStrategy)
+        MapStrategy inputStrategy)
     {
         if (sourceProperty is null)
         {
@@ -216,10 +215,10 @@ internal sealed class ConstructorMapStrategyDetector
         return new OptionalSourcePropertyMapStrategy(inputStrategy, sourceProperty);
     }
 
-    private IMapStrategy EncapsulateMapStrategyForTargetOptional(
+    private MapStrategy EncapsulateMapStrategyForTargetOptional(
         IPropertySymbol targetProperty,
         IPropertySymbol[] allTargetProperties,
-        IMapStrategy inputStrategy,
+        MapStrategy inputStrategy,
         out bool requirePostConstructorInitialization)
     {
         requirePostConstructorInitialization = false;
@@ -253,7 +252,7 @@ internal sealed class ConstructorMapStrategyDetector
         return new OptionalTargetPropertyMapStrategy(inputStrategy, targetProperty);
     }
 
-    private bool CanInvokeMappingConstructor(out IMethodSymbol constructor, out IMapStrategy strategy)
+    private bool CanInvokeMappingConstructor(out IMethodSymbol constructor, out MapStrategy strategy)
     {
         constructor = null!;
         var noMapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
@@ -264,14 +263,14 @@ internal sealed class ConstructorMapStrategyDetector
         // - Have a mapping from source to the type of the parameter
         var constructors = this.context.TargetType.GetAccessibleConstructors(this.compilation, this.context.ParentSymbol, 1);
         var constructorsWithStrategy = constructors
-            .Select<IMethodSymbol, (IMethodSymbol Constructor, IMapStrategy Strategy)>(constructor =>
+            .Select<IMethodSymbol, (IMethodSymbol Constructor, MapStrategy Strategy)>(constructor =>
             {
                 var constructorParameterType = constructor.Parameters.Single().Type;
 
                 // Only use this strategy when they are the same type
                 if (constructorParameterType.IsEqualTo(this.context.SourceType, this.context.GetRootMapMethod().NullableEnabled))
                 {
-                    return (constructor, new IdentityMapStrategy(MappaAlgorithmRule.ImplicitConversion, constructorParameterType, this.context.SourceType));
+                    return (constructor, new IdentityMapStrategy(constructorParameterType, this.context.SourceType));
                 }
 
                 return (constructor, noMapStrategy);
@@ -311,7 +310,7 @@ internal sealed class ConstructorMapStrategyDetector
         return strategy is not NoMapStrategy;
     }
 
-    private bool CanInvokeEmptyConstructor(out IMapStrategy strategy)
+    private bool CanInvokeEmptyConstructor(out MapStrategy strategy)
     {
         var noMapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
 
@@ -432,7 +431,6 @@ internal sealed class ConstructorMapStrategyDetector
 
                     // TODO [#21] Allow to return an error if some source properties are not mapped.
                     strategy = new InvokeConstructorMapStrategy(
-                        MappaAlgorithmRule.InvokeEmptyConstructor,
                         this.context.TargetType,
                         this.context.SourceType,
                         constructors.Single(),
@@ -453,7 +451,7 @@ internal sealed class ConstructorMapStrategyDetector
         ITypeSymbol targetType,
         ITypeSymbol sourceType,
         bool useConstructorMapStrategyDetector,
-        out IMapStrategy elementStrategy)
+        out MapStrategy elementStrategy)
     {
         using (this.context.AlgorithmSettings.UseConstructorMapStrategyDetector.Apply(useConstructorMapStrategyDetector))
         {
@@ -477,7 +475,7 @@ internal sealed class ConstructorMapStrategyDetector
         ITypeSymbol sourceClassType,
         ref IPropertySymbol? sourceProperty,
         StringComparison stringComparison,
-        out IMapStrategy strategy)
+        out MapStrategy strategy)
     {
         strategy = new NoMapStrategy(targetType, null!);
 
@@ -544,7 +542,7 @@ internal sealed class ConstructorMapStrategyDetector
         ITypeSymbol targetType,
         MappaAssignFromContextAttribute attribute,
         ref IPropertySymbol? sourceProperty,
-        out IMapStrategy strategy)
+        out MapStrategy strategy)
     {
         strategy = new NoMapStrategy(targetType, null!);
 
@@ -571,7 +569,7 @@ internal sealed class ConstructorMapStrategyDetector
         ITypeSymbol sourceClassType,
         IPropertySymbol? sourceProperty,
         MappaInvokeMethodAttribute mappaInvokeMethodAttribute,
-        out IMapStrategy strategy)
+        out MapStrategy strategy)
     {
         strategy = new NoMapStrategy(targetType, null!);
 

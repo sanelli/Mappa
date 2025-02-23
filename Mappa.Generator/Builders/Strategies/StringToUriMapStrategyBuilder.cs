@@ -13,27 +13,12 @@ namespace Mappa.Generator.Builders.Strategies;
 internal sealed class StringToUriMapStrategyBuilder
    : IMappaStrategyBuilder
 {
-    private readonly StringToUriMapStrategy strategy;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="StringToUriMapStrategyBuilder"/> class.
-    /// </summary>
-    /// <param name="strategy">The strategy.</param>
-    public StringToUriMapStrategyBuilder(StringToUriMapStrategy strategy)
-    {
-        this.strategy = strategy;
-    }
-
     /// <inheritdoc/>
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
         var temporary = context.NextTemporary();
         var code = $"System.Uri {temporary} = new System.UriBuilder({source}).Uri;";
 
-        var ruleComment = mappaGlobalOptions.MappaDebugComments
-            ? $"/* Mappa Rule: {this.strategy.Rule} */ "
-            : string.Empty;
-
-        return ($"{ruleComment}{temporary}", code);
+        return (temporary, code);
     }
 }

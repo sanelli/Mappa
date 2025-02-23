@@ -28,10 +28,6 @@ internal sealed class NullableToNullableMapStrategyBuilder
     /// <inheritdoc/>
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
-        var ruleComment = mappaGlobalOptions.MappaDebugComments
-            ? $"/* Mappa Rule: {this.strategy.Rule} (type argument strategy: {this.strategy.TypeArgumentStrategy.Rule}) */ "
-            : string.Empty;
-
         var returnValue = context.NextTemporary();
 
         var builder = new PrettyCode.StringBuilder();
@@ -60,6 +56,6 @@ internal sealed class NullableToNullableMapStrategyBuilder
             builder.AppendLine($"{returnValue} = ({this.strategy.TargetType.ToDisplayString()}) null;");
         }
 
-        return ($"{ruleComment}{returnValue}", builder.ToString());
+        return (returnValue, builder.ToString());
     }
 }

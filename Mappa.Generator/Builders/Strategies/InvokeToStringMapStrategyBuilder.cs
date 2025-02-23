@@ -51,11 +51,7 @@ internal sealed class InvokeToStringMapStrategyBuilder
 
         var code = $"string {temporary} = {source}.ToString({parameters});";
 
-        var ruleComment = mappaGlobalOptions.MappaDebugComments
-            ? $"/* Mappa Rule: {this.strategy.Rule} */ "
-            : string.Empty;
-
-        return ($"{ruleComment}{temporary}", code);
+        return (temporary, code);
     }
 
     private static string GetCulture(CultureInfoSetting cultureInfoSettings, string? cultureName)

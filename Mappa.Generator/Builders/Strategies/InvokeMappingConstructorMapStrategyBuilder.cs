@@ -38,19 +38,12 @@ internal sealed class InvokeMappingConstructorMapStrategyBuilder
         stringBuilder.AppendLine($"{sourceTypeName} {sourceTemporary} = {source};");
 
         var (parameterTemporary, parameterCode) = this.strategy.ArgumentStrategy.GetBuilder().BuildSource(sourceTemporary, context, mappaGlobalOptions);
-        if (!string.IsNullOrWhiteSpace(parameterCode))
-        {
-            stringBuilder.AppendLine(parameterCode);
-            stringBuilder.AppendEmptyLine();
-        }
+        stringBuilder.AppendLine(parameterCode);
+        stringBuilder.AppendEmptyLine();
 
         var targetTemporary = context.NextTemporary();
         stringBuilder.AppendLine($"{targetTypeName} {targetTemporary} = new {targetTypeWithoutNullableAnnotation}({parameterTemporary});");
 
-        var ruleComment = mappaGlobalOptions.MappaDebugComments
-            ? $"/* Mappa Rule: {this.strategy.Rule} */ "
-            : string.Empty;
-
-        return ($"{ruleComment}{targetTemporary}", stringBuilder.ToString());
+        return (targetTemporary, stringBuilder.ToString());
     }
 }

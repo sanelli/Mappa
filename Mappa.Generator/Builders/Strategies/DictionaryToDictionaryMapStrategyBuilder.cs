@@ -28,10 +28,6 @@ internal sealed class DictionaryToDictionaryMapStrategyBuilder
     /// <inheritdoc/>
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
-        var ruleComment = mappaGlobalOptions.MappaDebugComments
-            ? $"/* Mappa Rule: {this.strategy.Rule} (key strategy: {this.strategy.KeyStrategy.Rule}, value strategy: {this.strategy.ValueStrategy.Rule}) */ "
-            : string.Empty;
-
         var (targetKeyType, targetValueType) = this.strategy.TargetType.GetKeyAndValueTypes();
         var (sourceKeyType, sourceValueType) = this.strategy.SourceType.GetKeyAndValueTypes();
 
@@ -49,27 +45,21 @@ internal sealed class DictionaryToDictionaryMapStrategyBuilder
             builder.AppendLine($"{sourceKeyType.ToDisplayString()} {sourceKeyTemporary} = {loopTemporary}.Key;");
 
             var (targetKeyTemporary, targetKeyStrategyCode) = this.strategy.KeyStrategy.GetBuilder().BuildSource(sourceKeyTemporary, context, mappaGlobalOptions);
-            if (!string.IsNullOrEmpty(targetKeyStrategyCode))
-            {
-                builder.AppendLine(targetKeyStrategyCode);
-                builder.AppendEmptyLine();
-            }
+            builder.AppendLine(targetKeyStrategyCode);
+            builder.AppendEmptyLine();
 
             // Process the target.
             var valueTemporary = context.NextTemporary();
             builder.AppendLine($"{sourceValueType.ToDisplayString()} {valueTemporary} = {loopTemporary}.Value;");
             var (targetValueTemporary, targetValueStrategyCode) = this.strategy.ValueStrategy.GetBuilder().BuildSource(valueTemporary, context, mappaGlobalOptions);
-            if (!string.IsNullOrEmpty(targetValueStrategyCode))
-            {
-                builder.AppendLine(targetValueStrategyCode);
-                builder.AppendEmptyLine();
-            }
+            builder.AppendLine(targetValueStrategyCode);
+            builder.AppendEmptyLine();
 
             // Assign using the indexer.
             builder.AppendEmptyLine();
             builder.AppendLine($"{dictionaryTemporary}[{targetKeyTemporary}] = {targetValueTemporary};");
         }
 
-        return ($"{ruleComment}{dictionaryTemporary}", builder.ToString());
+        return (dictionaryTemporary, builder.ToString());
     }
 }

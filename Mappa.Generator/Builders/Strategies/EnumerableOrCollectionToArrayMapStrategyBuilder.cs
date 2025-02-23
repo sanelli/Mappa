@@ -28,10 +28,6 @@ internal sealed class EnumerableOrCollectionToArrayMapStrategyBuilder
     /// <inheritdoc/>
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
-        var ruleComment = mappaGlobalOptions.MappaDebugComments
-            ? $"/* Mappa Rule: {this.strategy.Rule} (inner strategy: {this.strategy.ElementStrategy.Rule}) */ "
-            : string.Empty;
-
         var targetElementType = this.strategy.TargetType.GetElementType();
         var sourceElementType = this.strategy.SourceType.GetElementType();
 
@@ -44,11 +40,8 @@ internal sealed class EnumerableOrCollectionToArrayMapStrategyBuilder
         using (builder.CurlyBracesBlock())
         {
             var (innerVariable, innerStrategyCode) = this.strategy.ElementStrategy.GetBuilder().BuildSource(loopTemporary, context, mappaGlobalOptions);
-            if (!string.IsNullOrEmpty(innerStrategyCode))
-            {
-                builder.AppendLine(innerStrategyCode);
-                builder.AppendEmptyLine();
-            }
+            builder.AppendLine(innerStrategyCode);
+            builder.AppendEmptyLine();
 
             builder.AppendLine($"{listTemporary}.Add({innerVariable});");
         }
@@ -56,6 +49,6 @@ internal sealed class EnumerableOrCollectionToArrayMapStrategyBuilder
         var arrayTemporary = context.NextTemporary();
         builder.AppendLine($"{targetElementType.ToDisplayString()}[] {arrayTemporary} = {listTemporary}.ToArray();");
 
-        return ($"{ruleComment}{arrayTemporary}", builder.ToString());
+        return (arrayTemporary, builder.ToString());
     }
 }

@@ -28,10 +28,6 @@ internal sealed class ArrayOrListToCollectionMapStrategyBuilder
     /// <inheritdoc/>
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
-        var ruleComment = mappaGlobalOptions.MappaDebugComments
-            ? $"/* Mappa Rule: {this.strategy.Rule} (inner strategy: {this.strategy.ElementStrategy.Rule}) */ "
-            : string.Empty;
-
         var targetElementType = this.strategy.TargetType.GetElementType();
         var sourceElementType = this.strategy.SourceType.GetElementType();
         var countProperty = this.strategy.SourceType.GetCountProperty();
@@ -49,15 +45,12 @@ internal sealed class ArrayOrListToCollectionMapStrategyBuilder
             var itemTemporary = context.NextTemporary();
             builder.AppendLine($"{sourceElementType} {itemTemporary} = {source}[{indexTemporary}];");
             var (innerVariable, innerStrategyCode) = this.strategy.ElementStrategy.GetBuilder().BuildSource(itemTemporary, context, mappaGlobalOptions);
-            if (!string.IsNullOrEmpty(innerStrategyCode))
-            {
-                builder.AppendLine(innerStrategyCode);
-                builder.AppendEmptyLine();
-            }
+            builder.AppendLine(innerStrategyCode);
+            builder.AppendEmptyLine();
 
             builder.AppendLine($"{returnVariable}.Add({innerVariable});");
         }
 
-        return ($"{ruleComment}{returnVariable}", builder.ToString());
+        return (returnVariable, builder.ToString());
     }
 }

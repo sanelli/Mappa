@@ -10,29 +10,11 @@ namespace Mappa.Generator.Models.Strategies;
 /// <summary>
 /// Strategy to map <see cref="Enum"/> to integral type.
 /// </summary>
-internal sealed class EnumToIntegralMapStrategy
-    : IMapStrategy
+/// <param name="targetType">The target type.</param>
+/// <param name="sourceType">The source type.</param>
+internal sealed class EnumToIntegralMapStrategy(ITypeSymbol targetType, ITypeSymbol sourceType)
+        : MapStrategy(targetType, sourceType)
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="EnumToIntegralMapStrategy"/> class.
-    /// </summary>
-    /// <param name="targetType">The target type.</param>
-    /// <param name="sourceType">The source type.</param>
-    public EnumToIntegralMapStrategy(ITypeSymbol targetType, ITypeSymbol sourceType)
-    {
-        this.TargetType = targetType;
-        this.SourceType = sourceType;
-    }
-
     /// <inheritdoc />
-    public ITypeSymbol TargetType { get; }
-
-    /// <inheritdoc />
-    public ITypeSymbol SourceType { get; }
-
-    /// <inheritdoc />
-    public MappaAlgorithmRule Rule => MappaAlgorithmRule.EnumToIntegral;
-
-    /// <inheritdoc />
-    public IMappaStrategyBuilder GetBuilder() => new EnumToIntegralMapStrategyBuilder(this);
+    internal override IMappaStrategyBuilder GetBuilder() => new EnumToIntegralMapStrategyBuilder(this);
 }

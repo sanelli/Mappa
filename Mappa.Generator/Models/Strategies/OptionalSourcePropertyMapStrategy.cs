@@ -12,39 +12,21 @@ namespace Mappa.Generator.Models.Strategies;
 /// Strategy to encapsulate a strategy when the source property
 /// is optional (i.e. a property named "Has&lt;SourceProperty&gt;" exists.
 /// </summary>
-internal sealed class OptionalSourcePropertyMapStrategy
-    : IMapStrategy
+/// <param name="strategy">The strategy to apply.</param>
+/// <param name="sourceProperty">The source property on which optional is applied.</param>
+internal sealed class OptionalSourcePropertyMapStrategy(MapStrategy strategy, IPropertySymbol sourceProperty)
+        : MapStrategy(strategy.TargetType, strategy.SourceType)
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="OptionalSourcePropertyMapStrategy"/> class.
-    /// </summary>
-    /// <param name="strategy">The strategy to apply.</param>
-    /// <param name="sourceProperty">The source property on which optional is applied.</param>
-    public OptionalSourcePropertyMapStrategy(IMapStrategy strategy, IPropertySymbol sourceProperty)
-    {
-        this.InnerStrategy = strategy;
-        this.SourceProperty = sourceProperty;
-    }
-
-    /// <inheritdoc/>
-    public ITypeSymbol TargetType => this.InnerStrategy.TargetType;
-
-    /// <inheritdoc/>
-    public ITypeSymbol SourceType => this.InnerStrategy.SourceType;
-
-    /// <inheritdoc/>
-    public MappaAlgorithmRule Rule => this.InnerStrategy.Rule;
-
     /// <summary>
     /// Gets the strategy encapsulated.
     /// </summary>
-    internal IMapStrategy InnerStrategy { get; }
+    internal MapStrategy InnerStrategy { get; } = strategy;
 
     /// <summary>
     /// Gets the optional property details.
     /// </summary>
-    internal IPropertySymbol SourceProperty { get; }
+    internal IPropertySymbol SourceProperty { get; } = sourceProperty;
 
     /// <inheritdoc/>
-    public IMappaStrategyBuilder GetBuilder() => new OptionalSourcePropertyMapStrategyBuilder(this);
+    internal override IMappaStrategyBuilder GetBuilder() => new OptionalSourcePropertyMapStrategyBuilder(this);
 }

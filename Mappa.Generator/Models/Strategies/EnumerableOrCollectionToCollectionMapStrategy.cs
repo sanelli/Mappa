@@ -11,39 +11,20 @@ namespace Mappa.Generator.Models.Strategies;
 /// <summary>
 /// Strategy to map a collection to a collection.
 /// </summary>
-internal sealed class EnumerableOrCollectionToCollectionMapStrategy
-    : IMapStrategy
+/// <param name="targetType">The target type.</param>
+/// <param name="sourceType">The source type.</param>
+/// <param name="elementStrategy">The strategy that map the array element.</param>
+internal sealed class EnumerableOrCollectionToCollectionMapStrategy(
+    ITypeSymbol targetType,
+    ITypeSymbol sourceType,
+    MapStrategy elementStrategy)
+        : MapStrategy(targetType, sourceType)
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="EnumerableOrCollectionToCollectionMapStrategy"/> class.
-    /// </summary>
-    /// <param name="targetType">The target type.</param>
-    /// <param name="sourceType">The source type.</param>
-    /// <param name="elementStrategy">The strategy that map the array element.</param>
-    public EnumerableOrCollectionToCollectionMapStrategy(
-        ITypeSymbol targetType,
-        ITypeSymbol sourceType,
-        IMapStrategy elementStrategy)
-    {
-        this.TargetType = targetType;
-        this.SourceType = sourceType;
-        this.ElementStrategy = elementStrategy;
-    }
-
-    /// <inheritdoc/>
-    public ITypeSymbol TargetType { get; }
-
-    /// <inheritdoc/>
-    public ITypeSymbol SourceType { get; }
-
     /// <summary>
     /// Gets the strategy to map the types encapsulated by the nullable struct.
     /// </summary>
-    public IMapStrategy ElementStrategy { get; }
+    public MapStrategy ElementStrategy { get; } = elementStrategy;
 
     /// <inheritdoc/>
-    public MappaAlgorithmRule Rule => MappaAlgorithmRule.EnumerableOrCollectionToCollection;
-
-    /// <inheritdoc/>
-    public IMappaStrategyBuilder GetBuilder() => new EnumerableOrCollectionToCollectionMapStrategyBuilder(this);
+    internal override IMappaStrategyBuilder GetBuilder() => new EnumerableOrCollectionToCollectionMapStrategyBuilder(this);
 }

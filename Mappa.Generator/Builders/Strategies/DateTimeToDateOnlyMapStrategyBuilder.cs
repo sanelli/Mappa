@@ -13,27 +13,11 @@ namespace Mappa.Generator.Builders.Strategies;
 internal sealed class DateTimeToDateOnlyMapStrategyBuilder
    : IMappaStrategyBuilder
 {
-    private readonly DateTimeToDateOnlyMapStrategy strategy;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="DateTimeToDateOnlyMapStrategyBuilder"/> class.
-    /// </summary>
-    /// <param name="strategy">The strategy.</param>
-    public DateTimeToDateOnlyMapStrategyBuilder(DateTimeToDateOnlyMapStrategy strategy)
-    {
-        this.strategy = strategy;
-    }
-
     /// <inheritdoc/>
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
         var temporary = context.NextTemporary();
         var code = $"System.DateOnly {temporary} = System.DateOnly.FromDateTime({source});";
-
-        var ruleComment = mappaGlobalOptions.MappaDebugComments
-            ? $"/* Mappa Rule: {this.strategy.Rule} */ "
-            : string.Empty;
-
-        return ($"{ruleComment}{temporary}", code);
+        return (temporary, code);
     }
 }

@@ -13,20 +13,6 @@ namespace Mappa.Generator.Builders.Strategies;
 internal sealed class NoMapStrategyBuilder
     : IMappaStrategyBuilder
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="NoMapStrategyBuilder"/> class.
-    /// </summary>
-    /// <param name="noMapStrategy">The strategy.</param>
-    public NoMapStrategyBuilder(NoMapStrategy noMapStrategy)
-    {
-        this.NoMapStrategy = noMapStrategy;
-    }
-
-    /// <summary>
-    /// Gets the No Map Strategy.
-    /// </summary>
-    private NoMapStrategy NoMapStrategy { get; }
-
     /// <inheritdoc/>
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {

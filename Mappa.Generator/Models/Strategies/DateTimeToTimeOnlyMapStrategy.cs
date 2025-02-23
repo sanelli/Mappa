@@ -12,29 +12,11 @@ namespace Mappa.Generator.Models.Strategies;
 /// Strategy to map a <see cref="DateTime"/> to
 /// a TimeOnly value.
 /// </summary>
-internal sealed class DateTimeToTimeOnlyMapStrategy
-    : IMapStrategy
+/// <param name="targetType">The target type.</param>
+/// <param name="sourceType">The source type.</param>
+internal sealed class DateTimeToTimeOnlyMapStrategy(ITypeSymbol targetType, ITypeSymbol sourceType)
+        : MapStrategy(targetType, sourceType)
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="DateTimeToTimeOnlyMapStrategy"/> class.
-    /// </summary>
-    /// <param name="targetType">The target type.</param>
-    /// <param name="sourceType">The source type.</param>
-    public DateTimeToTimeOnlyMapStrategy(ITypeSymbol targetType, ITypeSymbol sourceType)
-    {
-        this.TargetType = targetType;
-        this.SourceType = sourceType;
-    }
-
     /// <inheritdoc/>
-    public ITypeSymbol TargetType { get; }
-
-    /// <inheritdoc/>
-    public ITypeSymbol SourceType { get; }
-
-    /// <inheritdoc/>
-    public MappaAlgorithmRule Rule => MappaAlgorithmRule.DateTimeToTimeOnly;
-
-    /// <inheritdoc/>
-    public IMappaStrategyBuilder GetBuilder() => new DateTimeToTimeOnlyMapStrategyBuilder(this);
+    internal override IMappaStrategyBuilder GetBuilder() => new DateTimeToTimeOnlyMapStrategyBuilder();
 }

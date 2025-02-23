@@ -32,10 +32,6 @@ internal sealed class StringToNumberMapStrategyBuilder
         var temporary = context.NextTemporary();
         var code = $"{targetType} {temporary} = {targetType}.Parse({source});";
 
-        var ruleComment = mappaGlobalOptions.MappaDebugComments
-            ? $"/* Mappa Rule: {this.strategy.Rule} (target-type is \"{targetType}\") */ "
-            : string.Empty;
-
-        return ($"{ruleComment}{temporary}", code);
+        return (temporary, code);
     }
 }

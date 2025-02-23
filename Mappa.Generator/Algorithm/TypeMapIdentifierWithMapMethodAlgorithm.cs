@@ -32,7 +32,7 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
     }
 
     /// <inheritdoc/>
-    internal override IMapStrategy GetStrategy()
+    internal override MapStrategy GetStrategy()
     {
         this.CancellationToken.ThrowIfCancellationRequested();
 
@@ -46,7 +46,7 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
 
             if (!mapMethodRequireMappaContext || /* mapMethodRequireMappaContext && */ callerMethodProvideMappaContext)
             {
-                return new MethodMapStrategy(MappaAlgorithmRule.MapUsingExistingMethod, mapMethod, rootMapMethod.MaybeGetMappaContextParameterName());
+                return new MethodMapStrategy(mapMethod, rootMapMethod.MaybeGetMappaContextParameterName());
             }
         }
 
