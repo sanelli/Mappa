@@ -1,4 +1,5 @@
 dotnet build Mappa
+dotnet build Mappa.Tests
 
 dotnet build Mappa.Generator
 dotnet build Mappa.Generator.Tests
