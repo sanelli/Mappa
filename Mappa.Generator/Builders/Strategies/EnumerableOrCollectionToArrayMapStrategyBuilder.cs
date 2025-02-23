@@ -40,11 +40,8 @@ internal sealed class EnumerableOrCollectionToArrayMapStrategyBuilder
         using (builder.CurlyBracesBlock())
         {
             var (innerVariable, innerStrategyCode) = this.strategy.ElementStrategy.GetBuilder().BuildSource(loopTemporary, context, mappaGlobalOptions);
-            if (!string.IsNullOrEmpty(innerStrategyCode))
-            {
-                builder.AppendLine(innerStrategyCode);
-                builder.AppendEmptyLine();
-            }
+            builder.AppendLine(innerStrategyCode);
+            builder.AppendEmptyLine();
 
             builder.AppendLine($"{listTemporary}.Add({innerVariable});");
         }

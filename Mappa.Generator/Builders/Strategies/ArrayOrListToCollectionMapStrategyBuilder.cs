@@ -45,11 +45,8 @@ internal sealed class ArrayOrListToCollectionMapStrategyBuilder
             var itemTemporary = context.NextTemporary();
             builder.AppendLine($"{sourceElementType} {itemTemporary} = {source}[{indexTemporary}];");
             var (innerVariable, innerStrategyCode) = this.strategy.ElementStrategy.GetBuilder().BuildSource(itemTemporary, context, mappaGlobalOptions);
-            if (!string.IsNullOrEmpty(innerStrategyCode))
-            {
-                builder.AppendLine(innerStrategyCode);
-                builder.AppendEmptyLine();
-            }
+            builder.AppendLine(innerStrategyCode);
+            builder.AppendEmptyLine();
 
             builder.AppendLine($"{returnVariable}.Add({innerVariable});");
         }

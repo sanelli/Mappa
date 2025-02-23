@@ -17,5 +17,5 @@ internal sealed class NoMapStrategy(ITypeSymbol targetType, ITypeSymbol sourceTy
         : MapStrategy(targetType, sourceType)
 {
     /// <inheritdoc/>
-    internal override IMappaStrategyBuilder GetBuilder() => new NoMapStrategyBuilder(this);
+    internal override IMappaStrategyBuilder GetBuilder() => new NoMapStrategyBuilder();
 }
