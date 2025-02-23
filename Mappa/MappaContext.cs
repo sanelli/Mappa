@@ -35,13 +35,13 @@ public sealed class MappaContext
     /// </summary>
     public MappaContext()
     {
-        this.items = new Dictionary<string, object>();
+        this.items = [];
     }
 
     /// <summary>
     /// Gets the keys.
     /// </summary>
-    public IEnumerable<string> Keys => this.items.Keys;
+    public IReadOnlyCollection<string> Keys => new List<string>(this.items.Keys);
 
     /// <summary>
     /// Get the value for <paramref name="key"/>.
@@ -101,4 +101,24 @@ public sealed class MappaContext
     /// <param name="value">The value of the item, if it exists.</param>
     /// <returns><c>true</c> if the item with key <paramref name="key"/> exists, <c>false</c> otherwise.</returns>
     public bool TryGetValue(string key, out object value) => this.items.TryGetValue(key, out value);
+
+    /// <summary>
+    /// Attempt to obtain a value with a specific type.
+    /// </summary>
+    /// <param name="key">The key of the item.</param>
+    /// <param name="value">The value of the item, if it exists.</param>
+    /// <returns><c>true</c> if the item with key <paramref name="key"/> exists and it is of type <typeparamref name="TTarget"/>, <c>false</c> otherwise.</returns>
+    /// <typeparam name="TTarget">The type of the target.</typeparam>
+    public bool TryGetValue<TTarget>(string key, out TTarget value)
+    {
+        value = default!;
+        if (this.items.TryGetValue(key, out var oValue)
+            && oValue is TTarget tValue)
+        {
+            value = tValue;
+            return true;
+        }
+
+        return false;
+    }
 }

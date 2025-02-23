@@ -15,19 +15,70 @@ namespace Mappa.Tests;
 public sealed class MappaContextTests
 {
     /// <summary>
-    /// Tests <see cref="MappaContext"/> can be created from a dictionary.
+    /// Tests <see cref="MappaContext"/> can be created from a dictionary
+    /// or set list of key-value pairs.
     /// </summary>
     [Fact]
     [UnitTest]
     public void CanCreateMappaContextFromDictionary()
     {
         // Arrange
-        MappaContext context = new(new Dictionary<string, object>
+        var dictionary = new Dictionary<string, object>
         {
             ["foo"] = "bar",
-        });
+        };
+
+        KeyValuePair<string, object>[] pairs = [new("foo", "bar")];
+
+        // Act
+        var contextFromDictionary = new MappaContext(dictionary);
+        var contextFromPairs = new MappaContext(pairs);
+        var contentFromFancyConstructor = new MappaContext { ["foo"] = "bar" };
+
+        // Assert
+        contextFromDictionary["foo"].Should().Be("bar");
+        contextFromPairs["foo"].Should().Be("bar");
+        contentFromFancyConstructor["foo"].Should().Be("bar");
+    }
+
+    /// <summary>
+    /// Tests <see cref="MappaContext"/> value can be set.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanAddValuesViaContext()
+    {
+        // Act
+        var context = new MappaContext { ["foo"] = "bar" };
+        context.Add("ijk", "xyz");
+        context["zap"] = "bli";
+        context["foo"] = "abc";
+
+        // Assert
+        context["ijk"].Should().Be("xyz");
+        context["foo"].Should().Be("abc");
+        context["zap"].Should().Be("bli");
+        context.Keys.Should().BeEquivalentTo("foo", "ijk", "zap");
+    }
+
+    /// <summary>
+    /// Tests <see cref="MappaContext"/> value can be obtained.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanGetValuesViaContext()
+    {
+        // Act
+        var context = new MappaContext { ["foo"] = "bar" };
+        var throwing = () => context["ijk"];
 
         // Assert
         context["foo"].Should().Be("bar");
+        throwing.Should().Throw<KeyNotFoundException>();
+        context.TryGetValue("foo", out _).Should().BeTrue();
+        context.TryGetValue("ijk", out _).Should().BeFalse();
+        context.TryGetValue<string>("foo", out _).Should().BeTrue();
+        context.TryGetValue<int>("foo", out _).Should().BeFalse();
+        context.TryGetValue<string>("ijk", out _).Should().BeFalse();
     }
 }
