@@ -33,7 +33,7 @@ public sealed class OptionalStrategyIntegrationTests
 
                                   public class Source
                                   {
-                                      public bool HasPropertyA { get; set; }
+                                      public bool HasPropertyA => /* fake value */ true;
                                       public int PropertyA { get; set; }
                                   }
 
@@ -118,7 +118,7 @@ public sealed class OptionalStrategyIntegrationTests
 
                                   public class Source
                                   {
-                                      public bool HasPropertyA { get; set; }
+                                      public bool HasPropertyA => /* fake value */ true;
                                       public int PropertyA { get; set; }
                                   }
 
@@ -229,7 +229,7 @@ public sealed class OptionalStrategyIntegrationTests
 
                                   public class Source
                                   {
-                                      public bool HasPropertyA { get; set; }
+                                      public bool HasPropertyA => /* fake value */ true;
                                       public int PropertyA { get; set; }
                                   }
 
@@ -341,7 +341,7 @@ public sealed class OptionalStrategyIntegrationTests
 
                                   public class Source
                                   {
-                                      public bool HasPropertyA { get; set; }
+                                      public bool HasPropertyA => /* fake value */ true;
                                       public int PropertyA { get; set; }
                                   }
 
@@ -453,7 +453,7 @@ public sealed class OptionalStrategyIntegrationTests
 
                                   public class Source
                                   {
-                                      public bool HasPropertyA { get; set; }
+                                      public bool HasPropertyA => /* fake value */ true;
                                       public int PropertyA { get; set; }
                                   }
 
@@ -554,7 +554,7 @@ public sealed class OptionalStrategyIntegrationTests
 
                                   public class Source
                                   {
-                                      public bool HasPropertyA { get; set; }
+                                      public bool HasPropertyA => /* fake value */ true;
                                       public int PropertyA { get; set; }
                                   }
 
@@ -681,7 +681,7 @@ public sealed class OptionalStrategyIntegrationTests
 
                                   public class Source
                                   {
-                                      public bool HasPropertyA { get; set; }
+                                      public bool HasPropertyA => /* fake value */ true;
                                       public int PropertyA { get; set; }
                                   }
 
@@ -808,7 +808,7 @@ public sealed class OptionalStrategyIntegrationTests
 
                                   public class Source
                                   {
-                                      public bool HasPropertyA { get; set; }
+                                      public bool HasPropertyA => /* fake value */ true;
                                       public int PropertyA { get; set; }
                                   }
 
@@ -935,7 +935,7 @@ public sealed class OptionalStrategyIntegrationTests
 
                                   public class Source
                                   {
-                                      public bool HasPropertyA { get; set; }
+                                      public bool HasPropertyA => /* fake value */ true;
                                       public int PropertyA { get; set; }
                                   }
 
@@ -1016,7 +1016,7 @@ public sealed class OptionalStrategyIntegrationTests
 
                                   public class Source
                                   {
-                                      public bool HasPropertyA { get; set; }
+                                      public bool HasPropertyA => /* fake value */ true;
                                       public int PropertyA { get; set; }
                                   }
 
@@ -1123,7 +1123,7 @@ public sealed class OptionalStrategyIntegrationTests
 
                                   public class Source
                                   {
-                                      public bool HasPropertyA { get; set; }
+                                      public bool HasPropertyA => /* fake value */ true;
                                       public int PropertyA { get; set; }
                                   }
 
@@ -1231,7 +1231,7 @@ public sealed class OptionalStrategyIntegrationTests
 
                                   public class Source
                                   {
-                                      public bool HasPropertyA { get; set; }
+                                      public bool HasPropertyA => /* fake value */ true;
                                       public int PropertyA { get; set; }
                                   }
 
@@ -1339,7 +1339,7 @@ public sealed class OptionalStrategyIntegrationTests
 
                                   public class Source
                                   {
-                                      public bool HasPropertyA { get; set; }
+                                      public bool HasPropertyA => /* fake value */ true;
                                       public int PropertyA { get; set; }
                                   }
 
@@ -1436,7 +1436,7 @@ public sealed class OptionalStrategyIntegrationTests
 
                                   public class Source
                                   {
-                                      public bool HasPropertyA { get; set; }
+                                      public bool HasPropertyA => /* fake value */ true;
                                       public int PropertyA { get; set; }
                                   }
 
@@ -1559,7 +1559,7 @@ public sealed class OptionalStrategyIntegrationTests
 
                                   public class Source
                                   {
-                                      public bool HasPropertyA { get; set; }
+                                      public bool HasPropertyA => /* fake value */ true;
                                       public int PropertyA { get; set; }
                                   }
 
@@ -1682,7 +1682,7 @@ public sealed class OptionalStrategyIntegrationTests
 
                                   public class Source
                                   {
-                                      public bool HasPropertyA { get; set; }
+                                      public bool HasPropertyA => /* fake value */ true;
                                       public int PropertyA { get; set; }
                                   }
 
@@ -1810,7 +1810,7 @@ public sealed class OptionalStrategyIntegrationTests
 
                                   public class Target
                                   {
-                                      public bool HasPropertyA { get; set; }
+                                      public bool HasPropertyA => /* fake value */ true;
                                       public int PropertyA { get; set; }
                                   }
 
@@ -1891,7 +1891,7 @@ public sealed class OptionalStrategyIntegrationTests
 
                                   public class Target
                                   {
-                                      public bool HasPropertyA { get; set; }
+                                      public bool HasPropertyA => /* fake value */ true;
                                       public required int PropertyA { get; set; }
                                   }
 
@@ -1973,7 +1973,7 @@ public sealed class OptionalStrategyIntegrationTests
 
                                   public class Target
                                   {
-                                      public bool HasPropertyA { get; set; }
+                                      public bool HasPropertyA => /* fake value */ true;
                                       public int PropertyA { get; set; }
                                   }
 
@@ -2068,7 +2068,7 @@ public sealed class OptionalStrategyIntegrationTests
 
                                   public class Target
                                   {
-                                      public bool HasPropertyA { get; set; }
+                                      public bool HasPropertyA => /* fake value */ true;
                                       public int PropertyA { get; set; }
                                   }
 
@@ -2163,7 +2163,7 @@ public sealed class OptionalStrategyIntegrationTests
 
                                   public class Target
                                   {
-                                      public bool HasPropertyA { get; set; }
+                                      public bool HasPropertyA => /* fake value */ true;
                                       public int PropertyA { get; set; }
                                   }
 
@@ -2259,7 +2259,7 @@ public sealed class OptionalStrategyIntegrationTests
 
                                   public class Target
                                   {
-                                      public bool HasPropertyA { get; set; }
+                                      public bool HasPropertyA => /* fake value */ true;
                                       public int PropertyA { get; set; }
                                   }
 
@@ -2357,7 +2357,7 @@ public sealed class OptionalStrategyIntegrationTests
 
                                   public class Target
                                   {
-                                      public bool HasPropertyA { get; set; }
+                                      public bool HasPropertyA => /* fake value */ true;
                                       public int PropertyA { get; set; }
                                   }
 
@@ -2464,7 +2464,7 @@ public sealed class OptionalStrategyIntegrationTests
 
                                   public class Target
                                   {
-                                      public bool HasPropertyA { get; set; }
+                                      public bool HasPropertyA => /* fake value */ true;
                                       public int PropertyA { get; set; }
                                   }
 
@@ -2571,7 +2571,7 @@ public sealed class OptionalStrategyIntegrationTests
 
                                   public class Target
                                   {
-                                      public bool HasPropertyA { get; set; }
+                                      public bool HasPropertyA => /* fake value */ true;
                                       public int PropertyA { get; set; }
                                   }
 
@@ -2679,7 +2679,7 @@ public sealed class OptionalStrategyIntegrationTests
 
                                   public class Target
                                   {
-                                      public bool HasPropertyA { get; set; }
+                                      public bool HasPropertyA => /* fake value */ true;
                                       public int PropertyA { get; set; }
                                   }
 
@@ -2773,13 +2773,13 @@ public sealed class OptionalStrategyIntegrationTests
 
                                   public class Source
                                   {
-                                      public bool HasPropertyA { get; set; }
+                                      public bool HasPropertyA => /* fake value */ true;
                                       public int PropertyA { get; set; }
                                   }
 
                                   public class Target
                                   {
-                                      public bool HasPropertyA { get; set; }
+                                      public bool HasPropertyA => /* fake value */ true;
                                       public int PropertyA { get; set; }
                                   }
 

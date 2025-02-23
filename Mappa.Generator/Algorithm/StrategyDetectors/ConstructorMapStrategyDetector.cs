@@ -218,7 +218,7 @@ internal sealed class ConstructorMapStrategyDetector
 
     private IMapStrategy EncapsulateMapStrategyForTargetOptional(
         IPropertySymbol targetProperty,
-        IPropertySymbol[] targetProperties,
+        IPropertySymbol[] allTargetProperties,
         IMapStrategy inputStrategy,
         out bool requirePostConstructorInitialization)
     {
@@ -238,7 +238,7 @@ internal sealed class ConstructorMapStrategyDetector
             return inputStrategy;
         }
 
-        IPropertySymbol? hasProperty = Array.Find(targetProperties, property => property.Name.Equals($"Has{targetProperty.Name}", StringComparison.Ordinal));
+        IPropertySymbol? hasProperty = Array.Find(allTargetProperties, property => property.Name.Equals($"Has{targetProperty.Name}", StringComparison.Ordinal));
         if (hasProperty is null)
         {
             return inputStrategy;
@@ -327,10 +327,13 @@ internal sealed class ConstructorMapStrategyDetector
         }
         else
         {
+            // Gets all the properties
+            var allTargetProperties = this.context.TargetType.GetTypeProperties().ToArray();
+
             // Gets the target properties
             // TODO [#3] Allow to ignore some target properties when looking for for one empty constructor mapping.
             // TODO [#4] Ensure property setter is accessible.
-            var targetProperties = this.context.TargetType.GetTypeProperties()
+            var targetProperties = allTargetProperties
 
                 // Ignore indexer properties.
                 // Ignore properties without a setter.
@@ -361,7 +364,7 @@ internal sealed class ConstructorMapStrategyDetector
                     // Remove all the optional identifier properties from the list
                     // when the optional setting is enabled.
                     .Where(targetProperty => this.context.MappaUserSettings.Optional is not BooleanSetting.Enable
-                                             || targetProperties.All(otherProperty => !targetProperty.Name.Equals($"Has{otherProperty.Name}", StringComparison.Ordinal)))
+                                             || allTargetProperties.All(otherProperty => !targetProperty.Name.Equals($"Has{otherProperty.Name}", StringComparison.Ordinal)))
 
                     // Look up for mapping
                     .Select(
@@ -390,7 +393,7 @@ internal sealed class ConstructorMapStrategyDetector
                                     out var propertyStrategyFromAttribute))
                             {
                                 propertyStrategyFromAttribute = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, [.. sourceProperties.Values], propertyStrategyFromAttribute);
-                                propertyStrategyFromAttribute = this.EncapsulateMapStrategyForTargetOptional(targetProperty, targetProperties, propertyStrategyFromAttribute, out var postConstructorInitializer);
+                                propertyStrategyFromAttribute = this.EncapsulateMapStrategyForTargetOptional(targetProperty, allTargetProperties, propertyStrategyFromAttribute, out var postConstructorInitializer);
                                 return new PropertyMapStrategy(targetProperty, sourceProperty, propertyStrategyFromAttribute, postConstructorInitializer);
                             }
 
@@ -406,7 +409,7 @@ internal sealed class ConstructorMapStrategyDetector
                             if (this.TryGetStrategyBetweenTypes(targetPropertyType, sourcePropertyType, true, out var propertyStrategy))
                             {
                                 propertyStrategy = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, [.. sourceProperties.Values], propertyStrategy);
-                                propertyStrategy = this.EncapsulateMapStrategyForTargetOptional(targetProperty, targetProperties, propertyStrategy, out var postConstructorInitializer);
+                                propertyStrategy = this.EncapsulateMapStrategyForTargetOptional(targetProperty, allTargetProperties, propertyStrategy, out var postConstructorInitializer);
                                 return new PropertyMapStrategy(targetProperty, sourceProperty, propertyStrategy, postConstructorInitializer);
                             }
 
