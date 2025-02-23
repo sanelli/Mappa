@@ -43,8 +43,5 @@ internal sealed class FromReferenceNullableMapStrategy
     public IMapStrategy InnerStrategy { get; }
 
     /// <inheritdoc/>
-    public MappaAlgorithmRule Rule => MappaAlgorithmRule.FromReferenceNullable;
-
-    /// <inheritdoc/>
     public IMappaStrategyBuilder GetBuilder() => new FromReferenceNullableMapStrategyBuilder(this);
 }

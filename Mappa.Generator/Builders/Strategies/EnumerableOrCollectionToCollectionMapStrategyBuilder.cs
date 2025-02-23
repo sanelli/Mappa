@@ -28,10 +28,6 @@ internal sealed class EnumerableOrCollectionToCollectionMapStrategyBuilder
     /// <inheritdoc/>
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
-        var ruleComment = mappaGlobalOptions.MappaDebugComments
-            ? $"/* Mappa Rule: {this.strategy.Rule} (inner strategy: {this.strategy.ElementStrategy.Rule}) */ "
-            : string.Empty;
-
         var targetElementType = this.strategy.TargetType.GetElementType();
         var sourceElementType = this.strategy.SourceType.GetElementType();
 
@@ -54,6 +50,6 @@ internal sealed class EnumerableOrCollectionToCollectionMapStrategyBuilder
             builder.AppendLine($"{returnVariable}.Add({innerVariable});");
         }
 
-        return ($"{ruleComment}{returnVariable}", builder.ToString());
+        return (returnVariable, builder.ToString());
     }
 }

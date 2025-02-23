@@ -56,7 +56,6 @@ internal sealed class StringMapStrategyDetector
             mapStrategy = new InvokeParseStringWithFormatMapStrategy(
                 this.context.TargetType,
                 this.context.SourceType,
-                MappaAlgorithmRule.StringToDateTime,
                 this.context.MappaUserSettings.DateTimeFormat,
                 actualCultureSettingsInfo,
                 this.context.MappaUserSettings.CultureName);
@@ -71,7 +70,6 @@ internal sealed class StringMapStrategyDetector
             mapStrategy = new InvokeParseStringWithFormatMapStrategy(
                 this.context.TargetType,
                 this.context.SourceType,
-                MappaAlgorithmRule.StringToDateTimeOffset,
                 this.context.MappaUserSettings.DateTimeOffsetFormat,
                 actualCultureSettingsInfo,
                 this.context.MappaUserSettings.CultureName);
@@ -86,7 +84,6 @@ internal sealed class StringMapStrategyDetector
             mapStrategy = new InvokeParseStringWithFormatMapStrategy(
                 this.context.TargetType,
                 this.context.SourceType,
-                MappaAlgorithmRule.StringToTimeSpan,
                 this.context.MappaUserSettings.TimeSpanFormat,
                 actualCultureSettingsInfo,
                 this.context.MappaUserSettings.CultureName);
@@ -98,7 +95,6 @@ internal sealed class StringMapStrategyDetector
             mapStrategy = new InvokeParseStringWithFormatForDateOnlyAndTimeOnlyMapStrategy(
                 this.context.TargetType,
                 this.context.SourceType,
-                MappaAlgorithmRule.StringToTimeOnly,
                 this.context.MappaUserSettings.TimeOnlyFormat,
                 this.GetActualCultureSettingsInfo(),
                 this.context.MappaUserSettings.CultureName);
@@ -110,7 +106,6 @@ internal sealed class StringMapStrategyDetector
             mapStrategy = new InvokeParseStringWithFormatForDateOnlyAndTimeOnlyMapStrategy(
                 this.context.TargetType,
                 this.context.SourceType,
-                MappaAlgorithmRule.StringToDateOnly,
                 this.context.MappaUserSettings.DateOnlyFormat,
                 this.GetActualCultureSettingsInfo(),
                 this.context.MappaUserSettings.CultureName);

@@ -50,8 +50,5 @@ internal sealed class DictionaryToDictionaryMapStrategy
     public IMapStrategy ValueStrategy { get; }
 
     /// <inheritdoc/>
-    public MappaAlgorithmRule Rule => MappaAlgorithmRule.DictionaryToDictionary;
-
-    /// <inheritdoc/>
     public IMappaStrategyBuilder GetBuilder() => new DictionaryToDictionaryMapStrategyBuilder(this);
 }

@@ -28,10 +28,6 @@ internal sealed class DictionaryToDictionaryMapStrategyBuilder
     /// <inheritdoc/>
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
-        var ruleComment = mappaGlobalOptions.MappaDebugComments
-            ? $"/* Mappa Rule: {this.strategy.Rule} (key strategy: {this.strategy.KeyStrategy.Rule}, value strategy: {this.strategy.ValueStrategy.Rule}) */ "
-            : string.Empty;
-
         var (targetKeyType, targetValueType) = this.strategy.TargetType.GetKeyAndValueTypes();
         var (sourceKeyType, sourceValueType) = this.strategy.SourceType.GetKeyAndValueTypes();
 
@@ -70,6 +66,6 @@ internal sealed class DictionaryToDictionaryMapStrategyBuilder
             builder.AppendLine($"{dictionaryTemporary}[{targetKeyTemporary}] = {targetValueTemporary};");
         }
 
-        return ($"{ruleComment}{dictionaryTemporary}", builder.ToString());
+        return (dictionaryTemporary, builder.ToString());
     }
 }

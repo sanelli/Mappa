@@ -68,10 +68,6 @@ internal sealed class StringToGuidMapStrategyBuilder
         var temporary = context.NextTemporary();
         var code = $"{this.strategy.TargetType.ToDisplayString()} {temporary} = {this.strategy.TargetType.ToDisplayString()}.{parseMethod}({parameters});";
 
-        var ruleComment = mappaGlobalOptions.MappaDebugComments
-            ? $"/* Mappa Rule: {this.strategy.Rule} */ "
-            : string.Empty;
-
-        return ($"{ruleComment}{temporary}", code);
+        return (temporary, code);
     }
 }

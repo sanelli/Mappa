@@ -33,8 +33,5 @@ internal sealed class DateTimeOffsetToDateTimeMapStrategy
     public ITypeSymbol SourceType { get; }
 
     /// <inheritdoc/>
-    public MappaAlgorithmRule Rule => MappaAlgorithmRule.DateTimeOffsetToDateTime;
-
-    /// <inheritdoc/>
-    public IMappaStrategyBuilder GetBuilder() => new DateTimeOffsetToDateTimeMapStrategyBuilder(this);
+    public IMappaStrategyBuilder GetBuilder() => new DateTimeOffsetToDateTimeMapStrategyBuilder();
 }

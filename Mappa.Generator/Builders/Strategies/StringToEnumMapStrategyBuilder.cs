@@ -30,11 +30,6 @@ internal sealed class StringToEnumMapStrategyBuilder
     {
         var builder = new PrettyCode.StringBuilder();
 
-        if (mappaGlobalOptions.MappaDebugComments)
-        {
-            builder.AppendLine($"/* Mappa Rule: {this.strategy.Rule} */ ");
-        }
-
         var enumFullName = this.strategy.TargetType.ToDisplayString();
         var temporary = context.NextTemporary();
         builder.AppendLine($"{enumFullName} {temporary};");
@@ -60,10 +55,6 @@ internal sealed class StringToEnumMapStrategyBuilder
             }
         }
 
-        var ruleComment = mappaGlobalOptions.MappaDebugComments
-            ? $"/* Mappa Rule: {this.strategy.Rule} (target-enum is \"{enumFullName}\") */ "
-            : string.Empty;
-
-        return ($"{ruleComment}{temporary}", builder.ToString());
+        return (temporary, builder.ToString());
     }
 }

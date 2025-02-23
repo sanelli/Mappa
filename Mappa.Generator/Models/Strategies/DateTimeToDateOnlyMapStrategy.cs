@@ -33,8 +33,5 @@ internal sealed class DateTimeToDateOnlyMapStrategy
     public ITypeSymbol SourceType { get; }
 
     /// <inheritdoc/>
-    public MappaAlgorithmRule Rule => MappaAlgorithmRule.DateTimeToDateOnly;
-
-    /// <inheritdoc/>
-    public IMappaStrategyBuilder GetBuilder() => new DateTimeToDateOnlyMapStrategyBuilder(this);
+    public IMappaStrategyBuilder GetBuilder() => new DateTimeToDateOnlyMapStrategyBuilder();
 }

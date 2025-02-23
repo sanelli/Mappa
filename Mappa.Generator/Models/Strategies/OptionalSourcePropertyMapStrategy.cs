@@ -32,9 +32,6 @@ internal sealed class OptionalSourcePropertyMapStrategy
     /// <inheritdoc/>
     public ITypeSymbol SourceType => this.InnerStrategy.SourceType;
 
-    /// <inheritdoc/>
-    public MappaAlgorithmRule Rule => this.InnerStrategy.Rule;
-
     /// <summary>
     /// Gets the strategy encapsulated.
     /// </summary>

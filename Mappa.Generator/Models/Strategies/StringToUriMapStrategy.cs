@@ -33,8 +33,5 @@ internal sealed class StringToUriMapStrategy
     public ITypeSymbol SourceType { get; }
 
     /// <inheritdoc/>
-    public MappaAlgorithmRule Rule => MappaAlgorithmRule.StringToUri;
-
-    /// <inheritdoc/>
-    public IMappaStrategyBuilder GetBuilder() => new StringToUriMapStrategyBuilder(this);
+    public IMappaStrategyBuilder GetBuilder() => new StringToUriMapStrategyBuilder();
 }

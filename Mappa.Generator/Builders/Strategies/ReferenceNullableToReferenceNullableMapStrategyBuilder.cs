@@ -28,10 +28,6 @@ internal sealed class ReferenceNullableToReferenceNullableMapStrategyBuilder
     /// <inheritdoc/>
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
-        var ruleComment = mappaGlobalOptions.MappaDebugComments
-            ? $"/* Mappa Rule: {this.strategy.Rule} (inner strategy: {this.strategy.InnerStrategy.Rule}) */ "
-            : string.Empty;
-
         var returnValue = context.NextTemporary();
         var nonNullTemporary = context.NextTemporary();
 
@@ -58,6 +54,6 @@ internal sealed class ReferenceNullableToReferenceNullableMapStrategyBuilder
             builder.AppendLine($"{returnValue} = ({this.strategy.TargetType.ToDisplayString()}) null;");
         }
 
-        return ($"{ruleComment}{returnValue}", builder.ToString());
+        return (returnValue, builder.ToString());
     }
 }

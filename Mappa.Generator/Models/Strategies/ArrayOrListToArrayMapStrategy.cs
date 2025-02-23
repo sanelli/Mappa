@@ -42,8 +42,5 @@ internal sealed class ArrayOrListToArrayMapStrategy
     public IMapStrategy ElementStrategy { get; }
 
     /// <inheritdoc/>
-    public MappaAlgorithmRule Rule => MappaAlgorithmRule.ArrayOrListToArray;
-
-    /// <inheritdoc/>
     public IMappaStrategyBuilder GetBuilder() => new ArrayOrListToArrayMapStrategyBuilder(this);
 }

@@ -173,7 +173,6 @@ internal sealed class ConstructorMapStrategyDetector
             if (constructorsWithMappings.Length > 0)
             {
                 strategy = new InvokeConstructorMapStrategy(
-                    MappaAlgorithmRule.InvokeConstructor,
                     this.context.TargetType,
                     this.context.SourceType,
                     constructorsWithMappings[0].methodSymbol,
@@ -271,7 +270,7 @@ internal sealed class ConstructorMapStrategyDetector
                 // Only use this strategy when they are the same type
                 if (constructorParameterType.IsEqualTo(this.context.SourceType, this.context.GetRootMapMethod().NullableEnabled))
                 {
-                    return (constructor, new IdentityMapStrategy(MappaAlgorithmRule.ImplicitConversion, constructorParameterType, this.context.SourceType));
+                    return (constructor, new IdentityMapStrategy(constructorParameterType, this.context.SourceType));
                 }
 
                 return (constructor, noMapStrategy);
@@ -432,7 +431,6 @@ internal sealed class ConstructorMapStrategyDetector
 
                     // TODO [#21] Allow to return an error if some source properties are not mapped.
                     strategy = new InvokeConstructorMapStrategy(
-                        MappaAlgorithmRule.InvokeEmptyConstructor,
                         this.context.TargetType,
                         this.context.SourceType,
                         constructors.Single(),

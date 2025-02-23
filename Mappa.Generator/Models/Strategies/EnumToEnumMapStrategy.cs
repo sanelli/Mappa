@@ -32,8 +32,5 @@ internal sealed class EnumToEnumMapStrategy
     public ITypeSymbol SourceType { get; }
 
     /// <inheritdoc/>
-    public MappaAlgorithmRule Rule => MappaAlgorithmRule.EnumToEnum;
-
-    /// <inheritdoc/>
     public IMappaStrategyBuilder GetBuilder() => new EnumToEnumMapStrategyBuilder(this);
 }

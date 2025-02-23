@@ -59,8 +59,5 @@ internal sealed class StringToGuidMapStrategy
     public string? CultureName { get; }
 
     /// <inheritdoc/>
-    public MappaAlgorithmRule Rule => MappaAlgorithmRule.StringToGuid;
-
-    /// <inheritdoc/>
     public IMappaStrategyBuilder GetBuilder() => new StringToGuidMapStrategyBuilder(this);
 }

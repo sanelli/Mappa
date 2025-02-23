@@ -37,9 +37,6 @@ internal sealed class MappaAssignFromContextAttributeStrategy
     /// <inheritdoc/>
     public ITypeSymbol SourceType => this.TargetType;
 
-    /// <inheritdoc/>
-    public MappaAlgorithmRule Rule => MappaAlgorithmRule.AssignFromContextAttribute;
-
     /// <summary>
     /// Gets the attribute.
     /// </summary>

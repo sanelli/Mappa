@@ -17,18 +17,13 @@ internal sealed class IdentityMapStrategy
     /// <summary>
     /// Initializes a new instance of the <see cref="IdentityMapStrategy"/> class.
     /// </summary>
-    /// <param name="rule">The rule applied.</param>
     /// <param name="targetType">The target type.</param>
     /// <param name="sourceType">The source type.</param>
-    public IdentityMapStrategy(MappaAlgorithmRule rule, ITypeSymbol targetType, ITypeSymbol sourceType)
+    public IdentityMapStrategy(ITypeSymbol targetType, ITypeSymbol sourceType)
     {
-        this.Rule = rule;
         this.TargetType = targetType;
         this.SourceType = sourceType;
     }
-
-    /// <inheritdoc/>
-    public MappaAlgorithmRule Rule { get; }
 
     /// <inheritdoc/>
     public ITypeSymbol TargetType { get; }
@@ -37,5 +32,5 @@ internal sealed class IdentityMapStrategy
     public ITypeSymbol SourceType { get; }
 
     /// <inheritdoc/>
-    public IMappaStrategyBuilder GetBuilder() => new IdentityMapStrategyBuilder(this);
+    public IMappaStrategyBuilder GetBuilder() => new IdentityMapStrategyBuilder();
 }

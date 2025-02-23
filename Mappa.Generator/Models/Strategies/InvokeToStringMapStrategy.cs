@@ -43,9 +43,6 @@ internal sealed class InvokeToStringMapStrategy
     /// <inheritdoc />
     public ITypeSymbol SourceType { get; }
 
-    /// <inheritdoc />
-    public MappaAlgorithmRule Rule => MappaAlgorithmRule.InvokeToString;
-
     /// <summary>
     /// Gets the (optional) format.
     /// </summary>

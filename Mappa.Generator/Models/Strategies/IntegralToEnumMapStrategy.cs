@@ -32,8 +32,5 @@ internal sealed class IntegralToEnumMapStrategy
     public ITypeSymbol SourceType { get; }
 
     /// <inheritdoc />
-    public MappaAlgorithmRule Rule => MappaAlgorithmRule.IntegralToEnum;
-
-    /// <inheritdoc />
     public IMappaStrategyBuilder GetBuilder() => new IntegralToEnumMapStrategyBuilder(this);
 }

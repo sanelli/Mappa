@@ -49,8 +49,5 @@ internal sealed class ParameterMapStrategy
     public ITypeSymbol SourceType => this.SourceProperty?.Type ?? throw new InvalidOperationException();
 
     /// <inheritdoc/>
-    public MappaAlgorithmRule Rule => MappaAlgorithmRule.ArgumentStrategy;
-
-    /// <inheritdoc/>
     public IMappaStrategyBuilder GetBuilder() => new ParameterMapStrategyBuilder(this);
 }

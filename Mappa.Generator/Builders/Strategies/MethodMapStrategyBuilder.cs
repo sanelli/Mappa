@@ -27,9 +27,6 @@ internal sealed class MethodMapStrategyBuilder
     /// <inheritdoc/>
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
-        var ruleComment = mappaGlobalOptions.MappaDebugComments
-            ? $"/* Mappa Rule: {this.strategy.Rule} */ "
-            : string.Empty;
         var temporary = context.NextTemporary();
 
         var methodName = this.strategy.MapMethod.MethodName;
@@ -47,6 +44,6 @@ internal sealed class MethodMapStrategyBuilder
 
         var code = $"{this.strategy.TargetType.ToDisplayString()} {temporary} = {methodName}({source}{contextParameter});";
 
-        return ($"{ruleComment}{temporary}", code);
+        return (temporary, code);
     }
 }

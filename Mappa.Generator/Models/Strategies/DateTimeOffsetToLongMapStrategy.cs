@@ -33,8 +33,5 @@ internal sealed class DateTimeOffsetToLongMapStrategy
     public ITypeSymbol SourceType { get; }
 
     /// <inheritdoc/>
-    public MappaAlgorithmRule Rule => MappaAlgorithmRule.DateTimeOffsetToLong;
-
-    /// <inheritdoc/>
-    public IMappaStrategyBuilder GetBuilder() => new DateTimeOffsetToLongMapStrategyBuilder(this);
+    public IMappaStrategyBuilder GetBuilder() => new DateTimeOffsetToLongMapStrategyBuilder();
 }

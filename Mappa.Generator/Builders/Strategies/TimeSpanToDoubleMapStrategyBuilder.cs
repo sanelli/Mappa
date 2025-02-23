@@ -13,27 +13,12 @@ namespace Mappa.Generator.Builders.Strategies;
 internal sealed class TimeSpanToDoubleMapStrategyBuilder
    : IMappaStrategyBuilder
 {
-    private readonly TimeSpanToDoubleMapStrategy strategy;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="TimeSpanToDoubleMapStrategyBuilder"/> class.
-    /// </summary>
-    /// <param name="strategy">The strategy.</param>
-    public TimeSpanToDoubleMapStrategyBuilder(TimeSpanToDoubleMapStrategy strategy)
-    {
-        this.strategy = strategy;
-    }
-
     /// <inheritdoc/>
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
         var temporary = context.NextTemporary();
         var code = $"double {temporary} = {source}.TotalSeconds;";
 
-        var ruleComment = mappaGlobalOptions.MappaDebugComments
-            ? $"/* Mappa Rule: {this.strategy.Rule} */ "
-            : string.Empty;
-
-        return ($"{ruleComment}{temporary}", code);
+        return (temporary, code);
     }
 }

@@ -50,8 +50,5 @@ internal sealed class InvokeMappingConstructorMapStrategy
     public IMapStrategy ArgumentStrategy { get; }
 
     /// <inheritdoc/>
-    public MappaAlgorithmRule Rule => MappaAlgorithmRule.InvokeMappingConstructor;
-
-    /// <inheritdoc/>
     public IMappaStrategyBuilder GetBuilder() => new InvokeMappingConstructorMapStrategyBuilder(this);
 }

@@ -56,8 +56,5 @@ internal sealed class PropertyMapStrategy
     public ITypeSymbol SourceType => this.SourceProperty?.Type ?? throw new InvalidOperationException();
 
     /// <inheritdoc/>
-    public MappaAlgorithmRule Rule => MappaAlgorithmRule.PropertyStrategy;
-
-    /// <inheritdoc/>
     public IMappaStrategyBuilder GetBuilder() => new PropertyMapStrategyBuilder(this);
 }

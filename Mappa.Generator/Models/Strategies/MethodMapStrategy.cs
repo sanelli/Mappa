@@ -17,13 +17,11 @@ internal sealed class MethodMapStrategy
     /// <summary>
     /// Initializes a new instance of the <see cref="MethodMapStrategy"/> class.
     /// </summary>
-    /// <param name="rule">The rule used to generate this strategy.</param>
     /// <param name="mapMethod">The method to be used for the mapping.</param>
     /// <param name="contextParameterName">The name of the context parameter.</param>
-    public MethodMapStrategy(MappaAlgorithmRule rule, MapMethod mapMethod, string? contextParameterName)
+    public MethodMapStrategy(MapMethod mapMethod, string? contextParameterName)
     {
         this.MapMethod = mapMethod;
-        this.Rule = rule;
         this.ContextParameterName = contextParameterName;
     }
 
@@ -32,9 +30,6 @@ internal sealed class MethodMapStrategy
 
     /// <inheritdoc/>
     public ITypeSymbol SourceType => this.MapMethod.SourceType;
-
-    /// <inheritdoc/>
-    public MappaAlgorithmRule Rule { get; }
 
     /// <summary>
     /// Gets the method used for the mapping.

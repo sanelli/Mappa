@@ -27,10 +27,6 @@ internal sealed class TupleToTupleMapStrategyBuilder
     /// <inheritdoc/>
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
-        var ruleComment = mappaGlobalOptions.MappaDebugComments
-            ? $"/* Mappa Rule: {this.strategy.Rule} (element strategies: {string.Join(", ", this.strategy.ElementStrategies.Select(elementStrategy => elementStrategy.ToString()))}) */ "
-            : string.Empty;
-
         var elementTemporaries = new List<string>();
         var builder = new PrettyCode.StringBuilder();
         for (int index = 0; index < this.strategy.ElementStrategies.Length; ++index)
@@ -58,6 +54,6 @@ internal sealed class TupleToTupleMapStrategyBuilder
 
         builder.AppendLine($"{this.strategy.TargetType.ToDisplayString()} {tupleTemporary} = {buildingExpression};");
 
-        return ($"{ruleComment}{tupleTemporary}", builder.ToString());
+        return (tupleTemporary, builder.ToString());
     }
 }

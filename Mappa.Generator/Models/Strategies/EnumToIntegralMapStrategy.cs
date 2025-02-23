@@ -31,8 +31,5 @@ internal sealed class EnumToIntegralMapStrategy
     public ITypeSymbol SourceType { get; }
 
     /// <inheritdoc />
-    public MappaAlgorithmRule Rule => MappaAlgorithmRule.EnumToIntegral;
-
-    /// <inheritdoc />
     public IMappaStrategyBuilder GetBuilder() => new EnumToIntegralMapStrategyBuilder(this);
 }

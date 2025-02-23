@@ -33,8 +33,5 @@ internal sealed class DateOnlyToLongMapStrategy
     public ITypeSymbol SourceType { get; }
 
     /// <inheritdoc/>
-    public MappaAlgorithmRule Rule => MappaAlgorithmRule.DateOnlyToLong;
-
-    /// <inheritdoc/>
-    public IMappaStrategyBuilder GetBuilder() => new DateOnlyToLongMapStrategyBuilder(this);
+    public IMappaStrategyBuilder GetBuilder() => new DateOnlyToLongMapStrategyBuilder();
 }

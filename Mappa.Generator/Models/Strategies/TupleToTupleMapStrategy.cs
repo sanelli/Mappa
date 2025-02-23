@@ -42,8 +42,5 @@ internal sealed class TupleToTupleMapStrategy
     public IMapStrategy[] ElementStrategies { get; }
 
     /// <inheritdoc/>
-    public MappaAlgorithmRule Rule => MappaAlgorithmRule.TupleToTuple;
-
-    /// <inheritdoc/>
     public IMappaStrategyBuilder GetBuilder() => new TupleToTupleMapStrategyBuilder(this);
 }

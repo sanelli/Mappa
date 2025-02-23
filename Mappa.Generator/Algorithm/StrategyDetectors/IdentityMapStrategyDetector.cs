@@ -42,29 +42,14 @@ internal sealed class IdentityMapStrategyDetector
         mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
 
         // 01. Map to the very same type.
-        if (this.CanMapUsingMapToSameTypeRule())
+        // 02. Map to object
+        // 03. Implicit conversion.
+        if (this.CanMapUsingMapToSameTypeRule()
+            || this.CanMapUsingMapToObjectRule()
+            || this.CanMapUsingImplicitConversion())
         {
             // TODO [#14] Add support for deep copy instead of shallow copy when the type is the same via attribute.
            mapStrategy = new IdentityMapStrategy(
-                MappaAlgorithmRule.MapToSameType,
-                this.context.TargetType,
-                this.context.SourceType);
-        }
-
-        // 02. Map to object
-        else if (this.CanMapUsingMapToObjectRule())
-        {
-            mapStrategy = new IdentityMapStrategy(
-                MappaAlgorithmRule.MapToObject,
-                this.context.TargetType,
-                this.context.SourceType);
-        }
-
-        // 03. Implicit conversion.
-        else if (this.CanMapUsingImplicitConversion())
-        {
-            mapStrategy = new IdentityMapStrategy(
-                MappaAlgorithmRule.ImplicitConversion,
                 this.context.TargetType,
                 this.context.SourceType);
         }

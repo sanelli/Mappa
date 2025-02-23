@@ -33,8 +33,5 @@ internal sealed class DoubleToTimeSpanMapStrategy
     public ITypeSymbol SourceType { get; }
 
     /// <inheritdoc/>
-    public MappaAlgorithmRule Rule => MappaAlgorithmRule.DoubleToTimeSpan;
-
-    /// <inheritdoc/>
-    public IMappaStrategyBuilder GetBuilder() => new DoubleToTimeSpanMapStrategyBuilder(this);
+    public IMappaStrategyBuilder GetBuilder() => new DoubleToTimeSpanMapStrategyBuilder();
 }

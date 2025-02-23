@@ -47,10 +47,6 @@ internal sealed class InvokeMappingConstructorMapStrategyBuilder
         var targetTemporary = context.NextTemporary();
         stringBuilder.AppendLine($"{targetTypeName} {targetTemporary} = new {targetTypeWithoutNullableAnnotation}({parameterTemporary});");
 
-        var ruleComment = mappaGlobalOptions.MappaDebugComments
-            ? $"/* Mappa Rule: {this.strategy.Rule} */ "
-            : string.Empty;
-
-        return ($"{ruleComment}{targetTemporary}", stringBuilder.ToString());
+        return (targetTemporary, stringBuilder.ToString());
     }
 }

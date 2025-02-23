@@ -31,8 +31,5 @@ internal sealed class EnumToStringMapStrategy
     public ITypeSymbol SourceType { get; }
 
     /// <inheritdoc />
-    public MappaAlgorithmRule Rule => MappaAlgorithmRule.EnumToString;
-
-    /// <inheritdoc />
     public IMappaStrategyBuilder GetBuilder() => new EnumToStringMapStrategyBuilder(this);
 }

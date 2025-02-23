@@ -32,8 +32,5 @@ internal sealed class NoMapStrategy
     public ITypeSymbol SourceType { get; }
 
     /// <inheritdoc/>
-    public MappaAlgorithmRule Rule => MappaAlgorithmRule.None;
-
-    /// <inheritdoc/>
     public IMappaStrategyBuilder GetBuilder() => new NoMapStrategyBuilder(this);
 }

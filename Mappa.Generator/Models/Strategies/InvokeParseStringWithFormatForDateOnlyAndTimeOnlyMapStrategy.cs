@@ -20,19 +20,16 @@ internal sealed class InvokeParseStringWithFormatForDateOnlyAndTimeOnlyMapStrate
     /// </summary>
     /// <param name="targetType">The target type.</param>
     /// <param name="sourceType">The source type.</param>
-    /// <param name="rule">The rule to be applied.</param>
     /// <param name="format">The format to apply.</param>
     /// <param name="cultureInfoSetting">The culture info settings.</param>
     /// <param name="cultureName">The culture name when the culture info settings are user defined.</param>
     internal InvokeParseStringWithFormatForDateOnlyAndTimeOnlyMapStrategy(
         ITypeSymbol targetType,
         ITypeSymbol sourceType,
-        MappaAlgorithmRule rule,
         string? format,
         CultureInfoSetting cultureInfoSetting,
         string? cultureName)
     {
-        this.Rule = rule;
         this.TargetType = targetType;
         this.SourceType = sourceType;
         this.Format = format;
@@ -60,9 +57,6 @@ internal sealed class InvokeParseStringWithFormatForDateOnlyAndTimeOnlyMapStrate
     /// Gets the culture name.
     /// </summary>
     public string? CultureName { get; }
-
-    /// <inheritdoc/>
-    public MappaAlgorithmRule Rule { get; }
 
     /// <inheritdoc/>
     public IMappaStrategyBuilder GetBuilder() => new InvokeParseStringWithFormatForDateOnlyAndTimeOnlyMapStrategyBuilder(this);

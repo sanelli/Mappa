@@ -33,11 +33,6 @@ internal sealed class IntegralToEnumMapStrategyBuilder
     {
         var builder = new PrettyCode.StringBuilder();
 
-        if (mappaGlobalOptions.MappaDebugComments)
-        {
-            builder.AppendLine($"/* Mappa Rule: {this.strategy.Rule} */ ");
-        }
-
         var enumFullName = this.strategy.TargetType.ToDisplayString();
         var enumUnderlyingType = ((INamedTypeSymbol)this.strategy.TargetType).EnumUnderlyingType
                                  ?? throw new MappaGeneratorException($"The enum \"{enumFullName}\" does not have an underlying type");
@@ -65,10 +60,6 @@ internal sealed class IntegralToEnumMapStrategyBuilder
             }
         }
 
-        var ruleComment = mappaGlobalOptions.MappaDebugComments
-            ? $"/* Mappa Rule: {this.strategy.Rule} (source-type is \"{this.strategy.SourceType.ToDisplayString()}\", target-enum is \"{enumFullName}\") */ "
-            : string.Empty;
-
-        return ($"{ruleComment}{temporary}", builder.ToString());
+        return (temporary, builder.ToString());
     }
 }

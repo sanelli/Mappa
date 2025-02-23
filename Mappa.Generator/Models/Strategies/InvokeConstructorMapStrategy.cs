@@ -17,26 +17,18 @@ internal sealed class InvokeConstructorMapStrategy
     /// <summary>
     /// Initializes a new instance of the <see cref="InvokeConstructorMapStrategy"/> class.
     /// </summary>
-    /// <param name="rule">The rule applied.</param>
     /// <param name="targetType">The source type.</param>
     /// <param name="sourceType">The target type.</param>
     /// <param name="constructor">Gets the constructor.</param>
     /// <param name="parametersMapStrategies">The strategies to be applied via constructor parameters.</param>
     /// <param name="initializerStrategies">The strategies to be applied via initializers.</param>
     public InvokeConstructorMapStrategy(
-        MappaAlgorithmRule rule,
         ITypeSymbol targetType,
         ITypeSymbol sourceType,
         IMethodSymbol constructor,
         ParameterMapStrategy[] parametersMapStrategies,
         PropertyMapStrategy[] initializerStrategies)
     {
-        if (rule is not MappaAlgorithmRule.InvokeEmptyConstructor and not MappaAlgorithmRule.InvokeConstructor)
-        {
-            throw new ArgumentException($"Only {MappaAlgorithmRule.InvokeEmptyConstructor} and {MappaAlgorithmRule.InvokeConstructor} are valid rules for {nameof(InvokeConstructorMapStrategy)}", nameof(rule));
-        }
-
-        this.Rule = rule;
         this.TargetType = targetType;
         this.SourceType = sourceType;
         this.Constructor = constructor;
@@ -64,9 +56,6 @@ internal sealed class InvokeConstructorMapStrategy
     /// Gets the strategies that can be applied via initializers.
     /// </summary>
     public PropertyMapStrategy[] InitializerStrategies { get; }
-
-    /// <inheritdoc/>
-    public MappaAlgorithmRule Rule { get; }
 
     /// <inheritdoc/>
     public IMappaStrategyBuilder GetBuilder() => new InvokeConstructorMapStrategyBuilder(this);

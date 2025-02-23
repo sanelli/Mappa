@@ -27,12 +27,7 @@ internal sealed class ToReferenceNullableMapStrategyBuilder
     /// <inheritdoc/>
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
-        var ruleComment = mappaGlobalOptions.MappaDebugComments
-            ? $"/* Mappa Rule: {this.strategy.Rule} (inner strategy: {this.strategy.InnerStrategy.Rule}) */ "
-            : string.Empty;
-
         var (innerVariable, innerStrategyCode) = this.strategy.InnerStrategy.GetBuilder().BuildSource(source, context, mappaGlobalOptions);
-
-        return ($"{ruleComment}{innerVariable}", innerStrategyCode);
+        return (innerVariable, innerStrategyCode);
     }
 }

@@ -47,9 +47,6 @@ internal sealed class MappaInvokeMethodAttributeStrategy
     /// <inheritdoc/>
     public ITypeSymbol SourceType { get; }
 
-    /// <inheritdoc/>
-    public MappaAlgorithmRule Rule => MappaAlgorithmRule.InvokeMethodFromAttribute;
-
     /// <summary>
     /// Gets the method that should be invoked.
     /// </summary>

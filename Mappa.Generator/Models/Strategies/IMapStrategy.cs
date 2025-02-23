@@ -24,11 +24,6 @@ internal interface IMapStrategy
     ITypeSymbol SourceType { get; }
 
     /// <summary>
-    /// Gets the rule applied.
-    /// </summary>
-    MappaAlgorithmRule Rule { get; }
-
-    /// <summary>
     /// Gets the strategy builder for this strategy.
     /// </summary>
     /// <returns>The strategy builder.</returns>

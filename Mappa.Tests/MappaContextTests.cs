@@ -42,6 +42,34 @@ public sealed class MappaContextTests
     }
 
     /// <summary>
+    /// Tests <see cref="MappaContext"/> can be created from by using the conversion methods.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanCreateMappaFromConversion()
+    {
+        // Arrange
+        var dictionary = new Dictionary<string, object>
+        {
+            ["foo"] = "bar",
+        };
+
+        KeyValuePair<string, object>[] pairs = [new("foo", "bar")];
+
+        // Act
+        MappaContext contextFromDictionary = dictionary;
+        MappaContext contextFromPairs = pairs;
+        MappaContext contextFromDictionary2 = MappaContext.ToMappaContext(dictionary);
+        MappaContext contextFromPairs2 = MappaContext.ToMappaContext(pairs);
+
+        // Assert
+        contextFromDictionary["foo"].Should().Be("bar");
+        contextFromPairs["foo"].Should().Be("bar");
+        contextFromDictionary2["foo"].Should().Be("bar");
+        contextFromPairs2["foo"].Should().Be("bar");
+    }
+
+    /// <summary>
     /// Tests <see cref="MappaContext"/> value can be set.
     /// </summary>
     [Fact]

@@ -33,8 +33,5 @@ internal sealed class DateTimeToLongMapStrategy
     public ITypeSymbol SourceType { get; }
 
     /// <inheritdoc/>
-    public MappaAlgorithmRule Rule => MappaAlgorithmRule.DateTimeToLong;
-
-    /// <inheritdoc/>
-    public IMappaStrategyBuilder GetBuilder() => new DateTimeToLongMapStrategyBuilder(this);
+    public IMappaStrategyBuilder GetBuilder() => new DateTimeToLongMapStrategyBuilder();
 }

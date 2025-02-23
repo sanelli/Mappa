@@ -43,8 +43,5 @@ internal sealed class NullableToNullableMapStrategy
     public IMapStrategy TypeArgumentStrategy { get; }
 
     /// <inheritdoc/>
-    public MappaAlgorithmRule Rule => MappaAlgorithmRule.NullableToNullable;
-
-    /// <inheritdoc/>
     public IMappaStrategyBuilder GetBuilder() => new NullableToNullableMapStrategyBuilder(this);
 }
