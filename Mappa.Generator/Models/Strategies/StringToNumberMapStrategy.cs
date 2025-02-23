@@ -12,26 +12,11 @@ namespace Mappa.Generator.Models.Strategies;
 /// Strategy to map a <see cref="string"/> to
 /// a numeric value.
 /// </summary>
-internal sealed class StringToNumberMapStrategy
-    : IMapStrategy
+/// <param name="targetType">The target type.</param>
+/// <param name="sourceType">The source type.</param>
+internal sealed class StringToNumberMapStrategy(ITypeSymbol targetType, ITypeSymbol sourceType)
+        : MapStrategy(targetType, sourceType)
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="StringToNumberMapStrategy"/> class.
-    /// </summary>
-    /// <param name="targetType">The target type.</param>
-    /// <param name="sourceType">The source type.</param>
-    public StringToNumberMapStrategy(ITypeSymbol targetType, ITypeSymbol sourceType)
-    {
-        this.TargetType = targetType;
-        this.SourceType = sourceType;
-    }
-
     /// <inheritdoc/>
-    public ITypeSymbol TargetType { get; }
-
-    /// <inheritdoc/>
-    public ITypeSymbol SourceType { get; }
-
-    /// <inheritdoc/>
-    public IMappaStrategyBuilder GetBuilder() => new StringToNumberMapStrategyBuilder(this);
+    internal override IMappaStrategyBuilder GetBuilder() => new StringToNumberMapStrategyBuilder(this);
 }

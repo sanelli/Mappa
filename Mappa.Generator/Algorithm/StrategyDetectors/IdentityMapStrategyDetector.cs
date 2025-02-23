@@ -37,7 +37,7 @@ internal sealed class IdentityMapStrategyDetector
     }
 
     /// <inheritdoc/>
-    public bool TryDetect(out IMapStrategy mapStrategy)
+    public bool TryDetect(out MapStrategy mapStrategy)
     {
         mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
 

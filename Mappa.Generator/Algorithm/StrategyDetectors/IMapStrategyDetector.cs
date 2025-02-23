@@ -16,5 +16,5 @@ internal interface IMapStrategyDetector
     /// </summary>
     /// <param name="mapStrategy">The map strategy.</param>
     /// <returns><c>true</c> if a strategy has been found.</returns>
-    bool TryDetect(out IMapStrategy mapStrategy);
+    bool TryDetect(out MapStrategy mapStrategy);
 }

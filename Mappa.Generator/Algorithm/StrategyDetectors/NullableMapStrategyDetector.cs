@@ -37,7 +37,7 @@ internal sealed class NullableMapStrategyDetector
     }
 
     /// <inheritdoc/>
-    public bool TryDetect(out IMapStrategy mapStrategy)
+    public bool TryDetect(out MapStrategy mapStrategy)
     {
         mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
 
@@ -71,7 +71,7 @@ internal sealed class NullableMapStrategyDetector
         return mapStrategy is not NoMapStrategy;
     }
 
-    private bool CanMapNullableToNullable(out IMapStrategy elementStrategy)
+    private bool CanMapNullableToNullable(out MapStrategy elementStrategy)
     {
         var isSourceNullable = this.context.SourceType.IsNullable();
         var isTargetNullable = this.context.TargetType.IsNullable();
@@ -80,7 +80,7 @@ internal sealed class NullableMapStrategyDetector
         return isSourceNullable && isTargetNullable && this.TryGetElementStrategy(out elementStrategy);
     }
 
-    private bool CanMapNullableToNonNullable(out IMapStrategy elementStrategy)
+    private bool CanMapNullableToNonNullable(out MapStrategy elementStrategy)
     {
         var isSourceNullable = this.context.SourceType.IsNullable();
 
@@ -88,7 +88,7 @@ internal sealed class NullableMapStrategyDetector
         return isSourceNullable && this.TryGetSourceElementStrategy(out elementStrategy);
     }
 
-    private bool CanMapNonNullableToNullable(out IMapStrategy elementStrategy)
+    private bool CanMapNonNullableToNullable(out MapStrategy elementStrategy)
     {
         var isTargetTypeNullable = this.context.TargetType.IsNullable();
 
@@ -96,7 +96,7 @@ internal sealed class NullableMapStrategyDetector
         return isTargetTypeNullable && this.TryGetTargetElementStrategy(out elementStrategy);
     }
 
-    private bool TryGetElementStrategy(out IMapStrategy elementStrategy)
+    private bool TryGetElementStrategy(out MapStrategy elementStrategy)
     {
         var sourceElementType = this.context.SourceType.GetElementType();
         var targetElementType = this.context.TargetType.GetElementType();
@@ -109,7 +109,7 @@ internal sealed class NullableMapStrategyDetector
         return elementStrategy is not NoMapStrategy;
     }
 
-    private bool TryGetSourceElementStrategy(out IMapStrategy elementStrategy)
+    private bool TryGetSourceElementStrategy(out MapStrategy elementStrategy)
     {
         var sourceElementType = this.context.SourceType.GetElementType();
         var targetType = this.context.TargetType;
@@ -122,7 +122,7 @@ internal sealed class NullableMapStrategyDetector
         return elementStrategy is not NoMapStrategy;
     }
 
-    private bool TryGetTargetElementStrategy(out IMapStrategy elementStrategy)
+    private bool TryGetTargetElementStrategy(out MapStrategy elementStrategy)
     {
         var sourceType = this.context.SourceType;
         var targetElementType = this.context.TargetType.GetElementType();

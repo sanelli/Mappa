@@ -13,63 +13,41 @@ namespace Mappa.Generator.Models.Strategies;
 /// Strategy to be used when we are mapping
 /// using the <see cref="MappaInvokeMethodAttribute"/>.
 /// </summary>
-internal sealed class MappaInvokeMethodAttributeStrategy
-     : IMapStrategy
+/// <param name="targetType">The type of the target.</param>
+/// <param name="sourceClassType">The type of the source.</param>
+/// <param name="attribute">The attribute, as specified by the user on the mapper method.</param>
+/// <param name="method">The method to be invoked.</param>
+/// <param name="sourceProperty">The optional source property to be used by the method.</param>
+/// <param name="isNullableEnabled"><c>true</c> if nullable is enabled at this invocation point.</param>
+internal sealed class MappaInvokeMethodAttributeStrategy(
+    ITypeSymbol targetType,
+    ITypeSymbol sourceClassType,
+    MappaInvokeMethodAttribute attribute,
+    IMethodSymbol method,
+    IPropertySymbol? sourceProperty,
+    bool isNullableEnabled)
+          : MapStrategy(targetType, sourceClassType)
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MappaInvokeMethodAttributeStrategy"/> class.
-    /// </summary>
-    /// <param name="targetType">The type of the target.</param>
-    /// <param name="sourceClassType">The type of the source.</param>
-    /// <param name="attribute">The attribute, as specified by the user on the mapper method.</param>
-    /// <param name="method">The method to be invoked.</param>
-    /// <param name="sourceProperty">The optional source property to be used by the method.</param>
-    /// <param name="isNullableEnabled"><c>true</c> if nullable is enabled at this invocation point.</param>
-    public MappaInvokeMethodAttributeStrategy(
-        ITypeSymbol targetType,
-        ITypeSymbol sourceClassType,
-        MappaInvokeMethodAttribute attribute,
-        IMethodSymbol method,
-        IPropertySymbol? sourceProperty,
-        bool isNullableEnabled)
-    {
-        this.TargetType = targetType;
-        this.SourceType = sourceClassType;
-        this.Attribute = attribute;
-        this.Method = method;
-        this.SourceProperty = sourceProperty;
-        this.IsNullableEnabled = isNullableEnabled;
-    }
-
-    /// <inheritdoc/>
-    public ITypeSymbol TargetType { get; }
-
-    /// <inheritdoc/>
-    public ITypeSymbol SourceType { get; }
-
     /// <summary>
     /// Gets the method that should be invoked.
     /// </summary>
-    internal IMethodSymbol Method { get; }
+    internal IMethodSymbol Method { get; } = method;
 
     /// <summary>
     /// Gets the source property that can be used to invoke the mapper.
     /// </summary>
-    internal IPropertySymbol? SourceProperty { get; }
+    internal IPropertySymbol? SourceProperty { get; } = sourceProperty;
 
     /// <summary>
     /// Gets the attribute as specified by the user.
     /// </summary>
-    internal MappaInvokeMethodAttribute Attribute { get; }
+    internal MappaInvokeMethodAttribute Attribute { get; } = attribute;
 
     /// <summary>
     /// Gets a value indicating whether <c>nullable</c> is enabled for reference types.
     /// </summary>
-    internal bool IsNullableEnabled { get; }
+    internal bool IsNullableEnabled { get; } = isNullableEnabled;
 
     /// <inheritdoc/>
-    public IMappaStrategyBuilder GetBuilder()
-    {
-        return new MappaInvokeMethodAttributeStrategyBuilder(this);
-    }
+    internal override IMappaStrategyBuilder GetBuilder() => new MappaInvokeMethodAttributeStrategyBuilder(this);
 }

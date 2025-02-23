@@ -12,26 +12,14 @@ namespace Mappa.Generator.Models.Strategies;
 /// Strategy to map a <see cref="DateTime"/> to
 /// a <see cref="long"/> value.
 /// </summary>
-internal sealed class LongToDateTimeMapStrategy
-    : IMapStrategy
+/// <remarks>
+/// Initializes a new instance of the <see cref="LongToDateTimeMapStrategy"/> class.
+/// </remarks>
+/// <param name="targetType">The target type.</param>
+/// <param name="sourceType">The source type.</param>
+internal sealed class LongToDateTimeMapStrategy(ITypeSymbol targetType, ITypeSymbol sourceType)
+        : MapStrategy(targetType, sourceType)
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="LongToDateTimeMapStrategy"/> class.
-    /// </summary>
-    /// <param name="targetType">The target type.</param>
-    /// <param name="sourceType">The source type.</param>
-    public LongToDateTimeMapStrategy(ITypeSymbol targetType, ITypeSymbol sourceType)
-    {
-        this.TargetType = targetType;
-        this.SourceType = sourceType;
-    }
-
     /// <inheritdoc/>
-    public ITypeSymbol TargetType { get; }
-
-    /// <inheritdoc/>
-    public ITypeSymbol SourceType { get; }
-
-    /// <inheritdoc/>
-    public IMappaStrategyBuilder GetBuilder() => new LongToDateTimeMapStrategyBuilder();
+    internal override IMappaStrategyBuilder GetBuilder() => new LongToDateTimeMapStrategyBuilder();
 }

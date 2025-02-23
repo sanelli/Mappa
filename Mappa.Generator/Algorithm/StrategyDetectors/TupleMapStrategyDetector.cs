@@ -37,7 +37,7 @@ internal sealed class TupleMapStrategyDetector
     }
 
     /// <inheritdoc/>
-    public bool TryDetect(out IMapStrategy mapStrategy)
+    public bool TryDetect(out MapStrategy mapStrategy)
     {
         mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
 
@@ -53,12 +53,12 @@ internal sealed class TupleMapStrategyDetector
         return mapStrategy is not NoMapStrategy;
     }
 
-    private bool CanMapTupleToTuple(out IList<IMapStrategy> elementsStrategies)
+    private bool CanMapTupleToTuple(out IList<MapStrategy> elementsStrategies)
     {
         var isSourceTuple = this.context.SourceType.IsTuple(this.compilation);
         var isTargetTuple = this.context.TargetType.IsTuple(this.compilation);
 
-        var tmpTupleStrategies = elementsStrategies = new List<IMapStrategy>();
+        var tmpTupleStrategies = elementsStrategies = new List<MapStrategy>();
 
         return isSourceTuple
                && isTargetTuple

@@ -10,26 +10,11 @@ namespace Mappa.Generator.Models.Strategies;
 /// <summary>
 /// Strategy to map <see cref="Enum"/> to <see cref="string"/>.
 /// </summary>
-internal sealed class EnumToStringMapStrategy
-    : IMapStrategy
+/// <param name="targetType">The target type.</param>
+/// <param name="sourceType">The source type.</param>
+internal sealed class EnumToStringMapStrategy(ITypeSymbol targetType, ITypeSymbol sourceType)
+        : MapStrategy(targetType, sourceType)
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="EnumToStringMapStrategy"/> class.
-    /// </summary>
-    /// <param name="targetType">The target type.</param>
-    /// <param name="sourceType">The source type.</param>
-    public EnumToStringMapStrategy(ITypeSymbol targetType, ITypeSymbol sourceType)
-    {
-        this.TargetType = targetType;
-        this.SourceType = sourceType;
-    }
-
     /// <inheritdoc />
-    public ITypeSymbol TargetType { get; }
-
-    /// <inheritdoc />
-    public ITypeSymbol SourceType { get; }
-
-    /// <inheritdoc />
-    public IMappaStrategyBuilder GetBuilder() => new EnumToStringMapStrategyBuilder(this);
+    internal override IMappaStrategyBuilder GetBuilder() => new EnumToStringMapStrategyBuilder(this);
 }

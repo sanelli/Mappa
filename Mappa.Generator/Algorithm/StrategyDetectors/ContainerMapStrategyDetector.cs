@@ -37,7 +37,7 @@ internal sealed class ContainerMapStrategyDetector
     }
 
     /// <inheritdoc/>
-    public bool TryDetect(out IMapStrategy mapStrategy)
+    public bool TryDetect(out MapStrategy mapStrategy)
     {
         mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
 
@@ -104,7 +104,7 @@ internal sealed class ContainerMapStrategyDetector
         return mapStrategy is not NoMapStrategy;
     }
 
-    private bool CanMapArrayOrListToArray(out IMapStrategy elementStrategy)
+    private bool CanMapArrayOrListToArray(out MapStrategy elementStrategy)
     {
         // Source can be S[], IList<S>, List<S>
         var acceptSource = this.context.SourceType.IsArray();
@@ -117,7 +117,7 @@ internal sealed class ContainerMapStrategyDetector
         return acceptSource && isTargetArray && this.TryGetElementStrategy(out elementStrategy);
     }
 
-    private bool CanMapCollectionOrEnumerableToArray(out IMapStrategy elementStrategy)
+    private bool CanMapCollectionOrEnumerableToArray(out MapStrategy elementStrategy)
     {
         // Source can be IEnumerable<S>, ICollection<S> or IReadOnlyCollection<S>
         var acceptSource = this.context.SourceType.IsIEnumerable();
@@ -130,7 +130,7 @@ internal sealed class ContainerMapStrategyDetector
         return acceptSource && isTargetArray && this.TryGetElementStrategy(out elementStrategy);
     }
 
-    private bool CanMapArrayOrListToCollectionOrEnumerable(out IMapStrategy elementStrategy)
+    private bool CanMapArrayOrListToCollectionOrEnumerable(out MapStrategy elementStrategy)
     {
         // Source can be S[], IList<S>, List<S>
         var acceptSource = this.context.SourceType.IsArray();
@@ -149,7 +149,7 @@ internal sealed class ContainerMapStrategyDetector
         return acceptSource && acceptTarget && this.TryGetElementStrategy(out elementStrategy);
     }
 
-    private bool CanMapCollectionOrEnumerableToCollectionOrEnumerable(out IMapStrategy elementStrategy)
+    private bool CanMapCollectionOrEnumerableToCollectionOrEnumerable(out MapStrategy elementStrategy)
     {
         // Source can be S[], IList<S>, List<S>
         var acceptSource = this.context.SourceType.IsIEnumerable();
@@ -168,7 +168,7 @@ internal sealed class ContainerMapStrategyDetector
         return acceptSource && acceptTarget && this.TryGetElementStrategy(out elementStrategy);
     }
 
-    private bool CanMapDictionaryToDictionary(out IMapStrategy keyStrategy, out IMapStrategy valueStrategy)
+    private bool CanMapDictionaryToDictionary(out MapStrategy keyStrategy, out MapStrategy valueStrategy)
     {
         var isSourceDictionary = this.context.SourceType.IsIDictionary(this.compilation)
                                  || this.context.SourceType.IsDictionary(this.compilation);
@@ -181,7 +181,7 @@ internal sealed class ContainerMapStrategyDetector
         return isSourceDictionary && isTargetDictionary && this.TryGetKeyAndValueStrategy(out keyStrategy, out valueStrategy);
     }
 
-    private bool TryGetElementStrategy(out IMapStrategy elementStrategy)
+    private bool TryGetElementStrategy(out MapStrategy elementStrategy)
     {
         var sourceElementType = this.context.SourceType.GetElementType();
         var targetElementType = this.context.TargetType.GetElementType();
@@ -194,7 +194,7 @@ internal sealed class ContainerMapStrategyDetector
         return elementStrategy is not NoMapStrategy;
     }
 
-    private bool TryGetKeyAndValueStrategy(out IMapStrategy keyStrategy, out IMapStrategy valueStrategy)
+    private bool TryGetKeyAndValueStrategy(out MapStrategy keyStrategy, out MapStrategy valueStrategy)
     {
         var (sourceKeyType, sourceKeyValueType) = this.context.SourceType.GetKeyAndValueTypes();
         var (targetKeyType, targetValueType) = this.context.TargetType.GetKeyAndValueTypes();

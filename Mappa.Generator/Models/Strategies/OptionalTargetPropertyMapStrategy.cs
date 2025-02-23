@@ -12,36 +12,21 @@ namespace Mappa.Generator.Models.Strategies;
 /// Strategy to encapsulate a strategy when the target property
 /// is optional (i.e. a property named "Has&lt;TargetProperty&gt;" exists.
 /// </summary>
-internal sealed class OptionalTargetPropertyMapStrategy
-    : IMapStrategy
+/// <param name="strategy">The strategy to apply.</param>
+/// <param name="targetProperty">The target property on which optional is applied.</param>
+internal sealed class OptionalTargetPropertyMapStrategy(MapStrategy strategy, IPropertySymbol targetProperty)
+        : MapStrategy(strategy.TargetType, strategy.SourceType)
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="OptionalTargetPropertyMapStrategy"/> class.
-    /// </summary>
-    /// <param name="strategy">The strategy to apply.</param>
-    /// <param name="targetProperty">The target property on which optional is applied.</param>
-    public OptionalTargetPropertyMapStrategy(IMapStrategy strategy, IPropertySymbol targetProperty)
-    {
-        this.InnerStrategy = strategy;
-        this.TargetProperty = targetProperty;
-    }
-
-    /// <inheritdoc/>
-    public ITypeSymbol TargetType => this.InnerStrategy.TargetType;
-
-    /// <inheritdoc/>
-    public ITypeSymbol SourceType => this.InnerStrategy.SourceType;
-
     /// <summary>
     /// Gets the strategy encapsulated.
     /// </summary>
-    internal IMapStrategy InnerStrategy { get; }
+    internal MapStrategy InnerStrategy { get; } = strategy;
 
     /// <summary>
     /// Gets the optional property details.
     /// </summary>
-    internal IPropertySymbol TargetProperty { get; }
+    internal IPropertySymbol TargetProperty { get; } = targetProperty;
 
     /// <inheritdoc/>
-    public IMappaStrategyBuilder GetBuilder() => new OptionalTargetPropertyMapStrategyBuilder(this);
+    internal override IMappaStrategyBuilder GetBuilder() => new OptionalTargetPropertyMapStrategyBuilder(this);
 }

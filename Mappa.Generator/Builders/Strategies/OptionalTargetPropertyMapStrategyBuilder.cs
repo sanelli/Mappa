@@ -81,7 +81,7 @@ internal sealed class OptionalTargetPropertyMapStrategyBuilder
         return $"{source} != default";
     }
 
-    private IMapStrategy GetStrategy()
+    private MapStrategy GetStrategy()
     {
         if (this.strategy.InnerStrategy is OptionalSourcePropertyMapStrategy optionalSourcePropertyMapStrategy)
         {

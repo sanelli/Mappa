@@ -4,43 +4,26 @@
 
 using Mappa.Generator.Builders.Strategies;
 
-using Microsoft.CodeAnalysis;
-
 namespace Mappa.Generator.Models.Strategies;
 
 /// <summary>
 /// Describe a strategy for mapping between two types that uses a map method.
 /// </summary>
-internal sealed class MethodMapStrategy
-    : IMapStrategy
+/// <param name="mapMethod">The method to be used for the mapping.</param>
+/// <param name="contextParameterName">The name of the context parameter.</param>
+internal sealed class MethodMapStrategy(MapMethod mapMethod, string? contextParameterName)
+        : MapStrategy(mapMethod.TargetType, mapMethod.SourceType)
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MethodMapStrategy"/> class.
-    /// </summary>
-    /// <param name="mapMethod">The method to be used for the mapping.</param>
-    /// <param name="contextParameterName">The name of the context parameter.</param>
-    public MethodMapStrategy(MapMethod mapMethod, string? contextParameterName)
-    {
-        this.MapMethod = mapMethod;
-        this.ContextParameterName = contextParameterName;
-    }
-
-    /// <inheritdoc/>
-    public ITypeSymbol TargetType => this.MapMethod.TargetType;
-
-    /// <inheritdoc/>
-    public ITypeSymbol SourceType => this.MapMethod.SourceType;
-
     /// <summary>
     /// Gets the method used for the mapping.
     /// </summary>
-    public MapMethod MapMethod { get; }
+    public MapMethod MapMethod { get; } = mapMethod;
 
     /// <summary>
     /// Gets the name of the context parameter.
     /// </summary>
-    internal string? ContextParameterName { get; }
+    internal string? ContextParameterName { get; } = contextParameterName;
 
     /// <inheritdoc/>
-    public IMappaStrategyBuilder GetBuilder() => new MethodMapStrategyBuilder(this);
+    internal override IMappaStrategyBuilder GetBuilder() => new MethodMapStrategyBuilder(this);
 }

@@ -32,7 +32,7 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
     }
 
     /// <inheritdoc/>
-    internal override IMapStrategy GetStrategy()
+    internal override MapStrategy GetStrategy()
     {
         this.CancellationToken.ThrowIfCancellationRequested();
 

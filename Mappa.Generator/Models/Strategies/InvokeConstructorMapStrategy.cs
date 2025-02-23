@@ -11,52 +11,34 @@ namespace Mappa.Generator.Models.Strategies;
 /// <summary>
 /// Strategy used to invoke the constructor.
 /// </summary>
-internal sealed class InvokeConstructorMapStrategy
-    : IMapStrategy
+/// <param name="targetType">The source type.</param>
+/// <param name="sourceType">The target type.</param>
+/// <param name="constructor">Gets the constructor.</param>
+/// <param name="parametersMapStrategies">The strategies to be applied via constructor parameters.</param>
+/// <param name="initializerStrategies">The strategies to be applied via initializers.</param>
+internal sealed class InvokeConstructorMapStrategy(
+    ITypeSymbol targetType,
+    ITypeSymbol sourceType,
+    IMethodSymbol constructor,
+    ParameterMapStrategy[] parametersMapStrategies,
+    PropertyMapStrategy[] initializerStrategies)
+        : MapStrategy(targetType, sourceType)
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="InvokeConstructorMapStrategy"/> class.
-    /// </summary>
-    /// <param name="targetType">The source type.</param>
-    /// <param name="sourceType">The target type.</param>
-    /// <param name="constructor">Gets the constructor.</param>
-    /// <param name="parametersMapStrategies">The strategies to be applied via constructor parameters.</param>
-    /// <param name="initializerStrategies">The strategies to be applied via initializers.</param>
-    public InvokeConstructorMapStrategy(
-        ITypeSymbol targetType,
-        ITypeSymbol sourceType,
-        IMethodSymbol constructor,
-        ParameterMapStrategy[] parametersMapStrategies,
-        PropertyMapStrategy[] initializerStrategies)
-    {
-        this.TargetType = targetType;
-        this.SourceType = sourceType;
-        this.Constructor = constructor;
-        this.ParametersMapStrategies = parametersMapStrategies;
-        this.InitializerStrategies = initializerStrategies;
-    }
-
-    /// <inheritdoc/>
-    public ITypeSymbol TargetType { get; }
-
-    /// <inheritdoc/>
-    public ITypeSymbol SourceType { get; }
-
     /// <summary>
     /// Gets the constructor used.
     /// </summary>
-    public IMethodSymbol Constructor { get; private set; }
+    public IMethodSymbol Constructor { get; private set; } = constructor;
 
     /// <summary>
     /// Gets the strategies that can be applied via constructor parameters.
     /// </summary>
-    public ParameterMapStrategy[] ParametersMapStrategies { get; }
+    public ParameterMapStrategy[] ParametersMapStrategies { get; } = parametersMapStrategies;
 
     /// <summary>
     /// Gets the strategies that can be applied via initializers.
     /// </summary>
-    public PropertyMapStrategy[] InitializerStrategies { get; }
+    public PropertyMapStrategy[] InitializerStrategies { get; } = initializerStrategies;
 
     /// <inheritdoc/>
-    public IMappaStrategyBuilder GetBuilder() => new InvokeConstructorMapStrategyBuilder(this);
+    internal override IMappaStrategyBuilder GetBuilder() => new InvokeConstructorMapStrategyBuilder(this);
 }

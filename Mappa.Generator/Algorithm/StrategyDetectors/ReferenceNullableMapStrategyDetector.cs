@@ -34,7 +34,7 @@ internal sealed class ReferenceNullableMapStrategyDetector
     }
 
     /// <inheritdoc/>
-    public bool TryDetect(out IMapStrategy mapStrategy)
+    public bool TryDetect(out MapStrategy mapStrategy)
     {
         mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
 
@@ -77,7 +77,7 @@ internal sealed class ReferenceNullableMapStrategyDetector
         return mapStrategy is not NoMapStrategy;
     }
 
-    private bool CanMapReferenceToReferenceWhenNullableIsEnabled(out IMapStrategy mapStrategy)
+    private bool CanMapReferenceToReferenceWhenNullableIsEnabled(out MapStrategy mapStrategy)
     {
         mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
 
@@ -92,7 +92,7 @@ internal sealed class ReferenceNullableMapStrategyDetector
         return isSourceNullable && isTargetNullable && this.TryGetStrategyWithReferenceNullableDisabled(out mapStrategy);
     }
 
-    private bool CanMapReferenceNullableToReferenceNullable(out IMapStrategy mapStrategy)
+    private bool CanMapReferenceNullableToReferenceNullable(out MapStrategy mapStrategy)
     {
         mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
 
@@ -102,7 +102,7 @@ internal sealed class ReferenceNullableMapStrategyDetector
         return isSourceNullable && isTargetNullable && this.TryGetStrategyWithReferenceNullableDisabled(out mapStrategy);
     }
 
-    private bool CanMapFromReferenceNullable(out IMapStrategy mapStrategy)
+    private bool CanMapFromReferenceNullable(out MapStrategy mapStrategy)
     {
         mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
 
@@ -111,7 +111,7 @@ internal sealed class ReferenceNullableMapStrategyDetector
         return isSourceNullable && this.TryGetStrategyWithReferenceNullableDisabled(out mapStrategy);
     }
 
-    private bool CanMapToReferenceNullable(out IMapStrategy mapStrategy)
+    private bool CanMapToReferenceNullable(out MapStrategy mapStrategy)
     {
         mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
 
@@ -120,7 +120,7 @@ internal sealed class ReferenceNullableMapStrategyDetector
         return isTargetNullable && this.TryGetStrategyWithReferenceNullableDisabled(out mapStrategy);
     }
 
-    private bool TryGetStrategyWithReferenceNullableDisabled(out IMapStrategy elementStrategy)
+    private bool TryGetStrategyWithReferenceNullableDisabled(out MapStrategy elementStrategy)
     {
         var derivedContext = new DerivedMappaMapAlgorithmContext(
             this.context,

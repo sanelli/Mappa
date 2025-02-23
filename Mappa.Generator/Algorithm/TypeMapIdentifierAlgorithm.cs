@@ -53,7 +53,7 @@ internal class TypeMapIdentifierAlgorithm
     /// <see cref="MappaMapAlgorithmContext.TargetType"/>.
     /// </summary>
     /// <returns>The strategy computed.</returns>
-    internal virtual IMapStrategy GetStrategy()
+    internal virtual MapStrategy GetStrategy()
     {
         IMapStrategyDetector[] detectors = [
 

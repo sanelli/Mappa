@@ -11,36 +11,20 @@ namespace Mappa.Generator.Models.Strategies;
 /// <summary>
 /// Strategy to mup a tuple to another tuple.
 /// </summary>
-internal sealed class TupleToTupleMapStrategy
-    : IMapStrategy
+/// <param name="targetType">The target type.</param>
+/// <param name="sourceType">The source ty[e.</param>
+/// <param name="elementStrategies">The strategies for each element of the tuple.</param>
+internal sealed class TupleToTupleMapStrategy(
+    ITypeSymbol targetType,
+    ITypeSymbol sourceType,
+    MapStrategy[] elementStrategies)
+        : MapStrategy(targetType, sourceType)
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="TupleToTupleMapStrategy"/> class.
-    /// </summary>
-    /// <param name="targetType">The target type.</param>
-    /// <param name="sourceType">The source ty[e.</param>
-    /// <param name="elementStrategies">The strategies for each element of the tuple.</param>
-    public TupleToTupleMapStrategy(
-        ITypeSymbol targetType,
-        ITypeSymbol sourceType,
-        IMapStrategy[] elementStrategies)
-    {
-        this.TargetType = targetType;
-        this.SourceType = sourceType;
-        this.ElementStrategies = elementStrategies;
-    }
-
-    /// <inheritdoc/>
-    public ITypeSymbol TargetType { get; }
-
-    /// <inheritdoc/>
-    public ITypeSymbol SourceType { get; }
-
     /// <summary>
     /// Gets the strategies for each element of the tuple.
     /// </summary>
-    public IMapStrategy[] ElementStrategies { get; }
+    public MapStrategy[] ElementStrategies { get; } = elementStrategies;
 
     /// <inheritdoc/>
-    public IMappaStrategyBuilder GetBuilder() => new TupleToTupleMapStrategyBuilder(this);
+    internal override IMappaStrategyBuilder GetBuilder() => new TupleToTupleMapStrategyBuilder(this);
 }

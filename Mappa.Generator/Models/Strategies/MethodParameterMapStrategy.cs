@@ -4,36 +4,20 @@
 
 using Mappa.Generator.Builders.Strategies;
 
-using Microsoft.CodeAnalysis;
-
 namespace Mappa.Generator.Models.Strategies;
 
 /// <summary>
 /// Strategy to map the source parameter of a method using a specific strategy.
 /// </summary>
-internal sealed class MethodParameterMapStrategy
-    : IMapStrategy
+/// <param name="strategy">The strategy to be used for mapping the method parameter.</param>
+internal sealed class MethodParameterMapStrategy(MapStrategy strategy)
+        : MapStrategy(strategy.TargetType, strategy.SourceType)
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MethodParameterMapStrategy"/> class.
-    /// </summary>
-    /// <param name="strategy">The strategy to be used for mapping the method parameter.</param>
-    public MethodParameterMapStrategy(IMapStrategy strategy)
-    {
-        this.Strategy = strategy;
-    }
-
-    /// <inheritdoc/>
-    public ITypeSymbol TargetType => this.Strategy.TargetType;
-
-    /// <inheritdoc/>
-    public ITypeSymbol SourceType => this.Strategy.SourceType;
-
     /// <summary>
     /// Gets the strategy to be used to map the method.
     /// </summary>
-    internal IMapStrategy Strategy { get; }
+    internal MapStrategy Strategy { get; } = strategy;
 
     /// <inheritdoc/>
-    public IMappaStrategyBuilder GetBuilder() => new MethodParameterMapStrategyBuilder(this);
+    internal override IMappaStrategyBuilder GetBuilder() => new MethodParameterMapStrategyBuilder(this);
 }

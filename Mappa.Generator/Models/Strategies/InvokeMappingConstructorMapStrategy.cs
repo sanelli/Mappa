@@ -11,44 +11,27 @@ namespace Mappa.Generator.Models.Strategies;
 /// <summary>
 /// Strategy used when invoking the mapping constructor of a class.
 /// </summary>
-internal sealed class InvokeMappingConstructorMapStrategy
-    : IMapStrategy
+/// <param name="targetType">The target type.</param>
+/// <param name="sourceType">The source type.</param>
+/// <param name="constructor">The constructor.</param>
+/// <param name="argumentStrategy">The argument strategy.</param>
+internal sealed class InvokeMappingConstructorMapStrategy(
+    ITypeSymbol targetType,
+    ITypeSymbol sourceType,
+    IMethodSymbol constructor,
+    MapStrategy argumentStrategy)
+        : MapStrategy(targetType, sourceType)
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="InvokeMappingConstructorMapStrategy"/> class.
-    /// </summary>
-    /// <param name="targetType">The target type.</param>
-    /// <param name="sourceType">The source type.</param>
-    /// <param name="constructor">The constructor.</param>
-    /// <param name="argumentStrategy">The argument strategy.</param>
-    public InvokeMappingConstructorMapStrategy(
-        ITypeSymbol targetType,
-        ITypeSymbol sourceType,
-        IMethodSymbol constructor,
-        IMapStrategy argumentStrategy)
-    {
-        this.TargetType = targetType;
-        this.SourceType = sourceType;
-        this.Constructor = constructor;
-        this.ArgumentStrategy = argumentStrategy;
-    }
-
-    /// <inheritdoc/>
-    public ITypeSymbol TargetType { get; }
-
-    /// <inheritdoc/>
-    public ITypeSymbol SourceType { get; }
-
     /// <summary>
     /// Gets the constructor to be used.
     /// </summary>
-    public IMethodSymbol Constructor { get; }
+    public IMethodSymbol Constructor { get; } = constructor;
 
     /// <summary>
     /// Gets the strategy for the parameter.
     /// </summary>
-    public IMapStrategy ArgumentStrategy { get; }
+    public MapStrategy ArgumentStrategy { get; } = argumentStrategy;
 
     /// <inheritdoc/>
-    public IMappaStrategyBuilder GetBuilder() => new InvokeMappingConstructorMapStrategyBuilder(this);
+    internal override IMappaStrategyBuilder GetBuilder() => new InvokeMappingConstructorMapStrategyBuilder(this);
 }

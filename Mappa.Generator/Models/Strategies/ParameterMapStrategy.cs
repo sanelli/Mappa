@@ -11,43 +11,27 @@ namespace Mappa.Generator.Models.Strategies;
 /// <summary>
 /// Describe a strategy to map a property into a parameter.
 /// </summary>
-internal sealed class ParameterMapStrategy
-    : IMapStrategy
+/// <param name="targetParameter">The target parameter.</param>
+/// <param name="sourceProperty">The source property.</param>
+/// <param name="parameterStrategy">The strategy to map from source to target.</param>
+internal sealed class ParameterMapStrategy(IParameterSymbol targetParameter, IPropertySymbol? sourceProperty, MapStrategy parameterStrategy)
+    : MapStrategy(targetParameter.Type, sourceProperty?.Type ?? null!)
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ParameterMapStrategy"/> class.
-    /// </summary>
-    /// <param name="targetParameter">The target parameter.</param>
-    /// <param name="sourceProperty">The source property.</param>
-    /// <param name="parameterStrategy">The strategy to map from source to target.</param>
-    public ParameterMapStrategy(IParameterSymbol targetParameter, IPropertySymbol? sourceProperty, IMapStrategy parameterStrategy)
-    {
-        this.TargetParameter = targetParameter;
-        this.SourceProperty = sourceProperty;
-        this.ParameterStrategy = parameterStrategy;
-    }
-
     /// <summary>
     /// Gets the target parameter.
     /// </summary>
-    public IParameterSymbol TargetParameter { get; }
+    internal IParameterSymbol TargetParameter { get; } = targetParameter;
 
     /// <summary>
     /// Gets the source property.
     /// </summary>
-    public IPropertySymbol? SourceProperty { get; }
+    internal IPropertySymbol? SourceProperty { get; } = sourceProperty;
 
     /// <summary>
     /// Gets the mapping strategy.
     /// </summary>
-    public IMapStrategy ParameterStrategy { get; }
+    internal MapStrategy ParameterStrategy { get; } = parameterStrategy;
 
     /// <inheritdoc/>
-    public ITypeSymbol TargetType => this.TargetParameter.Type;
-
-    /// <inheritdoc/>
-    public ITypeSymbol SourceType => this.SourceProperty?.Type ?? throw new InvalidOperationException();
-
-    /// <inheritdoc/>
-    public IMappaStrategyBuilder GetBuilder() => new ParameterMapStrategyBuilder(this);
+    internal override IMappaStrategyBuilder GetBuilder() => new ParameterMapStrategyBuilder(this);
 }
