@@ -2243,7 +2243,7 @@ public sealed class OptionalStrategyIntegrationTests
     /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
-    public async Task CanMapWithTargetOptionalDefaultSettingsTargetingConstructorWithParameterAndCustomMapping()
+    public async Task CanMapWithTargetOptionalDefaultSettingsTargetingConstructorWithParameter()
     {
         // Arrange
         const string sourceCode = """
@@ -2331,10 +2331,518 @@ public sealed class OptionalStrategyIntegrationTests
                 });
     }
 
-    // TODO [#48] Test with optional enabled on class targeting optional property with mapping user defined via attribute.
-    // TODO [#48] Test with optional enabled on method targeting optional property with mapping user defined via attribute.
-    // TODO [#48] Test with optional enabled on method overriding on class targeting optional property with mapping user defined via attribute.
-    // TODO [#48] Test with optional enabled on class targeting optional property with mapping user defined via attribute (method invokation does not have any input parameter in order to test the missing source).
-    // TODO [#48] Test with optional enabled and source is optional and target is optional.
-    // TODO [#48] Test with nested struct/classes.
+    /// <summary>
+    /// Test a mapping can be created when target property is optional and:
+    /// - when optional is present on the target;
+    /// - optional is enabled on class;
+    /// - when the mapping uses a custom mapping method via <see cref="MappaInvokeMethodAttribute"/>;
+    /// - when the mapping happens from source to property.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapWithTargetOptionalEnabledOnClassTargetingConstructorWithParameterAndCustomMapping()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class Source
+                                  {
+                                      public int PropertyA { get; set; }
+                                  }
+
+                                  public class Target
+                                  {
+                                      public bool HasPropertyA { get; set; }
+                                      public int PropertyA { get; set; }
+                                  }
+
+                                  [Mappa]
+                                  [MappaSettings(Optional = BooleanSetting.Enable)]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaInvokeMethod(nameof(Target.PropertyA), nameof(Increment))]
+                                      public partial Target Map(Source input);
+                                      
+                                      [MappaIgnore]
+                                      private int Increment(int x)
+                                      {
+                                         return x + 1;
+                                      } 
+                                  }
+                                  #nullable restore
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                NullableAnnotation.NotAnnotated,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(4)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                "__mappa_tmp_1",
+                                initializationAssertions => initializationAssertions.BeObjectCreationExpressionSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.Target"));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(int).ToString(),
+                                "__mappa_tmp_2",
+                                initializationAssertions => initializationAssertions.BeMemberAccessExpressionSyntax("input.PropertyA"));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeIfStatementSyntax(
+                                conditionAssertions => conditionAssertions.BeBinaryExpressionSyntax(
+                                    leftExpression => leftExpression.BeIdentifierNameSyntax("__mappa_tmp_2"),
+                                    SyntaxKind.ExclamationEqualsToken,
+                                    rightExpression => rightExpression.BeDefaultLiteralExpressionSyntax()),
+                                thenStatementAssertions =>
+                                {
+                                    thenStatementAssertions
+                                        .IsBlockStatement()
+                                        .AsBlock()
+                                        .HasSyntaxNodesCount(2)
+                                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeLocalDeclarationStatementSyntax(
+                                            typeof(int).ToString(),
+                                            "__mappa_tmp_3",
+                                            initializationAssertions => initializationAssertions.BeInvocationExpressionSyntax("this.Increment", argument => argument.BeIdentifierNameSyntax("__mappa_tmp_2"))))
+                                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeAssignmentExpressionStatement(
+                                            leftExpression => leftExpression.BeMemberAccessExpressionSyntax("__mappa_tmp_1.PropertyA"),
+                                            rightExpression => rightExpression.BeIdentifierNameSyntax("__mappa_tmp_3")));
+                                });
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_1"));
+                        });
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping can be created when target property is optional and:
+    /// - when optional is present on the target;
+    /// - optional is enabled on method;
+    /// - when the mapping uses a custom mapping method via <see cref="MappaInvokeMethodAttribute"/>;
+    /// - when the mapping happens from source to property.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapWithTargetOptionalEnabledOnMethodTargetingConstructorWithParameterAndCustomMapping()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class Source
+                                  {
+                                      public int PropertyA { get; set; }
+                                  }
+
+                                  public class Target
+                                  {
+                                      public bool HasPropertyA { get; set; }
+                                      public int PropertyA { get; set; }
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaInvokeMethod(nameof(Target.PropertyA), nameof(Increment))]
+                                      [MappaSettings(Optional = BooleanSetting.Enable)]
+                                      public partial Target Map(Source input);
+                                      
+                                      [MappaIgnore]
+                                      private int Increment(int x)
+                                      {
+                                         return x + 1;
+                                      } 
+                                  }
+                                  #nullable restore
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                NullableAnnotation.NotAnnotated,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(4)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                "__mappa_tmp_1",
+                                initializationAssertions => initializationAssertions.BeObjectCreationExpressionSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.Target"));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(int).ToString(),
+                                "__mappa_tmp_2",
+                                initializationAssertions => initializationAssertions.BeMemberAccessExpressionSyntax("input.PropertyA"));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeIfStatementSyntax(
+                                conditionAssertions => conditionAssertions.BeBinaryExpressionSyntax(
+                                    leftExpression => leftExpression.BeIdentifierNameSyntax("__mappa_tmp_2"),
+                                    SyntaxKind.ExclamationEqualsToken,
+                                    rightExpression => rightExpression.BeDefaultLiteralExpressionSyntax()),
+                                thenStatementAssertions =>
+                                {
+                                    thenStatementAssertions
+                                        .IsBlockStatement()
+                                        .AsBlock()
+                                        .HasSyntaxNodesCount(2)
+                                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeLocalDeclarationStatementSyntax(
+                                            typeof(int).ToString(),
+                                            "__mappa_tmp_3",
+                                            initializationAssertions => initializationAssertions.BeInvocationExpressionSyntax("this.Increment", argument => argument.BeIdentifierNameSyntax("__mappa_tmp_2"))))
+                                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeAssignmentExpressionStatement(
+                                            leftExpression => leftExpression.BeMemberAccessExpressionSyntax("__mappa_tmp_1.PropertyA"),
+                                            rightExpression => rightExpression.BeIdentifierNameSyntax("__mappa_tmp_3")));
+                                });
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_1"));
+                        });
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping can be created when target property is optional and:
+    /// - when optional is present on the target;
+    /// - optional is enabled on method overriding class;
+    /// - when the mapping uses a custom mapping method via <see cref="MappaInvokeMethodAttribute"/>;
+    /// - when the mapping happens from source to property.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapWithTargetOptionalEnabledOnMethodOverridingClassTargetingConstructorWithParameterAndCustomMapping()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class Source
+                                  {
+                                      public int PropertyA { get; set; }
+                                  }
+
+                                  public class Target
+                                  {
+                                      public bool HasPropertyA { get; set; }
+                                      public int PropertyA { get; set; }
+                                  }
+
+                                  [Mappa]
+                                  [MappaSettings(Optional = BooleanSetting.Disable)]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaInvokeMethod(nameof(Target.PropertyA), nameof(Increment))]
+                                      [MappaSettings(Optional = BooleanSetting.Enable)]
+                                      public partial Target Map(Source input);
+                                      
+                                      [MappaIgnore]
+                                      private int Increment(int x)
+                                      {
+                                         return x + 1;
+                                      } 
+                                  }
+                                  #nullable restore
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                NullableAnnotation.NotAnnotated,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(4)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                "__mappa_tmp_1",
+                                initializationAssertions => initializationAssertions.BeObjectCreationExpressionSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.Target"));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(int).ToString(),
+                                "__mappa_tmp_2",
+                                initializationAssertions => initializationAssertions.BeMemberAccessExpressionSyntax("input.PropertyA"));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeIfStatementSyntax(
+                                conditionAssertions => conditionAssertions.BeBinaryExpressionSyntax(
+                                    leftExpression => leftExpression.BeIdentifierNameSyntax("__mappa_tmp_2"),
+                                    SyntaxKind.ExclamationEqualsToken,
+                                    rightExpression => rightExpression.BeDefaultLiteralExpressionSyntax()),
+                                thenStatementAssertions =>
+                                {
+                                    thenStatementAssertions
+                                        .IsBlockStatement()
+                                        .AsBlock()
+                                        .HasSyntaxNodesCount(2)
+                                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeLocalDeclarationStatementSyntax(
+                                            typeof(int).ToString(),
+                                            "__mappa_tmp_3",
+                                            initializationAssertions => initializationAssertions.BeInvocationExpressionSyntax("this.Increment", argument => argument.BeIdentifierNameSyntax("__mappa_tmp_2"))))
+                                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeAssignmentExpressionStatement(
+                                            leftExpression => leftExpression.BeMemberAccessExpressionSyntax("__mappa_tmp_1.PropertyA"),
+                                            rightExpression => rightExpression.BeIdentifierNameSyntax("__mappa_tmp_3")));
+                                });
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_1"));
+                        });
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping can be created when target property is optional and:
+    /// - when optional is present on the target;
+    /// - optional is enabled on method;
+    /// - when the mapping uses a custom mapping method via <see cref="MappaInvokeMethodAttribute"/> that does not require an input parameter;
+    /// - when the mapping happens from source to property.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapWithTargetOptionalEnabledOnMethodTargetingConstructorWithParameterAndCustomMappingWithoutInputProperty()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class Source
+                                  {
+                                      public int PropertyB { get; set; }
+                                  }
+
+                                  public class Target
+                                  {
+                                      public bool HasPropertyA { get; set; }
+                                      public int PropertyA { get; set; }
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaInvokeMethod(nameof(Target.PropertyA), nameof(Increment))]
+                                      [MappaSettings(Optional = BooleanSetting.Enable)]
+                                      public partial Target Map(Source input);
+                                      
+                                      [MappaIgnore]
+                                      private int Increment()
+                                      {
+                                         return 1;
+                                      } 
+                                  }
+                                  #nullable restore
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                NullableAnnotation.NotAnnotated,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(4)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                "__mappa_tmp_1",
+                                initializationAssertions => initializationAssertions.BeObjectCreationExpressionSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.Target"));
+                        })
+                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeLocalDeclarationStatementSyntax(
+                            typeof(int).ToString(),
+                            "__mappa_tmp_2",
+                            initializationAssertions => initializationAssertions.BeInvocationExpressionSyntax("this.Increment")))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeIfStatementSyntax(
+                                conditionAssertions => conditionAssertions.BeBinaryExpressionSyntax(
+                                    leftExpression => leftExpression.BeIdentifierNameSyntax("__mappa_tmp_2"),
+                                    SyntaxKind.ExclamationEqualsToken,
+                                    rightExpression => rightExpression.BeDefaultLiteralExpressionSyntax()),
+                                thenStatementAssertions =>
+                                {
+                                    thenStatementAssertions
+                                        .IsBlockStatement()
+                                        .AsBlock()
+                                        .HasSyntaxNodesCount(1)
+
+                                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeAssignmentExpressionStatement(
+                                            leftExpression => leftExpression.BeMemberAccessExpressionSyntax("__mappa_tmp_1.PropertyA"),
+                                            rightExpression => rightExpression.BeIdentifierNameSyntax("__mappa_tmp_2")));
+                                });
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_1"));
+                        });
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping can be created when target property is optional and:
+    /// - when optional is present on the source and on the target
+    /// - when the mapping happens from source to property.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapWithSourceAndTargetOptionalEnabled()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class Source
+                                  {
+                                      public bool HasPropertyA { get; set; }
+                                      public int PropertyA { get; set; }
+                                  }
+
+                                  public class Target
+                                  {
+                                      public bool HasPropertyA { get; set; }
+                                      public int PropertyA { get; set; }
+                                  }
+
+                                  [Mappa]
+                                  [MappaSettings(Optional = BooleanSetting.Enable)]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial Target Map(Source input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                NullableAnnotation.NotAnnotated,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(4)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                "__mappa_tmp_1",
+                                initializationAssertions => initializationAssertions.BeObjectCreationExpressionSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.Target"));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(int).ToString(),
+                                "__mappa_tmp_2",
+                                initializationAssertions => initializationAssertions.BeMemberAccessExpressionSyntax("input.PropertyA"));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeIfStatementSyntax(
+                                conditionAssertions => conditionAssertions.BeMemberAccessExpressionSyntax("input.HasPropertyA"),
+                                thenStatementAssertions =>
+                                {
+                                    thenStatementAssertions
+                                        .IsBlockStatement()
+                                        .AsBlock()
+                                        .HasSyntaxNodesCount(1)
+                                        .HasNextSyntaxNode(statementAssertions => statementAssertions.BeAssignmentExpressionStatement(
+                                            leftExpressionAssertions => leftExpressionAssertions.BeMemberAccessExpressionSyntax("__mappa_tmp_1.PropertyA"),
+                                            rightExpressionAssertions => rightExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_2")));
+                                });
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_1"));
+                        });
+                });
+    }
 }

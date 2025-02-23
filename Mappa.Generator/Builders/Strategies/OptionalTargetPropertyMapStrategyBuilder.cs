@@ -57,7 +57,7 @@ internal sealed class OptionalTargetPropertyMapStrategyBuilder
             builder.AppendLine($"if ({this.GetCondition(source, context)})");
             using (builder.CurlyBracesBlock())
             {
-                var (innerStrategyVariableName, innerStrategyCode) = this.strategy.InnerStrategy.GetBuilder().BuildSource(source, context, mappaGlobalOptions);
+                var (innerStrategyVariableName, innerStrategyCode) = this.GetStrategy().GetBuilder().BuildSource(source, context, mappaGlobalOptions);
                 if (!string.IsNullOrWhiteSpace(innerStrategyCode))
                 {
                     builder.AppendLine(innerStrategyCode);
@@ -79,5 +79,15 @@ internal sealed class OptionalTargetPropertyMapStrategyBuilder
         }
 
         return $"{source} != default";
+    }
+
+    private IMapStrategy GetStrategy()
+    {
+        if (this.strategy.InnerStrategy is OptionalSourcePropertyMapStrategy optionalSourcePropertyMapStrategy)
+        {
+            return optionalSourcePropertyMapStrategy.InnerStrategy;
+        }
+
+        return this.strategy.InnerStrategy;
     }
 }

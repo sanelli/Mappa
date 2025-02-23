@@ -357,6 +357,13 @@ internal sealed class ConstructorMapStrategyDetector
 
                 // Match target property with a source property.
                 var initializerStrategies = targetProperties
+
+                    // Remove all the optional identifier properties from the list
+                    // when the optional setting is enabled.
+                    .Where(targetProperty => this.context.MappaUserSettings.Optional is not BooleanSetting.Enable
+                                             || targetProperties.All(otherProperty => !targetProperty.Name.Equals($"Has{otherProperty.Name}", StringComparison.Ordinal)))
+
+                    // Look up for mapping
                     .Select(
                         targetProperty =>
                         {
