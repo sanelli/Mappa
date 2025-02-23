@@ -13,6 +13,9 @@ internal sealed class CaseSwitchLabelSyntaxAssertions
     : ObjectAssertions<CaseSwitchLabelSyntax, CaseSwitchLabelSyntaxAssertions>,
         ISwitchLabelSyntaxAssertions
 {
+    private readonly SemanticModel semanticModel;
+    private readonly Compilation compilation;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="CaseSwitchLabelSyntaxAssertions"/> class.
     /// </summary>
@@ -25,19 +28,9 @@ internal sealed class CaseSwitchLabelSyntaxAssertions
         Compilation compilation)
         : base(value, FluentAssertions.Execution.AssertionChain.GetOrCreate())
     {
-        this.SemanticModel = semanticModel;
-        this.Compilation = compilation;
+        this.semanticModel = semanticModel;
+        this.compilation = compilation;
     }
-
-    /// <summary>
-    /// Gets the semantic model.
-    /// </summary>
-    public SemanticModel SemanticModel { get; }
-
-    /// <summary>
-    /// Gets the compilation.
-    /// </summary>
-    public Compilation Compilation { get; }
 
     /// <summary>
     /// Assert that the syntax is a case.
@@ -67,7 +60,7 @@ internal sealed class CaseSwitchLabelSyntaxAssertions
     public CaseSwitchLabelSyntaxAssertions HasValue(Action<ExpressionSyntaxAssertions> assert)
     {
         ArgumentNullException.ThrowIfNull(assert);
-        assert(new ExpressionSyntaxAssertions(this.Subject.Value, this.SemanticModel, this.Compilation));
+        assert(new ExpressionSyntaxAssertions(this.Subject.Value, this.semanticModel, this.compilation));
         return this;
     }
 }

@@ -15,6 +15,9 @@ namespace Mappa.Generator.Tests.Assertions;
 internal sealed class SyntaxNodeAssertions
     : ObjectAssertions<SyntaxNode, SyntaxNodeAssertions>
 {
+    private readonly SemanticModel semanticModel;
+    private readonly Compilation compilation;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="SyntaxNodeAssertions"/> class.
     /// </summary>
@@ -27,19 +30,9 @@ internal sealed class SyntaxNodeAssertions
         Compilation compilation)
         : base(value, FluentAssertions.Execution.AssertionChain.GetOrCreate())
     {
-        this.SemanticModel = semanticModel;
-        this.Compilation = compilation;
+        this.semanticModel = semanticModel;
+        this.compilation = compilation;
     }
-
-    /// <summary>
-    /// Gets the semantic model.
-    /// </summary>
-    private SemanticModel SemanticModel { get; }
-
-    /// <summary>
-    /// Gets the compilation.
-    /// </summary>
-    private Compilation Compilation { get; }
 
     /// <summary>
     /// Assert that the syntax node is a return statement.
@@ -53,7 +46,7 @@ internal sealed class SyntaxNodeAssertions
         if (expressionAssertion is not null)
         {
             returnStatement.Expression.Should().NotBeNull();
-            expressionAssertion(new ExpressionSyntaxAssertions(returnStatement.Expression!, this.SemanticModel, this.Compilation));
+            expressionAssertion(new ExpressionSyntaxAssertions(returnStatement.Expression!, this.semanticModel, this.compilation));
         }
 
         return this;
@@ -77,7 +70,7 @@ internal sealed class SyntaxNodeAssertions
     /// <param name="assertInitialization">Assert the initialization expression.</param>
     /// <returns>The assertion.</returns>
     public SyntaxNodeAssertions BeLocalDeclarationStatementSyntax(string type, string name, Action<ExpressionSyntaxAssertions> assertInitialization)
-        => this.BeLocalDeclarationStatementSyntax(type, new[] { name }, new[] { assertInitialization });
+        => this.BeLocalDeclarationStatementSyntax(type, [name], [assertInitialization]);
 
     /// <summary>
     /// Validate that the syntax node is a variable declaration syntax.
@@ -110,23 +103,26 @@ internal sealed class SyntaxNodeAssertions
         var isTypeNullable = type.EndsWith('?');
         type = type.Replace("?", string.Empty, StringComparison.Ordinal);
 
-        var expectedType = this.Compilation.GetTypeSymbol(type);
-        var localSymbol = this.SemanticModel.GetDeclaredSymbol(localDeclarationStatementSyntax.Declaration.Variables[0]) as ILocalSymbol;
+        var expectedType = this.compilation.GetTypeSymbol(type);
+        var localSymbol = this.semanticModel.GetDeclaredSymbol(localDeclarationStatementSyntax.Declaration.Variables[0]) as ILocalSymbol;
 
         localSymbol.Should().NotBeNull();
 
         SymbolEqualityComparer
             .Default
-            .Equals(localSymbol!.Type, expectedType)
+            .Equals(localSymbol.Type, expectedType)
             .Should().BeTrue();
 
-        if (isTypeNullable)
+        if (expectedType.IsReferenceType)
         {
-            localSymbol.NullableAnnotation.Should().Be(NullableAnnotation.Annotated);
-        }
-        else
-        {
-            localSymbol.NullableAnnotation.Should().BeOneOf([NullableAnnotation.None, NullableAnnotation.NotAnnotated]);
+            if (isTypeNullable)
+            {
+                localSymbol.NullableAnnotation.Should().Be(NullableAnnotation.Annotated);
+            }
+            else
+            {
+                localSymbol.NullableAnnotation.Should().BeOneOf([NullableAnnotation.None, NullableAnnotation.NotAnnotated]);
+            }
         }
 
         if (assertInitializations is null)
@@ -142,7 +138,7 @@ internal sealed class SyntaxNodeAssertions
             {
                 localDeclarationStatementSyntax.Declaration.Variables[index].Initializer.Should().NotBeNull();
                 var initializer = localDeclarationStatementSyntax.Declaration.Variables[index].Initializer!;
-                assertInitializations[index](new ExpressionSyntaxAssertions(initializer.Value, this.SemanticModel, this.Compilation));
+                assertInitializations[index](new ExpressionSyntaxAssertions(initializer.Value, this.semanticModel, this.compilation));
             }
         }
 
@@ -164,7 +160,7 @@ internal sealed class SyntaxNodeAssertions
 
         this.Subject.Should().BeOfType<SwitchStatementSyntax>();
         var switchStatementSyntax = (SwitchStatementSyntax)this.Subject;
-        assertExpression(new ExpressionSyntaxAssertions(switchStatementSyntax.Expression, this.SemanticModel, this.Compilation));
+        assertExpression(new ExpressionSyntaxAssertions(switchStatementSyntax.Expression, this.semanticModel, this.compilation));
 
         var caseStatements = switchStatementSyntax
             .ChildNodes()
@@ -177,8 +173,8 @@ internal sealed class SyntaxNodeAssertions
             caseStatements[index].Should().BeOfType<SwitchSectionSyntax>();
             var switchSectionSyntax = (SwitchSectionSyntax)caseStatements[index];
 
-            var labelAssertions = switchSectionSyntax.Labels.ToAssertions(this.SemanticModel, this.Compilation);
-            var statementAssertions = switchSectionSyntax.Statements.ToAssertions(this.SemanticModel, this.Compilation);
+            var labelAssertions = switchSectionSyntax.Labels.ToAssertions(this.semanticModel, this.compilation);
+            var statementAssertions = switchSectionSyntax.Statements.ToAssertions(this.semanticModel, this.compilation);
 
             assertCase[index](labelAssertions, statementAssertions);
         }
@@ -227,8 +223,8 @@ internal sealed class SyntaxNodeAssertions
         expressionStatementSyntax.Expression.Should().BeOfType<AssignmentExpressionSyntax>();
         var assignmentExpressionSyntax = (AssignmentExpressionSyntax)expressionStatementSyntax.Expression;
 
-        leftExpressionAssertions(new ExpressionSyntaxAssertions(assignmentExpressionSyntax.Left, this.SemanticModel, this.Compilation));
-        rightExpressionAssertions(new ExpressionSyntaxAssertions(assignmentExpressionSyntax.Right, this.SemanticModel, this.Compilation));
+        leftExpressionAssertions(new ExpressionSyntaxAssertions(assignmentExpressionSyntax.Left, this.semanticModel, this.compilation));
+        rightExpressionAssertions(new ExpressionSyntaxAssertions(assignmentExpressionSyntax.Right, this.semanticModel, this.compilation));
 
         return this;
     }
@@ -255,7 +251,7 @@ internal sealed class SyntaxNodeAssertions
 
         for (int index = 0; index < parameterAssertions.Length; ++index)
         {
-            parameterAssertions[index](new ExpressionSyntaxAssertions(objectCreationExpressionSyntax.ArgumentList!.Arguments[index].Expression, this.SemanticModel, this.Compilation));
+            parameterAssertions[index](new ExpressionSyntaxAssertions(objectCreationExpressionSyntax.ArgumentList!.Arguments[index].Expression, this.semanticModel, this.compilation));
         }
 
         return this;
@@ -277,7 +273,7 @@ internal sealed class SyntaxNodeAssertions
         => this.BeForStatementSyntax(
             declarationAssertion,
             conditionAssertion,
-            incrementorAssertion is null ? null : new[] { incrementorAssertion },
+            incrementorAssertion is null ? null : [incrementorAssertion],
             statementAssertion);
 
     /// <summary>
@@ -306,7 +302,7 @@ internal sealed class SyntaxNodeAssertions
         else
         {
             forStatementSyntax.Declaration.Should().NotBeNull();
-            declarationAssertion(new VariableDeclarationSyntaxAssertions(forStatementSyntax.Declaration!, this.SemanticModel, this.Compilation));
+            declarationAssertion(new VariableDeclarationSyntaxAssertions(forStatementSyntax.Declaration!, this.semanticModel, this.compilation));
         }
 
         if (conditionAssertion is null)
@@ -316,7 +312,7 @@ internal sealed class SyntaxNodeAssertions
         else
         {
             forStatementSyntax.Condition.Should().NotBeNull();
-            conditionAssertion(new ExpressionSyntaxAssertions(forStatementSyntax.Condition!, this.SemanticModel, this.Compilation));
+            conditionAssertion(new ExpressionSyntaxAssertions(forStatementSyntax.Condition!, this.semanticModel, this.compilation));
         }
 
         if (incrementorAssertions is null)
@@ -330,11 +326,11 @@ internal sealed class SyntaxNodeAssertions
 
             for (int index = 0; index < incrementorAssertions.Length; ++index)
             {
-                incrementorAssertions[index](new ExpressionSyntaxAssertions(forStatementSyntax.Incrementors[index], this.SemanticModel, this.Compilation));
+                incrementorAssertions[index](new ExpressionSyntaxAssertions(forStatementSyntax.Incrementors[index], this.semanticModel, this.compilation));
             }
         }
 
-        statementAssertion(forStatementSyntax.Statement.ToAssertion(this.SemanticModel, this.Compilation));
+        statementAssertion(forStatementSyntax.Statement.ToAssertion(this.semanticModel, this.compilation));
 
         return this;
     }
@@ -358,13 +354,13 @@ internal sealed class SyntaxNodeAssertions
         expressionStatementSyntax.Expression.Should().BeOfType<InvocationExpressionSyntax>();
         var invocationExpressionSyntax = (InvocationExpressionSyntax)expressionStatementSyntax.Expression;
 
-        new ExpressionSyntaxAssertions(invocationExpressionSyntax.Expression, this.SemanticModel, this.Compilation)
+        new ExpressionSyntaxAssertions(invocationExpressionSyntax.Expression, this.semanticModel, this.compilation)
             .BeMemberAccessExpressionSyntax(accessIdentifier);
 
         invocationExpressionSyntax.ArgumentList.Arguments.Should().HaveCount(argumentExpressionAssertions.Length);
         for (int index = 0; index < argumentExpressionAssertions.Length; ++index)
         {
-            argumentExpressionAssertions[index](new ExpressionSyntaxAssertions(invocationExpressionSyntax.ArgumentList.Arguments[index].Expression, this.SemanticModel, this.Compilation));
+            argumentExpressionAssertions[index](new ExpressionSyntaxAssertions(invocationExpressionSyntax.ArgumentList.Arguments[index].Expression, this.semanticModel, this.compilation));
         }
 
         return this;
@@ -392,8 +388,8 @@ internal sealed class SyntaxNodeAssertions
         this.Subject.Should().BeOfType<ForEachStatementSyntax>();
         var forEachStatementSyntax = (ForEachStatementSyntax)this.Subject;
 
-        var expectedType = this.Compilation.GetTypeSymbol(forEachStatementSyntax.Type.ToString());
-        var actualType = this.Compilation.GetTypeSymbol(forEachStatementSyntax.Type.ToString());
+        var expectedType = this.compilation.GetTypeSymbol(forEachStatementSyntax.Type.ToString());
+        var actualType = this.compilation.GetTypeSymbol(forEachStatementSyntax.Type.ToString());
 
         SymbolEqualityComparer
             .Default
@@ -401,8 +397,8 @@ internal sealed class SyntaxNodeAssertions
             .Should().BeTrue();
 
         forEachStatementSyntax.Identifier.Text.Should().Be(identifier);
-        expressionAssertions(new ExpressionSyntaxAssertions(forEachStatementSyntax.Expression, this.SemanticModel, this.Compilation));
-        statementAssertions(forEachStatementSyntax.Statement.ToAssertion(this.SemanticModel, this.Compilation));
+        expressionAssertions(new ExpressionSyntaxAssertions(forEachStatementSyntax.Expression, this.semanticModel, this.compilation));
+        statementAssertions(forEachStatementSyntax.Statement.ToAssertion(this.semanticModel, this.compilation));
 
         return this;
     }
@@ -425,8 +421,8 @@ internal sealed class SyntaxNodeAssertions
         this.Subject.Should().BeOfType<IfStatementSyntax>();
         var ifStatementSyntax = (IfStatementSyntax)this.Subject;
 
-        conditionAssertions(new ExpressionSyntaxAssertions(ifStatementSyntax.Condition, this.SemanticModel, this.Compilation));
-        thenStatementAssertions(ifStatementSyntax.Statement.ToAssertion(this.SemanticModel, this.Compilation));
+        conditionAssertions(new ExpressionSyntaxAssertions(ifStatementSyntax.Condition, this.semanticModel, this.compilation));
+        thenStatementAssertions(ifStatementSyntax.Statement.ToAssertion(this.semanticModel, this.compilation));
 
         if (elseStatementAssertions is null)
         {
@@ -435,7 +431,7 @@ internal sealed class SyntaxNodeAssertions
         else
         {
             ifStatementSyntax.Else.Should().NotBeNull();
-            elseStatementAssertions(ifStatementSyntax.Else!.Statement.ToAssertion(this.SemanticModel, this.Compilation));
+            elseStatementAssertions(ifStatementSyntax.Else!.Statement.ToAssertion(this.semanticModel, this.compilation));
         }
 
         return this;

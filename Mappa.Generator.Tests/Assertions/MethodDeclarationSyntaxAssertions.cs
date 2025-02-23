@@ -16,6 +16,9 @@ namespace Mappa.Generator.Tests.Assertions;
 internal sealed class MethodDeclarationSyntaxAssertions
     : ObjectAssertions<MethodDeclarationSyntax, MethodDeclarationSyntaxAssertions>
 {
+    private readonly SemanticModel semanticModel;
+    private readonly Compilation compilation;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="MethodDeclarationSyntaxAssertions"/> class.
     /// </summary>
@@ -28,19 +31,9 @@ internal sealed class MethodDeclarationSyntaxAssertions
         Compilation compilation)
         : base(value, FluentAssertions.Execution.AssertionChain.GetOrCreate())
     {
-        this.SemanticModel = semanticModel;
-        this.Compilation = compilation;
+        this.semanticModel = semanticModel;
+        this.compilation = compilation;
     }
-
-    /// <summary>
-    /// Gets the semantic model.
-    /// </summary>
-    public SemanticModel SemanticModel { get; }
-
-    /// <summary>
-    /// Gets the compilation.
-    /// </summary>
-    public Compilation Compilation { get; }
 
     /// <summary>
     /// Assert that the class have all the expected modifiers.
@@ -88,7 +81,7 @@ internal sealed class MethodDeclarationSyntaxAssertions
 
         var blockSyntaxes = this.Subject.ChildNodes().OfType<BlockSyntax>().ToArray();
         blockSyntaxes.Should().HaveCount(1);
-        var blockSyntaxAssertions = new BlockSyntaxAssertions(blockSyntaxes.Single(), this.SemanticModel, this.Compilation);
+        var blockSyntaxAssertions = new BlockSyntaxAssertions(blockSyntaxes.Single(), this.semanticModel, this.compilation);
         assert(blockSyntaxAssertions);
         return this;
     }

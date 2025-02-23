@@ -12,6 +12,9 @@ namespace Mappa.Generator.Tests.Assertions;
 internal sealed class PatternSyntaxAssertions
  : ObjectAssertions<PatternSyntax, PatternSyntaxAssertions>
 {
+    private readonly SemanticModel semanticModel;
+    private readonly Compilation compilation;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="PatternSyntaxAssertions"/> class.
     /// </summary>
@@ -21,19 +24,9 @@ internal sealed class PatternSyntaxAssertions
     public PatternSyntaxAssertions(PatternSyntax value, SemanticModel semanticModel, Compilation compilation)
         : base(value, FluentAssertions.Execution.AssertionChain.GetOrCreate())
     {
-        this.SemanticModel = semanticModel;
-        this.Compilation = compilation;
+        this.semanticModel = semanticModel;
+        this.compilation = compilation;
     }
-
-    /// <summary>
-    /// Gets the semantic model.
-    /// </summary>
-    public SemanticModel SemanticModel { get; }
-
-    /// <summary>
-    /// Gets the compilation.
-    /// </summary>
-    public Compilation Compilation { get; }
 
     /// <summary>
     /// Assert that the pattern is a unary pattern.
@@ -50,7 +43,7 @@ internal sealed class PatternSyntaxAssertions
 
         unaryPatternSyntax.OperatorToken.Kind().Should().Be(kind);
 
-        argumentAssertions(new PatternSyntaxAssertions(unaryPatternSyntax.Pattern, this.SemanticModel, this.Compilation));
+        argumentAssertions(new PatternSyntaxAssertions(unaryPatternSyntax.Pattern, this.semanticModel, this.compilation));
 
         return this;
     }

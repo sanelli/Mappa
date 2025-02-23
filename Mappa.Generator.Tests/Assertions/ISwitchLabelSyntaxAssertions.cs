@@ -24,14 +24,14 @@ internal interface ISwitchLabelSyntaxAssertions
     public ISwitchLabelSyntaxAssertions IsDefault();
 
     /// <summary>
-    /// Returns an instance of this assertions as <see cref="CaseSwitchLabelSyntaxAssertions"/>.
+    /// Returns an instance of the assertions as <see cref="CaseSwitchLabelSyntaxAssertions"/>.
     /// </summary>
-    /// <returns>An instance of this assertions as <see cref="CaseSwitchLabelSyntaxAssertions"/>.</returns>
+    /// <returns>An instance of the assertions as <see cref="CaseSwitchLabelSyntaxAssertions"/>.</returns>
     public CaseSwitchLabelSyntaxAssertions AsCase() => (CaseSwitchLabelSyntaxAssertions)this;
 
     /// <summary>
-    /// Returns an instance of this assertions as <see cref="DefaultSwitchLabelSyntaxAssertions"/>.
+    /// Returns an instance of the assertions as <see cref="DefaultSwitchLabelSyntaxAssertions"/>.
     /// </summary>
-    /// <returns>An instance of this assertions as <see cref="DefaultSwitchLabelSyntaxAssertions"/>.</returns>
+    /// <returns>An instance of the assertions as <see cref="DefaultSwitchLabelSyntaxAssertions"/>.</returns>
     public DefaultSwitchLabelSyntaxAssertions AsDefault() => (DefaultSwitchLabelSyntaxAssertions)this;
 }

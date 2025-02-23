@@ -1,6 +1,8 @@
 // <copyright file="MappaBuilderContext.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
+using Mappa.Generator.Helpers;
+
 using Microsoft.CodeAnalysis;
 
 namespace Mappa.Generator.Models;
@@ -10,7 +12,8 @@ namespace Mappa.Generator.Models;
 /// </summary>
 internal sealed class MappaBuilderContext
 {
-    private readonly Compilation compilation;
+    private readonly StackSetting<string> compositeTypeSourceName = new(string.Empty);
+    private readonly StackSetting<string> compositeTypeTargetName = new(string.Empty);
     private uint temporaryCounter;
 
     /// <summary>
@@ -19,13 +22,13 @@ internal sealed class MappaBuilderContext
     /// <param name="compilation">The compilation.</param>
     public MappaBuilderContext(Compilation compilation)
     {
-        this.compilation = compilation;
+        this.Compilation = compilation;
     }
 
     /// <summary>
     /// Gets the compilation.
     /// </summary>
-    internal Compilation Compilation => this.compilation;
+    internal Compilation Compilation { get; }
 
     /// <summary>
     /// Gets a new unique temporary value.
@@ -33,4 +36,32 @@ internal sealed class MappaBuilderContext
     /// <returns>A new temporary value.</returns>
     internal string NextTemporary()
         => $"__mappa_tmp_{++this.temporaryCounter}";
+
+    /// <summary>
+    /// Push a new value for the source name for struct, record, classes, etc...
+    /// </summary>
+    /// <param name="sourceName">The name of the source.</param>
+    /// <returns>Disposable value used to remove the source.</returns>
+    internal IDisposable PushCurrentCompositeTypeSourceName(string sourceName)
+        => this.compositeTypeSourceName.Apply(sourceName);
+
+    /// <summary>
+    /// Gets the current value of the source pushed.
+    /// </summary>
+    /// <returns>The current source.</returns>
+    internal string GetCompositeTypeSourceName() => this.compositeTypeSourceName.CurrentValue;
+
+    /// <summary>
+    /// Push a new value for the target name for struct, record, classes, etc...
+    /// </summary>
+    /// <param name="sourceName">The name of the target.</param>
+    /// <returns>Disposable value used to remove the target.</returns>
+    internal IDisposable PushCurrentCompositeTypeTargetName(string sourceName)
+        => this.compositeTypeTargetName.Apply(sourceName);
+
+    /// <summary>
+    /// Gets the current value of the target pushed.
+    /// </summary>
+    /// <returns>The current source.</returns>
+    internal string GetCompositeTypeTargetName() => this.compositeTypeTargetName.CurrentValue;
 }

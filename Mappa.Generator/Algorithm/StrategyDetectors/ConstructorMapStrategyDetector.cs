@@ -127,6 +127,7 @@ internal sealed class ConstructorMapStrategyDetector
                                         StringComparison.OrdinalIgnoreCase,
                                         out var propertyStrategyFromAttribute))
                                 {
+                                    propertyStrategyFromAttribute = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, sourceProperties, propertyStrategyFromAttribute);
                                     var strategy = new ParameterMapStrategy(targetParameter, sourceProperty!, propertyStrategyFromAttribute);
                                     return (targetParameter, sourceProperty!, strategy);
                                 }
@@ -149,6 +150,7 @@ internal sealed class ConstructorMapStrategyDetector
                                 // Get a strategy from source to target
                                 if (this.TryGetStrategyBetweenTypes(targetParameterType, sourcePropertyType, true, out var propertyStrategy))
                                 {
+                                    propertyStrategy = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, sourceProperties, propertyStrategy);
                                     var parameterMapStrategy = new ParameterMapStrategy(targetParameter, sourceProperty, propertyStrategy);
                                     return (targetParameter, sourceProperty, parameterMapStrategy);
                                 }
@@ -183,6 +185,72 @@ internal sealed class ConstructorMapStrategyDetector
         }
 
         return strategy is not NoMapStrategy;
+    }
+
+    private IMapStrategy EncapsulateMapStrategyForSourceOptional(
+        IPropertySymbol? sourceProperty,
+        IPropertySymbol[] sourceProperties,
+        IMapStrategy inputStrategy)
+    {
+        if (sourceProperty is null)
+        {
+            return inputStrategy;
+        }
+
+        if (this.context.MappaUserSettings.Optional is not BooleanSetting.Enable)
+        {
+            return inputStrategy;
+        }
+
+        IPropertySymbol? hasProperty = Array.Find(sourceProperties, property => property.Name.Equals($"Has{sourceProperty.Name}", StringComparison.Ordinal));
+        if (hasProperty is null)
+        {
+            return inputStrategy;
+        }
+
+        if (!hasProperty.Type.IsBoolean())
+        {
+            return inputStrategy;
+        }
+
+        return new OptionalSourcePropertyMapStrategy(inputStrategy, sourceProperty);
+    }
+
+    private IMapStrategy EncapsulateMapStrategyForTargetOptional(
+        IPropertySymbol targetProperty,
+        IPropertySymbol[] allTargetProperties,
+        IMapStrategy inputStrategy,
+        out bool requirePostConstructorInitialization)
+    {
+        requirePostConstructorInitialization = false;
+        if (this.context.MappaUserSettings.Optional is not BooleanSetting.Enable)
+        {
+            return inputStrategy;
+        }
+
+        if (targetProperty.IsIndexer)
+        {
+            return inputStrategy;
+        }
+
+        if (targetProperty.IsRequired)
+        {
+            return inputStrategy;
+        }
+
+        IPropertySymbol? hasProperty = Array.Find(allTargetProperties, property => property.Name.Equals($"Has{targetProperty.Name}", StringComparison.Ordinal));
+        if (hasProperty is null)
+        {
+            return inputStrategy;
+        }
+
+        if (!hasProperty.Type.IsBoolean())
+        {
+            return inputStrategy;
+        }
+
+        requirePostConstructorInitialization = true;
+        return new OptionalTargetPropertyMapStrategy(inputStrategy, targetProperty);
     }
 
     private bool CanInvokeMappingConstructor(out IMethodSymbol constructor, out IMapStrategy strategy)
@@ -259,10 +327,13 @@ internal sealed class ConstructorMapStrategyDetector
         }
         else
         {
+            // Gets all the properties
+            var allTargetProperties = this.context.TargetType.GetTypeProperties().ToArray();
+
             // Gets the target properties
             // TODO [#3] Allow to ignore some target properties when looking for for one empty constructor mapping.
             // TODO [#4] Ensure property setter is accessible.
-            var targetProperties = this.context.TargetType.GetTypeProperties()
+            var targetProperties = allTargetProperties
 
                 // Ignore indexer properties.
                 // Ignore properties without a setter.
@@ -289,6 +360,13 @@ internal sealed class ConstructorMapStrategyDetector
 
                 // Match target property with a source property.
                 var initializerStrategies = targetProperties
+
+                    // Remove all the optional identifier properties from the list
+                    // when the optional setting is enabled.
+                    .Where(targetProperty => this.context.MappaUserSettings.Optional is not BooleanSetting.Enable
+                                             || allTargetProperties.All(otherProperty => !targetProperty.Name.Equals($"Has{otherProperty.Name}", StringComparison.Ordinal)))
+
+                    // Look up for mapping
                     .Select(
                         targetProperty =>
                         {
@@ -314,13 +392,15 @@ internal sealed class ConstructorMapStrategyDetector
                                     StringComparison.Ordinal,
                                     out var propertyStrategyFromAttribute))
                             {
-                                return new PropertyMapStrategy(targetProperty, sourceProperty, propertyStrategyFromAttribute);
+                                propertyStrategyFromAttribute = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, [.. sourceProperties.Values], propertyStrategyFromAttribute);
+                                propertyStrategyFromAttribute = this.EncapsulateMapStrategyForTargetOptional(targetProperty, allTargetProperties, propertyStrategyFromAttribute, out var postConstructorInitializer);
+                                return new PropertyMapStrategy(targetProperty, sourceProperty, propertyStrategyFromAttribute, postConstructorInitializer);
                             }
 
                             // Look for a matching source property
                             if (!hasSourceProperty || sourceProperty is null)
                             {
-                                return new PropertyMapStrategy(targetProperty, null, noMapStrategy);
+                                return new PropertyMapStrategy(targetProperty, null, noMapStrategy, false);
                             }
 
                             var targetPropertyType = targetProperty.Type;
@@ -328,10 +408,12 @@ internal sealed class ConstructorMapStrategyDetector
 
                             if (this.TryGetStrategyBetweenTypes(targetPropertyType, sourcePropertyType, true, out var propertyStrategy))
                             {
-                                return new PropertyMapStrategy(targetProperty, sourceProperty, propertyStrategy);
+                                propertyStrategy = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, [.. sourceProperties.Values], propertyStrategy);
+                                propertyStrategy = this.EncapsulateMapStrategyForTargetOptional(targetProperty, allTargetProperties, propertyStrategy, out var postConstructorInitializer);
+                                return new PropertyMapStrategy(targetProperty, sourceProperty, propertyStrategy, postConstructorInitializer);
                             }
 
-                            return new PropertyMapStrategy(targetProperty, null, noMapStrategy);
+                            return new PropertyMapStrategy(targetProperty, null, noMapStrategy, false);
                         })
                     .ToArray();
 

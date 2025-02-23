@@ -17,24 +17,10 @@ internal sealed class StatementSyntaxAssertions
     /// Initializes a new instance of the <see cref="StatementSyntaxAssertions"/> class.
     /// </summary>
     /// <param name="value">The target of assertions.</param>
-    /// <param name="semanticModel">The semantic model.</param>
-    /// <param name="compilation">The compilation.</param>
-    public StatementSyntaxAssertions(StatementSyntax value, SemanticModel semanticModel, Compilation compilation)
+    public StatementSyntaxAssertions(StatementSyntax value)
         : base(value, FluentAssertions.Execution.AssertionChain.GetOrCreate())
     {
-        this.SemanticModel = semanticModel;
-        this.Compilation = compilation;
     }
-
-    /// <summary>
-    /// Gets the semantic model.
-    /// </summary>
-    public SemanticModel SemanticModel { get; }
-
-    /// <summary>
-    /// Gets the compilation.
-    /// </summary>
-    public Compilation Compilation { get; }
 
     /// <inheritdoc/>
     public IStatementSyntaxBaseAssertions IsBlockStatement()

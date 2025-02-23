@@ -17,6 +17,9 @@ namespace Mappa.Generator.Tests.Assertions;
 internal sealed class ClassDeclarationSyntaxAssertions
     : ObjectAssertions<ClassDeclarationSyntax, ClassDeclarationSyntaxAssertions>
 {
+    private readonly SemanticModel semanticModel;
+    private readonly Compilation compilation;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ClassDeclarationSyntaxAssertions"/> class.
     /// </summary>
@@ -29,19 +32,9 @@ internal sealed class ClassDeclarationSyntaxAssertions
         Compilation compilation)
         : base(value, FluentAssertions.Execution.AssertionChain.GetOrCreate())
     {
-        this.SemanticModel = semanticModel;
-        this.Compilation = compilation;
+        this.semanticModel = semanticModel;
+        this.compilation = compilation;
     }
-
-    /// <summary>
-    /// Gets the semantic model.
-    /// </summary>
-    private SemanticModel SemanticModel { get; }
-
-    /// <summary>
-    /// Gets the compilation.
-    /// </summary>
-    private Compilation Compilation { get; }
 
     /// <summary>
     /// Assert that the class have all the expected modifiers.
@@ -149,10 +142,10 @@ internal sealed class ClassDeclarationSyntaxAssertions
                     return false;
                 }
 
-                var methodSymbol = this.SemanticModel.GetDeclaredSymbol(methodDeclarationSyntax)
+                var methodSymbol = this.semanticModel.GetDeclaredSymbol(methodDeclarationSyntax)
                                    ?? throw new MappaGeneratorException(
                                        $"Cannot obtain symbol from method \"{methodDeclarationSyntax.Identifier}\".");
-                var expectedReturnType = this.Compilation.GetTypeSymbol(returnType);
+                var expectedReturnType = this.compilation.GetTypeSymbol(returnType);
 
                 if (methodSymbol.IsExtensionMethod != isExtensionMethod)
                 {
@@ -184,7 +177,7 @@ internal sealed class ClassDeclarationSyntaxAssertions
                         return false;
                     }
 
-                    var expectedType = this.Compilation.GetTypeSymbol(parameters[parameterIndex].Type);
+                    var expectedType = this.compilation.GetTypeSymbol(parameters[parameterIndex].Type);
                     if (!SymbolEqualityComparer.Default.Equals(
                             expectedType,
                             methodSymbol.Parameters[parameterIndex].Type))
@@ -204,7 +197,7 @@ internal sealed class ClassDeclarationSyntaxAssertions
             .ToArray();
         methods.Should().HaveCount(1);
 
-        assert(new MethodDeclarationSyntaxAssertions(methods.Single(), this.SemanticModel, this.Compilation));
+        assert(new MethodDeclarationSyntaxAssertions(methods.Single(), this.semanticModel, this.compilation));
         return this;
     }
 }

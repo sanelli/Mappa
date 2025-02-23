@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+option csharp_namespace = "Mappa.Samples.Models";
+
+// Protobuf model for the CountingValues enum.
+enum ProtobufCountingValues
+{
+  // First one.
+  One = 0;
+
+  // Second two.
+  Two = 1;
+
+  // Third value.
+  Three = 2;
+}
+
+// Source protobuf model with optionals.
+message SourceProtobufOptionalModel
+{
+  // An integer value.
+  optional int32 ParamA = 1;
+
+  // An enum value.
+  optional ProtobufCountingValues ParamB = 2;
+}
+
+// Target protobuf model with optionals.
+message TargetProtobufOptionalModel
+{
+  // An integer value.
+  optional int32 ParamA = 1;
+
+  // An enum value.
+  optional ProtobufCountingValues ParamB = 2;
+}

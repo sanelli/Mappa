@@ -21,6 +21,7 @@ internal sealed class MappaUserSettings
     private readonly StackSetting<string?> guidFormat;
     private readonly StackSetting<CultureInfoSetting> cultureInfoSetting;
     private readonly StackSetting<string?> cultureName;
+    private readonly StackSetting<BooleanSetting> optional;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaUserSettings"/> class.
@@ -35,7 +36,8 @@ internal sealed class MappaUserSettings
             otherSettings.TimeSpanFormat,
             otherSettings.GuidFormat,
             otherSettings.CultureInfoSetting,
-            otherSettings.CultureName)
+            otherSettings.CultureName,
+            otherSettings.Optional)
     {
     }
 
@@ -50,6 +52,7 @@ internal sealed class MappaUserSettings
     /// <param name="guidFormat">The default format for <see cref="Guid"/>.</param>
     /// <param name="cultureInfoSetting">The type of culture info settings to be provided.</param>
     /// <param name="cultureName">The default culture info to use to generate a format provider.</param>
+    /// <param name="optional">Enable or disable (protobuf) optional feature.</param>
     private MappaUserSettings(
         string? dateTimeFormat,
         string? dateTimeOffsetFormat,
@@ -58,7 +61,8 @@ internal sealed class MappaUserSettings
         string? timeSpanFormat,
         string? guidFormat,
         CultureInfoSetting cultureInfoSetting,
-        string? cultureName)
+        string? cultureName,
+        BooleanSetting optional)
     {
         this.dateTimeFormat = new(dateTimeFormat);
         this.dateTimeOffsetFormat = new(dateTimeOffsetFormat);
@@ -68,6 +72,7 @@ internal sealed class MappaUserSettings
         this.guidFormat = new(guidFormat);
         this.cultureInfoSetting = new(cultureInfoSetting);
         this.cultureName = new(cultureName);
+        this.optional = new(optional);
     }
 
     /// <inheritdoc />
@@ -94,6 +99,9 @@ internal sealed class MappaUserSettings
     /// <inheritdoc />
     public string? CultureName => this.cultureName;
 
+    /// <inheritdoc/>
+    public BooleanSetting Optional => this.optional;
+
     /// <summary>
     /// Push the changes required by the <paramref name="mappaSettingsAttribute"/> on the stack.
     /// If <paramref name="mappaSettingsAttribute"/> is <c>null</c>
@@ -119,6 +127,7 @@ internal sealed class MappaUserSettings
             this.guidFormat.Apply(mappaSettingsAttribute.GuidFormat ?? this.guidFormat),
             this.cultureInfoSetting.Apply(mappaSettingsAttribute.CultureInfoSetting is not CultureInfoSetting.Undefined ? mappaSettingsAttribute.CultureInfoSetting : this.cultureInfoSetting),
             this.cultureName.Apply(mappaSettingsAttribute.CultureName ?? this.cultureName),
+            this.optional.Apply(mappaSettingsAttribute.Optional is not BooleanSetting.Undefined ? mappaSettingsAttribute.Optional : this.optional),
  #pragma warning restore CA2000
         ]);
     }
