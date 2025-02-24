@@ -108,10 +108,18 @@ internal sealed class SyntaxNodeAssertions
 
         localSymbol.Should().NotBeNull();
 
-        SymbolEqualityComparer
-            .Default
-            .Equals(localSymbol.Type, expectedType)
-            .Should().BeTrue();
+        if (localSymbol.Type.IsValueType && isTypeNullable)
+        {
+            // At this stage I would need to build a Nullable<T> but it is easier just compare the type names
+            localSymbol.Type.ToDisplayString().Should().Be($"{type}?");
+        }
+        else
+        {
+            SymbolEqualityComparer
+                .Default
+                .Equals(localSymbol.Type, expectedType)
+                .Should().BeTrue();
+        }
 
         if (expectedType.IsReferenceType)
         {
