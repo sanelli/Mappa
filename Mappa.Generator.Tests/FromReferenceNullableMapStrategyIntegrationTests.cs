@@ -89,7 +89,7 @@ public class FromReferenceNullableMapStrategyIntegrationTests
                                 thenBranchAssertions =>
                                 {
                                     thenBranchAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(4)
                                         .HasNextSyntaxNode(statementAssertions =>
@@ -119,7 +119,7 @@ public class FromReferenceNullableMapStrategyIntegrationTests
                                 elseStatementAssertions =>
                                 {
                                     elseStatementAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(1)
                                         .HasNextSyntaxNode(statementAssertions =>

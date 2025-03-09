@@ -85,7 +85,7 @@ public class ReferenceNullableToReferenceNullableMapStrategyIntegrationTests
                                 ifStatementAssertions =>
                                 {
                                     ifStatementAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(4)
                                         .HasNextSyntaxNode(statementAssertions =>
@@ -122,7 +122,7 @@ public class ReferenceNullableToReferenceNullableMapStrategyIntegrationTests
                                 elseStatementAssertions =>
                                 {
                                     elseStatementAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(1)
                                         .HasNextSyntaxNode(statementAssertions =>
@@ -211,7 +211,7 @@ public class ReferenceNullableToReferenceNullableMapStrategyIntegrationTests
                                 ifStatementAssertions =>
                                 {
                                     ifStatementAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(4)
                                         .HasNextSyntaxNode(statementAssertions =>
@@ -248,7 +248,7 @@ public class ReferenceNullableToReferenceNullableMapStrategyIntegrationTests
                                 elseStatementAssertions =>
                                 {
                                     elseStatementAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(1)
                                         .HasNextSyntaxNode(statementAssertions =>

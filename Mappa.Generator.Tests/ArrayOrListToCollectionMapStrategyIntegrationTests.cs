@@ -134,7 +134,7 @@ public sealed class ArrayOrListToCollectionMapStrategyIntegrationTests
                                 statementSyntaxBaseAssertions =>
                                 {
                                     statementSyntaxBaseAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(2)
                                         .HasNextSyntaxNode(forStatement =>

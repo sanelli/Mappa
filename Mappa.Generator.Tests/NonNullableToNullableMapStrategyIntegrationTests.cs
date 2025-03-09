@@ -67,7 +67,7 @@ public class NonNullableToNullableMapStrategyIntegrationTests
                                 labelAssertions.Should().HaveCount(1);
                                 labelAssertions[0].IsCase().AsCase().HasValue(expression => expression.BeMemberAccessExpressionSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.TestEnum.One"));
                                 statementAssertions.Should().HaveCount(1);
-                                statementAssertions[0].IsBlockStatement().AsBlock()
+                                statementAssertions[0].BeBlockStatement().AsBlock()
                                     .HasSyntaxNodesCount(2)
                                     .HasNextSyntaxNode(caseStatement => caseStatement.BeAssignmentExpressionStatement(
                                         left => left.BeIdentifierNameSyntax("__mappa_tmp_1"),
@@ -79,7 +79,7 @@ public class NonNullableToNullableMapStrategyIntegrationTests
                                 labelAssertions.Should().HaveCount(1);
                                 labelAssertions[0].IsDefault();
                                 statementAssertions.Should().HaveCount(1);
-                                statementAssertions[0].IsBlockStatement().AsBlock()
+                                statementAssertions[0].BeBlockStatement().AsBlock()
                                     .HasSyntaxNodesCount(1)
                                     .HasNextSyntaxNode(defaultSyntaxNode => defaultSyntaxNode.BeThrowStatementSyntax<ArgumentOutOfRangeException>(expression => expression.BeLiteralExpressionSyntax("input")));
                             }))

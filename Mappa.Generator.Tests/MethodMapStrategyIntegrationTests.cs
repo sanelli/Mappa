@@ -83,7 +83,7 @@ public sealed class MethodMapStrategyIntegrationTests
                                 ifStatementAssertions =>
                                 {
                                     ifStatementAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(5)
                                         .HasNextSyntaxNode(ifSyntaxNodeAssertions =>
@@ -134,7 +134,7 @@ public sealed class MethodMapStrategyIntegrationTests
                                 elseStatementAssertions =>
                                 {
                                     elseStatementAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(1)
                                         .HasNextSyntaxNode(elseSyntaxNodeAssertions =>
@@ -218,7 +218,7 @@ public sealed class MethodMapStrategyIntegrationTests
                                 ifStatementAssertions =>
                                 {
                                     ifStatementAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(5)
                                         .HasNextSyntaxNode(ifSyntaxNodeAssertions =>
@@ -269,7 +269,7 @@ public sealed class MethodMapStrategyIntegrationTests
                                 elseStatementAssertions =>
                                 {
                                     elseStatementAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(1)
                                         .HasNextSyntaxNode(elseSyntaxNodeAssertions =>

@@ -73,7 +73,7 @@ public sealed class EnumToIntegralMapStrategyIntegrationTests
                                     labelsAssertions[0].IsCase();
                                     labelsAssertions[0].AsCase().HasValue(expressionSyntaxAssertions => expressionSyntaxAssertions.BeMemberAccessExpressionSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.TestEnum.One"));
                                     statementAssertions.Should().HaveCount(1);
-                                    statementAssertions[0].IsBlockStatement();
+                                    statementAssertions[0].BeBlockStatement();
                                     statementAssertions[0].AsBlock()
                                         .HasSyntaxNodesCount(2)
                                         .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeAssignmentExpressionStatement("__mappa_tmp_1", assert => assert.BeLiteralExpressionSyntax(0)))
@@ -85,7 +85,7 @@ public sealed class EnumToIntegralMapStrategyIntegrationTests
                                     labelsAssertions[0].IsCase();
                                     labelsAssertions[0].AsCase().HasValue(expressionSyntaxAssertions => expressionSyntaxAssertions.BeMemberAccessExpressionSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.TestEnum.Two"));
                                     statementAssertions.Should().HaveCount(1);
-                                    statementAssertions[0].IsBlockStatement();
+                                    statementAssertions[0].BeBlockStatement();
                                     statementAssertions[0].AsBlock()
                                         .HasSyntaxNodesCount(2)
                                         .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeAssignmentExpressionStatement("__mappa_tmp_1", assert => assert.BeLiteralExpressionSyntax(1)))
@@ -97,7 +97,7 @@ public sealed class EnumToIntegralMapStrategyIntegrationTests
                                     labelsAssertions[0].IsCase();
                                     labelsAssertions[0].AsCase().HasValue(expressionSyntaxAssertions => expressionSyntaxAssertions.BeMemberAccessExpressionSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.TestEnum.Three"));
                                     statementAssertions.Should().HaveCount(1);
-                                    statementAssertions[0].IsBlockStatement();
+                                    statementAssertions[0].BeBlockStatement();
                                     statementAssertions[0].AsBlock()
                                         .HasSyntaxNodesCount(2)
                                         .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeAssignmentExpressionStatement("__mappa_tmp_1", assert => assert.BeLiteralExpressionSyntax(2)))
@@ -108,7 +108,7 @@ public sealed class EnumToIntegralMapStrategyIntegrationTests
                                     labelsAssertions.Should().HaveCount(1);
                                     labelsAssertions[0].IsDefault();
                                     statementAssertions.Should().HaveCount(1);
-                                    statementAssertions[0].IsBlockStatement();
+                                    statementAssertions[0].BeBlockStatement();
                                     statementAssertions[0].AsBlock()
                                         .HasSyntaxNodesCount(1)
                                         .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeThrowStatementSyntax<ArgumentOutOfRangeException>(

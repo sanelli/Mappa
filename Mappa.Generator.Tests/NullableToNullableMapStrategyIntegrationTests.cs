@@ -66,7 +66,7 @@ public class NullableToNullableMapStrategyIntegrationTests
                                 thenStatementAssertions =>
                                 {
                                     thenStatementAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(4)
                                         .HasNextSyntaxNode(syntaxNode => syntaxNode.BeLocalDeclarationStatementSyntax(
@@ -85,7 +85,7 @@ public class NullableToNullableMapStrategyIntegrationTests
                                                 labelAssertions.Should().HaveCount(1);
                                                 labelAssertions[0].IsCase().AsCase().HasValue(expression => expression.BeLiteralExpressionSyntax(0));
                                                 statementAssertions.Should().HaveCount(1);
-                                                statementAssertions[0].IsBlockStatement().AsBlock()
+                                                statementAssertions[0].BeBlockStatement().AsBlock()
                                                     .HasSyntaxNodesCount(2)
                                                     .HasNextSyntaxNode(caseStatement => caseStatement.BeAssignmentExpressionStatement(
                                                         left => left.BeIdentifierNameSyntax("__mappa_tmp_3"),
@@ -97,7 +97,7 @@ public class NullableToNullableMapStrategyIntegrationTests
                                                 labelAssertions.Should().HaveCount(1);
                                                 labelAssertions[0].IsDefault();
                                                 statementAssertions.Should().HaveCount(1);
-                                                statementAssertions[0].IsBlockStatement().AsBlock()
+                                                statementAssertions[0].BeBlockStatement().AsBlock()
                                                     .HasSyntaxNodesCount(1)
                                                     .HasNextSyntaxNode(defaultSyntaxNode => defaultSyntaxNode.BeThrowStatementSyntax<ArgumentOutOfRangeException>(expression => expression.BeLiteralExpressionSyntax("__mappa_tmp_2")));
                                             }))
@@ -108,7 +108,7 @@ public class NullableToNullableMapStrategyIntegrationTests
                                 elseStatementAssertions =>
                                 {
                                     elseStatementAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(1)
                                         .HasNextSyntaxNode(syntaxNode => syntaxNode.BeAssignmentExpressionStatement(

@@ -61,7 +61,7 @@ public class NullableToNonNullableMapStrategyIntegrationTests
                                 thenStatementAssertions =>
                                 {
                                     thenStatementAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(2)
                                         .HasNextSyntaxNode(syntaxNode => syntaxNode.BeLocalDeclarationStatementSyntax(
@@ -75,7 +75,7 @@ public class NullableToNonNullableMapStrategyIntegrationTests
                                 elseStatementAssertions =>
                                 {
                                     elseStatementAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(1)
                                         .HasNextSyntaxNode(syntaxNode => syntaxNode.BeThrowStatementSyntax<NullReferenceException>(argument => argument.BeLiteralExpressionSyntax("\"input\" is null.")));

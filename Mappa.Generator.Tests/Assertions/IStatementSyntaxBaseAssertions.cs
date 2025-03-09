@@ -15,7 +15,7 @@ internal interface IStatementSyntaxBaseAssertions
     /// Assert the subject is a block statement.
     /// </summary>
     /// <returns>The assertion.</returns>
-    IStatementSyntaxBaseAssertions IsBlockStatement();
+    IStatementSyntaxBaseAssertions BeBlockStatement();
 
     /// <summary>
     /// Returns this instance as a <see cref="BlockSyntaxAssertions"/>.

@@ -176,14 +176,14 @@ public sealed class OptionalStrategyIntegrationTests
                             syntaxNodeAssertions.BeIfStatementSyntax(
                                 condition => condition.BeMemberAccessExpressionSyntax("input.HasPropertyA"),
                                 thenStatement => thenStatement
-                                    .IsBlockStatement()
+                                    .BeBlockStatement()
                                     .AsBlock()
                                     .HasSyntaxNodesCount(1)
                                     .HasNextSyntaxNode(statement => statement.BeAssignmentExpressionStatement(
                                         leftExpression => leftExpression.BeIdentifierNameSyntax("__mappa_tmp_2"),
                                         rightExpression => rightExpression.BeIdentifierNameSyntax("__mappa_tmp_1"))),
                                 elseStatement => elseStatement
-                                    .IsBlockStatement()
+                                    .BeBlockStatement()
                                     .AsBlock()
                                     .HasSyntaxNodesCount(1)
                                     .HasNextSyntaxNode(statement => statement.BeAssignmentExpressionStatement(
@@ -288,14 +288,14 @@ public sealed class OptionalStrategyIntegrationTests
                             syntaxNodeAssertions.BeIfStatementSyntax(
                                 condition => condition.BeMemberAccessExpressionSyntax("input.HasPropertyA"),
                                 thenStatement => thenStatement
-                                    .IsBlockStatement()
+                                    .BeBlockStatement()
                                     .AsBlock()
                                     .HasSyntaxNodesCount(1)
                                     .HasNextSyntaxNode(statement => statement.BeAssignmentExpressionStatement(
                                         leftExpression => leftExpression.BeIdentifierNameSyntax("__mappa_tmp_2"),
                                         rightExpression => rightExpression.BeIdentifierNameSyntax("__mappa_tmp_1"))),
                                 elseStatement => elseStatement
-                                    .IsBlockStatement()
+                                    .BeBlockStatement()
                                     .AsBlock()
                                     .HasSyntaxNodesCount(1)
                                     .HasNextSyntaxNode(statement => statement.BeAssignmentExpressionStatement(
@@ -400,14 +400,14 @@ public sealed class OptionalStrategyIntegrationTests
                             syntaxNodeAssertions.BeIfStatementSyntax(
                                 condition => condition.BeMemberAccessExpressionSyntax("input.HasPropertyA"),
                                 thenStatement => thenStatement
-                                    .IsBlockStatement()
+                                    .BeBlockStatement()
                                     .AsBlock()
                                     .HasSyntaxNodesCount(1)
                                     .HasNextSyntaxNode(statement => statement.BeAssignmentExpressionStatement(
                                         leftExpression => leftExpression.BeIdentifierNameSyntax("__mappa_tmp_2"),
                                         rightExpression => rightExpression.BeIdentifierNameSyntax("__mappa_tmp_1"))),
                                 elseStatement => elseStatement
-                                    .IsBlockStatement()
+                                    .BeBlockStatement()
                                     .AsBlock()
                                     .HasSyntaxNodesCount(1)
                                     .HasNextSyntaxNode(statement => statement.BeAssignmentExpressionStatement(
@@ -619,7 +619,7 @@ public sealed class OptionalStrategyIntegrationTests
                             syntaxNodeAssertions.BeIfStatementSyntax(
                                 condition => condition.BeMemberAccessExpressionSyntax("input.HasPropertyA"),
                                 thenStatement => thenStatement
-                                    .IsBlockStatement()
+                                    .BeBlockStatement()
                                     .AsBlock()
                                     .HasSyntaxNodesCount(2)
                                     .HasNextSyntaxNode(statement =>
@@ -635,7 +635,7 @@ public sealed class OptionalStrategyIntegrationTests
                                         leftExpression => leftExpression.BeIdentifierNameSyntax("__mappa_tmp_2"),
                                         rightExpression => rightExpression.BeIdentifierNameSyntax("__mappa_tmp_3"))),
                                 elseStatement => elseStatement
-                                    .IsBlockStatement()
+                                    .BeBlockStatement()
                                     .AsBlock()
                                     .HasSyntaxNodesCount(1)
                                     .HasNextSyntaxNode(statement => statement.BeAssignmentExpressionStatement(
@@ -746,7 +746,7 @@ public sealed class OptionalStrategyIntegrationTests
                             syntaxNodeAssertions.BeIfStatementSyntax(
                                 condition => condition.BeMemberAccessExpressionSyntax("input.HasPropertyA"),
                                 thenStatement => thenStatement
-                                    .IsBlockStatement()
+                                    .BeBlockStatement()
                                     .AsBlock()
                                     .HasSyntaxNodesCount(2)
                                     .HasNextSyntaxNode(statement =>
@@ -762,7 +762,7 @@ public sealed class OptionalStrategyIntegrationTests
                                         leftExpression => leftExpression.BeIdentifierNameSyntax("__mappa_tmp_2"),
                                         rightExpression => rightExpression.BeIdentifierNameSyntax("__mappa_tmp_3"))),
                                 elseStatement => elseStatement
-                                    .IsBlockStatement()
+                                    .BeBlockStatement()
                                     .AsBlock()
                                     .HasSyntaxNodesCount(1)
                                     .HasNextSyntaxNode(statement => statement.BeAssignmentExpressionStatement(
@@ -874,7 +874,7 @@ public sealed class OptionalStrategyIntegrationTests
                             syntaxNodeAssertions.BeIfStatementSyntax(
                                 condition => condition.BeMemberAccessExpressionSyntax("input.HasPropertyA"),
                                 thenStatement => thenStatement
-                                    .IsBlockStatement()
+                                    .BeBlockStatement()
                                     .AsBlock()
                                     .HasSyntaxNodesCount(2)
                                     .HasNextSyntaxNode(statement =>
@@ -890,7 +890,7 @@ public sealed class OptionalStrategyIntegrationTests
                                         leftExpression => leftExpression.BeIdentifierNameSyntax("__mappa_tmp_2"),
                                         rightExpression => rightExpression.BeIdentifierNameSyntax("__mappa_tmp_3"))),
                                 elseStatement => elseStatement
-                                    .IsBlockStatement()
+                                    .BeBlockStatement()
                                     .AsBlock()
                                     .HasSyntaxNodesCount(1)
                                     .HasNextSyntaxNode(statement => statement.BeAssignmentExpressionStatement(
@@ -1070,14 +1070,14 @@ public sealed class OptionalStrategyIntegrationTests
                             syntaxNodeAssertions.BeIfStatementSyntax(
                                 condition => condition.BeMemberAccessExpressionSyntax("input.HasPropertyA"),
                                 thenStatement => thenStatement
-                                    .IsBlockStatement()
+                                    .BeBlockStatement()
                                     .AsBlock()
                                     .HasSyntaxNodesCount(1)
                                     .HasNextSyntaxNode(statement => statement.BeAssignmentExpressionStatement(
                                         leftExpression => leftExpression.BeIdentifierNameSyntax("__mappa_tmp_2"),
                                         rightExpression => rightExpression.BeIdentifierNameSyntax("__mappa_tmp_1"))),
                                 elseStatement => elseStatement
-                                    .IsBlockStatement()
+                                    .BeBlockStatement()
                                     .AsBlock()
                                     .HasSyntaxNodesCount(1)
                                     .HasNextSyntaxNode(statement => statement.BeAssignmentExpressionStatement(
@@ -1178,14 +1178,14 @@ public sealed class OptionalStrategyIntegrationTests
                             syntaxNodeAssertions.BeIfStatementSyntax(
                                 condition => condition.BeMemberAccessExpressionSyntax("input.HasPropertyA"),
                                 thenStatement => thenStatement
-                                    .IsBlockStatement()
+                                    .BeBlockStatement()
                                     .AsBlock()
                                     .HasSyntaxNodesCount(1)
                                     .HasNextSyntaxNode(statement => statement.BeAssignmentExpressionStatement(
                                         leftExpression => leftExpression.BeIdentifierNameSyntax("__mappa_tmp_2"),
                                         rightExpression => rightExpression.BeIdentifierNameSyntax("__mappa_tmp_1"))),
                                 elseStatement => elseStatement
-                                    .IsBlockStatement()
+                                    .BeBlockStatement()
                                     .AsBlock()
                                     .HasSyntaxNodesCount(1)
                                     .HasNextSyntaxNode(statement => statement.BeAssignmentExpressionStatement(
@@ -1286,14 +1286,14 @@ public sealed class OptionalStrategyIntegrationTests
                             syntaxNodeAssertions.BeIfStatementSyntax(
                                 condition => condition.BeMemberAccessExpressionSyntax("input.HasPropertyA"),
                                 thenStatement => thenStatement
-                                    .IsBlockStatement()
+                                    .BeBlockStatement()
                                     .AsBlock()
                                     .HasSyntaxNodesCount(1)
                                     .HasNextSyntaxNode(statement => statement.BeAssignmentExpressionStatement(
                                         leftExpression => leftExpression.BeIdentifierNameSyntax("__mappa_tmp_2"),
                                         rightExpression => rightExpression.BeIdentifierNameSyntax("__mappa_tmp_1"))),
                                 elseStatement => elseStatement
-                                    .IsBlockStatement()
+                                    .BeBlockStatement()
                                     .AsBlock()
                                     .HasSyntaxNodesCount(1)
                                     .HasNextSyntaxNode(statement => statement.BeAssignmentExpressionStatement(
@@ -1497,7 +1497,7 @@ public sealed class OptionalStrategyIntegrationTests
                             syntaxNodeAssertions.BeIfStatementSyntax(
                                 condition => condition.BeMemberAccessExpressionSyntax("input.HasPropertyA"),
                                 thenStatement => thenStatement
-                                    .IsBlockStatement()
+                                    .BeBlockStatement()
                                     .AsBlock()
                                     .HasSyntaxNodesCount(2)
                                     .HasNextSyntaxNode(statement =>
@@ -1513,7 +1513,7 @@ public sealed class OptionalStrategyIntegrationTests
                                         leftExpression => leftExpression.BeIdentifierNameSyntax("__mappa_tmp_2"),
                                         rightExpression => rightExpression.BeIdentifierNameSyntax("__mappa_tmp_3"))),
                                 elseStatement => elseStatement
-                                    .IsBlockStatement()
+                                    .BeBlockStatement()
                                     .AsBlock()
                                     .HasSyntaxNodesCount(1)
                                     .HasNextSyntaxNode(statement => statement.BeAssignmentExpressionStatement(
@@ -1620,7 +1620,7 @@ public sealed class OptionalStrategyIntegrationTests
                             syntaxNodeAssertions.BeIfStatementSyntax(
                                 condition => condition.BeMemberAccessExpressionSyntax("input.HasPropertyA"),
                                 thenStatement => thenStatement
-                                    .IsBlockStatement()
+                                    .BeBlockStatement()
                                     .AsBlock()
                                     .HasSyntaxNodesCount(2)
                                     .HasNextSyntaxNode(statement =>
@@ -1636,7 +1636,7 @@ public sealed class OptionalStrategyIntegrationTests
                                         leftExpression => leftExpression.BeIdentifierNameSyntax("__mappa_tmp_2"),
                                         rightExpression => rightExpression.BeIdentifierNameSyntax("__mappa_tmp_3"))),
                                 elseStatement => elseStatement
-                                    .IsBlockStatement()
+                                    .BeBlockStatement()
                                     .AsBlock()
                                     .HasSyntaxNodesCount(1)
                                     .HasNextSyntaxNode(statement => statement.BeAssignmentExpressionStatement(
@@ -1744,7 +1744,7 @@ public sealed class OptionalStrategyIntegrationTests
                             syntaxNodeAssertions.BeIfStatementSyntax(
                                 condition => condition.BeMemberAccessExpressionSyntax("input.HasPropertyA"),
                                 thenStatement => thenStatement
-                                    .IsBlockStatement()
+                                    .BeBlockStatement()
                                     .AsBlock()
                                     .HasSyntaxNodesCount(2)
                                     .HasNextSyntaxNode(statement =>
@@ -1760,7 +1760,7 @@ public sealed class OptionalStrategyIntegrationTests
                                         leftExpression => leftExpression.BeIdentifierNameSyntax("__mappa_tmp_2"),
                                         rightExpression => rightExpression.BeIdentifierNameSyntax("__mappa_tmp_3"))),
                                 elseStatement => elseStatement
-                                    .IsBlockStatement()
+                                    .BeBlockStatement()
                                     .AsBlock()
                                     .HasSyntaxNodesCount(1)
                                     .HasNextSyntaxNode(statement => statement.BeAssignmentExpressionStatement(
@@ -2028,7 +2028,7 @@ public sealed class OptionalStrategyIntegrationTests
                                 thenStatementAssertions =>
                                 {
                                     thenStatementAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(1)
                                         .HasNextSyntaxNode(statementAssertions => statementAssertions.BeAssignmentExpressionStatement(
@@ -2123,7 +2123,7 @@ public sealed class OptionalStrategyIntegrationTests
                                 thenStatementAssertions =>
                                 {
                                     thenStatementAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(1)
                                         .HasNextSyntaxNode(statementAssertions => statementAssertions.BeAssignmentExpressionStatement(
@@ -2219,7 +2219,7 @@ public sealed class OptionalStrategyIntegrationTests
                                 thenStatementAssertions =>
                                 {
                                     thenStatementAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(1)
                                         .HasNextSyntaxNode(statementAssertions => statementAssertions.BeAssignmentExpressionStatement(
@@ -2419,7 +2419,7 @@ public sealed class OptionalStrategyIntegrationTests
                                 thenStatementAssertions =>
                                 {
                                     thenStatementAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(2)
                                         .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeLocalDeclarationStatementSyntax(
@@ -2526,7 +2526,7 @@ public sealed class OptionalStrategyIntegrationTests
                                 thenStatementAssertions =>
                                 {
                                     thenStatementAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(2)
                                         .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeLocalDeclarationStatementSyntax(
@@ -2634,7 +2634,7 @@ public sealed class OptionalStrategyIntegrationTests
                                 thenStatementAssertions =>
                                 {
                                     thenStatementAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(2)
                                         .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeLocalDeclarationStatementSyntax(
@@ -2738,7 +2738,7 @@ public sealed class OptionalStrategyIntegrationTests
                                 thenStatementAssertions =>
                                 {
                                     thenStatementAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(1)
 
@@ -2831,7 +2831,7 @@ public sealed class OptionalStrategyIntegrationTests
                                 thenStatementAssertions =>
                                 {
                                     thenStatementAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(1)
                                         .HasNextSyntaxNode(statementAssertions => statementAssertions.BeAssignmentExpressionStatement(
