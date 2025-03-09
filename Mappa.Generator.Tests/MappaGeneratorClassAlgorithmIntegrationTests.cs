@@ -341,4 +341,48 @@ public sealed class MappaGeneratorClassAlgorithmIntegrationTests
                 string.Empty,
                 "int");
     }
+
+    /// <summary>
+    /// Asset that multiple mappers can be generated inside the
+    /// very same compilation unit / file.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanGenerateMultipleMappersFromInsideTheSameFile()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class InnerSource { public int A { get; set; } }
+                                  public class InnerTarget { public int A { get; set; } }
+
+                                  public class Source { public InnerSource Property { get; set; } }
+                                  public class Target { public InnerTarget Property { get; set; } }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial InnerTarget Map(InnerSource input);
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class AnotherMapper
+                                  {
+                                      public partial Target Map(Source input);
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode(howMany: 2)
+            .WithCompilationUnits(2)
+            .Should().HaveCount(2);
+    }
 }

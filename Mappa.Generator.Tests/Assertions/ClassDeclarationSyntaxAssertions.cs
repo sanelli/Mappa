@@ -145,14 +145,17 @@ internal sealed class ClassDeclarationSyntaxAssertions
                 var methodSymbol = this.semanticModel.GetDeclaredSymbol(methodDeclarationSyntax)
                                    ?? throw new MappaGeneratorException(
                                        $"Cannot obtain symbol from method \"{methodDeclarationSyntax.Identifier}\".");
-                var expectedReturnType = this.compilation.GetTypeSymbol(returnType);
+                ITypeSymbol? expectedReturnType = this.compilation.GetTypeSymbol(returnType);
 
                 if (methodSymbol.IsExtensionMethod != isExtensionMethod)
                 {
                     return false;
                 }
 
-                if (!SymbolEqualityComparer.Default.Equals(methodSymbol.ReturnType, expectedReturnType))
+                var correctReturnType = (expectedReturnType != null && SymbolEqualityComparer.Default.Equals(methodSymbol.ReturnType, expectedReturnType))
+                                        || (expectedReturnType == null && methodSymbol.ReturnType.ToDisplayString().Equals(returnType, StringComparison.Ordinal));
+
+                if (!correctReturnType)
                 {
                     return false;
                 }
@@ -178,9 +181,11 @@ internal sealed class ClassDeclarationSyntaxAssertions
                     }
 
                     var expectedType = this.compilation.GetTypeSymbol(parameters[parameterIndex].Type);
-                    if (!SymbolEqualityComparer.Default.Equals(
-                            expectedType,
-                            methodSymbol.Parameters[parameterIndex].Type))
+                    var correctParameterType = (expectedType != null && SymbolEqualityComparer.Default.Equals(
+                                                   expectedType,
+                                                   methodSymbol.Parameters[parameterIndex].Type))
+                                               || (expectedType == null && methodSymbol.Parameters[parameterIndex].Type.ToDisplayString().Equals(parameters[parameterIndex].Type, StringComparison.Ordinal));
+                    if (!correctParameterType)
                     {
                         return false;
                     }

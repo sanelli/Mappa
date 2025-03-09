@@ -78,7 +78,7 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
                                 statementAssertions =>
                                 {
                                     statementAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(1)
                                         .HasNextSyntaxNode(forStatementAssertions =>
@@ -159,7 +159,7 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
                                 statementAssertions =>
                                 {
                                     statementAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(1)
                                         .HasNextSyntaxNode(forStatementAssertions =>
@@ -240,7 +240,7 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
                                 statementAssertions =>
                                 {
                                     statementAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(1)
                                         .HasNextSyntaxNode(forStatementAssertions =>
@@ -322,7 +322,7 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
                                 statementAssertions =>
                                 {
                                     statementAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(1)
                                         .HasNextSyntaxNode(forStatementAssertions =>
@@ -404,7 +404,7 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
                                 statementAssertions =>
                                 {
                                     statementAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(1)
                                         .HasNextSyntaxNode(forStatementAssertions =>
@@ -486,7 +486,7 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
                                 statementAssertions =>
                                 {
                                     statementAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(1)
                                         .HasNextSyntaxNode(forStatementAssertions =>
@@ -568,7 +568,7 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
                                 statementAssertions =>
                                 {
                                     statementAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(1)
                                         .HasNextSyntaxNode(forStatementAssertions =>
@@ -650,7 +650,7 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
                                 statementAssertions =>
                                 {
                                     statementAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(1)
                                         .HasNextSyntaxNode(forStatementAssertions =>
@@ -732,7 +732,7 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
                                 statementAssertions =>
                                 {
                                     statementAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(1)
                                         .HasNextSyntaxNode(forStatementAssertions =>
@@ -814,7 +814,7 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
                                 statementAssertions =>
                                 {
                                     statementAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(1)
                                         .HasNextSyntaxNode(forStatementAssertions =>
@@ -896,7 +896,7 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
                                 statementAssertions =>
                                 {
                                     statementAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(1)
                                         .HasNextSyntaxNode(forStatementAssertions =>
@@ -978,7 +978,7 @@ public sealed class EnumerableOrCollectionToCollectionMapStrategyIntegrationTest
                                 statementAssertions =>
                                 {
                                     statementAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(1)
                                         .HasNextSyntaxNode(forStatementAssertions =>

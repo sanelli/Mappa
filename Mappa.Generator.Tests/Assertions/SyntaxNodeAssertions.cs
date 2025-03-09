@@ -103,10 +103,19 @@ internal sealed class SyntaxNodeAssertions
         var isTypeNullable = type.EndsWith('?');
         type = type.Replace("?", string.Empty, StringComparison.Ordinal);
 
-        var expectedType = this.compilation.GetTypeSymbol(type);
         var localSymbol = this.semanticModel.GetDeclaredSymbol(localDeclarationStatementSyntax.Declaration.Variables[0]) as ILocalSymbol;
-
         localSymbol.Should().NotBeNull();
+
+        ITypeSymbol expectedType;
+        if (localSymbol.Type.IsValueType && isTypeNullable)
+        {
+            var valueTypeNullableStringSymbol = $"{typeof(Nullable)}<{type}>";
+            expectedType = this.compilation.GetTypeSymbol(valueTypeNullableStringSymbol);
+        }
+        else
+        {
+            expectedType = this.compilation.GetTypeSymbol(type);
+        }
 
         SymbolEqualityComparer
             .Default

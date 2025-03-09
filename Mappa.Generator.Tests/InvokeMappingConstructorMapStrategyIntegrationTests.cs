@@ -77,7 +77,7 @@ public sealed class InvokeMappingConstructorMapStrategyIntegrationTests
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
-                        .IsBlockStatement()
+                        .BeBlockStatement()
                         .AsBlock()
                         .HasSyntaxNodesCount(3)
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
@@ -159,7 +159,7 @@ public sealed class InvokeMappingConstructorMapStrategyIntegrationTests
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
-                        .IsBlockStatement()
+                        .BeBlockStatement()
                         .AsBlock()
                         .HasSyntaxNodesCount(3)
                         .HasNextSyntaxNode(syntaxNodeAssertions =>

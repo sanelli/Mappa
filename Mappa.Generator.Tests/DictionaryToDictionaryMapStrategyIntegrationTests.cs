@@ -74,7 +74,7 @@ public sealed class DictionaryToDictionaryMapStrategyIntegrationTests
                                 statementAssertions =>
                                 {
                                     statementAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(3)
                                         .HasNextSyntaxNode(forEachStatementAssertions =>
@@ -156,7 +156,7 @@ public sealed class DictionaryToDictionaryMapStrategyIntegrationTests
                                 statementAssertions =>
                                 {
                                     statementAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(3)
                                         .HasNextSyntaxNode(forEachStatementAssertions =>
@@ -238,7 +238,7 @@ public sealed class DictionaryToDictionaryMapStrategyIntegrationTests
                                 statementAssertions =>
                                 {
                                     statementAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(3)
                                         .HasNextSyntaxNode(forEachStatementAssertions =>
@@ -320,7 +320,7 @@ public sealed class DictionaryToDictionaryMapStrategyIntegrationTests
                                 statementAssertions =>
                                 {
                                     statementAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(3)
                                         .HasNextSyntaxNode(forEachStatementAssertions =>

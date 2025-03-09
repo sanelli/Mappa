@@ -96,7 +96,7 @@ public class ArrayOrListToArrayMapStrategyIntegrationTests
                                 statementSyntaxBaseAssertions =>
                                 {
                                     statementSyntaxBaseAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(2)
                                         .HasNextSyntaxNode(forStatement =>
@@ -214,7 +214,7 @@ public class ArrayOrListToArrayMapStrategyIntegrationTests
                                 statementSyntaxBaseAssertions =>
                                 {
                                     statementSyntaxBaseAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(2)
                                         .HasNextSyntaxNode(forStatement =>
@@ -333,7 +333,7 @@ public class ArrayOrListToArrayMapStrategyIntegrationTests
                                 statementSyntaxBaseAssertions =>
                                 {
                                     statementSyntaxBaseAssertions
-                                        .IsBlockStatement()
+                                        .BeBlockStatement()
                                         .AsBlock()
                                         .HasSyntaxNodesCount(2)
                                         .HasNextSyntaxNode(forStatement =>

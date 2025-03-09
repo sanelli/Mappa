@@ -73,7 +73,7 @@ internal sealed class BlockSyntaxAssertions
     }
 
     /// <inheritdoc/>
-    public IStatementSyntaxBaseAssertions IsBlockStatement()
+    public IStatementSyntaxBaseAssertions BeBlockStatement()
     {
         this.Subject.Should().BeOfType<BlockSyntax>();
         return this;
