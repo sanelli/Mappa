@@ -103,9 +103,11 @@ public sealed class MappaContextTests
         // Assert
         context["foo"].Should().Be("bar");
         throwing.Should().Throw<KeyNotFoundException>();
-        context.TryGetValue("foo", out _).Should().BeTrue();
+        context.TryGetValue("foo", out var value).Should().BeTrue();
+        value.Should().Be("bar");
         context.TryGetValue("ijk", out _).Should().BeFalse();
-        context.TryGetValue<string>("foo", out _).Should().BeTrue();
+        context.TryGetValue<string>("foo", out var stringValue).Should().BeTrue();
+        stringValue.Should().Be("bar");
         context.TryGetValue<int>("foo", out _).Should().BeFalse();
         context.TryGetValue<string>("ijk", out _).Should().BeFalse();
     }
