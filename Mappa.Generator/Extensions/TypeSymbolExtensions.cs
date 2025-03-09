@@ -168,6 +168,14 @@ internal static class TypeSymbolExtensions
         => typeSymbol.AllInterfaces.Any(@interface => @interface.IsICollection());
 
     /// <summary>
+    /// Check if the type implements <see cref="IList{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <returns><c>true</c> if the type symbol implements <see cref="IList{T}"/>.</returns>
+    internal static bool ImplementIList(this ITypeSymbol typeSymbol)
+        => typeSymbol.AllInterfaces.Any(@interface => @interface.IsIList());
+
+    /// <summary>
     /// Check if the type implements <see cref="IDictionary{K,V}"/>.
     /// </summary>
     /// <param name="typeSymbol">The type symbol.</param>
