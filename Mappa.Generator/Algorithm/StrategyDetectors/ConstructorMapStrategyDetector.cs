@@ -331,14 +331,13 @@ internal sealed class ConstructorMapStrategyDetector
 
             // Gets the target properties
             // TODO [#3] Allow to ignore some target properties when looking for for one empty constructor mapping.
-            // TODO [#4] Ensure property setter is accessible.
             var targetProperties = allTargetProperties
 
                 // Ignore indexer properties.
                 // Ignore properties without a setter.
                 // TODO [#5] Accept target properties implementing IList<T>.
                 // TODO [#6] Accept target properties implementing IDictionary<K, V>.
-                .Where(property => !property.IsIndexer && property.SetMethod is not null)
+                .Where(property => !property.IsIndexer)
                 .ToArray();
 
             // If no target properties exist there is no point in applying this strategy
@@ -366,6 +365,7 @@ internal sealed class ConstructorMapStrategyDetector
                                              || allTargetProperties.All(otherProperty => !targetProperty.Name.Equals($"Has{otherProperty.Name}", StringComparison.Ordinal)))
 
                     // Look up for mapping
+                    // TODO [#4] Ensure property setter is accessible.
                     .Select(
                         targetProperty =>
                         {
@@ -396,8 +396,45 @@ internal sealed class ConstructorMapStrategyDetector
                                 return new PropertyMapStrategy(targetProperty, sourceProperty, propertyStrategyFromAttribute, postConstructorInitializer);
                             }
 
+                            // Look up for post initialization collection properties
+                            // TODO [#7] Ensure property getter method is accessible.
+                            if (sourceProperty is not null &&
+                                targetProperty.SetMethod is null && // TODO [#4] Or setter exists but is not accessible.
+                                targetProperty.GetMethod is not null)
+                            {
+                                // Check if it implements IDictionary<K, V>
+                                if (targetProperty.Type.ImplementIDictionary(this.compilation)
+                                    && sourceProperty.Type.ImplementIDictionary(this.compilation)
+                                    && this.context.TryGetKeyAndValueStrategy(
+                                        this.compilation,
+                                        out var keyStrategy,
+                                        out var valueStrategy,
+                                        this.cancellationToken))
+                                {
+                                    var dictionaryPropertyStrategy = new ReadonlyDictionaryPropertyMapStrategy(targetProperty, sourceProperty, keyStrategy, valueStrategy);
+                                    return new PropertyMapStrategy(targetProperty, sourceProperty, dictionaryPropertyStrategy, true);
+                                }
+
+                                // Check if it implements ICollection<T>
+                                else if (targetProperty.Type.ImplementICollection()
+                                         && (sourceProperty.Type.IsArray() || sourceProperty.Type.ImplementIEnumerable())
+                                         && this.context.TryGetElementStrategy(this.compilation, out var elementStrategy, this.cancellationToken))
+                                {
+                                    var collectionPropertyStrategy = new ReadonlyCollectionPropertyMapStrategy(targetProperty, sourceProperty, elementStrategy);
+                                    return new PropertyMapStrategy(targetProperty, sourceProperty, collectionPropertyStrategy, true);
+                                }
+
+                                return new PropertyMapStrategy(targetProperty, null, noMapStrategy, false);
+                            }
+
                             // Look for a matching source property
-                            if (!hasSourceProperty || sourceProperty is null)
+                            if (!hasSourceProperty ||
+                                sourceProperty is null /* TODO [#4] Or setter is not accessible. */)
+                            {
+                                return new PropertyMapStrategy(targetProperty, null, noMapStrategy, false);
+                            }
+
+                            if (targetProperty.SetMethod is null /* TODO [#7] Or getter is not accessible. */)
                             {
                                 return new PropertyMapStrategy(targetProperty, null, noMapStrategy, false);
                             }
@@ -429,13 +466,21 @@ internal sealed class ConstructorMapStrategyDetector
                         .Where(propertyStrategy => propertyStrategy.PropertyStrategy is not NoMapStrategy)
                         .ToArray();
 
-                    // TODO [#21] Allow to return an error if some source properties are not mapped.
-                    strategy = new InvokeConstructorMapStrategy(
-                        this.context.TargetType,
-                        this.context.SourceType,
-                        constructors.Single(),
-                        [],
-                        initializerStrategies);
+                    // If no property can be mapped then we should not be applying this.
+                    if (initializerStrategies.Length > 0)
+                    {
+                        // TODO [#21] Allow to return an error if some source properties are not mapped.
+                        strategy = new InvokeConstructorMapStrategy(
+                            this.context.TargetType,
+                            this.context.SourceType,
+                            constructors.Single(),
+                            [],
+                            initializerStrategies);
+                    }
+                    else
+                    {
+                        strategy = noMapStrategy;
+                    }
                 }
             }
             else

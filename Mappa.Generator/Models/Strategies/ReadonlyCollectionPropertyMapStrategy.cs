@@ -1,0 +1,32 @@
+// <copyright file="ReadonlyCollectionPropertyMapStrategy.cs" company="Stefano Anelli">
+// Copyright (c) Stefano Anelli. All rights reserved.
+// </copyright>
+
+using Mappa.Generator.Builders.Strategies;
+
+using Microsoft.CodeAnalysis;
+
+namespace Mappa.Generator.Models.Strategies;
+
+/// <summary>
+/// Strategy used when mapping to a collection property that
+/// either does not have a setter or the setter is not accessible.
+/// </summary>
+/// <param name="targetProperty">The target property (a collection type).</param>
+/// <param name="sourceProperty">The source property (a collection type).</param>
+/// <param name="elementStrategy">The strategy of the element mapping.</param>
+internal sealed class ReadonlyCollectionPropertyMapStrategy(IPropertySymbol targetProperty, IPropertySymbol sourceProperty, MapStrategy elementStrategy)
+    : MapStrategy(targetProperty.Type, sourceProperty.Type)
+{
+    /// <summary>
+    /// Gets the strategy for the elements.
+    /// </summary>
+    public MapStrategy ElementStrategy { get; } = elementStrategy;
+
+    /// <inheritdoc/>
+    internal override IMappaStrategyBuilder GetBuilder()
+    {
+        // TODO [#87] Implement me.
+        throw new NotImplementedException("#87");
+    }
+}

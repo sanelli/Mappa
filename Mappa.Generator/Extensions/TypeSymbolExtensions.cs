@@ -152,6 +152,31 @@ internal static class TypeSymbolExtensions
         => typeSymbol.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T;
 
     /// <summary>
+    /// Check if the type implements <see cref="IEnumerable{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <returns><c>true</c> if the type symbol implements <see cref="IEnumerable{T}"/>.</returns>
+    internal static bool ImplementIEnumerable(this ITypeSymbol typeSymbol)
+        => typeSymbol.AllInterfaces.Any(@interface => @interface.IsIEnumerable());
+
+    /// <summary>
+    /// Check if the type implements <see cref="ICollection{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <returns><c>true</c> if the type symbol implements <see cref="ICollection{T}"/>.</returns>
+    internal static bool ImplementICollection(this ITypeSymbol typeSymbol)
+        => typeSymbol.AllInterfaces.Any(@interface => @interface.IsICollection());
+
+    /// <summary>
+    /// Check if the type implements <see cref="IDictionary{K,V}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol implements <see cref="IDictionary{K,V}"/>.</returns>
+    internal static bool ImplementIDictionary(this ITypeSymbol typeSymbol, Compilation compilation)
+        => typeSymbol.AllInterfaces.Any(@interface => @interface.IsIDictionary(compilation));
+
+    /// <summary>
     /// Check if the type is <see cref="Tuple"/>.
     /// </summary>
     /// <param name="typeSymbol">The type symbol.</param>
