@@ -365,7 +365,6 @@ internal sealed class ConstructorMapStrategyDetector
                                              || allTargetProperties.All(otherProperty => !targetProperty.Name.Equals($"Has{otherProperty.Name}", StringComparison.Ordinal)))
 
                     // Look up for mapping
-                    // TODO [#4] Ensure property setter is accessible.
                     .Select(
                         targetProperty =>
                         {
@@ -382,6 +381,7 @@ internal sealed class ConstructorMapStrategyDetector
                             }
 
                             // Look for any attribute action that can be applied
+                            // TODO [#4] Ensure property setter is accessible.
                             if (this.context.MapMethod is not null &&
                                 this.TryGetStrategyForPropertyOrArgumentUsingAttributesOnMethod(
                                     targetProperty.Name,
@@ -436,12 +436,12 @@ internal sealed class ConstructorMapStrategyDetector
 
                             // Look for a matching source property
                             if (!hasSourceProperty ||
-                                sourceProperty is null /* TODO [#4] Or setter is not accessible. */)
+                                sourceProperty is null /* TODO [#7] Or getter is not accessible. */)
                             {
                                 return new PropertyMapStrategy(targetProperty, null, noMapStrategy, false);
                             }
 
-                            if (targetProperty.SetMethod is null /* TODO [#7] Or getter is not accessible. */)
+                            if (targetProperty.SetMethod is null /* TODO [#4] Or setter is not accessible. */)
                             {
                                 return new PropertyMapStrategy(targetProperty, null, noMapStrategy, false);
                             }

@@ -12,7 +12,7 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Tests around <see cref="ReadonlyCollectionPropertyMapStrategy"/>.
 /// </summary>
-// TODO [#7] Add extra tests to make sure this works when setter exists but is not accessible.
+// TODO [#4] Add extra tests to make sure this works when setter exists but is not accessible.
 public sealed class ReadonlyCollectionPropertyMapStrategyIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {

@@ -24,19 +24,21 @@ internal sealed class ReadonlyDictionaryPropertyMapStrategy(
     : MapStrategy(targetProperty.Type, sourceProperty.Type)
 {
     /// <summary>
+    /// Gets the target property.
+    /// </summary>
+    internal IPropertySymbol TargetProperty { get; } = targetProperty;
+
+    /// <summary>
     /// Gets the strategy for the keys.
     /// </summary>
-    public MapStrategy KeyStrategy { get; } = keyStrategy;
+    internal MapStrategy KeyStrategy { get; } = keyStrategy;
 
     /// <summary>
     /// Gets the strategy for the values.
     /// </summary>
-    public MapStrategy ValueStrategy { get; } = valueStrategy;
+    internal MapStrategy ValueStrategy { get; } = valueStrategy;
 
     /// <inheritdoc/>
     internal override IMappaStrategyBuilder GetBuilder()
-    {
-        // TODO [#87] Implement me.
-        throw new NotImplementedException("#87");
-    }
+        => new ReadonlyDictionaryPropertyMapStrategyBuilder(this);
 }
