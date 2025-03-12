@@ -69,7 +69,60 @@ public sealed class ReadonlyCollectionPropertyMapStrategyIntegrationTests
                 NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
-                    // TODO [#87] Implement me.
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(4)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                "__mappa_tmp_1",
+                                initializerExpressionAssertions => initializerExpressionAssertions.BeObjectCreationExpressionSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.Target"));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(int[]).ToString(),
+                                "__mappa_tmp_2",
+                                initializerExpressionAssertions => initializerExpressionAssertions.BeMemberAccessExpressionSyntax("input.PropertyA"));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeForStatementSyntax(
+                                declarationAssertion => declarationAssertion.BeAssignmentFromConstant("int", "__mappa_tmp_3", 0),
+                                conditionAssertion => conditionAssertion.BeBinaryExpressionSyntax(
+                                    leftExpressionAssertions => leftExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_3"),
+                                    SyntaxKind.LessThanToken,
+                                    rightExpressionAssertions => rightExpressionAssertions.BeMemberAccessExpressionSyntax("__mappa_tmp_2.Length")),
+                                incrementorAssertion => incrementorAssertion.BePrefixUnaryExpressionSyntax(SyntaxKind.PlusPlusToken, expression => expression.BeIdentifierNameSyntax("__mappa_tmp_3")),
+                                statementSyntaxBaseAssertions => statementSyntaxBaseAssertions
+                                    .BeBlockStatement()
+                                    .AsBlock()
+                                    .HasSyntaxNodesCount(3)
+                                    .HasNextSyntaxNode(forStatementAssertion =>
+                                    {
+                                        forStatementAssertion.BeLocalDeclarationStatementSyntax(
+                                            typeof(int).ToString(),
+                                            "__mappa_tmp_4",
+                                            initializerAssertions => initializerAssertions.BeElementAccessExpressionSyntaxWithIdentifierNameSyntax("__mappa_tmp_2", "__mappa_tmp_3"));
+                                    })
+                                    .HasNextSyntaxNode(forStatementAssertion =>
+                                    {
+                                        forStatementAssertion.BeLocalDeclarationStatementSyntax(
+                                            typeof(string).ToString(),
+                                            "__mappa_tmp_5",
+                                            initializerAssertions => initializerAssertions.BeInvocationExpressionSyntax("__mappa_tmp_4.ToString"));
+                                    })
+                                    .HasNextSyntaxNode(forStatementAssertion =>
+                                    {
+                                        forStatementAssertion.BeInvocationExpressionSyntaxStatement(
+                                            "__mappa_tmp_1.PropertyA.Add",
+                                            firstParameter => firstParameter.BeIdentifierNameSyntax("__mappa_tmp_5"));
+                                    }));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(expressionAssertion => expressionAssertion.BeIdentifierNameSyntax("__mappa_tmp_1"));
+                        });
                 });
     }
 
