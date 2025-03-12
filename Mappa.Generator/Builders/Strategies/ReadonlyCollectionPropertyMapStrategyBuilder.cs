@@ -34,21 +34,21 @@ internal sealed class ReadonlyCollectionPropertyMapStrategyBuilder
         var stringBuilder = new PrettyCode.StringBuilder();
 
         // For array or collections use a for loop
-        if (this.strategy.SourceType.IsArray() || this.strategy.SourceType.ImplementIList())
+        if (this.strategy.SourceType.IsArray() || this.strategy.SourceType.IsOrImplementIList())
         {
             var counterTemporary = context.NextTemporary();
             stringBuilder.AppendLine($"for (int {counterTemporary} = 0; {counterTemporary} < {source}.{GetLengthPropertyName(this.strategy.SourceType)}; ++{counterTemporary})");
             using (stringBuilder.CurlyBracesBlock())
             {
                 var elementTemporary = context.NextTemporary();
-                stringBuilder.AppendLine($"{this.strategy.SourceType.GetElementType().ToDisplayString()} {elementTemporary} = {source}[{elementTemporary}];");
+                stringBuilder.AppendLine($"{this.strategy.SourceType.GetElementType().ToDisplayString()} {elementTemporary} = {source}[{counterTemporary}];");
                 var (targetElementTemporary, targetElementCode) = this.strategy.ElementStrategy.GetBuilder().BuildSource(elementTemporary, context, mappaGlobalOptions);
                 if (!string.IsNullOrWhiteSpace(targetElementCode))
                 {
                     stringBuilder.AppendLine(targetElementCode);
                 }
 
-                stringBuilder.AppendLine($"{context.GetCompositeTypeTargetName()}.Add({targetElementTemporary});");
+                stringBuilder.AppendLine($"{context.GetCompositeTypeTargetName()}.{this.strategy.TargetProperty.Name}.Add({targetElementTemporary});");
             }
 
             return (string.Empty, stringBuilder.ToString());
@@ -66,7 +66,7 @@ internal sealed class ReadonlyCollectionPropertyMapStrategyBuilder
             return nameof(Array.Length);
         }
 
-        if (typeSymbol.ImplementICollection())
+        if (typeSymbol.IsOrImplementICollection())
         {
             return nameof(ICollection<int>.Count);
         }

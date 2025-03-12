@@ -403,9 +403,11 @@ internal sealed class ConstructorMapStrategyDetector
                                 targetProperty.GetMethod is not null)
                             {
                                 // Check if it implements IDictionary<K, V>
-                                if (targetProperty.Type.ImplementIDictionary(this.compilation)
-                                    && sourceProperty.Type.ImplementIDictionary(this.compilation)
+                                if (targetProperty.Type.IsOrImplementIDictionary(this.compilation)
+                                    && sourceProperty.Type.IsOrImplementIDictionary(this.compilation)
                                     && this.context.TryGetKeyAndValueStrategy(
+                                        targetProperty.Type,
+                                        sourceProperty.Type,
                                         this.compilation,
                                         out var keyStrategy,
                                         out var valueStrategy,
@@ -416,9 +418,14 @@ internal sealed class ConstructorMapStrategyDetector
                                 }
 
                                 // Check if it implements ICollection<T>
-                                else if (targetProperty.Type.ImplementICollection()
-                                         && (sourceProperty.Type.IsArray() || sourceProperty.Type.ImplementIEnumerable())
-                                         && this.context.TryGetElementStrategy(this.compilation, out var elementStrategy, this.cancellationToken))
+                                else if (targetProperty.Type.IsOrImplementICollection()
+                                         && (sourceProperty.Type.IsArray() || sourceProperty.Type.IsOrImplementIEnumerable())
+                                         && this.context.TryGetElementStrategy(
+                                             targetProperty.Type,
+                                             sourceProperty.Type,
+                                             this.compilation,
+                                             out var elementStrategy,
+                                             this.cancellationToken))
                                 {
                                     var collectionPropertyStrategy = new ReadonlyCollectionPropertyMapStrategy(targetProperty, sourceProperty, elementStrategy);
                                     return new PropertyMapStrategy(targetProperty, sourceProperty, collectionPropertyStrategy, true);

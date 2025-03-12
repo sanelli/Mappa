@@ -19,14 +19,16 @@ internal sealed class ReadonlyCollectionPropertyMapStrategy(IPropertySymbol targ
     : MapStrategy(targetProperty.Type, sourceProperty.Type)
 {
     /// <summary>
+    /// Gets the target property.
+    /// </summary>
+    internal IPropertySymbol TargetProperty { get; } = targetProperty;
+
+    /// <summary>
     /// Gets the strategy for the elements.
     /// </summary>
-    public MapStrategy ElementStrategy { get; } = elementStrategy;
+    internal MapStrategy ElementStrategy { get; } = elementStrategy;
 
     /// <inheritdoc/>
     internal override IMappaStrategyBuilder GetBuilder()
-    {
-        // TODO [#87] Implement me.
-        throw new NotImplementedException("#87");
-    }
+        => new ReadonlyCollectionPropertyMapStrategyBuilder(this);
 }
