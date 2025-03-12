@@ -37,12 +37,12 @@ public sealed class ReadonlyCollectionPropertyMapStrategyIntegrationTests
 
                                   public class Source
                                   {
-                                      int[] PropertyA {get;}
+                                      public int[] PropertyA {get;}
                                   }
 
                                   public class Target
                                   {
-                                      ICollection<string> PropertyA {get;}
+                                      public ICollection<string> PropertyA {get;}
                                   }
 
                                   [Mappa]
@@ -147,12 +147,12 @@ public sealed class ReadonlyCollectionPropertyMapStrategyIntegrationTests
 
                                   public class Source
                                   {
-                                      int[] PropertyA {get;}
+                                      public int[] PropertyA {get;}
                                   }
 
                                   public class Target
                                   {
-                                      List<string> PropertyA {get;}
+                                      public List<string> PropertyA {get;}
                                   }
 
                                   [Mappa]
@@ -257,12 +257,12 @@ public sealed class ReadonlyCollectionPropertyMapStrategyIntegrationTests
 
                                   public class Source
                                   {
-                                      IList<int> PropertyA {get;}
+                                      public IList<int> PropertyA {get;}
                                   }
 
                                   public class Target
                                   {
-                                      ICollection<string> PropertyA {get;}
+                                      public ICollection<string> PropertyA {get;}
                                   }
 
                                   [Mappa]
@@ -367,12 +367,12 @@ public sealed class ReadonlyCollectionPropertyMapStrategyIntegrationTests
 
                                   public class Source
                                   {
-                                      IList<int> PropertyA {get;}
+                                      public IList<int> PropertyA {get;}
                                   }
 
                                   public class Target
                                   {
-                                      List<string> PropertyA {get;}
+                                      public List<string> PropertyA {get;}
                                   }
 
                                   [Mappa]
@@ -477,12 +477,12 @@ public sealed class ReadonlyCollectionPropertyMapStrategyIntegrationTests
 
                                   public class Source
                                   {
-                                      IEnumerable<int> PropertyA {get;}
+                                     public IEnumerable<int> PropertyA {get;}
                                   }
 
                                   public class Target
                                   {
-                                      List<string> PropertyA {get;}
+                                     public List<string> PropertyA {get;}
                                   }
 
                                   [Mappa]

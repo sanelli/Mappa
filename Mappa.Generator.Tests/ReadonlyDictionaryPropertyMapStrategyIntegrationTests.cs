@@ -36,12 +36,12 @@ public sealed class ReadonlyDictionaryPropertyMapStrategyIntegrationTests
 
                                   public class Source
                                   {
-                                      Dictionary<int, string> PropertyA {get;}
+                                      public Dictionary<int, string> PropertyA {get;}
                                   }
 
                                   public class Target
                                   {
-                                      Dictionary<string, int> PropertyA {get;}
+                                      public Dictionary<string, int> PropertyA {get;}
                                   }
 
                                   [Mappa]
@@ -162,12 +162,12 @@ public sealed class ReadonlyDictionaryPropertyMapStrategyIntegrationTests
 
                                   public class Source
                                   {
-                                      IDictionary<int, string> PropertyA {get;}
+                                      public IDictionary<int, string> PropertyA {get;}
                                   }
 
                                   public class Target
                                   {
-                                      IDictionary<string, int> PropertyA {get;}
+                                      public IDictionary<string, int> PropertyA {get;}
                                   }
 
                                   [Mappa]
