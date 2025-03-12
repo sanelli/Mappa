@@ -227,10 +227,10 @@ internal sealed class ExpressionSyntaxAssertions
     /// Assert that the expression in a element access expression syntax having
     /// identifier name syntax for accessing both the array and the index.
     /// </summary>
-    /// <param name="arrayName">The name of the array.</param>
+    /// <param name="variableName">The name of the variable.</param>
     /// <param name="stringLiteral">The name of the index variable.</param>
     /// <returns>The assertions.</returns>
-    public ExpressionSyntaxAssertions BeElementAccessExpressionSyntaxWithIdentifierNameSyntax(string arrayName, string stringLiteral)
+    public ExpressionSyntaxAssertions BeElementAccessExpressionSyntaxWithIdentifierNameSyntax(string variableName, string stringLiteral)
     {
         this.Subject.Should().BeOfType<ElementAccessExpressionSyntax>();
 
@@ -238,7 +238,34 @@ internal sealed class ExpressionSyntaxAssertions
         var expression = elementAccessExpressionSyntax.Expression;
         expression.Should().BeOfType<IdentifierNameSyntax>();
         var arrayAccess = (IdentifierNameSyntax)expression;
-        arrayAccess.Identifier.ToString().Should().Be(arrayName);
+        arrayAccess.Identifier.ToString().Should().Be(variableName);
+
+        var argumentList = elementAccessExpressionSyntax.ArgumentList;
+        argumentList.Arguments.Should().HaveCount(1);
+        argumentList.Arguments[0].Expression.Should().BeOfType<IdentifierNameSyntax>();
+        var indexExpression = (IdentifierNameSyntax)argumentList.Arguments[0].Expression;
+        indexExpression.Identifier.ToString().Should().Be(stringLiteral);
+
+        return this;
+    }
+
+    /// <summary>
+    /// Assert that the expression in a element access expression syntax having
+    /// member access expression syntax for accessing both the variable;
+    /// the index is an identifier name.
+    /// </summary>
+    /// <param name="fullAccessPath">The path to access the variable.</param>
+    /// <param name="stringLiteral">The name of the index variable.</param>
+    /// <returns>The assertions.</returns>
+    public ExpressionSyntaxAssertions BeElementAccessExpressionSyntaxWithMemberAccessNameSyntax(string fullAccessPath, string stringLiteral)
+    {
+        this.Subject.Should().BeOfType<ElementAccessExpressionSyntax>();
+
+        var elementAccessExpressionSyntax = (ElementAccessExpressionSyntax)this.Subject;
+        var expression = elementAccessExpressionSyntax.Expression;
+        expression.Should().BeOfType<MemberAccessExpressionSyntax>();
+        var arrayAccess = (MemberAccessExpressionSyntax)expression;
+        arrayAccess.ToString().Should().Be(fullAccessPath);
 
         var argumentList = elementAccessExpressionSyntax.ArgumentList;
         argumentList.Arguments.Should().HaveCount(1);
@@ -253,10 +280,10 @@ internal sealed class ExpressionSyntaxAssertions
     /// Assert that the expression in a element access expression syntax having
     /// lister syntax for accessing both the array and the index.
     /// </summary>
-    /// <param name="arrayName">The name of the array.</param>
+    /// <param name="variableName">The name of the variable.</param>
     /// <param name="stringLiteral">The name of the index variable.</param>
     /// <returns>The assertions.</returns>
-    public ExpressionSyntaxAssertions BeElementAccessExpressionSyntaxWithLiteralSyntax(string arrayName, string stringLiteral)
+    public ExpressionSyntaxAssertions BeElementAccessExpressionSyntaxWithLiteralSyntax(string variableName, string stringLiteral)
     {
         this.Subject.Should().BeOfType<ElementAccessExpressionSyntax>();
 
@@ -264,7 +291,7 @@ internal sealed class ExpressionSyntaxAssertions
         var expression = elementAccessExpressionSyntax.Expression;
         expression.Should().BeOfType<IdentifierNameSyntax>();
         var arrayAccess = (IdentifierNameSyntax)expression;
-        arrayAccess.Identifier.ToString().Should().Be(arrayName);
+        arrayAccess.Identifier.ToString().Should().Be(variableName);
 
         var argumentList = elementAccessExpressionSyntax.ArgumentList;
         argumentList.Arguments.Should().HaveCount(1);

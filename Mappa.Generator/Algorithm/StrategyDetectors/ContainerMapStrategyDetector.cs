@@ -114,7 +114,7 @@ internal sealed class ContainerMapStrategyDetector
         var isTargetArray = this.context.TargetType.IsArray();
 
         elementStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
-        return acceptSource && isTargetArray && this.TryGetElementStrategy(out elementStrategy);
+        return acceptSource && isTargetArray && this.context.TryGetElementStrategy(this.compilation, out elementStrategy, this.cancellationToken);
     }
 
     private bool CanMapCollectionOrEnumerableToArray(out MapStrategy elementStrategy)
@@ -127,7 +127,7 @@ internal sealed class ContainerMapStrategyDetector
         var isTargetArray = this.context.TargetType.IsArray();
 
         elementStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
-        return acceptSource && isTargetArray && this.TryGetElementStrategy(out elementStrategy);
+        return acceptSource && isTargetArray && this.context.TryGetElementStrategy(this.compilation, out elementStrategy, this.cancellationToken);
     }
 
     private bool CanMapArrayOrListToCollectionOrEnumerable(out MapStrategy elementStrategy)
@@ -146,7 +146,7 @@ internal sealed class ContainerMapStrategyDetector
 
         // Return result of check.
         elementStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
-        return acceptSource && acceptTarget && this.TryGetElementStrategy(out elementStrategy);
+        return acceptSource && acceptTarget && this.context.TryGetElementStrategy(this.compilation, out elementStrategy, this.cancellationToken);
     }
 
     private bool CanMapCollectionOrEnumerableToCollectionOrEnumerable(out MapStrategy elementStrategy)
@@ -165,7 +165,7 @@ internal sealed class ContainerMapStrategyDetector
 
         // Return result of check.
         elementStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
-        return acceptSource && acceptTarget && this.TryGetElementStrategy(out elementStrategy);
+        return acceptSource && acceptTarget && this.context.TryGetElementStrategy(this.compilation, out elementStrategy, this.cancellationToken);
     }
 
     private bool CanMapDictionaryToDictionary(out MapStrategy keyStrategy, out MapStrategy valueStrategy)
@@ -178,43 +178,10 @@ internal sealed class ContainerMapStrategyDetector
         keyStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
         valueStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
 
-        return isSourceDictionary && isTargetDictionary && this.TryGetKeyAndValueStrategy(out keyStrategy, out valueStrategy);
-    }
-
-    private bool TryGetElementStrategy(out MapStrategy elementStrategy)
-    {
-        var sourceElementType = this.context.SourceType.GetElementType();
-        var targetElementType = this.context.TargetType.GetElementType();
-        var derivedContext = new DerivedMappaMapAlgorithmContext(
-            this.context,
-            targetElementType,
-            sourceElementType);
-        var algorithm = new TypeMapIdentifierWithMapMethodAlgorithm(derivedContext, this.compilation, this.cancellationToken);
-        elementStrategy = algorithm.GetStrategy();
-        return elementStrategy is not NoMapStrategy;
-    }
-
-    private bool TryGetKeyAndValueStrategy(out MapStrategy keyStrategy, out MapStrategy valueStrategy)
-    {
-        var (sourceKeyType, sourceKeyValueType) = this.context.SourceType.GetKeyAndValueTypes();
-        var (targetKeyType, targetValueType) = this.context.TargetType.GetKeyAndValueTypes();
-
-        // Get strategy for key
-        var keyContext = new DerivedMappaMapAlgorithmContext(
-            this.context,
-            targetKeyType,
-            sourceKeyType);
-        var keyAlgorithm = new TypeMapIdentifierWithMapMethodAlgorithm(keyContext, this.compilation, this.cancellationToken);
-        keyStrategy = keyAlgorithm.GetStrategy();
-
-        // Get strategy for value
-        var valueContext = new DerivedMappaMapAlgorithmContext(
-            this.context,
-            targetValueType,
-            sourceKeyValueType);
-        var valueAlgorithm = new TypeMapIdentifierWithMapMethodAlgorithm(valueContext, this.compilation, this.cancellationToken);
-        valueStrategy = valueAlgorithm.GetStrategy();
-
-        return keyStrategy is not NoMapStrategy && valueStrategy is not NoMapStrategy;
+        return isSourceDictionary && isTargetDictionary && this.context.TryGetKeyAndValueStrategy(
+            this.compilation,
+            out keyStrategy,
+            out valueStrategy,
+            this.cancellationToken);
     }
 }
