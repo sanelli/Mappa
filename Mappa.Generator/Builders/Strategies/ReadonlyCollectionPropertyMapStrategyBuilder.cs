@@ -32,11 +32,11 @@ internal sealed class ReadonlyCollectionPropertyMapStrategyBuilder
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
         var stringBuilder = new PrettyCode.StringBuilder();
+        var counterTemporary = context.NextTemporary();
 
-        // For array or collections use a for loop
+        // For array or lists use a for loop
         if (this.strategy.SourceType.IsArray() || this.strategy.SourceType.IsOrImplementIList())
         {
-            var counterTemporary = context.NextTemporary();
             stringBuilder.AppendLine($"for (int {counterTemporary} = 0; {counterTemporary} < {source}.{GetLengthPropertyName(this.strategy.SourceType)}; ++{counterTemporary})");
             using (stringBuilder.CurlyBracesBlock())
             {
@@ -50,13 +50,25 @@ internal sealed class ReadonlyCollectionPropertyMapStrategyBuilder
 
                 stringBuilder.AppendLine($"{context.GetCompositeTypeTargetName()}.{this.strategy.TargetProperty.Name}.Add({targetElementTemporary});");
             }
-
-            return (string.Empty, stringBuilder.ToString());
         }
 
         // For generic IEnumerable use foreach
-        // TODO [#87] Implement me.
-        throw new NotImplementedException("#87");
+        else
+        {
+            stringBuilder.AppendLine($"foreach ({this.strategy.SourceType.GetElementType().ToDisplayString()} {counterTemporary} in {source})");
+            using (stringBuilder.CurlyBracesBlock())
+            {
+                var (targetElementTemporary, targetElementCode) = this.strategy.ElementStrategy.GetBuilder().BuildSource(counterTemporary, context, mappaGlobalOptions);
+                if (!string.IsNullOrWhiteSpace(targetElementCode))
+                {
+                    stringBuilder.AppendLine(targetElementCode);
+                }
+
+                stringBuilder.AppendLine($"{context.GetCompositeTypeTargetName()}.{this.strategy.TargetProperty.Name}.Add({targetElementTemporary});");
+            }
+        }
+
+        return (string.Empty, stringBuilder.ToString());
     }
 
     private static string GetLengthPropertyName(ITypeSymbol typeSymbol)

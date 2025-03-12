@@ -455,4 +455,104 @@ public sealed class ReadonlyCollectionPropertyMapStrategyIntegrationTests
                         });
                 });
     }
+
+    /// <summary>
+    /// Test that a mapping can be created from:
+    /// - from <see cref="IEnumerable{T}"/> of <see cref="int"/> property;
+    /// - to <see cref="List{T}"/> or <see cref="string"/> property;
+    /// - target property does not have a setter.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapToReadonlyPropertyCollectionFromIEnumerableWhenTargetSetterIsNotProvidedAndIsOfTypeList()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+                                  using System.Collections.Generic;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class Source
+                                  {
+                                      IEnumerable<int> PropertyA {get;}
+                                  }
+
+                                  public class Target
+                                  {
+                                      List<string> PropertyA {get;}
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial Target Map(Source input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                NullableAnnotation.NotAnnotated,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(4)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                "__mappa_tmp_1",
+                                initializerExpressionAssertions => initializerExpressionAssertions.BeObjectCreationExpressionSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.Target"));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(IEnumerable<int>).ToString(),
+                                "__mappa_tmp_2",
+                                initializerExpressionAssertions => initializerExpressionAssertions.BeMemberAccessExpressionSyntax("input.PropertyA"));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeForEachStatementSyntax(
+                                typeof(int).ToString(),
+                                "__mappa_tmp_3",
+                                incrementorAssertion => incrementorAssertion.BeIdentifierNameSyntax("__mappa_tmp_2"),
+                                statementSyntaxBaseAssertions => statementSyntaxBaseAssertions
+                                    .BeBlockStatement()
+                                    .AsBlock()
+                                    .HasSyntaxNodesCount(2)
+                                    .HasNextSyntaxNode(forStatementAssertion =>
+                                    {
+                                        forStatementAssertion.BeLocalDeclarationStatementSyntax(
+                                            typeof(string).ToString(),
+                                            "__mappa_tmp_4",
+                                            initializerAssertions => initializerAssertions.BeInvocationExpressionSyntax("__mappa_tmp_3.ToString"));
+                                    })
+                                    .HasNextSyntaxNode(forStatementAssertion =>
+                                    {
+                                        forStatementAssertion.BeInvocationExpressionSyntaxStatement(
+                                            "__mappa_tmp_1.PropertyA.Add",
+                                            firstParameter => firstParameter.BeIdentifierNameSyntax("__mappa_tmp_4"));
+                                    }));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(expressionAssertion => expressionAssertion.BeIdentifierNameSyntax("__mappa_tmp_1"));
+                        });
+                });
+    }
 }
