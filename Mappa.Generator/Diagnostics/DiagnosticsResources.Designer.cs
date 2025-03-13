@@ -122,5 +122,11 @@ namespace Mappa.Generator.Diagnostics {
                 return ResourceManager.GetString("ParseExactDoesNotAcceptOnlyFormat", resourceCulture);
             }
         }
+        
+        internal static string PropertySetterIsNotAccessible {
+            get {
+                return ResourceManager.GetString("PropertySetterIsNotAccessible", resourceCulture);
+            }
+        }
     }
 }

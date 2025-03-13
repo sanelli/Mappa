@@ -382,7 +382,6 @@ internal sealed class ConstructorMapStrategyDetector
 
                             // Look for any attribute action that can be applied
                             if (this.context.MapMethod is not null
-                                && targetProperty.IsSetterAccessible(this.context.MapMethod)
                                 && this.TryGetStrategyForPropertyOrArgumentUsingAttributesOnMethod(
                                     targetProperty.Name,
                                     targetProperty.Type,
@@ -391,6 +390,12 @@ internal sealed class ConstructorMapStrategyDetector
                                     StringComparison.Ordinal,
                                     out var propertyStrategyFromAttribute))
                             {
+                                if (!targetProperty.IsSetterAccessible(this.context.MapMethod))
+                                {
+                                    this.context.ReportDiagnostic(MappaDiagnostics.PropertySetterIsNotAccessible(this.context.GetMapMethod().MethodDeclarationSyntax, this.context.TargetType, targetProperty));
+                                    return new PropertyMapStrategy(targetProperty, null, noMapStrategy, false);
+                                }
+
                                 propertyStrategyFromAttribute = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, [.. sourceProperties.Values], propertyStrategyFromAttribute);
                                 propertyStrategyFromAttribute = this.EncapsulateMapStrategyForTargetOptional(targetProperty, allTargetProperties, propertyStrategyFromAttribute, out var postConstructorInitializer);
                                 return new PropertyMapStrategy(targetProperty, sourceProperty, propertyStrategyFromAttribute, postConstructorInitializer);

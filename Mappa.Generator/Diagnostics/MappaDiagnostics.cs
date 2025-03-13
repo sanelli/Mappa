@@ -201,4 +201,21 @@ internal static class MappaDiagnostics
             MappaDiagnosticDescriptors.ParseExactDoesNotAcceptOnlyFormat,
             methodDeclarationSyntax?.GetLocation(),
             typeName);
+
+    /// <summary>
+    /// Diagnostic to report the fact that <paramref name="property"/>
+    /// is not accessible and therefore cannot be mapped.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="typeSymbol">The type which the property belong to.</param>
+    /// <param name="property">The property that cannot be accessed.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic PropertySetterIsNotAccessible(
+        MethodDeclarationSyntax? methodDeclarationSyntax,
+        ITypeSymbol typeSymbol,
+        IPropertySymbol property)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.PropertySetterIsNotAccessible,
+            methodDeclarationSyntax?.GetLocation(),
+            $"{typeSymbol.ToDisplayString()}.{property.Name}");
 }

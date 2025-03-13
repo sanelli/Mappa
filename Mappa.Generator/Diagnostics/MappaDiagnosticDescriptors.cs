@@ -27,6 +27,7 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? cannotUseMappaAssignFromContextAttributeWithoutContextParameter;
     private static DiagnosticDescriptor? userDefinedCultureIsMissingCultureName;
     private static DiagnosticDescriptor? parseExactDoesNotAcceptOnlyFormat;
+    private static DiagnosticDescriptor? propertySetterIsNotAccessible;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -131,6 +132,14 @@ internal static class MappaDiagnosticDescriptors
         => parseExactDoesNotAcceptOnlyFormat ??= BuildWarning(
             MappaDiagnosticsKind.ParseExactDoesNotAcceptOnlyFormat,
             DiagnosticsResources.ParseExactDoesNotAcceptOnlyFormat);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.PropertySetterIsNotAccessible"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor PropertySetterIsNotAccessible
+        => propertySetterIsNotAccessible ??= BuildWarning(
+            MappaDiagnosticsKind.PropertySetterIsNotAccessible,
+            DiagnosticsResources.PropertySetterIsNotAccessible);
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(

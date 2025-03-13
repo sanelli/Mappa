@@ -57,4 +57,7 @@
     <data name="ParseExactDoesNotAcceptOnlyFormat" xml:space="preserve">
         <value>Format will be ignored because method {0}.ParseExact(string, string) does not exist; consider defining a culture via MappaSettings.</value>
     </data>
+    <data name="PropertySetterIsNotAccessible" xml:space="preserve">
+        <value>Setter for property '{0}' is not accessible.</value>
+    </data>
 </root>
