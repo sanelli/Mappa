@@ -11,6 +11,7 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Unit tests for <see cref="MappaInvokeMethodAttribute"/> usage.
 /// </summary>
+// TODO [#4] Add tests to make sure that no mapping is applied when setter is not accessible (e.g. private).
 public sealed class MappaInvokeMethodAttributeTests
     : MappaGeneratorAbstractUnitTests
 {

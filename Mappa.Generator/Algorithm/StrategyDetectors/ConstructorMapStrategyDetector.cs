@@ -381,9 +381,9 @@ internal sealed class ConstructorMapStrategyDetector
                             }
 
                             // Look for any attribute action that can be applied
-                            // TODO [#4] Ensure property setter is accessible.
-                            if (this.context.MapMethod is not null &&
-                                this.TryGetStrategyForPropertyOrArgumentUsingAttributesOnMethod(
+                            if (this.context.MapMethod is not null
+                                && targetProperty.IsSetterAccessible(this.context.MapMethod)
+                                && this.TryGetStrategyForPropertyOrArgumentUsingAttributesOnMethod(
                                     targetProperty.Name,
                                     targetProperty.Type,
                                     this.context.SourceType,
