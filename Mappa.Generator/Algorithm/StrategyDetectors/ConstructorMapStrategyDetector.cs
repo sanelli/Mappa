@@ -404,7 +404,7 @@ internal sealed class ConstructorMapStrategyDetector
                             // Look up for post initialization collection properties
                             // TODO [#7] Ensure property getter method is accessible.
                             if (sourceProperty is not null &&
-                                targetProperty.SetMethod is null && // TODO [#4] Or setter exists but is not accessible.
+                                (targetProperty.SetMethod is null || (this.context.MapMethod is not null && targetProperty.SetMethod is not null && !targetProperty.IsSetterAccessible(this.context.MapMethod))) &&
                                 targetProperty.GetMethod is not null)
                             {
                                 // Check if it implements IDictionary<K, V>
