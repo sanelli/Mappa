@@ -443,12 +443,12 @@ internal sealed class ConstructorMapStrategyDetector
                             if (!hasSourceProperty ||
                                 sourceProperty is null /* TODO [#7] Or getter is not accessible. */)
                             {
-                                return new PropertyMapStrategy(targetProperty, null, noMapStrategy, false);
+                                return new PropertyMapStrategy(targetProperty, sourceProperty, noMapStrategy, false);
                             }
 
-                            if (targetProperty.SetMethod is null /* TODO [#4] Or setter is not accessible. */)
+                            if (targetProperty.SetMethod is null || !targetProperty.IsSetterAccessible(this.context.GetMapMethod()))
                             {
-                                return new PropertyMapStrategy(targetProperty, null, noMapStrategy, false);
+                                return new PropertyMapStrategy(targetProperty, sourceProperty, noMapStrategy, false);
                             }
 
                             var targetPropertyType = targetProperty.Type;
