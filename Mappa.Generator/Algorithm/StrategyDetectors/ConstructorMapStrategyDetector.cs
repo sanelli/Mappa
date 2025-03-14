@@ -446,7 +446,7 @@ internal sealed class ConstructorMapStrategyDetector
                                 return new PropertyMapStrategy(targetProperty, sourceProperty, noMapStrategy, false);
                             }
 
-                            if (targetProperty.SetMethod is null || !targetProperty.IsSetterAccessible(this.context.GetMapMethod()))
+                            if (targetProperty.SetMethod is null || !targetProperty.IsSetterAccessible(this.context.GetRootMapMethod()))
                             {
                                 return new PropertyMapStrategy(targetProperty, sourceProperty, noMapStrategy, false);
                             }
