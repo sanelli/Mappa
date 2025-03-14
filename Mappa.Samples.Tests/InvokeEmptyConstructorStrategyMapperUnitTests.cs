@@ -55,4 +55,22 @@ public sealed class InvokeEmptyConstructorStrategyMapperUnitTests
         target.ParamA.Should().Be(source.ParamA.ToString(NumberFormatInfo.CurrentInfo));
         target.ParamB.Should().Be((int)source.ParamB);
     }
+
+    /// <summary>
+    /// Unit test for <see cref="InvokeEmptyConstructorStrategyMapper.MapWithPrivateSetter(SourceClassModel)"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapWhenOnePropertyIsIgnored()
+    {
+        // Arrange
+        var source = new SourceClassModel { ParamA = 123, ParamB = CountingValues.Three };
+
+        // Act
+        var target = this.mapper.MapWithPrivateSetter(source);
+
+        // Arrange
+        target.ParamA.Should().Be(source.ParamA.ToString(NumberFormatInfo.CurrentInfo));
+        target.ParamB.Should().Be(new TargetClassModelWithOnePrivateSetterProperty().ParamB);
+    }
 }

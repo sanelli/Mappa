@@ -381,9 +381,8 @@ internal sealed class ConstructorMapStrategyDetector
                             }
 
                             // Look for any attribute action that can be applied
-                            // TODO [#4] Ensure property setter is accessible.
-                            if (this.context.MapMethod is not null &&
-                                this.TryGetStrategyForPropertyOrArgumentUsingAttributesOnMethod(
+                            if (this.context.MapMethod is not null
+                                && this.TryGetStrategyForPropertyOrArgumentUsingAttributesOnMethod(
                                     targetProperty.Name,
                                     targetProperty.Type,
                                     this.context.SourceType,
@@ -391,6 +390,12 @@ internal sealed class ConstructorMapStrategyDetector
                                     StringComparison.Ordinal,
                                     out var propertyStrategyFromAttribute))
                             {
+                                if (!targetProperty.IsSetterAccessible(this.context.MapMethod))
+                                {
+                                    this.context.ReportDiagnostic(MappaDiagnostics.PropertySetterIsNotAccessible(this.context.GetMapMethod().MethodDeclarationSyntax, this.context.TargetType, targetProperty));
+                                    return new PropertyMapStrategy(targetProperty, null, noMapStrategy, false);
+                                }
+
                                 propertyStrategyFromAttribute = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, [.. sourceProperties.Values], propertyStrategyFromAttribute);
                                 propertyStrategyFromAttribute = this.EncapsulateMapStrategyForTargetOptional(targetProperty, allTargetProperties, propertyStrategyFromAttribute, out var postConstructorInitializer);
                                 return new PropertyMapStrategy(targetProperty, sourceProperty, propertyStrategyFromAttribute, postConstructorInitializer);
@@ -399,7 +404,7 @@ internal sealed class ConstructorMapStrategyDetector
                             // Look up for post initialization collection properties
                             // TODO [#7] Ensure property getter method is accessible.
                             if (sourceProperty is not null &&
-                                targetProperty.SetMethod is null && // TODO [#4] Or setter exists but is not accessible.
+                                (targetProperty.SetMethod is null || (this.context.MapMethod is not null && targetProperty.SetMethod is not null && !targetProperty.IsSetterAccessible(this.context.MapMethod))) &&
                                 targetProperty.GetMethod is not null)
                             {
                                 // Check if it implements IDictionary<K, V>
@@ -438,12 +443,12 @@ internal sealed class ConstructorMapStrategyDetector
                             if (!hasSourceProperty ||
                                 sourceProperty is null /* TODO [#7] Or getter is not accessible. */)
                             {
-                                return new PropertyMapStrategy(targetProperty, null, noMapStrategy, false);
+                                return new PropertyMapStrategy(targetProperty, sourceProperty, noMapStrategy, false);
                             }
 
-                            if (targetProperty.SetMethod is null /* TODO [#4] Or setter is not accessible. */)
+                            if (targetProperty.SetMethod is null || !targetProperty.IsSetterAccessible(this.context.GetRootMapMethod()))
                             {
-                                return new PropertyMapStrategy(targetProperty, null, noMapStrategy, false);
+                                return new PropertyMapStrategy(targetProperty, sourceProperty, noMapStrategy, false);
                             }
 
                             var targetPropertyType = targetProperty.Type;

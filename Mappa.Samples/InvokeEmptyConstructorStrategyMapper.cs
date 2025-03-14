@@ -30,4 +30,11 @@ public sealed partial class InvokeEmptyConstructorStrategyMapper
     /// <param name="sourceRecordModel">The source model.</param>
     /// <returns>The target model.</returns>
     public partial TargetRecordModelWithEmptyConstructor Map(SourceRecordModelWithEmptyConstructor sourceRecordModel);
+
+    /// <summary>
+    /// Map from <see cref="SourceClassModel"/> to <see cref="TargetClassModelWithOnePrivateSetterProperty"/>
+    /// using the constructor empty strategy and ignoring properties with private setter.
+    /// </summary>
+    /// <returns>The target model.</returns>
+    public partial TargetClassModelWithOnePrivateSetterProperty MapWithPrivateSetter(SourceClassModel sourceClassModel);
 }

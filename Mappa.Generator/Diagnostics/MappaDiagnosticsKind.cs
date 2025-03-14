@@ -83,4 +83,9 @@ internal enum MappaDiagnosticsKind
     /// and format is being ignored.
     /// </summary>
     ParseExactDoesNotAcceptOnlyFormat,
+
+    /// <summary>
+    /// The property setter is not accessible.
+    /// </summary>
+    PropertySetterIsNotAccessible,
 }

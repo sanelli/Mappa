@@ -20,4 +20,18 @@ public sealed partial class ReadOnlyTargetCollectionMapper
     /// <param name="source">The source.</param>
     /// <returns>The target mapper.</returns>
     public partial TargetClassWithCollections Map(SourceClassWithCollections source);
+
+    /// <summary>
+    /// Map from <see cref="SourceClassWithCollections"/> to <see cref="TargetClassWithPrivateSetterPropertyCollections"/>.
+    /// </summary>
+    /// <param name="source">The source.</param>
+    /// <returns>The target mapper.</returns>
+    public partial TargetClassWithPrivateSetterPropertyCollections MapWithPrivateSetters(SourceClassWithCollections source);
+
+    /// <summary>
+    /// Map from <see cref="SourceClassWithCollections"/> to <see cref="TargetProtobufClassWithCollections"/>.
+    /// </summary>
+    /// <param name="source">The source.</param>
+    /// <returns>The target mapper.</returns>
+    public partial TargetProtobufClassWithCollections MapToProtobuf(SourceClassWithCollections source);
 }

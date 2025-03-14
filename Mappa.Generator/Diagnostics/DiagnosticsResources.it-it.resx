@@ -50,4 +50,7 @@
     <data name="ParseExactDoesNotAcceptOnlyFormat" xml:space="preserve">
         <value>Il valore di Format verrrà ignorato perché il metodo ;'0}.ParseExact(string, string)' non esiste; definire una cultura via MappaSettings può risolvere il problema.</value>
     </data>
+    <data name="PropertySetterIsNotAccessible" xml:space="preserve">
+        <value>Il metodo setter per la proprietà '{0}' non è accessibile.</value>
+    </data>
 </root>
