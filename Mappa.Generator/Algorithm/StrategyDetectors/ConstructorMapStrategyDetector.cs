@@ -114,7 +114,30 @@ internal sealed class ConstructorMapStrategyDetector
                             targetParameter =>
                             {
                                 // TODO [#8] Allow property mapping where source property name differ from target parameter name using an attribute.
-                                IPropertySymbol? sourceProperty = Array.Find(sourceProperties, property => property.Name.Equals(targetParameter.Name, StringComparison.OrdinalIgnoreCase));
+                                var usePropertyAttributes = this.context.MapMethod is not null
+                                    ? this.context.MapMethod.GetAttributes<MappaUsePropertyAttribute>().Where(attribute => attribute.TargetPropertyName.Equals(targetParameter.Name, StringComparison.OrdinalIgnoreCase)).ToArray()
+                                    : [];
+
+                                string expectedSourcePropertyName;
+                                StringComparison expectedSourcePropertyComparison;
+                                switch (usePropertyAttributes.Length)
+                                {
+                                    case 0:
+                                        expectedSourcePropertyName = targetParameter.Name;
+                                        expectedSourcePropertyComparison = StringComparison.OrdinalIgnoreCase;
+                                        break;
+                                    case 1:
+                                        expectedSourcePropertyName = usePropertyAttributes[0].SourcePropertyName;
+                                        expectedSourcePropertyComparison = StringComparison.Ordinal;
+                                        break;
+                                    default:
+                                        this.context.ReportDiagnostic(MappaDiagnostics.TooManyUsePropertyAttributesForTheSameTargetProperty(this.context.GetRootMapMethod().MethodDeclarationSyntax, this.context.GetRootMapMethod().MethodName, targetParameter.Name));
+                                        return (targetParameter, null!, noMapStrategy);
+                                }
+
+                                IPropertySymbol? sourceProperty = Array.Find(
+                                    sourceProperties,
+                                    property => property.Name.Equals(expectedSourcePropertyName, expectedSourcePropertyComparison));
 
                                 // Look for any attribute action that can be applied
                                 if (this.context.MapMethod is not null &&
@@ -364,10 +387,27 @@ internal sealed class ConstructorMapStrategyDetector
                     .Select(
                         targetProperty =>
                         {
-                            // TODO [#8] Allow property mapping where source property name differ from target property name using an attribute.
                             // TODO [#9] Allow property mapping regardless of casing using an attribute.
                             // Try to get a matching property
-                            var hasSourceProperty = sourceProperties.TryGetValue(targetProperty.Name, out var sourceProperty);
+                            var usePropertyAttributes = this.context.MapMethod is not null
+                                ? this.context.MapMethod.GetAttributes<MappaUsePropertyAttribute>().Where(attribute => attribute.TargetPropertyName.Equals(targetProperty.Name, StringComparison.Ordinal)).ToArray()
+                                : [];
+
+                            string expectedSourcePropertyName;
+                            switch (usePropertyAttributes.Length)
+                            {
+                                case 0:
+                                    expectedSourcePropertyName = targetProperty.Name;
+                                    break;
+                                case 1:
+                                    expectedSourcePropertyName = usePropertyAttributes[0].SourcePropertyName;
+                                    break;
+                                default:
+                                    this.context.ReportDiagnostic(MappaDiagnostics.TooManyUsePropertyAttributesForTheSameTargetProperty(this.context.GetRootMapMethod().MethodDeclarationSyntax, this.context.GetRootMapMethod().MethodName, targetProperty.Name));
+                                    return new PropertyMapStrategy(targetProperty, null, noMapStrategy, false);
+                            }
+
+                            var hasSourceProperty = sourceProperties.TryGetValue(expectedSourcePropertyName, out var sourceProperty);
 
                             // Just to be sure force source property to null
                             // since there seems to be no guarantee on the valuer returned.
@@ -388,7 +428,7 @@ internal sealed class ConstructorMapStrategyDetector
                             {
                                 if (!targetProperty.IsSetterAccessible(this.context.MapMethod))
                                 {
-                                    this.context.ReportDiagnostic(MappaDiagnostics.PropertySetterIsNotAccessible(this.context.GetMapMethod().MethodDeclarationSyntax, this.context.TargetType, targetProperty));
+                                    this.context.ReportDiagnostic(MappaDiagnostics.PropertySetterIsNotAccessible(this.context.GetRootMapMethod().MethodDeclarationSyntax, this.context.TargetType, targetProperty));
                                     return new PropertyMapStrategy(targetProperty, null, noMapStrategy, false);
                                 }
 

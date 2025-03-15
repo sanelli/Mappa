@@ -88,4 +88,9 @@ internal enum MappaDiagnosticsKind
     /// The property setter is not accessible.
     /// </summary>
     PropertySetterIsNotAccessible,
+
+    /// <summary>
+    /// A method has multiple <see cref="MappaUsePropertyAttribute"/>s for the same property.
+    /// </summary>
+    TooManyUsePropertyAttributesForTheSameTargetProperty,
 }

@@ -218,4 +218,23 @@ internal static class MappaDiagnostics
             MappaDiagnosticDescriptors.PropertySetterIsNotAccessible,
             methodDeclarationSyntax?.GetLocation(),
             $"{typeSymbol.ToDisplayString()}.{property.Name}");
+
+    /// <summary>
+    /// Diagnostic to report the fact that <paramref name="methodDeclarationSyntax"/>
+    /// has multiple attributes of type <see cref="MappaUsePropertyAttribute"/>
+    /// targeting the same <paramref name="property"/>.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="methodName">The name of the method.</param>
+    /// <param name="property">The property (or parameter) that cannot be accessed.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic TooManyUsePropertyAttributesForTheSameTargetProperty(
+        MethodDeclarationSyntax? methodDeclarationSyntax,
+        string methodName,
+        string property)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.TooManyUsePropertyAttributesForTheSameTargetProperty,
+            methodDeclarationSyntax?.GetLocation(),
+            methodName,
+            property);
 }

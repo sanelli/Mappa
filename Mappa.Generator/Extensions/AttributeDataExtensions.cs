@@ -22,6 +22,7 @@ internal static class AttributeDataExtensions
     private static readonly string MappaIgnoreAttributeFullName = typeof(MappaIgnoreAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaIgnoreAttribute)}");
     private static readonly string MappaAssignFromContextAttributeFullName = typeof(MappaAssignFromContextAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaAssignFromContextAttribute)}");
     private static readonly string MappaSettingsAttributeFullName = typeof(MappaSettingsAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaSettingsAttribute)}");
+    private static readonly string MappaUsePropertyAttributeFullName = typeof(MappaUsePropertyAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaUsePropertyAttribute)}");
 
     /// <summary>
     /// Gets the <see cref="MappaInvokeMethodAttribute"/>s applied to the method.
@@ -75,17 +76,17 @@ internal static class AttributeDataExtensions
     }
 
     /// <summary>
-    /// Gets the <see cref="MappaAssignFromContextAttributeFullName"/>s applied.
+    /// Gets the <see cref="MappaAssignFromContextAttribute"/>s applied.
     /// </summary>
     /// <param name="attributes">The attributes.</param>
     /// <param name="compilation">The compilation.</param>
-    /// <returns>The <see cref="MappaAssignFromContextAttributeFullName"/> applied.</returns>
+    /// <returns>The <see cref="MappaAssignFromContextAttribute"/> applied.</returns>
     internal static MappaAssignFromContextAttribute[] GetMappaAssignFromContextAttributes(this ImmutableArray<AttributeData> attributes, Compilation compilation)
     {
-        var mappaInvokeMethodAttributeSymbol = compilation.GetTypeByMetadataName(MappaAssignFromContextAttributeFullName);
+        var mappaAssignFromContextAttributeSymbol = compilation.GetTypeByMetadataName(MappaAssignFromContextAttributeFullName);
         List<MappaAssignFromContextAttribute> results = new();
         foreach (var constructorArguments in attributes
-                     .Where(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, mappaInvokeMethodAttributeSymbol))
+                     .Where(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, mappaAssignFromContextAttributeSymbol))
                      .Select(attributeData => attributeData.ConstructorArguments))
         {
             if (constructorArguments.Length == 2 &&
@@ -173,6 +174,31 @@ internal static class AttributeDataExtensions
         }
 
         return attribute;
+    }
+
+    /// <summary>
+    /// Gets the <see cref="MappaUsePropertyAttribute"/>s applied.
+    /// </summary>
+    /// <param name="attributes">The attributes.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The <see cref="MappaUsePropertyAttribute"/> applied.</returns>
+    internal static MappaUsePropertyAttribute[] GetMappaUsePropertyAttributes(this ImmutableArray<AttributeData> attributes, Compilation compilation)
+    {
+        var mappaUsePropertyAttributeSymbol = compilation.GetTypeByMetadataName(MappaUsePropertyAttributeFullName);
+        List<MappaUsePropertyAttribute> results = new();
+        foreach (var constructorArguments in attributes
+                     .Where(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, mappaUsePropertyAttributeSymbol))
+                     .Select(attributeData => attributeData.ConstructorArguments))
+        {
+            if (constructorArguments.Length == 2 &&
+                constructorArguments[0].Value is string targetParameterName &&
+                constructorArguments[1].Value is string sourcePropertyName)
+            {
+                results.Add(new MappaUsePropertyAttribute(targetParameterName, sourcePropertyName));
+            }
+        }
+
+        return [..results];
     }
 
     private sealed class FakeType(string fullName) : Type
