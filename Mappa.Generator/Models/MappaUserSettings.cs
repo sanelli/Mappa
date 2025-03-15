@@ -21,7 +21,7 @@ internal sealed class MappaUserSettings
     private readonly StackSetting<string?> guidFormat;
     private readonly StackSetting<CultureInfoSetting> cultureInfoSetting;
     private readonly StackSetting<string?> cultureName;
-    private readonly StackSetting<BooleanSetting> optional;
+    private readonly StackSetting<BooleanSetting> protobufOptional;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaUserSettings"/> class.
@@ -37,7 +37,7 @@ internal sealed class MappaUserSettings
             otherSettings.GuidFormat,
             otherSettings.CultureInfoSetting,
             otherSettings.CultureName,
-            otherSettings.Optional)
+            otherSettings.ProtobufOptional)
     {
     }
 
@@ -72,7 +72,7 @@ internal sealed class MappaUserSettings
         this.guidFormat = new(guidFormat);
         this.cultureInfoSetting = new(cultureInfoSetting);
         this.cultureName = new(cultureName);
-        this.optional = new(optional);
+        this.protobufOptional = new(optional);
     }
 
     /// <inheritdoc />
@@ -100,7 +100,7 @@ internal sealed class MappaUserSettings
     public string? CultureName => this.cultureName;
 
     /// <inheritdoc/>
-    public BooleanSetting Optional => this.optional;
+    public BooleanSetting ProtobufOptional => this.protobufOptional;
 
     /// <summary>
     /// Push the changes required by the <paramref name="mappaSettingsAttribute"/> on the stack.
@@ -127,7 +127,7 @@ internal sealed class MappaUserSettings
             this.guidFormat.Apply(mappaSettingsAttribute.GuidFormat ?? this.guidFormat),
             this.cultureInfoSetting.Apply(mappaSettingsAttribute.CultureInfoSetting is not CultureInfoSetting.Undefined ? mappaSettingsAttribute.CultureInfoSetting : this.cultureInfoSetting),
             this.cultureName.Apply(mappaSettingsAttribute.CultureName ?? this.cultureName),
-            this.optional.Apply(mappaSettingsAttribute.Optional is not BooleanSetting.Undefined ? mappaSettingsAttribute.Optional : this.optional),
+            this.protobufOptional.Apply(mappaSettingsAttribute.ProtobufOptional is not BooleanSetting.Undefined ? mappaSettingsAttribute.ProtobufOptional : this.protobufOptional),
  #pragma warning restore CA2000
         ]);
     }

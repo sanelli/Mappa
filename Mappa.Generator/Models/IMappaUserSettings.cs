@@ -52,7 +52,7 @@ internal interface IMappaUserSettings
     string? CultureName { get; }
 
     /// <summary>
-    /// Gets a value indicating whether the optional feature is enabled when performing mapping.
+    /// Gets a value indicating whether the protobuf optional feature is enabled when performing mapping.
     /// </summary>
-    public BooleanSetting Optional { get; }
+    public BooleanSetting ProtobufOptional { get; }
 }

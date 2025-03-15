@@ -8,7 +8,7 @@ dotnet build Mappa.Samples
 dotnet build Mappa.Samples.Tests
 dotnet build Mappa.Samples.Aot
 
-dotnet build Mappa.Bechmark
+dotnet build Mappa.Benchmark
 
 dotnet build Mappa.Dependency.Protobuf
 dotnet build Mappa.Dependency.Protobuf.DependencyInjection

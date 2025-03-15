@@ -8,10 +8,10 @@ using Mappa.Samples.Models;
 namespace Mappa.Samples;
 
 /// <summary>
-/// Mapper showcasing the <see cref="MappaSettingsAttribute.Optional"/> setting for protobuf.
+/// Mapper showcasing the <see cref="MappaSettingsAttribute.ProtobufOptional"/> setting for protobuf.
 /// </summary>
 [Mappa]
-[MappaSettings(Optional = BooleanSetting.Enable)]
+[MappaSettings(ProtobufOptional = BooleanSetting.Enable)]
 public sealed partial class ProtobufOptionalMapper
 {
     /// <summary>
