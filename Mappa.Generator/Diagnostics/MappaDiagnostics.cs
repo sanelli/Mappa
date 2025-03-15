@@ -226,15 +226,15 @@ internal static class MappaDiagnostics
     /// </summary>
     /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
     /// <param name="methodName">The name of the method.</param>
-    /// <param name="property">The property that cannot be accessed.</param>
+    /// <param name="property">The property (or parameter) that cannot be accessed.</param>
     /// <returns>The diagnostic.</returns>
     internal static Diagnostic TooManyUsePropertyAttributesForTheSameTargetProperty(
         MethodDeclarationSyntax? methodDeclarationSyntax,
         string methodName,
-        IPropertySymbol property)
+        string property)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.TooManyUsePropertyAttributesForTheSameTargetProperty,
             methodDeclarationSyntax?.GetLocation(),
             methodName,
-            property.Name);
+            property);
 }

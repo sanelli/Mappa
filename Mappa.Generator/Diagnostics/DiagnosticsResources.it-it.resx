@@ -54,6 +54,6 @@
         <value>Il metodo setter per la proprietà '{0}' non è accessibile.</value>
     </data>
     <data name="TooManyUsePropertyAttributesForTheSameTargetProperty" xml:space="preserve">
-        <value>Il metodo '{0}' ha molteplici attributi di tipo MappaUseProperty per la medesima proprietà '{1}'.</value>
+        <value>Il metodo '{0}' ha molteplici attributi di tipo MappaUseProperty per la medesima proprietà or parametro '{1}'.</value>
     </data>
 </root>
