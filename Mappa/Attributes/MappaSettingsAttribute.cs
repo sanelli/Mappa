@@ -56,8 +56,8 @@ public sealed class MappaSettingsAttribute
     public string? CultureName { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the optional feature is enabled when performing mapping.
+    /// Gets or sets a value indicating whether the protobuf optional feature is enabled when performing mapping.
     /// It is not enabled by default.
     /// </summary>
-    public BooleanSetting Optional { get; set; } = BooleanSetting.Undefined;
+    public BooleanSetting ProtobufOptional { get; set; } = BooleanSetting.Undefined;
 }

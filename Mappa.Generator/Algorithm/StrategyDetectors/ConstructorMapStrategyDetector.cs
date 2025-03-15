@@ -195,7 +195,7 @@ internal sealed class ConstructorMapStrategyDetector
             return inputStrategy;
         }
 
-        if (this.context.MappaUserSettings.Optional is not BooleanSetting.Enable)
+        if (this.context.MappaUserSettings.ProtobufOptional is not BooleanSetting.Enable)
         {
             return inputStrategy;
         }
@@ -221,7 +221,7 @@ internal sealed class ConstructorMapStrategyDetector
         out bool requirePostConstructorInitialization)
     {
         requirePostConstructorInitialization = false;
-        if (this.context.MappaUserSettings.Optional is not BooleanSetting.Enable)
+        if (this.context.MappaUserSettings.ProtobufOptional is not BooleanSetting.Enable)
         {
             return inputStrategy;
         }
@@ -357,7 +357,7 @@ internal sealed class ConstructorMapStrategyDetector
 
                     // Remove all the optional identifier properties from the list
                     // when the optional setting is enabled.
-                    .Where(targetProperty => this.context.MappaUserSettings.Optional is not BooleanSetting.Enable
+                    .Where(targetProperty => this.context.MappaUserSettings.ProtobufOptional is not BooleanSetting.Enable
                                              || allTargetProperties.All(otherProperty => !targetProperty.Name.Equals($"Has{otherProperty.Name}", StringComparison.Ordinal)))
 
                     // Look up for mapping

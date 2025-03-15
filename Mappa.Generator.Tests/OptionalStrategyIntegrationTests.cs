@@ -134,7 +134,7 @@ public sealed class OptionalStrategyIntegrationTests
                                   [Mappa]
                                   public sealed partial class Mapper
                                   {
-                                      [MappaSettings(Optional = BooleanSetting.Enable)]
+                                      [MappaSettings(ProtobufOptional = BooleanSetting.Enable)]
                                       public partial Target Map(Source input);
                                   }
                                   #nullable restore
@@ -243,10 +243,10 @@ public sealed class OptionalStrategyIntegrationTests
                                   }
 
                                   [Mappa]
-                                  [MappaSettings(Optional = BooleanSetting.Enable)]
+                                  [MappaSettings(ProtobufOptional = BooleanSetting.Enable)]
                                   public sealed partial class Mapper
                                   {
-                                      [MappaSettings(Optional = BooleanSetting.Enable)]
+                                      [MappaSettings(ProtobufOptional = BooleanSetting.Enable)]
                                       public partial Target Map(Source input);
                                   }
                                   #nullable restore
@@ -355,10 +355,10 @@ public sealed class OptionalStrategyIntegrationTests
                                   }
 
                                   [Mappa]
-                                  [MappaSettings(Optional = BooleanSetting.Disable)]
+                                  [MappaSettings(ProtobufOptional = BooleanSetting.Disable)]
                                   public sealed partial class Mapper
                                   {
-                                      [MappaSettings(Optional = BooleanSetting.Enable)]
+                                      [MappaSettings(ProtobufOptional = BooleanSetting.Enable)]
                                       public partial Target Map(Source input);
                                   }
                                   #nullable restore
@@ -568,7 +568,7 @@ public sealed class OptionalStrategyIntegrationTests
                                   }
 
                                   [Mappa]
-                                  [MappaSettings(Optional = BooleanSetting.Enable)]
+                                  [MappaSettings(ProtobufOptional = BooleanSetting.Enable)]
                                   public sealed partial class Mapper
                                   {
                                       [MappaInvokeMethod(nameof(Target.PropertyA), nameof(Increment))]
@@ -698,7 +698,7 @@ public sealed class OptionalStrategyIntegrationTests
                                   public sealed partial class Mapper
                                   {
                                       [MappaInvokeMethod(nameof(Target.PropertyA), nameof(Increment))]
-                                      [MappaSettings(Optional = BooleanSetting.Enable)]
+                                      [MappaSettings(ProtobufOptional = BooleanSetting.Enable)]
                                       public partial Target Map(Source input);
                                       
                                       [MappaIgnore]
@@ -822,11 +822,11 @@ public sealed class OptionalStrategyIntegrationTests
                                   }
 
                                   [Mappa]
-                                  [MappaSettings(Optional = BooleanSetting.Disable)]
+                                  [MappaSettings(ProtobufOptional = BooleanSetting.Disable)]
                                   public sealed partial class Mapper
                                   {
                                       [MappaInvokeMethod(nameof(Target.PropertyA), nameof(Increment))]
-                                      [MappaSettings(Optional = BooleanSetting.Enable)]
+                                      [MappaSettings(ProtobufOptional = BooleanSetting.Enable)]
                                       public partial Target Map(Source input);
                                       
                                       [MappaIgnore]
@@ -1028,7 +1028,7 @@ public sealed class OptionalStrategyIntegrationTests
                                   [Mappa]
                                   public sealed partial class Mapper
                                   {
-                                      [MappaSettings(Optional = BooleanSetting.Enable)]
+                                      [MappaSettings(ProtobufOptional = BooleanSetting.Enable)]
                                       public partial Target Map(Source input);
                                   }
                                   #nullable restore
@@ -1133,10 +1133,10 @@ public sealed class OptionalStrategyIntegrationTests
                                   }
 
                                   [Mappa]
-                                  [MappaSettings(Optional = BooleanSetting.Enable)]
+                                  [MappaSettings(ProtobufOptional = BooleanSetting.Enable)]
                                   public sealed partial class Mapper
                                   {
-                                      [MappaSettings(Optional = BooleanSetting.Enable)]
+                                      [MappaSettings(ProtobufOptional = BooleanSetting.Enable)]
                                       public partial Target Map(Source input);
                                   }
                                   #nullable restore
@@ -1241,10 +1241,10 @@ public sealed class OptionalStrategyIntegrationTests
                                   }
 
                                   [Mappa]
-                                  [MappaSettings(Optional = BooleanSetting.Disable)]
+                                  [MappaSettings(ProtobufOptional = BooleanSetting.Disable)]
                                   public sealed partial class Mapper
                                   {
-                                      [MappaSettings(Optional = BooleanSetting.Enable)]
+                                      [MappaSettings(ProtobufOptional = BooleanSetting.Enable)]
                                       public partial Target Map(Source input);
                                   }
                                   #nullable restore
@@ -1446,7 +1446,7 @@ public sealed class OptionalStrategyIntegrationTests
                                   }
 
                                   [Mappa]
-                                  [MappaSettings(Optional = BooleanSetting.Enable)]
+                                  [MappaSettings(ProtobufOptional = BooleanSetting.Enable)]
                                   public sealed partial class Mapper
                                   {
                                       [MappaInvokeMethod(nameof(Target.PropertyA), nameof(Increment))]
@@ -1572,7 +1572,7 @@ public sealed class OptionalStrategyIntegrationTests
                                   public sealed partial class Mapper
                                   {
                                       [MappaInvokeMethod(nameof(Target.PropertyA), nameof(Increment))]
-                                      [MappaSettings(Optional = BooleanSetting.Enable)]
+                                      [MappaSettings(ProtobufOptional = BooleanSetting.Enable)]
                                       public partial Target Map(Source input);
                                       
                                       [MappaIgnore]
@@ -1692,11 +1692,11 @@ public sealed class OptionalStrategyIntegrationTests
                                   }
 
                                   [Mappa]
-                                  [MappaSettings(Optional = BooleanSetting.Disable)]
+                                  [MappaSettings(ProtobufOptional = BooleanSetting.Disable)]
                                   public sealed partial class Mapper
                                   {
                                       [MappaInvokeMethod(nameof(Target.PropertyA), nameof(Increment))]
-                                      [MappaSettings(Optional = BooleanSetting.Enable)]
+                                      [MappaSettings(ProtobufOptional = BooleanSetting.Enable)]
                                       public partial Target Map(Source input);
                                       
                                       [MappaIgnore]
@@ -1896,7 +1896,7 @@ public sealed class OptionalStrategyIntegrationTests
                                   }
 
                                   [Mappa]
-                                  [MappaSettings(Optional = BooleanSetting.Enable)]
+                                  [MappaSettings(ProtobufOptional = BooleanSetting.Enable)]
                                   public sealed partial class Mapper
                                   {
                                       public partial Target Map(Source input);
@@ -1978,7 +1978,7 @@ public sealed class OptionalStrategyIntegrationTests
                                   }
 
                                   [Mappa]
-                                  [MappaSettings(Optional = BooleanSetting.Enable)]
+                                  [MappaSettings(ProtobufOptional = BooleanSetting.Enable)]
                                   public sealed partial class Mapper
                                   {
                                       public partial Target Map(Source input);
@@ -2075,7 +2075,7 @@ public sealed class OptionalStrategyIntegrationTests
                                   [Mappa]
                                   public sealed partial class Mapper
                                   {
-                                      [MappaSettings(Optional = BooleanSetting.Enable)]
+                                      [MappaSettings(ProtobufOptional = BooleanSetting.Enable)]
                                       public partial Target Map(Source input);
                                   }
                                   #nullable restore
@@ -2168,10 +2168,10 @@ public sealed class OptionalStrategyIntegrationTests
                                   }
 
                                   [Mappa]
-                                  [MappaSettings(Optional = BooleanSetting.Disable)]
+                                  [MappaSettings(ProtobufOptional = BooleanSetting.Disable)]
                                   public sealed partial class Mapper
                                   {
-                                      [MappaSettings(Optional = BooleanSetting.Enable)]
+                                      [MappaSettings(ProtobufOptional = BooleanSetting.Enable)]
                                       public partial Target Map(Source input);
                                   }
                                   #nullable restore
@@ -2362,7 +2362,7 @@ public sealed class OptionalStrategyIntegrationTests
                                   }
 
                                   [Mappa]
-                                  [MappaSettings(Optional = BooleanSetting.Enable)]
+                                  [MappaSettings(ProtobufOptional = BooleanSetting.Enable)]
                                   public sealed partial class Mapper
                                   {
                                       [MappaInvokeMethod(nameof(Target.PropertyA), nameof(Increment))]
@@ -2472,7 +2472,7 @@ public sealed class OptionalStrategyIntegrationTests
                                   public sealed partial class Mapper
                                   {
                                       [MappaInvokeMethod(nameof(Target.PropertyA), nameof(Increment))]
-                                      [MappaSettings(Optional = BooleanSetting.Enable)]
+                                      [MappaSettings(ProtobufOptional = BooleanSetting.Enable)]
                                       public partial Target Map(Source input);
                                       
                                       [MappaIgnore]
@@ -2576,11 +2576,11 @@ public sealed class OptionalStrategyIntegrationTests
                                   }
 
                                   [Mappa]
-                                  [MappaSettings(Optional = BooleanSetting.Disable)]
+                                  [MappaSettings(ProtobufOptional = BooleanSetting.Disable)]
                                   public sealed partial class Mapper
                                   {
                                       [MappaInvokeMethod(nameof(Target.PropertyA), nameof(Increment))]
-                                      [MappaSettings(Optional = BooleanSetting.Enable)]
+                                      [MappaSettings(ProtobufOptional = BooleanSetting.Enable)]
                                       public partial Target Map(Source input);
                                       
                                       [MappaIgnore]
@@ -2687,7 +2687,7 @@ public sealed class OptionalStrategyIntegrationTests
                                   public sealed partial class Mapper
                                   {
                                       [MappaInvokeMethod(nameof(Target.PropertyA), nameof(Increment))]
-                                      [MappaSettings(Optional = BooleanSetting.Enable)]
+                                      [MappaSettings(ProtobufOptional = BooleanSetting.Enable)]
                                       public partial Target Map(Source input);
                                       
                                       [MappaIgnore]
@@ -2784,7 +2784,7 @@ public sealed class OptionalStrategyIntegrationTests
                                   }
 
                                   [Mappa]
-                                  [MappaSettings(Optional = BooleanSetting.Enable)]
+                                  [MappaSettings(ProtobufOptional = BooleanSetting.Enable)]
                                   public sealed partial class Mapper
                                   {
                                       public partial Target Map(Source input);

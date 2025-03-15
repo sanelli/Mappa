@@ -52,7 +52,7 @@ namespace Mappa.Generator.Models;
 ///         <description>The name of the default culture to be applied.</description>
 ///     </item>
 ///     <item>
-///         <term><c>mappa.optional</c></term>
+///         <term><c>mappa.protobufoptional</c></term>
 ///         <description>Set the default value to enable or disable the (protobuf) optional setting. Valid values are the values from the <see cref="BooleanSetting"/> enum.</description>
 ///     </item>
 /// </list>
@@ -71,7 +71,7 @@ internal sealed class MappaGlobalOptions
     private const string MappaSettingsGuidFormat = "guidformat";
     private const string MappaSettingsCultureInfoSettings = "cultureinfosettings";
     private const string MappaSettingsCultureName = "culturename";
-    private const string MappaSettingsEnableOptional = "enableoptional";
+    private const string MappaSettingsProtobufOptional = "protobufoptional";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaGlobalOptions"/> class.
@@ -131,7 +131,7 @@ internal sealed class MappaGlobalOptions
             ? GetCultureInfoSettingsFromString(cultureInfoSettings)
             : CultureInfoSetting.None;
 
-        this.Optional = options.TryGetValue(GetOptionName(MappaSettingsEnableOptional), out var optional)
+        this.ProtobufOptional = options.TryGetValue(GetOptionName(MappaSettingsProtobufOptional), out var optional)
                                   && !string.IsNullOrWhiteSpace(cultureInfoSettings)
             ? GetEnableSettingsFromString(optional)
             : BooleanSetting.Undefined;
@@ -207,7 +207,7 @@ internal sealed class MappaGlobalOptions
     public string? CultureName { get; }
 
     /// <inheritdoc/>
-    public BooleanSetting Optional { get; }
+    public BooleanSetting ProtobufOptional { get; }
 
     /// <summary>
     /// Gets a value indicating whether to report debug INFO diagnostics.
