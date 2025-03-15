@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Models.Strategies;
 using Mappa.Generator.Tests.Abstractions;
 using Mappa.Generator.Tests.Assertions;
@@ -499,5 +500,49 @@ public sealed class InvokeConstructorMapStrategyIntegrationTests
                             syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_3"));
                         });
                 });
+    }
+
+    /// <summary>
+    /// Test that mapping fails when using constructor with
+    /// parameters but one of the source properties is private.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task MapUsingConstructorParametersCannotHappenWhenSourcePropertyHasPrivateGetter()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class Source
+                                  {
+                                      public int PropertyA { private get; set; }
+                                      public int PropertyB { get; set; }
+                                  }
+
+                                  public record Target(int PropertyA, long PropertyB);
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial Target Map(Source input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .ContainDiagnostic(
+                MappaDiagnosticDescriptors.CannotIdentifyStrategy,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Target");
     }
 }

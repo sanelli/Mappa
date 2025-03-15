@@ -47,4 +47,39 @@ internal static class PropertySymbolExtensions
         this IPropertySymbol property,
         MapMethod method)
          => property.IsSetterAccessible(method.MethodSymbol);
+
+    /// <summary>
+    /// Check if a property getter is accessible from inside a method.
+    /// </summary>
+    /// <param name="property">The property which getter is to investigate.</param>
+    /// <param name="method">The method that will access the property.</param>
+    /// <returns><c>true</c> if the getter method of property <paramref name="property"/> exists and is accessible from <paramref name="method"/>, <c>false</c> otherwise.</returns>
+    internal static bool IsGetterAccessible(
+        this IPropertySymbol property,
+        IMethodSymbol method)
+    {
+        var getMethod = property.GetMethod;
+        if (getMethod is null)
+        {
+            return false;
+        }
+
+        return getMethod.DeclaredAccessibility switch
+        {
+            Accessibility.Public => true,
+            Accessibility.Internal => getMethod.ContainingAssembly.Equals(method.ContainingAssembly, SymbolEqualityComparer.Default),
+            _ => false,
+        };
+    }
+
+    /// <summary>
+    /// Check if a property getter is accessible from inside a method.
+    /// </summary>
+    /// <param name="property">The property which getter is to investigate.</param>
+    /// <param name="method">The method that will access the property.</param>
+    /// <returns><c>true</c> if the getter method of property <paramref name="property"/> exists and is accessible from <paramref name="method"/>, <c>false</c> otherwise.</returns>
+    internal static bool IsGetterAccessible(
+        this IPropertySymbol property,
+        MapMethod method)
+        => property.IsGetterAccessible(method.MethodSymbol);
 }

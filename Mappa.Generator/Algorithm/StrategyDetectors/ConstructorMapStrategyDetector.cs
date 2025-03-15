@@ -101,8 +101,7 @@ internal sealed class ConstructorMapStrategyDetector
 
                 // Ignore indexer properties.
                 // Ignore properties without a setter.
-                // TODO [#7] Ensure property getter method is accessible.
-                .Where(property => !property.IsIndexer && property.GetMethod is not null)
+                .Where(property => !property.IsIndexer && property.IsGetterAccessible(this.context.GetRootMapMethod()))
                 .ToArray();
 
             // For each constructor identifier we get all the arguments,
