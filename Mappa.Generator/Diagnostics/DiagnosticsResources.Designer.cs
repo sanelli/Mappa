@@ -128,5 +128,11 @@ namespace Mappa.Generator.Diagnostics {
                 return ResourceManager.GetString("PropertySetterIsNotAccessible", resourceCulture);
             }
         }
+        
+        internal static string TooManyUsePropertyAttributesForTheSameTargetProperty {
+            get {
+                return ResourceManager.GetString("TooManyUsePropertyAttributesForTheSameTargetProperty", resourceCulture);
+            }
+        }
     }
 }

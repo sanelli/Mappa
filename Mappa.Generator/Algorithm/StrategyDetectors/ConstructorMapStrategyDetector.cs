@@ -364,10 +364,27 @@ internal sealed class ConstructorMapStrategyDetector
                     .Select(
                         targetProperty =>
                         {
-                            // TODO [#8] Allow property mapping where source property name differ from target property name using an attribute.
                             // TODO [#9] Allow property mapping regardless of casing using an attribute.
                             // Try to get a matching property
-                            var hasSourceProperty = sourceProperties.TryGetValue(targetProperty.Name, out var sourceProperty);
+                            var usePropertyAttributes = this.context.MapMethod is not null
+                                ? this.context.MapMethod.GetAttributes<MappaUsePropertyAttribute>().Where(attribute => attribute.TargetPropertyName.Equals(targetProperty.Name, StringComparison.Ordinal)).ToArray()
+                                : [];
+
+                            string expectedSourcePropertyName;
+                            switch (usePropertyAttributes.Length)
+                            {
+                                case 0:
+                                    expectedSourcePropertyName = targetProperty.Name;
+                                    break;
+                                case 1:
+                                    expectedSourcePropertyName = usePropertyAttributes[0].SourcePropertyName;
+                                    break;
+                                default:
+                                    this.context.ReportDiagnostic(MappaDiagnostics.TooManyUsePropertyAttributesForTheSameTargetProperty(this.context.GetRootMapMethod().MethodDeclarationSyntax, this.context.GetRootMapMethod().MethodName, targetProperty));
+                                    return new PropertyMapStrategy(targetProperty, null, noMapStrategy, false);
+                            }
+
+                            var hasSourceProperty = sourceProperties.TryGetValue(expectedSourcePropertyName, out var sourceProperty);
 
                             // Just to be sure force source property to null
                             // since there seems to be no guarantee on the valuer returned.

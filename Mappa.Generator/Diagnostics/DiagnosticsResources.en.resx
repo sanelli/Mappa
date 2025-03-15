@@ -53,4 +53,7 @@
     <data name="PropertySetterIsNotAccessible" xml:space="preserve">
         <value>Setter for property '{0}' is not accessible.</value>
     </data>
+    <data name="TooManyUsePropertyAttributesForTheSameTargetProperty" xml:space="preserve">
+        <value>Method '{0}' has multiple MappaUseProperty attributes targeting the same property '{1}'.</value>
+    </data>
 </root>

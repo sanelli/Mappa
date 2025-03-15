@@ -42,20 +42,25 @@ internal static class MethodSymbolExtensions
     internal static Attribute[] GetMethodMappaAttributes(this IMethodSymbol methodSymbol, Compilation compilation)
     {
         var result = new List<Attribute>();
+        var attributeDatas = methodSymbol.GetAttributes();
 
         // Mappa Invoke Method Attributes
-        var invokeMethodAttributes = methodSymbol.GetAttributes().GetInvokeMethodAttributes(compilation);
+        var invokeMethodAttributes = attributeDatas.GetInvokeMethodAttributes(compilation);
         result.AddRange(invokeMethodAttributes);
 
         // Mappa Assign From Context Attributes
-        var assignFromContextAttributes = methodSymbol.GetAttributes().GetMappaAssignFromContextAttributes(compilation);
+        var assignFromContextAttributes = attributeDatas.GetMappaAssignFromContextAttributes(compilation);
         result.AddRange(assignFromContextAttributes);
 
         // Mappa Setting Attribute
-        if (methodSymbol.GetAttributes().GetMappaSettingsAttribute(compilation) is { } mappaSettingAttribute)
+        if (attributeDatas.GetMappaSettingsAttribute(compilation) is { } mappaSettingAttribute)
         {
             result.Add(mappaSettingAttribute);
         }
+
+        // Mappa Assign From Context Attributes
+        var usePropertyAttributes = attributeDatas.GetMappaUsePropertyAttributes(compilation);
+        result.AddRange(usePropertyAttributes);
 
         // All done.
         return [.. result];

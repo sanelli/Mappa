@@ -28,6 +28,7 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? userDefinedCultureIsMissingCultureName;
     private static DiagnosticDescriptor? parseExactDoesNotAcceptOnlyFormat;
     private static DiagnosticDescriptor? propertySetterIsNotAccessible;
+    private static DiagnosticDescriptor? tooManyUsePropertyAttributesForTheSameTargetProperty;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -140,6 +141,14 @@ internal static class MappaDiagnosticDescriptors
         => propertySetterIsNotAccessible ??= BuildWarning(
             MappaDiagnosticsKind.PropertySetterIsNotAccessible,
             DiagnosticsResources.PropertySetterIsNotAccessible);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.TooManyUsePropertyAttributesForTheSameTargetProperty"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor TooManyUsePropertyAttributesForTheSameTargetProperty
+        => tooManyUsePropertyAttributesForTheSameTargetProperty ??= BuildError(
+            MappaDiagnosticsKind.TooManyUsePropertyAttributesForTheSameTargetProperty,
+            DiagnosticsResources.TooManyUsePropertyAttributesForTheSameTargetProperty);
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(
