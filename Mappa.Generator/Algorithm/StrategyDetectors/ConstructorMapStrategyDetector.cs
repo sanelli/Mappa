@@ -388,7 +388,7 @@ internal sealed class ConstructorMapStrategyDetector
                             {
                                 if (!targetProperty.IsSetterAccessible(this.context.MapMethod))
                                 {
-                                    this.context.ReportDiagnostic(MappaDiagnostics.PropertySetterIsNotAccessible(this.context.GetMapMethod().MethodDeclarationSyntax, this.context.TargetType, targetProperty));
+                                    this.context.ReportDiagnostic(MappaDiagnostics.PropertySetterIsNotAccessible(this.context.GetRootMapMethod().MethodDeclarationSyntax, this.context.TargetType, targetProperty));
                                     return new PropertyMapStrategy(targetProperty, null, noMapStrategy, false);
                                 }
 
