@@ -334,8 +334,6 @@ internal sealed class ConstructorMapStrategyDetector
 
                 // Ignore indexer properties.
                 // Ignore properties without a setter.
-                // TODO [#5] Accept target properties implementing IList<T>.
-                // TODO [#6] Accept target properties implementing IDictionary<K, V>.
                 .Where(property => !property.IsIndexer)
                 .ToArray();
 
