@@ -347,8 +347,7 @@ internal sealed class ConstructorMapStrategyDetector
 
                     // Ignore indexer properties.
                     // Ignore properties without a setter.
-                    // TODO [#7] Ensure property getter method is accessible.
-                    .Where(property => !property.IsIndexer && property.GetMethod is not null)
+                    .Where(property => !property.IsIndexer && property.IsGetterAccessible(this.context.GetRootMapMethod()))
 
                     // Map them to a dictionary
                     .ToDictionary(property => property.Name);
@@ -399,7 +398,6 @@ internal sealed class ConstructorMapStrategyDetector
                             }
 
                             // Look up for post initialization collection properties
-                            // TODO [#7] Ensure property getter method is accessible.
                             if (sourceProperty is not null &&
                                 (targetProperty.SetMethod is null || (this.context.MapMethod is not null && targetProperty.SetMethod is not null && !targetProperty.IsSetterAccessible(this.context.MapMethod))) &&
                                 targetProperty.GetMethod is not null)
@@ -437,8 +435,7 @@ internal sealed class ConstructorMapStrategyDetector
                             }
 
                             // Look for a matching source property
-                            if (!hasSourceProperty ||
-                                sourceProperty is null /* TODO [#7] Or getter is not accessible. */)
+                            if (!hasSourceProperty || sourceProperty is null)
                             {
                                 return new PropertyMapStrategy(targetProperty, sourceProperty, noMapStrategy, false);
                             }
