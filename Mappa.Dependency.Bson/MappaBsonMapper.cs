@@ -13,7 +13,7 @@ public sealed class MappaBsonMapper
     : IMappaBsonMapper
 {
     /// <inheritdoc />
-    public ObjectId MapObjectId(string source)
+    public ObjectId MapToObjectId(string source)
     {
 #if NET6_0_OR_GREATER
         ArgumentException.ThrowIfNullOrWhiteSpace(source);
@@ -28,15 +28,15 @@ public sealed class MappaBsonMapper
     }
 
     /// <inheritdoc />
-    public ObjectId? MapToNullableObjectId(string? source)
+    public ObjectId MapToObjectId(byte[] source)
     {
-        return string.IsNullOrWhiteSpace(source) ? null : ObjectId.Parse(source);
+        return new ObjectId(source);
     }
 
     /// <inheritdoc />
-    public ObjectId MapToObjectId(byte[] source)
+    public ObjectId? MapToNullableObjectId(string? source)
     {
-       return new ObjectId(source);
+        return source is null ? null : ObjectId.Parse(source);
     }
 
     /// <inheritdoc />
@@ -46,7 +46,7 @@ public sealed class MappaBsonMapper
     }
 
     /// <inheritdoc />
-    public string? MapToString(ObjectId? source)
+    public string? MapToNullableString(ObjectId? source)
     {
         return source?.ToString();
     }
