@@ -83,7 +83,7 @@ internal sealed class DictionaryToDictionaryMapStrategyBuilder
 
         string GetTargetType()
         {
-            // For read-only targeted (i.e. readonly, immutable and frozen)
+            // For read-only targeted (i.e. IReadOnly, ReadOnly, Immutable and Frozen)
             if (this.strategy.TargetType.IsOrImplementIReadOnlyDictionary(context.Compilation)
                 && !this.strategy.TargetType.IsOrImplementIDictionary(context.Compilation))
             {
