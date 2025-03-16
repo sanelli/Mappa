@@ -20,14 +20,14 @@
         <Company>Stefano Anelli</Company>
         <NeutralLanguage>en</NeutralLanguage>
         <Copyright>Stefano Anelli</Copyright>
-        <PackageId>Mappa.Dependency.Protobuf.DependencyIngection</PackageId>
-        <Product>Mappa.Dependency.Protobuf.DependencyIngection</Product>
-        <Description>Dependency injection for protobuf mapping methods for common types.</Description>
+        <PackageId>Mappa.Dependency.Bson.DependencyIngection</PackageId>
+        <Product>Mappa.Dependency.Bson.DependencyIngection</Product>
+        <Description>Dependency injection for Bson mapping for common types.</Description>
         <PackageLicense>https://github.com/sanelli/Mappa/blob/main/LICENSE</PackageLicense>
         <PackageProjectUrl>https://github.com/sanelli/Mappa</PackageProjectUrl>
         <RepositoryUrl>https://github.com/sanelli/Mappa</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
-        <PackageTags>Mappa;Mapper;Mapping;SourceGenerator;gRPC;protobuf</PackageTags>
+        <PackageTags>Mappa;Mapper;Mapping;SourceGenerator;Bson</PackageTags>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Comment.Todo.Analyzer" Version="1.0.2">

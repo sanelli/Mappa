@@ -52,6 +52,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mappa.Dependency.Bson", "Ma
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mappa.Dependency.Bson.Tests", "Mappa.Dependency.Bson.Tests\Mappa.Dependency.Bson.Tests.csproj", "{9BC2D4F3-0062-4AB7-ACC7-5DDFA8A4C999}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mappa.Dependency.Bson.DependencyInjection", "Mappa.Dependency.Bson.DependencyInjection\Mappa.Dependency.Bson.DependencyInjection.csproj", "{C6B0723B-31BA-4380-B745-4CFB032576AA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mappa.Dependency.Bson.DependencyInjection.Tests", "Mappa.Dependency.Bson.DependencyInjection.Tests\Mappa.Dependency.Bson.DependencyInjection.Tests.csproj", "{FEAD074A-61E5-4AFC-9F1D-8A1F0B4790FF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -117,6 +121,14 @@ Global
 		{9BC2D4F3-0062-4AB7-ACC7-5DDFA8A4C999}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9BC2D4F3-0062-4AB7-ACC7-5DDFA8A4C999}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9BC2D4F3-0062-4AB7-ACC7-5DDFA8A4C999}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C6B0723B-31BA-4380-B745-4CFB032576AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C6B0723B-31BA-4380-B745-4CFB032576AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C6B0723B-31BA-4380-B745-4CFB032576AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C6B0723B-31BA-4380-B745-4CFB032576AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FEAD074A-61E5-4AFC-9F1D-8A1F0B4790FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FEAD074A-61E5-4AFC-9F1D-8A1F0B4790FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FEAD074A-61E5-4AFC-9F1D-8A1F0B4790FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FEAD074A-61E5-4AFC-9F1D-8A1F0B4790FF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{01A7FC44-1956-4F7F-B29E-F53A08DE2146} = {C9B7F1B1-3F59-44F3-BF02-FFCF1083FF8A}
