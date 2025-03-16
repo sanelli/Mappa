@@ -125,4 +125,58 @@ public sealed class DictionaryToDictionaryMapperUnitTests
             { "3", "Three" },
         });
     }
+
+    /// <summary>
+    /// Unit test for <see cref="DictionaryToDictionaryMapper.MapCustomDictionaryWithGenerics"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapCustomDictionaryWithGenerics()
+    {
+        // Arrange
+        CustomDictionaryWithGeneric<int, CountingValues> input = new CustomDictionaryWithGeneric<int, CountingValues>
+        {
+            { 1, CountingValues.One },
+            { 2, CountingValues.Two },
+            { 3, CountingValues.Three },
+        };
+
+        // Act
+        var actual = this.mapper.MapCustomDictionaryWithGenerics(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo(new Dictionary<string, string>
+        {
+            { "1", "One" },
+            { "2", "Two" },
+            { "3", "Three" },
+        });
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="DictionaryToDictionaryMapper.MapCustomDictionaryWithoutGenerics"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapCustomDictionaryWithoutGenerics()
+    {
+        // Arrange
+        CustomDictionaryIntToCountingValues input = new()
+        {
+            { 1, CountingValues.One },
+            { 2, CountingValues.Two },
+            { 3, CountingValues.Three },
+        };
+
+        // Act
+        var actual = this.mapper.MapCustomDictionaryWithoutGenerics(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo(new Dictionary<string, string>
+        {
+            { "1", "One" },
+            { "2", "Two" },
+            { "3", "Three" },
+        });
+    }
 }

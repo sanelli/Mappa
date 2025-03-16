@@ -88,12 +88,10 @@ internal sealed class ContainerMapStrategyDetector
                 collectionOrEnumerableElementStrategy);
         }
 
-        // 05. Dictionary<SK,SV> -> Dictionary<TK,TV> : DictionaryStrategy( IMapStrategy(TK, SK), IMapStrategy(TV, SV) ).
+        // 05. (I)Dictionary<SK,SV> -> (I)Dictionary<TK,TV> : DictionaryStrategy( IMapStrategy(TK, SK), IMapStrategy(TV, SV) ).
         else if (this.CanMapDictionaryToDictionary(out var dictionaryKeyStrategy, out var dictionaryValueStrategy))
         {
             // TODO [#34] Allow the user to specify if they want to use .Add or the indexer.
-            // TODO [#35] Add Support for input implementing IDictionary<>.
-            // TODO [#36] Add Support for output implementing IDictionary<>.
             mapStrategy = new DictionaryToDictionaryMapStrategy(
                 this.context.TargetType,
                 this.context.SourceType,
@@ -170,10 +168,9 @@ internal sealed class ContainerMapStrategyDetector
 
     private bool CanMapDictionaryToDictionary(out MapStrategy keyStrategy, out MapStrategy valueStrategy)
     {
-        var isSourceDictionary = this.context.SourceType.IsIDictionary(this.compilation)
-                                 || this.context.SourceType.IsDictionary(this.compilation);
-        var isTargetDictionary = this.context.TargetType.IsIDictionary(this.compilation)
-                                 || this.context.TargetType.IsDictionary(this.compilation);
+        var isSourceDictionary = this.context.SourceType.IsOrImplementIDictionary(this.compilation);
+        var isTargetDictionary = this.context.TargetType.IsOrImplementIDictionary(this.compilation)
+            && IfInterfaceAcceptOnlyIDictionary();
 
         keyStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
         valueStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
@@ -183,5 +180,21 @@ internal sealed class ContainerMapStrategyDetector
             out keyStrategy,
             out valueStrategy,
             this.cancellationToken);
+
+        bool IfInterfaceAcceptOnlyIDictionary()
+        {
+            if (this.context.TargetType.TypeKind is TypeKind.Interface)
+            {
+                return this.context.TargetType.IsIDictionary(this.compilation);
+            }
+
+            // Target type MUST have a constructor with no arguments.
+            if (this.context.TargetType is INamedTypeSymbol namedTypeSymbol)
+            {
+                return namedTypeSymbol.Constructors.Any(constructor => constructor.Parameters.Length == 0);
+            }
+
+            return false;
+        }
     }
 }

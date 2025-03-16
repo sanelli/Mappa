@@ -28,14 +28,14 @@ internal sealed class DictionaryToDictionaryMapStrategyBuilder
     /// <inheritdoc/>
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
-        var (targetKeyType, targetValueType) = this.strategy.TargetType.GetKeyAndValueTypes();
-        var (sourceKeyType, sourceValueType) = this.strategy.SourceType.GetKeyAndValueTypes();
+        var (targetKeyType, targetValueType) = this.strategy.TargetType.GetKeyAndValueTypes(context.Compilation);
+        var (sourceKeyType, sourceValueType) = this.strategy.SourceType.GetKeyAndValueTypes(context.Compilation);
 
         var dictionaryTemporary = context.NextTemporary();
         var loopTemporary = context.NextTemporary();
 
         var builder = new PrettyCode.StringBuilder();
-        builder.AppendLine($"System.Collections.Generic.Dictionary<{targetKeyType.ToDisplayString()}, {targetValueType.ToDisplayString()}> {dictionaryTemporary} = new System.Collections.Generic.Dictionary<{targetKeyType.ToDisplayString()}, {targetValueType.ToDisplayString()}>();");
+        builder.AppendLine($"{this.strategy.TargetType.ToDisplayString()} {dictionaryTemporary} = new {GetNewType()}();");
         builder.AppendLine($"foreach (System.Collections.Generic.KeyValuePair<{sourceKeyType.ToDisplayString()}, {sourceValueType.ToDisplayString()}> {loopTemporary} in {source})");
 
         using (builder.CurlyBracesBlock())
@@ -61,5 +61,15 @@ internal sealed class DictionaryToDictionaryMapStrategyBuilder
         }
 
         return (dictionaryTemporary, builder.ToString());
+
+        string GetNewType()
+        {
+            if (this.strategy.TargetType.IsIDictionary(context.Compilation))
+            {
+                return $"System.Collections.Generic.Dictionary<{targetKeyType.ToDisplayString()}, {targetValueType.ToDisplayString()}>";
+            }
+
+            return this.strategy.TargetType.ToDisplayString();
+        }
     }
 }
