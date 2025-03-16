@@ -70,6 +70,20 @@ public sealed class MappaBsonMapperUnitTests
     }
 
     /// <summary>
+    /// Tests <see cref="MappaBsonMapper.MapToNullableObjectId"/> when input is null.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapToNullableObjectIdWhenInputIsNull()
+    {
+        // Act
+        var actual = this.mapper.MapToNullableObjectId(null);
+
+        // Assert
+        actual.Should().Be(null);
+    }
+
+    /// <summary>
     /// Tests <see cref="MappaBsonMapper.MapToObjectId(byte[])"/>.
     /// </summary>
     [Fact]
