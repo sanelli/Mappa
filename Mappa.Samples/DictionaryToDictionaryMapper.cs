@@ -40,4 +40,18 @@ public sealed partial class DictionaryToDictionaryMapper
     /// <param name="input">The input dictionary.</param>
     /// <returns>The mapper dictionary.</returns>
     public partial IDictionary<string, string> MapIDictionaryToIDictionary(IDictionary<int, CountingValues> input);
+
+    /// <summary>
+    /// Map from <see cref="CustomDictionaryWithGeneric{TKey, TValue}"/> to <see cref="CustomDictionaryWithGeneric{TKey, TValue}"/>.
+    /// </summary>
+    /// <param name="input">The input model.</param>
+    /// <returns>The target model.</returns>
+    public partial CustomDictionaryWithGeneric<string, string> MapCustomDictionaryWithGenerics(CustomDictionaryWithGeneric<int, CountingValues> input);
+
+    /// <summary>
+    /// Map from <see cref="CustomDictionaryIntToCountingValues"/> to <see cref="CustomDictionaryStringToString"/>.
+    /// </summary>
+    /// <param name="input">The input model.</param>
+    /// <returns>The target model.</returns>
+    public partial CustomDictionaryStringToString MapCustomDictionaryWithoutGenerics(CustomDictionaryIntToCountingValues input);
 }
