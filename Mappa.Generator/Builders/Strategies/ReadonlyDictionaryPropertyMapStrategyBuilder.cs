@@ -28,7 +28,7 @@ internal sealed class ReadonlyDictionaryPropertyMapStrategyBuilder
     /// <inheritdoc />
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
-        var (sourceKeyType, sourceValueType) = this.strategy.SourceType.GetKeyAndValueTypes();
+        var (sourceKeyType, sourceValueType) = this.strategy.SourceType.GetKeyAndValueTypes(context.Compilation);
         var loopTemporary = context.NextTemporary();
 
         var builder = new PrettyCode.StringBuilder();

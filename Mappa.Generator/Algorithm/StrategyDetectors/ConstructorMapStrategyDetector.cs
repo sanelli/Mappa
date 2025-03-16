@@ -442,6 +442,7 @@ internal sealed class ConstructorMapStrategyDetector
                                 targetProperty.GetMethod is not null)
                             {
                                 // Check if it implements IDictionary<K, V>
+                                // TODO [#34] Allow the user to specify if they want to use .Add or the indexer.
                                 if (targetProperty.Type.IsOrImplementIDictionary(this.compilation)
                                     && sourceProperty.Type.IsOrImplementIDictionary(this.compilation)
                                     && this.context.TryGetKeyAndValueStrategy(

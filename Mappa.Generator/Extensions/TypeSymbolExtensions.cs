@@ -226,13 +226,28 @@ internal static class TypeSymbolExtensions
     /// Gets the key and value type of the container.
     /// </summary>
     /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
     /// <returns>The element type of the key and value of the contain.</returns>
     /// <exception cref="MappaGeneratorException">If <paramref name="typeSymbol"/> is not an array or a generic type.</exception>
-    internal static (ITypeSymbol KeyType, ITypeSymbol ValueType) GetKeyAndValueTypes(this ITypeSymbol typeSymbol)
+    internal static (ITypeSymbol KeyType, ITypeSymbol ValueType) GetKeyAndValueTypes(this ITypeSymbol typeSymbol, Compilation compilation)
     {
         if (typeSymbol is INamedTypeSymbol { TypeArguments.Length: 2 } namedTypeSymbol)
         {
             return (namedTypeSymbol.TypeArguments.First(), namedTypeSymbol.TypeArguments.Last());
+        }
+
+        // The type might be non-generic but still implement an IDictionary
+        // so we need to check all the interfaces to get the type argument of
+        // the first IDictionary{TKey, TValue}.
+        if (typeSymbol is INamedTypeSymbol symbol)
+        {
+            foreach (var @interface in symbol.AllInterfaces)
+            {
+                if (@interface is not null && @interface.IsGenericType && @interface.IsIDictionary(compilation))
+                {
+                    return (@interface.TypeArguments.First(), @interface.TypeArguments.Last());
+                }
+            }
         }
 
         throw new MappaGeneratorException($"Cannot obtain key and value types of \"{typeSymbol.ToDisplayString()}\"");

@@ -85,8 +85,8 @@ internal static class CommonStrategyDetectors
             out MapStrategy valueStrategy,
             CancellationToken cancellationToken)
     {
-        var (sourceKeyType, sourceKeyValueType) = sourceType.GetKeyAndValueTypes();
-        var (targetKeyType, targetValueType) = targetType.GetKeyAndValueTypes();
+        var (sourceKeyType, sourceKeyValueType) = sourceType.GetKeyAndValueTypes(compilation);
+        var (targetKeyType, targetValueType) = targetType.GetKeyAndValueTypes(compilation);
 
         // Get strategy for key
         var keyContext = new DerivedMappaMapAlgorithmContext(
