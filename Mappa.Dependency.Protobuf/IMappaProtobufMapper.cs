@@ -7,8 +7,7 @@ using Google.Protobuf.WellKnownTypes;
 namespace Mappa.Dependency.Protobuf;
 
 /// <summary>
-/// Describe the method available that can be used to
-/// map to and from gRPC types.
+/// Mapper methods for protobuf common types.
 /// </summary>
 public interface IMappaProtobufMapper
 {
