@@ -3,7 +3,9 @@
 // </copyright>
 
 using System.Collections;
+using System.Collections.Frozen;
 using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 
 using Mappa.Generator.Exceptions;
 
@@ -25,7 +27,11 @@ internal static class TypeSymbolExtensions
     private static readonly string Tuple7Fullname = typeof(Tuple<,,,,,,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Tuple<,,,,,,>)}");
     private static readonly string Tuple8Fullname = typeof(Tuple<,,,,,,,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Tuple<,,,,,,,>)}");
     private static readonly string DictionaryFullName = typeof(Dictionary<,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Dictionary<,>)}");
+    private static readonly string ReadOnlyDictionaryFullName = typeof(ReadOnlyDictionary<,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(ReadOnlyDictionary<,>)}");
+    private static readonly string ImmutableDictionaryFullName = typeof(ImmutableDictionary<,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(ImmutableDictionary<,>)}");
+    private static readonly string FrozenDictionaryFullName = typeof(FrozenDictionary<,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(FrozenDictionary<,>)}");
     private static readonly string DictionaryInterfaceFullName = typeof(IDictionary<,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(IDictionary<,>)}");
+    private static readonly string ReadOnlyDictionaryInterfaceFullName = typeof(IReadOnlyDictionary<,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(IReadOnlyDictionary<,>)}");
     private static readonly string ListFullName = typeof(List<>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(List<>)}");
     private static readonly string TimeSpanFullName = typeof(TimeSpan).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(TimeSpan)}");
     private static readonly string UriFullName = typeof(Uri).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Uri)}");
@@ -115,6 +121,19 @@ internal static class TypeSymbolExtensions
     }
 
     /// <summary>
+    /// Check if the type is <see cref="IReadOnlyDictionary{K,V}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="IReadOnlyDictionary{K,V}"/>.</returns>
+    internal static bool IsIReadOnlyDictionary(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var listType = compilation.GetTypeByMetadataName(ReadOnlyDictionaryInterfaceFullName);
+        var isList = SymbolEqualityComparer.Default.Equals(listType, typeSymbol.OriginalDefinition);
+        return isList;
+    }
+
+    /// <summary>
     /// Check if the type is <see cref="Dictionary{K,V}"/>.
     /// </summary>
     /// <param name="typeSymbol">The type symbol.</param>
@@ -123,6 +142,45 @@ internal static class TypeSymbolExtensions
     internal static bool IsDictionary(this ITypeSymbol typeSymbol, Compilation compilation)
     {
         var dictionaryType = compilation.GetTypeByMetadataName(DictionaryFullName);
+        var isDictionary = SymbolEqualityComparer.Default.Equals(dictionaryType, typeSymbol.OriginalDefinition);
+        return isDictionary;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="ReadOnlyDictionary{K,V}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="ReadOnlyDictionary{K,V}"/>.</returns>
+    internal static bool IsReadOnlyDictionary(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var dictionaryType = compilation.GetTypeByMetadataName(ReadOnlyDictionaryFullName);
+        var isDictionary = SymbolEqualityComparer.Default.Equals(dictionaryType, typeSymbol.OriginalDefinition);
+        return isDictionary;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="ImmutableDictionary{K,V}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="ImmutableDictionary{K,V}"/>.</returns>
+    internal static bool IsImmutableDictionary(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var dictionaryType = compilation.GetTypeByMetadataName(ImmutableDictionaryFullName);
+        var isDictionary = SymbolEqualityComparer.Default.Equals(dictionaryType, typeSymbol.OriginalDefinition);
+        return isDictionary;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="FrozenDictionary{K,V}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="FrozenDictionary{K,V}"/>.</returns>
+    internal static bool IsFrozenDictionary(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var dictionaryType = compilation.GetTypeByMetadataName(FrozenDictionaryFullName);
         var isDictionary = SymbolEqualityComparer.Default.Equals(dictionaryType, typeSymbol.OriginalDefinition);
         return isDictionary;
     }
@@ -183,6 +241,15 @@ internal static class TypeSymbolExtensions
     /// <returns><c>true</c> if the type symbol implements <see cref="IDictionary{K,V}"/>.</returns>
     internal static bool IsOrImplementIDictionary(this ITypeSymbol typeSymbol, Compilation compilation)
         => typeSymbol.IsIDictionary(compilation) || typeSymbol.AllInterfaces.Any(@interface => @interface.IsIDictionary(compilation));
+
+    /// <summary>
+    /// Check if the type is <see cref="IReadOnlyDictionary{K,V}"/> or implements <see cref="IReadOnlyDictionary{K,V}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol implements <see cref="IDictionary{K,V}"/>.</returns>
+    internal static bool IsOrImplementIReadOnlyDictionary(this ITypeSymbol typeSymbol, Compilation compilation)
+        => typeSymbol.IsIReadOnlyDictionary(compilation) || typeSymbol.AllInterfaces.Any(@interface => @interface.IsIReadOnlyDictionary(compilation));
 
     /// <summary>
     /// Check if the type is <see cref="Tuple"/>.

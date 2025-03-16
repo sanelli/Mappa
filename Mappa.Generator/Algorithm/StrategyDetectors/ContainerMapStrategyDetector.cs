@@ -169,7 +169,11 @@ internal sealed class ContainerMapStrategyDetector
     private bool CanMapDictionaryToDictionary(out MapStrategy keyStrategy, out MapStrategy valueStrategy)
     {
         var isSourceDictionary = this.context.SourceType.IsOrImplementIDictionary(this.compilation);
-        var isTargetDictionary = this.context.TargetType.IsOrImplementIDictionary(this.compilation)
+        var isTargetDictionary = (this.context.TargetType.IsOrImplementIDictionary(this.compilation)
+                                  || this.context.TargetType.IsIReadOnlyDictionary(this.compilation)
+                                  || this.context.TargetType.IsReadOnlyDictionary(this.compilation)
+                                  || this.context.TargetType.IsImmutableDictionary(this.compilation)
+                                  || this.context.TargetType.IsFrozenDictionary(this.compilation))
             && IfInterfaceAcceptOnlyIDictionary();
 
         keyStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
@@ -185,12 +189,22 @@ internal sealed class ContainerMapStrategyDetector
         {
             if (this.context.TargetType.TypeKind is TypeKind.Interface)
             {
-                return this.context.TargetType.IsIDictionary(this.compilation);
+                return this.context.TargetType.IsIDictionary(this.compilation)
+                    || this.context.TargetType.IsIReadOnlyDictionary(this.compilation);
             }
 
-            // Target type MUST have a constructor with no arguments.
+            // Target type MUST have a constructor with no arguments
+            // unless it is a ReadOnlyDictionary, ImmutableDictionary or a FrozenDictionary
+            // for which special coding is provided.
             if (this.context.TargetType is INamedTypeSymbol namedTypeSymbol)
             {
+                if (namedTypeSymbol.IsReadOnlyDictionary(this.compilation)
+                    || this.context.TargetType.IsImmutableDictionary(this.compilation)
+                    || this.context.TargetType.IsFrozenDictionary(this.compilation))
+                {
+                    return true;
+                }
+
                 return namedTypeSymbol.Constructors.Any(constructor => constructor.Parameters.Length == 0);
             }
 

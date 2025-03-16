@@ -35,7 +35,7 @@ internal sealed class DictionaryToDictionaryMapStrategyBuilder
         var loopTemporary = context.NextTemporary();
 
         var builder = new PrettyCode.StringBuilder();
-        builder.AppendLine($"{this.strategy.TargetType.ToDisplayString()} {dictionaryTemporary} = new {GetNewType()}();");
+        builder.AppendLine($"{GetTargetType()} {dictionaryTemporary} = new {GetNewType()}();");
         builder.AppendLine($"foreach (System.Collections.Generic.KeyValuePair<{sourceKeyType.ToDisplayString()}, {sourceValueType.ToDisplayString()}> {loopTemporary} in {source})");
 
         using (builder.CurlyBracesBlock())
@@ -60,7 +60,38 @@ internal sealed class DictionaryToDictionaryMapStrategyBuilder
             builder.AppendLine($"{dictionaryTemporary}[{targetKeyTemporary}] = {targetValueTemporary};");
         }
 
+        if (this.strategy.TargetType.IsReadOnlyDictionary(context.Compilation))
+        {
+            var readOnlyTemporary = context.NextTemporary();
+            builder.AppendLine($"{this.strategy.TargetType.ToDisplayString()} {readOnlyTemporary} = new System.Collections.ObjectModel.ReadOnlyDictionary<{targetKeyType.ToDisplayString()},{targetValueType.ToDisplayString()}>({dictionaryTemporary});");
+            dictionaryTemporary = readOnlyTemporary;
+        }
+        else if (this.strategy.TargetType.IsImmutableDictionary(context.Compilation))
+        {
+            var readOnlyTemporary = context.NextTemporary();
+            builder.AppendLine($"{this.strategy.TargetType.ToDisplayString()} {readOnlyTemporary} = System.Collections.Immutable.ToImmutableDictionary<{targetKeyType.ToDisplayString()},{targetValueType.ToDisplayString()}>({dictionaryTemporary});");
+            dictionaryTemporary = readOnlyTemporary;
+        }
+        else if (this.strategy.TargetType.IsFrozenDictionary(context.Compilation))
+        {
+            var readOnlyTemporary = context.NextTemporary();
+            builder.AppendLine($"{this.strategy.TargetType.ToDisplayString()} {readOnlyTemporary} = System.Collections.Frozen.FrozenDictionary.ToFrozenDictionary<{targetKeyType.ToDisplayString()},{targetValueType.ToDisplayString()}>({dictionaryTemporary});");
+            dictionaryTemporary = readOnlyTemporary;
+        }
+
         return (dictionaryTemporary, builder.ToString());
+
+        string GetTargetType()
+        {
+            // For read-only targeted (i.e. readonly, immutable and frozen)
+            if (this.strategy.TargetType.IsOrImplementIReadOnlyDictionary(context.Compilation)
+                && !this.strategy.TargetType.IsOrImplementIDictionary(context.Compilation))
+            {
+                return $"System.Collections.Generic.Dictionary<{targetKeyType.ToDisplayString()}, {targetValueType.ToDisplayString()}>";
+            }
+
+            return this.strategy.TargetType.ToDisplayString();
+        }
 
         string GetNewType()
         {
