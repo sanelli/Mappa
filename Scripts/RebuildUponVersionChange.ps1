@@ -14,3 +14,5 @@ dotnet build Mappa.Dependency.Protobuf
 dotnet build Mappa.Dependency.Protobuf.DependencyInjection
 dotnet build Mappa.Dependency.Protobuf.Tests
 dotnet build Mappa.Dependency.Protobuf.DependencyInjection.Tests
+
+dotnet build Mappa.Dependency.Bson

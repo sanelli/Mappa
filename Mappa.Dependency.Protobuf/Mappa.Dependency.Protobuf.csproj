@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <Import Project="$(MSBuildThisFileDirectory)../MappaVersion.targets"/>
     <PropertyGroup>
-        <TargetFrameworks>netstandard2.0;net9.0</TargetFrameworks>
+        <TargetFrameworks>netstandard2.1;net9.0</TargetFrameworks>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
@@ -22,12 +22,12 @@
         <Copyright>Stefano Anelli</Copyright>
         <PackageId>Mappa.Dependency.Protobuf</PackageId>
         <Product>Mappa.Dependency.Protobuf</Product>
-        <Description>gRPC mapping method for default types.</Description>
+        <Description>Protobuf mapping method for common types.</Description>
         <PackageLicense>https://github.com/sanelli/Mappa/blob/main/LICENSE</PackageLicense>
         <PackageProjectUrl>https://github.com/sanelli/Mappa</PackageProjectUrl>
         <RepositoryUrl>https://github.com/sanelli/Mappa</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
-        <PackageTags>Mappa;Mapper;Mapping;SourceGenerator;gRPC</PackageTags>
+        <PackageTags>Mappa;Mapper;Mapping;SourceGenerator;gRPC;protobuf</PackageTags>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Comment.Todo.Analyzer" Version="1.0.2">
