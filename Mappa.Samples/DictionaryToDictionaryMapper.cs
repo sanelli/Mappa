@@ -10,6 +10,15 @@ namespace Mappa.Samples;
 /// <summary>
 /// Mapper using the dictionary-to-dictionary strategy.
 /// </summary>
+// TODO [#105] Test source is IEnumerable<KeyValuePair<K,V>>.
+// TODO [#105] Test source implements IEnumerable<KeyValuePair<K,V>>.
+// TODO [#105] Test source is IReadOnlyDictionary<K,V>.
+// TODO [#105] Test source implements IReadOnlyDictionary<K,V>.
+// TODO [#105] Test target is IEnumerable<KeyValuePair<K,V>>.
+// TODO [#105] Test target is IReadOnlyDictionary<K,V>.
+// TODO [#105] Test target is ReadOnlyDictionary<K,V>.
+// TODO [#105] Test target is Immutable<K,V>.
+// TODO [#105] Test target is FrozenDictionary<K,V>.
 [Mappa]
 public sealed partial class DictionaryToDictionaryMapper
 {
