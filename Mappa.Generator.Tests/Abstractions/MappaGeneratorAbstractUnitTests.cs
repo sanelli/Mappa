@@ -59,6 +59,8 @@ public abstract class MappaGeneratorAbstractUnitTests
             MetadataReference.CreateFromFile(typeof(Uri).GetTypeInfo().Assembly.Location),
             MetadataReference.CreateFromFile(Path.Combine(frameworkPath, "netstandard.dll")),
             MetadataReference.CreateFromFile(Path.Combine(frameworkPath, "System.Runtime.dll")),
+            MetadataReference.CreateFromFile(Path.Combine(frameworkPath, "System.Collections.Immutable.dll")),
+            MetadataReference.CreateFromFile(Path.Combine(frameworkPath, "System.Runtime.dll")),
         };
 
         var compilation = CSharpCompilation.Create(

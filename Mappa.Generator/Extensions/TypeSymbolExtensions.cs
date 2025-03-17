@@ -18,6 +18,9 @@ namespace Mappa.Generator.Extensions;
 /// </summary>
 internal static class TypeSymbolExtensions
 {
+    private const string ImmutableDictionaryFullName = "System.Collections.Immutable.ImmutableDictionary`2";
+    private const string FrozenDictionaryFullName = "System.Collections.Frozen.FrozenDictionary`2";
+
     private static readonly string Tuple1Fullname = typeof(Tuple<>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Tuple<>)}");
     private static readonly string Tuple2Fullname = typeof(Tuple<,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Tuple<,>)}");
     private static readonly string Tuple3Fullname = typeof(Tuple<,,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Tuple<,,>)}");
@@ -28,8 +31,6 @@ internal static class TypeSymbolExtensions
     private static readonly string Tuple8Fullname = typeof(Tuple<,,,,,,,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Tuple<,,,,,,,>)}");
     private static readonly string DictionaryFullName = typeof(Dictionary<,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Dictionary<,>)}");
     private static readonly string ReadOnlyDictionaryFullName = typeof(ReadOnlyDictionary<,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(ReadOnlyDictionary<,>)}");
-    private static readonly string ImmutableDictionaryFullName = typeof(ImmutableDictionary<,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(ImmutableDictionary<,>)}");
-    private static readonly string FrozenDictionaryFullName = typeof(FrozenDictionary<,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(FrozenDictionary<,>)}");
     private static readonly string DictionaryInterfaceFullName = typeof(IDictionary<,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(IDictionary<,>)}");
     private static readonly string ReadOnlyDictionaryInterfaceFullName = typeof(IReadOnlyDictionary<,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(IReadOnlyDictionary<,>)}");
     private static readonly string ListFullName = typeof(List<>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(List<>)}");
