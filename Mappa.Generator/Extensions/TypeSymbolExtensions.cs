@@ -322,6 +322,15 @@ internal static class TypeSymbolExtensions
             return (namedTypeSymbol.TypeArguments.First(), namedTypeSymbol.TypeArguments.Last());
         }
 
+        if (typeSymbol is INamedTypeSymbol { TypeArguments.Length: 1 } mightBeEnumerable)
+        {
+            var enumerableElementType = mightBeEnumerable.GetElementType();
+            if (enumerableElementType.IsKeyValuePair(compilation))
+            {
+                return enumerableElementType.GetKeyAndValueTypes(compilation);
+            }
+        }
+
         // The type might be non-generic but still implement an IDictionary
         // so we need to check all the interfaces to get the type argument of
         // the first IDictionary{TKey, TValue}.
@@ -336,7 +345,7 @@ internal static class TypeSymbolExtensions
 
                 if (@interface is not null && @interface.IsGenericType && @interface.IsIEnumerableOfKeyValuePairs(compilation))
                 {
-                    return (@interface.TypeArguments.First(), @interface.TypeArguments.Last());
+                    return @interface.GetKeyAndValueTypes(compilation);
                 }
             }
         }

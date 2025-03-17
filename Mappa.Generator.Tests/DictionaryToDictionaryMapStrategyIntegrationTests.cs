@@ -13,7 +13,6 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Integration tests for <see cref="DictionaryToDictionaryMapStrategy"/> strategy.
 /// </summary>
-// TODO [#105] Add tests where source is IEnumerable<KeyValuePair<,>>.
 // TODO [#105] Add tests where source implements IEnumerable<KeyValuePair<,>>.
 // TODO [#105] Add tests where source is IReadOnlyDictionary.
 // TODO [#105] Add tests where source implements IReadOnlyDictionary.
@@ -794,6 +793,88 @@ public sealed class DictionaryToDictionaryMapStrategyIntegrationTests
                                 "Mappa.Generator.Tests.UnitTests.SourceCode.CustomDictionary<int, long>",
                                 "__mappa_tmp_1",
                                 assertions => assertions.BeObjectCreationExpressionSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.CustomDictionary<int, long>")))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeForEachStatementSyntax(
+                                typeof(KeyValuePair<short, int>).ToString(),
+                                "__mappa_tmp_2",
+                                expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("input"),
+                                statementAssertions =>
+                                {
+                                    statementAssertions
+                                        .BeBlockStatement()
+                                        .AsBlock()
+                                        .HasSyntaxNodesCount(3)
+                                        .HasNextSyntaxNode(forEachStatementAssertions =>
+                                            forEachStatementAssertions.BeLocalDeclarationStatementSyntax(
+                                                typeof(short).ToString(),
+                                                "__mappa_tmp_3",
+                                                assertions => assertions.BeMemberAccessExpressionSyntax($"__mappa_tmp_2.{nameof(KeyValuePair<short, int>.Key)}")))
+                                        .HasNextSyntaxNode(forEachStatementAssertions =>
+                                            forEachStatementAssertions.BeLocalDeclarationStatementSyntax(
+                                                typeof(int).ToString(),
+                                                "__mappa_tmp_4",
+                                                assertions => assertions.BeMemberAccessExpressionSyntax($"__mappa_tmp_2.{nameof(KeyValuePair<short, int>.Value)}")))
+                                        .HasNextSyntaxNode(forEachStatementAssertions =>
+                                            forEachStatementAssertions.BeAssignmentExpressionStatement(
+                                                leftExpressionAssertions => leftExpressionAssertions.BeElementAccessExpressionSyntaxWithIdentifierNameSyntax("__mappa_tmp_1", "__mappa_tmp_3"),
+                                                rightExpressionAssertions => rightExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_4")));
+                                });
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement(assertions => assertions.BeIdentifierNameSyntax("__mappa_tmp_1")));
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping can be created between a <see cref="IEnumerable{T}"/>
+    /// of <see cref="KeyValuePair{TKey,TValue}"/> and a <see cref="Dictionary{TKey,TValue}"/>.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapEnumerableOfKeyValuePairsToDictionary()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  
+                                  using Mappa.Attributes;
+                                  using System.Collections.Generic;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                                  
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial Dictionary<int, long> Map(IEnumerable<KeyValuePair<short, int>> input);
+                                  }
+                                  
+                                  #nullable restore
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                typeof(Dictionary<int, long>).ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(IEnumerable<KeyValuePair<short, int>>).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(3)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(Dictionary<int, long>).ToString(),
+                                "__mappa_tmp_1",
+                                assertions => assertions.BeObjectCreationExpressionSyntax(typeof(Dictionary<int, long>).ToString())))
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
                             syntaxNodeAssertions.BeForEachStatementSyntax(
