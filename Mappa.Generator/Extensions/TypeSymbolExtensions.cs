@@ -36,7 +36,8 @@ internal static class TypeSymbolExtensions
     private static readonly string TimeSpanFullName = typeof(TimeSpan).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(TimeSpan)}");
     private static readonly string UriFullName = typeof(Uri).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Uri)}");
     private static readonly string GuidFullName = typeof(Guid).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Guid)}");
-    private static readonly string DateTimeOffset = typeof(DateTimeOffset).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(DateTimeOffset)}");
+    private static readonly string DateTimeOffsetFullName = typeof(DateTimeOffset).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(DateTimeOffset)}");
+    private static readonly string KeyValuePairFullName = typeof(KeyValuePair<,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(KeyValuePair<,>)}");
 
     /// <summary>
     /// Check if the type is <see cref="Void"/>.
@@ -218,6 +219,24 @@ internal static class TypeSymbolExtensions
         => typeSymbol.IsIEnumerable() || typeSymbol.AllInterfaces.Any(@interface => @interface.IsIEnumerable());
 
     /// <summary>
+    /// Check if the type is <see cref="IEnumerable{T}"/> of <see cref="KeyValuePair{TKey,TValue}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="IEnumerable{T}"/> of <see cref="KeyValuePair{TKey,TValue}"/>.</returns>
+    internal static bool IsIEnumerableOfKeyValuePairs(this ITypeSymbol typeSymbol, Compilation compilation)
+        => typeSymbol.IsIEnumerable() && typeSymbol.GetElementType().IsKeyValuePair(compilation);
+
+    /// <summary>
+    /// Check if the type is <see cref="IEnumerable{T}"/> or implements <see cref="IEnumerable{T}"/> of <see cref="KeyValuePair{TKey,TValue}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is or implements <see cref="IEnumerable{T}"/> of <see cref="KeyValuePair{TKey,TValue}"/>, <c>false</c> otherwise.</returns>
+    internal static bool IsOrImplementIEnumerableOfKeyValuePair(this ITypeSymbol typeSymbol, Compilation compilation)
+        => typeSymbol.IsIEnumerableOfKeyValuePairs(compilation) || typeSymbol.AllInterfaces.Any(@interface => @interface.IsIEnumerableOfKeyValuePairs(compilation));
+
+    /// <summary>
     /// Check if the type is <see cref="ICollection{T}"/> or implements <see cref="ICollection{T}"/>.
     /// </summary>
     /// <param name="typeSymbol">The type symbol.</param>
@@ -314,6 +333,11 @@ internal static class TypeSymbolExtensions
                 {
                     return (@interface.TypeArguments.First(), @interface.TypeArguments.Last());
                 }
+
+                if (@interface is not null && @interface.IsGenericType && @interface.IsIEnumerableOfKeyValuePairs(compilation))
+                {
+                    return (@interface.TypeArguments.First(), @interface.TypeArguments.Last());
+                }
             }
         }
 
@@ -334,7 +358,7 @@ internal static class TypeSymbolExtensions
             return true;
         }
 
-        typeArguments = Array.Empty<ITypeSymbol>().ToImmutableArray();
+        typeArguments = [];
         return false;
     }
 
@@ -458,7 +482,7 @@ internal static class TypeSymbolExtensions
     /// <param name="typeSymbol">The type symbol.</param>
     /// <returns><c>true</c> if the type symbol is <see cref="long"/> type or a compatible smaller
     /// numeric type, <c>false</c> otherwise.</returns>
-    internal static bool IsLongOrNumericCanBeImplictlyCastedToLong(this ITypeSymbol typeSymbol)
+    internal static bool IsLongOrNumericCanBeImplicitlyCastedToLong(this ITypeSymbol typeSymbol)
     {
         switch (typeSymbol.SpecialType)
         {
@@ -491,7 +515,7 @@ internal static class TypeSymbolExtensions
     /// <returns><c>true</c> if the type symbol is <see cref="DateTime"/>.</returns>
     internal static bool IsDateTimeOffset(this ITypeSymbol typeSymbol, Compilation compilation)
     {
-        var dateTimeOffsetType = compilation.GetTypeByMetadataName(DateTimeOffset);
+        var dateTimeOffsetType = compilation.GetTypeByMetadataName(DateTimeOffsetFullName);
         var isDateTimeOffsetType = SymbolEqualityComparer.Default.Equals(dateTimeOffsetType, typeSymbol.OriginalDefinition);
         return isDateTimeOffsetType;
     }
@@ -713,5 +737,18 @@ internal static class TypeSymbolExtensions
         var guidType = compilation.GetTypeByMetadataName(GuidFullName);
         var isGuid = SymbolEqualityComparer.Default.Equals(guidType, typeSymbol.OriginalDefinition);
         return isGuid;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="KeyValuePair{TKey,TValue}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="KeyValuePair{TKey,TValue}"/>.</returns>
+    internal static bool IsKeyValuePair(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var keyValuePairSymbol = compilation.GetTypeByMetadataName(KeyValuePairFullName);
+        var isKeyValuePair = SymbolEqualityComparer.Default.Equals(keyValuePairSymbol, typeSymbol.OriginalDefinition);
+        return isKeyValuePair;
     }
 }

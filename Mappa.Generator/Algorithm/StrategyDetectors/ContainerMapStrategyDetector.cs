@@ -169,8 +169,10 @@ internal sealed class ContainerMapStrategyDetector
     private bool CanMapDictionaryToDictionary(out MapStrategy keyStrategy, out MapStrategy valueStrategy)
     {
         var isSourceDictionary = this.context.SourceType.IsOrImplementIDictionary(this.compilation)
-                                 || this.context.TargetType.IsIReadOnlyDictionary(this.compilation);
+                                 || this.context.TargetType.IsIReadOnlyDictionary(this.compilation)
+                                 || this.context.TargetType.IsOrImplementIEnumerableOfKeyValuePair(this.compilation);
         var isTargetDictionary = (this.context.TargetType.IsOrImplementIDictionary(this.compilation)
+                                  || this.context.TargetType.IsIEnumerableOfKeyValuePairs(this.compilation)
                                   || this.context.TargetType.IsIReadOnlyDictionary(this.compilation)
                                   || this.context.TargetType.IsReadOnlyDictionary(this.compilation)
                                   || this.context.TargetType.IsImmutableDictionary(this.compilation)
@@ -191,7 +193,8 @@ internal sealed class ContainerMapStrategyDetector
             if (this.context.TargetType.TypeKind is TypeKind.Interface)
             {
                 return this.context.TargetType.IsIDictionary(this.compilation)
-                    || this.context.TargetType.IsIReadOnlyDictionary(this.compilation);
+                       || this.context.TargetType.IsIEnumerableOfKeyValuePairs(this.compilation)
+                       || this.context.TargetType.IsIReadOnlyDictionary(this.compilation);
             }
 
             // Target type MUST have a constructor with no arguments

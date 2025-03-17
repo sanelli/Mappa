@@ -84,7 +84,9 @@ internal sealed class DictionaryToDictionaryMapStrategyBuilder
         string GetTargetType()
         {
             // For read-only targeted (i.e. IReadOnly, ReadOnly, Immutable and Frozen)
-            if (this.strategy.TargetType.IsOrImplementIReadOnlyDictionary(context.Compilation)
+            // and for targeting IEnumerable<KeyValuePair<TKey, TValue>>.
+            if ((this.strategy.TargetType.IsOrImplementIReadOnlyDictionary(context.Compilation)
+                 || this.strategy.TargetType.IsIEnumerableOfKeyValuePairs(context.Compilation))
                 && !this.strategy.TargetType.IsOrImplementIDictionary(context.Compilation))
             {
                 return $"System.Collections.Generic.Dictionary<{targetKeyType.ToDisplayString()}, {targetValueType.ToDisplayString()}>";
@@ -95,7 +97,9 @@ internal sealed class DictionaryToDictionaryMapStrategyBuilder
 
         string GetNewType()
         {
-            if (this.strategy.TargetType.IsIDictionary(context.Compilation))
+            if (this.strategy.TargetType.IsIDictionary(context.Compilation)
+                || this.strategy.TargetType.IsIEnumerableOfKeyValuePairs(context.Compilation)
+                || this.strategy.TargetType.IsIReadOnlyDictionary(context.Compilation))
             {
                 return $"System.Collections.Generic.Dictionary<{targetKeyType.ToDisplayString()}, {targetValueType.ToDisplayString()}>";
             }

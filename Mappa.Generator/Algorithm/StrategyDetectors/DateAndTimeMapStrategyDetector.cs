@@ -175,7 +175,7 @@ internal sealed class DateAndTimeMapStrategyDetector
 
     private bool CanMapLongOrSmallerNumericTypeToDateTime()
     {
-        var sourceIsLongOrSmallerNumericType = this.context.SourceType.IsLongOrNumericCanBeImplictlyCastedToLong();
+        var sourceIsLongOrSmallerNumericType = this.context.SourceType.IsLongOrNumericCanBeImplicitlyCastedToLong();
         var targetIsDateTime = this.context.TargetType.IsDateTime();
         return sourceIsLongOrSmallerNumericType && targetIsDateTime;
     }
@@ -224,7 +224,7 @@ internal sealed class DateAndTimeMapStrategyDetector
 
     private bool CanMapLongOrSmallerNumericTypeToDateTimeOffset()
     {
-        var sourceIsLongOrSmallerNumericType = this.context.SourceType.IsLongOrNumericCanBeImplictlyCastedToLong();
+        var sourceIsLongOrSmallerNumericType = this.context.SourceType.IsLongOrNumericCanBeImplicitlyCastedToLong();
         var targetIsDateTimeOffset = this.context.TargetType.IsDateTimeOffset(this.compilation);
         return sourceIsLongOrSmallerNumericType && targetIsDateTimeOffset;
     }
