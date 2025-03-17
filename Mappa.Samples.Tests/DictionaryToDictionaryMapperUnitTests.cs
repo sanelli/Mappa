@@ -179,4 +179,193 @@ public sealed class DictionaryToDictionaryMapperUnitTests
             { "3", "Three" },
         });
     }
+
+    /// <summary>
+    /// Unit test for <see cref="DictionaryToDictionaryMapper.MapIEnumerableOfKeyValuePairsToDictionary"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapIEnumerableOfKeyValuePairsToDictionary()
+    {
+        // Arrange
+        IEnumerable<KeyValuePair<int, CountingValues>> input = new Dictionary<int, CountingValues>
+        {
+            { 1, CountingValues.One },
+            { 2, CountingValues.Two },
+            { 3, CountingValues.Three },
+        };
+
+        // Act
+        var actual = this.mapper.MapIEnumerableOfKeyValuePairsToDictionary(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo(new Dictionary<string, string>
+        {
+            { "1", "One" },
+            { "2", "Two" },
+            { "3", "Three" },
+        });
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="DictionaryToDictionaryMapper.MapIReadOnlyDictionaryToDictionary"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapIReadOnlyDictionaryToDictionary()
+    {
+        // Arrange
+        IReadOnlyDictionary<int, CountingValues> input = new Dictionary<int, CountingValues>
+        {
+            { 1, CountingValues.One },
+            { 2, CountingValues.Two },
+            { 3, CountingValues.Three },
+        };
+
+        // Act
+        var actual = this.mapper.MapIReadOnlyDictionaryToDictionary(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo(new Dictionary<string, string>
+        {
+            { "1", "One" },
+            { "2", "Two" },
+            { "3", "Three" },
+        });
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="DictionaryToDictionaryMapper.MapDictionaryToIEnumerableOfKeyValuePair"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDictionaryToIEnumerableOfKeyValuePair()
+    {
+        // Arrange
+        Dictionary<int, CountingValues> input = new()
+        {
+            { 1, CountingValues.One },
+            { 2, CountingValues.Two },
+            { 3, CountingValues.Three },
+        };
+
+        // Act
+        var actual = this.mapper.MapDictionaryToIEnumerableOfKeyValuePair(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo(new Dictionary<string, string>
+        {
+            { "1", "One" },
+            { "2", "Two" },
+            { "3", "Three" },
+        });
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="DictionaryToDictionaryMapper.MapDictionaryToIReadOnlyDictionary"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDictionaryToIReadOnlyDictionary()
+    {
+        // Arrange
+        Dictionary<int, CountingValues> input = new()
+        {
+            { 1, CountingValues.One },
+            { 2, CountingValues.Two },
+            { 3, CountingValues.Three },
+        };
+
+        // Act
+        var actual = this.mapper.MapDictionaryToIReadOnlyDictionary(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo(new Dictionary<string, string>
+        {
+            { "1", "One" },
+            { "2", "Two" },
+            { "3", "Three" },
+        });
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="DictionaryToDictionaryMapper.MapDictionaryToReadOnlyDictionary"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDictionaryToReadOnlyDictionary()
+    {
+        // Arrange
+        Dictionary<int, CountingValues> input = new()
+        {
+            { 1, CountingValues.One },
+            { 2, CountingValues.Two },
+            { 3, CountingValues.Three },
+        };
+
+        // Act
+        var actual = this.mapper.MapDictionaryToReadOnlyDictionary(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo(new Dictionary<string, string>
+        {
+            { "1", "One" },
+            { "2", "Two" },
+            { "3", "Three" },
+        });
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="DictionaryToDictionaryMapper.MapDictionaryToImmutableDictionary"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDictionaryToImmutableDictionary()
+    {
+        // Arrange
+        Dictionary<int, CountingValues> input = new()
+        {
+            { 1, CountingValues.One },
+            { 2, CountingValues.Two },
+            { 3, CountingValues.Three },
+        };
+
+        // Act
+        var actual = this.mapper.MapDictionaryToImmutableDictionary(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo(new Dictionary<string, string>
+        {
+            { "1", "One" },
+            { "2", "Two" },
+            { "3", "Three" },
+        });
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="DictionaryToDictionaryMapper.MapDictionaryToFrozenDictionary"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDictionaryToFrozenDictionary()
+    {
+        // Arrange
+        Dictionary<int, CountingValues> input = new()
+        {
+            { 1, CountingValues.One },
+            { 2, CountingValues.Two },
+            { 3, CountingValues.Three },
+        };
+
+        // Act
+        var actual = this.mapper.MapDictionaryToFrozenDictionary(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo(new Dictionary<string, string>
+        {
+            { "1", "One" },
+            { "2", "Two" },
+            { "3", "Three" },
+        });
+    }
 }
