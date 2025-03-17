@@ -41,55 +41,8 @@ internal sealed class ContainerMapStrategyDetector
     {
         mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
 
-        // 01. S[]/List<T> -> T[] : ArrayOrListToArrayMapStrategy ( IMapStrategy(T, S) ).
-        if (this.CanMapArrayOrListToArray(out var arrayOrListToArrayElementStrategy))
-        {
-            // TODO [#23] Add Support for input implementing IList<>.
-            // TODO [#24] Add support for faster iteration using Span<>.
-            mapStrategy = new ArrayOrListToArrayMapStrategy(
-                this.context.TargetType,
-                this.context.SourceType,
-                arrayOrListToArrayElementStrategy);
-        }
-
-        // 02. Collection<S>/Enumerable<S> -> T[] : CollectionOrEnumerableToArray( IMapStrategy(T, S) )
-        else if (this.CanMapCollectionOrEnumerableToArray(out var collectionOrEnumerableToArrayElementStrategy))
-        {
-            // TODO [#25] Add Support for input implementing IEnumerable<>, ICollection<>, IReadOnlyCollection<>.
-            mapStrategy = new EnumerableOrCollectionToArrayMapStrategy(
-                this.context.TargetType,
-                this.context.SourceType,
-                collectionOrEnumerableToArrayElementStrategy);
-        }
-
-        // 03. S[]/List<S> -> Collection<T>/IEnumerable<T> : ArrayOrListToCollectionMapStrategy ( IMapStrategy(T, S) ).
-        else if (this.CanMapArrayOrListToCollectionOrEnumerable(out var arrayOrListElementStrategy))
-        {
-            // TODO [#26] Add Support for input implementing IList<>.
-            // TODO [#27] Add Support for output implementing IList<>, IEnumerable<>, IReadOnlyCollection<>, ICollection<>.
-            // TODO [#28] Check if it is possible using Span<> here as well.
-            // TODO [#29] Allow to prefer returning array over lists.
-            mapStrategy = new ArrayOrListToCollectionMapStrategy(
-                this.context.TargetType,
-                this.context.SourceType,
-                arrayOrListElementStrategy);
-        }
-
-        // 04. IEnumerable<S>/Collection<S> -> Collection<T>/IEnumerable<T> : EnumerableOrCollectionToCollectionMapStrategy ( IMapStrategy(T, S) ).
-        else if (this.CanMapCollectionOrEnumerableToCollectionOrEnumerable(out var collectionOrEnumerableElementStrategy))
-        {
-            // TODO [#30] Add Support for input implementing IEnumerable<>, ICollection<>, IReadOnlyCollection<>.
-            // TODO [#31] Add Support for output implementing IList<>, IEnumerable<>, IReadOnlyCollection<>, ICollection<>.
-            // TODO [#32] Check if it is possible using Span<> here as well.
-            // TODO [#33] Allow to prefer returning array over lists.
-            mapStrategy = new EnumerableOrCollectionToCollectionMapStrategy(
-                this.context.TargetType,
-                this.context.SourceType,
-                collectionOrEnumerableElementStrategy);
-        }
-
-        // 05. (I)Dictionary<SK,SV> -> (I)Dictionary<TK,TV> : DictionaryStrategy( IMapStrategy(TK, SK), IMapStrategy(TV, SV) ).
-        else if (this.CanMapDictionaryToDictionary(out var dictionaryKeyStrategy, out var dictionaryValueStrategy))
+        // 01. Dictionary -> Dictionary strategy.
+        if (this.CanMapDictionaryToDictionary(out var dictionaryKeyStrategy, out var dictionaryValueStrategy))
         {
             // TODO [#34] Allow the user to specify if they want to use .Add or the indexer.
             mapStrategy = new DictionaryToDictionaryMapStrategy(
@@ -99,73 +52,23 @@ internal sealed class ContainerMapStrategyDetector
                 dictionaryValueStrategy);
         }
 
+        // 02. Collection -> Collection strategy.
+        // TODO [#24] Add support for faster iteration using Span<>.
+        // TODO [#29] Allow to prefer returning array over lists for interfaces.
+        else if (this.CanMapCollectionToCollection(out var elementStrategy))
+        {
+            mapStrategy = new CollectionToCollectionMapStrategy(
+                this.context.TargetType,
+                this.context.SourceType,
+                elementStrategy);
+        }
+
         return mapStrategy is not NoMapStrategy;
     }
 
-    private bool CanMapArrayOrListToArray(out MapStrategy elementStrategy)
-    {
-        // Source can be S[], IList<S>, List<S>
-        var acceptSource = this.context.SourceType.IsArray();
-        acceptSource = acceptSource || this.context.SourceType.IsIList();
-        acceptSource = acceptSource || this.context.SourceType.IsList(this.compilation);
-
-        var isTargetArray = this.context.TargetType.IsArray();
-
-        elementStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
-        return acceptSource && isTargetArray && this.context.TryGetElementStrategy(this.compilation, out elementStrategy, this.cancellationToken);
-    }
-
-    private bool CanMapCollectionOrEnumerableToArray(out MapStrategy elementStrategy)
-    {
-        // Source can be IEnumerable<S>, ICollection<S> or IReadOnlyCollection<S>
-        var acceptSource = this.context.SourceType.IsIEnumerable();
-        acceptSource = acceptSource || this.context.SourceType.IsICollection();
-        acceptSource = acceptSource || this.context.SourceType.IsIReadOnlyCollection();
-
-        var isTargetArray = this.context.TargetType.IsArray();
-
-        elementStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
-        return acceptSource && isTargetArray && this.context.TryGetElementStrategy(this.compilation, out elementStrategy, this.cancellationToken);
-    }
-
-    private bool CanMapArrayOrListToCollectionOrEnumerable(out MapStrategy elementStrategy)
-    {
-        // Source can be S[], IList<S>, List<S>
-        var acceptSource = this.context.SourceType.IsArray();
-        acceptSource = acceptSource || this.context.SourceType.IsIList();
-        acceptSource = acceptSource || this.context.SourceType.IsList(this.compilation);
-
-        // Target can be IList<T>, List<T>, ICollection<T>, IReadOnlyCollection<T>, IEnumerable<T>
-        var acceptTarget = this.context.TargetType.IsIList();
-        acceptTarget = acceptTarget || this.context.TargetType.IsList(this.compilation);
-        acceptTarget = acceptTarget || this.context.TargetType.IsICollection();
-        acceptTarget = acceptTarget || this.context.TargetType.IsIReadOnlyCollection();
-        acceptTarget = acceptTarget || this.context.TargetType.IsIEnumerable();
-
-        // Return result of check.
-        elementStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
-        return acceptSource && acceptTarget && this.context.TryGetElementStrategy(this.compilation, out elementStrategy, this.cancellationToken);
-    }
-
-    private bool CanMapCollectionOrEnumerableToCollectionOrEnumerable(out MapStrategy elementStrategy)
-    {
-        // Source can be S[], IList<S>, List<S>
-        var acceptSource = this.context.SourceType.IsIEnumerable();
-        acceptSource = acceptSource || this.context.SourceType.IsICollection();
-        acceptSource = acceptSource || this.context.SourceType.IsIReadOnlyCollection();
-
-        // Target can be IList<T>, List<T>, ICollection<T>, IReadOnlyCollection<T>, IEnumerable<T>
-        var acceptTarget = this.context.TargetType.IsIList();
-        acceptTarget = acceptTarget || this.context.TargetType.IsList(this.compilation);
-        acceptTarget = acceptTarget || this.context.TargetType.IsICollection();
-        acceptTarget = acceptTarget || this.context.TargetType.IsIReadOnlyCollection();
-        acceptTarget = acceptTarget || this.context.TargetType.IsIEnumerable();
-
-        // Return result of check.
-        elementStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
-        return acceptSource && acceptTarget && this.context.TryGetElementStrategy(this.compilation, out elementStrategy, this.cancellationToken);
-    }
-
+    // TODO [#105] Support SortedDictionary as output type.
+    // TODO [#105] Support ImmutableSortedDictionary as output type.
+    // TODO [#105] Support IImmutableDictionary as output type.
     private bool CanMapDictionaryToDictionary(out MapStrategy keyStrategy, out MapStrategy valueStrategy)
     {
         var isSourceDictionary = this.context.SourceType.IsOrImplementIDictionary(this.compilation)
@@ -209,6 +112,71 @@ internal sealed class ContainerMapStrategyDetector
                     return true;
                 }
 
+                return namedTypeSymbol.Constructors.Any(constructor => constructor.Parameters.Length == 0);
+            }
+
+            return false;
+        }
+    }
+
+    private bool CanMapCollectionToCollection(out MapStrategy elementStrategy)
+    {
+        var isSourceCollection = this.context.SourceType.IsOrImplementIEnumerable();
+
+        // TODO [#105] IReadOnlyCollection.
+        // TODO [#105] Stack (Are not ICollection).
+        // TODO [#105] Queue (Are not ICollection).
+        // TODO [#105] ReadOnlyCollection.
+        // TODO [#105] ReadOnlySet.
+        // TODO [#105] FrozenCollection.
+        // TODO [#105] ImmutableHashSet.
+        // TODO [#105] ImmutableArray.
+        // TODO [#105] ImmutableList.
+        // TODO [#105] ImmutableQueue.
+        // TODO [#105] ImmutableSortedSet.
+        // TODO [#105] ImmutableStack.
+        // TODO [#105] ImmutableSet.
+        var isTargetCollection = (this.context.TargetType.IsIEnumerable()
+                                  || this.context.TargetType.IsArray()
+                                  || this.context.TargetType.IsOrImplementICollection())
+                                 && InterfaceAndConstructorChecks();
+
+        elementStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
+
+        return isSourceCollection && isTargetCollection && this.context.TryGetElementStrategy(
+            this.compilation,
+            out elementStrategy,
+            this.cancellationToken);
+
+        bool InterfaceAndConstructorChecks()
+        {
+            if (this.context.TargetType.TypeKind is TypeKind.Interface)
+            {
+                // TODO [#105] IList.
+                // TODO [#105] ISet.
+                // TODO [#105] IReadOnlyList.
+                // TODO [#105] IReadOnlySet.
+                // TODO [#105] ImmutableList.
+                return this.context.TargetType.IsIEnumerable()
+                       || this.context.TargetType.IsICollection()
+                       || this.context.TargetType.IsIReadOnlyCollection();
+            }
+
+            // Target type MUST have a constructor with no arguments
+            // unless it is a ReadOnlyDictionary, ImmutableDictionary or a FrozenDictionary
+            // for which special coding is provided.
+            if (this.context.TargetType is INamedTypeSymbol namedTypeSymbol)
+            {
+                // TODO [#105] ReadOnlyCollection -- Add exception.
+                // TODO [#105] ReadOnlySet -- Add exception.
+                // TODO [#105] FrozenCollection -- Add exception.
+                // TODO [#105] ImmutableHashSet -- Add exception.
+                // TODO [#105] ImmutableArray -- Add exception.
+                // TODO [#105] ImmutableList -- Add exception.
+                // TODO [#105] ImmutableQueue -- Add exception.
+                // TODO [#105] ImmutableSortedSet -- Add exception.
+                // TODO [#105] ImmutableStack -- Add exception.
+                // TODO [#105] ImmutableSet -- Add exception.
                 return namedTypeSymbol.Constructors.Any(constructor => constructor.Parameters.Length == 0);
             }
 

@@ -31,6 +31,7 @@ internal static class TypeSymbolExtensions
     private static readonly string Tuple8Fullname = typeof(Tuple<,,,,,,,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Tuple<,,,,,,,>)}");
     private static readonly string DictionaryFullName = typeof(Dictionary<,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Dictionary<,>)}");
     private static readonly string ReadOnlyDictionaryFullName = typeof(ReadOnlyDictionary<,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(ReadOnlyDictionary<,>)}");
+    private static readonly string ReadOnlyCollectionFullName = typeof(ReadOnlyCollection<>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(ReadOnlyCollection<>)}");
     private static readonly string DictionaryInterfaceFullName = typeof(IDictionary<,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(IDictionary<,>)}");
     private static readonly string ReadOnlyDictionaryInterfaceFullName = typeof(IReadOnlyDictionary<,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(IReadOnlyDictionary<,>)}");
     private static readonly string ListFullName = typeof(List<>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(List<>)}");
@@ -159,6 +160,19 @@ internal static class TypeSymbolExtensions
         var dictionaryType = compilation.GetTypeByMetadataName(ReadOnlyDictionaryFullName);
         var isDictionary = SymbolEqualityComparer.Default.Equals(dictionaryType, typeSymbol.OriginalDefinition);
         return isDictionary;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="ReadOnlyCollection{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="ReadOnlyCollection{K}"/>.</returns>
+    internal static bool IsReadOnlyCollection(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var collectionSymbol = compilation.GetTypeByMetadataName(ReadOnlyCollectionFullName);
+        var isCollection = SymbolEqualityComparer.Default.Equals(collectionSymbol, typeSymbol.OriginalDefinition);
+        return isCollection;
     }
 
     /// <summary>

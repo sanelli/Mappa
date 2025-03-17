@@ -1,4 +1,4 @@
-// <copyright file="EnumerableOrCollectionToArrayMapStrategy.cs" company="Stefano Anelli">
+// <copyright file="CollectionToCollectionMapStrategy.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -9,22 +9,22 @@ using Microsoft.CodeAnalysis;
 namespace Mappa.Generator.Models.Strategies;
 
 /// <summary>
-/// Strategy to map an array to another array.
+/// Strategy to map a collection to a collection.
 /// </summary>
 /// <param name="targetType">The target type.</param>
 /// <param name="sourceType">The source type.</param>
-/// <param name="elementStrategy">The strategy that map the array element.</param>
-internal sealed class EnumerableOrCollectionToArrayMapStrategy(
+/// <param name="elementStrategy">The strategy for the element.</param>
+internal sealed class CollectionToCollectionMapStrategy(
     ITypeSymbol targetType,
     ITypeSymbol sourceType,
     MapStrategy elementStrategy)
         : MapStrategy(targetType, sourceType)
 {
     /// <summary>
-    /// Gets the strategy to map the types encapsulated by the nullable struct.
+    /// Gets the strategy for the keys.
     /// </summary>
     public MapStrategy ElementStrategy { get; } = elementStrategy;
 
     /// <inheritdoc/>
-    internal override IMappaStrategyBuilder GetBuilder() => new EnumerableOrCollectionToArrayMapStrategyBuilder(this);
+    internal override IMappaStrategyBuilder GetBuilder() => new CollectionToCollectionMapStrategyBuilder(this);
 }
