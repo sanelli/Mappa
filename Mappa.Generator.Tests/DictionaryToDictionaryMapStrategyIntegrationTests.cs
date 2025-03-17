@@ -13,6 +13,8 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Integration tests for <see cref="DictionaryToDictionaryMapStrategy"/> strategy.
 /// </summary>
+// TODO [#105] Add tests where source is IReadOnlyDictionary.
+// TODO [#105] Add tests where source implements IReadOnlyDictionary.
 // TODO [#105] Add tests where target is IReadOnlyDictionary.
 // TODO [#105] Add tests where target is ReadOnlyDictionary.
 // TODO [#105] Add tests where target is ImmutableDictionary.
