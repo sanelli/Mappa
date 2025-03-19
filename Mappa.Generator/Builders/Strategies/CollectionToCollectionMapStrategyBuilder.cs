@@ -3,8 +3,11 @@
 // </copyright>
 
 using Mappa.Generator.Exceptions;
+using Mappa.Generator.Extensions;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
+
+using Microsoft.CodeAnalysis;
 
 namespace Mappa.Generator.Builders.Strategies;
 
@@ -25,14 +28,152 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
         this.strategy = strategy;
     }
 
+    private enum AddMethod
+    {
+        UseIndexer,
+        UseAdd,
+    }
+
     /// <inheritdoc/>
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
-        if (this.strategy is null)
+        var stringBuilder = new PrettyCode.StringBuilder();
+
+        BuildTargetVariable(stringBuilder, source, context, this.strategy.TargetType, this.strategy.SourceType, out var targetVariableName, out var addMethod, out var targerCounterVariableName);
+        using (AppendLoopBlock(
+                   stringBuilder,
+                   source,
+                   context,
+                   this.strategy.SourceType,
+                   out var loopVariableName,
+                   out var countingVariableName))
         {
-            throw new MappaGeneratorException(nameof(this.strategy));
+            var elementStrategyBuilder = this.strategy.ElementStrategy.GetBuilder();
+            var (targetElementVariable, targetElementCode) = elementStrategyBuilder.BuildSource(loopVariableName, context, mappaGlobalOptions);
+            if (!string.IsNullOrWhiteSpace(targetElementCode))
+            {
+                stringBuilder.AppendLine(targetElementCode);
+            }
+
+            switch (addMethod)
+            {
+                case AddMethod.UseIndexer:
+                    var index = countingVariableName ?? targerCounterVariableName ?? throw new MappaGeneratorException("Cannot identify a suitable index");
+                    stringBuilder.AppendLine($"{targetVariableName}[{index}] = {targetElementVariable};");
+                    if (string.IsNullOrWhiteSpace(countingVariableName))
+                    {
+                        // If there is no counting variable from the loop the target counter must be increased.
+                        stringBuilder.AppendLine($"{targerCounterVariableName} += 1;");
+                    }
+
+                    break;
+                case AddMethod.UseAdd:
+                    stringBuilder.AppendLine($"{targetVariableName}.Add({targetElementVariable});");
+                    break;
+                default:
+                    throw new MappaGeneratorException("Unexpected add method.");
+            }
         }
 
-        throw new NotImplementedException();
+        return (targetVariableName, stringBuilder.ToString());
+    }
+
+    private static void BuildTargetVariable(
+        PrettyCode.StringBuilder stringBuilder,
+        string source,
+        MappaBuilderContext context,
+        ITypeSymbol targetTypeSymbol,
+        ITypeSymbol sourceTypeSymbol,
+        out string targetVariableName,
+        out AddMethod addMethod,
+        out string? counterVariableName)
+    {
+        targetVariableName = context.NextTemporary();
+        var sourceHasIndexer = HasIndexer(context, sourceTypeSymbol);
+        var targetHasIndexer = HasIndexer(context, targetTypeSymbol);
+        string? capacity = null;
+        addMethod = AddMethod.UseAdd;
+        counterVariableName = null;
+
+        if (targetTypeSymbol.IsIEnumerable())
+        {
+            if (sourceHasIndexer || sourceTypeSymbol.IsOrImplementICollection())
+            {
+                capacity = GetLengthPropertyName(source, sourceTypeSymbol, context.Compilation);
+            }
+
+            if (targetHasIndexer)
+            {
+                addMethod = AddMethod.UseIndexer;
+            }
+
+            stringBuilder.AppendLine($"System.Collections.Generic.List<{targetTypeSymbol.GetElementType().ToDisplayString()}> {targetVariableName} = new System.Collections.Generic.List<{targetTypeSymbol.GetElementType().ToDisplayString()}>({capacity ?? string.Empty});");
+            if (targetHasIndexer && !sourceHasIndexer)
+            {
+                counterVariableName = context.NextTemporary();
+                stringBuilder.AppendLine($"int {counterVariableName} = 0;");
+            }
+        }
+        else
+        {
+            throw new MappaGeneratorException($"Unsupported target type {targetTypeSymbol.ToDisplayString()} during generation of collection to collection mapping.");
+        }
+    }
+
+    private static IDisposable AppendLoopBlock(
+        PrettyCode.StringBuilder stringBuilder,
+        string source,
+        MappaBuilderContext context,
+        ITypeSymbol sourceTypeSymbol,
+        out string loopVariableName,
+        out string? countingVariableName)
+    {
+        // For array, Span<T> or anything implementing IList we can use a for loop
+        // this way we can also use Span<> for ever better performances.
+        if (HasIndexer(context, sourceTypeSymbol))
+        {
+            countingVariableName = context.NextTemporary();
+            loopVariableName = context.NextTemporary();
+
+            stringBuilder.AppendLine($"for (int {countingVariableName} = 0; {countingVariableName} < {GetLengthPropertyName(source, sourceTypeSymbol, context.Compilation)}; ++{countingVariableName})");
+            var block = stringBuilder.CurlyBracesBlock();
+            stringBuilder.AppendLine($"{sourceTypeSymbol.GetElementType().ToDisplayString()} {loopVariableName} = {source}[{countingVariableName}];");
+            return block;
+        }
+
+        // Let's use a generic foreach loop!
+        countingVariableName = string.Empty;
+        loopVariableName = context.NextTemporary();
+        stringBuilder.AppendLine($"foreach ({sourceTypeSymbol.GetElementType().ToDisplayString()} {loopVariableName} in {source})");
+        return stringBuilder.CurlyBracesBlock();
+    }
+
+    private static bool HasIndexer(MappaBuilderContext context, ITypeSymbol sourceTypeSymbol)
+    {
+        return sourceTypeSymbol.IsArray()
+               || sourceTypeSymbol.IsSpan(context.Compilation)
+               || sourceTypeSymbol.IsReadOnlySpan(context.Compilation)
+               || sourceTypeSymbol.IsMemory(context.Compilation)
+               || sourceTypeSymbol.IsReadOnlyMemory(context.Compilation)
+               || sourceTypeSymbol.IsOrImplementIList();
+    }
+
+    private static string GetLengthPropertyName(string source, ITypeSymbol sourceTypeSymbol, Compilation compilation)
+    {
+        if (sourceTypeSymbol.IsArray()
+            || sourceTypeSymbol.IsSpan(compilation)
+            || sourceTypeSymbol.IsReadOnlySpan(compilation)
+            || sourceTypeSymbol.IsSpan(compilation)
+            || sourceTypeSymbol.IsReadOnlySpan(compilation))
+        {
+            return $"{source}.Length";
+        }
+
+        if (sourceTypeSymbol.IsOrImplementICollection())
+        {
+            return $"{source}.Count";
+        }
+
+        return $"global::System.Linq.Enumerable.Count<{sourceTypeSymbol.GetElementType().ToDisplayString()}>({source})";
     }
 }

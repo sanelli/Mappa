@@ -20,6 +20,10 @@ internal static class TypeSymbolExtensions
 {
     private const string ImmutableDictionaryFullName = "System.Collections.Immutable.ImmutableDictionary`2";
     private const string FrozenDictionaryFullName = "System.Collections.Frozen.FrozenDictionary`2";
+    private const string SpanFullName = "System.Span`1";
+    private const string ReadOnlySpanFullName = "System.ReadOnlySpan`1";
+    private const string MemoryFullName = "System.Memory`1";
+    private const string ReadOnlyMemoryFullName = "System.ReadOnlySMemory`1";
 
     private static readonly string Tuple1Fullname = typeof(Tuple<>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Tuple<>)}");
     private static readonly string Tuple2Fullname = typeof(Tuple<,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Tuple<,>)}");
@@ -108,6 +112,58 @@ internal static class TypeSymbolExtensions
         var listType = compilation.GetTypeByMetadataName(ListFullName);
         var isList = SymbolEqualityComparer.Default.Equals(listType, typeSymbol.OriginalDefinition);
         return isList;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="Span{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="Span{T}"/>.</returns>
+    internal static bool IsSpan(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var spanType = compilation.GetTypeByMetadataName(SpanFullName);
+        var isSpan = SymbolEqualityComparer.Default.Equals(spanType, typeSymbol.OriginalDefinition);
+        return isSpan;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="ReadOnlySpan{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="ReadOnlySpan{T}"/>.</returns>
+    internal static bool IsReadOnlySpan(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var spanType = compilation.GetTypeByMetadataName(ReadOnlySpanFullName);
+        var isSpan = SymbolEqualityComparer.Default.Equals(spanType, typeSymbol.OriginalDefinition);
+        return isSpan;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="Memory{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="Memory{T}"/>.</returns>
+    internal static bool IsMemory(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var memoryType = compilation.GetTypeByMetadataName(MemoryFullName);
+        var isMemory = SymbolEqualityComparer.Default.Equals(memoryType, typeSymbol.OriginalDefinition);
+        return isMemory;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="ReadOnlyMemory{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="ReadOnlyMemory{T}"/>.</returns>
+    internal static bool IsReadOnlyMemory(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var readOnlyMemoryType = compilation.GetTypeByMetadataName(ReadOnlyMemoryFullName);
+        var isMemory = SymbolEqualityComparer.Default.Equals(readOnlyMemoryType, typeSymbol.OriginalDefinition);
+        return isMemory;
     }
 
     /// <summary>

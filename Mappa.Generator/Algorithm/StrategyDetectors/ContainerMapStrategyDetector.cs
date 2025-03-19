@@ -121,8 +121,15 @@ internal sealed class ContainerMapStrategyDetector
 
     private bool CanMapCollectionToCollection(out MapStrategy elementStrategy)
     {
+        // TODO [#105] Span<T>.
+        // TODO [#105] Memory<T>.
+        // TODO [#105] ReadOnlySpan<T>.
+        // TODO [#105] ReadOnlyMemory<T>.
         var isSourceCollection = this.context.SourceType.IsOrImplementIEnumerable();
 
+        // TODO [#105] Array.
+        // TODO [#105] ICollection.
+        // TODO [#105] Implements ICollection.
         // TODO [#105] IReadOnlyCollection.
         // TODO [#105] Stack (Are not ICollection).
         // TODO [#105] Queue (Are not ICollection).
@@ -136,9 +143,11 @@ internal sealed class ContainerMapStrategyDetector
         // TODO [#105] ImmutableSortedSet.
         // TODO [#105] ImmutableStack.
         // TODO [#105] ImmutableSet.
-        var isTargetCollection = (this.context.TargetType.IsIEnumerable()
-                                  || this.context.TargetType.IsArray()
-                                  || this.context.TargetType.IsOrImplementICollection())
+        // TODO [#105] Span<T>.
+        // TODO [#105] Memory<T>.
+        // TODO [#105] ReadOnlySpan<T>.
+        // TODO [#105] ReadOnlyMemory<T>.
+        var isTargetCollection = this.context.TargetType.IsIEnumerable()
                                  && InterfaceAndConstructorChecks();
 
         elementStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
@@ -148,18 +157,20 @@ internal sealed class ContainerMapStrategyDetector
             out elementStrategy,
             this.cancellationToken);
 
+        // TODO [#105] Add exceptions for Arrays.
         bool InterfaceAndConstructorChecks()
         {
             if (this.context.TargetType.TypeKind is TypeKind.Interface)
             {
+                // TODO [#105] IEnumerable.
+                // TODO [#105] ICollection.
+                // TODO [#105] IReadOnlyCollection.
                 // TODO [#105] IList.
                 // TODO [#105] ISet.
                 // TODO [#105] IReadOnlyList.
                 // TODO [#105] IReadOnlySet.
-                // TODO [#105] ImmutableList.
-                return this.context.TargetType.IsIEnumerable()
-                       || this.context.TargetType.IsICollection()
-                       || this.context.TargetType.IsIReadOnlyCollection();
+                // TODO [#105] IImmutableList.
+                return this.context.TargetType.IsIEnumerable();
             }
 
             // Target type MUST have a constructor with no arguments
@@ -177,6 +188,7 @@ internal sealed class ContainerMapStrategyDetector
                 // TODO [#105] ImmutableSortedSet -- Add exception.
                 // TODO [#105] ImmutableStack -- Add exception.
                 // TODO [#105] ImmutableSet -- Add exception.
+                // TODO [#105] Span<T> -- Add exception as we need to create an array probably.
                 return namedTypeSymbol.Constructors.Any(constructor => constructor.Parameters.Length == 0);
             }
 
