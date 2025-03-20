@@ -121,11 +121,11 @@ internal sealed class ContainerMapStrategyDetector
 
     private bool CanMapCollectionToCollection(out MapStrategy elementStrategy)
     {
-        // TODO [#105] Span<T>.
-        // TODO [#105] Memory<T>.
-        // TODO [#105] ReadOnlySpan<T>.
-        // TODO [#105] ReadOnlyMemory<T>.
-        var isSourceCollection = this.context.SourceType.IsOrImplementIEnumerable();
+        var isSourceCollection = this.context.SourceType.IsOrImplementIEnumerable()
+            || this.context.SourceType.IsSpan(this.compilation)
+            || this.context.SourceType.IsMemory(this.compilation)
+            || this.context.SourceType.IsReadOnlySpan(this.compilation)
+            || this.context.SourceType.IsReadOnlyMemory(this.compilation);
 
         // TODO [#105] Array.
         // TODO [#105] ICollection.

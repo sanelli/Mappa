@@ -163,8 +163,8 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
         if (sourceTypeSymbol.IsArray()
             || sourceTypeSymbol.IsSpan(compilation)
             || sourceTypeSymbol.IsReadOnlySpan(compilation)
-            || sourceTypeSymbol.IsSpan(compilation)
-            || sourceTypeSymbol.IsReadOnlySpan(compilation))
+            || sourceTypeSymbol.IsMemory(compilation)
+            || sourceTypeSymbol.IsReadOnlyMemory(compilation))
         {
             return $"{source}.Length";
         }

@@ -23,7 +23,7 @@ internal static class TypeSymbolExtensions
     private const string SpanFullName = "System.Span`1";
     private const string ReadOnlySpanFullName = "System.ReadOnlySpan`1";
     private const string MemoryFullName = "System.Memory`1";
-    private const string ReadOnlyMemoryFullName = "System.ReadOnlySMemory`1";
+    private const string ReadOnlyMemoryFullName = "System.ReadOnlyMemory`1";
 
     private static readonly string Tuple1Fullname = typeof(Tuple<>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Tuple<>)}");
     private static readonly string Tuple2Fullname = typeof(Tuple<,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Tuple<,>)}");
