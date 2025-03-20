@@ -10,7 +10,8 @@ namespace Mappa.Samples;
 /// <summary>
 /// Mapper showing mapping across different collection types.
 /// </summary>
-// TODO [#105] impl IEnumerable<CountingValues> -> IEnumerable<int>.
+// TODO [#105] impl non-generic IEnumerable<CountingValues> -> IEnumerable<int>.
+// TODO [#105] impl generic IEnumerable<CountingValues> -> IEnumerable<int>.
 // TODO [#105] CountingValues[] -> IEnumerable<int>.
 // TODO [#105] Span<CountingValues> -> IEnumerable<int>.
 // TODO [#105] ReadOnlySpan<CountingValues> -> IEnumerable<int>.

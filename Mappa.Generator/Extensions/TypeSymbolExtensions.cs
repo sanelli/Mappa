@@ -376,6 +376,17 @@ internal static class TypeSymbolExtensions
             return namedTypeSymbol.TypeArguments.First();
         }
 
+        if (typeSymbol is INamedTypeSymbol nonGenericNamedTypeSymbol)
+        {
+            foreach (var @interface in nonGenericNamedTypeSymbol.AllInterfaces)
+            {
+                if (@interface is not null && @interface.IsGenericType && @interface.IsIEnumerable())
+                {
+                    return @interface.TypeArguments.First();
+                }
+            }
+        }
+
         throw new MappaGeneratorException($"Cannot obtain element type of \"{typeSymbol.ToDisplayString()}\"");
     }
 
@@ -384,7 +395,7 @@ internal static class TypeSymbolExtensions
     /// </summary>
     /// <param name="typeSymbol">The type symbol.</param>
     /// <param name="compilation">The compilation.</param>
-    /// <returns>The element type of the key and value of the contain.</returns>
+    /// <returns>The element type of the key and value of the container.</returns>
     /// <exception cref="MappaGeneratorException">If <paramref name="typeSymbol"/> is not an array or a generic type.</exception>
     internal static (ITypeSymbol KeyType, ITypeSymbol ValueType) GetKeyAndValueTypes(this ITypeSymbol typeSymbol, Compilation compilation)
     {

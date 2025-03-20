@@ -12,7 +12,6 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Integration tests for the <see cref="CollectionToCollectionMapStrategy"/>.
 /// </summary>
-// TODO [#105] impl IEnumerable<int> -> IEnumerable<string>.
 // TODO [#105] int[] -> IEnumerable<string>.
 // TODO [#105] Span<int> -> IEnumerable<string>.
 // TODO [#105] ReadOnlySpan<int> -> IEnumerable<string>.
@@ -82,7 +81,189 @@ public class CollectionToCollectionMapStrategyIntegrationTests
                 NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
-                    // TODO [#105] Add assertions.
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(3)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(List<string>).ToString(),
+                                "__mappa_tmp_1",
+                                initializerAssertions => initializerAssertions.BeObjectCreationExpressionSyntax(typeof(List<string>).ToString())))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeForEachStatementSyntax(
+                                typeof(int).ToString(),
+                                "__mappa_tmp_2",
+                                expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("input"),
+                                statementAssertions =>
+                                    statementAssertions
+                                        .BeBlockStatement()
+                                        .AsBlock()
+                                        .HasSyntaxNodesCount(2)
+                                        .HasNextSyntaxNode(foreachStatementAssertions =>
+                                            foreachStatementAssertions.BeLocalDeclarationStatementSyntax(
+                                                typeof(string).ToString(),
+                                                "__mappa_tmp_3",
+                                                initializerAssertions => initializerAssertions.BeInvocationExpressionSyntax("__mappa_tmp_2.ToString")))
+                                        .HasNextSyntaxNode(foreachStatementAssertions =>
+                                            foreachStatementAssertions.BeInvocationExpressionSyntaxStatement(
+                                                "__mappa_tmp_1.Add",
+                                                firstParameterAssertions => firstParameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_3")))))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeReturnStatement(expressionAssertions => expressionAssertions
+                                .BeIdentifierNameSyntax("__mappa_tmp_1")));
+                });
+    }
+
+    /// <summary>
+    /// Test map from a non-generic type implementing <see cref="IEnumerable{T}"/>
+    /// to <see cref="IEnumerable{T}"/>.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapFromNonGenericTypeImplementingIEnumerableToIEnumerable()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+
+                                  using Mappa.Attributes;
+                                  using System.Collections.Generic;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                                  
+                                  public partial class Source : IEnumerable<int> { }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial IEnumerable<string> Map(Source input);
+                                  }
+
+                                  #nullable restore
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                typeof(IEnumerable<string>).ToString(),
+                NullableAnnotation.NotAnnotated,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(3)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(List<string>).ToString(),
+                                "__mappa_tmp_1",
+                                initializerAssertions => initializerAssertions.BeObjectCreationExpressionSyntax(typeof(List<string>).ToString())))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeForEachStatementSyntax(
+                                typeof(int).ToString(),
+                                "__mappa_tmp_2",
+                                expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("input"),
+                                statementAssertions =>
+                                    statementAssertions
+                                        .BeBlockStatement()
+                                        .AsBlock()
+                                        .HasSyntaxNodesCount(2)
+                                        .HasNextSyntaxNode(foreachStatementAssertions =>
+                                            foreachStatementAssertions.BeLocalDeclarationStatementSyntax(
+                                                typeof(string).ToString(),
+                                                "__mappa_tmp_3",
+                                                initializerAssertions => initializerAssertions.BeInvocationExpressionSyntax("__mappa_tmp_2.ToString")))
+                                        .HasNextSyntaxNode(foreachStatementAssertions =>
+                                            foreachStatementAssertions.BeInvocationExpressionSyntaxStatement(
+                                                "__mappa_tmp_1.Add",
+                                                firstParameterAssertions => firstParameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_3")))))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeReturnStatement(expressionAssertions => expressionAssertions
+                                .BeIdentifierNameSyntax("__mappa_tmp_1")));
+                });
+    }
+
+    /// <summary>
+    /// Test map from a generic type implementing <see cref="IEnumerable{T}"/>
+    /// to <see cref="IEnumerable{T}"/>.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapFromGenericTypeImplementingIEnumerableToIEnumerable()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+
+                                  using Mappa.Attributes;
+                                  using System.Collections.Generic;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                                  
+                                  public partial class Source<T> : IEnumerable<T> { }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial IEnumerable<string> Map(Source<int> input);
+                                  }
+
+                                  #nullable restore
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                typeof(IEnumerable<string>).ToString(),
+                NullableAnnotation.NotAnnotated,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Source<int>",
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(3)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(List<string>).ToString(),
+                                "__mappa_tmp_1",
+                                initializerAssertions => initializerAssertions.BeObjectCreationExpressionSyntax(typeof(List<string>).ToString())))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeForEachStatementSyntax(
+                                typeof(int).ToString(),
+                                "__mappa_tmp_2",
+                                expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("input"),
+                                statementAssertions =>
+                                    statementAssertions
+                                        .BeBlockStatement()
+                                        .AsBlock()
+                                        .HasSyntaxNodesCount(2)
+                                        .HasNextSyntaxNode(foreachStatementAssertions =>
+                                            foreachStatementAssertions.BeLocalDeclarationStatementSyntax(
+                                                typeof(string).ToString(),
+                                                "__mappa_tmp_3",
+                                                initializerAssertions => initializerAssertions.BeInvocationExpressionSyntax("__mappa_tmp_2.ToString")))
+                                        .HasNextSyntaxNode(foreachStatementAssertions =>
+                                            foreachStatementAssertions.BeInvocationExpressionSyntaxStatement(
+                                                "__mappa_tmp_1.Add",
+                                                firstParameterAssertions => firstParameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_3")))))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeReturnStatement(expressionAssertions => expressionAssertions
+                                .BeIdentifierNameSyntax("__mappa_tmp_1")));
                 });
     }
 }
