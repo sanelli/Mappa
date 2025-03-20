@@ -44,9 +44,11 @@ namespace Mappa.Samples;
 // TODO [#105] ICollection<int> -> Memory<long>.
 // TODO [#105] ICollection<int> -> ReadOnlyMemory<long>.
 // TODO [#105] IEnumerable<int> -> string[].
-// TODO [#105] impl IEnumerable<int> -> string[].
 // TODO [#105] non-generic impl IEnumerable<int> -> string[].
 // TODO [#105] generic impl IEnumerable<int> -> string[].
+// TODO [#105] IList<int> -> string[].
+// TODO [#105] non-generic impl IList<int> -> string[].
+// TODO [#105] generic impl IList<int> -> string[].
 // TODO [#105] IEnumerable<int> -> Span<long>.
 // TODO [#105] IEnumerable<int> -> ReadOnlySpan<long>.
 // TODO [#105] IEnumerable<int> -> Memory<long>.
