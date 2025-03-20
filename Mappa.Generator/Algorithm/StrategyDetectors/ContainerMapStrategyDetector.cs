@@ -128,9 +128,7 @@ internal sealed class ContainerMapStrategyDetector
             || this.context.SourceType.IsReadOnlyMemory(this.compilation);
 
         // TODO [#105] Array.
-        // TODO [#105] ICollection.
         // TODO [#105] Implements ICollection.
-        // TODO [#105] IReadOnlyCollection.
         // TODO [#105] Stack (Are not ICollection).
         // TODO [#105] Queue (Are not ICollection).
         // TODO [#105] ReadOnlyCollection.
@@ -149,7 +147,9 @@ internal sealed class ContainerMapStrategyDetector
         // TODO [#105] ReadOnlyMemory<T>.
         var isTargetCollection = (this.context.TargetType.IsIEnumerable()
                                  || this.context.TargetType.IsIList()
-                                 || this.context.TargetType.IsList(this.compilation))
+                                 || this.context.TargetType.IsList(this.compilation)
+                                 || this.context.TargetType.IsICollection()
+                                 || this.context.TargetType.IsIReadOnlyCollection())
                                  && InterfaceAndConstructorChecks();
 
         elementStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
@@ -173,7 +173,9 @@ internal sealed class ContainerMapStrategyDetector
                 // TODO [#105] IReadOnlySet.
                 // TODO [#105] IImmutableList.
                 return this.context.TargetType.IsIEnumerable()
-                    || this.context.TargetType.IsIList();
+                    || this.context.TargetType.IsIList()
+                    || this.context.TargetType.IsICollection()
+                    || this.context.TargetType.IsIReadOnlyCollection();
             }
 
             // Target type MUST have a constructor with no arguments

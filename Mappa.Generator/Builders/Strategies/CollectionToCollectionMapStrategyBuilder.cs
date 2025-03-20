@@ -90,21 +90,22 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
     {
         targetVariableName = context.NextTemporary();
         var sourceHasIndexer = HasIndexer(context, sourceTypeSymbol);
-        var targetHasIndexer = HasIndexer(context, targetTypeSymbol);
         string? capacity = null;
         addMethod = AddMethod.UseAdd;
         counterVariableName = null;
 
         if (targetTypeSymbol.IsIEnumerable()
             || targetTypeSymbol.IsList(context.Compilation)
-            || targetTypeSymbol.IsIList())
+            || targetTypeSymbol.IsIList()
+            || targetTypeSymbol.IsICollection()
+            || targetTypeSymbol.IsIReadOnlyCollection())
         {
             if (sourceHasIndexer || sourceTypeSymbol.IsOrImplementICollection())
             {
                 capacity = GetLengthExpression(source, sourceTypeSymbol, context.Compilation);
             }
 
-            if (targetHasIndexer && HasIndexer(context, sourceTypeSymbol))
+            if (sourceHasIndexer)
             {
                 addMethod = AddMethod.UseIndexer;
             }
