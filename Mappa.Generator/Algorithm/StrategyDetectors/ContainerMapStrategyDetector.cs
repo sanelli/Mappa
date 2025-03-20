@@ -128,6 +128,7 @@ internal sealed class ContainerMapStrategyDetector
             || this.context.SourceType.IsReadOnlyMemory(this.compilation);
 
         // TODO [#105] Array.
+        // TODO [#105] Implements IList.
         // TODO [#105] Implements ICollection.
         // TODO [#105] Stack (Are not ICollection).
         // TODO [#105] Queue (Are not ICollection).
@@ -164,10 +165,6 @@ internal sealed class ContainerMapStrategyDetector
         {
             if (this.context.TargetType.TypeKind is TypeKind.Interface)
             {
-                // TODO [#105] IEnumerable.
-                // TODO [#105] ICollection.
-                // TODO [#105] IReadOnlyCollection.
-                // TODO [#105] IList.
                 // TODO [#105] ISet.
                 // TODO [#105] IReadOnlyList.
                 // TODO [#105] IReadOnlySet.
