@@ -99,7 +99,7 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
         {
             if (sourceHasIndexer || sourceTypeSymbol.IsOrImplementICollection())
             {
-                capacity = GetLengthPropertyName(source, sourceTypeSymbol, context.Compilation);
+                capacity = GetLengthExpression(source, sourceTypeSymbol, context.Compilation);
             }
 
             if (targetHasIndexer)
@@ -135,7 +135,7 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
             countingVariableName = context.NextTemporary();
             loopVariableName = context.NextTemporary();
 
-            stringBuilder.AppendLine($"for (int {countingVariableName} = 0; {countingVariableName} < {GetLengthPropertyName(source, sourceTypeSymbol, context.Compilation)}; ++{countingVariableName})");
+            stringBuilder.AppendLine($"for (int {countingVariableName} = 0; {countingVariableName} < {GetLengthExpression(source, sourceTypeSymbol, context.Compilation)}; ++{countingVariableName})");
             var block = stringBuilder.CurlyBracesBlock();
             stringBuilder.AppendLine($"{sourceTypeSymbol.GetElementType().ToDisplayString()} {loopVariableName} = {source}[{countingVariableName}];");
             return block;
@@ -158,7 +158,7 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
                || sourceTypeSymbol.IsOrImplementIList();
     }
 
-    private static string GetLengthPropertyName(string source, ITypeSymbol sourceTypeSymbol, Compilation compilation)
+    private static string GetLengthExpression(string source, ITypeSymbol sourceTypeSymbol, Compilation compilation)
     {
         if (sourceTypeSymbol.IsArray()
             || sourceTypeSymbol.IsSpan(compilation)

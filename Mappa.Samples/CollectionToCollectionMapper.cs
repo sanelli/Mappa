@@ -20,6 +20,9 @@ namespace Mappa.Samples;
 // TODO [#105] is IList<int> -> IEnumerable<string>.
 // TODO [#105] non-generic impl IList<int> -> IEnumerable<string>.
 // TODO [#105] generic impl IList<int> -> IEnumerable<string>.
+// TODO [#105] is ICollection<int> -> IEnumerable<string>.
+// TODO [#105] non-generic impl ICollection<int> -> IEnumerable<string>.
+// TODO [#105] generic impl ICollection<int> -> IEnumerable<string>.
 // TODO [#105] IEnumerable<int> -> List<string>.
 // TODO [#105] int[] -> string[].
 // TODO [#105] int[] -> Span<long>.
