@@ -18,20 +18,24 @@ namespace Mappa.Samples;
 // TODO [#105] Memory<CountingValues> -> IEnumerable<string>.
 // TODO [#105] ReadOnlyMemory<CountingValues> -> IEnumerable<string>.
 // TODO [#105] is IList<int> -> IEnumerable<string>.
-// TODO [#105] impl IList<int> -> IEnumerable<string>.
+// TODO [#105] non-generic impl IList<int> -> IEnumerable<string>.
+// TODO [#105] generic impl IList<int> -> IEnumerable<string>.
 // TODO [#105] int[] -> string[].
 // TODO [#105] int[] -> Span<long>.
 // TODO [#105] int[] -> ReadOnlySpan<long>.
 // TODO [#105] int[] -> Memory<long>.
 // TODO [#105] int[] -> ReadOnlyMemory<long>.
 // TODO [#105] ICollection<int> -> string[].
-// TODO [#105] impl ICollection<int> -> string[].
+// TODO [#105] generic impl ICollection<int> -> string[].
+// TODO [#105] non-generic impl ICollection<int> -> string[].
 // TODO [#105] ICollection<int> -> Span<long>.
 // TODO [#105] ICollection<int> -> ReadOnlySpan<long>.
 // TODO [#105] ICollection<int> -> Memory<long>.
 // TODO [#105] ICollection<int> -> ReadOnlyMemory<long>.
 // TODO [#105] IEnumerable<int> -> string[].
 // TODO [#105] impl IEnumerable<int> -> string[].
+// TODO [#105] non-generic impl IEnumerable<int> -> string[].
+// TODO [#105] generic impl IEnumerable<int> -> string[].
 // TODO [#105] IEnumerable<int> -> Span<long>.
 // TODO [#105] IEnumerable<int> -> ReadOnlySpan<long>.
 // TODO [#105] IEnumerable<int> -> Memory<long>.
