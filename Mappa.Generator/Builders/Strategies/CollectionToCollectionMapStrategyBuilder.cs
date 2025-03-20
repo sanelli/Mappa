@@ -39,7 +39,7 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
     {
         var stringBuilder = new PrettyCode.StringBuilder();
 
-        BuildTargetVariable(stringBuilder, source, context, this.strategy.TargetType, this.strategy.SourceType, out var targetVariableName, out var addMethod, out var targerCounterVariableName);
+        AppendTargetVariable(stringBuilder, source, context, this.strategy.TargetType, this.strategy.SourceType, out var targetVariableName, out var addMethod, out var targerCounterVariableName);
         using (AppendLoopBlock(
                    stringBuilder,
                    source,
@@ -78,7 +78,7 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
         return (targetVariableName, stringBuilder.ToString());
     }
 
-    private static void BuildTargetVariable(
+    private static void AppendTargetVariable(
         PrettyCode.StringBuilder stringBuilder,
         string source,
         MappaBuilderContext context,
@@ -95,24 +95,21 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
         addMethod = AddMethod.UseAdd;
         counterVariableName = null;
 
-        if (targetTypeSymbol.IsIEnumerable())
+        if (targetTypeSymbol.IsIEnumerable()
+            || targetTypeSymbol.IsList(context.Compilation)
+            || targetTypeSymbol.IsIList())
         {
             if (sourceHasIndexer || sourceTypeSymbol.IsOrImplementICollection())
             {
                 capacity = GetLengthExpression(source, sourceTypeSymbol, context.Compilation);
             }
 
-            if (targetHasIndexer)
+            if (targetHasIndexer && HasIndexer(context, sourceTypeSymbol))
             {
                 addMethod = AddMethod.UseIndexer;
             }
 
             stringBuilder.AppendLine($"System.Collections.Generic.List<{targetTypeSymbol.GetElementType().ToDisplayString()}> {targetVariableName} = new System.Collections.Generic.List<{targetTypeSymbol.GetElementType().ToDisplayString()}>({capacity ?? string.Empty});");
-            if (targetHasIndexer && !sourceHasIndexer)
-            {
-                counterVariableName = context.NextTemporary();
-                stringBuilder.AppendLine($"int {counterVariableName} = 0;");
-            }
         }
         else
         {
