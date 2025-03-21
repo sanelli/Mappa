@@ -23,6 +23,11 @@ namespace Mappa.Samples;
 // TODO [#105] is ICollection<int> -> IEnumerable<string>.
 // TODO [#105] non-generic impl ICollection<int> -> IEnumerable<string>.
 // TODO [#105] generic impl ICollection<int> -> IEnumerable<string>.
+// TODO [#105] is IReadOnlyCollection<int> -> IEnumerable<string>.
+// TODO [#105] non-generic impl IReadOnlyCollection<int> -> IEnumerable<string>.
+// TODO [#105] generic impl IReadOnlyCollection<int> -> IEnumerable<string>.
+// TODO [#105] Stack<int> -> IEnumerable<string>.
+// TODO [#105] Queue<int> -> IEnumerable<string>.
 // TODO [#105] IEnumerable<int> -> List<string>.
 // TODO [#105] int[] -> List<string>.
 // TODO [#105] IEnumerable<int> -> IList<string>.
@@ -53,6 +58,9 @@ namespace Mappa.Samples;
 // TODO [#105] IEnumerable<int> -> ReadOnlySpan<long>.
 // TODO [#105] IEnumerable<int> -> Memory<long>.
 // TODO [#105] IEnumerable<int> -> ReadOnlyMemory<long>.
+// TODO [#105] IReadOnlyCollection<int> -> string[].
+// TODO [#105] non-generic impl IReadOnlyCollection<int> -> string[].
+// TODO [#105] generic impl IReadOnlyCollection<int> -> string[].
 [Mappa]
 public sealed partial class CollectionToCollectionMapper
 {

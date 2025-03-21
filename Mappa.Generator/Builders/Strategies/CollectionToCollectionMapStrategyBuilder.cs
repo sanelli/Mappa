@@ -89,8 +89,6 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
         out string? counterVariableName)
     {
         targetVariableName = context.NextTemporary();
-        var sourceHasIndexer = HasIndexer(context, sourceTypeSymbol);
-        string? capacity = null;
         addMethod = AddMethod.UseAdd;
         counterVariableName = null;
 
@@ -100,17 +98,14 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
             || targetTypeSymbol.IsICollection()
             || targetTypeSymbol.IsIReadOnlyCollection())
         {
-            if (sourceHasIndexer || sourceTypeSymbol.IsOrImplementICollection())
-            {
-                capacity = GetLengthExpression(source, sourceTypeSymbol, context.Compilation);
-            }
+            TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out var capacity);
 
-            if (sourceHasIndexer)
+            if (HasIndexer(context, sourceTypeSymbol))
             {
                 addMethod = AddMethod.UseIndexer;
             }
 
-            stringBuilder.AppendLine($"System.Collections.Generic.List<{targetTypeSymbol.GetElementType().ToDisplayString()}> {targetVariableName} = new System.Collections.Generic.List<{targetTypeSymbol.GetElementType().ToDisplayString()}>({capacity ?? string.Empty});");
+            stringBuilder.AppendLine($"System.Collections.Generic.List<{targetTypeSymbol.GetElementType().ToDisplayString()}> {targetVariableName} = new System.Collections.Generic.List<{targetTypeSymbol.GetElementType().ToDisplayString()}>({capacity});");
         }
         else
         {
@@ -156,7 +151,11 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
                || sourceTypeSymbol.IsOrImplementIList();
     }
 
-    private static string GetLengthExpression(string source, ITypeSymbol sourceTypeSymbol, Compilation compilation)
+    private static bool TryGetLengthExpressionFromProperty(
+        string source,
+        ITypeSymbol sourceTypeSymbol,
+        Compilation compilation,
+        out string lengthExpression)
     {
         if (sourceTypeSymbol.IsArray()
             || sourceTypeSymbol.IsSpan(compilation)
@@ -164,12 +163,26 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
             || sourceTypeSymbol.IsMemory(compilation)
             || sourceTypeSymbol.IsReadOnlyMemory(compilation))
         {
-            return $"{source}.Length";
+            lengthExpression = $"{source}.Length";
+        }
+        else if (sourceTypeSymbol.IsOrImplementICollection()
+                 || sourceTypeSymbol.IsOrImplementIReadOnlyCollection())
+        {
+            lengthExpression = $"{source}.Count";
+        }
+        else
+        {
+            lengthExpression = string.Empty;
         }
 
-        if (sourceTypeSymbol.IsOrImplementICollection())
+        return lengthExpression.Length > 0;
+    }
+
+    private static string GetLengthExpression(string source, ITypeSymbol sourceTypeSymbol, Compilation compilation)
+    {
+        if (TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, compilation, out var lengthExpression))
         {
-            return $"{source}.Count";
+            return lengthExpression;
         }
 
         return $"global::System.Linq.Enumerable.Count<{sourceTypeSymbol.GetElementType().ToDisplayString()}>({source})";

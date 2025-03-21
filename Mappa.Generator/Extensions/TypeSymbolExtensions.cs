@@ -316,6 +316,14 @@ internal static class TypeSymbolExtensions
         => typeSymbol.IsICollection() || typeSymbol.AllInterfaces.Any(@interface => @interface.IsICollection());
 
     /// <summary>
+    /// Check if the type is <see cref="IReadOnlyCollection{T}"/> or implements <see cref="IReadOnlyCollection{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <returns><c>true</c> if the type symbol is or implements <see cref="ICollection{T}"/>, <c>false</c> otherwise.</returns>
+    internal static bool IsOrImplementIReadOnlyCollection(this ITypeSymbol typeSymbol)
+        => typeSymbol.IsIReadOnlyCollection() || typeSymbol.AllInterfaces.Any(@interface => @interface.IsIReadOnlyCollection());
+
+    /// <summary>
     /// Check if the type is <see cref="IList{T}"/> or implements <see cref="IList{T}"/>.
     /// </summary>
     /// <param name="typeSymbol">The type symbol.</param>
