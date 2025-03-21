@@ -10,57 +10,6 @@ namespace Mappa.Samples;
 /// <summary>
 /// Mapper showing mapping across different collection types.
 /// </summary>
-// TODO [#105] impl non-generic IEnumerable<CountingValues> -> IEnumerable<int>.
-// TODO [#105] impl generic IEnumerable<CountingValues> -> IEnumerable<int>.
-// TODO [#105] CountingValues[] -> IEnumerable<int>.
-// TODO [#105] Span<CountingValues> -> IEnumerable<int>.
-// TODO [#105] ReadOnlySpan<CountingValues> -> IEnumerable<int>.
-// TODO [#105] Memory<CountingValues> -> IEnumerable<string>.
-// TODO [#105] ReadOnlyMemory<CountingValues> -> IEnumerable<string>.
-// TODO [#105] is IList<int> -> IEnumerable<string>.
-// TODO [#105] non-generic impl IList<int> -> IEnumerable<string>.
-// TODO [#105] generic impl IList<int> -> IEnumerable<string>.
-// TODO [#105] is ICollection<int> -> IEnumerable<string>.
-// TODO [#105] non-generic impl ICollection<int> -> IEnumerable<string>.
-// TODO [#105] generic impl ICollection<int> -> IEnumerable<string>.
-// TODO [#105] is IReadOnlyCollection<int> -> IEnumerable<string>.
-// TODO [#105] non-generic impl IReadOnlyCollection<int> -> IEnumerable<string>.
-// TODO [#105] generic impl IReadOnlyCollection<int> -> IEnumerable<string>.
-// TODO [#105] Stack<int> -> IEnumerable<string>.
-// TODO [#105] Queue<int> -> IEnumerable<string>.
-// TODO [#105] IEnumerable<int> -> List<string>.
-// TODO [#105] int[] -> List<string>.
-// TODO [#105] IEnumerable<int> -> IList<string>.
-// TODO [#105] int[] -> IList<string>.
-// TODO [#105] IEnumerable<int> -> ICollection<string>.
-// TODO [#105] int[] -> ICollection<string>.
-// TODO [#105] IEnumerable<int> -> IReadOnlyCollection<string>.
-// TODO [#105] int[] -> IReadOnlyCollection<string>.
-// TODO [#105] int[] -> string[].
-// TODO [#105] int[] -> Span<long>.
-// TODO [#105] int[] -> ReadOnlySpan<long>.
-// TODO [#105] int[] -> Memory<long>.
-// TODO [#105] int[] -> ReadOnlyMemory<long>.
-// TODO [#105] ICollection<int> -> string[].
-// TODO [#105] generic impl ICollection<int> -> string[].
-// TODO [#105] non-generic impl ICollection<int> -> string[].
-// TODO [#105] ICollection<int> -> Span<long>.
-// TODO [#105] ICollection<int> -> ReadOnlySpan<long>.
-// TODO [#105] ICollection<int> -> Memory<long>.
-// TODO [#105] ICollection<int> -> ReadOnlyMemory<long>.
-// TODO [#105] IEnumerable<int> -> string[].
-// TODO [#105] non-generic impl IEnumerable<int> -> string[].
-// TODO [#105] generic impl IEnumerable<int> -> string[].
-// TODO [#105] IList<int> -> string[].
-// TODO [#105] non-generic impl IList<int> -> string[].
-// TODO [#105] generic impl IList<int> -> string[].
-// TODO [#105] IEnumerable<int> -> Span<long>.
-// TODO [#105] IEnumerable<int> -> ReadOnlySpan<long>.
-// TODO [#105] IEnumerable<int> -> Memory<long>.
-// TODO [#105] IEnumerable<int> -> ReadOnlyMemory<long>.
-// TODO [#105] IReadOnlyCollection<int> -> string[].
-// TODO [#105] non-generic impl IReadOnlyCollection<int> -> string[].
-// TODO [#105] generic impl IReadOnlyCollection<int> -> string[].
 [Mappa]
 public sealed partial class CollectionToCollectionMapper
 {
@@ -71,4 +20,60 @@ public sealed partial class CollectionToCollectionMapper
     /// <param name="input">The input collection.</param>
     /// <returns>The output collection.</returns>
     public partial IEnumerable<int> MapIEnumerableToIEnumerable(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map <see cref="CustomCollectionImplementingIEnumerableOfCountingValues"/>
+    /// to an <see cref="IEnumerable{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial IEnumerable<int> MapFromNonGenericTypeImplementingIEnumerableToIEnumerable(CustomCollectionImplementingIEnumerableOfCountingValues input);
+
+    /// <summary>
+    /// Map <see cref="CustomCollectionImplementingIEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="IEnumerable{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial IEnumerable<int> MapFromGenericTypeImplementingIEnumerableToIEnumerable(CustomCollectionImplementingIEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="Array"/> of <see cref="CountingValues"/>
+    /// to an <see cref="IEnumerable{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial IEnumerable<int> MapFromArrayToIEnumerable(CountingValues[] input);
+
+    /// <summary>
+    /// Map an <see cref="Span{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="IEnumerable{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial IEnumerable<int> MapFromSpanToIEnumerable(Span<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="ReadOnlySpan{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="IEnumerable{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial IEnumerable<int> MapFromReadOnlySpanToIEnumerable(ReadOnlySpan<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="Memory{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="IEnumerable{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial IEnumerable<int> MapFromMemoryToIEnumerable(Memory<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="ReadOnlyMemory{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="IEnumerable{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial IEnumerable<int> MapFromReadOnlyMemoryToIEnumerable(ReadOnlyMemory<CountingValues> input);
 }

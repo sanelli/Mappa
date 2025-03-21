@@ -131,8 +131,10 @@ internal sealed class ContainerMapStrategyDetector
         // TODO [#105] Array.
         // TODO [#105] Implements IList.
         // TODO [#105] Implements ICollection.
-        // TODO [#105] Stack (Are not ICollection).
-        // TODO [#105] Queue (Are not ICollection).
+        // TODO [#105] is Stack (Are not ICollection).
+        // TODO [#105] is Queue (Are not ICollection).
+        // TODO [#105] impl Stack (Are not ICollection).
+        // TODO [#105] impl Queue (Are not ICollection).
         // TODO [#105] ReadOnlyCollection.
         // TODO [#105] ReadOnlySet.
         // TODO [#105] FrozenCollection.

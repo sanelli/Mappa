@@ -344,9 +344,9 @@ public class CollectionToCollectionMapStrategyIntegrationTests
                                                 "__mappa_tmp_4",
                                                 initializerAssertions => initializerAssertions.BeInvocationExpressionSyntax("__mappa_tmp_3.ToString")))
                                         .HasNextSyntaxNode(foreachStatementAssertions =>
-                                            foreachStatementAssertions.BeAssignmentExpressionStatement(
-                                                leftExpressionAssertions => leftExpressionAssertions.BeElementAccessExpressionSyntaxWithIdentifierNameSyntax("__mappa_tmp_1", "__mappa_tmp_2"),
-                                                rightExpressionAssertions => rightExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_4")))))
+                                            foreachStatementAssertions.BeInvocationExpressionSyntaxStatement(
+                                                "__mappa_tmp_1.Add",
+                                                firstParameterAssertions => firstParameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_4")))))
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                             syntaxNodeAssertions.BeReturnStatement(expressionAssertions => expressionAssertions
                                 .BeIdentifierNameSyntax("__mappa_tmp_1")));
@@ -428,9 +428,9 @@ public class CollectionToCollectionMapStrategyIntegrationTests
                                                 "__mappa_tmp_4",
                                                 initializerAssertions => initializerAssertions.BeInvocationExpressionSyntax("__mappa_tmp_3.ToString")))
                                         .HasNextSyntaxNode(foreachStatementAssertions =>
-                                            foreachStatementAssertions.BeAssignmentExpressionStatement(
-                                                leftExpressionAssertions => leftExpressionAssertions.BeElementAccessExpressionSyntaxWithIdentifierNameSyntax("__mappa_tmp_1", "__mappa_tmp_2"),
-                                                rightExpressionAssertions => rightExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_4")))))
+                                            foreachStatementAssertions.BeInvocationExpressionSyntaxStatement(
+                                                "__mappa_tmp_1.Add",
+                                                firstParameterAssertions => firstParameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_4")))))
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                             syntaxNodeAssertions.BeReturnStatement(expressionAssertions => expressionAssertions
                                 .BeIdentifierNameSyntax("__mappa_tmp_1")));
@@ -512,9 +512,9 @@ public class CollectionToCollectionMapStrategyIntegrationTests
                                                 "__mappa_tmp_4",
                                                 initializerAssertions => initializerAssertions.BeInvocationExpressionSyntax("__mappa_tmp_3.ToString")))
                                         .HasNextSyntaxNode(foreachStatementAssertions =>
-                                            foreachStatementAssertions.BeAssignmentExpressionStatement(
-                                                leftExpressionAssertions => leftExpressionAssertions.BeElementAccessExpressionSyntaxWithIdentifierNameSyntax("__mappa_tmp_1", "__mappa_tmp_2"),
-                                                rightExpressionAssertions => rightExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_4")))))
+                                            foreachStatementAssertions.BeInvocationExpressionSyntaxStatement(
+                                                "__mappa_tmp_1.Add",
+                                                firstParameterAssertions => firstParameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_4")))))
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                             syntaxNodeAssertions.BeReturnStatement(expressionAssertions => expressionAssertions
                                 .BeIdentifierNameSyntax("__mappa_tmp_1")));
@@ -596,9 +596,9 @@ public class CollectionToCollectionMapStrategyIntegrationTests
                                                 "__mappa_tmp_4",
                                                 initializerAssertions => initializerAssertions.BeInvocationExpressionSyntax("__mappa_tmp_3.ToString")))
                                         .HasNextSyntaxNode(foreachStatementAssertions =>
-                                            foreachStatementAssertions.BeAssignmentExpressionStatement(
-                                                leftExpressionAssertions => leftExpressionAssertions.BeElementAccessExpressionSyntaxWithIdentifierNameSyntax("__mappa_tmp_1", "__mappa_tmp_2"),
-                                                rightExpressionAssertions => rightExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_4")))))
+                                            foreachStatementAssertions.BeInvocationExpressionSyntaxStatement(
+                                                "__mappa_tmp_1.Add",
+                                                firstParameterAssertions => firstParameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_4")))))
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                             syntaxNodeAssertions.BeReturnStatement(expressionAssertions => expressionAssertions
                                 .BeIdentifierNameSyntax("__mappa_tmp_1")));
@@ -680,9 +680,9 @@ public class CollectionToCollectionMapStrategyIntegrationTests
                                                 "__mappa_tmp_4",
                                                 initializerAssertions => initializerAssertions.BeInvocationExpressionSyntax("__mappa_tmp_3.ToString")))
                                         .HasNextSyntaxNode(foreachStatementAssertions =>
-                                            foreachStatementAssertions.BeAssignmentExpressionStatement(
-                                                leftExpressionAssertions => leftExpressionAssertions.BeElementAccessExpressionSyntaxWithIdentifierNameSyntax("__mappa_tmp_1", "__mappa_tmp_2"),
-                                                rightExpressionAssertions => rightExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_4")))))
+                                            foreachStatementAssertions.BeInvocationExpressionSyntaxStatement(
+                                                "__mappa_tmp_1.Add",
+                                                firstParameterAssertions => firstParameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_4")))))
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                             syntaxNodeAssertions.BeReturnStatement(expressionAssertions => expressionAssertions
                                 .BeIdentifierNameSyntax("__mappa_tmp_1")));
@@ -764,9 +764,9 @@ public class CollectionToCollectionMapStrategyIntegrationTests
                                                 "__mappa_tmp_4",
                                                 initializerAssertions => initializerAssertions.BeInvocationExpressionSyntax("__mappa_tmp_3.ToString")))
                                         .HasNextSyntaxNode(foreachStatementAssertions =>
-                                            foreachStatementAssertions.BeAssignmentExpressionStatement(
-                                                leftExpressionAssertions => leftExpressionAssertions.BeElementAccessExpressionSyntaxWithIdentifierNameSyntax("__mappa_tmp_1", "__mappa_tmp_2"),
-                                                rightExpressionAssertions => rightExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_4")))))
+                                            foreachStatementAssertions.BeInvocationExpressionSyntaxStatement(
+                                                "__mappa_tmp_1.Add",
+                                                firstParameterAssertions => firstParameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_4")))))
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                             syntaxNodeAssertions.BeReturnStatement(expressionAssertions => expressionAssertions
                                 .BeIdentifierNameSyntax("__mappa_tmp_1")));
@@ -851,9 +851,9 @@ public class CollectionToCollectionMapStrategyIntegrationTests
                                                 "__mappa_tmp_4",
                                                 initializerAssertions => initializerAssertions.BeInvocationExpressionSyntax("__mappa_tmp_3.ToString")))
                                         .HasNextSyntaxNode(foreachStatementAssertions =>
-                                            foreachStatementAssertions.BeAssignmentExpressionStatement(
-                                                leftExpressionAssertions => leftExpressionAssertions.BeElementAccessExpressionSyntaxWithIdentifierNameSyntax("__mappa_tmp_1", "__mappa_tmp_2"),
-                                                rightExpressionAssertions => rightExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_4")))))
+                                            foreachStatementAssertions.BeInvocationExpressionSyntaxStatement(
+                                                "__mappa_tmp_1.Add",
+                                                firstParameterAssertions => firstParameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_4")))))
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                             syntaxNodeAssertions.BeReturnStatement(expressionAssertions => expressionAssertions
                                 .BeIdentifierNameSyntax("__mappa_tmp_1")));
@@ -938,9 +938,9 @@ public class CollectionToCollectionMapStrategyIntegrationTests
                                                 "__mappa_tmp_4",
                                                 initializerAssertions => initializerAssertions.BeInvocationExpressionSyntax("__mappa_tmp_3.ToString")))
                                         .HasNextSyntaxNode(foreachStatementAssertions =>
-                                            foreachStatementAssertions.BeAssignmentExpressionStatement(
-                                                leftExpressionAssertions => leftExpressionAssertions.BeElementAccessExpressionSyntaxWithIdentifierNameSyntax("__mappa_tmp_1", "__mappa_tmp_2"),
-                                                rightExpressionAssertions => rightExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_4")))))
+                                            foreachStatementAssertions.BeInvocationExpressionSyntaxStatement(
+                                                "__mappa_tmp_1.Add",
+                                                firstParameterAssertions => firstParameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_4")))))
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                             syntaxNodeAssertions.BeReturnStatement(expressionAssertions => expressionAssertions
                                 .BeIdentifierNameSyntax("__mappa_tmp_1")));
@@ -1564,9 +1564,9 @@ public class CollectionToCollectionMapStrategyIntegrationTests
                                                 "__mappa_tmp_4",
                                                 initializerAssertions => initializerAssertions.BeInvocationExpressionSyntax("__mappa_tmp_3.ToString")))
                                         .HasNextSyntaxNode(foreachStatementAssertions =>
-                                            foreachStatementAssertions.BeAssignmentExpressionStatement(
-                                                leftExpressionAssertions => leftExpressionAssertions.BeElementAccessExpressionSyntaxWithIdentifierNameSyntax("__mappa_tmp_1", "__mappa_tmp_2"),
-                                                rightExpressionAssertions => rightExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_4")))))
+                                            foreachStatementAssertions.BeInvocationExpressionSyntaxStatement(
+                                                "__mappa_tmp_1.Add",
+                                                firstParameterAssertions => firstParameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_4")))))
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                             syntaxNodeAssertions.BeReturnStatement(expressionAssertions => expressionAssertions
                                 .BeIdentifierNameSyntax("__mappa_tmp_1")));
@@ -1722,9 +1722,9 @@ public class CollectionToCollectionMapStrategyIntegrationTests
                                                 "__mappa_tmp_4",
                                                 initializerAssertions => initializerAssertions.BeInvocationExpressionSyntax("__mappa_tmp_3.ToString")))
                                         .HasNextSyntaxNode(foreachStatementAssertions =>
-                                            foreachStatementAssertions.BeAssignmentExpressionStatement(
-                                                leftExpressionAssertions => leftExpressionAssertions.BeElementAccessExpressionSyntaxWithIdentifierNameSyntax("__mappa_tmp_1", "__mappa_tmp_2"),
-                                                rightExpressionAssertions => rightExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_4")))))
+                                            foreachStatementAssertions.BeInvocationExpressionSyntaxStatement(
+                                                "__mappa_tmp_1.Add",
+                                                firstParameterAssertions => firstParameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_4")))))
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                             syntaxNodeAssertions.BeReturnStatement(expressionAssertions => expressionAssertions
                                 .BeIdentifierNameSyntax("__mappa_tmp_1")));
@@ -1880,9 +1880,9 @@ public class CollectionToCollectionMapStrategyIntegrationTests
                                                 "__mappa_tmp_4",
                                                 initializerAssertions => initializerAssertions.BeInvocationExpressionSyntax("__mappa_tmp_3.ToString")))
                                         .HasNextSyntaxNode(foreachStatementAssertions =>
-                                            foreachStatementAssertions.BeAssignmentExpressionStatement(
-                                                leftExpressionAssertions => leftExpressionAssertions.BeElementAccessExpressionSyntaxWithIdentifierNameSyntax("__mappa_tmp_1", "__mappa_tmp_2"),
-                                                rightExpressionAssertions => rightExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_4")))))
+                                            foreachStatementAssertions.BeInvocationExpressionSyntaxStatement(
+                                                "__mappa_tmp_1.Add",
+                                                firstParameterAssertions => firstParameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_4")))))
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                             syntaxNodeAssertions.BeReturnStatement(expressionAssertions => expressionAssertions
                                 .BeIdentifierNameSyntax("__mappa_tmp_1")));
@@ -2038,9 +2038,9 @@ public class CollectionToCollectionMapStrategyIntegrationTests
                                                 "__mappa_tmp_4",
                                                 initializerAssertions => initializerAssertions.BeInvocationExpressionSyntax("__mappa_tmp_3.ToString")))
                                         .HasNextSyntaxNode(foreachStatementAssertions =>
-                                            foreachStatementAssertions.BeAssignmentExpressionStatement(
-                                                leftExpressionAssertions => leftExpressionAssertions.BeElementAccessExpressionSyntaxWithIdentifierNameSyntax("__mappa_tmp_1", "__mappa_tmp_2"),
-                                                rightExpressionAssertions => rightExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_4")))))
+                                            foreachStatementAssertions.BeInvocationExpressionSyntaxStatement(
+                                                "__mappa_tmp_1.Add",
+                                                firstParameterAssertions => firstParameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_4")))))
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                             syntaxNodeAssertions.BeReturnStatement(expressionAssertions => expressionAssertions
                                 .BeIdentifierNameSyntax("__mappa_tmp_1")));

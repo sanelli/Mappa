@@ -98,13 +98,9 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
             || targetTypeSymbol.IsICollection()
             || targetTypeSymbol.IsIReadOnlyCollection())
         {
+            // Note: even if we set capacity the list would be empty so we cannot invoke an indexer, but only Add.
+            // (having an initial capacity is anyway an improvement on the performances).
             TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out var capacity);
-
-            if (HasIndexer(context, sourceTypeSymbol))
-            {
-                addMethod = AddMethod.UseIndexer;
-            }
-
             stringBuilder.AppendLine($"System.Collections.Generic.List<{targetTypeSymbol.GetElementType().ToDisplayString()}> {targetVariableName} = new System.Collections.Generic.List<{targetTypeSymbol.GetElementType().ToDisplayString()}>({capacity});");
         }
         else

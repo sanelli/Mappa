@@ -61,6 +61,7 @@ public abstract class MappaGeneratorAbstractUnitTests
             MetadataReference.CreateFromFile(Path.Combine(frameworkPath, "System.Runtime.dll")),
             MetadataReference.CreateFromFile(Path.Combine(frameworkPath, "System.Collections.Immutable.dll")),
             MetadataReference.CreateFromFile(Path.Combine(frameworkPath, "System.Runtime.dll")),
+            MetadataReference.CreateFromFile(Path.Combine(frameworkPath, "System.Collections.dll")),
         };
 
         var compilation = CSharpCompilation.Create(
