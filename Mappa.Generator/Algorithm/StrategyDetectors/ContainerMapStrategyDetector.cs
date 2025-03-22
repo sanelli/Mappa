@@ -149,7 +149,8 @@ internal sealed class ContainerMapStrategyDetector
         // TODO [#105] Memory<T>.
         // TODO [#105] ReadOnlySpan<T>.
         // TODO [#105] ReadOnlyMemory<T>.
-        var isTargetCollection = (this.context.TargetType.IsIEnumerable()
+        var isTargetCollection = (this.context.TargetType.IsArray()
+                                 || this.context.TargetType.IsIEnumerable()
                                  || this.context.TargetType.IsIList()
                                  || this.context.TargetType.IsList(this.compilation)
                                  || this.context.TargetType.IsICollection()
@@ -163,9 +164,13 @@ internal sealed class ContainerMapStrategyDetector
             out elementStrategy,
             this.cancellationToken);
 
-        // TODO [#105] Add exceptions for Arrays.
         bool InterfaceAndConstructorChecks()
         {
+            if (this.context.TargetType.TypeKind is TypeKind.Array)
+            {
+                return true;
+            }
+
             if (this.context.TargetType.TypeKind is TypeKind.Interface)
             {
                 // TODO [#105] ISet.

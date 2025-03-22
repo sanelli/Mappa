@@ -476,4 +476,21 @@ public sealed class CollectionToCollectionMapperUnitTests
         // Assert
         actual.Should().BeEquivalentTo([0, 2]);
     }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromArrayToArray"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromArrayToArray()
+    {
+        // Arrange
+        CountingValues[] input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromArrayToArray(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
 }

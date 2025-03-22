@@ -228,4 +228,12 @@ public sealed partial class CollectionToCollectionMapper
     /// <param name="input">The input collection.</param>
     /// <returns>The output collection.</returns>
     public partial IEnumerable<int> MapFromQueueToIEnumerable(Queue<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="Array"/> of <see cref="CountingValues"/>
+    /// to an <see cref="Array"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial int[] MapFromArrayToArray(CountingValues[] input);
 }

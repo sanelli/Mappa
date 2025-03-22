@@ -28,10 +28,12 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
         this.strategy = strategy;
     }
 
-    private enum AddMethod
+    private enum InsertionMethod
     {
-        UseIndexer,
-        UseAdd,
+        Indexer,
+        Add,
+        Push,
+        Enqueue,
     }
 
     /// <inheritdoc/>
@@ -39,14 +41,14 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
     {
         var stringBuilder = new PrettyCode.StringBuilder();
 
-        AppendTargetVariable(stringBuilder, source, context, this.strategy.TargetType, this.strategy.SourceType, out var targetVariableName, out var addMethod, out var targerCounterVariableName);
+        AppendTargetVariable(stringBuilder, source, context, this.strategy.TargetType, this.strategy.SourceType, out var targetVariableName, out var addMethod, out var targetCounterTemporary);
         using (AppendLoopBlock(
                    stringBuilder,
                    source,
                    context,
                    this.strategy.SourceType,
                    out var loopVariableName,
-                   out var countingVariableName))
+                   out var loopCounterTemporary))
         {
             var elementStrategyBuilder = this.strategy.ElementStrategy.GetBuilder();
             var (targetElementVariable, targetElementCode) = elementStrategyBuilder.BuildSource(loopVariableName, context, mappaGlobalOptions);
@@ -57,17 +59,18 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
 
             switch (addMethod)
             {
-                case AddMethod.UseIndexer:
-                    var index = countingVariableName ?? targerCounterVariableName ?? throw new MappaGeneratorException("Cannot identify a suitable index");
+                case InsertionMethod.Indexer:
+                    var index = loopCounterTemporary ?? targetCounterTemporary ?? throw new MappaGeneratorException("Cannot identify a suitable index");
                     stringBuilder.AppendLine($"{targetVariableName}[{index}] = {targetElementVariable};");
-                    if (string.IsNullOrWhiteSpace(countingVariableName))
+
+                    // If there is no counting variable from the loop the target counter must be increased.
+                    if (string.IsNullOrWhiteSpace(loopCounterTemporary))
                     {
-                        // If there is no counting variable from the loop the target counter must be increased.
-                        stringBuilder.AppendLine($"{targerCounterVariableName} += 1;");
+                        stringBuilder.AppendLine($"++{targetCounterTemporary};");
                     }
 
                     break;
-                case AddMethod.UseAdd:
+                case InsertionMethod.Add:
                     stringBuilder.AppendLine($"{targetVariableName}.Add({targetElementVariable});");
                     break;
                 default:
@@ -85,19 +88,40 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
         ITypeSymbol targetTypeSymbol,
         ITypeSymbol sourceTypeSymbol,
         out string targetVariableName,
-        out AddMethod addMethod,
+        out InsertionMethod insertionMethod,
         out string? counterVariableName)
     {
         targetVariableName = context.NextTemporary();
-        addMethod = AddMethod.UseAdd;
         counterVariableName = null;
 
-        if (targetTypeSymbol.IsIEnumerable()
+        if (targetTypeSymbol.IsArray())
+        {
+            // Array need indexers.
+            insertionMethod = InsertionMethod.Indexer;
+
+            // Capacity is always mandatory for arrays.
+            // In some scenarios it might mean we invoke the Enumerable.Count() extension method which
+            // might results in enumerations being executed twice.
+            var capacity = GetLengthExpression(source, sourceTypeSymbol, context.Compilation);
+            stringBuilder.AppendLine($"{targetTypeSymbol.GetElementType().ToDisplayString()}[] {targetVariableName} = new {targetTypeSymbol.GetElementType().ToDisplayString()}[{capacity}];");
+
+            // If source does not have an indexer we need to create a new counter variable
+            // this for instance is used when mapping generic IEnumerable<TSource> to TTarget[].
+            if (!HasIndexer(context, sourceTypeSymbol))
+            {
+                counterVariableName = context.NextTemporary();
+                stringBuilder.AppendLine($"int {counterVariableName} = 0;");
+            }
+        }
+        else if (targetTypeSymbol.IsIEnumerable()
             || targetTypeSymbol.IsList(context.Compilation)
             || targetTypeSymbol.IsIList()
             || targetTypeSymbol.IsICollection()
             || targetTypeSymbol.IsIReadOnlyCollection())
         {
+            // We are going to always use a list so Add method is best here.
+            insertionMethod = InsertionMethod.Add;
+
             // Note: even if we set capacity the list would be empty so we cannot invoke an indexer, but only Add.
             // (having an initial capacity is anyway an improvement on the performances).
             TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out var capacity);
