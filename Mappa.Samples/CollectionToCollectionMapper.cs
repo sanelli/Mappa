@@ -100,4 +100,132 @@ public sealed partial class CollectionToCollectionMapper
     /// <param name="input">The input collection.</param>
     /// <returns>The output collection.</returns>
     public partial IEnumerable<int> MapFromGenericTypeImplementingIListToIEnumerable(CustomCollectionImplementingIList<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="ICollection{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="IEnumerable{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial IEnumerable<int> MapFromICollectionToIEnumerable(ICollection<CountingValues> input);
+
+    /// <summary>
+    /// Map <see cref="CustomCollectionImplementingICollectionOfCountingValues"/>
+    /// to an <see cref="IEnumerable{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial IEnumerable<int> MapFromNonGenericTypeImplementingICollectionToIEnumerable(CustomCollectionImplementingICollectionOfCountingValues input);
+
+    /// <summary>
+    /// Map <see cref="CustomCollectionImplementingICollection{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="IEnumerable{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial IEnumerable<int> MapFromGenericTypeImplementingICollectionToIEnumerable(CustomCollectionImplementingICollection<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="IReadOnlyCollection{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="IEnumerable{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial IEnumerable<int> MapFromIReadOnlyCollectionToIEnumerable(IReadOnlyCollection<CountingValues> input);
+
+    /// <summary>
+    /// Map <see cref="CustomCollectionImplementingIReadOnlyCollectionOfCountingValues"/>
+    /// to an <see cref="IEnumerable{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial IEnumerable<int> MapFromNonGenericTypeImplementingIReadOnlyCollectionToIEnumerable(CustomCollectionImplementingIReadOnlyCollectionOfCountingValues input);
+
+    /// <summary>
+    /// Map <see cref="CustomCollectionImplementingIReadOnlyCollection{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="IEnumerable{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial IEnumerable<int> MapFromGenericTypeImplementingIReadOnlyCollectionToIEnumerable(CustomCollectionImplementingIReadOnlyCollection<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="List{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial List<int> MapFromIEnumerableToList(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="Array"/> of <see cref="CountingValues"/>
+    /// to an <see cref="List{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial List<int> MapFromArrayToList(CountingValues[] input);
+
+    /// <summary>
+    /// Map an <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="IList{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial IList<int> MapFromIEnumerableToIList(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="Array"/> of <see cref="CountingValues"/>
+    /// to an <see cref="IList{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial IList<int> MapFromArrayToIList(CountingValues[] input);
+
+    /// <summary>
+    /// Map an <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="ICollection{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial ICollection<int> MapFromIEnumerableToICollection(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="Array"/> of <see cref="CountingValues"/>
+    /// to an <see cref="ICollection{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial ICollection<int> MapFromArrayToICollection(CountingValues[] input);
+
+    /// <summary>
+    /// Map an <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="IReadOnlyCollection{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial IReadOnlyCollection<int> MapFromIEnumerableToIReadOnlyCollection(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="Array"/> of <see cref="CountingValues"/>
+    /// to an <see cref="IReadOnlyCollection{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial IReadOnlyCollection<int> MapFromArrayToIReadOnlyCollection(CountingValues[] input);
+
+    /// <summary>
+    /// Map an <see cref="Stack{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="IEnumerable{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial IEnumerable<int> MapFromStackToIEnumerable(Stack<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="Queue{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="IEnumerable{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial IEnumerable<int> MapFromQueueToIEnumerable(Queue<CountingValues> input);
 }
