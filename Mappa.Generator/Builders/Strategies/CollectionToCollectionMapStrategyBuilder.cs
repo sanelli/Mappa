@@ -66,7 +66,7 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
                     // If there is no counting variable from the loop the target counter must be increased.
                     if (string.IsNullOrWhiteSpace(loopCounterTemporary))
                     {
-                        stringBuilder.AppendLine($"++{targetCounterTemporary};");
+                        stringBuilder.AppendLine($"{targetCounterTemporary} = {targetCounterTemporary} + 1;");
                     }
 
                     break;
@@ -167,8 +167,8 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
             return block;
         }
 
-        // Let's use a generic foreach loop!
-        countingVariableName = string.Empty;
+        // Let's use a generic foreach loop (therefore without a counter)!
+        countingVariableName = null;
         loopVariableName = context.NextTemporary();
         stringBuilder.AppendLine($"foreach ({sourceTypeSymbol.GetElementType().ToDisplayString()} {loopVariableName} in {source})");
         return stringBuilder.CurlyBracesBlock();
