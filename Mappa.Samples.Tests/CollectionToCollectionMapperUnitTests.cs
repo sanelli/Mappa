@@ -170,4 +170,38 @@ public sealed class CollectionToCollectionMapperUnitTests
         // Assert
         actual.Should().BeEquivalentTo([0, 2]);
     }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromNonGenericTypeImplementingIListToIEnumerable"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromNonGenericTypeImplementingIListToIEnumerable()
+    {
+        // Arrange
+        CustomCollectionImplementingIListOfCountingValues input = new([CountingValues.One, CountingValues.Three]);
+
+        // Act
+        var actual = this.mapper.MapFromNonGenericTypeImplementingIListToIEnumerable(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromGenericTypeImplementingIListToIEnumerable"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromGenericTypeImplementingIListToIEnumerable()
+    {
+        // Arrange
+        CustomCollectionImplementingIList<CountingValues> input = new([CountingValues.One, CountingValues.Three]);
+
+        // Act
+        var actual = this.mapper.MapFromGenericTypeImplementingIListToIEnumerable(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
 }

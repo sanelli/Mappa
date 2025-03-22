@@ -84,4 +84,20 @@ public sealed partial class CollectionToCollectionMapper
     /// <param name="input">The input collection.</param>
     /// <returns>The output collection.</returns>
     public partial IEnumerable<int> MapFromIListToIEnumerable(IList<CountingValues> input);
+
+    /// <summary>
+    /// Map <see cref="CustomCollectionImplementingIListOfCountingValues"/>
+    /// to an <see cref="IEnumerable{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial IEnumerable<int> MapFromNonGenericTypeImplementingIListToIEnumerable(CustomCollectionImplementingIListOfCountingValues input);
+
+    /// <summary>
+    /// Map <see cref="CustomCollectionImplementingIList{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="IEnumerable{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial IEnumerable<int> MapFromGenericTypeImplementingIListToIEnumerable(CustomCollectionImplementingIList<CountingValues> input);
 }
