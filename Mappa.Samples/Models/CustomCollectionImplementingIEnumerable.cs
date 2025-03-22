@@ -11,9 +11,9 @@ namespace Mappa.Samples.Models;
 /// </summary>
 /// <typeparam name="T">The element type.</typeparam>
 public class CustomCollectionImplementingIEnumerable<T>
-: IEnumerable<T>
+    : IEnumerable<T>
 {
-    private readonly T[] items;
+    private readonly List<T> items;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CustomCollectionImplementingIEnumerable{T}"/> class.
@@ -21,55 +21,15 @@ public class CustomCollectionImplementingIEnumerable<T>
     /// <param name="items">Items in the custom collection.</param>
     public CustomCollectionImplementingIEnumerable(T[] items)
     {
-        this.items = items;
+        this.items = new(items);
     }
 
     /// <inheritdoc/>
-    public IEnumerator<T> GetEnumerator() => new Enumerator(this);
+    public IEnumerator<T> GetEnumerator() => this.items.GetEnumerator();
 
     /// <inheritdoc/>
     IEnumerator IEnumerable.GetEnumerator()
     {
         return this.GetEnumerator();
-    }
-
-    private sealed class Enumerator
-        : IEnumerator<T>
-    {
-        private readonly CustomCollectionImplementingIEnumerable<T> parent;
-        private int current = -1;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Enumerator"/> class.
-        /// </summary>
-        /// <param name="parent">The parent class.</param>
-        public Enumerator(CustomCollectionImplementingIEnumerable<T> parent)
-        {
-            this.parent = parent;
-        }
-
-        /// <inheritdoc/>
-        T IEnumerator<T>.Current => this.parent.items[this.current];
-
-        /// <inheritdoc/>
-        object? IEnumerator.Current => this.parent.items[this.current];
-
-        /// <inheritdoc/>
-        public bool MoveNext()
-        {
-            this.current++;
-            return this.current < this.parent.items.Length;
-        }
-
-        /// <inheritdoc/>
-        public void Reset()
-        {
-            this.current = -1;
-        }
-
-        /// <inheritdoc/>
-        public void Dispose()
-        {
-        }
     }
 }

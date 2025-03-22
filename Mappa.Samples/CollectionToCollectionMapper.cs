@@ -76,4 +76,12 @@ public sealed partial class CollectionToCollectionMapper
     /// <param name="input">The input collection.</param>
     /// <returns>The output collection.</returns>
     public partial IEnumerable<int> MapFromReadOnlyMemoryToIEnumerable(ReadOnlyMemory<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="List{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="IEnumerable{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial IEnumerable<int> MapFromIListToIEnumerable(IList<CountingValues> input);
 }

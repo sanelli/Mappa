@@ -153,4 +153,21 @@ public sealed class CollectionToCollectionMapperUnitTests
         // Assert
         actual.Should().BeEquivalentTo([0, 2]);
     }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIListToIEnumerable"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIListToIEnumerable()
+    {
+        // Arrange
+        IList<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIListToIEnumerable(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
 }

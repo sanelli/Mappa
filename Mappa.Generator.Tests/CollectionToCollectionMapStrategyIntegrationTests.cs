@@ -13,30 +13,30 @@ namespace Mappa.Generator.Tests;
 /// Integration tests for the <see cref="CollectionToCollectionMapStrategy"/>.
 /// </summary>
 // TODO [#105] int[] -> string[].
+// TODO [#105] int[] -> Span<string>.
+// TODO [#105] int[] -> ReadOnlySpan<string>.
+// TODO [#105] int[] -> Memory<string>.
+// TODO [#105] int[] -> ReadOnlyMemory<string>.
 // TODO [#105] ICollection<int> -> string[].
 // TODO [#105] non-generic impl ICollection<int> -> string[].
 // TODO [#105] generic impl ICollection<int> -> string[].
+// TODO [#105] ICollection<int> -> Span<string>.
+// TODO [#105] ICollection<int> -> ReadOnlySpan<string>.
+// TODO [#105] ICollection<int> -> Memory<string>.
+// TODO [#105] ICollection<int> -> ReadOnlyMemory<string>.
 // TODO [#105] IEnumerable<int> -> string[].
 // TODO [#105] non-generic impl IEnumerable<int> -> string[].
 // TODO [#105] generic impl IEnumerable<int> -> string[].
+// TODO [#105] IEnumerable<int> -> Span<long>.
+// TODO [#105] IEnumerable<int> -> ReadOnlySpan<long>.
+// TODO [#105] IEnumerable<int> -> Memory<long>.
+// TODO [#105] IEnumerable<int> -> ReadOnlyMemory<long>.
 // TODO [#105] IList<int> -> string[].
 // TODO [#105] non-generic impl IList<int> -> string[].
 // TODO [#105] generic impl IList<int> -> string[].
 // TODO [#105] IReadOnlyCollection<int> -> string[].
 // TODO [#105] non-generic impl IReadOnlyCollection<int> -> string[].
 // TODO [#105] generic impl IReadOnlyCollection<int> -> string[].
-// TODO [#105] int[] -> Span<long>.
-// TODO [#105] int[] -> ReadOnlySpan<long>.
-// TODO [#105] int[] -> Memory<long>.
-// TODO [#105] int[] -> ReadOnlyMemory<long>.
-// TODO [#105] ICollection<int> -> Span<long>.
-// TODO [#105] ICollection<int> -> ReadOnlySpan<long>.
-// TODO [#105] ICollection<int> -> Memory<long>.
-// TODO [#105] ICollection<int> -> ReadOnlyMemory<long>.
-// TODO [#105] IEnumerable<int> -> Span<long>.
-// TODO [#105] IEnumerable<int> -> ReadOnlySpan<long>.
-// TODO [#105] IEnumerable<int> -> Memory<long>.
-// TODO [#105] IEnumerable<int> -> ReadOnlyMemory<long>.
 // TODO [#105] ERROR WHEN FROM IEnumerable<int> -> Custom<string> without empty param constructor.
 public class CollectionToCollectionMapStrategyIntegrationTests
     : MappaGeneratorAbstractUnitTests
@@ -564,7 +564,7 @@ public class CollectionToCollectionMapStrategyIntegrationTests
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
-                        .HasSyntaxNodesCount(3)
+                        .HasSyntaxNodesCount(4)
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                             syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
                                 typeof(List<string>).ToString(),
@@ -573,13 +573,18 @@ public class CollectionToCollectionMapStrategyIntegrationTests
                                     typeof(List<string>).ToString(),
                                     firstParameterAssertions => firstParameterAssertions.BeMemberAccessExpressionSyntax("input.Length"))))
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(Span<int>).ToString(),
+                                "__mappa_tmp_2",
+                                initializerAssertions => initializerAssertions.BeMemberAccessExpressionSyntax("input.Span")))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
                             syntaxNodeAssertions.BeForStatementSyntax(
-                                declarationAssertions => declarationAssertions.BeAssignmentFromConstant(typeof(int).ToString(), "__mappa_tmp_2", 0),
+                                declarationAssertions => declarationAssertions.BeAssignmentFromConstant(typeof(int).ToString(), "__mappa_tmp_3", 0),
                                 conditionAssertions => conditionAssertions.BeBinaryExpressionSyntax(
-                                    leftExpressionAssertions => leftExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_2"),
+                                    leftExpressionAssertions => leftExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_3"),
                                     SyntaxKind.LessThanToken,
-                                    rightExpressionAssertions => rightExpressionAssertions.BeMemberAccessExpressionSyntax("input.Length")),
-                                incrementorAssertions => incrementorAssertions.BePrefixUnaryExpressionSyntax(SyntaxKind.PlusPlusToken, operandAssertions => operandAssertions.BeIdentifierNameSyntax("__mappa_tmp_2")),
+                                    rightExpressionAssertions => rightExpressionAssertions.BeMemberAccessExpressionSyntax("__mappa_tmp_2.Length")),
+                                incrementorAssertions => incrementorAssertions.BePrefixUnaryExpressionSyntax(SyntaxKind.PlusPlusToken, operandAssertions => operandAssertions.BeIdentifierNameSyntax("__mappa_tmp_3")),
                                 statementAssertions =>
                                     statementAssertions
                                         .BeBlockStatement()
@@ -588,17 +593,17 @@ public class CollectionToCollectionMapStrategyIntegrationTests
                                         .HasNextSyntaxNode(foreachStatementAssertions =>
                                             foreachStatementAssertions.BeLocalDeclarationStatementSyntax(
                                                 typeof(int).ToString(),
-                                                "__mappa_tmp_3",
-                                                initializerAssertions => initializerAssertions.BeElementAccessExpressionSyntaxWithIdentifierNameSyntax("input", "__mappa_tmp_2")))
+                                                "__mappa_tmp_4",
+                                                initializerAssertions => initializerAssertions.BeElementAccessExpressionSyntaxWithIdentifierNameSyntax("__mappa_tmp_2", "__mappa_tmp_3")))
                                         .HasNextSyntaxNode(foreachStatementAssertions =>
                                             foreachStatementAssertions.BeLocalDeclarationStatementSyntax(
                                                 typeof(string).ToString(),
-                                                "__mappa_tmp_4",
-                                                initializerAssertions => initializerAssertions.BeInvocationExpressionSyntax("__mappa_tmp_3.ToString")))
+                                                "__mappa_tmp_5",
+                                                initializerAssertions => initializerAssertions.BeInvocationExpressionSyntax("__mappa_tmp_4.ToString")))
                                         .HasNextSyntaxNode(foreachStatementAssertions =>
                                             foreachStatementAssertions.BeInvocationExpressionSyntaxStatement(
                                                 "__mappa_tmp_1.Add",
-                                                firstParameterAssertions => firstParameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_4")))))
+                                                firstParameterAssertions => firstParameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_5")))))
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                             syntaxNodeAssertions.BeReturnStatement(expressionAssertions => expressionAssertions
                                 .BeIdentifierNameSyntax("__mappa_tmp_1")));
@@ -648,7 +653,7 @@ public class CollectionToCollectionMapStrategyIntegrationTests
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
-                        .HasSyntaxNodesCount(3)
+                        .HasSyntaxNodesCount(4)
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                             syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
                                 typeof(List<string>).ToString(),
@@ -657,13 +662,18 @@ public class CollectionToCollectionMapStrategyIntegrationTests
                                     typeof(List<string>).ToString(),
                                     firstParameterAssertions => firstParameterAssertions.BeMemberAccessExpressionSyntax("input.Length"))))
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(ReadOnlySpan<int>).ToString(),
+                                "__mappa_tmp_2",
+                                initializerAssertions => initializerAssertions.BeMemberAccessExpressionSyntax("input.Span")))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
                             syntaxNodeAssertions.BeForStatementSyntax(
-                                declarationAssertions => declarationAssertions.BeAssignmentFromConstant(typeof(int).ToString(), "__mappa_tmp_2", 0),
+                                declarationAssertions => declarationAssertions.BeAssignmentFromConstant(typeof(int).ToString(), "__mappa_tmp_3", 0),
                                 conditionAssertions => conditionAssertions.BeBinaryExpressionSyntax(
-                                    leftExpressionAssertions => leftExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_2"),
+                                    leftExpressionAssertions => leftExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_3"),
                                     SyntaxKind.LessThanToken,
-                                    rightExpressionAssertions => rightExpressionAssertions.BeMemberAccessExpressionSyntax("input.Length")),
-                                incrementorAssertions => incrementorAssertions.BePrefixUnaryExpressionSyntax(SyntaxKind.PlusPlusToken, operandAssertions => operandAssertions.BeIdentifierNameSyntax("__mappa_tmp_2")),
+                                    rightExpressionAssertions => rightExpressionAssertions.BeMemberAccessExpressionSyntax("__mappa_tmp_2.Length")),
+                                incrementorAssertions => incrementorAssertions.BePrefixUnaryExpressionSyntax(SyntaxKind.PlusPlusToken, operandAssertions => operandAssertions.BeIdentifierNameSyntax("__mappa_tmp_3")),
                                 statementAssertions =>
                                     statementAssertions
                                         .BeBlockStatement()
@@ -672,17 +682,17 @@ public class CollectionToCollectionMapStrategyIntegrationTests
                                         .HasNextSyntaxNode(foreachStatementAssertions =>
                                             foreachStatementAssertions.BeLocalDeclarationStatementSyntax(
                                                 typeof(int).ToString(),
-                                                "__mappa_tmp_3",
-                                                initializerAssertions => initializerAssertions.BeElementAccessExpressionSyntaxWithIdentifierNameSyntax("input", "__mappa_tmp_2")))
+                                                "__mappa_tmp_4",
+                                                initializerAssertions => initializerAssertions.BeElementAccessExpressionSyntaxWithIdentifierNameSyntax("__mappa_tmp_2", "__mappa_tmp_3")))
                                         .HasNextSyntaxNode(foreachStatementAssertions =>
                                             foreachStatementAssertions.BeLocalDeclarationStatementSyntax(
                                                 typeof(string).ToString(),
-                                                "__mappa_tmp_4",
-                                                initializerAssertions => initializerAssertions.BeInvocationExpressionSyntax("__mappa_tmp_3.ToString")))
+                                                "__mappa_tmp_5",
+                                                initializerAssertions => initializerAssertions.BeInvocationExpressionSyntax("__mappa_tmp_4.ToString")))
                                         .HasNextSyntaxNode(foreachStatementAssertions =>
                                             foreachStatementAssertions.BeInvocationExpressionSyntaxStatement(
                                                 "__mappa_tmp_1.Add",
-                                                firstParameterAssertions => firstParameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_4")))))
+                                                firstParameterAssertions => firstParameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_5")))))
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                             syntaxNodeAssertions.BeReturnStatement(expressionAssertions => expressionAssertions
                                 .BeIdentifierNameSyntax("__mappa_tmp_1")));

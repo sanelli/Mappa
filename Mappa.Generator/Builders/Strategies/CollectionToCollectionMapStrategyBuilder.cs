@@ -119,14 +119,27 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
     {
         // For array, Span<T> or anything implementing IList we can use a for loop
         // this way we can also use Span<> for ever better performances.
+        string? spanTemporary = null;
         if (HasIndexer(context, sourceTypeSymbol))
         {
+            // For Memory<T> or ReadOnlyMemory<T> we need to access the Span<T>/ReadOnlySpan<T> instance via the Span property.
+            if (sourceTypeSymbol.IsMemory(context.Compilation))
+            {
+                spanTemporary = context.NextTemporary();
+                stringBuilder.AppendLine($"global::System.Span<{sourceTypeSymbol.GetElementType().ToDisplayString()}> {spanTemporary} = {source}.Span;");
+            }
+            else if (sourceTypeSymbol.IsReadOnlyMemory(context.Compilation))
+            {
+                spanTemporary = context.NextTemporary();
+                stringBuilder.AppendLine($"global::System.ReadOnlySpan<{sourceTypeSymbol.GetElementType().ToDisplayString()}> {spanTemporary} = {source}.Span;");
+            }
+
             countingVariableName = context.NextTemporary();
             loopVariableName = context.NextTemporary();
 
-            stringBuilder.AppendLine($"for (int {countingVariableName} = 0; {countingVariableName} < {GetLengthExpression(source, sourceTypeSymbol, context.Compilation)}; ++{countingVariableName})");
+            stringBuilder.AppendLine($"for (int {countingVariableName} = 0; {countingVariableName} < {GetLengthExpression(spanTemporary ?? source, sourceTypeSymbol, context.Compilation)}; ++{countingVariableName})");
             var block = stringBuilder.CurlyBracesBlock();
-            stringBuilder.AppendLine($"{sourceTypeSymbol.GetElementType().ToDisplayString()} {loopVariableName} = {source}[{countingVariableName}];");
+            stringBuilder.AppendLine($"{sourceTypeSymbol.GetElementType().ToDisplayString()} {loopVariableName} = {spanTemporary ?? source}[{countingVariableName}];");
             return block;
         }
 
@@ -142,8 +155,8 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
         return sourceTypeSymbol.IsArray()
                || sourceTypeSymbol.IsSpan(context.Compilation)
                || sourceTypeSymbol.IsReadOnlySpan(context.Compilation)
-               || sourceTypeSymbol.IsMemory(context.Compilation)
-               || sourceTypeSymbol.IsReadOnlyMemory(context.Compilation)
+               || sourceTypeSymbol.IsMemory(context.Compilation) // Indexer by accessing the Span property
+               || sourceTypeSymbol.IsReadOnlyMemory(context.Compilation) // Indexer by accessing the Span property
                || sourceTypeSymbol.IsOrImplementIList();
     }
 
