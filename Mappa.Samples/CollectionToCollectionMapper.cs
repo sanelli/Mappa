@@ -484,4 +484,17 @@ public sealed partial class CollectionToCollectionMapper
     /// <param name="input">The input collection.</param>
     /// <returns>The output collection.</returns>
     public partial CustomCollectionImplementingICollection<int> MapFromIEnumerableToGenericTypeImplementingICollection(IEnumerable<CountingValues> input);
+
+    // TODO [#105] int[] -> Stack<string>.
+    // TODO [#105] int[] -> impl non-generic Stack<string>.
+    // TODO [#105] int[] -> impl generic Stack<string>.
+    // TODO [#105] IEnumerable<int> -> Stack<string>.
+    // TODO [#105] IEnumerable<int> -> impl non-generic Stack<string>.
+    // TODO [#105] IEnumerable<int> -> impl generic Stack<string>.
+    // TODO [#105] int[] -> Queue<string>.
+    // TODO [#105] int[] -> impl non-generic Queue<string>.
+    // TODO [#105] int[] -> impl generic Queue<string>.
+    // TODO [#105] IEnumerable<int> -> Queue<string>.
+    // TODO [#105] IEnumerable<int> -> impl non-generic Queue<string>.
+    // TODO [#105] IEnumerable<int> -> impl generic Queue<string>.
 }

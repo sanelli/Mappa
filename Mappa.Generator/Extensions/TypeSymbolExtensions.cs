@@ -881,7 +881,26 @@ internal static class TypeSymbolExtensions
     /// <param name="compilation">The compilation.</param>
     /// <returns><c>true</c> if the type symbol is <see cref="Stack{T}"/>.</returns>
     internal static bool IsOrImplementStack(this ITypeSymbol typeSymbol, Compilation compilation)
-        => typeSymbol.IsStack(compilation) || typeSymbol.AllInterfaces.Any(@interface => @interface.IsStack(compilation));
+    {
+        var stackSymbol = compilation.GetTypeByMetadataName(StackFullName);
+        if (SymbolEqualityComparer.Default.Equals(stackSymbol, typeSymbol.OriginalDefinition))
+        {
+            return true;
+        }
+
+        INamedTypeSymbol? baseType = typeSymbol.BaseType;
+        while (baseType is not null)
+        {
+            if (SymbolEqualityComparer.Default.Equals(stackSymbol, baseType.OriginalDefinition))
+            {
+                return true;
+            }
+
+            baseType = baseType.BaseType;
+        }
+
+        return false;
+    }
 
     /// <summary>
     /// Check if the type is <see cref="Queue{T}"/>.
@@ -903,5 +922,24 @@ internal static class TypeSymbolExtensions
     /// <param name="compilation">The compilation.</param>
     /// <returns><c>true</c> if the type symbol is <see cref="Queue{T}"/>.</returns>
     internal static bool IsOrImplementQueue(this ITypeSymbol typeSymbol, Compilation compilation)
-        => typeSymbol.IsQueue(compilation) || typeSymbol.AllInterfaces.Any(@interface => @interface.IsQueue(compilation));
+    {
+        var queueType = compilation.GetTypeByMetadataName(QueueFullName);
+        if (SymbolEqualityComparer.Default.Equals(queueType, typeSymbol.OriginalDefinition))
+        {
+            return true;
+        }
+
+        INamedTypeSymbol? baseType = typeSymbol.BaseType;
+        while (baseType is not null)
+        {
+            if (SymbolEqualityComparer.Default.Equals(queueType, baseType.OriginalDefinition))
+            {
+                return true;
+            }
+
+            baseType = baseType.BaseType;
+        }
+
+        return false;
+    }
 }

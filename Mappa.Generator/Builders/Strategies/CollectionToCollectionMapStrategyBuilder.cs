@@ -141,12 +141,26 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
         else if (targetTypeSymbol.IsOrImplementStack(context.Compilation))
         {
             insertionMethod = InsertionMethod.Push;
-            stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {targetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}();");
+            var capacity = string.Empty;
+            if (targetTypeSymbol.IsStack(context.Compilation)
+                && TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out var detectedCapacity))
+            {
+                capacity = detectedCapacity;
+            }
+
+            stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {targetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}({capacity});");
         }
         else if (targetTypeSymbol.IsOrImplementQueue(context.Compilation))
         {
             insertionMethod = InsertionMethod.Enqueue;
-            stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {targetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}();");
+            var capacity = string.Empty;
+            if (targetTypeSymbol.IsQueue(context.Compilation)
+                && TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out var detectedCapacity))
+            {
+                capacity = detectedCapacity;
+            }
+
+            stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {targetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}({capacity});");
         }
         else if (targetTypeSymbol.IsIEnumerable()
             || targetTypeSymbol.IsList(context.Compilation)
