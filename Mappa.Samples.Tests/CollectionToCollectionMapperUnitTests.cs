@@ -510,4 +510,174 @@ public sealed class CollectionToCollectionMapperUnitTests
         // Assert
         actual.Should().BeEquivalentTo([0, 2]);
     }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromNonGenericTypeImplementingIEnumerableToArray"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromNonGenericTypeImplementingIEnumerableToArray()
+    {
+        // Arrange
+        CustomCollectionImplementingIEnumerableOfCountingValues input = new([CountingValues.One, CountingValues.Three]);
+
+        // Act
+        var actual = this.mapper.MapFromNonGenericTypeImplementingIEnumerableToArray(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromGenericTypeImplementingIEnumerableToArray"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromGenericTypeImplementingIEnumerableToArray()
+    {
+        // Arrange
+        CustomCollectionImplementingIEnumerable<CountingValues> input = new([CountingValues.One, CountingValues.Three]);
+
+        // Act
+        var actual = this.mapper.MapFromGenericTypeImplementingIEnumerableToArray(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromICollectionToArray"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromICollectionToArray()
+    {
+        // Arrange
+        ICollection<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromICollectionToArray(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromNonGenericTypeImplementingICollectionToArray"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromNonGenericTypeImplementingICollectionToArray()
+    {
+        // Arrange
+        CustomCollectionImplementingICollectionOfCountingValues input = new([CountingValues.One, CountingValues.Three]);
+
+        // Act
+        var actual = this.mapper.MapFromNonGenericTypeImplementingICollectionToArray(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromGenericTypeImplementingICollectionToArray"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromGenericTypeImplementingICollectionToArray()
+    {
+        // Arrange
+        CustomCollectionImplementingICollection<CountingValues> input = new([CountingValues.One, CountingValues.Three]);
+
+        // Act
+        var actual = this.mapper.MapFromGenericTypeImplementingICollectionToArray(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIReadOnlyCollectionToArray"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIReadOnlyCollectionToArray()
+    {
+        // Arrange
+        IReadOnlyCollection<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIReadOnlyCollectionToArray(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromNonGenericTypeImplementingIReadOnlyCollectionToArray"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromNonGenericTypeImplementingIReadOnlyCollectionToArray()
+    {
+        // Arrange
+        CustomCollectionImplementingIReadOnlyCollectionOfCountingValues input = new([CountingValues.One, CountingValues.Three]);
+
+        // Act
+        var actual = this.mapper.MapFromNonGenericTypeImplementingIReadOnlyCollectionToArray(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromGenericTypeImplementingIReadOnlyCollectionToArray"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromGenericTypeImplementingIReadOnlyCollectionToArray()
+    {
+        // Arrange
+        CustomCollectionImplementingIReadOnlyCollection<CountingValues> input = new([CountingValues.One, CountingValues.Three]);
+
+        // Act
+        var actual = this.mapper.MapFromGenericTypeImplementingIReadOnlyCollectionToArray(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromStackToArray"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromStackToArray()
+    {
+        // Arrange
+        Stack<CountingValues> input = new([CountingValues.One, CountingValues.Three]);
+
+        // Act
+        var actual = this.mapper.MapFromStackToArray(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromQueueToArray"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromQueueToArray()
+    {
+        // Arrange
+        Queue<CountingValues> input = new([CountingValues.One, CountingValues.Three]);
+
+        // Act
+        var actual = this.mapper.MapFromQueueToArray(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
 }

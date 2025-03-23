@@ -244,4 +244,84 @@ public sealed partial class CollectionToCollectionMapper
     /// <param name="input">The input collection.</param>
     /// <returns>The output collection.</returns>
     public partial int[] MapFromIEnumerableToArray(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="CustomCollectionImplementingIEnumerableOfCountingValues"/>
+    /// to an <see cref="Array"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial int[] MapFromNonGenericTypeImplementingIEnumerableToArray(CustomCollectionImplementingIEnumerableOfCountingValues input);
+
+    /// <summary>
+    /// Map an <see cref="CustomCollectionImplementingIEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="Array"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial int[] MapFromGenericTypeImplementingIEnumerableToArray(CustomCollectionImplementingIEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="ICollection{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="Array"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial int[] MapFromICollectionToArray(ICollection<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="CustomCollectionImplementingICollectionOfCountingValues"/>
+    /// to an <see cref="Array"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial int[] MapFromNonGenericTypeImplementingICollectionToArray(CustomCollectionImplementingICollectionOfCountingValues input);
+
+    /// <summary>
+    /// Map an <see cref="CustomCollectionImplementingICollection{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="Array"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial int[] MapFromGenericTypeImplementingICollectionToArray(CustomCollectionImplementingICollection<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="IReadOnlyCollection{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="Array"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial int[] MapFromIReadOnlyCollectionToArray(IReadOnlyCollection<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="CustomCollectionImplementingIReadOnlyCollectionOfCountingValues"/>
+    /// to an <see cref="Array"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial int[] MapFromNonGenericTypeImplementingIReadOnlyCollectionToArray(CustomCollectionImplementingIReadOnlyCollectionOfCountingValues input);
+
+    /// <summary>
+    /// Map an <see cref="CustomCollectionImplementingIReadOnlyCollection{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="Array"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial int[] MapFromGenericTypeImplementingIReadOnlyCollectionToArray(CustomCollectionImplementingIReadOnlyCollection<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="Stack{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="Array"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial int[] MapFromStackToArray(Stack<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="Queue{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="Array"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial int[] MapFromQueueToArray(Queue<CountingValues> input);
 }
