@@ -26,26 +26,25 @@ internal static class TypeSymbolExtensions
     private const string ReadOnlyMemoryFullName = "System.ReadOnlyMemory`1";
     private const string StackFullName = "System.Collections.Generic.Stack`1";
     private const string QueueFullName = "System.Collections.Generic.Queue`1";
-
-    private static readonly string Tuple1Fullname = typeof(Tuple<>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Tuple<>)}");
-    private static readonly string Tuple2Fullname = typeof(Tuple<,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Tuple<,>)}");
-    private static readonly string Tuple3Fullname = typeof(Tuple<,,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Tuple<,,>)}");
-    private static readonly string Tuple4Fullname = typeof(Tuple<,,,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Tuple<,,,>)}");
-    private static readonly string Tuple5Fullname = typeof(Tuple<,,,,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Tuple<,,,,>)}");
-    private static readonly string Tuple6Fullname = typeof(Tuple<,,,,,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Tuple<,,,,,>)}");
-    private static readonly string Tuple7Fullname = typeof(Tuple<,,,,,,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Tuple<,,,,,,>)}");
-    private static readonly string Tuple8Fullname = typeof(Tuple<,,,,,,,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Tuple<,,,,,,,>)}");
-    private static readonly string DictionaryFullName = typeof(Dictionary<,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Dictionary<,>)}");
-    private static readonly string ReadOnlyDictionaryFullName = typeof(ReadOnlyDictionary<,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(ReadOnlyDictionary<,>)}");
-    private static readonly string ReadOnlyCollectionFullName = typeof(ReadOnlyCollection<>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(ReadOnlyCollection<>)}");
-    private static readonly string DictionaryInterfaceFullName = typeof(IDictionary<,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(IDictionary<,>)}");
-    private static readonly string ReadOnlyDictionaryInterfaceFullName = typeof(IReadOnlyDictionary<,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(IReadOnlyDictionary<,>)}");
-    private static readonly string ListFullName = typeof(List<>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(List<>)}");
-    private static readonly string TimeSpanFullName = typeof(TimeSpan).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(TimeSpan)}");
-    private static readonly string UriFullName = typeof(Uri).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Uri)}");
-    private static readonly string GuidFullName = typeof(Guid).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Guid)}");
-    private static readonly string DateTimeOffsetFullName = typeof(DateTimeOffset).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(DateTimeOffset)}");
-    private static readonly string KeyValuePairFullName = typeof(KeyValuePair<,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(KeyValuePair<,>)}");
+    private const string Tuple1Fullname = "System.Tuple`1";
+    private const string Tuple2Fullname = "System.Tuple`2";
+    private const string Tuple3Fullname = "System.Tuple`3";
+    private const string Tuple4Fullname = "System.Tuple`4";
+    private const string Tuple5Fullname = "System.Tuple`5";
+    private const string Tuple6Fullname = "System.Tuple`6";
+    private const string Tuple7Fullname = "System.Tuple`7";
+    private const string Tuple8Fullname = "System.Tuple`8";
+    private const string DictionaryFullName = "System.Collections.Generic.Dictionary`2";
+    private const string ReadOnlyDictionaryFullName = "System.Collections.ObjectModel.ReadOnlyDictionary`2";
+    private const string ReadOnlyCollectionFullName = "System.Collections.ObjectModel.ReadOnlyCollection`1";
+    private const string DictionaryInterfaceFullName = "System.Collections.Generic.IDictionary`2";
+    private const string ReadOnlyDictionaryInterfaceFullName = "System.Collections.Generic.IReadOnlyDictionary`2";
+    private const string ListFullName = "System.Collections.Generic.List`1";
+    private const string TimeSpanFullName = "System.TimeSpan";
+    private const string UriFullName = "System.Uri";
+    private const string GuidFullName = "System.Guid";
+    private const string DateTimeOffsetFullName = "System.DateTimeOffset";
+    private const string KeyValuePairFullName = "System.Collections.Generic.KeyValuePair`2";
 
     /// <summary>
     /// Check if the type is <see cref="Void"/>.
