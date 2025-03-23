@@ -154,7 +154,9 @@ internal sealed class ContainerMapStrategyDetector
                                  || this.context.TargetType.IsSpan(this.compilation)
                                  || this.context.TargetType.IsReadOnlySpan(this.compilation)
                                  || this.context.TargetType.IsMemory(this.compilation)
-                                 || this.context.TargetType.IsReadOnlyMemory(this.compilation))
+                                 || this.context.TargetType.IsReadOnlyMemory(this.compilation)
+                                 || this.context.TargetType.IsOrImplementStack(this.compilation)
+                                 || this.context.TargetType.IsOrImplementQueue(this.compilation))
                                  && InterfaceAndConstructorChecks();
 
         elementStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);

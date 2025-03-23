@@ -24,6 +24,8 @@ internal static class TypeSymbolExtensions
     private const string ReadOnlySpanFullName = "System.ReadOnlySpan`1";
     private const string MemoryFullName = "System.Memory`1";
     private const string ReadOnlyMemoryFullName = "System.ReadOnlyMemory`1";
+    private const string StackFullName = "System.Collections.Generic.Stack`1";
+    private const string QueueFullName = "System.Collections.Generic.Queue`1";
 
     private static readonly string Tuple1Fullname = typeof(Tuple<>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Tuple<>)}");
     private static readonly string Tuple2Fullname = typeof(Tuple<,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Tuple<,>)}");
@@ -858,4 +860,48 @@ internal static class TypeSymbolExtensions
         var isKeyValuePair = SymbolEqualityComparer.Default.Equals(keyValuePairSymbol, typeSymbol.OriginalDefinition);
         return isKeyValuePair;
     }
+
+    /// <summary>
+    /// Check if the type is <see cref="Stack{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="Stack{T}"/>.</returns>
+    internal static bool IsStack(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var stackSymbol = compilation.GetTypeByMetadataName(StackFullName);
+        var isStack = SymbolEqualityComparer.Default.Equals(stackSymbol, typeSymbol.OriginalDefinition);
+        return isStack;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="Stack{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="Stack{T}"/>.</returns>
+    internal static bool IsOrImplementStack(this ITypeSymbol typeSymbol, Compilation compilation)
+        => typeSymbol.IsStack(compilation) || typeSymbol.AllInterfaces.Any(@interface => @interface.IsStack(compilation));
+
+    /// <summary>
+    /// Check if the type is <see cref="Queue{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="Queue{T}"/>.</returns>
+    internal static bool IsQueue(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var queueSymbol = compilation.GetTypeByMetadataName(QueueFullName);
+        var isStack = SymbolEqualityComparer.Default.Equals(queueSymbol, typeSymbol.OriginalDefinition);
+        return isStack;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="Queue{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="Queue{T}"/>.</returns>
+    internal static bool IsOrImplementQueue(this ITypeSymbol typeSymbol, Compilation compilation)
+        => typeSymbol.IsQueue(compilation) || typeSymbol.AllInterfaces.Any(@interface => @interface.IsQueue(compilation));
 }

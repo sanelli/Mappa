@@ -73,6 +73,12 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
                 case InsertionMethod.Add:
                     stringBuilder.AppendLine($"{targetVariableName}.Add({targetElementVariable});");
                     break;
+                case InsertionMethod.Push:
+                    stringBuilder.AppendLine($"{targetVariableName}.Push({targetElementVariable});");
+                    break;
+                case InsertionMethod.Enqueue:
+                    stringBuilder.AppendLine($"{targetVariableName}.Enqueue({targetElementVariable});");
+                    break;
                 default:
                     throw new MappaGeneratorException("Unexpected add method.");
             }
@@ -132,6 +138,16 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
                 stringBuilder.AppendLine($"int {counterVariableName} = 0;");
             }
         }
+        else if (targetTypeSymbol.IsOrImplementStack(context.Compilation))
+        {
+            insertionMethod = InsertionMethod.Push;
+            stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {targetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}();");
+        }
+        else if (targetTypeSymbol.IsOrImplementQueue(context.Compilation))
+        {
+            insertionMethod = InsertionMethod.Enqueue;
+            stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {targetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}();");
+        }
         else if (targetTypeSymbol.IsIEnumerable()
             || targetTypeSymbol.IsList(context.Compilation)
             || targetTypeSymbol.IsIList()
@@ -144,7 +160,7 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
             // Note: even if we set capacity the list would be empty so we cannot invoke an indexer, but only Add.
             // (having an initial capacity is anyway an improvement on the performances).
             TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out var capacity);
-            stringBuilder.AppendLine($"System.Collections.Generic.List<{targetTypeSymbol.GetElementType().ToDisplayString()}> {targetVariableName} = new System.Collections.Generic.List<{targetTypeSymbol.GetElementType().ToDisplayString()}>({capacity});");
+            stringBuilder.AppendLine($"global::System.Collections.Generic.List<{targetTypeSymbol.GetElementType().ToDisplayString()}> {targetVariableName} = new global::System.Collections.Generic.List<{targetTypeSymbol.GetElementType().ToDisplayString()}>({capacity});");
         }
         else if (targetTypeSymbol.ImplementICollection())
         {
@@ -153,7 +169,7 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
             // We are sure that is concrete because ICollection<T> is implemented in a different branch
             // and we re also sure it has a constructor with 0 arguments that can be used.
             insertionMethod = InsertionMethod.Add;
-            stringBuilder.AppendLine($"{targetTypeSymbol.ToDisplayString()} {targetVariableName} = new {targetTypeSymbol.ToDisplayString()}();");
+            stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {targetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}();");
         }
         else
         {
