@@ -953,4 +953,72 @@ public sealed class CollectionToCollectionMapperUnitTests
         // Assert
         actual.ShouldBeExactly([0, 2]);
     }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromArrayToNonGenericTypeImplementingICollection"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromArrayToNonGenericTypeImplementingICollection()
+    {
+        // Arrange
+        CountingValues[] input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromArrayToNonGenericTypeImplementingICollection(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromArrayToGenericTypeImplementingICollection"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromArrayToGenericTypeImplementingICollection()
+    {
+        // Arrange
+        CountingValues[] input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromArrayToGenericTypeImplementingICollection(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIEnumerableToNonGenericTypeImplementingICollection"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIEnumerableToNonGenericTypeImplementingICollection()
+    {
+        // Arrange
+        IEnumerable<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIEnumerableToNonGenericTypeImplementingICollection(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIEnumerableToGenericTypeImplementingICollection"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIEnumerableToGenericTypeImplementingICollection()
+    {
+        // Arrange
+        IEnumerable<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIEnumerableToGenericTypeImplementingICollection(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
 }

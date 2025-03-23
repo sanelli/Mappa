@@ -128,14 +128,15 @@ internal sealed class ContainerMapStrategyDetector
             || this.context.SourceType.IsReadOnlySpan(this.compilation)
             || this.context.SourceType.IsReadOnlyMemory(this.compilation);
 
-        // TODO [#105] Implements ICollection.
         // TODO [#105] Implements ISet.
         // TODO [#105] is Stack (Are not ICollection).
         // TODO [#105] is Queue (Are not ICollection).
         // TODO [#105] impl Stack (Are not ICollection).
         // TODO [#105] impl Queue (Are not ICollection).
+        // TODO [#105] IReadOnlyList.
         // TODO [#105] ReadOnlyCollection.
         // TODO [#105] ReadOnlySet.
+        // TODO [#105] IReadOnlySet.
         // TODO [#105] FrozenCollection.
         // TODO [#105] ImmutableHashSet.
         // TODO [#105] ImmutableArray.
@@ -148,7 +149,7 @@ internal sealed class ContainerMapStrategyDetector
                                  || this.context.TargetType.IsIEnumerable()
                                  || this.context.TargetType.IsIList()
                                  || this.context.TargetType.IsList(this.compilation)
-                                 || this.context.TargetType.IsICollection()
+                                 || this.context.TargetType.IsOrImplementICollection()
                                  || this.context.TargetType.IsIReadOnlyCollection()
                                  || this.context.TargetType.IsSpan(this.compilation)
                                  || this.context.TargetType.IsReadOnlySpan(this.compilation)
@@ -185,6 +186,7 @@ internal sealed class ContainerMapStrategyDetector
             // Target type MUST have a constructor with no arguments
             // unless it is a ReadOnlyDictionary, ImmutableDictionary or a FrozenDictionary
             // for which special coding is provided.
+            // TODO [#109] Support constructor with 1 integer parameter (capacity) via mappaSettings.
             if (this.context.TargetType is INamedTypeSymbol namedTypeSymbol)
             {
                 // TODO [#105] ReadOnlyCollection -- Add exception.
@@ -197,7 +199,6 @@ internal sealed class ContainerMapStrategyDetector
                 // TODO [#105] ImmutableSortedSet -- Add exception.
                 // TODO [#105] ImmutableStack -- Add exception.
                 // TODO [#105] ImmutableSet -- Add exception.
-                // TODO [#105] Span<T> -- Add exception as we need to create an array probably.
                 return namedTypeSymbol.Constructors.Any(constructor => constructor.Parameters.Length == 0);
             }
 

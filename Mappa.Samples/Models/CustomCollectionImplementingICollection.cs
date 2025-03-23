@@ -24,6 +24,14 @@ public class CustomCollectionImplementingICollection<T>
         this.items = new(items);
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CustomCollectionImplementingICollection{T}"/> class.
+    /// </summary>
+    public CustomCollectionImplementingICollection()
+        : this([])
+    {
+    }
+
     /// <inheritdoc />
     public int Count => this.items.Count;
 

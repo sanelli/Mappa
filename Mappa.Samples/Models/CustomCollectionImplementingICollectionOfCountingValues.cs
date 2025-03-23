@@ -9,4 +9,13 @@ namespace Mappa.Samples.Models;
 /// or <see cref="CountingValues"/>.
 /// </summary>
 public sealed class CustomCollectionImplementingICollectionOfCountingValues(CountingValues[] items)
-    : CustomCollectionImplementingICollection<CountingValues>(items);
+    : CustomCollectionImplementingICollection<CountingValues>(items)
+{
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CustomCollectionImplementingICollectionOfCountingValues"/> class.
+    /// </summary>
+    public CustomCollectionImplementingICollectionOfCountingValues()
+        : this([])
+    {
+    }
+}

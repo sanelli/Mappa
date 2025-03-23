@@ -452,4 +452,36 @@ public sealed partial class CollectionToCollectionMapper
     /// <param name="input">The input collection.</param>
     /// <returns>The output collection.</returns>
     public partial ReadOnlyMemory<int> MapFromIEnumerableToReadOnlyMemory(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="Array"/> of <see cref="int"/>
+    /// to an <see cref="CustomCollectionImplementingICollectionOfCountingValues"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial CustomCollectionImplementingICollectionOfIntegers MapFromArrayToNonGenericTypeImplementingICollection(CountingValues[] input);
+
+    /// <summary>
+    /// Map an <see cref="Array"/> of <see cref="CountingValues"/>
+    /// to an <see cref="CustomCollectionImplementingICollection{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial CustomCollectionImplementingICollection<int> MapFromArrayToGenericTypeImplementingICollection(CountingValues[] input);
+
+    /// <summary>
+    /// Map an <see cref="Array"/> of <see cref="int"/>
+    /// to an <see cref="CustomCollectionImplementingICollectionOfCountingValues"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial CustomCollectionImplementingICollectionOfIntegers MapFromIEnumerableToNonGenericTypeImplementingICollection(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="Array"/> of <see cref="CountingValues"/>
+    /// to an <see cref="CustomCollectionImplementingICollection{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial CustomCollectionImplementingICollection<int> MapFromIEnumerableToGenericTypeImplementingICollection(IEnumerable<CountingValues> input);
 }

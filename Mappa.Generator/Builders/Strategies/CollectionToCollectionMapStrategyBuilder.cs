@@ -108,6 +108,7 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
         targetVariableName = context.NextTemporary();
         counterVariableName = null;
 
+        // TODO [#105] Handle HashSet separately in order to make sure we could use capacity if available.
         if (targetTypeSymbol.IsArray()
             || targetTypeSymbol.IsSpan(context.Compilation)
             || targetTypeSymbol.IsReadOnlySpan(context.Compilation)
@@ -144,6 +145,15 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
             // (having an initial capacity is anyway an improvement on the performances).
             TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out var capacity);
             stringBuilder.AppendLine($"System.Collections.Generic.List<{targetTypeSymbol.GetElementType().ToDisplayString()}> {targetVariableName} = new System.Collections.Generic.List<{targetTypeSymbol.GetElementType().ToDisplayString()}>({capacity});");
+        }
+        else if (targetTypeSymbol.ImplementICollection())
+        {
+            // TODO [#109] Support constructor with 1 integer parameter (capacity) via mappaSettings.
+            // here we handle the scenario of the a concrete type implementing ICollection<T>.
+            // We are sure that is concrete because ICollection<T> is implemented in a different branch
+            // and we re also sure it has a constructor with 0 arguments that can be used.
+            insertionMethod = InsertionMethod.Add;
+            stringBuilder.AppendLine($"{targetTypeSymbol.ToDisplayString()} {targetVariableName} = new {targetTypeSymbol.ToDisplayString()}();");
         }
         else
         {
