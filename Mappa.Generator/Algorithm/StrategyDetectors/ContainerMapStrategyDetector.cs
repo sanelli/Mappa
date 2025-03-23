@@ -131,6 +131,7 @@ internal sealed class ContainerMapStrategyDetector
         // TODO [#105] Array.
         // TODO [#105] Implements IList.
         // TODO [#105] Implements ICollection.
+        // TODO [#105] Implements ISet.
         // TODO [#105] is Stack (Are not ICollection).
         // TODO [#105] is Queue (Are not ICollection).
         // TODO [#105] impl Stack (Are not ICollection).
@@ -145,16 +146,16 @@ internal sealed class ContainerMapStrategyDetector
         // TODO [#105] ImmutableSortedSet.
         // TODO [#105] ImmutableStack.
         // TODO [#105] ImmutableSet.
-        // TODO [#105] Span<T>.
-        // TODO [#105] Memory<T>.
-        // TODO [#105] ReadOnlySpan<T>.
-        // TODO [#105] ReadOnlyMemory<T>.
         var isTargetCollection = (this.context.TargetType.IsArray()
                                  || this.context.TargetType.IsIEnumerable()
                                  || this.context.TargetType.IsIList()
                                  || this.context.TargetType.IsList(this.compilation)
                                  || this.context.TargetType.IsICollection()
-                                 || this.context.TargetType.IsIReadOnlyCollection())
+                                 || this.context.TargetType.IsIReadOnlyCollection()
+                                 || this.context.TargetType.IsSpan(this.compilation)
+                                 || this.context.TargetType.IsReadOnlySpan(this.compilation)
+                                 || this.context.TargetType.IsMemory(this.compilation)
+                                 || this.context.TargetType.IsReadOnlyMemory(this.compilation))
                                  && InterfaceAndConstructorChecks();
 
         elementStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);

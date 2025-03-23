@@ -24,6 +24,12 @@ internal static partial class AssertionsHelpers
         ArgumentNullException.ThrowIfNull(compilation);
         ArgumentException.ThrowIfNullOrWhiteSpace(type);
 
+        // Remove heading global:: as it does not work very well with this code.
+        if (type.StartsWith("global::", StringComparison.Ordinal))
+        {
+            return compilation.GetTypeSymbol(type["global::".Length..]);
+        }
+
         // Manually handle named tuples
         if (type.StartsWith('(') && ContainSpacesRegex().Count(type) > 0)
         {

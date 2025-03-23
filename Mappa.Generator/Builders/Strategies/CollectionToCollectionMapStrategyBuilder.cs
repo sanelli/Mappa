@@ -78,6 +78,20 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
             }
         }
 
+        // For some types we need to do a bit of post-processing to make sure we always return the correct type
+        // (e.g. if we convert a T[] into a Span<T>, even if not needed it clarifies the code).
+        if (this.strategy.TargetType.IsSpan(context.Compilation)
+            || this.strategy.TargetType.IsReadOnlySpan(context.Compilation)
+            || this.strategy.TargetType.IsMemory(context.Compilation)
+            || this.strategy.TargetType.IsReadOnlyMemory(context.Compilation))
+        {
+            var targetTypeDisplayString = this.strategy.TargetType.ToDisplayString();
+            var postTargetVariableName = context.NextTemporary();
+            stringBuilder.AppendEmptyLine();
+            stringBuilder.AppendLine($"global::{targetTypeDisplayString} {postTargetVariableName} = new global::{targetTypeDisplayString}({targetVariableName});");
+            targetVariableName = postTargetVariableName;
+        }
+
         return (targetVariableName, stringBuilder.ToString());
     }
 
@@ -94,7 +108,11 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
         targetVariableName = context.NextTemporary();
         counterVariableName = null;
 
-        if (targetTypeSymbol.IsArray())
+        if (targetTypeSymbol.IsArray()
+            || targetTypeSymbol.IsSpan(context.Compilation)
+            || targetTypeSymbol.IsReadOnlySpan(context.Compilation)
+            || targetTypeSymbol.IsMemory(context.Compilation)
+            || targetTypeSymbol.IsReadOnlyMemory(context.Compilation))
         {
             // Array need indexers.
             insertionMethod = InsertionMethod.Indexer;

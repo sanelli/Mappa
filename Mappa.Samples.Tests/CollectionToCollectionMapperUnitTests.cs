@@ -5,6 +5,7 @@
 using FluentAssertions;
 
 using Mappa.Samples.Models;
+using Mappa.Samples.Tests.Extensions;
 
 using Xunit;
 using Xunit.Categories;
@@ -679,5 +680,22 @@ public sealed class CollectionToCollectionMapperUnitTests
 
         // Assert
         actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromArrayToSpan"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromArrayToSpan()
+    {
+        // Arrange
+        CountingValues[] input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromArrayToSpan(input);
+
+        // Assert
+        actual.ShouldBeExactly([0, 2]);
     }
 }
