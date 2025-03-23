@@ -1021,4 +1021,208 @@ public sealed class CollectionToCollectionMapperUnitTests
         // Assert
         actual.Should().BeEquivalentTo([0, 2]);
     }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromArrayToStack"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromArrayToStack()
+    {
+        // Arrange
+        CountingValues[] input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromArrayToStack(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromArrayToNonGenericTypeDerivedFromStack"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromArrayToNonGenericTypeDerivedFromStack()
+    {
+        // Arrange
+        CountingValues[] input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromArrayToNonGenericTypeDerivedFromStack(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromArrayGenericTypeDerivedFromStack"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromArrayGenericTypeDerivedFromStack()
+    {
+        // Arrange
+        CountingValues[] input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromArrayGenericTypeDerivedFromStack(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIEnumerableToStack"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIEnumerableToStack()
+    {
+        // Arrange
+        IEnumerable<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIEnumerableToStack(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIEnumerableToNonGenericTypeDerivedFromStack"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIEnumerableToNonGenericTypeDerivedFromStack()
+    {
+        // Arrange
+        IEnumerable<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIEnumerableToNonGenericTypeDerivedFromStack(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIEnumerableGenericTypeDerivedFromStack"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIEnumerableGenericTypeDerivedFromStack()
+    {
+        // Arrange
+        IEnumerable<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIEnumerableGenericTypeDerivedFromStack(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromArrayToQueue"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromArrayToQueue()
+    {
+        // Arrange
+        CountingValues[] input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromArrayToQueue(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromArrayToNonGenericTypeDerivedFromQueue"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromArrayToNonGenericTypeDerivedFromQueue()
+    {
+        // Arrange
+        CountingValues[] input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromArrayToNonGenericTypeDerivedFromQueue(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromArrayGenericTypeDerivedFromQueue"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromArrayGenericTypeDerivedFromQueue()
+    {
+        // Arrange
+        CountingValues[] input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromArrayGenericTypeDerivedFromQueue(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIEnumerableToQueue"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIEnumerableToQueue()
+    {
+        // Arrange
+        IEnumerable<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIEnumerableToQueue(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIEnumerableToNonGenericTypeDerivedFromQueue"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIEnumerableToNonGenericTypeDerivedFromQueue()
+    {
+        // Arrange
+        IEnumerable<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIEnumerableToNonGenericTypeDerivedFromQueue(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIEnumerableGenericTypeDerivedFromQueue"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIEnumerableGenericTypeDerivedFromQueue()
+    {
+        // Arrange
+        IEnumerable<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIEnumerableGenericTypeDerivedFromQueue(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
 }

@@ -470,7 +470,7 @@ public sealed partial class CollectionToCollectionMapper
     public partial CustomCollectionImplementingICollection<int> MapFromArrayToGenericTypeImplementingICollection(CountingValues[] input);
 
     /// <summary>
-    /// Map an <see cref="Array"/> of <see cref="int"/>
+    /// Map an <see cref="IEnumerable{T}"/> of <see cref="int"/>
     /// to an <see cref="CustomCollectionImplementingICollectionOfCountingValues"/>.
     /// </summary>
     /// <param name="input">The input collection.</param>
@@ -478,23 +478,106 @@ public sealed partial class CollectionToCollectionMapper
     public partial CustomCollectionImplementingICollectionOfIntegers MapFromIEnumerableToNonGenericTypeImplementingICollection(IEnumerable<CountingValues> input);
 
     /// <summary>
-    /// Map an <see cref="Array"/> of <see cref="CountingValues"/>
+    /// Map an <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
     /// to an <see cref="CustomCollectionImplementingICollection{T}"/> of <see cref="int"/>.
     /// </summary>
     /// <param name="input">The input collection.</param>
     /// <returns>The output collection.</returns>
     public partial CustomCollectionImplementingICollection<int> MapFromIEnumerableToGenericTypeImplementingICollection(IEnumerable<CountingValues> input);
 
-    // TODO [#105] int[] -> Stack<string>.
-    // TODO [#105] int[] -> impl non-generic Stack<string>.
-    // TODO [#105] int[] -> impl generic Stack<string>.
-    // TODO [#105] IEnumerable<int> -> Stack<string>.
-    // TODO [#105] IEnumerable<int> -> impl non-generic Stack<string>.
-    // TODO [#105] IEnumerable<int> -> impl generic Stack<string>.
-    // TODO [#105] int[] -> Queue<string>.
-    // TODO [#105] int[] -> impl non-generic Queue<string>.
-    // TODO [#105] int[] -> impl generic Queue<string>.
-    // TODO [#105] IEnumerable<int> -> Queue<string>.
-    // TODO [#105] IEnumerable<int> -> impl non-generic Queue<string>.
-    // TODO [#105] IEnumerable<int> -> impl generic Queue<string>.
+    /// <summary>
+    /// Map an <see cref="Array"/> of <see cref="CountingValues"/>
+    /// to an <see cref="Stack{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial Stack<int> MapFromArrayToStack(CountingValues[] input);
+
+    /// <summary>
+    /// Map an <see cref="Array"/> of <see cref="CountingValues"/>
+    /// to an <see cref="CustomStackOfIntegers"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial CustomStackOfIntegers MapFromArrayToNonGenericTypeDerivedFromStack(CountingValues[] input);
+
+    /// <summary>
+    /// Map an <see cref="Array"/> of <see cref="CountingValues"/>
+    /// to an <see cref="CustomStack{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial CustomStack<int> MapFromArrayGenericTypeDerivedFromStack(CountingValues[] input);
+
+    /// <summary>
+    /// Map an <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="Stack{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial Stack<int> MapFromIEnumerableToStack(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="CustomStackOfIntegers"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial CustomStackOfIntegers MapFromIEnumerableToNonGenericTypeDerivedFromStack(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="CustomStack{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial CustomStack<int> MapFromIEnumerableGenericTypeDerivedFromStack(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="Array"/> of <see cref="CountingValues"/>
+    /// to an <see cref="Queue{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial Queue<int> MapFromArrayToQueue(CountingValues[] input);
+
+    /// <summary>
+    /// Map an <see cref="Array"/> of <see cref="CountingValues"/>
+    /// to an <see cref="CustomQueueOfIntegers"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial CustomQueueOfIntegers MapFromArrayToNonGenericTypeDerivedFromQueue(CountingValues[] input);
+
+    /// <summary>
+    /// Map an <see cref="Array"/> of <see cref="CountingValues"/>
+    /// to an <see cref="CustomQueue{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial CustomQueue<int> MapFromArrayGenericTypeDerivedFromQueue(CountingValues[] input);
+
+    /// <summary>
+    /// Map an <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="Queue{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial Queue<int> MapFromIEnumerableToQueue(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="CustomQueueOfIntegers"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial CustomQueueOfIntegers MapFromIEnumerableToNonGenericTypeDerivedFromQueue(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="CustomQueue{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial CustomQueue<int> MapFromIEnumerableGenericTypeDerivedFromQueue(IEnumerable<CountingValues> input);
 }
