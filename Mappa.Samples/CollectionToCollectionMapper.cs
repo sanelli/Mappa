@@ -332,4 +332,124 @@ public sealed partial class CollectionToCollectionMapper
     /// <param name="input">The input collection.</param>
     /// <returns>The output collection.</returns>
     public partial Span<int> MapFromArrayToSpan(CountingValues[] input);
+
+    /// <summary>
+    /// Map an <see cref="IList{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="Span{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial Span<int> MapFromIListToSpan(IList<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="ICollection{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="Span{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial Span<int> MapFromICollectionToSpan(ICollection<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="Span{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial Span<int> MapFromIEnumerableToSpan(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="Array"/> of <see cref="CountingValues"/>
+    /// to an <see cref="ReadOnlySpan{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial ReadOnlySpan<int> MapFromArrayToReadOnlySpan(CountingValues[] input);
+
+    /// <summary>
+    /// Map an <see cref="IList{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="ReadOnlySpan{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial ReadOnlySpan<int> MapFromIListToReadOnlySpan(IList<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="ICollection{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="ReadOnlySpan{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial ReadOnlySpan<int> MapFromICollectionToReadOnlySpan(ICollection<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="ReadOnlySpan{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial ReadOnlySpan<int> MapFromIEnumerableToReadOnlySpan(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="Array"/> of <see cref="CountingValues"/>
+    /// to an <see cref="Memory{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial Memory<int> MapFromArrayToMemory(CountingValues[] input);
+
+    /// <summary>
+    /// Map an <see cref="IList{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="Memory{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial Memory<int> MapFromIListToMemory(IList<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="ICollection{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="Memory{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial Memory<int> MapFromICollectionToMemory(ICollection<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="Memory{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial Memory<int> MapFromIEnumerableToMemory(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="Array"/> of <see cref="CountingValues"/>
+    /// to an <see cref="ReadOnlyMemory{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial ReadOnlyMemory<int> MapFromArrayToReadOnlyMemory(CountingValues[] input);
+
+    /// <summary>
+    /// Map an <see cref="IList{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="ReadOnlyMemory{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial ReadOnlyMemory<int> MapFromIListToReadOnlyMemory(IList<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="ICollection{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="ReadOnlyMemory{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial ReadOnlyMemory<int> MapFromICollectionToReadOnlyMemory(ICollection<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to an <see cref="ReadOnlyMemory{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial ReadOnlyMemory<int> MapFromIEnumerableToReadOnlyMemory(IEnumerable<CountingValues> input);
 }

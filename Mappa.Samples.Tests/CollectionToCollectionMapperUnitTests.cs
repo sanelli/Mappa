@@ -698,4 +698,259 @@ public sealed class CollectionToCollectionMapperUnitTests
         // Assert
         actual.ShouldBeExactly([0, 2]);
     }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIListToSpan"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIListToSpan()
+    {
+        // Arrange
+        IList<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIListToSpan(input);
+
+        // Assert
+        actual.ShouldBeExactly([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromICollectionToSpan"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromICollectionToSpan()
+    {
+        // Arrange
+        ICollection<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromICollectionToSpan(input);
+
+        // Assert
+        actual.ShouldBeExactly([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIEnumerableToSpan"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIEnumerableToSpan()
+    {
+        // Arrange
+        IEnumerable<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIEnumerableToSpan(input);
+
+        // Assert
+        actual.ShouldBeExactly([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromArrayToReadOnlySpan"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromArrayToReadOnlySpan()
+    {
+        // Arrange
+        CountingValues[] input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromArrayToReadOnlySpan(input);
+
+        // Assert
+        actual.ShouldBeExactly([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIListToReadOnlySpan"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIListToReadOnlySpan()
+    {
+        // Arrange
+        IList<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIListToReadOnlySpan(input);
+
+        // Assert
+        actual.ShouldBeExactly([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromICollectionToReadOnlySpan"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromICollectionToReadOnlySpan()
+    {
+        // Arrange
+        ICollection<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromICollectionToReadOnlySpan(input);
+
+        // Assert
+        actual.ShouldBeExactly([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIEnumerableToReadOnlySpan"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIEnumerableToReadOnlySpan()
+    {
+        // Arrange
+        IEnumerable<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIEnumerableToReadOnlySpan(input);
+
+        // Assert
+        actual.ShouldBeExactly([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromArrayToMemory"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromArrayToMemory()
+    {
+        // Arrange
+        CountingValues[] input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromArrayToMemory(input);
+
+        // Assert
+        actual.ShouldBeExactly([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIListToMemory"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIListToMemory()
+    {
+        // Arrange
+        IList<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIListToMemory(input);
+
+        // Assert
+        actual.ShouldBeExactly([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromICollectionToMemory"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromICollectionToMemory()
+    {
+        // Arrange
+        ICollection<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromICollectionToMemory(input);
+
+        // Assert
+        actual.ShouldBeExactly([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIEnumerableToMemory"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIEnumerableToMemory()
+    {
+        // Arrange
+        IEnumerable<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIEnumerableToMemory(input);
+
+        // Assert
+        actual.ShouldBeExactly([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromArrayToReadOnlyMemory"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromArrayToReadOnlyMemory()
+    {
+        // Arrange
+        CountingValues[] input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromArrayToReadOnlyMemory(input);
+
+        // Assert
+        actual.ShouldBeExactly([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIListToReadOnlyMemory"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIListToReadOnlyMemory()
+    {
+        // Arrange
+        IList<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIListToReadOnlyMemory(input);
+
+        // Assert
+        actual.ShouldBeExactly([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromICollectionToReadOnlyMemory"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromICollectionToReadOnlyMemory()
+    {
+        // Arrange
+        ICollection<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromICollectionToReadOnlyMemory(input);
+
+        // Assert
+        actual.ShouldBeExactly([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIEnumerableToReadOnlyMemory"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIEnumerableToReadOnlyMemory()
+    {
+        // Arrange
+        IEnumerable<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIEnumerableToReadOnlyMemory(input);
+
+        // Assert
+        actual.ShouldBeExactly([0, 2]);
+    }
 }
