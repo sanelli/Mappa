@@ -129,10 +129,6 @@ internal sealed class ContainerMapStrategyDetector
             || this.context.SourceType.IsReadOnlyMemory(this.compilation);
 
         // TODO [#105] Implements ISet.
-        // TODO [#105] is Stack (Are not ICollection).
-        // TODO [#105] is Queue (Are not ICollection).
-        // TODO [#105] impl Stack (Are not ICollection).
-        // TODO [#105] impl Queue (Are not ICollection).
         // TODO [#105] IReadOnlyList.
         // TODO [#105] ReadOnlyCollection.
         // TODO [#105] ReadOnlySet.
