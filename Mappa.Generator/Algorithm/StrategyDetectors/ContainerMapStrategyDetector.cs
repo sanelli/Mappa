@@ -128,8 +128,6 @@ internal sealed class ContainerMapStrategyDetector
             || this.context.SourceType.IsReadOnlySpan(this.compilation)
             || this.context.SourceType.IsReadOnlyMemory(this.compilation);
 
-        // TODO [#105] Array.
-        // TODO [#105] Implements IList.
         // TODO [#105] Implements ICollection.
         // TODO [#105] Implements ISet.
         // TODO [#105] is Stack (Are not ICollection).
