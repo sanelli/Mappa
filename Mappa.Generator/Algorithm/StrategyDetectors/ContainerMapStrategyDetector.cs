@@ -113,6 +113,7 @@ internal sealed class ContainerMapStrategyDetector
                     return true;
                 }
 
+                // TODO [#105] Check the constructor is accessible from the called location.
                 return namedTypeSymbol.Constructors.Any(constructor => constructor.Parameters.Length == 0);
             }
 
@@ -197,6 +198,7 @@ internal sealed class ContainerMapStrategyDetector
                 // TODO [#105] ImmutableSortedSet -- Add exception.
                 // TODO [#105] ImmutableStack -- Add exception.
                 // TODO [#105] ImmutableSet -- Add exception.
+                // TODO [#105] Check the constructor is accessible from the called location.
                 return namedTypeSymbol.Constructors.Any(constructor => constructor.Parameters.Length == 0);
             }
 
