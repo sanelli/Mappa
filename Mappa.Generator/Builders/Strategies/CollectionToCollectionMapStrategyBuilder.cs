@@ -138,6 +138,15 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
                 stringBuilder.AppendLine($"int {counterVariableName} = 0;");
             }
         }
+        else if (targetTypeSymbol.IsISet(context.Compilation)
+                 || targetTypeSymbol.IsIReadOnlySet(context.Compilation)
+                 || targetTypeSymbol.IsHashSet(context.Compilation))
+        {
+            // We are going to always use an HashSet so Add method is best here.
+            insertionMethod = InsertionMethod.Add;
+            TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out var capacity);
+            stringBuilder.AppendLine($"global::System.Collections.Generic.HashSet<{targetTypeSymbol.GetElementType().ToDisplayString()}> {targetVariableName} = new global::System.Collections.Generic.HashSet<{targetTypeSymbol.GetElementType().ToDisplayString()}>({capacity});");
+        }
         else if (targetTypeSymbol.IsOrImplementStack(context.Compilation))
         {
             insertionMethod = InsertionMethod.Push;

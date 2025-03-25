@@ -131,10 +131,11 @@ internal sealed class ContainerMapStrategyDetector
 
         // TODO [#105] Implements ISet.
         // TODO [#105] IReadOnlyList.
+        // TODO [#105] IImmutableList.
         // TODO [#105] ReadOnlyCollection.
         // TODO [#105] ReadOnlySet.
-        // TODO [#105] IReadOnlySet.
         // TODO [#105] FrozenCollection.
+        // TODO [#105] FrozenSet.
         // TODO [#105] ImmutableHashSet.
         // TODO [#105] ImmutableArray.
         // TODO [#105] ImmutableList.
@@ -153,7 +154,10 @@ internal sealed class ContainerMapStrategyDetector
                                  || this.context.TargetType.IsMemory(this.compilation)
                                  || this.context.TargetType.IsReadOnlyMemory(this.compilation)
                                  || this.context.TargetType.IsOrImplementStack(this.compilation)
-                                 || this.context.TargetType.IsOrImplementQueue(this.compilation))
+                                 || this.context.TargetType.IsOrImplementQueue(this.compilation)
+                                 || this.context.TargetType.IsISet(this.compilation)
+                                 || this.context.TargetType.IsIReadOnlySet(this.compilation)
+                                 || this.context.TargetType.IsHashSet(this.compilation))
                                  && InterfaceAndConstructorChecks();
 
         elementStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
@@ -172,14 +176,15 @@ internal sealed class ContainerMapStrategyDetector
 
             if (this.context.TargetType.TypeKind is TypeKind.Interface)
             {
-                // TODO [#105] ISet.
                 // TODO [#105] IReadOnlyList.
-                // TODO [#105] IReadOnlySet.
                 // TODO [#105] IImmutableList.
                 return this.context.TargetType.IsIEnumerable()
                     || this.context.TargetType.IsIList()
                     || this.context.TargetType.IsICollection()
-                    || this.context.TargetType.IsIReadOnlyCollection();
+                    || this.context.TargetType.IsIReadOnlyCollection()
+                    || this.context.TargetType.IsISet(this.compilation)
+                    || this.context.TargetType.IsIReadOnlySet(this.compilation)
+                    ;
             }
 
             // Target type MUST have a constructor with no arguments
@@ -190,6 +195,7 @@ internal sealed class ContainerMapStrategyDetector
             {
                 // TODO [#105] ReadOnlyCollection -- Add exception.
                 // TODO [#105] ReadOnlySet -- Add exception.
+                // TODO [#105] FrozenSet -- Add exception.
                 // TODO [#105] FrozenCollection -- Add exception.
                 // TODO [#105] ImmutableHashSet -- Add exception.
                 // TODO [#105] ImmutableArray -- Add exception.

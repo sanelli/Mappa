@@ -45,6 +45,9 @@ internal static class TypeSymbolExtensions
     private const string GuidFullName = "System.Guid";
     private const string DateTimeOffsetFullName = "System.DateTimeOffset";
     private const string KeyValuePairFullName = "System.Collections.Generic.KeyValuePair`2";
+    private const string ISetFullName = "System.Collections.Generic.ISet`1";
+    private const string IReadOnlySetFullName = "System.Collections.Generic.IReadOnlySet`1";
+    private const string HashSetFullName = "System.Collections.Generic.HashSet`1";
 
     /// <summary>
     /// Check if the type is <see cref="Void"/>.
@@ -940,5 +943,44 @@ internal static class TypeSymbolExtensions
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="ISet{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="ISet{T}"/>.</returns>
+    internal static bool IsISet(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var setType = compilation.GetTypeByMetadataName(ISetFullName);
+        var isSetType = SymbolEqualityComparer.Default.Equals(setType, typeSymbol.OriginalDefinition);
+        return isSetType;
+    }
+
+    /// <summary>
+    /// Check if the type is <c>IReadOnlySet{T}</c>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <c>IReadOnlySet{T}</c>.</returns>
+    internal static bool IsIReadOnlySet(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var setType = compilation.GetTypeByMetadataName(IReadOnlySetFullName);
+        var isSetType = SymbolEqualityComparer.Default.Equals(setType, typeSymbol.OriginalDefinition);
+        return isSetType;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="HashSet{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="HashSet{T}"/>.</returns>
+    internal static bool IsHashSet(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var setType = compilation.GetTypeByMetadataName(HashSetFullName);
+        var isSetType = SymbolEqualityComparer.Default.Equals(setType, typeSymbol.OriginalDefinition);
+        return isSetType;
     }
 }
