@@ -114,6 +114,23 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
             stringBuilder.AppendLine($"global::System.Collections.Frozen.FrozenSet<{elementTypeDisplayString}> {postLoopVariableName} = System.Collections.Frozen.FrozenSet.ToFrozenSet<{elementTypeDisplayString}>({targetVariableName});");
             targetVariableName = postLoopVariableName;
         }
+        else if (targetTypeSymbol.IsIImmutableSet(context.Compilation)
+                 || targetTypeSymbol.IsImmutableHashSet(context.Compilation))
+        {
+            var postLoopVariableName = context.NextTemporary();
+            stringBuilder.AppendEmptyLine();
+            string elementTypeDisplayString = targetTypeSymbol.GetElementType().ToDisplayString();
+            stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {postLoopVariableName} = System.Collections.Immutable.ImmutableHashSet.ToImmutableHashSet<{elementTypeDisplayString}>({targetVariableName});");
+            targetVariableName = postLoopVariableName;
+        }
+        else if (targetTypeSymbol.IsImmutableSortedSet(context.Compilation))
+        {
+            var postLoopVariableName = context.NextTemporary();
+            stringBuilder.AppendEmptyLine();
+            string elementTypeDisplayString = targetTypeSymbol.GetElementType().ToDisplayString();
+            stringBuilder.AppendLine($"global::System.Collections.Immutable.ImmutableSortedSet<{elementTypeDisplayString}> {postLoopVariableName} = System.Collections.Immutable.ImmutableSortedSet.ToImmutableSortedSet<{elementTypeDisplayString}>({targetVariableName});");
+            targetVariableName = postLoopVariableName;
+        }
     }
 
     private static void AppendTargetVariable(
@@ -200,7 +217,10 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
             || targetTypeSymbol.IsICollection()
             || targetTypeSymbol.IsIReadOnlyCollection()
             || targetTypeSymbol.IsReadOnlyCollection(context.Compilation)
-            || targetTypeSymbol.IsFrozenSet(context.Compilation))
+            || targetTypeSymbol.IsFrozenSet(context.Compilation)
+            || targetTypeSymbol.IsIImmutableSet(context.Compilation)
+            || targetTypeSymbol.IsImmutableHashSet(context.Compilation)
+            || targetTypeSymbol.IsImmutableSortedSet(context.Compilation))
         {
             // We are going to always use a list so Add method is best here.
             insertionMethod = InsertionMethod.Add;

@@ -125,14 +125,13 @@ internal sealed class ContainerMapStrategyDetector
             || this.context.SourceType.IsReadOnlyMemory(this.compilation);
 
         // TODO [#105] ImmutableHashSet.
+        // TODO [#105] ImmutableSortedSet.
         // TODO [#105] IImmutableSet.
-        // TODO [#105] ImmutableSet.
         // TODO [#105] ImmutableArray.
         // TODO [#105] ImmutableList.
         // TODO [#105] IImmutableList.
         // TODO [#105] ImmutableQueue.
         // TODO [#105] IImmutableQueue.
-        // TODO [#105] ImmutableSortedSet.
         // TODO [#105] ImmutableStack.
         // TODO [#105] IImmutableStack.
         var isTargetCollection = (this.context.TargetType.IsArray()
@@ -153,7 +152,10 @@ internal sealed class ContainerMapStrategyDetector
                                  || this.context.TargetType.IsHashSet(this.compilation)
                                  || this.context.TargetType.IsReadOnlyCollection(this.compilation)
                                  || this.context.TargetType.IsReadOnlySet(this.compilation)
-                                 || this.context.TargetType.IsFrozenSet(this.compilation))
+                                 || this.context.TargetType.IsFrozenSet(this.compilation)
+                                 || this.context.TargetType.IsIImmutableSet(this.compilation)
+                                 || this.context.TargetType.IsImmutableHashSet(this.compilation)
+                                 || this.context.TargetType.IsImmutableSortedSet(this.compilation))
                                  && InterfaceAndConstructorChecks();
 
         elementStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
@@ -175,7 +177,6 @@ internal sealed class ContainerMapStrategyDetector
                 // TODO [#105] IImmutableList.
                 // TODO [#105] IImmutableStack.
                 // TODO [#105] IImmutableQueue.
-                // TODO [#105] IImmutableSet.
                 return this.context.TargetType.IsIEnumerable()
                        || this.context.TargetType.IsIList()
                        || this.context.TargetType.IsIReadOnlyList()
@@ -183,22 +184,22 @@ internal sealed class ContainerMapStrategyDetector
                        || this.context.TargetType.IsIReadOnlyCollection()
                        || this.context.TargetType.IsISet(this.compilation)
                        || this.context.TargetType.IsIReadOnlySet(this.compilation)
+                       || this.context.TargetType.IsIImmutableSet(this.compilation)
                     ;
             }
 
             // Target type MUST have a constructor with no arguments
             // unless it is a ReadOnlyDictionary, ImmutableDictionary or a FrozenDictionary
             // for which special coding is provided.
-            // TODO [#105] ImmutableHashSet -- Add exception.
             // TODO [#105] ImmutableArray -- Add exception.
             // TODO [#105] ImmutableList -- Add exception.
             // TODO [#105] ImmutableQueue -- Add exception.
-            // TODO [#105] ImmutableSortedSet -- Add exception.
             // TODO [#105] ImmutableStack -- Add exception.
-            // TODO [#105] ImmutableSet -- Add exception.
             if (this.context.TargetType.IsReadOnlyCollection(this.compilation)
                 || this.context.TargetType.IsReadOnlySet(this.compilation)
-                || this.context.TargetType.IsFrozenSet(this.compilation))
+                || this.context.TargetType.IsFrozenSet(this.compilation)
+                || this.context.TargetType.IsImmutableHashSet(this.compilation)
+                || this.context.TargetType.IsImmutableSortedSet(this.compilation))
             {
                 return true;
             }

@@ -19,6 +19,9 @@ namespace Mappa.Generator.Extensions;
 internal static class TypeSymbolExtensions
 {
     private const string ImmutableDictionaryFullName = "System.Collections.Immutable.ImmutableDictionary`2";
+    private const string IImmutableSetFullName = "System.Collections.Immutable.IImmutableSet`1";
+    private const string ImmutableHashSetFullName = "System.Collections.Immutable.ImmutableHashSet`1";
+    private const string ImmutableSortedSetFullName = "System.Collections.Immutable.ImmutableSortedSet`1";
     private const string FrozenDictionaryFullName = "System.Collections.Frozen.FrozenDictionary`2";
     private const string FrozenSetFullName = "System.Collections.Frozen.FrozenSet`1";
     private const string SpanFullName = "System.Span`1";
@@ -261,6 +264,45 @@ internal static class TypeSymbolExtensions
         var dictionaryType = compilation.GetTypeByMetadataName(ImmutableDictionaryFullName);
         var isDictionary = SymbolEqualityComparer.Default.Equals(dictionaryType, typeSymbol.OriginalDefinition);
         return isDictionary;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="ImmutableSortedSet{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="ImmutableSortedSet{T}"/>.</returns>
+    internal static bool IsImmutableSortedSet(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var setType = compilation.GetTypeByMetadataName(ImmutableSortedSetFullName);
+        var isSet = SymbolEqualityComparer.Default.Equals(setType, typeSymbol.OriginalDefinition);
+        return isSet;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="ImmutableHashSet{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="ImmutableHashSet{T}"/>.</returns>
+    internal static bool IsImmutableHashSet(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var setType = compilation.GetTypeByMetadataName(ImmutableHashSetFullName);
+        var isSet = SymbolEqualityComparer.Default.Equals(setType, typeSymbol.OriginalDefinition);
+        return isSet;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="IImmutableSet{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="IImmutableSet{T}"/>.</returns>
+    internal static bool IsIImmutableSet(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var setType = compilation.GetTypeByMetadataName(IImmutableSetFullName);
+        var isSet = SymbolEqualityComparer.Default.Equals(setType, typeSymbol.OriginalDefinition);
+        return isSet;
     }
 
     /// <summary>
