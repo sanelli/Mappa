@@ -114,7 +114,6 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
         targetVariableName = context.NextTemporary();
         counterVariableName = null;
 
-        // TODO [#105] Handle HashSet separately in order to make sure we could use capacity if available.
         if (targetTypeSymbol.IsArray()
             || targetTypeSymbol.IsSpan(context.Compilation)
             || targetTypeSymbol.IsReadOnlySpan(context.Compilation)
@@ -149,6 +148,7 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
         }
         else if (targetTypeSymbol.ImplementISet(context.Compilation))
         {
+            // TODO [#105] Since Type can implement ICollection<> explicitly we should cast to ICollection before performing the Add.
             insertionMethod = InsertionMethod.Add;
             stringBuilder.AppendLine($"global::{targetTypeSymbol} {targetVariableName} = new global::{targetTypeSymbol}();");
         }
@@ -192,6 +192,7 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
         }
         else if (targetTypeSymbol.ImplementICollection())
         {
+            // TODO [#105] Since Type can implement ICollection<> explicitly we should cast to ICollection before performing the Add.
             // TODO [#109] Support constructor with 1 integer parameter (capacity) via mappaSettings.
             // here we handle the scenario of the a concrete type implementing ICollection<T>.
             // We are sure that is concrete because ICollection<T> is implemented in a different branch

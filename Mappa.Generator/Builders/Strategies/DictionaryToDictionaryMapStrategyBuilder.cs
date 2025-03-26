@@ -57,6 +57,8 @@ internal sealed class DictionaryToDictionaryMapStrategyBuilder
 
             // Assign using the indexer.
             builder.AppendEmptyLine();
+
+            // TODO [#105] The indexer property can be implemented explicitly therefore a cast to the interface is required first.
             builder.AppendLine($"{dictionaryTemporary}[{targetKeyTemporary}] = {targetValueTemporary};");
         }
 
