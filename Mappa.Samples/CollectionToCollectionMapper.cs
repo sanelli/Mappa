@@ -683,4 +683,7 @@ public sealed partial class CollectionToCollectionMapper
     // TODO [#105] CanMapFromIEnumerableToIImmutableSet.
     // TODO [#105] CanMapFromIEnumerableToImmutableHashSet.
     // TODO [#105] CanMapFromIEnumerableToImmutableSortedSet.
+    // TODO [#105] CanMapFromIEnumerableToIImmutableList.
+    // TODO [#105] CanMapFromIEnumerableToImmutableArray.
+    // TODO [#105] CanMapFromIEnumerableToImmutableList.
 }
