@@ -660,4 +660,20 @@ public sealed partial class CollectionToCollectionMapper
     /// <param name="input">The input collection.</param>
     /// <returns>The output collection.</returns>
     public partial CustomCollectionImplementingISetOfIntegers MapFromIEnumerableToCustomCollectionImplementingISetOfIntegers(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="IReadOnlyList{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial IReadOnlyList<int> MapFromIEnumerableToIReadOnlyList(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="Array"/> of <see cref="CountingValues"/>
+    /// to a <see cref="IReadOnlyList{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial IReadOnlyList<int> MapFromArrayToIReadOnlyList(CountingValues[] input);
 }

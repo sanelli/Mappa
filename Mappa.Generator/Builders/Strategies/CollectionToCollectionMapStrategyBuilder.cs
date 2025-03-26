@@ -179,6 +179,7 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
         else if (targetTypeSymbol.IsIEnumerable()
             || targetTypeSymbol.IsList(context.Compilation)
             || targetTypeSymbol.IsIList()
+            || targetTypeSymbol.IsIReadOnlyList()
             || targetTypeSymbol.IsICollection()
             || targetTypeSymbol.IsIReadOnlyCollection())
         {

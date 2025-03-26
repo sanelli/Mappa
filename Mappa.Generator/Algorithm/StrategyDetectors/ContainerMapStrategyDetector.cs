@@ -136,15 +136,19 @@ internal sealed class ContainerMapStrategyDetector
         // TODO [#105] FrozenCollection.
         // TODO [#105] FrozenSet.
         // TODO [#105] ImmutableHashSet.
+        // TODO [#105] IImmutableSet.
         // TODO [#105] ImmutableArray.
         // TODO [#105] ImmutableList.
         // TODO [#105] ImmutableQueue.
+        // TODO [#105] IImmutableQueue.
         // TODO [#105] ImmutableSortedSet.
         // TODO [#105] ImmutableStack.
+        // TODO [#105] IImmutableStack.
         // TODO [#105] ImmutableSet.
         var isTargetCollection = (this.context.TargetType.IsArray()
                                  || this.context.TargetType.IsIEnumerable()
                                  || this.context.TargetType.IsIList()
+                                 || this.context.TargetType.IsIReadOnlyList()
                                  || this.context.TargetType.IsList(this.compilation)
                                  || this.context.TargetType.IsOrImplementICollection()
                                  || this.context.TargetType.IsIReadOnlyCollection()
@@ -175,14 +179,17 @@ internal sealed class ContainerMapStrategyDetector
 
             if (this.context.TargetType.TypeKind is TypeKind.Interface)
             {
-                // TODO [#105] IReadOnlyList.
                 // TODO [#105] IImmutableList.
+                // TODO [#105] IImmutableStack.
+                // TODO [#105] IImmutableQueue.
+                // TODO [#105] IImmutableSet.
                 return this.context.TargetType.IsIEnumerable()
-                    || this.context.TargetType.IsIList()
-                    || this.context.TargetType.IsICollection()
-                    || this.context.TargetType.IsIReadOnlyCollection()
-                    || this.context.TargetType.IsISet(this.compilation)
-                    || this.context.TargetType.IsIReadOnlySet(this.compilation)
+                       || this.context.TargetType.IsIList()
+                       || this.context.TargetType.IsIReadOnlyList()
+                       || this.context.TargetType.IsICollection()
+                       || this.context.TargetType.IsIReadOnlyCollection()
+                       || this.context.TargetType.IsISet(this.compilation)
+                       || this.context.TargetType.IsIReadOnlySet(this.compilation)
                     ;
             }
 

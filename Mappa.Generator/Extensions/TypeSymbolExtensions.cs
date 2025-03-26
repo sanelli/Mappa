@@ -984,8 +984,8 @@ internal static class TypeSymbolExtensions
     /// <returns><c>true</c> if the type symbol is <c>IReadOnlySet{T}</c>.</returns>
     internal static bool IsIReadOnlySet(this ITypeSymbol typeSymbol, Compilation compilation)
     {
-        var setType = compilation.GetTypeByMetadataName(IReadOnlySetFullName);
-        var isSetType = SymbolEqualityComparer.Default.Equals(setType, typeSymbol.OriginalDefinition);
+        var readonlySetType = compilation.GetTypeByMetadataName(IReadOnlySetFullName);
+        var isSetType = SymbolEqualityComparer.Default.Equals(readonlySetType, typeSymbol.OriginalDefinition);
         return isSetType;
     }
 
@@ -997,8 +997,16 @@ internal static class TypeSymbolExtensions
     /// <returns><c>true</c> if the type symbol is <see cref="HashSet{T}"/>.</returns>
     internal static bool IsHashSet(this ITypeSymbol typeSymbol, Compilation compilation)
     {
-        var setType = compilation.GetTypeByMetadataName(HashSetFullName);
-        var isSetType = SymbolEqualityComparer.Default.Equals(setType, typeSymbol.OriginalDefinition);
+        var hashsetType = compilation.GetTypeByMetadataName(HashSetFullName);
+        var isSetType = SymbolEqualityComparer.Default.Equals(hashsetType, typeSymbol.OriginalDefinition);
         return isSetType;
     }
+
+    /// <summary>
+    /// Check if the type is <see cref="IReadOnlyList{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="IReadOnlyList{T}"/>.</returns>
+    internal static bool IsIReadOnlyList(this ITypeSymbol typeSymbol)
+        => typeSymbol.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IReadOnlyList_T;
 }
