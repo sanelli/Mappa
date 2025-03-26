@@ -107,4 +107,18 @@ public sealed partial class DictionaryToDictionaryMapper
     /// <param name="input">The input dictionary.</param>
     /// <returns>The mapped dictionary.</returns>
     public partial FrozenDictionary<string, string> MapDictionaryToFrozenDictionary(Dictionary<int, CountingValues> input);
+
+    /// <summary>
+    /// Map a <see cref="Dictionary{TKey,TValue}"/> to <see cref="SortedDictionary{TKey,TValue}"/>.
+    /// </summary>
+    /// <param name="input">The input dictionary.</param>
+    /// <returns>The mapped dictionary.</returns>
+    public partial SortedDictionary<string, string> MapDictionaryToSortedDictionary(Dictionary<int, CountingValues> input);
+
+    /// <summary>
+    /// Map a <see cref="SortedDictionary{TKey,TValue}"/> to <see cref="Dictionary{TKey,TValue}"/>.
+    /// </summary>
+    /// <param name="input">The input dictionary.</param>
+    /// <returns>The mapped dictionary.</returns>
+    public partial Dictionary<string, string> MapSortedDictionaryToDictionary(SortedDictionary<int, CountingValues> input);
 }

@@ -68,7 +68,6 @@ internal sealed class ContainerMapStrategyDetector
         return mapStrategy is not NoMapStrategy;
     }
 
-    // TODO [#105] Support SortedDictionary as output type.
     // TODO [#105] Support ImmutableSortedDictionary as output type.
     // TODO [#105] Support IImmutableDictionary as output type.
     private bool CanMapDictionaryToDictionary(out MapStrategy keyStrategy, out MapStrategy valueStrategy)

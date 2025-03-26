@@ -368,4 +368,58 @@ public sealed class DictionaryToDictionaryMapperUnitTests
             { "3", "Three" },
         });
     }
+
+    /// <summary>
+    /// Unit test for <see cref="DictionaryToDictionaryMapper.MapDictionaryToSortedDictionary"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDictionaryToSortedDictionary()
+    {
+        // Arrange
+        Dictionary<int, CountingValues> input = new()
+        {
+            { 1, CountingValues.One },
+            { 2, CountingValues.Two },
+            { 3, CountingValues.Three },
+        };
+
+        // Act
+        var actual = this.mapper.MapDictionaryToSortedDictionary(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo(new SortedDictionary<string, string>
+        {
+            { "1", "One" },
+            { "2", "Two" },
+            { "3", "Three" },
+        });
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="DictionaryToDictionaryMapper.MapSortedDictionaryToDictionary"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapSortedDictionaryToDictionary()
+    {
+        // Arrange
+        SortedDictionary<int, CountingValues> input = new()
+        {
+            { 1, CountingValues.One },
+            { 2, CountingValues.Two },
+            { 3, CountingValues.Three },
+        };
+
+        // Act
+        var actual = this.mapper.MapSortedDictionaryToDictionary(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo(new Dictionary<string, string>
+        {
+            { "1", "One" },
+            { "2", "Two" },
+            { "3", "Three" },
+        });
+    }
 }
