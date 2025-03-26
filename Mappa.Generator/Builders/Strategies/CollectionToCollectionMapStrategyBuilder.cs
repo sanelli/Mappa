@@ -148,6 +148,24 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
             stringBuilder.AppendLine($"global::System.Collections.Immutable.ImmutableList<{elementTypeDisplayString}> {postLoopVariableName} = System.Collections.Immutable.ImmutableList.ToImmutableList<{elementTypeDisplayString}>({targetVariableName});");
             targetVariableName = postLoopVariableName;
         }
+        else if (targetTypeSymbol.IsIImmutableQueue(context.Compilation)
+                 || targetTypeSymbol.IsImmutableQueue(context.Compilation))
+        {
+            var postLoopVariableName = context.NextTemporary();
+            stringBuilder.AppendEmptyLine();
+            string elementTypeDisplayString = targetTypeSymbol.GetElementType().ToDisplayString();
+            stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {postLoopVariableName} = System.Collections.Immutable.ImmutableQueue.Create<{elementTypeDisplayString}>({targetVariableName});");
+            targetVariableName = postLoopVariableName;
+        }
+        else if (targetTypeSymbol.IsIImmutableStack(context.Compilation)
+                 || targetTypeSymbol.IsImmutableStack(context.Compilation))
+        {
+            var postLoopVariableName = context.NextTemporary();
+            stringBuilder.AppendEmptyLine();
+            string elementTypeDisplayString = targetTypeSymbol.GetElementType().ToDisplayString();
+            stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {postLoopVariableName} = System.Collections.Immutable.ImmutableStack.Create<{elementTypeDisplayString}>({targetVariableName});");
+            targetVariableName = postLoopVariableName;
+        }
     }
 
     private static void AppendTargetVariable(
@@ -167,7 +185,11 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
             || targetTypeSymbol.IsSpan(context.Compilation)
             || targetTypeSymbol.IsReadOnlySpan(context.Compilation)
             || targetTypeSymbol.IsMemory(context.Compilation)
-            || targetTypeSymbol.IsReadOnlyMemory(context.Compilation))
+            || targetTypeSymbol.IsReadOnlyMemory(context.Compilation)
+            || targetTypeSymbol.IsIImmutableQueue(context.Compilation)
+            || targetTypeSymbol.IsImmutableQueue(context.Compilation)
+            || targetTypeSymbol.IsIImmutableStack(context.Compilation)
+            || targetTypeSymbol.IsImmutableStack(context.Compilation))
         {
             // Array need indexers.
             insertionMethod = InsertionMethod.Indexer;
