@@ -679,4 +679,5 @@ public sealed partial class CollectionToCollectionMapper
 
     // TODO [#105] CanMapFromIEnumerableToReadOnlyCollection.
     // TODO [#105] CanMapFromIEnumerableToReadOnlySet.
+    // TODO [#105] CanMapFromIEnumerableToFrozenSet.
 }

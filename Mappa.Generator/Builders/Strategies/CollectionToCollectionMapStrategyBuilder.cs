@@ -101,10 +101,18 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
             || targetTypeSymbol.IsReadOnlySet(context.Compilation))
         {
             var targetTypeDisplayString = targetTypeSymbol.ToDisplayString();
-            var postTargetVariableName = context.NextTemporary();
+            var postLoopVariableName = context.NextTemporary();
             stringBuilder.AppendEmptyLine();
-            stringBuilder.AppendLine($"global::{targetTypeDisplayString} {postTargetVariableName} = new global::{targetTypeDisplayString}({targetVariableName});");
-            targetVariableName = postTargetVariableName;
+            stringBuilder.AppendLine($"global::{targetTypeDisplayString} {postLoopVariableName} = new global::{targetTypeDisplayString}({targetVariableName});");
+            targetVariableName = postLoopVariableName;
+        }
+        else if (targetTypeSymbol.IsFrozenSet(context.Compilation))
+        {
+            var postLoopVariableName = context.NextTemporary();
+            stringBuilder.AppendEmptyLine();
+            string elementTypeDisplayString = targetTypeSymbol.GetElementType().ToDisplayString();
+            stringBuilder.AppendLine($"global::System.Collections.Frozen.FrozenSet<{elementTypeDisplayString}> {postLoopVariableName} = System.Collections.Frozen.FrozenSet.ToFrozenSet<{elementTypeDisplayString}>({targetVariableName});");
+            targetVariableName = postLoopVariableName;
         }
     }
 
@@ -154,7 +162,8 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
             TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out var capacity);
             stringBuilder.AppendLine($"global::System.Collections.Generic.HashSet<{targetTypeSymbol.GetElementType().ToDisplayString()}> {targetVariableName} = new global::System.Collections.Generic.HashSet<{targetTypeSymbol.GetElementType().ToDisplayString()}>({capacity});");
         }
-        else if (targetTypeSymbol.ImplementISet(context.Compilation))
+        else if (targetTypeSymbol.ImplementISet(context.Compilation)
+                 && targetTypeSymbol.HasZeroParametersConstructor())
         {
             // TODO [#111] Since Type can implement ICollection<> explicitly we should cast to ICollection before performing the Add.
             insertionMethod = InsertionMethod.Add;
@@ -190,7 +199,8 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
             || targetTypeSymbol.IsIReadOnlyList()
             || targetTypeSymbol.IsICollection()
             || targetTypeSymbol.IsIReadOnlyCollection()
-            || targetTypeSymbol.IsReadOnlyCollection(context.Compilation))
+            || targetTypeSymbol.IsReadOnlyCollection(context.Compilation)
+            || targetTypeSymbol.IsFrozenSet(context.Compilation))
         {
             // We are going to always use a list so Add method is best here.
             insertionMethod = InsertionMethod.Add;
@@ -200,7 +210,8 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
             TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out var capacity);
             stringBuilder.AppendLine($"global::System.Collections.Generic.List<{targetTypeSymbol.GetElementType().ToDisplayString()}> {targetVariableName} = new global::System.Collections.Generic.List<{targetTypeSymbol.GetElementType().ToDisplayString()}>({capacity});");
         }
-        else if (targetTypeSymbol.ImplementICollection())
+        else if (targetTypeSymbol.ImplementICollection()
+                 && targetTypeSymbol.HasZeroParametersConstructor())
         {
             // TODO [#111] Since Type can implement ICollection<> explicitly we should cast to ICollection before performing the Add.
             // TODO [#109] Support constructor with 1 integer parameter (capacity) via mappaSettings.

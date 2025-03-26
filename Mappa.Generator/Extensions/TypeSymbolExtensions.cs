@@ -20,6 +20,7 @@ internal static class TypeSymbolExtensions
 {
     private const string ImmutableDictionaryFullName = "System.Collections.Immutable.ImmutableDictionary`2";
     private const string FrozenDictionaryFullName = "System.Collections.Frozen.FrozenDictionary`2";
+    private const string FrozenSetFullName = "System.Collections.Frozen.FrozenSet`1";
     private const string SpanFullName = "System.Span`1";
     private const string ReadOnlySpanFullName = "System.ReadOnlySpan`1";
     private const string MemoryFullName = "System.Memory`1";
@@ -273,6 +274,19 @@ internal static class TypeSymbolExtensions
         var dictionaryType = compilation.GetTypeByMetadataName(FrozenDictionaryFullName);
         var isDictionary = SymbolEqualityComparer.Default.Equals(dictionaryType, typeSymbol.OriginalDefinition);
         return isDictionary;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="FrozenSet{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="FrozenSet{T}"/>.</returns>
+    internal static bool IsFrozenSet(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var frozenSetType = compilation.GetTypeByMetadataName(FrozenSetFullName);
+        var isFrozenSet = SymbolEqualityComparer.Default.Equals(frozenSetType, typeSymbol.OriginalDefinition);
+        return isFrozenSet;
     }
 
     /// <summary>
@@ -1023,4 +1037,20 @@ internal static class TypeSymbolExtensions
     /// <returns><c>true</c> if the type symbol is <see cref="IReadOnlyList{T}"/>.</returns>
     internal static bool IsIReadOnlyList(this ITypeSymbol typeSymbol)
         => typeSymbol.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IReadOnlyList_T;
+
+    /// <summary>
+    /// Check if <paramref name="namedTypeSymbol"/> has a constructor with empty parameters.
+    /// </summary>
+    /// <param name="namedTypeSymbol">The symbol to check has a constructor without parameters.</param>
+    /// <returns><c>true</c> if <paramref name="namedTypeSymbol"/> has a constructor with no parameters, <c>false</c> otherwise.</returns>
+    internal static bool HasZeroParametersConstructor(this INamedTypeSymbol namedTypeSymbol)
+        => namedTypeSymbol.Constructors.Any(constructor => constructor.Parameters.Length == 0);
+
+    /// <summary>
+    /// Check if <paramref name="typeSymbol"/> has a constructor with empty parameters.
+    /// </summary>
+    /// <param name="typeSymbol">The symbol to check has a constructor without parameters.</param>
+    /// <returns><c>true</c> if <paramref name="typeSymbol"/> has a constructor with no parameters, <c>false</c> otherwise.</returns>
+    internal static bool HasZeroParametersConstructor(this ITypeSymbol typeSymbol)
+        => typeSymbol.TypeKind != TypeKind.Interface && typeSymbol is INamedTypeSymbol namedTypeSymbol && namedTypeSymbol.HasZeroParametersConstructor();
 }

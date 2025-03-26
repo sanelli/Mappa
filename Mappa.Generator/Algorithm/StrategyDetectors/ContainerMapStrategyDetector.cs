@@ -104,20 +104,15 @@ internal sealed class ContainerMapStrategyDetector
             // Target type MUST have a constructor with no arguments
             // unless it is a ReadOnlyDictionary, ImmutableDictionary or a FrozenDictionary
             // for which special coding is provided.
-            if (this.context.TargetType is INamedTypeSymbol namedTypeSymbol)
+            if (this.context.TargetType.IsReadOnlyDictionary(this.compilation)
+                || this.context.TargetType.IsImmutableDictionary(this.compilation)
+                || this.context.TargetType.IsFrozenDictionary(this.compilation))
             {
-                if (namedTypeSymbol.IsReadOnlyDictionary(this.compilation)
-                    || this.context.TargetType.IsImmutableDictionary(this.compilation)
-                    || this.context.TargetType.IsFrozenDictionary(this.compilation))
-                {
-                    return true;
-                }
-
-                // TODO [#105] Check the constructor is accessible from the called location.
-                return namedTypeSymbol.Constructors.Any(constructor => constructor.Parameters.Length == 0);
+                return true;
             }
 
-            return false;
+            // TODO [#105] Check the constructor is accessible from the called location.
+            return this.context.TargetType.HasZeroParametersConstructor();
         }
     }
 
@@ -129,7 +124,6 @@ internal sealed class ContainerMapStrategyDetector
             || this.context.SourceType.IsReadOnlySpan(this.compilation)
             || this.context.SourceType.IsReadOnlyMemory(this.compilation);
 
-        // TODO [#105] FrozenSet.
         // TODO [#105] ImmutableHashSet.
         // TODO [#105] IImmutableSet.
         // TODO [#105] ImmutableSet.
@@ -158,7 +152,8 @@ internal sealed class ContainerMapStrategyDetector
                                  || this.context.TargetType.IsIReadOnlySet(this.compilation)
                                  || this.context.TargetType.IsHashSet(this.compilation)
                                  || this.context.TargetType.IsReadOnlyCollection(this.compilation)
-                                 || this.context.TargetType.IsReadOnlySet(this.compilation))
+                                 || this.context.TargetType.IsReadOnlySet(this.compilation)
+                                 || this.context.TargetType.IsFrozenSet(this.compilation))
                                  && InterfaceAndConstructorChecks();
 
         elementStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
@@ -194,29 +189,23 @@ internal sealed class ContainerMapStrategyDetector
             // Target type MUST have a constructor with no arguments
             // unless it is a ReadOnlyDictionary, ImmutableDictionary or a FrozenDictionary
             // for which special coding is provided.
-            // TODO [#109] Support constructor with 1 integer parameter (capacity) via mappaSettings.
-            if (this.context.TargetType is INamedTypeSymbol namedTypeSymbol)
+            // TODO [#105] ImmutableHashSet -- Add exception.
+            // TODO [#105] ImmutableArray -- Add exception.
+            // TODO [#105] ImmutableList -- Add exception.
+            // TODO [#105] ImmutableQueue -- Add exception.
+            // TODO [#105] ImmutableSortedSet -- Add exception.
+            // TODO [#105] ImmutableStack -- Add exception.
+            // TODO [#105] ImmutableSet -- Add exception.
+            if (this.context.TargetType.IsReadOnlyCollection(this.compilation)
+                || this.context.TargetType.IsReadOnlySet(this.compilation)
+                || this.context.TargetType.IsFrozenSet(this.compilation))
             {
-                if (namedTypeSymbol.IsReadOnlyCollection(this.compilation)
-                    || namedTypeSymbol.IsReadOnlySet(this.compilation))
-                {
-                    return true;
-                }
-
-                // TODO [#105] FrozenSet -- Add exception.
-                // TODO [#105] FrozenCollection -- Add exception.
-                // TODO [#105] ImmutableHashSet -- Add exception.
-                // TODO [#105] ImmutableArray -- Add exception.
-                // TODO [#105] ImmutableList -- Add exception.
-                // TODO [#105] ImmutableQueue -- Add exception.
-                // TODO [#105] ImmutableSortedSet -- Add exception.
-                // TODO [#105] ImmutableStack -- Add exception.
-                // TODO [#105] ImmutableSet -- Add exception.
-                // TODO [#105] Check the constructor is accessible from the called location.
-                return namedTypeSymbol.Constructors.Any(constructor => constructor.Parameters.Length == 0);
+                return true;
             }
 
-            return false;
+            // TODO [#109] Support constructor with 1 integer parameter (capacity) via mappaSettings.
+            // TODO [#105] Check the constructor is accessible from the called location.
+            return this.context.TargetType.HasZeroParametersConstructor();
         }
     }
 }
