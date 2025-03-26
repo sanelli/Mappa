@@ -147,6 +147,11 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
             TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out var capacity);
             stringBuilder.AppendLine($"global::System.Collections.Generic.HashSet<{targetTypeSymbol.GetElementType().ToDisplayString()}> {targetVariableName} = new global::System.Collections.Generic.HashSet<{targetTypeSymbol.GetElementType().ToDisplayString()}>({capacity});");
         }
+        else if (targetTypeSymbol.ImplementISet(context.Compilation))
+        {
+            insertionMethod = InsertionMethod.Add;
+            stringBuilder.AppendLine($"global::{targetTypeSymbol} {targetVariableName} = new global::{targetTypeSymbol}();");
+        }
         else if (targetTypeSymbol.IsOrImplementStack(context.Compilation))
         {
             insertionMethod = InsertionMethod.Push;

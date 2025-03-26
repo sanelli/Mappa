@@ -959,6 +959,24 @@ internal static class TypeSymbolExtensions
     }
 
     /// <summary>
+    /// Check if the type implements <see cref="ISet{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="ISet{T}"/>.</returns>
+    internal static bool ImplementISet(this ITypeSymbol typeSymbol, Compilation compilation)
+        => typeSymbol.AllInterfaces.Any(@interface => @interface.IsISet(compilation));
+
+    /// <summary>
+    /// Check if the type is <see cref="ISet{T}"/> or implements <see cref="ISet{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol implements <see cref="ISet{T}"/>.</returns>
+    internal static bool IsOrImplementISet(this ITypeSymbol typeSymbol, Compilation compilation)
+        => typeSymbol.IsISet(compilation) || typeSymbol.ImplementISet(compilation);
+
+    /// <summary>
     /// Check if the type is <c>IReadOnlySet{T}</c>.
     /// </summary>
     /// <param name="typeSymbol">The type symbol.</param>

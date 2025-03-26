@@ -129,7 +129,6 @@ internal sealed class ContainerMapStrategyDetector
             || this.context.SourceType.IsReadOnlySpan(this.compilation)
             || this.context.SourceType.IsReadOnlyMemory(this.compilation);
 
-        // TODO [#105] Implements ISet.
         // TODO [#105] IReadOnlyList.
         // TODO [#105] IImmutableList.
         // TODO [#105] ReadOnlyCollection.
@@ -155,7 +154,7 @@ internal sealed class ContainerMapStrategyDetector
                                  || this.context.TargetType.IsReadOnlyMemory(this.compilation)
                                  || this.context.TargetType.IsOrImplementStack(this.compilation)
                                  || this.context.TargetType.IsOrImplementQueue(this.compilation)
-                                 || this.context.TargetType.IsISet(this.compilation)
+                                 || this.context.TargetType.IsOrImplementISet(this.compilation)
                                  || this.context.TargetType.IsIReadOnlySet(this.compilation)
                                  || this.context.TargetType.IsHashSet(this.compilation))
                                  && InterfaceAndConstructorChecks();
