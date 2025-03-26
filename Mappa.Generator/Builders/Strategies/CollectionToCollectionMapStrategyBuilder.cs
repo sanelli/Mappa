@@ -131,6 +131,23 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
             stringBuilder.AppendLine($"global::System.Collections.Immutable.ImmutableSortedSet<{elementTypeDisplayString}> {postLoopVariableName} = System.Collections.Immutable.ImmutableSortedSet.ToImmutableSortedSet<{elementTypeDisplayString}>({targetVariableName});");
             targetVariableName = postLoopVariableName;
         }
+        else if (targetTypeSymbol.IsIImmutableList(context.Compilation)
+                 || targetTypeSymbol.IsImmutableArray(context.Compilation))
+        {
+            var postLoopVariableName = context.NextTemporary();
+            stringBuilder.AppendEmptyLine();
+            string elementTypeDisplayString = targetTypeSymbol.GetElementType().ToDisplayString();
+            stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {postLoopVariableName} = System.Collections.Immutable.ImmutableArray.ToImmutableArray<{elementTypeDisplayString}>({targetVariableName});");
+            targetVariableName = postLoopVariableName;
+        }
+        else if (targetTypeSymbol.IsImmutableList(context.Compilation))
+        {
+            var postLoopVariableName = context.NextTemporary();
+            stringBuilder.AppendEmptyLine();
+            string elementTypeDisplayString = targetTypeSymbol.GetElementType().ToDisplayString();
+            stringBuilder.AppendLine($"global::System.Collections.Immutable.ImmutableList<{elementTypeDisplayString}> {postLoopVariableName} = System.Collections.Immutable.ImmutableList.ToImmutableList<{elementTypeDisplayString}>({targetVariableName});");
+            targetVariableName = postLoopVariableName;
+        }
     }
 
     private static void AppendTargetVariable(
@@ -220,7 +237,10 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
             || targetTypeSymbol.IsFrozenSet(context.Compilation)
             || targetTypeSymbol.IsIImmutableSet(context.Compilation)
             || targetTypeSymbol.IsImmutableHashSet(context.Compilation)
-            || targetTypeSymbol.IsImmutableSortedSet(context.Compilation))
+            || targetTypeSymbol.IsImmutableSortedSet(context.Compilation)
+            || targetTypeSymbol.IsIImmutableList(context.Compilation)
+            || targetTypeSymbol.IsImmutableArray(context.Compilation)
+            || targetTypeSymbol.IsImmutableList(context.Compilation))
         {
             // We are going to always use a list so Add method is best here.
             insertionMethod = InsertionMethod.Add;

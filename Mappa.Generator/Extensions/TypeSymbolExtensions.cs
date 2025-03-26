@@ -22,6 +22,9 @@ internal static class TypeSymbolExtensions
     private const string IImmutableSetFullName = "System.Collections.Immutable.IImmutableSet`1";
     private const string ImmutableHashSetFullName = "System.Collections.Immutable.ImmutableHashSet`1";
     private const string ImmutableSortedSetFullName = "System.Collections.Immutable.ImmutableSortedSet`1";
+    private const string IImmutableListFullName = "System.Collections.Immutable.IImmutableList`1";
+    private const string ImmutableArrayFullName = "System.Collections.Immutable.ImmutableArray`1";
+    private const string ImmutableListFullName = "System.Collections.Immutable.ImmutableList`1";
     private const string FrozenDictionaryFullName = "System.Collections.Frozen.FrozenDictionary`2";
     private const string FrozenSetFullName = "System.Collections.Frozen.FrozenSet`1";
     private const string SpanFullName = "System.Span`1";
@@ -329,6 +332,45 @@ internal static class TypeSymbolExtensions
         var frozenSetType = compilation.GetTypeByMetadataName(FrozenSetFullName);
         var isFrozenSet = SymbolEqualityComparer.Default.Equals(frozenSetType, typeSymbol.OriginalDefinition);
         return isFrozenSet;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="IImmutableList{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="IImmutableList{T}"/>.</returns>
+    internal static bool IsIImmutableList(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var listType = compilation.GetTypeByMetadataName(IImmutableListFullName);
+        var isSet = SymbolEqualityComparer.Default.Equals(listType, typeSymbol.OriginalDefinition);
+        return isSet;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="ImmutableArray{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="ImmutableArray{T}"/>.</returns>
+    internal static bool IsImmutableArray(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var listType = compilation.GetTypeByMetadataName(ImmutableArrayFullName);
+        var isSet = SymbolEqualityComparer.Default.Equals(listType, typeSymbol.OriginalDefinition);
+        return isSet;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="ImmutableList{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="ImmutableList{T}"/>.</returns>
+    internal static bool IsImmutableList(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var listType = compilation.GetTypeByMetadataName(ImmutableListFullName);
+        var isSet = SymbolEqualityComparer.Default.Equals(listType, typeSymbol.OriginalDefinition);
+        return isSet;
     }
 
     /// <summary>
