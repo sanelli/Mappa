@@ -29,12 +29,7 @@ internal static class PropertySymbolExtensions
             return false;
         }
 
-        return setMethod.DeclaredAccessibility switch
-        {
-            Accessibility.Public => true,
-            Accessibility.Internal => setMethod.ContainingAssembly.Equals(method.ContainingAssembly, SymbolEqualityComparer.Default),
-            _ => false,
-        };
+        return setMethod.IsAccessibleFromMethod(method);
     }
 
     /// <summary>
@@ -64,12 +59,7 @@ internal static class PropertySymbolExtensions
             return false;
         }
 
-        return getMethod.DeclaredAccessibility switch
-        {
-            Accessibility.Public => true,
-            Accessibility.Internal => getMethod.ContainingAssembly.Equals(method.ContainingAssembly, SymbolEqualityComparer.Default),
-            _ => false,
-        };
+        return getMethod.IsAccessibleFromMethod(method);
     }
 
     /// <summary>

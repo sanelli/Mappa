@@ -52,6 +52,8 @@ internal sealed class ReadonlyDictionaryPropertyMapStrategyBuilder
 
             // Assign using the indexer.
             builder.AppendEmptyLine();
+
+            // TODO [#111] The indexer setter property could be implemented explicitly so a conversion might be needed.
             builder.AppendLine($"{context.GetCompositeTypeTargetName()}.{this.strategy.TargetProperty.Name}[{targetKeyTemporary}] = {targetValueTemporary};");
         }
 

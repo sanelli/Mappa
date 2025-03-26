@@ -19,7 +19,7 @@ internal static class ClassDeclarationSyntaxExtensions
     /// Returns <c>true</c> if the <paramref name="classDeclarationSyntax"/> references
     /// a partial class.
     /// </summary>
-    /// <param name="classDeclarationSyntax">The class decalaration syntax.</param>
+    /// <param name="classDeclarationSyntax">The class declaration syntax.</param>
     /// <returns>
     /// <c>true</c> if <paramref name="classDeclarationSyntax"/> is <c>partial</c> class,
     /// <c>false</c> otherwise.

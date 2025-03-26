@@ -3,7 +3,9 @@
 // </copyright>
 
 using System.Collections;
+using System.Collections.Frozen;
 using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 
 using Mappa.Generator.Exceptions;
 
@@ -16,21 +18,50 @@ namespace Mappa.Generator.Extensions;
 /// </summary>
 internal static class TypeSymbolExtensions
 {
-    private static readonly string Tuple1Fullname = typeof(Tuple<>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Tuple<>)}");
-    private static readonly string Tuple2Fullname = typeof(Tuple<,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Tuple<,>)}");
-    private static readonly string Tuple3Fullname = typeof(Tuple<,,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Tuple<,,>)}");
-    private static readonly string Tuple4Fullname = typeof(Tuple<,,,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Tuple<,,,>)}");
-    private static readonly string Tuple5Fullname = typeof(Tuple<,,,,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Tuple<,,,,>)}");
-    private static readonly string Tuple6Fullname = typeof(Tuple<,,,,,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Tuple<,,,,,>)}");
-    private static readonly string Tuple7Fullname = typeof(Tuple<,,,,,,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Tuple<,,,,,,>)}");
-    private static readonly string Tuple8Fullname = typeof(Tuple<,,,,,,,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Tuple<,,,,,,,>)}");
-    private static readonly string DictionaryFullName = typeof(Dictionary<,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Dictionary<,>)}");
-    private static readonly string DictionaryInterfaceFullName = typeof(IDictionary<,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(IDictionary<,>)}");
-    private static readonly string ListFullName = typeof(List<>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(List<>)}");
-    private static readonly string TimeSpanFullName = typeof(TimeSpan).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(TimeSpan)}");
-    private static readonly string UriFullName = typeof(Uri).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Uri)}");
-    private static readonly string GuidFullName = typeof(Guid).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(Guid)}");
-    private static readonly string DateTimeOffset = typeof(DateTimeOffset).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(DateTimeOffset)}");
+    private const string ImmutableDictionaryFullName = "System.Collections.Immutable.ImmutableDictionary`2";
+    private const string ImmutableDictionaryInterfaceFullName = "System.Collections.Immutable.IImmutableDictionary`2";
+    private const string ImmutableSortedDictionaryFullName = "System.Collections.Immutable.ImmutableSortedDictionary`2";
+    private const string ImmutableSetInterfaceFullName = "System.Collections.Immutable.IImmutableSet`1";
+    private const string ImmutableHashSetFullName = "System.Collections.Immutable.ImmutableHashSet`1";
+    private const string ImmutableSortedSetFullName = "System.Collections.Immutable.ImmutableSortedSet`1";
+    private const string ImmutableListInterfaceFullName = "System.Collections.Immutable.IImmutableList`1";
+    private const string ImmutableArrayFullName = "System.Collections.Immutable.ImmutableArray`1";
+    private const string ImmutableListFullName = "System.Collections.Immutable.ImmutableList`1";
+    private const string FrozenDictionaryFullName = "System.Collections.Frozen.FrozenDictionary`2";
+    private const string FrozenSetFullName = "System.Collections.Frozen.FrozenSet`1";
+    private const string SpanFullName = "System.Span`1";
+    private const string ReadOnlySpanFullName = "System.ReadOnlySpan`1";
+    private const string MemoryFullName = "System.Memory`1";
+    private const string ReadOnlyMemoryFullName = "System.ReadOnlyMemory`1";
+    private const string StackFullName = "System.Collections.Generic.Stack`1";
+    private const string QueueFullName = "System.Collections.Generic.Queue`1";
+    private const string Tuple1Fullname = "System.Tuple`1";
+    private const string Tuple2Fullname = "System.Tuple`2";
+    private const string Tuple3Fullname = "System.Tuple`3";
+    private const string Tuple4Fullname = "System.Tuple`4";
+    private const string Tuple5Fullname = "System.Tuple`5";
+    private const string Tuple6Fullname = "System.Tuple`6";
+    private const string Tuple7Fullname = "System.Tuple`7";
+    private const string Tuple8Fullname = "System.Tuple`8";
+    private const string DictionaryFullName = "System.Collections.Generic.Dictionary`2";
+    private const string ReadOnlyDictionaryFullName = "System.Collections.ObjectModel.ReadOnlyDictionary`2";
+    private const string ReadOnlyCollectionFullName = "System.Collections.ObjectModel.ReadOnlyCollection`1";
+    private const string ReadOnlySetFullName = "System.Collections.ObjectModel.ReadOnlySet`1";
+    private const string DictionaryInterfaceFullName = "System.Collections.Generic.IDictionary`2";
+    private const string ReadOnlyDictionaryInterfaceFullName = "System.Collections.Generic.IReadOnlyDictionary`2";
+    private const string ListFullName = "System.Collections.Generic.List`1";
+    private const string TimeSpanFullName = "System.TimeSpan";
+    private const string UriFullName = "System.Uri";
+    private const string GuidFullName = "System.Guid";
+    private const string DateTimeOffsetFullName = "System.DateTimeOffset";
+    private const string KeyValuePairFullName = "System.Collections.Generic.KeyValuePair`2";
+    private const string SetInterfaceFullName = "System.Collections.Generic.ISet`1";
+    private const string ReadOnlySetInterfaceFullName = "System.Collections.Generic.IReadOnlySet`1";
+    private const string HashSetFullName = "System.Collections.Generic.HashSet`1";
+    private const string ImmutableStackInterfaceFullName = "System.Collections.Immutable.IImmutableStack`1";
+    private const string ImmutableStackFullName = "System.Collections.Immutable.ImmutableStack`1";
+    private const string ImmutableQueueInterfaceFullName = "System.Collections.Immutable.IImmutableQueue`1";
+    private const string ImmutableQueueFullName = "System.Collections.Immutable.ImmutableQueue`1";
 
     /// <summary>
     /// Check if the type is <see cref="Void"/>.
@@ -102,6 +133,58 @@ internal static class TypeSymbolExtensions
     }
 
     /// <summary>
+    /// Check if the type is <see cref="Span{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="Span{T}"/>.</returns>
+    internal static bool IsSpan(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var spanType = compilation.GetTypeByMetadataName(SpanFullName);
+        var isSpan = SymbolEqualityComparer.Default.Equals(spanType, typeSymbol.OriginalDefinition);
+        return isSpan;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="ReadOnlySpan{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="ReadOnlySpan{T}"/>.</returns>
+    internal static bool IsReadOnlySpan(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var spanType = compilation.GetTypeByMetadataName(ReadOnlySpanFullName);
+        var isSpan = SymbolEqualityComparer.Default.Equals(spanType, typeSymbol.OriginalDefinition);
+        return isSpan;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="Memory{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="Memory{T}"/>.</returns>
+    internal static bool IsMemory(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var memoryType = compilation.GetTypeByMetadataName(MemoryFullName);
+        var isMemory = SymbolEqualityComparer.Default.Equals(memoryType, typeSymbol.OriginalDefinition);
+        return isMemory;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="ReadOnlyMemory{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="ReadOnlyMemory{T}"/>.</returns>
+    internal static bool IsReadOnlyMemory(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var readOnlyMemoryType = compilation.GetTypeByMetadataName(ReadOnlyMemoryFullName);
+        var isMemory = SymbolEqualityComparer.Default.Equals(readOnlyMemoryType, typeSymbol.OriginalDefinition);
+        return isMemory;
+    }
+
+    /// <summary>
     /// Check if the type is <see cref="IDictionary{K,V}"/>.
     /// </summary>
     /// <param name="typeSymbol">The type symbol.</param>
@@ -110,6 +193,19 @@ internal static class TypeSymbolExtensions
     internal static bool IsIDictionary(this ITypeSymbol typeSymbol, Compilation compilation)
     {
         var listType = compilation.GetTypeByMetadataName(DictionaryInterfaceFullName);
+        var isList = SymbolEqualityComparer.Default.Equals(listType, typeSymbol.OriginalDefinition);
+        return isList;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="IReadOnlyDictionary{K,V}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="IReadOnlyDictionary{K,V}"/>.</returns>
+    internal static bool IsIReadOnlyDictionary(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var listType = compilation.GetTypeByMetadataName(ReadOnlyDictionaryInterfaceFullName);
         var isList = SymbolEqualityComparer.Default.Equals(listType, typeSymbol.OriginalDefinition);
         return isList;
     }
@@ -125,6 +221,188 @@ internal static class TypeSymbolExtensions
         var dictionaryType = compilation.GetTypeByMetadataName(DictionaryFullName);
         var isDictionary = SymbolEqualityComparer.Default.Equals(dictionaryType, typeSymbol.OriginalDefinition);
         return isDictionary;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="ReadOnlyDictionary{K,V}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="ReadOnlyDictionary{K,V}"/>.</returns>
+    internal static bool IsReadOnlyDictionary(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var dictionaryType = compilation.GetTypeByMetadataName(ReadOnlyDictionaryFullName);
+        var isDictionary = SymbolEqualityComparer.Default.Equals(dictionaryType, typeSymbol.OriginalDefinition);
+        return isDictionary;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="ReadOnlyCollection{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="ReadOnlyCollection{K}"/>.</returns>
+    internal static bool IsReadOnlyCollection(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var collectionSymbol = compilation.GetTypeByMetadataName(ReadOnlyCollectionFullName);
+        var isCollection = SymbolEqualityComparer.Default.Equals(collectionSymbol, typeSymbol.OriginalDefinition);
+        return isCollection;
+    }
+
+    /// <summary>
+    /// Check if the type is <c>ReadOnlySet{T}</c>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <c>ReadOnlySet{T}</c>..</returns>
+    internal static bool IsReadOnlySet(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var setSymbol = compilation.GetTypeByMetadataName(ReadOnlySetFullName);
+        var isCollection = SymbolEqualityComparer.Default.Equals(setSymbol, typeSymbol.OriginalDefinition);
+        return isCollection;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="ImmutableDictionary{K,V}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="ImmutableDictionary{K,V}"/>.</returns>
+    internal static bool IsImmutableDictionary(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var dictionaryType = compilation.GetTypeByMetadataName(ImmutableDictionaryFullName);
+        var isDictionary = SymbolEqualityComparer.Default.Equals(dictionaryType, typeSymbol.OriginalDefinition);
+        return isDictionary;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="IImmutableDictionary{K,V}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="IImmutableDictionary{K,V}"/>.</returns>
+    internal static bool IsIImmutableDictionary(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var dictionaryType = compilation.GetTypeByMetadataName(ImmutableDictionaryInterfaceFullName);
+        var isDictionary = SymbolEqualityComparer.Default.Equals(dictionaryType, typeSymbol.OriginalDefinition);
+        return isDictionary;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="ImmutableSortedDictionary{K,V}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="ImmutableSortedDictionary{K,V}"/>.</returns>
+    internal static bool IsImmutableSortedDictionary(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var dictionaryType = compilation.GetTypeByMetadataName(ImmutableSortedDictionaryFullName);
+        var isDictionary = SymbolEqualityComparer.Default.Equals(dictionaryType, typeSymbol.OriginalDefinition);
+        return isDictionary;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="ImmutableSortedSet{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="ImmutableSortedSet{T}"/>.</returns>
+    internal static bool IsImmutableSortedSet(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var setType = compilation.GetTypeByMetadataName(ImmutableSortedSetFullName);
+        var isSet = SymbolEqualityComparer.Default.Equals(setType, typeSymbol.OriginalDefinition);
+        return isSet;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="ImmutableHashSet{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="ImmutableHashSet{T}"/>.</returns>
+    internal static bool IsImmutableHashSet(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var setType = compilation.GetTypeByMetadataName(ImmutableHashSetFullName);
+        var isSet = SymbolEqualityComparer.Default.Equals(setType, typeSymbol.OriginalDefinition);
+        return isSet;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="IImmutableSet{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="IImmutableSet{T}"/>.</returns>
+    internal static bool IsIImmutableSet(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var setType = compilation.GetTypeByMetadataName(ImmutableSetInterfaceFullName);
+        var isSet = SymbolEqualityComparer.Default.Equals(setType, typeSymbol.OriginalDefinition);
+        return isSet;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="FrozenDictionary{K,V}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="FrozenDictionary{K,V}"/>.</returns>
+    internal static bool IsFrozenDictionary(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var dictionaryType = compilation.GetTypeByMetadataName(FrozenDictionaryFullName);
+        var isDictionary = SymbolEqualityComparer.Default.Equals(dictionaryType, typeSymbol.OriginalDefinition);
+        return isDictionary;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="FrozenSet{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="FrozenSet{T}"/>.</returns>
+    internal static bool IsFrozenSet(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var frozenSetType = compilation.GetTypeByMetadataName(FrozenSetFullName);
+        var isFrozenSet = SymbolEqualityComparer.Default.Equals(frozenSetType, typeSymbol.OriginalDefinition);
+        return isFrozenSet;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="IImmutableList{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="IImmutableList{T}"/>.</returns>
+    internal static bool IsIImmutableList(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var listType = compilation.GetTypeByMetadataName(ImmutableListInterfaceFullName);
+        var isSet = SymbolEqualityComparer.Default.Equals(listType, typeSymbol.OriginalDefinition);
+        return isSet;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="ImmutableArray{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="ImmutableArray{T}"/>.</returns>
+    internal static bool IsImmutableArray(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var listType = compilation.GetTypeByMetadataName(ImmutableArrayFullName);
+        var isSet = SymbolEqualityComparer.Default.Equals(listType, typeSymbol.OriginalDefinition);
+        return isSet;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="ImmutableList{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="ImmutableList{T}"/>.</returns>
+    internal static bool IsImmutableList(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var listType = compilation.GetTypeByMetadataName(ImmutableListFullName);
+        var isSet = SymbolEqualityComparer.Default.Equals(listType, typeSymbol.OriginalDefinition);
+        return isSet;
     }
 
     /// <summary>
@@ -160,12 +438,46 @@ internal static class TypeSymbolExtensions
         => typeSymbol.IsIEnumerable() || typeSymbol.AllInterfaces.Any(@interface => @interface.IsIEnumerable());
 
     /// <summary>
+    /// Check if the type is <see cref="IEnumerable{T}"/> of <see cref="KeyValuePair{TKey,TValue}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="IEnumerable{T}"/> of <see cref="KeyValuePair{TKey,TValue}"/>.</returns>
+    internal static bool IsIEnumerableOfKeyValuePairs(this ITypeSymbol typeSymbol, Compilation compilation)
+        => typeSymbol.IsIEnumerable() && typeSymbol.GetElementType().IsKeyValuePair(compilation);
+
+    /// <summary>
+    /// Check if the type is <see cref="IEnumerable{T}"/> or implements <see cref="IEnumerable{T}"/> of <see cref="KeyValuePair{TKey,TValue}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is or implements <see cref="IEnumerable{T}"/> of <see cref="KeyValuePair{TKey,TValue}"/>, <c>false</c> otherwise.</returns>
+    internal static bool IsOrImplementIEnumerableOfKeyValuePair(this ITypeSymbol typeSymbol, Compilation compilation)
+        => typeSymbol.IsIEnumerableOfKeyValuePairs(compilation) || typeSymbol.AllInterfaces.Any(@interface => @interface.IsIEnumerableOfKeyValuePairs(compilation));
+
+    /// <summary>
     /// Check if the type is <see cref="ICollection{T}"/> or implements <see cref="ICollection{T}"/>.
     /// </summary>
     /// <param name="typeSymbol">The type symbol.</param>
     /// <returns><c>true</c> if the type symbol is or implements <see cref="ICollection{T}"/>, <c>false</c> otherwise.</returns>
     internal static bool IsOrImplementICollection(this ITypeSymbol typeSymbol)
-        => typeSymbol.IsICollection() || typeSymbol.AllInterfaces.Any(@interface => @interface.IsICollection());
+        => typeSymbol.IsICollection() || typeSymbol.ImplementICollection();
+
+    /// <summary>
+    /// Check if the type is <see cref="ICollection{T}"/> or implements <see cref="ICollection{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <returns><c>true</c> if the type symbol is or implements <see cref="ICollection{T}"/>, <c>false</c> otherwise.</returns>
+    internal static bool ImplementICollection(this ITypeSymbol typeSymbol)
+        => typeSymbol.AllInterfaces.Any(@interface => @interface.IsICollection());
+
+    /// <summary>
+    /// Check if the type is <see cref="IReadOnlyCollection{T}"/> or implements <see cref="IReadOnlyCollection{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <returns><c>true</c> if the type symbol is or implements <see cref="ICollection{T}"/>, <c>false</c> otherwise.</returns>
+    internal static bool IsOrImplementIReadOnlyCollection(this ITypeSymbol typeSymbol)
+        => typeSymbol.IsIReadOnlyCollection() || typeSymbol.AllInterfaces.Any(@interface => @interface.IsIReadOnlyCollection());
 
     /// <summary>
     /// Check if the type is <see cref="IList{T}"/> or implements <see cref="IList{T}"/>.
@@ -183,6 +495,15 @@ internal static class TypeSymbolExtensions
     /// <returns><c>true</c> if the type symbol implements <see cref="IDictionary{K,V}"/>.</returns>
     internal static bool IsOrImplementIDictionary(this ITypeSymbol typeSymbol, Compilation compilation)
         => typeSymbol.IsIDictionary(compilation) || typeSymbol.AllInterfaces.Any(@interface => @interface.IsIDictionary(compilation));
+
+    /// <summary>
+    /// Check if the type is <see cref="IReadOnlyDictionary{K,V}"/> or implements <see cref="IReadOnlyDictionary{K,V}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol implements <see cref="IDictionary{K,V}"/>.</returns>
+    internal static bool IsOrImplementIReadOnlyDictionary(this ITypeSymbol typeSymbol, Compilation compilation)
+        => typeSymbol.IsIReadOnlyDictionary(compilation) || typeSymbol.AllInterfaces.Any(@interface => @interface.IsIReadOnlyDictionary(compilation));
 
     /// <summary>
     /// Check if the type is <see cref="Tuple"/>.
@@ -219,6 +540,17 @@ internal static class TypeSymbolExtensions
             return namedTypeSymbol.TypeArguments.First();
         }
 
+        if (typeSymbol is INamedTypeSymbol nonGenericNamedTypeSymbol)
+        {
+            foreach (var @interface in nonGenericNamedTypeSymbol.AllInterfaces)
+            {
+                if (@interface is not null && @interface.IsGenericType && @interface.IsIEnumerable())
+                {
+                    return @interface.TypeArguments.First();
+                }
+            }
+        }
+
         throw new MappaGeneratorException($"Cannot obtain element type of \"{typeSymbol.ToDisplayString()}\"");
     }
 
@@ -227,13 +559,22 @@ internal static class TypeSymbolExtensions
     /// </summary>
     /// <param name="typeSymbol">The type symbol.</param>
     /// <param name="compilation">The compilation.</param>
-    /// <returns>The element type of the key and value of the contain.</returns>
+    /// <returns>The element type of the key and value of the container.</returns>
     /// <exception cref="MappaGeneratorException">If <paramref name="typeSymbol"/> is not an array or a generic type.</exception>
     internal static (ITypeSymbol KeyType, ITypeSymbol ValueType) GetKeyAndValueTypes(this ITypeSymbol typeSymbol, Compilation compilation)
     {
         if (typeSymbol is INamedTypeSymbol { TypeArguments.Length: 2 } namedTypeSymbol)
         {
             return (namedTypeSymbol.TypeArguments.First(), namedTypeSymbol.TypeArguments.Last());
+        }
+
+        if (typeSymbol is INamedTypeSymbol { TypeArguments.Length: 1 } mightBeEnumerable)
+        {
+            var enumerableElementType = mightBeEnumerable.GetElementType();
+            if (enumerableElementType.IsKeyValuePair(compilation))
+            {
+                return enumerableElementType.GetKeyAndValueTypes(compilation);
+            }
         }
 
         // The type might be non-generic but still implement an IDictionary
@@ -246,6 +587,11 @@ internal static class TypeSymbolExtensions
                 if (@interface is not null && @interface.IsGenericType && @interface.IsIDictionary(compilation))
                 {
                     return (@interface.TypeArguments.First(), @interface.TypeArguments.Last());
+                }
+
+                if (@interface is not null && @interface.IsGenericType && @interface.IsIEnumerableOfKeyValuePairs(compilation))
+                {
+                    return @interface.GetKeyAndValueTypes(compilation);
                 }
             }
         }
@@ -267,7 +613,7 @@ internal static class TypeSymbolExtensions
             return true;
         }
 
-        typeArguments = Array.Empty<ITypeSymbol>().ToImmutableArray();
+        typeArguments = [];
         return false;
     }
 
@@ -391,7 +737,7 @@ internal static class TypeSymbolExtensions
     /// <param name="typeSymbol">The type symbol.</param>
     /// <returns><c>true</c> if the type symbol is <see cref="long"/> type or a compatible smaller
     /// numeric type, <c>false</c> otherwise.</returns>
-    internal static bool IsLongOrNumericCanBeImplictlyCastedToLong(this ITypeSymbol typeSymbol)
+    internal static bool IsLongOrNumericCanBeImplicitlyCastedToLong(this ITypeSymbol typeSymbol)
     {
         switch (typeSymbol.SpecialType)
         {
@@ -424,7 +770,7 @@ internal static class TypeSymbolExtensions
     /// <returns><c>true</c> if the type symbol is <see cref="DateTime"/>.</returns>
     internal static bool IsDateTimeOffset(this ITypeSymbol typeSymbol, Compilation compilation)
     {
-        var dateTimeOffsetType = compilation.GetTypeByMetadataName(DateTimeOffset);
+        var dateTimeOffsetType = compilation.GetTypeByMetadataName(DateTimeOffsetFullName);
         var isDateTimeOffsetType = SymbolEqualityComparer.Default.Equals(dateTimeOffsetType, typeSymbol.OriginalDefinition);
         return isDateTimeOffsetType;
     }
@@ -647,4 +993,248 @@ internal static class TypeSymbolExtensions
         var isGuid = SymbolEqualityComparer.Default.Equals(guidType, typeSymbol.OriginalDefinition);
         return isGuid;
     }
+
+    /// <summary>
+    /// Check if the type is <see cref="KeyValuePair{TKey,TValue}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="KeyValuePair{TKey,TValue}"/>.</returns>
+    internal static bool IsKeyValuePair(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var keyValuePairSymbol = compilation.GetTypeByMetadataName(KeyValuePairFullName);
+        var isKeyValuePair = SymbolEqualityComparer.Default.Equals(keyValuePairSymbol, typeSymbol.OriginalDefinition);
+        return isKeyValuePair;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="Stack{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="Stack{T}"/>.</returns>
+    internal static bool IsStack(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var stackSymbol = compilation.GetTypeByMetadataName(StackFullName);
+        var isStack = SymbolEqualityComparer.Default.Equals(stackSymbol, typeSymbol.OriginalDefinition);
+        return isStack;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="Stack{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="Stack{T}"/>.</returns>
+    internal static bool IsOrImplementStack(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var stackSymbol = compilation.GetTypeByMetadataName(StackFullName);
+        if (SymbolEqualityComparer.Default.Equals(stackSymbol, typeSymbol.OriginalDefinition))
+        {
+            return true;
+        }
+
+        INamedTypeSymbol? baseType = typeSymbol.BaseType;
+        while (baseType is not null)
+        {
+            if (SymbolEqualityComparer.Default.Equals(stackSymbol, baseType.OriginalDefinition))
+            {
+                return true;
+            }
+
+            baseType = baseType.BaseType;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="Queue{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="Queue{T}"/>.</returns>
+    internal static bool IsQueue(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var queueSymbol = compilation.GetTypeByMetadataName(QueueFullName);
+        var isStack = SymbolEqualityComparer.Default.Equals(queueSymbol, typeSymbol.OriginalDefinition);
+        return isStack;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="Queue{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="Queue{T}"/>.</returns>
+    internal static bool IsOrImplementQueue(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var queueType = compilation.GetTypeByMetadataName(QueueFullName);
+        if (SymbolEqualityComparer.Default.Equals(queueType, typeSymbol.OriginalDefinition))
+        {
+            return true;
+        }
+
+        INamedTypeSymbol? baseType = typeSymbol.BaseType;
+        while (baseType is not null)
+        {
+            if (SymbolEqualityComparer.Default.Equals(queueType, baseType.OriginalDefinition))
+            {
+                return true;
+            }
+
+            baseType = baseType.BaseType;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="ISet{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="ISet{T}"/>.</returns>
+    internal static bool IsISet(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var setType = compilation.GetTypeByMetadataName(SetInterfaceFullName);
+        var isSetType = SymbolEqualityComparer.Default.Equals(setType, typeSymbol.OriginalDefinition);
+        return isSetType;
+    }
+
+    /// <summary>
+    /// Check if the type implements <see cref="ISet{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="ISet{T}"/>.</returns>
+    internal static bool ImplementISet(this ITypeSymbol typeSymbol, Compilation compilation)
+        => typeSymbol.AllInterfaces.Any(@interface => @interface.IsISet(compilation));
+
+    /// <summary>
+    /// Check if the type is <see cref="ISet{T}"/> or implements <see cref="ISet{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol implements <see cref="ISet{T}"/>.</returns>
+    internal static bool IsOrImplementISet(this ITypeSymbol typeSymbol, Compilation compilation)
+        => typeSymbol.IsISet(compilation) || typeSymbol.ImplementISet(compilation);
+
+    /// <summary>
+    /// Check if the type is <c>IReadOnlySet{T}</c>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <c>IReadOnlySet{T}</c>.</returns>
+    internal static bool IsIReadOnlySet(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var readonlySetType = compilation.GetTypeByMetadataName(ReadOnlySetInterfaceFullName);
+        var isSetType = SymbolEqualityComparer.Default.Equals(readonlySetType, typeSymbol.OriginalDefinition);
+        return isSetType;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="HashSet{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="HashSet{T}"/>.</returns>
+    internal static bool IsHashSet(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var hashsetType = compilation.GetTypeByMetadataName(HashSetFullName);
+        var isSetType = SymbolEqualityComparer.Default.Equals(hashsetType, typeSymbol.OriginalDefinition);
+        return isSetType;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="IReadOnlyList{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="IReadOnlyList{T}"/>.</returns>
+    internal static bool IsIReadOnlyList(this ITypeSymbol typeSymbol)
+        => typeSymbol.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IReadOnlyList_T;
+
+    /// <summary>
+    /// Check if the type is <see cref="IImmutableQueue{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="IImmutableQueue{T}"/>.</returns>
+    internal static bool IsIImmutableQueue(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var queueType = compilation.GetTypeByMetadataName(ImmutableQueueInterfaceFullName);
+        var isQueue = SymbolEqualityComparer.Default.Equals(queueType, typeSymbol.OriginalDefinition);
+        return isQueue;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="ImmutableQueue{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="ImmutableQueue{T}"/>.</returns>
+    internal static bool IsImmutableQueue(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var queueType = compilation.GetTypeByMetadataName(ImmutableQueueFullName);
+        var isQueue = SymbolEqualityComparer.Default.Equals(queueType, typeSymbol.OriginalDefinition);
+        return isQueue;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="IImmutableStack{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="IImmutableStack{T}"/>.</returns>
+    internal static bool IsIImmutableStack(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var stackType = compilation.GetTypeByMetadataName(ImmutableStackInterfaceFullName);
+        var isStack = SymbolEqualityComparer.Default.Equals(stackType, typeSymbol.OriginalDefinition);
+        return isStack;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="ImmutableStack{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="ImmutableStack{T}"/>.</returns>
+    internal static bool IsImmutableStack(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var stackType = compilation.GetTypeByMetadataName(ImmutableStackFullName);
+        var isStack = SymbolEqualityComparer.Default.Equals(stackType, typeSymbol.OriginalDefinition);
+        return isStack;
+    }
+
+    /// <summary>
+    /// Check if <paramref name="namedTypeSymbol"/> has a constructor with empty parameters.
+    /// </summary>
+    /// <param name="namedTypeSymbol">The symbol to check has a constructor without parameters.</param>
+    /// <param name="accessibleFromMethod">Optional method, if provided (and not <c>null</c>) we will check that the constructor can be invoked from <paramref name="accessibleFromMethod"/>.</param>
+    /// <returns><c>true</c> if <paramref name="namedTypeSymbol"/> has a constructor with no parameters, <c>false</c> otherwise.</returns>
+    internal static bool HasAccessibleZeroParametersConstructor(
+        this INamedTypeSymbol namedTypeSymbol,
+        IMethodSymbol? accessibleFromMethod = null)
+    {
+        var constructor = namedTypeSymbol.Constructors.FirstOrDefault(constructor => constructor.Parameters.Length == 0);
+        if (constructor is null)
+        {
+            return false;
+        }
+
+        return accessibleFromMethod == null || constructor.IsAccessibleFromMethod(accessibleFromMethod);
+    }
+
+    /// <summary>
+    /// Check if <paramref name="typeSymbol"/> has a constructor with empty parameters.
+    /// </summary>
+    /// <param name="typeSymbol">The symbol to check has a constructor without parameters.</param>
+    /// <param name="accessibleFromMethod">Optional method, if provided (and not <c>null</c>) we will check that the constructor can be invoked from <paramref name="accessibleFromMethod"/>.</param>
+    /// <returns><c>true</c> if <paramref name="typeSymbol"/> has a constructor with no parameters, <c>false</c> otherwise.</returns>
+    internal static bool HasAccessibleZeroParametersConstructor(
+        this ITypeSymbol typeSymbol,
+        IMethodSymbol? accessibleFromMethod = null)
+        => typeSymbol.TypeKind != TypeKind.Interface &&
+           typeSymbol is INamedTypeSymbol namedTypeSymbol &&
+           namedTypeSymbol.HasAccessibleZeroParametersConstructor(accessibleFromMethod);
 }

@@ -197,17 +197,17 @@ internal sealed class ExpressionSyntaxAssertions
     /// <summary>
     /// Assert that the expression is an array creation expression.
     /// </summary>
-    /// <param name="type">The type being created.</param>
+    /// <param name="elementType">The element type of the array being created.</param>
     /// <param name="sizeAssertion">The assertions on the size expression.</param>
     /// <returns>The assertion.</returns>
-    public ExpressionSyntaxAssertions BeArrayCreationExpressionSyntax(string type, Action<ExpressionSyntaxAssertions> sizeAssertion)
+    public ExpressionSyntaxAssertions BeArrayCreationExpressionSyntax(string elementType, Action<ExpressionSyntaxAssertions> sizeAssertion)
     {
         ArgumentNullException.ThrowIfNull(sizeAssertion);
 
         this.Subject.Should().BeOfType<ArrayCreationExpressionSyntax>();
         var arrayCreationExpressionSyntax = (ArrayCreationExpressionSyntax)this.Subject;
 
-        var expectedType = this.compilation.GetTypeSymbol(type);
+        var expectedType = this.compilation.GetTypeSymbol(elementType);
         var localSymbol = this.compilation.GetTypeSymbol(arrayCreationExpressionSyntax.Type.ElementType.ToString());
 
         SymbolEqualityComparer

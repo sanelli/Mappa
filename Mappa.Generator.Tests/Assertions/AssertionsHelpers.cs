@@ -24,6 +24,12 @@ internal static partial class AssertionsHelpers
         ArgumentNullException.ThrowIfNull(compilation);
         ArgumentException.ThrowIfNullOrWhiteSpace(type);
 
+        // Remove heading global:: as it does not work very well with this code.
+        if (type.StartsWith("global::", StringComparison.Ordinal))
+        {
+            return compilation.GetTypeSymbol(type["global::".Length..]);
+        }
+
         // Manually handle named tuples
         if (type.StartsWith('(') && ContainSpacesRegex().Count(type) > 0)
         {
@@ -56,22 +62,18 @@ internal static partial class AssertionsHelpers
             return arraySymbol;
         }
 
-        // NOTE: This does not work for nested generic types
         INamedTypeSymbol namedTypeSymbol;
         if (type.Contains('[', StringComparison.OrdinalIgnoreCase))
         {
-            var typeParts = type.Split("[");
-            namedTypeSymbol = compilation.GetTypeByMetadataName(NormalizeType(typeParts[0]))!;
-            if (typeParts.Length > 1)
+            var firstIndexOfOpenBrackets = type.IndexOf('[', StringComparison.OrdinalIgnoreCase);
+            var typeName = type[..firstIndexOfOpenBrackets];
+            namedTypeSymbol = compilation.GetTypeByMetadataName(NormalizeType(typeName))!;
+            var generics = SplitWithBoundaries(type.Substring(firstIndexOfOpenBrackets + 1, type.Length - firstIndexOfOpenBrackets - 2), ',', '[', ']');
+            if (generics.Length > 0 && Array.TrueForAll(generics, generic => !string.IsNullOrWhiteSpace(generic)))
             {
-                var typeArguments = typeParts[^1]
-                    .Replace("]", string.Empty, StringComparison.Ordinal)
-                    .Split(",")
-                    .Select(x => x.Trim())
+                var typeArguments = generics
                     .Select(NormalizeType)
-                    .Select(compilation.GetTypeByMetadataName)
-                    .Where(t => t is not null)
-                    .OfType<ITypeSymbol>()
+                    .Select(compilation.GetTypeSymbol)
                     .ToArray();
                 var constructedGenericType = namedTypeSymbol.Construct(typeArguments);
                 return constructedGenericType;
@@ -79,19 +81,16 @@ internal static partial class AssertionsHelpers
         }
         else if (type.Contains('<', StringComparison.OrdinalIgnoreCase))
         {
-            var typeParts = type.Split("<");
-            int count = typeParts[1].Split(",").Length;
-            namedTypeSymbol = compilation.GetTypeByMetadataName(NormalizeType($"{typeParts[0]}`{count}"))!;
-            if (typeParts.Length > 1)
+            var firstIndexOfOpenAngularBracket = type.IndexOf('<', StringComparison.OrdinalIgnoreCase);
+
+            var typeName = type[..firstIndexOfOpenAngularBracket];
+            var generics = SplitWithBoundaries(type.Substring(firstIndexOfOpenAngularBracket + 1, type.Length - firstIndexOfOpenAngularBracket - 2), ',', '<', '>');
+            namedTypeSymbol = compilation.GetTypeByMetadataName(NormalizeType($"{typeName}`{generics.Length}"))!;
+            if (generics.Length > 0 && Array.TrueForAll(generics, generic => !string.IsNullOrWhiteSpace(generic)))
             {
-                var typeArguments = typeParts[^1]
-                    .Replace(">", string.Empty, StringComparison.Ordinal)
-                    .Split(",")
-                    .Select(x => x.Trim())
+                var typeArguments = generics
                     .Select(NormalizeType)
-                    .Select(compilation.GetTypeByMetadataName)
-                    .Where(t => t is not null)
-                    .OfType<ITypeSymbol>()
+                    .Select(compilation.GetTypeSymbol)
                     .ToArray();
                 var constructedGenericType = namedTypeSymbol.Construct(typeArguments);
                 return constructedGenericType;
@@ -103,6 +102,42 @@ internal static partial class AssertionsHelpers
         }
 
         return namedTypeSymbol;
+
+        string[] SplitWithBoundaries(string s, char separator, char open, char close)
+        {
+            var parts = new List<string>();
+            int opened = 0;
+            var current = string.Empty;
+            foreach (var character in s)
+            {
+                if (character == separator && opened == 0)
+                {
+                    parts.Add(current.Trim());
+                    current = string.Empty;
+                }
+                else if (character == open)
+                {
+                    opened++;
+                    current += character;
+                }
+                else if (character == close)
+                {
+                    opened--;
+                    current += character;
+                }
+                else
+                {
+                    current += character;
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(current))
+            {
+                parts.Add(current.Trim());
+            }
+
+            return parts.ToArray();
+        }
     }
 
     /// <summary>
