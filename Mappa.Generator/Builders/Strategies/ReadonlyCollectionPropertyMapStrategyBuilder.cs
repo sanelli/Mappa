@@ -64,6 +64,7 @@ internal sealed class ReadonlyCollectionPropertyMapStrategyBuilder
                     stringBuilder.AppendLine(targetElementCode);
                 }
 
+                // TODO [#111] Add method could be implemented explicitly so a conversion might be needed.
                 stringBuilder.AppendLine($"{context.GetCompositeTypeTargetName()}.{this.strategy.TargetProperty.Name}.Add({targetElementTemporary});");
             }
         }
