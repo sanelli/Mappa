@@ -1327,4 +1327,72 @@ public sealed class CollectionToCollectionMapperUnitTests
         // Assert
         actual.Should().BeEquivalentTo([0, 2]);
     }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromArrayToCustomCollectionImplementingISet"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromArrayToCustomCollectionImplementingISet()
+    {
+        // Arrange
+        CountingValues[] input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromArrayToCustomCollectionImplementingISet(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIEnumerableToCustomCollectionImplementingISet"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIEnumerableToCustomCollectionImplementingISet()
+    {
+        // Arrange
+        IEnumerable<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIEnumerableToCustomCollectionImplementingISet(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromArrayToCustomCollectionImplementingISetOfIntegers"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromArrayToCustomCollectionImplementingISetOfIntegers()
+    {
+        // Arrange
+        CountingValues[] input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromArrayToCustomCollectionImplementingISetOfIntegers(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIEnumerableToCustomCollectionImplementingISetOfIntegers"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIEnumerableToCustomCollectionImplementingISetOfIntegers()
+    {
+        // Arrange
+        IEnumerable<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIEnumerableToCustomCollectionImplementingISetOfIntegers(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
 }

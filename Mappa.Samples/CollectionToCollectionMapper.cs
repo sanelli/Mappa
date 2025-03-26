@@ -628,4 +628,36 @@ public sealed partial class CollectionToCollectionMapper
     /// <param name="input">The input collection.</param>
     /// <returns>The output collection.</returns>
     public partial HashSet<int> MapFromIEnumerableToHashSet(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="Array"/> of <see cref="CountingValues"/>
+    /// to a <see cref="CustomCollectionImplementingISet{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial CustomCollectionImplementingISet<int> MapFromArrayToCustomCollectionImplementingISet(CountingValues[] input);
+
+    /// <summary>
+    /// Map an <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="CustomCollectionImplementingISet{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial CustomCollectionImplementingISet<int> MapFromIEnumerableToCustomCollectionImplementingISet(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="Array"/> of <see cref="CountingValues"/>
+    /// to a <see cref="CustomCollectionImplementingISetOfIntegers"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial CustomCollectionImplementingISetOfIntegers MapFromArrayToCustomCollectionImplementingISetOfIntegers(CountingValues[] input);
+
+    /// <summary>
+    /// Map an <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="CustomCollectionImplementingISetOfIntegers"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial CustomCollectionImplementingISetOfIntegers MapFromIEnumerableToCustomCollectionImplementingISetOfIntegers(IEnumerable<CountingValues> input);
 }
