@@ -129,22 +129,18 @@ internal sealed class ContainerMapStrategyDetector
             || this.context.SourceType.IsReadOnlySpan(this.compilation)
             || this.context.SourceType.IsReadOnlyMemory(this.compilation);
 
-        // TODO [#105] IReadOnlyList.
-        // TODO [#105] IImmutableList.
-        // TODO [#105] ReadOnlyCollection.
-        // TODO [#105] ReadOnlySet.
-        // TODO [#105] FrozenCollection.
         // TODO [#105] FrozenSet.
         // TODO [#105] ImmutableHashSet.
         // TODO [#105] IImmutableSet.
+        // TODO [#105] ImmutableSet.
         // TODO [#105] ImmutableArray.
         // TODO [#105] ImmutableList.
+        // TODO [#105] IImmutableList.
         // TODO [#105] ImmutableQueue.
         // TODO [#105] IImmutableQueue.
         // TODO [#105] ImmutableSortedSet.
         // TODO [#105] ImmutableStack.
         // TODO [#105] IImmutableStack.
-        // TODO [#105] ImmutableSet.
         var isTargetCollection = (this.context.TargetType.IsArray()
                                  || this.context.TargetType.IsIEnumerable()
                                  || this.context.TargetType.IsIList()
@@ -160,7 +156,9 @@ internal sealed class ContainerMapStrategyDetector
                                  || this.context.TargetType.IsOrImplementQueue(this.compilation)
                                  || this.context.TargetType.IsOrImplementISet(this.compilation)
                                  || this.context.TargetType.IsIReadOnlySet(this.compilation)
-                                 || this.context.TargetType.IsHashSet(this.compilation))
+                                 || this.context.TargetType.IsHashSet(this.compilation)
+                                 || this.context.TargetType.IsReadOnlyCollection(this.compilation)
+                                 || this.context.TargetType.IsReadOnlySet(this.compilation))
                                  && InterfaceAndConstructorChecks();
 
         elementStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
@@ -199,8 +197,12 @@ internal sealed class ContainerMapStrategyDetector
             // TODO [#109] Support constructor with 1 integer parameter (capacity) via mappaSettings.
             if (this.context.TargetType is INamedTypeSymbol namedTypeSymbol)
             {
-                // TODO [#105] ReadOnlyCollection -- Add exception.
-                // TODO [#105] ReadOnlySet -- Add exception.
+                if (namedTypeSymbol.IsReadOnlyCollection(this.compilation)
+                    || namedTypeSymbol.IsReadOnlySet(this.compilation))
+                {
+                    return true;
+                }
+
                 // TODO [#105] FrozenSet -- Add exception.
                 // TODO [#105] FrozenCollection -- Add exception.
                 // TODO [#105] ImmutableHashSet -- Add exception.

@@ -676,4 +676,7 @@ public sealed partial class CollectionToCollectionMapper
     /// <param name="input">The input collection.</param>
     /// <returns>The output collection.</returns>
     public partial IReadOnlyList<int> MapFromArrayToIReadOnlyList(CountingValues[] input);
+
+    // TODO [#105] CanMapFromIEnumerableToReadOnlyCollection.
+    // TODO [#105] CanMapFromIEnumerableToReadOnlySet.
 }

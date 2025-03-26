@@ -37,6 +37,7 @@ internal static class TypeSymbolExtensions
     private const string DictionaryFullName = "System.Collections.Generic.Dictionary`2";
     private const string ReadOnlyDictionaryFullName = "System.Collections.ObjectModel.ReadOnlyDictionary`2";
     private const string ReadOnlyCollectionFullName = "System.Collections.ObjectModel.ReadOnlyCollection`1";
+    private const string ReadOnlySetFullName = "System.Collections.ObjectModel.ReadOnlySet`1";
     private const string DictionaryInterfaceFullName = "System.Collections.Generic.IDictionary`2";
     private const string ReadOnlyDictionaryInterfaceFullName = "System.Collections.Generic.IReadOnlyDictionary`2";
     private const string ListFullName = "System.Collections.Generic.List`1";
@@ -232,6 +233,19 @@ internal static class TypeSymbolExtensions
     {
         var collectionSymbol = compilation.GetTypeByMetadataName(ReadOnlyCollectionFullName);
         var isCollection = SymbolEqualityComparer.Default.Equals(collectionSymbol, typeSymbol.OriginalDefinition);
+        return isCollection;
+    }
+
+    /// <summary>
+    /// Check if the type is <c>ReadOnlySet{T}</c>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <c>ReadOnlySet{T}</c>..</returns>
+    internal static bool IsReadOnlySet(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var setSymbol = compilation.GetTypeByMetadataName(ReadOnlySetFullName);
+        var isCollection = SymbolEqualityComparer.Default.Equals(setSymbol, typeSymbol.OriginalDefinition);
         return isCollection;
     }
 

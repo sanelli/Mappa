@@ -86,19 +86,26 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
 
         // For some types we need to do a bit of post-processing to make sure we always return the correct type
         // (e.g. if we convert a T[] into a Span<T>, even if not needed it clarifies the code).
-        if (this.strategy.TargetType.IsSpan(context.Compilation)
-            || this.strategy.TargetType.IsReadOnlySpan(context.Compilation)
-            || this.strategy.TargetType.IsMemory(context.Compilation)
-            || this.strategy.TargetType.IsReadOnlyMemory(context.Compilation))
+        AppendPostLoopCode(stringBuilder, context, this.strategy.TargetType, ref targetVariableName);
+
+        return (targetVariableName, stringBuilder.ToString());
+    }
+
+    private static void AppendPostLoopCode(PrettyCode.StringBuilder stringBuilder, MappaBuilderContext context, ITypeSymbol targetTypeSymbol, ref string targetVariableName)
+    {
+        if (targetTypeSymbol.IsSpan(context.Compilation)
+            || targetTypeSymbol.IsReadOnlySpan(context.Compilation)
+            || targetTypeSymbol.IsMemory(context.Compilation)
+            || targetTypeSymbol.IsReadOnlyMemory(context.Compilation)
+            || targetTypeSymbol.IsReadOnlyCollection(context.Compilation)
+            || targetTypeSymbol.IsReadOnlySet(context.Compilation))
         {
-            var targetTypeDisplayString = this.strategy.TargetType.ToDisplayString();
+            var targetTypeDisplayString = targetTypeSymbol.ToDisplayString();
             var postTargetVariableName = context.NextTemporary();
             stringBuilder.AppendEmptyLine();
             stringBuilder.AppendLine($"global::{targetTypeDisplayString} {postTargetVariableName} = new global::{targetTypeDisplayString}({targetVariableName});");
             targetVariableName = postTargetVariableName;
         }
-
-        return (targetVariableName, stringBuilder.ToString());
     }
 
     private static void AppendTargetVariable(
@@ -139,7 +146,8 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
         }
         else if (targetTypeSymbol.IsISet(context.Compilation)
                  || targetTypeSymbol.IsIReadOnlySet(context.Compilation)
-                 || targetTypeSymbol.IsHashSet(context.Compilation))
+                 || targetTypeSymbol.IsHashSet(context.Compilation)
+                 || targetTypeSymbol.IsReadOnlySet(context.Compilation))
         {
             // We are going to always use an HashSet so Add method is best here.
             insertionMethod = InsertionMethod.Add;
@@ -181,7 +189,8 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
             || targetTypeSymbol.IsIList()
             || targetTypeSymbol.IsIReadOnlyList()
             || targetTypeSymbol.IsICollection()
-            || targetTypeSymbol.IsIReadOnlyCollection())
+            || targetTypeSymbol.IsIReadOnlyCollection()
+            || targetTypeSymbol.IsReadOnlyCollection(context.Compilation))
         {
             // We are going to always use a list so Add method is best here.
             insertionMethod = InsertionMethod.Add;
