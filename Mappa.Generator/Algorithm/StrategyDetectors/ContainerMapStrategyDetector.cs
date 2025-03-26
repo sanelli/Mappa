@@ -124,9 +124,6 @@ internal sealed class ContainerMapStrategyDetector
             || this.context.SourceType.IsReadOnlySpan(this.compilation)
             || this.context.SourceType.IsReadOnlyMemory(this.compilation);
 
-        // TODO [#105] ImmutableHashSet.
-        // TODO [#105] ImmutableSortedSet.
-        // TODO [#105] IImmutableSet.
         // TODO [#105] ImmutableArray.
         // TODO [#105] ImmutableList.
         // TODO [#105] IImmutableList.
