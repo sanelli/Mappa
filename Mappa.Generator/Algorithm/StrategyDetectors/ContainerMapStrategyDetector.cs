@@ -68,8 +68,6 @@ internal sealed class ContainerMapStrategyDetector
         return mapStrategy is not NoMapStrategy;
     }
 
-    // TODO [#105] Support ImmutableSortedDictionary as output type.
-    // TODO [#105] Support IImmutableDictionary as output type.
     private bool CanMapDictionaryToDictionary(out MapStrategy keyStrategy, out MapStrategy valueStrategy)
     {
         var isSourceDictionary = this.context.SourceType.IsOrImplementIDictionary(this.compilation)
@@ -79,7 +77,9 @@ internal sealed class ContainerMapStrategyDetector
                                   || this.context.TargetType.IsIEnumerableOfKeyValuePairs(this.compilation)
                                   || this.context.TargetType.IsIReadOnlyDictionary(this.compilation)
                                   || this.context.TargetType.IsReadOnlyDictionary(this.compilation)
+                                  || this.context.TargetType.IsIImmutableDictionary(this.compilation)
                                   || this.context.TargetType.IsImmutableDictionary(this.compilation)
+                                  || this.context.TargetType.IsImmutableSortedDictionary(this.compilation)
                                   || this.context.TargetType.IsFrozenDictionary(this.compilation))
             && IfInterfaceAcceptOnlyIDictionary();
 
@@ -98,7 +98,9 @@ internal sealed class ContainerMapStrategyDetector
             {
                 return this.context.TargetType.IsIDictionary(this.compilation)
                        || this.context.TargetType.IsIEnumerableOfKeyValuePairs(this.compilation)
-                       || this.context.TargetType.IsIReadOnlyDictionary(this.compilation);
+                       || this.context.TargetType.IsIReadOnlyDictionary(this.compilation)
+                       || this.context.TargetType.IsIImmutableDictionary(this.compilation)
+                       ;
             }
 
             // Target type MUST have a constructor with no arguments
@@ -106,6 +108,7 @@ internal sealed class ContainerMapStrategyDetector
             // for which special coding is provided.
             if (this.context.TargetType.IsReadOnlyDictionary(this.compilation)
                 || this.context.TargetType.IsImmutableDictionary(this.compilation)
+                || this.context.TargetType.IsImmutableSortedDictionary(this.compilation)
                 || this.context.TargetType.IsFrozenDictionary(this.compilation))
             {
                 return true;

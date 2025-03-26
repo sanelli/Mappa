@@ -19,6 +19,8 @@ namespace Mappa.Generator.Extensions;
 internal static class TypeSymbolExtensions
 {
     private const string ImmutableDictionaryFullName = "System.Collections.Immutable.ImmutableDictionary`2";
+    private const string ImmutableDictionaryInterfaceFullName = "System.Collections.Immutable.IImmutableDictionary`2";
+    private const string ImmutableSortedDictionaryFullName = "System.Collections.Immutable.ImmutableSortedDictionary`2";
     private const string ImmutableSetInterfaceFullName = "System.Collections.Immutable.IImmutableSet`1";
     private const string ImmutableHashSetFullName = "System.Collections.Immutable.ImmutableHashSet`1";
     private const string ImmutableSortedSetFullName = "System.Collections.Immutable.ImmutableSortedSet`1";
@@ -269,6 +271,32 @@ internal static class TypeSymbolExtensions
     internal static bool IsImmutableDictionary(this ITypeSymbol typeSymbol, Compilation compilation)
     {
         var dictionaryType = compilation.GetTypeByMetadataName(ImmutableDictionaryFullName);
+        var isDictionary = SymbolEqualityComparer.Default.Equals(dictionaryType, typeSymbol.OriginalDefinition);
+        return isDictionary;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="IImmutableDictionary{K,V}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="IImmutableDictionary{K,V}"/>.</returns>
+    internal static bool IsIImmutableDictionary(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var dictionaryType = compilation.GetTypeByMetadataName(ImmutableDictionaryInterfaceFullName);
+        var isDictionary = SymbolEqualityComparer.Default.Equals(dictionaryType, typeSymbol.OriginalDefinition);
+        return isDictionary;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="ImmutableSortedDictionary{K,V}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="ImmutableSortedDictionary{K,V}"/>.</returns>
+    internal static bool IsImmutableSortedDictionary(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var dictionaryType = compilation.GetTypeByMetadataName(ImmutableSortedDictionaryFullName);
         var isDictionary = SymbolEqualityComparer.Default.Equals(dictionaryType, typeSymbol.OriginalDefinition);
         return isDictionary;
     }

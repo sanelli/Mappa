@@ -68,10 +68,17 @@ internal sealed class DictionaryToDictionaryMapStrategyBuilder
             builder.AppendLine($"{this.strategy.TargetType.ToDisplayString()} {readOnlyTemporary} = new System.Collections.ObjectModel.ReadOnlyDictionary<{targetKeyType.ToDisplayString()},{targetValueType.ToDisplayString()}>({dictionaryTemporary});");
             dictionaryTemporary = readOnlyTemporary;
         }
-        else if (this.strategy.TargetType.IsImmutableDictionary(context.Compilation))
+        else if (this.strategy.TargetType.IsIImmutableDictionary(context.Compilation)
+                 || this.strategy.TargetType.IsImmutableDictionary(context.Compilation))
         {
             var readOnlyTemporary = context.NextTemporary();
             builder.AppendLine($"{this.strategy.TargetType.ToDisplayString()} {readOnlyTemporary} = System.Collections.Immutable.ImmutableDictionary.ToImmutableDictionary<{targetKeyType.ToDisplayString()},{targetValueType.ToDisplayString()}>({dictionaryTemporary});");
+            dictionaryTemporary = readOnlyTemporary;
+        }
+        else if (this.strategy.TargetType.IsImmutableSortedDictionary(context.Compilation))
+        {
+            var readOnlyTemporary = context.NextTemporary();
+            builder.AppendLine($"{this.strategy.TargetType.ToDisplayString()} {readOnlyTemporary} = System.Collections.Immutable.ImmutableSortedDictionary.ToImmutableSortedDictionary<{targetKeyType.ToDisplayString()},{targetValueType.ToDisplayString()}>({dictionaryTemporary});");
             dictionaryTemporary = readOnlyTemporary;
         }
         else if (this.strategy.TargetType.IsFrozenDictionary(context.Compilation))
@@ -93,7 +100,9 @@ internal sealed class DictionaryToDictionaryMapStrategyBuilder
             if (this.strategy.TargetType.IsIEnumerableOfKeyValuePairs(context.Compilation)
                || this.strategy.TargetType.IsIReadOnlyDictionary(context.Compilation)
                || this.strategy.TargetType.IsReadOnlyDictionary(context.Compilation)
+               || this.strategy.TargetType.IsIImmutableDictionary(context.Compilation)
                || this.strategy.TargetType.IsImmutableDictionary(context.Compilation)
+               || this.strategy.TargetType.IsImmutableSortedDictionary(context.Compilation)
                || this.strategy.TargetType.IsFrozenDictionary(context.Compilation))
             {
                 return $"System.Collections.Generic.Dictionary<{targetKeyType.ToDisplayString()}, {targetValueType.ToDisplayString()}>";
@@ -108,7 +117,9 @@ internal sealed class DictionaryToDictionaryMapStrategyBuilder
                 || this.strategy.TargetType.IsIEnumerableOfKeyValuePairs(context.Compilation)
                 || this.strategy.TargetType.IsIReadOnlyDictionary(context.Compilation)
                 || this.strategy.TargetType.IsReadOnlyDictionary(context.Compilation)
+                || this.strategy.TargetType.IsIImmutableDictionary(context.Compilation)
                 || this.strategy.TargetType.IsImmutableDictionary(context.Compilation)
+                || this.strategy.TargetType.IsImmutableSortedDictionary(context.Compilation)
                 || this.strategy.TargetType.IsFrozenDictionary(context.Compilation))
             {
                 return $"System.Collections.Generic.Dictionary<{targetKeyType.ToDisplayString()}, {targetValueType.ToDisplayString()}>";

@@ -316,6 +316,33 @@ public sealed class DictionaryToDictionaryMapperUnitTests
     }
 
     /// <summary>
+    /// Unit test for <see cref="DictionaryToDictionaryMapper.MapDictionaryToIImmutableDictionary"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDictionaryToIImmutableDictionary()
+    {
+        // Arrange
+        Dictionary<int, CountingValues> input = new()
+        {
+            { 1, CountingValues.One },
+            { 2, CountingValues.Two },
+            { 3, CountingValues.Three },
+        };
+
+        // Act
+        var actual = this.mapper.MapDictionaryToIImmutableDictionary(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo(new Dictionary<string, string>
+        {
+            { "1", "One" },
+            { "2", "Two" },
+            { "3", "Three" },
+        });
+    }
+
+    /// <summary>
     /// Unit test for <see cref="DictionaryToDictionaryMapper.MapDictionaryToImmutableDictionary"/>.
     /// </summary>
     [Fact]
@@ -332,6 +359,33 @@ public sealed class DictionaryToDictionaryMapperUnitTests
 
         // Act
         var actual = this.mapper.MapDictionaryToImmutableDictionary(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo(new Dictionary<string, string>
+        {
+            { "1", "One" },
+            { "2", "Two" },
+            { "3", "Three" },
+        });
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="DictionaryToDictionaryMapper.MapDictionaryToImmutableSortedDictionary"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDictionaryToImmutableSortedDictionary()
+    {
+        // Arrange
+        Dictionary<int, CountingValues> input = new()
+        {
+            { 1, CountingValues.One },
+            { 2, CountingValues.Two },
+            { 3, CountingValues.Three },
+        };
+
+        // Act
+        var actual = this.mapper.MapDictionaryToImmutableSortedDictionary(input);
 
         // Assert
         actual.Should().BeEquivalentTo(new Dictionary<string, string>

@@ -95,11 +95,25 @@ public sealed partial class DictionaryToDictionaryMapper
     public partial ReadOnlyDictionary<string, string> MapDictionaryToReadOnlyDictionary(Dictionary<int, CountingValues> input);
 
     /// <summary>
+    /// Map a <see cref="Dictionary{TKey,TValue}"/> to <see cref="IImmutableDictionary{TKey,TValue}"/>.
+    /// </summary>
+    /// <param name="input">The input dictionary.</param>
+    /// <returns>The mapped dictionary.</returns>
+    public partial IImmutableDictionary<string, string> MapDictionaryToIImmutableDictionary(Dictionary<int, CountingValues> input);
+
+    /// <summary>
     /// Map a <see cref="Dictionary{TKey,TValue}"/> to <see cref="ImmutableDictionary{TKey,TValue}"/>.
     /// </summary>
     /// <param name="input">The input dictionary.</param>
     /// <returns>The mapped dictionary.</returns>
     public partial ImmutableDictionary<string, string> MapDictionaryToImmutableDictionary(Dictionary<int, CountingValues> input);
+
+    /// <summary>
+    /// Map a <see cref="Dictionary{TKey,TValue}"/> to <see cref="ImmutableSortedDictionary{TKey,TValue}"/>.
+    /// </summary>
+    /// <param name="input">The input dictionary.</param>
+    /// <returns>The mapped dictionary.</returns>
+    public partial ImmutableSortedDictionary<string, string> MapDictionaryToImmutableSortedDictionary(Dictionary<int, CountingValues> input);
 
     /// <summary>
     /// Map a <see cref="Dictionary{TKey,TValue}"/> to <see cref="FrozenDictionary{TKey,TValue}"/>.
