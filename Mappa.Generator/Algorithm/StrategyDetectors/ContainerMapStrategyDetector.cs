@@ -61,7 +61,8 @@ internal sealed class ContainerMapStrategyDetector
             mapStrategy = new CollectionToCollectionMapStrategy(
                 this.context.TargetType,
                 this.context.SourceType,
-                elementStrategy);
+                elementStrategy,
+                this.context.MapMethod?.MethodSymbol);
         }
 
         return mapStrategy is not NoMapStrategy;
@@ -111,8 +112,7 @@ internal sealed class ContainerMapStrategyDetector
                 return true;
             }
 
-            // TODO [#105] Check the constructor is accessible from the called location.
-            return this.context.TargetType.HasZeroParametersConstructor();
+            return this.context.TargetType.HasAccessibleZeroParametersConstructor(this.context.MapMethod?.MethodSymbol);
         }
     }
 
@@ -201,8 +201,7 @@ internal sealed class ContainerMapStrategyDetector
             }
 
             // TODO [#109] Support constructor with 1 integer parameter (capacity) via mappaSettings.
-            // TODO [#105] Check the constructor is accessible from the called location.
-            return this.context.TargetType.HasZeroParametersConstructor();
+            return this.context.TargetType.HasAccessibleZeroParametersConstructor(this.context.MapMethod?.MethodSymbol);
         }
     }
 }

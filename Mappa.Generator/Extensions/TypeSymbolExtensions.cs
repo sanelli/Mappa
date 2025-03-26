@@ -1182,15 +1182,31 @@ internal static class TypeSymbolExtensions
     /// Check if <paramref name="namedTypeSymbol"/> has a constructor with empty parameters.
     /// </summary>
     /// <param name="namedTypeSymbol">The symbol to check has a constructor without parameters.</param>
+    /// <param name="accessibleFromMethod">Optional method, if provided (and not <c>null</c>) we will check that the constructor can be invoked from <paramref name="accessibleFromMethod"/>.</param>
     /// <returns><c>true</c> if <paramref name="namedTypeSymbol"/> has a constructor with no parameters, <c>false</c> otherwise.</returns>
-    internal static bool HasZeroParametersConstructor(this INamedTypeSymbol namedTypeSymbol)
-        => namedTypeSymbol.Constructors.Any(constructor => constructor.Parameters.Length == 0);
+    internal static bool HasAccessibleZeroParametersConstructor(
+        this INamedTypeSymbol namedTypeSymbol,
+        IMethodSymbol? accessibleFromMethod = null)
+    {
+        var constructor = namedTypeSymbol.Constructors.FirstOrDefault(constructor => constructor.Parameters.Length == 0);
+        if (constructor is null)
+        {
+            return false;
+        }
+
+        return accessibleFromMethod == null || constructor.IsAccessibleFromMethod(accessibleFromMethod);
+    }
 
     /// <summary>
     /// Check if <paramref name="typeSymbol"/> has a constructor with empty parameters.
     /// </summary>
     /// <param name="typeSymbol">The symbol to check has a constructor without parameters.</param>
+    /// <param name="accessibleFromMethod">Optional method, if provided (and not <c>null</c>) we will check that the constructor can be invoked from <paramref name="accessibleFromMethod"/>.</param>
     /// <returns><c>true</c> if <paramref name="typeSymbol"/> has a constructor with no parameters, <c>false</c> otherwise.</returns>
-    internal static bool HasZeroParametersConstructor(this ITypeSymbol typeSymbol)
-        => typeSymbol.TypeKind != TypeKind.Interface && typeSymbol is INamedTypeSymbol namedTypeSymbol && namedTypeSymbol.HasZeroParametersConstructor();
+    internal static bool HasAccessibleZeroParametersConstructor(
+        this ITypeSymbol typeSymbol,
+        IMethodSymbol? accessibleFromMethod = null)
+        => typeSymbol.TypeKind != TypeKind.Interface &&
+           typeSymbol is INamedTypeSymbol namedTypeSymbol &&
+           namedTypeSymbol.HasAccessibleZeroParametersConstructor(accessibleFromMethod);
 }

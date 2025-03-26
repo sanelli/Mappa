@@ -14,16 +14,23 @@ namespace Mappa.Generator.Models.Strategies;
 /// <param name="targetType">The target type.</param>
 /// <param name="sourceType">The source type.</param>
 /// <param name="elementStrategy">The strategy for the element.</param>
+/// <param name="methodSymbol">The method this strategy is used for.</param>
 internal sealed class CollectionToCollectionMapStrategy(
     ITypeSymbol targetType,
     ITypeSymbol sourceType,
-    MapStrategy elementStrategy)
+    MapStrategy elementStrategy,
+    IMethodSymbol? methodSymbol)
         : MapStrategy(targetType, sourceType)
 {
     /// <summary>
     /// Gets the strategy for the keys.
     /// </summary>
-    public MapStrategy ElementStrategy { get; } = elementStrategy;
+    internal MapStrategy ElementStrategy { get; } = elementStrategy;
+
+    /// <summary>
+    /// Gets the method symbol.
+    /// </summary>
+    internal IMethodSymbol? MethodSymbol { get; } = methodSymbol;
 
     /// <inheritdoc/>
     internal override IMappaStrategyBuilder GetBuilder() => new CollectionToCollectionMapStrategyBuilder(this);

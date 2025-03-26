@@ -561,6 +561,49 @@ public sealed class DictionaryToDictionaryMapStrategyIntegrationTests
     }
 
     /// <summary>
+    /// Test a mapping cannot be created from <see cref="Dictionary{TKey,TValue}"/>
+    /// to a custom derived implementation of <see cref="IDictionary{TKey,TValue}"/>
+    /// that does not expose generic parameters when target has a private constructor
+    /// with zero parameters.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CannotMapDictionaryToCustomDerivedIDictionaryWithoutGenericParametersWhenEmptyConstructorIsPrivate()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+
+                                  using Mappa.Attributes;
+                                  using System.Collections.Generic;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public partial class Target : IDictionary<int, long>
+                                  {
+                                      private Target(){ }
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial Target Map(Dictionary<short, int> input);
+                                  }
+
+                                  #nullable restore
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .ContainDiagnostic(MappaDiagnosticDescriptors.CannotIdentifyStrategy, typeof(Dictionary<short, int>).ToString(), "Mappa.Generator.Tests.UnitTests.SourceCode.Target");
+    }
+
+    /// <summary>
     /// Test a mapping can be created from  derived implementation of <see cref="IDictionary{TKey,TValue}"/>
     /// that exposes generic parameters to <see cref="Dictionary{TKey,TValue}"/>.
     /// </summary>

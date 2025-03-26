@@ -41,7 +41,16 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
     {
         var stringBuilder = new PrettyCode.StringBuilder();
 
-        AppendTargetVariable(stringBuilder, source, context, this.strategy.TargetType, this.strategy.SourceType, out var targetVariableName, out var addMethod, out var targetCounterTemporary);
+        AppendTargetVariable(
+            stringBuilder,
+            source,
+            context,
+            this.strategy.MethodSymbol,
+            this.strategy.TargetType,
+            this.strategy.SourceType,
+            out var targetVariableName,
+            out var addMethod,
+            out var targetCounterTemporary);
         using (AppendLoopBlock(
                    stringBuilder,
                    source,
@@ -172,6 +181,7 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
         PrettyCode.StringBuilder stringBuilder,
         string source,
         MappaBuilderContext context,
+        IMethodSymbol? methodSymbol,
         ITypeSymbol targetTypeSymbol,
         ITypeSymbol sourceTypeSymbol,
         out string targetVariableName,
@@ -219,7 +229,7 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
             stringBuilder.AppendLine($"global::System.Collections.Generic.HashSet<{targetTypeSymbol.GetElementType().ToDisplayString()}> {targetVariableName} = new global::System.Collections.Generic.HashSet<{targetTypeSymbol.GetElementType().ToDisplayString()}>({capacity});");
         }
         else if (targetTypeSymbol.ImplementISet(context.Compilation)
-                 && targetTypeSymbol.HasZeroParametersConstructor())
+                 && targetTypeSymbol.HasAccessibleZeroParametersConstructor(methodSymbol))
         {
             // TODO [#111] Since Type can implement ICollection<> explicitly we should cast to ICollection before performing the Add.
             insertionMethod = InsertionMethod.Add;
@@ -273,7 +283,7 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
             stringBuilder.AppendLine($"global::System.Collections.Generic.List<{targetTypeSymbol.GetElementType().ToDisplayString()}> {targetVariableName} = new global::System.Collections.Generic.List<{targetTypeSymbol.GetElementType().ToDisplayString()}>({capacity});");
         }
         else if (targetTypeSymbol.ImplementICollection()
-                 && targetTypeSymbol.HasZeroParametersConstructor())
+                 && targetTypeSymbol.HasAccessibleZeroParametersConstructor(methodSymbol))
         {
             // TODO [#111] Since Type can implement ICollection<> explicitly we should cast to ICollection before performing the Add.
             // TODO [#109] Support constructor with 1 integer parameter (capacity) via mappaSettings.
