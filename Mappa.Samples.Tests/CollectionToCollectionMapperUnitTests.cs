@@ -1429,4 +1429,157 @@ public sealed class CollectionToCollectionMapperUnitTests
         // Assert
         actual.Should().BeEquivalentTo([0, 2]);
     }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIEnumerableToReadOnlyCollection"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIEnumerableToReadOnlyCollection()
+    {
+        // Arrange
+        IEnumerable<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIEnumerableToReadOnlyCollection(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIEnumerableToReadOnlySet"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIEnumerableToReadOnlySet()
+    {
+        // Arrange
+        IEnumerable<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIEnumerableToReadOnlySet(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIEnumerableToFrozenSet"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIEnumerableToFrozenSet()
+    {
+        // Arrange
+        IEnumerable<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIEnumerableToFrozenSet(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIEnumerableToIImmutableSet"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIEnumerableToIImmutableSet()
+    {
+        // Arrange
+        IEnumerable<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIEnumerableToIImmutableSet(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIEnumerableToImmutableHashSet"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIEnumerableToImmutableHashSet()
+    {
+        // Arrange
+        IEnumerable<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIEnumerableToImmutableHashSet(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIEnumerableToImmutableSortedSet"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIEnumerableToImmutableSortedSet()
+    {
+        // Arrange
+        IEnumerable<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIEnumerableToImmutableSortedSet(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIEnumerableToIImmutableList"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIEnumerableToIImmutableList()
+    {
+        // Arrange
+        IEnumerable<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIEnumerableToIImmutableList(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIEnumerableToImmutableArray"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIEnumerableToImmutableArray()
+    {
+        // Arrange
+        IEnumerable<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIEnumerableToImmutableArray(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIEnumerableToImmutableList"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIEnumerableToImmutableList()
+    {
+        // Arrange
+        IEnumerable<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIEnumerableToImmutableList(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
 }

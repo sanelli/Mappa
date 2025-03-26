@@ -2,6 +2,10 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using System.Collections.Frozen;
+using System.Collections.Immutable;
+using System.Collections.ObjectModel;
+
 using Mappa.Attributes;
 using Mappa.Samples.Models;
 
@@ -677,13 +681,75 @@ public sealed partial class CollectionToCollectionMapper
     /// <returns>The output collection.</returns>
     public partial IReadOnlyList<int> MapFromArrayToIReadOnlyList(CountingValues[] input);
 
-    // TODO [#105] CanMapFromIEnumerableToReadOnlyCollection.
-    // TODO [#105] CanMapFromIEnumerableToReadOnlySet.
-    // TODO [#105] CanMapFromIEnumerableToFrozenSet.
-    // TODO [#105] CanMapFromIEnumerableToIImmutableSet.
-    // TODO [#105] CanMapFromIEnumerableToImmutableHashSet.
-    // TODO [#105] CanMapFromIEnumerableToImmutableSortedSet.
-    // TODO [#105] CanMapFromIEnumerableToIImmutableList.
-    // TODO [#105] CanMapFromIEnumerableToImmutableArray.
-    // TODO [#105] CanMapFromIEnumerableToImmutableList.
+    /// <summary>
+    /// Map an <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="ReadOnlyCollection{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial ReadOnlyCollection<int> MapFromIEnumerableToReadOnlyCollection(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="ReadOnlySet{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial ReadOnlySet<int> MapFromIEnumerableToReadOnlySet(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="FrozenSet{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial FrozenSet<int> MapFromIEnumerableToFrozenSet(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="IImmutableSet{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial IImmutableSet<int> MapFromIEnumerableToIImmutableSet(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="ImmutableHashSet{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial ImmutableHashSet<int> MapFromIEnumerableToImmutableHashSet(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="ImmutableSortedSet{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial ImmutableSortedSet<int> MapFromIEnumerableToImmutableSortedSet(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="IImmutableList{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial IImmutableList<int> MapFromIEnumerableToIImmutableList(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="ImmutableArray{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial ImmutableArray<int> MapFromIEnumerableToImmutableArray(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="ImmutableList{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial ImmutableList<int> MapFromIEnumerableToImmutableList(IEnumerable<CountingValues> input);
 }
