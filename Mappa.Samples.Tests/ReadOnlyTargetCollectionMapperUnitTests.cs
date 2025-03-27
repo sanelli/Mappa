@@ -44,7 +44,9 @@ public sealed class ReadOnlyTargetCollectionMapperUnitTests
                 [22] = "122",
                 [23] = "123",
                 [24] = "124",
-            });
+            },
+            [25, 26, 27],
+            [28, 29, 30]);
 
         // Act
         var actual = this.mapper.Map(source);
@@ -64,6 +66,8 @@ public sealed class ReadOnlyTargetCollectionMapperUnitTests
         actual.PropertyH["22"].Should().Be(122);
         actual.PropertyH["23"].Should().Be(123);
         actual.PropertyH["24"].Should().Be(124);
+        actual.PropertyI.Should().BeEquivalentTo("25", "26", "27");
+        actual.PropertyJ.Should().BeEquivalentTo("28", "29", "30");
     }
 
     /// <summary>
@@ -92,7 +96,9 @@ public sealed class ReadOnlyTargetCollectionMapperUnitTests
                 [22] = "122",
                 [23] = "123",
                 [24] = "124",
-            });
+            },
+            [25, 26, 27],
+            [28, 29, 30]);
 
         // Act
         var actual = this.mapper.MapWithPrivateSetters(source);
@@ -112,6 +118,8 @@ public sealed class ReadOnlyTargetCollectionMapperUnitTests
         actual.PropertyH["22"].Should().Be(122);
         actual.PropertyH["23"].Should().Be(123);
         actual.PropertyH["24"].Should().Be(124);
+        actual.PropertyI.Should().BeEquivalentTo("25", "26", "27");
+        actual.PropertyJ.Should().BeEquivalentTo("28", "29", "30");
     }
 
     /// <summary>
@@ -140,7 +148,9 @@ public sealed class ReadOnlyTargetCollectionMapperUnitTests
                 [22] = "122",
                 [23] = "123",
                 [24] = "124",
-            });
+            },
+            [25, 26, 27],
+            [28, 29, 30]);
 
         // Act
         var actual = this.mapper.MapToProtobuf(source);

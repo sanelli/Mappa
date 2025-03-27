@@ -48,7 +48,7 @@ internal sealed class ReadonlyCollectionPropertyMapStrategyBuilder
                     stringBuilder.AppendLine(targetElementCode);
                 }
 
-                stringBuilder.AppendLine($"{context.GetCompositeTypeTargetName()}.{this.strategy.TargetProperty.Name}.Add({targetElementTemporary});");
+                AppendIndexer(stringBuilder, context, this.strategy, targetElementTemporary);
             }
         }
 
@@ -64,12 +64,33 @@ internal sealed class ReadonlyCollectionPropertyMapStrategyBuilder
                     stringBuilder.AppendLine(targetElementCode);
                 }
 
-                // TODO [#111] Add method could be implemented explicitly so a conversion might be needed.
-                stringBuilder.AppendLine($"{context.GetCompositeTypeTargetName()}.{this.strategy.TargetProperty.Name}.Add({targetElementTemporary});");
+                AppendIndexer(stringBuilder, context, this.strategy, targetElementTemporary);
             }
         }
 
         return (string.Empty, stringBuilder.ToString());
+    }
+
+    private static void AppendIndexer(PrettyCode.StringBuilder stringBuilder, MappaBuilderContext context, ReadonlyCollectionPropertyMapStrategy strategy, string targetElementTemporary)
+    {
+        var elementType = strategy.TargetType.GetElementType();
+        var methodAccessMode = strategy.TargetType.GetInterfaceMethodAccessMode(
+            "Add",
+            "System.Collections.Generic.ICollection",
+            TypeSymbolExtensions.NormalizeType(elementType.ToDisplayString()),
+            returnType => returnType.IsVoid(),
+            [elementType]);
+
+        if (methodAccessMode == InterfaceMethodAccessMode.InterfaceExplicit)
+        {
+            var interfaceTemporary = context.NextTemporary();
+            stringBuilder.AppendLine($"System.Collections.Generic.ICollection<{elementType}> {interfaceTemporary} = {context.GetCompositeTypeTargetName()}.{strategy.TargetProperty.Name};");
+            stringBuilder.AppendLine($"{interfaceTemporary}.Add({targetElementTemporary});");
+        }
+        else
+        {
+            stringBuilder.AppendLine($"{context.GetCompositeTypeTargetName()}.{strategy.TargetProperty.Name}.Add({targetElementTemporary});");
+        }
     }
 
     private static string GetLengthPropertyName(ITypeSymbol typeSymbol)

@@ -20,6 +20,8 @@ public sealed class SourceClassWithCollections
     /// <param name="propertyF">The F property.</param>
     /// <param name="propertyG">The G property.</param>
     /// <param name="propertyH">The H property.</param>
+    /// <param name="propertyI">The I property.</param>
+    /// <param name="propertyJ">The J property.</param>
     public SourceClassWithCollections(
         int[] propertyA,
         IList<int> propertyB,
@@ -28,7 +30,9 @@ public sealed class SourceClassWithCollections
         ICollection<int> propertyE,
         IEnumerable<int> propertyF,
         Dictionary<int, string> propertyG,
-        IDictionary<int, string> propertyH)
+        IDictionary<int, string> propertyH,
+        ICollection<int> propertyI,
+        ICollection<int> propertyJ)
     {
         this.PropertyA = propertyA;
         this.PropertyB = propertyB;
@@ -38,6 +42,8 @@ public sealed class SourceClassWithCollections
         this.PropertyF = propertyF;
         this.PropertyG = propertyG;
         this.PropertyH = propertyH;
+        this.PropertyI = propertyI;
+        this.PropertyJ = propertyJ;
     }
 
     /// <summary>
@@ -85,4 +91,14 @@ public sealed class SourceClassWithCollections
     /// Gets an <see cref="IDictionary{TKey,TValue}"/> property.
     /// </summary>
     public IDictionary<int, string> PropertyH { get; }
+
+    /// <summary>
+    /// Gets an enumerable property.
+    /// </summary>
+    public IEnumerable<int> PropertyI { get; }
+
+    /// <summary>
+    /// Gets an enumerable property.
+    /// </summary>
+    public IEnumerable<int> PropertyJ { get; }
 }
