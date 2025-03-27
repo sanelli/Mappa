@@ -800,4 +800,20 @@ public sealed partial class CollectionToCollectionMapper
     /// <param name="input">The input collection.</param>
     /// <returns>The output collection.</returns>
     public partial CustomCollectionImplementingExplicitlyICollectionOfIntegers MapFromIEnumerableToCustomCollectionImplementingExplicitlyICollectionOfIntegers(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="CustomCollectionImplementingExplicitlyISet{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial CustomCollectionImplementingExplicitlyISet<int> MapFromIEnumerableToCustomCollectionImplementingExplicitlyISet(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="CustomCollectionImplementingExplicitlyISetOfIntegers"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial CustomCollectionImplementingExplicitlyISetOfIntegers MapFromIEnumerableToCustomCollectionImplementingExplicitlyISetOfIntegers(IEnumerable<CountingValues> input);
 }

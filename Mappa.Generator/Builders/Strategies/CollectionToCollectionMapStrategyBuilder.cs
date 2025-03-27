@@ -247,8 +247,18 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
         else if (targetTypeSymbol.ImplementISet(context.Compilation)
                  && targetTypeSymbol.HasAccessibleZeroParametersConstructor(methodSymbol))
         {
-            // TODO [#111] Since Type can implement ISet<> explicitly we should cast to ISet before performing the Add.
             insertionMethod = InsertionMethod.Add;
+            var elementType = targetTypeSymbol.GetElementType();
+
+            // Use ICollection because ISet derive the Add from ICollection
+            interfaceToAccessFrom = $"System.Collections.Generic.ICollection<{TypeSymbolExtensions.NormalizeType(elementType.ToDisplayString())}>";
+            interfaceMethodAccessMode = targetTypeSymbol.GetInterfaceMethodAccessMode(
+                "Add",
+                "System.Collections.Generic.ICollection",
+                TypeSymbolExtensions.NormalizeType(elementType.ToDisplayString()),
+                returnType => returnType.IsVoid(),
+                [elementType]);
+
             stringBuilder.AppendLine($"global::{targetTypeSymbol} {targetVariableName} = new global::{targetTypeSymbol}();");
         }
         else if (targetTypeSymbol.IsOrImplementStack(context.Compilation))
