@@ -4,7 +4,6 @@
 
 using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Models.Strategies;
-using Mappa.Generator.Tests.Abstractions;
 using Mappa.Generator.Tests.Assertions;
 
 namespace Mappa.Generator.Tests;
@@ -13,10 +12,9 @@ namespace Mappa.Generator.Tests;
 /// Integration tests for the <see cref="CollectionToCollectionMapStrategy"/>.
 /// </summary>
 public sealed partial class CollectionToCollectionMapStrategyIntegrationTests
-    : MappaGeneratorAbstractUnitTests
 {
     /// <summary>
-    /// Test map targeting class with non empty constructor cannot be generated.
+    /// Test map targeting class with non-empty constructor cannot be generated.
     /// </summary>
     /// <returns>The async task.</returns>
     [Fact]

@@ -4,6 +4,8 @@
 
 using System.Text.RegularExpressions;
 
+using Mappa.Generator.Extensions;
+
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Mappa.Generator.Tests.Assertions;
@@ -67,12 +69,12 @@ internal static partial class AssertionsHelpers
         {
             var firstIndexOfOpenBrackets = type.IndexOf('[', StringComparison.OrdinalIgnoreCase);
             var typeName = type[..firstIndexOfOpenBrackets];
-            namedTypeSymbol = compilation.GetTypeByMetadataName(NormalizeType(typeName))!;
+            namedTypeSymbol = compilation.GetTypeByMetadataName(TypeSymbolExtensions.NormalizeType(typeName))!;
             var generics = SplitWithBoundaries(type.Substring(firstIndexOfOpenBrackets + 1, type.Length - firstIndexOfOpenBrackets - 2), ',', '[', ']');
             if (generics.Length > 0 && Array.TrueForAll(generics, generic => !string.IsNullOrWhiteSpace(generic)))
             {
                 var typeArguments = generics
-                    .Select(NormalizeType)
+                    .Select(TypeSymbolExtensions.NormalizeType)
                     .Select(compilation.GetTypeSymbol)
                     .ToArray();
                 var constructedGenericType = namedTypeSymbol.Construct(typeArguments);
@@ -85,11 +87,11 @@ internal static partial class AssertionsHelpers
 
             var typeName = type[..firstIndexOfOpenAngularBracket];
             var generics = SplitWithBoundaries(type.Substring(firstIndexOfOpenAngularBracket + 1, type.Length - firstIndexOfOpenAngularBracket - 2), ',', '<', '>');
-            namedTypeSymbol = compilation.GetTypeByMetadataName(NormalizeType($"{typeName}`{generics.Length}"))!;
+            namedTypeSymbol = compilation.GetTypeByMetadataName(TypeSymbolExtensions.NormalizeType($"{typeName}`{generics.Length}"))!;
             if (generics.Length > 0 && Array.TrueForAll(generics, generic => !string.IsNullOrWhiteSpace(generic)))
             {
                 var typeArguments = generics
-                    .Select(NormalizeType)
+                    .Select(TypeSymbolExtensions.NormalizeType)
                     .Select(compilation.GetTypeSymbol)
                     .ToArray();
                 var constructedGenericType = namedTypeSymbol.Construct(typeArguments);
@@ -98,7 +100,7 @@ internal static partial class AssertionsHelpers
         }
         else
         {
-            namedTypeSymbol = compilation.GetTypeByMetadataName(NormalizeType(type))!;
+            namedTypeSymbol = compilation.GetTypeByMetadataName(TypeSymbolExtensions.NormalizeType(type))!;
         }
 
         return namedTypeSymbol;
@@ -182,24 +184,6 @@ internal static partial class AssertionsHelpers
                 _ => throw new ArgumentException($"Unknown switch label of type {statement.GetType().FullName}"),
             })
             .ToArray();
-
-    private static string NormalizeType(string type)
-        => type switch
-        {
-            "sbyte" => typeof(sbyte).ToString(),
-            "short" => typeof(short).ToString(),
-            "int" => typeof(int).ToString(),
-            "long" => typeof(long).ToString(),
-            "byte" => typeof(byte).ToString(),
-            "ushort" => typeof(ushort).ToString(),
-            "uint" => typeof(uint).ToString(),
-            "ulong" => typeof(ulong).ToString(),
-            "float" => typeof(float).ToString(),
-            "double" => typeof(double).ToString(),
-            "string" => typeof(string).ToString(),
-            "char" => typeof(char).ToString(),
-            _ => type,
-        };
 
     [GeneratedRegex("\\s+")]
     private static partial Regex ContainSpacesRegex();

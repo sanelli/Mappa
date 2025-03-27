@@ -784,4 +784,20 @@ public sealed partial class CollectionToCollectionMapper
     /// <param name="input">The input collection.</param>
     /// <returns>The output collection.</returns>
     public partial ImmutableStack<int> MapFromArrayToImmutableStack(CountingValues[] input);
+
+    /// <summary>
+    /// Map an <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="CustomCollectionImplementingExplicitlyICollection{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial CustomCollectionImplementingExplicitlyICollection<int> MapFromIEnumerableToCustomCollectionImplementingExplicitlyICollection(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map an <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="CustomCollectionImplementingExplicitlyICollectionOfIntegers"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial CustomCollectionImplementingExplicitlyICollectionOfIntegers MapFromIEnumerableToCustomCollectionImplementingExplicitlyICollectionOfIntegers(IEnumerable<CountingValues> input);
 }

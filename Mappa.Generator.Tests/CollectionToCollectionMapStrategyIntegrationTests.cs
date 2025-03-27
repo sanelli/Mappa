@@ -3,6 +3,7 @@
 // </copyright>
 
 using Mappa.Generator.Models.Strategies;
+using Mappa.Generator.Tests.Abstractions;
 using Mappa.Generator.Tests.Assertions;
 using Mappa.Generator.Tests.Assertions.Extensions;
 
@@ -12,6 +13,7 @@ namespace Mappa.Generator.Tests;
 /// Integration tests for the <see cref="CollectionToCollectionMapStrategy"/>.
 /// </summary>
 public sealed partial class CollectionToCollectionMapStrategyIntegrationTests
+    : MappaGeneratorAbstractUnitTests
 {
     /// <summary>
     /// Test map from <see cref="IEnumerable{T}"/> to <see cref="IEnumerable{T}"/>.

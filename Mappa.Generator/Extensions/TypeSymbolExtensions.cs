@@ -1237,4 +1237,32 @@ internal static class TypeSymbolExtensions
         => typeSymbol.TypeKind != TypeKind.Interface &&
            typeSymbol is INamedTypeSymbol namedTypeSymbol &&
            namedTypeSymbol.HasAccessibleZeroParametersConstructor(accessibleFromMethod);
+
+    /// <summary>
+    /// Normalize a type name (e.g. <c>"string"</c>
+    /// become  <c>"System.String"</c>).
+    /// </summary>
+    /// <param name="type">The type name to be normalised.</param>
+    /// <returns>The normalised name of the type.</returns>
+    internal static string NormalizeType(string type)
+        => type switch
+        {
+            "sbyte" => typeof(sbyte).ToString(),
+            "short" => typeof(short).ToString(),
+            "int" => typeof(int).ToString(),
+            "long" => typeof(long).ToString(),
+            "byte" => typeof(byte).ToString(),
+            "ushort" => typeof(ushort).ToString(),
+            "uint" => typeof(uint).ToString(),
+            "ulong" => typeof(ulong).ToString(),
+            "float" => typeof(float).ToString(),
+            "double" => typeof(double).ToString(),
+            "string" => typeof(string).ToString(),
+            "char" => typeof(char).ToString(),
+            "decimal" => typeof(decimal).ToString(),
+            "nint" => typeof(nint).ToString(),
+            "nuint" => typeof(nuint).ToString(),
+            "void" => typeof(void).ToString(),
+            _ => type,
+        };
 }

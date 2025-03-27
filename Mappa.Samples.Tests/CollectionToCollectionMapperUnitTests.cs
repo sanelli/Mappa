@@ -1650,4 +1650,38 @@ public sealed class CollectionToCollectionMapperUnitTests
         // Assert
         actual.Should().BeEquivalentTo([0, 2]);
     }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIEnumerableToCustomCollectionImplementingExplicitlyICollection"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIEnumerableToCustomCollectionImplementingExplicitlyICollection()
+    {
+        // Arrange
+        IEnumerable<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIEnumerableToCustomCollectionImplementingExplicitlyICollection(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIEnumerableToCustomCollectionImplementingExplicitlyICollectionOfIntegers"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIEnumerableToCustomCollectionImplementingExplicitlyICollectionOfIntegers()
+    {
+        // Arrange
+        IEnumerable<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIEnumerableToCustomCollectionImplementingExplicitlyICollectionOfIntegers(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
 }

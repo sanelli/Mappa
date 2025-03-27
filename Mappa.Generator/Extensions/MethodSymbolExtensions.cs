@@ -3,6 +3,7 @@
 // </copyright>
 
 using Mappa.Generator.Exceptions;
+using Mappa.Generator.Models;
 
 using Microsoft.CodeAnalysis;
 
@@ -75,9 +76,14 @@ internal static class MethodSymbolExtensions
     /// <returns><c>true</c> if the second parameter of the method is
     /// of type <see cref="MappaContext"/>, <c>false</c> otherwise.</returns>
     internal static bool SecondParameterIsMappaContext(
-        this IMethodSymbol methodSymbol,
+        this IMethodSymbol? methodSymbol,
         Compilation compilation)
     {
+        if (methodSymbol is null)
+        {
+            return true;
+        }
+
         var secondParameterType = methodSymbol.Parameters[1].Type;
         var mappaContextType = compilation.GetTypeByMetadataName(MappaContextTypeFullName);
         return SymbolEqualityComparer.Default.Equals(mappaContextType, secondParameterType);
@@ -97,5 +103,92 @@ internal static class MethodSymbolExtensions
             Accessibility.Internal => calleeMethod.ContainingAssembly.Equals(callerMethod.ContainingAssembly, SymbolEqualityComparer.Default),
             _ => false,
         };
+    }
+
+    /// <summary>
+    /// Check if a method can be accessed directly or can be accessed
+    /// via explicit interface.
+    /// </summary>
+    /// <param name="targetTypeSymbol">The type containing the method.</param>
+    /// <param name="methodName">The name of the method (e.g. <c>"Add"</c>).</param>
+    /// <param name="fullInterfaceName">The full name interface (e.g. <c>"System.Collections.Generic.ICollection"</c>).</param>
+    /// <param name="elementTypeName">The type of the element.</param>
+    /// <param name="returnTypeCheck">The check on the return type of the method.</param>
+    /// <param name="parameterTypes">The list of type of parameters.</param>
+    /// <returns>An enumeration indicating how the method can be accessed.</returns>
+    internal static InterfaceMethodAccessMode GetInterfaceMethodAccessMode(
+        this ITypeSymbol targetTypeSymbol,
+        string methodName,
+        string fullInterfaceName,
+        string elementTypeName,
+        Predicate<ITypeSymbol> returnTypeCheck,
+        ITypeSymbol[] parameterTypes)
+    {
+        // Look up for accessible method in the type and its hierarchy.
+        var currentSymbol = targetTypeSymbol;
+        while (currentSymbol is not null)
+        {
+            if (HasExpectedMethod(currentSymbol, methodName))
+            {
+                return InterfaceMethodAccessMode.Direct;
+            }
+
+            currentSymbol = currentSymbol.BaseType;
+        }
+
+        string explicitName = $"{fullInterfaceName}<{elementTypeName}>.{methodName}";
+        currentSymbol = targetTypeSymbol;
+        while (currentSymbol is not null)
+        {
+            if (HasExpectedMethod(currentSymbol, explicitName))
+            {
+                return InterfaceMethodAccessMode.InterfaceExplicit;
+            }
+
+            currentSymbol = currentSymbol.BaseType;
+        }
+
+        // Look up for the generic variant of the method name.
+        if (targetTypeSymbol is INamedTypeSymbol
+            { OriginalDefinition.TypeArguments.Length: > 0 } namedTypeSymbol)
+        {
+            var typeArgumentName = namedTypeSymbol.OriginalDefinition.TypeArguments[0].Name;
+            string genericName = $"{fullInterfaceName}<{typeArgumentName}>.{methodName}";
+            currentSymbol = targetTypeSymbol;
+            while (currentSymbol is not null)
+            {
+                if (HasExpectedMethod(currentSymbol, genericName))
+                {
+                    return InterfaceMethodAccessMode.InterfaceExplicit;
+                }
+
+                currentSymbol = currentSymbol.BaseType;
+            }
+        }
+
+        // The method cannot be found.
+        return InterfaceMethodAccessMode.None;
+
+        bool EqualParameters(IMethodSymbol methodSymbol)
+        {
+            for (int index = 0; index < parameterTypes.Length; index++)
+            {
+                if (!SymbolEqualityComparer.Default.Equals(methodSymbol.Parameters[index].Type, parameterTypes[index]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        bool HasExpectedMethod(ITypeSymbol typeSymbol, string name)
+            => typeSymbol
+                .GetMembers()
+                .OfType<IMethodSymbol>()
+                .Any(method => method.Name.Equals(name, StringComparison.Ordinal)
+                     && returnTypeCheck(method.ReturnType)
+                     && method.Parameters.Length == parameterTypes.Length
+                     && EqualParameters(method));
     }
 }
