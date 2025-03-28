@@ -82,7 +82,7 @@ internal sealed class NullableStrategyBuilder
         {
             stringBuilder.AppendLine(this.strategy.TargetType.IsNullable()
                 ? $"{targetTemporary} = ({this.strategy.TargetType.ToDisplayString()}) null;"
-                : $"throw new System.NullReferenceException(\"\\\"{originalSourceTemporary}\\\" is null.\")");
+                : $"throw new System.NullReferenceException(\"\\\"{originalSourceTemporary}\\\" is null.\");");
         }
 
         return (targetTemporary, stringBuilder.ToString());

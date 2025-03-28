@@ -17,13 +17,14 @@ namespace Mappa.Samples.Tests;
 public sealed class ReferenceToReferenceWithNullableDisabledMapperUnitTest
 {
     private readonly ReferenceToReferenceWithNullableDisabledMapper mapper = new();
+    private readonly ReferenceToValueTypeWithNullableDisabledMapper valueTypeMapper = new();
 
     /// <summary>
     /// Unit test for <see cref="ReferenceToReferenceWithNullableDisabledMapper.Map"/>
     /// when input is not null.
     /// </summary>
     [Fact]
-    [IntegrationTest]
+    [UnitTest]
     public void CanMapWhenNotNull()
     {
         // Arrange
@@ -34,7 +35,7 @@ public sealed class ReferenceToReferenceWithNullableDisabledMapperUnitTest
 
         // Arrange
         target.Should().NotBeNull();
-        target!.ParamA.Should().Be($"{source.ParamA}");
+        target.ParamA.Should().Be($"{source.ParamA}");
         target.ParamB.Should().Be((int)source.ParamB);
     }
 
@@ -43,7 +44,7 @@ public sealed class ReferenceToReferenceWithNullableDisabledMapperUnitTest
     /// when input is null.
     /// </summary>
     [Fact]
-    [IntegrationTest]
+    [UnitTest]
     public void CanMapWhenNull()
     {
         // Act
@@ -51,5 +52,61 @@ public sealed class ReferenceToReferenceWithNullableDisabledMapperUnitTest
 
         // Arrange
         target.Should().BeNull();
+    }
+
+    /// <summary>
+    /// Test <see cref="ReferenceToValueTypeWithNullableDisabledMapper.MapToInteger"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapToInteger()
+    {
+        // Act
+        var target = this.valueTypeMapper.MapToInteger("30");
+
+        // Arrange
+        target.Should().Be(30);
+    }
+
+    /// <summary>
+    /// Test <see cref="ReferenceToValueTypeWithNullableDisabledMapper.MapToInteger"/> when input is null.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapToIntegerWithInputIsNull()
+    {
+        // Act
+        var target = () => this.valueTypeMapper.MapToInteger(null);
+
+        // Arrange
+        target.Should().Throw<NullReferenceException>();
+    }
+
+    /// <summary>
+    /// Test <see cref="ReferenceToValueTypeWithNullableDisabledMapper.MapToNullableInteger"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapToNullableInteger()
+    {
+        // Act
+        var target = this.valueTypeMapper.MapToNullableInteger("30");
+
+        // Arrange
+        target.Should().Be(30);
+    }
+
+    /// <summary>
+    /// Test <see cref="ReferenceToValueTypeWithNullableDisabledMapper.MapToNullableInteger"/> when input is null.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapToNullableIntegerWhenInputIsNull()
+    {
+        // Act
+        var target = this.valueTypeMapper.MapToNullableInteger(null);
+
+        // Arrange
+        target.Should().Be(null);
     }
 }
