@@ -22,6 +22,10 @@ public sealed class TargetClassWithPrivateSetterPropertyCollections
         this.PropertyF = new List<string>();
         this.PropertyG = new Dictionary<string, int>();
         this.PropertyH = new Dictionary<string, int>();
+        this.PropertyI = new();
+        this.PropertyJ = new();
+        this.PropertyK = new();
+        this.PropertyL = new();
     }
 
     /// <summary>
@@ -63,4 +67,24 @@ public sealed class TargetClassWithPrivateSetterPropertyCollections
     /// Gets an <see cref="IDictionary{TKey,TValue}"/> property.
     /// </summary>
     public IDictionary<string, int> PropertyH { get; private set; }
+
+    /// <summary>
+    /// Gets a <see cref="CustomCollectionImplementingExplicitlyICollection{T}"/> property.
+    /// </summary>
+    public CustomCollectionImplementingExplicitlyICollection<string> PropertyI { get; private set; }
+
+    /// <summary>
+    /// Gets a <see cref="CustomCollectionImplementingExplicitlyICollectionOfStrings"/> property.
+    /// </summary>
+    public CustomCollectionImplementingExplicitlyICollectionOfStrings PropertyJ { get; private set; }
+
+    /// <summary>
+    /// gets a <see cref="CustomDictionaryWithGenericAndExplicitImplementation{K,V}"/>.
+    /// </summary>
+    public CustomDictionaryWithGenericAndExplicitImplementation<string, int> PropertyK { get; private set; }
+
+    /// <summary>
+    /// gets a <see cref="CustomDictionaryWithNonGenericAndExplicitImplementation"/>.
+    /// </summary>
+    public CustomDictionaryWithNonGenericAndExplicitImplementation PropertyL { get; private set; }
 }

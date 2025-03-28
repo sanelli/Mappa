@@ -50,7 +50,9 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
             this.strategy.SourceType,
             out var targetVariableName,
             out var addMethod,
-            out var targetCounterTemporary);
+            out var targetCounterTemporary,
+            out var interfaceMethodAccessMode,
+            out var interfaceToAccessFrom);
         using (AppendLoopBlock(
                    stringBuilder,
                    source,
@@ -80,7 +82,17 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
 
                     break;
                 case InsertionMethod.Add:
-                    stringBuilder.AppendLine($"{targetVariableName}.Add({targetElementVariable});");
+                    if (interfaceMethodAccessMode == InterfaceMethodAccessMode.InterfaceExplicit)
+                    {
+                        var interfaceTemporary = context.NextTemporary();
+                        stringBuilder.AppendLine($"{interfaceToAccessFrom} {interfaceTemporary} = {targetVariableName};");
+                        stringBuilder.AppendLine($"{interfaceTemporary}.Add({targetElementVariable});");
+                    }
+                    else
+                    {
+                        stringBuilder.AppendLine($"{targetVariableName}.Add({targetElementVariable});");
+                    }
+
                     break;
                 case InsertionMethod.Push:
                     stringBuilder.AppendLine($"{targetVariableName}.Push({targetElementVariable});");
@@ -186,10 +198,14 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
         ITypeSymbol sourceTypeSymbol,
         out string targetVariableName,
         out InsertionMethod insertionMethod,
-        out string? counterVariableName)
+        out string? counterVariableName,
+        out InterfaceMethodAccessMode interfaceMethodAccessMode,
+        out string interfaceToAccessFrom)
     {
         targetVariableName = context.NextTemporary();
         counterVariableName = null;
+        interfaceMethodAccessMode = InterfaceMethodAccessMode.None;
+        interfaceToAccessFrom = string.Empty;
 
         if (targetTypeSymbol.IsArray()
             || targetTypeSymbol.IsSpan(context.Compilation)
@@ -231,8 +247,18 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
         else if (targetTypeSymbol.ImplementISet(context.Compilation)
                  && targetTypeSymbol.HasAccessibleZeroParametersConstructor(methodSymbol))
         {
-            // TODO [#111] Since Type can implement ICollection<> explicitly we should cast to ICollection before performing the Add.
             insertionMethod = InsertionMethod.Add;
+            var elementType = targetTypeSymbol.GetElementType();
+
+            // Use ICollection because ISet derive the Add from ICollection
+            interfaceToAccessFrom = $"System.Collections.Generic.ICollection<{TypeSymbolExtensions.NormalizeType(elementType.ToDisplayString())}>";
+            interfaceMethodAccessMode = targetTypeSymbol.GetInterfaceMethodAccessMode(
+                "Add",
+                "System.Collections.Generic.ICollection",
+                TypeSymbolExtensions.NormalizeType(elementType.ToDisplayString()),
+                returnType => returnType.IsVoid(),
+                [elementType]);
+
             stringBuilder.AppendLine($"global::{targetTypeSymbol} {targetVariableName} = new global::{targetTypeSymbol}();");
         }
         else if (targetTypeSymbol.IsOrImplementStack(context.Compilation))
@@ -285,12 +311,21 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
         else if (targetTypeSymbol.ImplementICollection()
                  && targetTypeSymbol.HasAccessibleZeroParametersConstructor(methodSymbol))
         {
-            // TODO [#111] Since Type can implement ICollection<> explicitly we should cast to ICollection before performing the Add.
             // TODO [#109] Support constructor with 1 integer parameter (capacity) via mappaSettings.
             // here we handle the scenario of the a concrete type implementing ICollection<T>.
             // We are sure that is concrete because ICollection<T> is implemented in a different branch
             // and we re also sure it has a constructor with 0 arguments that can be used.
             insertionMethod = InsertionMethod.Add;
+
+            var elementType = targetTypeSymbol.GetElementType();
+            interfaceToAccessFrom = $"System.Collections.Generic.ICollection<{TypeSymbolExtensions.NormalizeType(elementType.ToDisplayString())}>";
+            interfaceMethodAccessMode = targetTypeSymbol.GetInterfaceMethodAccessMode(
+                "Add",
+                "System.Collections.Generic.ICollection",
+                TypeSymbolExtensions.NormalizeType(elementType.ToDisplayString()),
+                returnType => returnType.IsVoid(),
+                [elementType]);
+
             stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {targetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}();");
         }
         else

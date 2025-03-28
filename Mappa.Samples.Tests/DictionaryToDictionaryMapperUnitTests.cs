@@ -476,4 +476,58 @@ public sealed class DictionaryToDictionaryMapperUnitTests
             { "3", "Three" },
         });
     }
+
+    /// <summary>
+    /// Unit test for <see cref="DictionaryToDictionaryMapper.MapDictionaryToCustomDictionaryWithGenericAndExplicitImplementation"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDictionaryToCustomDictionaryWithGenericAndExplicitImplementation()
+    {
+        // Arrange
+        Dictionary<int, CountingValues> input = new()
+        {
+            { 1, CountingValues.One },
+            { 2, CountingValues.Two },
+            { 3, CountingValues.Three },
+        };
+
+        // Act
+        var actual = this.mapper.MapDictionaryToCustomDictionaryWithGenericAndExplicitImplementation(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo(new Dictionary<string, string>
+        {
+            { "1", "One" },
+            { "2", "Two" },
+            { "3", "Three" },
+        });
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="DictionaryToDictionaryMapper.MapDictionaryToCustomDictionaryWithNonGenericAndExplicitImplementation"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDictionaryToCustomDictionaryWithNonGenericAndExplicitImplementation()
+    {
+        // Arrange
+        Dictionary<int, CountingValues> input = new()
+        {
+            { 1, CountingValues.One },
+            { 2, CountingValues.Two },
+            { 3, CountingValues.Three },
+        };
+
+        // Act
+        var actual = this.mapper.MapDictionaryToCustomDictionaryWithNonGenericAndExplicitImplementation(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo(new Dictionary<string, string>
+        {
+            { "1", "One" },
+            { "2", "Two" },
+            { "3", "Three" },
+        });
+    }
 }

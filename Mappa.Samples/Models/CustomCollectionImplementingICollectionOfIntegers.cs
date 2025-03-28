@@ -6,7 +6,7 @@ namespace Mappa.Samples.Models;
 
 /// <summary>
 /// Custom non-generic class implementing <see cref="ICollection{T}"/>
-/// or <see cref="CountingValues"/>.
+/// of <see cref="int"/>.
 /// </summary>
 public sealed class CustomCollectionImplementingICollectionOfIntegers(int[] items)
     : CustomCollectionImplementingICollection<int>(items)

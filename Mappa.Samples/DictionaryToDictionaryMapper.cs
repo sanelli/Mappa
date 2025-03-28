@@ -135,4 +135,18 @@ public sealed partial class DictionaryToDictionaryMapper
     /// <param name="input">The input dictionary.</param>
     /// <returns>The mapped dictionary.</returns>
     public partial Dictionary<string, string> MapSortedDictionaryToDictionary(SortedDictionary<int, CountingValues> input);
+
+    /// <summary>
+    /// Map a <see cref="Dictionary{TKey,TValue}"/> to <see cref="CustomDictionaryWithGenericAndExplicitImplementation{TKey,TValue}"/>.
+    /// </summary>
+    /// <param name="input">The input dictionary.</param>
+    /// <returns>The mapped dictionary.</returns>
+    public partial CustomDictionaryWithGenericAndExplicitImplementation<string, string> MapDictionaryToCustomDictionaryWithGenericAndExplicitImplementation(Dictionary<int, CountingValues> input);
+
+    /// <summary>
+    /// Map a <see cref="Dictionary{TKey,TValue}"/> to <see cref="CustomDictionaryWithNonGenericAndExplicitImplementation"/>.
+    /// </summary>
+    /// <param name="input">The input dictionary.</param>
+    /// <returns>The mapped dictionary.</returns>
+    public partial CustomDictionaryWithNonGenericAndExplicitImplementation MapDictionaryToCustomDictionaryWithNonGenericAndExplicitImplementation(Dictionary<int, CountingValues> input);
 }
