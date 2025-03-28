@@ -46,7 +46,19 @@ public sealed class ReadOnlyTargetCollectionMapperUnitTests
                 [24] = "124",
             },
             [25, 26, 27],
-            [28, 29, 30]);
+            [28, 29, 30],
+            new Dictionary<int, string>
+            {
+                [31] = "131",
+                [32] = "132",
+                [33] = "133",
+            },
+            new Dictionary<int, string>
+            {
+                [34] = "134",
+                [35] = "135",
+                [36] = "136",
+            });
 
         // Act
         var actual = this.mapper.Map(source);
@@ -68,6 +80,14 @@ public sealed class ReadOnlyTargetCollectionMapperUnitTests
         actual.PropertyH["24"].Should().Be(124);
         actual.PropertyI.Should().BeEquivalentTo("25", "26", "27");
         actual.PropertyJ.Should().BeEquivalentTo("28", "29", "30");
+        actual.PropertyK.Should().HaveCount(3);
+        ((IDictionary<string, int>)actual.PropertyK)["31"].Should().Be(131);
+        ((IDictionary<string, int>)actual.PropertyK)["32"].Should().Be(132);
+        ((IDictionary<string, int>)actual.PropertyK)["33"].Should().Be(133);
+        actual.PropertyL.Should().HaveCount(3);
+        ((IDictionary<string, string>)actual.PropertyL)["34"].Should().Be("134");
+        ((IDictionary<string, string>)actual.PropertyL)["35"].Should().Be("135");
+        ((IDictionary<string, string>)actual.PropertyL)["36"].Should().Be("136");
     }
 
     /// <summary>
@@ -98,7 +118,19 @@ public sealed class ReadOnlyTargetCollectionMapperUnitTests
                 [24] = "124",
             },
             [25, 26, 27],
-            [28, 29, 30]);
+            [28, 29, 30],
+            new Dictionary<int, string>
+            {
+                [31] = "131",
+                [32] = "132",
+                [33] = "133",
+            },
+            new Dictionary<int, string>
+            {
+                [34] = "134",
+                [35] = "135",
+                [36] = "136",
+            });
 
         // Act
         var actual = this.mapper.MapWithPrivateSetters(source);
@@ -120,6 +152,14 @@ public sealed class ReadOnlyTargetCollectionMapperUnitTests
         actual.PropertyH["24"].Should().Be(124);
         actual.PropertyI.Should().BeEquivalentTo("25", "26", "27");
         actual.PropertyJ.Should().BeEquivalentTo("28", "29", "30");
+        actual.PropertyK.Should().HaveCount(3);
+        ((IDictionary<string, int>)actual.PropertyK)["31"].Should().Be(131);
+        ((IDictionary<string, int>)actual.PropertyK)["32"].Should().Be(132);
+        ((IDictionary<string, int>)actual.PropertyK)["33"].Should().Be(133);
+        actual.PropertyL.Should().HaveCount(3);
+        ((IDictionary<string, string>)actual.PropertyL)["34"].Should().Be("134");
+        ((IDictionary<string, string>)actual.PropertyL)["35"].Should().Be("135");
+        ((IDictionary<string, string>)actual.PropertyL)["36"].Should().Be("136");
     }
 
     /// <summary>
@@ -150,7 +190,19 @@ public sealed class ReadOnlyTargetCollectionMapperUnitTests
                 [24] = "124",
             },
             [25, 26, 27],
-            [28, 29, 30]);
+            [28, 29, 30],
+            new Dictionary<int, string>
+            {
+                [31] = "131",
+                [32] = "132",
+                [33] = "133",
+            },
+            new Dictionary<int, string>
+            {
+                [34] = "134",
+                [35] = "135",
+                [36] = "136",
+            });
 
         // Act
         var actual = this.mapper.MapToProtobuf(source);
