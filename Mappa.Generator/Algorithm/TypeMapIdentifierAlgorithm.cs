@@ -63,25 +63,22 @@ internal class TypeMapIdentifierAlgorithm
             // 02. Nullable related strategies.
             new NullableMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
 
-            // 03. Reference nullable related strategies.
-            new ReferenceNullableMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
-
-            // 04. Enum related strategies.
+            // 03. Enum related strategies.
             new EnumMapStrategyDetector(this.Context, this.Compilation),
 
-            // 05. String related strategies.
+            // 04. String related strategies.
             new StringMapStrategyDetector(this.Context, this.Compilation),
 
-            // 06. Date and time related strategies.
+            // 05. Date and time related strategies.
             new DateAndTimeMapStrategyDetector(this.Context, this.Compilation),
 
-            // 07. Container related strategies.
+            // 06. Container related strategies.
             new ContainerMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
 
-            // 08. Tuple related strategies.
+            // 07. Tuple related strategies.
             new TupleMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
 
-            // 09. Constructor related strategies.
+            // 08. Constructor related strategies.
             new ConstructorMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
         ];
 
@@ -99,7 +96,7 @@ internal class TypeMapIdentifierAlgorithm
                 // Skip the nullable reference strategy in order to avoid infinite loops
                 // in the case this algorithm is run inside the nullable reference strategy
                 // detector itself.
-                case ReferenceNullableMapStrategyDetector when !this.Context.AlgorithmSettings.UseReferenceNullableMapStrategyDetector:
+                case NullableMapStrategyDetector when !this.Context.AlgorithmSettings.UseNullableMapStrategyDetector:
                     continue;
             }
 

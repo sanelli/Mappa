@@ -100,7 +100,7 @@ internal static class TypeSymbolExtensions
     /// </summary>
     /// <param name="typeSymbol">The type symbol.</param>
     /// <returns><c>true</c> if the type symbol is <see cref="Nullable{T}"/>.</returns>
-    internal static bool IsNullable(this ITypeSymbol typeSymbol)
+    internal static bool IsValueTypeNullable(this ITypeSymbol typeSymbol)
         => typeSymbol.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T;
 
     /// <summary>
@@ -904,7 +904,8 @@ internal static class TypeSymbolExtensions
     }
 
     /// <summary>
-    /// Check if a reference type has the nullable attribute.
+    /// Check if a reference type has the nullable attribute or the nullable attribute
+    /// is not set because the reference <c>#nullable</c> flag is not enabled.
     /// </summary>
     /// <param name="typeSymbol">The symbol.</param>
     /// <returns><c>true</c> if the type is a reference nullable type.</returns>
@@ -912,7 +913,7 @@ internal static class TypeSymbolExtensions
         => typeSymbol is
         {
             IsReferenceType: true,
-            NullableAnnotation: NullableAnnotation.Annotated
+            NullableAnnotation: NullableAnnotation.Annotated or NullableAnnotation.None,
         };
 
     /// <summary>
