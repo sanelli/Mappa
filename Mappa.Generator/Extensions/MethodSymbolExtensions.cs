@@ -191,4 +191,82 @@ internal static class MethodSymbolExtensions
                      && method.Parameters.Length == parameterTypes.Length
                      && EqualParameters(method));
     }
+
+    /// <summary>
+    /// Check if <see cref="IDictionary{TKey,TValue}.this[TKey]"/> can be accessed directly
+    /// of need an interface because it was implemented explicitly.
+    /// </summary>
+    /// <param name="targetTypeSymbol">The target type implementing <see cref="IDictionary{TKey,TValue}"/>.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The way the indexer can be accessed.</returns>
+    internal static InterfaceMethodAccessMode GetIDictionaryInterfaceIndexerAccessMode(
+        this ITypeSymbol targetTypeSymbol,
+        Compilation compilation)
+    {
+        // Get and value type
+        var (keyType, valueType) = targetTypeSymbol.GetKeyAndValueTypes(compilation);
+
+        // Look up for an indexer implementation in the hierarchy.
+        var currentType = targetTypeSymbol;
+        while (currentType is not null)
+        {
+            var hasIndexer = HasIndexer("this[]");
+            if (hasIndexer)
+            {
+                return InterfaceMethodAccessMode.Direct;
+            }
+
+            currentType = currentType.BaseType;
+        }
+
+        // Look for non-generic explicit implementation of IDictionary
+        var nonGenericName = $"System.Collections.Generic.IDictionary<{TypeSymbolExtensions.NormalizeType(keyType.ToDisplayString())},{TypeSymbolExtensions.NormalizeType(valueType.ToDisplayString())}>.this[]";
+        currentType = targetTypeSymbol;
+        while (currentType is not null)
+        {
+            var hasIndexer = HasIndexer(nonGenericName);
+            if (hasIndexer)
+            {
+                return InterfaceMethodAccessMode.InterfaceExplicit;
+            }
+
+            currentType = currentType.BaseType;
+        }
+
+        // Look for generic explicit implementation of IDictionary
+        if (targetTypeSymbol is INamedTypeSymbol { OriginalDefinition.TypeArguments.Length: 2 } namedTypeSymbol)
+        {
+            var keyTypeArgument = namedTypeSymbol.OriginalDefinition.TypeArguments[0].Name;
+            var valueTypeArgument = namedTypeSymbol.OriginalDefinition.TypeArguments[1].Name;
+
+            var genericName = $"System.Collections.Generic.IDictionary<{keyTypeArgument},{valueTypeArgument}>.this[]";
+
+            currentType = targetTypeSymbol;
+            while (currentType is not null)
+            {
+                var hasIndexer = HasIndexer(genericName);
+                if (hasIndexer)
+                {
+                    return InterfaceMethodAccessMode.InterfaceExplicit;
+                }
+
+                currentType = currentType.BaseType;
+            }
+        }
+
+        // Not found
+        return InterfaceMethodAccessMode.None;
+
+        bool HasIndexer(string name)
+        {
+            var hasIndexer = targetTypeSymbol.GetMembers()
+                .OfType<IPropertySymbol>()
+                .Any(propertySymbol => propertySymbol.IsIndexer
+                                         && propertySymbol.Parameters.Length == 1
+                                         && propertySymbol.Name.Equals(name, StringComparison.OrdinalIgnoreCase)
+                                         && SymbolEqualityComparer.Default.Equals(propertySymbol.Type, valueType)
+                                         && SymbolEqualityComparer.Default.Equals(propertySymbol.Parameters[0].Type, keyType));
+            return hasIndexer;
+        }
+    }
 }

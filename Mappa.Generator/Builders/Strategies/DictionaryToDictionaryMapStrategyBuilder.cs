@@ -35,7 +35,7 @@ internal sealed class DictionaryToDictionaryMapStrategyBuilder
         var loopTemporary = context.NextTemporary();
 
         var builder = new PrettyCode.StringBuilder();
-        builder.AppendLine($"{GetTargetType()} {dictionaryTemporary} = new {GetNewType()}();");
+        builder.AppendLine($"{GetTargetType(out var interfaceMethodAccessMode)} {dictionaryTemporary} = new {GetNewType()}();");
         builder.AppendLine($"foreach (System.Collections.Generic.KeyValuePair<{sourceKeyType.ToDisplayString()}, {sourceValueType.ToDisplayString()}> {loopTemporary} in {source})");
 
         using (builder.CurlyBracesBlock())
@@ -58,8 +58,16 @@ internal sealed class DictionaryToDictionaryMapStrategyBuilder
             // Assign using the indexer.
             builder.AppendEmptyLine();
 
-            // TODO [#111] The indexer property can be implemented explicitly therefore a cast to the interface is required first.
-            builder.AppendLine($"{dictionaryTemporary}[{targetKeyTemporary}] = {targetValueTemporary};");
+            if (interfaceMethodAccessMode == InterfaceMethodAccessMode.InterfaceExplicit)
+            {
+                var interfaceTemporary = context.NextTemporary();
+                builder.AppendLine($"global::System.Collections.Generic.IDictionary<{targetKeyType.ToDisplayString()},{targetValueType.ToDisplayString()}> {interfaceTemporary} = {dictionaryTemporary};");
+                builder.AppendLine($"{interfaceTemporary}[{targetKeyTemporary}] = {targetValueTemporary};");
+            }
+            else
+            {
+                builder.AppendLine($"{dictionaryTemporary}[{targetKeyTemporary}] = {targetValueTemporary};");
+            }
         }
 
         if (this.strategy.TargetType.IsReadOnlyDictionary(context.Compilation))
@@ -90,8 +98,10 @@ internal sealed class DictionaryToDictionaryMapStrategyBuilder
 
         return (dictionaryTemporary, builder.ToString());
 
-        string GetTargetType()
+        string GetTargetType(out InterfaceMethodAccessMode interfaceMethodAccessMode)
         {
+            interfaceMethodAccessMode = InterfaceMethodAccessMode.None;
+
             if (this.strategy.TargetType.IsIDictionary(context.Compilation))
             {
                 return $"System.Collections.Generic.IDictionary<{targetKeyType.ToDisplayString()}, {targetValueType.ToDisplayString()}>";
@@ -108,6 +118,9 @@ internal sealed class DictionaryToDictionaryMapStrategyBuilder
                 return $"System.Collections.Generic.Dictionary<{targetKeyType.ToDisplayString()}, {targetValueType.ToDisplayString()}>";
             }
 
+            // At this stage we only implement IDictionary<K,V> and we need to check if
+            // the interface was by any chance explicitly implemented.
+            interfaceMethodAccessMode = this.strategy.TargetType.GetIDictionaryInterfaceIndexerAccessMode(context.Compilation);
             return this.strategy.TargetType.ToDisplayString();
         }
 
