@@ -50,7 +50,7 @@ internal sealed class MappaMapAlgorithmContextSettings
     /// Typically the nullable reference strategy won't be applied if
     /// we are looking for a strategy to match a nullable reference strategy.
     /// </remarks>
-    internal StackSetting<bool> UseReferenceNullableMapStrategyDetector { get; } = new(true);
+    internal StackSetting<bool> UseNullableMapStrategyDetector { get; } = new(true);
 
     /// <summary>
     /// Gets the stack settings that enable or disable the usage
@@ -82,7 +82,7 @@ internal sealed class MappaMapAlgorithmContextSettings
             foreach (IStackSetting stackSetting in new[]
                      {
                          settings.UseConstructorMapStrategyDetector,
-                         settings.UseReferenceNullableMapStrategyDetector,
+                         settings.UseNullableMapStrategyDetector,
                      })
             {
                 this.disposables.Add(stackSetting.ApplyDefault());

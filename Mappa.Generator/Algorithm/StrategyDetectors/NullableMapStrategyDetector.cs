@@ -39,99 +39,49 @@ internal sealed class NullableMapStrategyDetector
     /// <inheritdoc/>
     public bool TryDetect(out MapStrategy mapStrategy)
     {
+        var isSourceNullable = this.context.SourceType.IsNullable();
+        var isTargetValueTypeNullable = this.context.TargetType.IsValueTypeNullable();
+
         mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
-
-        // 01. Nullable<S> -> Nullable<T> : NullableToNullableStrategy( IMapStrategy(T, S) )
-        if (this.CanMapNullableToNullable(out var nullableToNullableElementStrategy))
+        if (isTargetValueTypeNullable && !isSourceNullable)
         {
-            mapStrategy = new NullableToNullableMapStrategy(
-                this.context.TargetType,
-                this.context.SourceType,
-                nullableToNullableElementStrategy);
+            mapStrategy = this.IdentifyInnerStrategy(wrapInNullableStrategy: false);
         }
-
-        // 02. Nullable<S> -> T : SourceIsNullableStrategy ( IMapStrategy(T, S) )
-        else if (this.CanMapNullableToNonNullable(out var nullableToNonNullableElementStrategy))
+        else if (isSourceNullable)
         {
-            mapStrategy = new NullableToNonNullableMapStrategy(
-                this.context.TargetType,
-                this.context.SourceType,
-                nullableToNonNullableElementStrategy);
-        }
-
-        // 03. S -> Nullable<T>
-        else if (this.CanMapNonNullableToNullable(out var nonNullableToNullableElementStrategy))
-        {
-            mapStrategy = new NonNullableToNullableMapStrategy(
-                this.context.TargetType,
-                this.context.SourceType,
-                nonNullableToNullableElementStrategy);
+            mapStrategy = this.IdentifyInnerStrategy(wrapInNullableStrategy: true);
         }
 
         return mapStrategy is not NoMapStrategy;
     }
 
-    private bool CanMapNullableToNullable(out MapStrategy elementStrategy)
+    private MapStrategy IdentifyInnerStrategy(bool wrapInNullableStrategy)
     {
-        var isSourceNullable = this.context.SourceType.IsNullable();
-        var isTargetNullable = this.context.TargetType.IsNullable();
-
-        elementStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
-        return isSourceNullable && isTargetNullable && this.TryGetElementStrategy(out elementStrategy);
-    }
-
-    private bool CanMapNullableToNonNullable(out MapStrategy elementStrategy)
-    {
-        var isSourceNullable = this.context.SourceType.IsNullable();
-
-        elementStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
-        return isSourceNullable && this.TryGetSourceElementStrategy(out elementStrategy);
-    }
-
-    private bool CanMapNonNullableToNullable(out MapStrategy elementStrategy)
-    {
-        var isTargetTypeNullable = this.context.TargetType.IsNullable();
-
-        elementStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
-        return isTargetTypeNullable && this.TryGetTargetElementStrategy(out elementStrategy);
-    }
-
-    private bool TryGetElementStrategy(out MapStrategy elementStrategy)
-    {
-        var sourceElementType = this.context.SourceType.GetElementType();
-        var targetElementType = this.context.TargetType.GetElementType();
+        MapStrategy mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
+        var sourceInnerType = this.context.SourceType.GetTypeInsideNullable();
+        var targetInnerType = this.context.TargetType.GetTypeInsideNullable();
         var derivedContext = new DerivedMappaMapAlgorithmContext(
             this.context,
-            targetElementType,
-            sourceElementType);
-        var algorithm = new TypeMapIdentifierWithMapMethodAlgorithm(derivedContext, this.compilation, this.cancellationToken);
-        elementStrategy = algorithm.GetStrategy();
-        return elementStrategy is not NoMapStrategy;
-    }
+            targetInnerType,
+            sourceInnerType);
 
-    private bool TryGetSourceElementStrategy(out MapStrategy elementStrategy)
-    {
-        var sourceElementType = this.context.SourceType.GetElementType();
-        var targetType = this.context.TargetType;
-        var derivedContext = new DerivedMappaMapAlgorithmContext(
-            this.context,
-            targetType,
-            sourceElementType);
-        var algorithm = new TypeMapIdentifierWithMapMethodAlgorithm(derivedContext, this.compilation, this.cancellationToken);
-        elementStrategy = algorithm.GetStrategy();
-        return elementStrategy is not NoMapStrategy;
-    }
+        using (this.context.AlgorithmSettings.UseNullableMapStrategyDetector.Apply(false))
+        {
+            var algorithm = new TypeMapIdentifierAlgorithm(derivedContext, this.compilation, this.cancellationToken);
+            var elementStrategy = algorithm.GetStrategy();
+            if (elementStrategy is not NoMapStrategy)
+            {
+                if (wrapInNullableStrategy)
+                {
+                    mapStrategy = new NullableStrategy(this.context.TargetType, this.context.SourceType, elementStrategy);
+                }
+                else
+                {
+                    return elementStrategy;
+                }
+            }
+        }
 
-    private bool TryGetTargetElementStrategy(out MapStrategy elementStrategy)
-    {
-        var sourceType = this.context.SourceType;
-        var targetElementType = this.context.TargetType.GetElementType();
-        var derivedContext = new DerivedMappaMapAlgorithmContext(
-            this.context,
-            targetElementType,
-            sourceType);
-        var algorithm = new TypeMapIdentifierWithMapMethodAlgorithm(derivedContext, this.compilation, this.cancellationToken);
-        elementStrategy = algorithm.GetStrategy();
-        return elementStrategy is not NoMapStrategy;
+        return mapStrategy;
     }
 }

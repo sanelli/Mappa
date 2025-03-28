@@ -16,6 +16,8 @@ namespace Mappa.Samples.Tests;
 public sealed class ReferenceNullableToReferenceNullableMapperUnitTest
 {
     private readonly ReferenceNullableToReferenceNullableMapper mapper = new();
+    private readonly ReferenceToValueTypeNullableMapper referenceMapper = new();
+    private readonly NullableReferenceToValueTypeNullableMapper nullableReferenceMapper = new();
 
     /// <summary>
     /// Unit test for <see cref="ReferenceNullableToReferenceNullableMapper.MapReferenceNullableToReferenceNullable"/>.
@@ -107,5 +109,89 @@ public sealed class ReferenceNullableToReferenceNullableMapperUnitTest
 
         // Arrange
         action.Should().Throw<NullReferenceException>();
+    }
+
+    /// <summary>
+    /// Test <see cref="ReferenceToValueTypeNullableMapper.MapToInteger"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapToInteger()
+    {
+        // Act
+        var target = this.referenceMapper.MapToInteger("30");
+
+        // Arrange
+        target.Should().Be(30);
+    }
+
+    /// <summary>
+    /// Test <see cref="ReferenceToValueTypeNullableMapper.MapToNullableInteger"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapToNullableInteger()
+    {
+        // Act
+        var target = this.referenceMapper.MapToNullableInteger("30");
+
+        // Arrange
+        target.Should().Be(30);
+    }
+
+    /// <summary>
+    /// Test <see cref="NullableReferenceToValueTypeNullableMapper.MapToInteger"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapNullableReferenceToInteger()
+    {
+        // Act
+        var target = this.nullableReferenceMapper.MapToInteger("30");
+
+        // Arrange
+        target.Should().Be(30);
+    }
+
+    /// <summary>
+    /// Test <see cref="NullableReferenceToValueTypeNullableMapper.MapToInteger"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapNullableReferenceToIntegerWhenInputIsNull()
+    {
+        // Act
+        var target = () => this.nullableReferenceMapper.MapToInteger(null);
+
+        // Arrange
+        target.Should().Throw<NullReferenceException>();
+    }
+
+    /// <summary>
+    /// Test <see cref="NullableReferenceToValueTypeNullableMapper.MapToNullableInteger"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapNullableReferenceToNullableInteger()
+    {
+        // Act
+        var target = this.nullableReferenceMapper.MapToNullableInteger("30");
+
+        // Arrange
+        target.Should().Be(30);
+    }
+
+    /// <summary>
+    /// Test <see cref="NullableReferenceToValueTypeNullableMapper.MapToNullableInteger"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapNullableReferenceToNullableIntegerWhenInputIsNull()
+    {
+        // Act
+        var target = this.nullableReferenceMapper.MapToNullableInteger(null);
+
+        // Arrange
+        target.Should().Be(null);
     }
 }
