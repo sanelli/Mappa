@@ -33,4 +33,9 @@ public sealed partial class ReferenceNullableToReferenceNullableMapper
     /// <param name="input">The input enum value.</param>
     /// <returns>The integer mapped from the value.</returns>
     public partial TargetClassModel MapFromReferenceNullable(SourceClassModel? input);
+
+    // TODO [#106] string? -> int
+    // TODO [#106] string? -> int?
+    // TODO [#106] string -> int
+    // TODO [#106] string -> int?
 }

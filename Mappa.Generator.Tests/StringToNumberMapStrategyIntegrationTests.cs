@@ -50,6 +50,7 @@ public sealed class StringToNumberMapStrategyIntegrationTests
 
         // Arrange
         var sourceCode = $$"""
+                         #nullable enable
                          using Mappa.Attributes;
 
                          namespace Mappa.Generator.Tests.UnitTests.SourceCode;
@@ -74,7 +75,7 @@ public sealed class StringToNumberMapStrategyIntegrationTests
                 numericType,
                 NullableAnnotation.NotAnnotated,
                 typeof(string).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions

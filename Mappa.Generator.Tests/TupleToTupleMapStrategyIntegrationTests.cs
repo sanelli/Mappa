@@ -103,6 +103,7 @@ public sealed class TupleToTupleMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
                                   using Mappa.Attributes;
                                   using System;
 
@@ -128,7 +129,7 @@ public sealed class TupleToTupleMapStrategyIntegrationTests
                 "(string, string)",
                 NullableAnnotation.NotAnnotated,
                 typeof(Tuple<int, string>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -172,6 +173,7 @@ public sealed class TupleToTupleMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
                                   using Mappa.Attributes;
                                   using System;
 
@@ -197,7 +199,7 @@ public sealed class TupleToTupleMapStrategyIntegrationTests
                 "(string First, string Second)",
                 NullableAnnotation.NotAnnotated,
                 typeof(Tuple<int, string>).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions

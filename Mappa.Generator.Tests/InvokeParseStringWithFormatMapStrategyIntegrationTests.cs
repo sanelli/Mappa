@@ -36,6 +36,7 @@ public sealed class InvokeParseStringWithFormatMapStrategyIntegrationTests
 
         // Arrange
         var sourceCode = $$"""
+                          #nullable enable
                           using System;
                           using Mappa.Attributes;
 
@@ -61,7 +62,7 @@ public sealed class InvokeParseStringWithFormatMapStrategyIntegrationTests
                 targetType.ToString(),
                 NullableAnnotation.NotAnnotated,
                 typeof(string).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -103,6 +104,7 @@ public sealed class InvokeParseStringWithFormatMapStrategyIntegrationTests
 
         // Arrange
         var sourceCode = $$"""
+                          #nullable enable
                           using System;
                           using Mappa.Attributes;
 
@@ -129,7 +131,7 @@ public sealed class InvokeParseStringWithFormatMapStrategyIntegrationTests
                 targetType.ToString(),
                 NullableAnnotation.NotAnnotated,
                 typeof(string).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -177,6 +179,7 @@ public sealed class InvokeParseStringWithFormatMapStrategyIntegrationTests
 
         // Arrange
         var sourceCode = $$"""
+                          #nullable enable
                           using System;
                           using Mappa.Attributes;
 
@@ -205,7 +208,7 @@ public sealed class InvokeParseStringWithFormatMapStrategyIntegrationTests
                 targetType.ToString(),
                 NullableAnnotation.NotAnnotated,
                 typeof(string).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -266,6 +269,7 @@ public sealed class InvokeParseStringWithFormatMapStrategyIntegrationTests
 
         // Arrange
         var sourceCode = $$"""
+                          #nullable enable
                           using System;
                           using Mappa.Attributes;
 
@@ -294,7 +298,7 @@ public sealed class InvokeParseStringWithFormatMapStrategyIntegrationTests
                 targetType.ToString(),
                 NullableAnnotation.NotAnnotated,
                 typeof(string).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -351,6 +355,7 @@ public sealed class InvokeParseStringWithFormatMapStrategyIntegrationTests
 
         // Arrange
         var sourceCode = $$"""
+                          #nullable enable
                           using System;
                           using Mappa.Attributes;
 
@@ -378,7 +383,7 @@ public sealed class InvokeParseStringWithFormatMapStrategyIntegrationTests
                 targetType.ToString(),
                 NullableAnnotation.NotAnnotated,
                 typeof(string).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -425,6 +430,7 @@ public sealed class InvokeParseStringWithFormatMapStrategyIntegrationTests
 
         // Arrange
         var sourceCode = $$"""
+                          #nullable enable
                           using System;
                           using Mappa.Attributes;
 
@@ -452,7 +458,7 @@ public sealed class InvokeParseStringWithFormatMapStrategyIntegrationTests
                 targetType.ToString(),
                 NullableAnnotation.NotAnnotated,
                 typeof(string).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -496,6 +502,7 @@ public sealed class InvokeParseStringWithFormatMapStrategyIntegrationTests
 
         // Arrange
         var sourceCode = $$"""
+                          #nullable enable
                           using System;
                           using Mappa.Attributes;
 
@@ -522,7 +529,7 @@ public sealed class InvokeParseStringWithFormatMapStrategyIntegrationTests
                 targetType.ToString(),
                 NullableAnnotation.NotAnnotated,
                 typeof(string).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -567,6 +574,7 @@ public sealed class InvokeParseStringWithFormatMapStrategyIntegrationTests
 
         // Arrange
         var sourceCode = $$"""
+                          #nullable enable
                           using System;
                           using Mappa.Attributes;
 
@@ -593,7 +601,7 @@ public sealed class InvokeParseStringWithFormatMapStrategyIntegrationTests
                 targetType.ToString(),
                 NullableAnnotation.NotAnnotated,
                 typeof(string).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -638,6 +646,7 @@ public sealed class InvokeParseStringWithFormatMapStrategyIntegrationTests
 
         // Arrange
         var sourceCode = $$"""
+                          #nullable enable
                           using System;
                           using Mappa.Attributes;
 
@@ -664,7 +673,7 @@ public sealed class InvokeParseStringWithFormatMapStrategyIntegrationTests
                 targetType.ToString(),
                 NullableAnnotation.NotAnnotated,
                 typeof(string).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -716,6 +725,7 @@ public sealed class InvokeParseStringWithFormatMapStrategyIntegrationTests
 
         // Arrange
         var sourceCode = $$"""
+                          #nullable enable
                           using System;
                           using Mappa.Attributes;
 
@@ -744,7 +754,7 @@ public sealed class InvokeParseStringWithFormatMapStrategyIntegrationTests
                 targetType.ToString(),
                 NullableAnnotation.NotAnnotated,
                 typeof(string).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -801,6 +811,7 @@ public sealed class InvokeParseStringWithFormatMapStrategyIntegrationTests
 
         // Arrange
         var sourceCode = $$"""
+                          #nullable enable
                           using System;
                           using Mappa.Attributes;
 
@@ -828,7 +839,7 @@ public sealed class InvokeParseStringWithFormatMapStrategyIntegrationTests
                 targetType.ToString(),
                 NullableAnnotation.NotAnnotated,
                 typeof(string).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -876,6 +887,7 @@ public sealed class InvokeParseStringWithFormatMapStrategyIntegrationTests
 
         // Arrange
         var sourceCode = $$"""
+                          #nullable enable
                           using System;
                           using Mappa.Attributes;
 
@@ -903,7 +915,7 @@ public sealed class InvokeParseStringWithFormatMapStrategyIntegrationTests
                 targetType.ToString(),
                 NullableAnnotation.NotAnnotated,
                 typeof(string).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions

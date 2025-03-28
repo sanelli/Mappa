@@ -21,4 +21,7 @@ public sealed partial class ReferenceToReferenceWithNullableDisabledMapper
     #nullable  disable
     public partial TargetClassModel Map(SourceClassModel input);
     #nullable restore
+
+    // TODO [#106] string -> int
+    // TODO [#106] string -> int?
 }

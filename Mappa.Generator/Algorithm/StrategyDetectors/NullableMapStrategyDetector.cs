@@ -39,47 +39,49 @@ internal sealed class NullableMapStrategyDetector
     /// <inheritdoc/>
     public bool TryDetect(out MapStrategy mapStrategy)
     {
+        var isSourceNullable = this.context.SourceType.IsNullable();
+        var isTargetValueTypeNullable = this.context.TargetType.IsValueTypeNullable();
+
         mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
-
-        var isSourceNullable = IsNullable(this.context.SourceType);
-        var isTargetNullable = IsNullable(this.context.TargetType);
-
-        if (isSourceNullable || isTargetNullable)
+        if (isTargetValueTypeNullable && !isSourceNullable)
         {
-            var sourceInnerType = GetTypeInsideNullable(this.context.SourceType);
-            var targetInnerType = GetTypeInsideNullable(this.context.TargetType);
-            var derivedContext = new DerivedMappaMapAlgorithmContext(
-                this.context,
-                targetInnerType,
-                sourceInnerType);
+            mapStrategy = this.IdentifyInnerStrategy(wrapInNullableStrategy: false);
+        }
+        else if (isSourceNullable)
+        {
+            mapStrategy = this.IdentifyInnerStrategy(wrapInNullableStrategy: true);
+        }
 
-            using (this.context.AlgorithmSettings.UseNullableMapStrategyDetector.Apply(false))
+        return mapStrategy is not NoMapStrategy;
+    }
+
+    private MapStrategy IdentifyInnerStrategy(bool wrapInNullableStrategy)
+    {
+        MapStrategy mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
+        var sourceInnerType = this.context.SourceType.GetTypeInsideNullable();
+        var targetInnerType = this.context.TargetType.GetTypeInsideNullable();
+        var derivedContext = new DerivedMappaMapAlgorithmContext(
+            this.context,
+            targetInnerType,
+            sourceInnerType);
+
+        using (this.context.AlgorithmSettings.UseNullableMapStrategyDetector.Apply(false))
+        {
+            var algorithm = new TypeMapIdentifierAlgorithm(derivedContext, this.compilation, this.cancellationToken);
+            var elementStrategy = algorithm.GetStrategy();
+            if (elementStrategy is not NoMapStrategy)
             {
-                var algorithm = new TypeMapIdentifierAlgorithm(derivedContext, this.compilation, this.cancellationToken);
-                var elementStrategy = algorithm.GetStrategy();
-                if (elementStrategy is not NoMapStrategy)
+                if (wrapInNullableStrategy)
                 {
                     mapStrategy = new NullableStrategy(this.context.TargetType, this.context.SourceType, elementStrategy);
-                    return true;
+                }
+                else
+                {
+                    return elementStrategy;
                 }
             }
         }
 
-        return false;
-    }
-
-    private static bool IsNullable(ITypeSymbol typeSymbol)
-    {
-        return typeSymbol.IsValueTypeNullable() || typeSymbol.IsReferenceNullable();
-    }
-
-    private static ITypeSymbol GetTypeInsideNullable(ITypeSymbol typeSymbol)
-    {
-        if (typeSymbol.IsReferenceType)
-        {
-            return typeSymbol;
-        }
-
-        return typeSymbol.GetElementType();
+        return mapStrategy;
     }
 }

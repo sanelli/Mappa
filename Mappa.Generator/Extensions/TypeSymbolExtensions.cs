@@ -1266,4 +1266,37 @@ internal static class TypeSymbolExtensions
             "void" => typeof(void).ToString(),
             _ => type,
         };
+
+    /// <summary>
+    /// Check if <paramref name="typeSymbol"/> is either <see cref="IsValueTypeNullable"/>
+    /// or <see cref="IsReferenceNullable"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type to evaluate.</param>
+    /// <returns><c>true</c> if <paramref name="typeSymbol"/> is either <see cref="IsValueTypeNullable"/>
+    /// or <see cref="IsReferenceNullable"/>, <c>false</c> otherwise.</returns>
+    internal static bool IsNullable(this ITypeSymbol typeSymbol)
+    {
+        return typeSymbol.IsValueTypeNullable() || typeSymbol.IsReferenceNullable();
+    }
+
+    /// <summary>
+    /// Get the type inside the nullable.
+    /// For reference type it returns the type itself.
+    /// </summary>
+    /// <param name="typeSymbol">The type to evaluate.</param>
+    /// <returns>The type inside the nullable.</returns>
+    internal static ITypeSymbol GetTypeInsideNullable(this ITypeSymbol typeSymbol)
+    {
+        if (typeSymbol.IsReferenceNullable())
+        {
+            return typeSymbol;
+        }
+
+        if (typeSymbol.IsValueTypeNullable())
+        {
+            return typeSymbol.GetElementType();
+        }
+
+        return typeSymbol;
+    }
 }

@@ -268,7 +268,7 @@ public class NullableStrategyIntegrationTests
     }
 
     /// <summary>
-    /// Test a mapping can be created between two enums.
+    /// Test a mapping can be created from value type and nullable value type.
     /// </summary>
     /// <returns>The async task.</returns>
     [Fact]
@@ -341,7 +341,7 @@ public class NullableStrategyIntegrationTests
     }
 
     /// <summary>
-    /// Test a mapping can be created between two enums.
+    /// Test a mapping can be created nullable value type and non nullable value type.
     /// </summary>
     /// <returns>The async task.</returns>
     [Fact]
@@ -411,7 +411,7 @@ public class NullableStrategyIntegrationTests
     }
 
     /// <summary>
-    /// Test a mapping can be created between two enums.
+    /// Test a mapping can be created between two nullable value types..
     /// </summary>
     /// <returns>The async task.</returns>
     [Fact]
@@ -512,6 +512,655 @@ public class NullableStrategyIntegrationTests
                                                 "Mappa.Generator.Tests.UnitTests.SourceCode.TestEnum?",
                                                 expression => expression.BeLiteralExpressionSyntax(null))));
                                 }))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeReturnStatement(expression => expression.BeIdentifierNameSyntax("__mappa_tmp_1")));
+                });
+    }
+
+    /// <summary>
+    /// nullable reference type to a non-nullable
+    /// reference type.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapFromReferenceNullable()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class Source
+                                  {
+                                    public int Property { get; set; }
+                                  }
+
+                                  public class Target
+                                  {
+                                     public int Property { get; set; }
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial Target Map(Source? input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                NullableAnnotation.NotAnnotated,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
+                NullableAnnotation.Annotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(3)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.Target", "__mappa_tmp_1");
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeIfStatementSyntax(
+                                conditionAssertions =>
+                                {
+                                    conditionAssertions.BeIsPatternExpressionSyntax(
+                                        expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("input"),
+                                        patternAssertions =>
+                                        {
+                                            patternAssertions.BeUnaryPatternSyntax(
+                                                SyntaxKind.NotKeyword,
+                                                unaryPatternSyntax => unaryPatternSyntax.BeConstantPatternSyntax(null));
+                                        });
+                                },
+                                thenBranchAssertions =>
+                                {
+                                    thenBranchAssertions
+                                        .BeBlockStatement()
+                                        .AsBlock()
+                                        .HasSyntaxNodesCount(4)
+                                        .HasNextSyntaxNode(statementAssertions =>
+                                        {
+                                            statementAssertions.BeLocalDeclarationStatementSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.Source", "__mappa_tmp_2", initExpressionAssertions => initExpressionAssertions.BeIdentifierNameSyntax("input"));
+                                        })
+                                        .HasNextSyntaxNode(statementAssertions =>
+                                        {
+                                            statementAssertions.BeLocalDeclarationStatementSyntax(typeof(int).ToString(), "__mappa_tmp_3", initExpressionAssertions => initExpressionAssertions.BeMemberAccessExpressionSyntax("__mappa_tmp_2.Property"));
+                                        })
+                                        .HasNextSyntaxNode(statementAssertions =>
+                                        {
+                                            statementAssertions.BeLocalDeclarationStatementSyntax(
+                                                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                                "__mappa_tmp_4",
+                                                initExpressionAssertions => initExpressionAssertions.BeObjectCreationExpressionSyntax(
+                                                    "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                                    ("Property", parameterAssertions => parameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_3"))));
+                                        })
+                                        .HasNextSyntaxNode(statementAssertions =>
+                                        {
+                                            statementAssertions.BeAssignmentExpressionStatement(
+                                                leftExpressionAssertions => leftExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_1"),
+                                                rightExpressionAssertions => rightExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_4"));
+                                        });
+                                },
+                                elseStatementAssertions =>
+                                {
+                                    elseStatementAssertions
+                                        .BeBlockStatement()
+                                        .AsBlock()
+                                        .HasSyntaxNodesCount(1)
+                                        .HasNextSyntaxNode(statementAssertions =>
+                                        {
+                                            statementAssertions.BeThrowStatementSyntax<NullReferenceException>(expressionAssertions => expressionAssertions.BeLiteralExpressionSyntax("\"input\" is null."));
+                                        });
+                                });
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_1"));
+                        });
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping can be created from a non
+    /// nullable reference type to a nullable
+    /// reference type.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapToReferenceNullable()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class Source
+                                  {
+                                      public int PropertyA { get; set; }
+                                  }
+
+                                  public class Target
+                                  {
+                                      public int PropertyA { get; set; }
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial Target? Map(Source input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                NullableAnnotation.Annotated,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(3)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions
+                                .BeLocalDeclarationStatementSyntax(
+                                    typeof(int).ToString(),
+                                    "__mappa_tmp_1",
+                                    initializationAssertions => initializationAssertions.BeMemberAccessExpressionSyntax("input.PropertyA"));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions
+                                .BeLocalDeclarationStatementSyntax(
+                                    "Mappa.Generator.Tests.UnitTests.SourceCode.Target?",
+                                    "__mappa_tmp_2",
+                                    initializationAssertions => initializationAssertions.BeObjectCreationExpressionSyntax(
+                                        "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                        ("PropertyA", assertions => assertions.BeIdentifierNameSyntax("__mappa_tmp_1"))));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_2"));
+                        });
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping can be created from nullable reference type to nullable value type (nullable disabled).
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [Bug("#88")]
+    [IntegrationTest]
+    public async Task CanMapNullableReferenceToValueTypeWithReferenceNullableDisabled()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable disable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial int Map(string input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                typeof(int).ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(string).ToString(),
+                NullableAnnotation.None,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(3)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(typeof(int).ToString(), "__mappa_tmp_1"))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeIfStatementSyntax(
+                                conditionAssertions =>
+                                {
+                                    conditionAssertions.BeIsPatternExpressionSyntax(
+                                        expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("input"),
+                                        patternAssertions => patternAssertions.BeUnaryPatternSyntax(SyntaxKind.NotKeyword, argumentAssertions => argumentAssertions.BeConstantPatternSyntax(null)));
+                                },
+                                thenStatementAssertions =>
+                                {
+                                    thenStatementAssertions
+                                        .BeBlockStatement()
+                                        .AsBlock()
+                                        .HasSyntaxNodesCount(3)
+                                        .HasNextSyntaxNode(syntaxNode => syntaxNode.BeLocalDeclarationStatementSyntax(
+                                            typeof(string).ToString(),
+                                            "__mappa_tmp_2",
+                                            assertInitialization => assertInitialization.BeIdentifierNameSyntax("input")))
+                                        .HasNextSyntaxNode(syntaxNode => syntaxNode.BeLocalDeclarationStatementSyntax(
+                                            typeof(int).ToString(),
+                                            "__mappa_tmp_3",
+                                            expression => expression.BeInvocationExpressionSyntax("int.Parse", parameter => parameter.BeIdentifierNameSyntax("__mappa_tmp_2"))))
+                                        .HasNextSyntaxNode(syntaxNode => syntaxNode.BeAssignmentExpressionStatement(
+                                            left => left.BeIdentifierNameSyntax("__mappa_tmp_1"),
+                                            right => right.BeIdentifierNameSyntax("__mappa_tmp_3")));
+                                },
+                                elseStatementAssertions =>
+                                {
+                                    elseStatementAssertions
+                                        .BeBlockStatement()
+                                        .AsBlock()
+                                        .HasSyntaxNodesCount(1)
+                                        .HasNextSyntaxNode(defaultSyntaxNode => defaultSyntaxNode.BeThrowStatementSyntax<NullReferenceException>(expression => expression.BeLiteralExpressionSyntax("\"input\" is null.")));
+                                }))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeReturnStatement(expression => expression.BeIdentifierNameSyntax("__mappa_tmp_1")));
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping can be created from nullable reference type to nullable value type (nullable disabled).
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [Bug("#88")]
+    [IntegrationTest]
+    public async Task CanMapNullableReferenceToNullableValueTypeWithReferenceNullableDisabled()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable disable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial int? Map(string input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                typeof(int?).ToString(),
+                NullableAnnotation.Annotated,
+                typeof(string).ToString(),
+                NullableAnnotation.None,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(3)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(typeof(int?).ToString(), "__mappa_tmp_1"))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeIfStatementSyntax(
+                                conditionAssertions =>
+                                {
+                                    conditionAssertions.BeIsPatternExpressionSyntax(
+                                        expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("input"),
+                                        patternAssertions => patternAssertions.BeUnaryPatternSyntax(SyntaxKind.NotKeyword, argumentAssertions => argumentAssertions.BeConstantPatternSyntax(null)));
+                                },
+                                thenStatementAssertions =>
+                                {
+                                    thenStatementAssertions
+                                        .BeBlockStatement()
+                                        .AsBlock()
+                                        .HasSyntaxNodesCount(3)
+                                        .HasNextSyntaxNode(syntaxNode => syntaxNode.BeLocalDeclarationStatementSyntax(
+                                            typeof(string).ToString(),
+                                            "__mappa_tmp_2",
+                                            assertInitialization => assertInitialization.BeIdentifierNameSyntax("input")))
+                                        .HasNextSyntaxNode(syntaxNode => syntaxNode.BeLocalDeclarationStatementSyntax(
+                                            typeof(int).ToString(),
+                                            "__mappa_tmp_3",
+                                            expression => expression.BeInvocationExpressionSyntax("int.Parse", parameter => parameter.BeIdentifierNameSyntax("__mappa_tmp_2"))))
+                                        .HasNextSyntaxNode(syntaxNode => syntaxNode.BeAssignmentExpressionStatement(
+                                            left => left.BeIdentifierNameSyntax("__mappa_tmp_1"),
+                                            right => right.BeIdentifierNameSyntax("__mappa_tmp_3")));
+                                },
+                                elseStatementAssertions =>
+                                {
+                                    elseStatementAssertions
+                                        .BeBlockStatement()
+                                        .AsBlock()
+                                        .HasSyntaxNodesCount(1)
+                                        .HasNextSyntaxNode(defaultSyntaxNode => defaultSyntaxNode.BeAssignmentExpressionStatement(
+                                            left =>
+                                            {
+                                                left.BeIdentifierNameSyntax("__mappa_tmp_1");
+                                            },
+                                            right =>
+                                            {
+                                                right.BeCastExpressionSyntax(
+                                                    "int?",
+                                                    expression => expression.BeLiteralExpressionSyntax(null));
+                                            }));
+                                }))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeReturnStatement(expression => expression.BeIdentifierNameSyntax("__mappa_tmp_1")));
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping can be created from nullable reference type to nullable value type (nullable enabled).
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [Bug("#88")]
+    [IntegrationTest]
+    public async Task CanMapNullableReferenceToValueTypeWithReferenceNullableEnabled()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial int Map(string? input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                typeof(int).ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(string).ToString(),
+                NullableAnnotation.Annotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(3)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(typeof(int).ToString(), "__mappa_tmp_1"))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeIfStatementSyntax(
+                                conditionAssertions =>
+                                {
+                                    conditionAssertions.BeIsPatternExpressionSyntax(
+                                        expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("input"),
+                                        patternAssertions => patternAssertions.BeUnaryPatternSyntax(SyntaxKind.NotKeyword, argumentAssertions => argumentAssertions.BeConstantPatternSyntax(null)));
+                                },
+                                thenStatementAssertions =>
+                                {
+                                    thenStatementAssertions
+                                        .BeBlockStatement()
+                                        .AsBlock()
+                                        .HasSyntaxNodesCount(3)
+                                        .HasNextSyntaxNode(syntaxNode => syntaxNode.BeLocalDeclarationStatementSyntax(
+                                            typeof(string).ToString(),
+                                            "__mappa_tmp_2",
+                                            assertInitialization => assertInitialization.BeIdentifierNameSyntax("input")))
+                                        .HasNextSyntaxNode(syntaxNode => syntaxNode.BeLocalDeclarationStatementSyntax(
+                                            typeof(int).ToString(),
+                                            "__mappa_tmp_3",
+                                            expression => expression.BeInvocationExpressionSyntax("int.Parse", parameter => parameter.BeIdentifierNameSyntax("__mappa_tmp_2"))))
+                                        .HasNextSyntaxNode(syntaxNode => syntaxNode.BeAssignmentExpressionStatement(
+                                            left => left.BeIdentifierNameSyntax("__mappa_tmp_1"),
+                                            right => right.BeIdentifierNameSyntax("__mappa_tmp_3")));
+                                },
+                                elseStatementAssertions =>
+                                {
+                                    elseStatementAssertions
+                                        .BeBlockStatement()
+                                        .AsBlock()
+                                        .HasSyntaxNodesCount(1)
+                                        .HasNextSyntaxNode(defaultSyntaxNode => defaultSyntaxNode.BeThrowStatementSyntax<NullReferenceException>(expression => expression.BeLiteralExpressionSyntax("\"input\" is null.")));
+                                }))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeReturnStatement(expression => expression.BeIdentifierNameSyntax("__mappa_tmp_1")));
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping can be created from nullable reference type to nullable value type (nullable enabled).
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [Bug("#88")]
+    [IntegrationTest]
+    public async Task CanMapNullableReferenceToNullableValueTypeWithReferenceNullableEnabled()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial int? Map(string? input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                typeof(int?).ToString(),
+                NullableAnnotation.Annotated,
+                typeof(string).ToString(),
+                NullableAnnotation.Annotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(3)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(typeof(int?).ToString(), "__mappa_tmp_1"))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeIfStatementSyntax(
+                                conditionAssertions =>
+                                {
+                                    conditionAssertions.BeIsPatternExpressionSyntax(
+                                        expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("input"),
+                                        patternAssertions => patternAssertions.BeUnaryPatternSyntax(SyntaxKind.NotKeyword, argumentAssertions => argumentAssertions.BeConstantPatternSyntax(null)));
+                                },
+                                thenStatementAssertions =>
+                                {
+                                    thenStatementAssertions
+                                        .BeBlockStatement()
+                                        .AsBlock()
+                                        .HasSyntaxNodesCount(3)
+                                        .HasNextSyntaxNode(syntaxNode => syntaxNode.BeLocalDeclarationStatementSyntax(
+                                            typeof(string).ToString(),
+                                            "__mappa_tmp_2",
+                                            assertInitialization => assertInitialization.BeIdentifierNameSyntax("input")))
+                                        .HasNextSyntaxNode(syntaxNode => syntaxNode.BeLocalDeclarationStatementSyntax(
+                                            typeof(int).ToString(),
+                                            "__mappa_tmp_3",
+                                            expression => expression.BeInvocationExpressionSyntax("int.Parse", parameter => parameter.BeIdentifierNameSyntax("__mappa_tmp_2"))))
+                                        .HasNextSyntaxNode(syntaxNode => syntaxNode.BeAssignmentExpressionStatement(
+                                            left => left.BeIdentifierNameSyntax("__mappa_tmp_1"),
+                                            right => right.BeIdentifierNameSyntax("__mappa_tmp_3")));
+                                },
+                                elseStatementAssertions =>
+                                {
+                                    elseStatementAssertions
+                                        .BeBlockStatement()
+                                        .AsBlock()
+                                        .HasSyntaxNodesCount(1)
+                                        .HasNextSyntaxNode(defaultSyntaxNode => defaultSyntaxNode.BeAssignmentExpressionStatement(
+                                            left =>
+                                            {
+                                                left.BeIdentifierNameSyntax("__mappa_tmp_1");
+                                            },
+                                            right =>
+                                            {
+                                                right.BeCastExpressionSyntax(
+                                                    "int?",
+                                                    expression => expression.BeLiteralExpressionSyntax(null));
+                                            }));
+                                }))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeReturnStatement(expression => expression.BeIdentifierNameSyntax("__mappa_tmp_1")));
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping can be created from reference type to value type (nullable enabled).
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapReferenceToValueTypeWithReferenceNullableEnabled()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial int Map(string input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                typeof(int).ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(string).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(2)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(int).ToString(),
+                                "__mappa_tmp_1",
+                                assertInitialization => assertInitialization.BeInvocationExpressionSyntax(
+                                    "int.Parse",
+                                    parameter => parameter.BeIdentifierNameSyntax("input"))))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeReturnStatement(expression => expression.BeIdentifierNameSyntax("__mappa_tmp_1")));
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping can be created from reference type to value type (nullable enabled).
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapReferenceToNullableValueTypeWithReferenceNullableEnabled()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial int? Map(string input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                typeof(int?).ToString(),
+                NullableAnnotation.Annotated,
+                typeof(string).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(2)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(int).ToString(),
+                                "__mappa_tmp_1",
+                                assertInitialization => assertInitialization.BeInvocationExpressionSyntax(
+                                    "int.Parse",
+                                    parameter => parameter.BeIdentifierNameSyntax("input"))))
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                             syntaxNodeAssertions.BeReturnStatement(expression => expression.BeIdentifierNameSyntax("__mappa_tmp_1")));
                 });

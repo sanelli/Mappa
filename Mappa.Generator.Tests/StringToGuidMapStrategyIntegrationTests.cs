@@ -28,6 +28,7 @@ public sealed class StringToGuidMapStrategyIntegrationTests
 
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
                                   using System;
                                   using Mappa.Attributes;
 
@@ -53,7 +54,7 @@ public sealed class StringToGuidMapStrategyIntegrationTests
                 typeof(Guid).ToString(),
                 NullableAnnotation.NotAnnotated,
                 typeof(string).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -88,6 +89,7 @@ public sealed class StringToGuidMapStrategyIntegrationTests
 
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
                                   using System;
                                   using Mappa.Attributes;
 
@@ -114,7 +116,7 @@ public sealed class StringToGuidMapStrategyIntegrationTests
                 typeof(Guid).ToString(),
                 NullableAnnotation.NotAnnotated,
                 typeof(string).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -150,6 +152,7 @@ public sealed class StringToGuidMapStrategyIntegrationTests
 
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
                                   using System;
                                   using Mappa.Attributes;
 
@@ -176,7 +179,7 @@ public sealed class StringToGuidMapStrategyIntegrationTests
                 typeof(Guid).ToString(),
                 NullableAnnotation.NotAnnotated,
                 typeof(string).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -213,6 +216,7 @@ public sealed class StringToGuidMapStrategyIntegrationTests
 
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
                                   using System;
                                   using Mappa.Attributes;
 
@@ -240,7 +244,7 @@ public sealed class StringToGuidMapStrategyIntegrationTests
                 typeof(Guid).ToString(),
                 NullableAnnotation.NotAnnotated,
                 typeof(string).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -276,6 +280,7 @@ public sealed class StringToGuidMapStrategyIntegrationTests
 
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
                                   using System;
                                   using Mappa.Attributes;
 
@@ -303,7 +308,7 @@ public sealed class StringToGuidMapStrategyIntegrationTests
                 typeof(Guid).ToString(),
                 NullableAnnotation.NotAnnotated,
                 typeof(string).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -338,6 +343,7 @@ public sealed class StringToGuidMapStrategyIntegrationTests
 
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
                                   using System;
                                   using Mappa.Attributes;
 
@@ -364,7 +370,7 @@ public sealed class StringToGuidMapStrategyIntegrationTests
                 typeof(Guid).ToString(),
                 NullableAnnotation.NotAnnotated,
                 typeof(string).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -400,6 +406,7 @@ public sealed class StringToGuidMapStrategyIntegrationTests
 
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
                                   using System;
                                   using Mappa.Attributes;
 
@@ -426,7 +433,7 @@ public sealed class StringToGuidMapStrategyIntegrationTests
                 typeof(Guid).ToString(),
                 NullableAnnotation.NotAnnotated,
                 typeof(string).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -462,6 +469,7 @@ public sealed class StringToGuidMapStrategyIntegrationTests
 
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
                                   using System;
                                   using Mappa.Attributes;
 
@@ -488,7 +496,7 @@ public sealed class StringToGuidMapStrategyIntegrationTests
                 typeof(Guid).ToString(),
                 NullableAnnotation.NotAnnotated,
                 typeof(string).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -526,6 +534,7 @@ public sealed class StringToGuidMapStrategyIntegrationTests
 
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
                                   using System;
                                   using Mappa.Attributes;
 
@@ -552,7 +561,7 @@ public sealed class StringToGuidMapStrategyIntegrationTests
                 typeof(Guid).ToString(),
                 NullableAnnotation.NotAnnotated,
                 typeof(string).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
