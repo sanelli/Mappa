@@ -6,7 +6,8 @@
 		<Product>Mappa</Product>
 		<Description>Mappa attributes and support classes.</Description>
 		<PackageLicense>https://github.com/sanelli/Mappa/blob/main/LICENSE</PackageLicense>
-		<PackageProjectUrl>https://github.com/sanelli/Mappa</PackageProjectUrl>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/sanelli/Mappa</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/sanelli/Mappa</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
         <PackageTags>Mappa;Mapper;Mapping;SourceGenerator</PackageTags>

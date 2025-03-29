@@ -24,6 +24,7 @@
         <Product>Mappa.Dependency.Bson</Product>
         <Description>Helper methods to map some Bson types.</Description>
         <PackageLicense>https://github.com/sanelli/Mappa/blob/main/LICENSE</PackageLicense>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageProjectUrl>https://github.com/sanelli/Mappa</PackageProjectUrl>
         <RepositoryUrl>https://github.com/sanelli/Mappa</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
