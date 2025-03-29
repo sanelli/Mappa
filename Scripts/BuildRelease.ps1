@@ -1,3 +1,13 @@
+dotnet clean -c Release ./Mappa
+dotnet clean -c Release ./Mappa.Generator
+dotnet clean -c Release ./Mappa.Samples
+dotnet clean -c Release ./Mappa.Samples.Aot
+dotnet clean -c Release ./Mappa.Benchmark
+dotnet clean -c Release ./Mappa.Dependency.Protobuf
+dotnet clean -c Release ./Mappa.Dependency.Protobuf.DependencyInjection
+dotnet clean -c Release ./Mappa.Dependency.Bson
+dotnet clean -c Release ./Mappa.Dependency.Bson.DependencyInjection
+
 dotnet build -c Release ./Mappa
 dotnet build -c Release ./Mappa.Generator
 dotnet build -c Release ./Mappa.Samples
