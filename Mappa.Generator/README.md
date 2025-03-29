@@ -1,5 +1,7 @@
 # Mappa.Generator
 This source generator generates code for partial methods in partial classes tagged with the `[Mappa]` attribute defined in the [Mappa](https://www.nuget.org/packages/Mappa/) package.
+The generated code allow to map from a source type to a target type.
+
 Assuming you have a partial method like the following
 ```csharp
 [Mappa]
@@ -80,6 +82,26 @@ where `TSource` is the source type of the mapping and `TTarget` is the target ty
        - When possible for some types (e.g. `List<T>`) the usage of the constructor accepting capacity is preferred to reduce the number of allocations;
        - Explicit interface implementation is supported;
 7. <u>Tuples strategy</u>:
+    - _When_:
+        - `TSource` and `TTarget` are both tuple types,
+        - The number of the elements in the tuple is the same,
+        - For each element of the tuple there exists a mapping from source element to target element;
+    - _What_:
+      - Each element of the source tuple is mapped into a new element of the target tuple;
+      - The target tuple is created by combining the elements mapped;
+    - _Notes_:
+       - Both named and un-named tuples are supported
+       - The type `Tuple<T>` (and its variations with more elements) are supported;
+8. <u>Constructor strategy</u>:
+    - _When_:
+       - `TTarget` type has one constructor with no parameters and each property with a setter can be assigned from a `TSource` property with the same name (case sensitive) OR,
+       - `TTarget` type has one constructor with parameters and each constructor argument can be assigned from a `TSource` property with the same name (case insensitive);
+    - _What_:
+       - Each property or constructor argument is mapped and a new instance of `TTarget` is generated;
+       - Get-only dictionary or collection properties for which a mapper exists are filled with mapped values from the corresponding source;
+    - _Notes_:
+       - Explicit interface implementation is supported for get-only dictionary and collection properties;
+       - Multiple [Mappa](https://www.nuget.org/packages/Mappa/) attributes can change the behaviour of the mapping;
 
 Currently unsupported features are:
 - Polymorphism;
