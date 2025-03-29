@@ -12,7 +12,7 @@ this has multiple benefits:
 - mapper methods can be inside any class (static class and extension methods are supported!).
 - you do not need to specify every type that requires a mapping: if a mapping is missing Mappa will generate it for you;
 
-## A simple example
+## 🧑‍🔬 A simple example
 Consider the following code snipped:
 ```csharp
 namespace Sample;
@@ -90,14 +90,14 @@ public partial class Mapper
 }
 ```
 
-## How to use Mappa
+## 🧑🏻‍💻 How to use Mappa
 The easiest way to is import the NuGet packages and apply the `[Mappa]` attribute on the partial classes that contains the partial methods that needs to be generated.
 
 Please see the [tutorial](./Documentation/tutorial.md) in the [documentation](./Documentation/README.md) provided.
 
 You can also find many examples in the [Mappa.Samples](Mappa.Samples) project.
 
-## NuGet packages
+## 📦 NuGet packages
 - [Mappa](https://www.nuget.org/packages/Mappa/): source generator that allows to automatically generate mapping between classes and value types;
 - [Mappa source generator](https://www.nuget.org/packages/Mappa.Generator/): source generator that allows to automatically generate mapping between classes and value types;
 - [Mappa Protobuf](https://www.nuget.org/packages/Mappa.Dependency.Protobuf/): methods to map `Google.Protobuf.WellKnownTypes` objects from [Google.Protobuf](https://www.nuget.org/packages/Google.Protobuf) package into common objects.
