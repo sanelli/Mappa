@@ -12,27 +12,36 @@ public partial class Mapper
 ```
 
 where `TSource` is the source type of the mapping and `TTarget` is the target type of the mapping, the source generator works by applying the following set of strategies in the order they are defined (see [TypeMapIdentifierAlgorithm.cs](https://github.com/sanelli/Mappa/blob/main/Mappa.Generator/Algorithm/TypeMapIdentifierAlgorithm.cs)):
-1. <u>Identity strategy</u>:
+1. <u>Existing method strategy</u>
+    - _When_:
+        - A method in the same class from `TSource` to `TTarget` exists OR,
+        - A method from a property or field marked with the `[MappaDependency]` from `TSource` to `TTarget` exists;
+    - _What_:
+        - the method is invoked;
+   - _Notes_:
+       - This strategy is usually used when mapping element of an array, keys or values of dictionaries, elements of tuples, properties of class/struct/record;
+2. <u>Identity strategy</u>:
    - _When_:
       - `TSource` and `TTarget` are the same type (e.g. `TSource => int` and `TTarget => int`) OR,
       - `TSource` can be implicitly converted into `TTarget` (e.g. `TSource => int` and `TTarget => long`);
    - _What_:
       - the input value is simply assigned to the target;
-2. <u>Nullable strategy</u>:
+3. <u>Nullable strategy</u>:
     - _When_:
         - `TSource` is the `Nullable<T>` value type (e.g. `int?`) OR,
         - `TSource` is a `nullable` reference type when `#nullable enable` (e.g. `string?`) OR,
-        - `TSource` is a reference type when `#nullable disable` (e.g. `string`);
+        - `TSource` is a reference type when `#nullable disable` (e.g. `string`),
+        - AND a mapping exists from source to target when stripped of the nullablity;
     - _What_:
         - if `TTarget` can be `null` the mapper will return null OR,
         - if `TTarget` cannot be `null` the mapper will throw a `NullReferenceException`;
-3. <u>`enum` strategy</u>:
+4. <u>`enum` strategy</u>:
     - _When_:
         - `TSource` is an `enum` and `TTarget` is a different `enum`, an integral numeric type compatible with the `enum` or a string OR,
         - `TSource` is a different `enum`, an integral numeric type compatible with the `enum` and `TTarget` is an `enum`;
    - _What_:
        - a `switch` statement is introduced to quickly map `TSource` to `TTarget` using all the possible values of the `enum`,
-4. <u>`string` strategy</u>:
+5. <u>`string` strategy</u>:
     - _When_:
         - `TSource` is a `string` and `TTarget` is any of the following types `DateTime`, `DateTimeOffset`, `DateOnly`, `TimeOnly`, `Guid`, `Uri` OR,
         - `TTarget` is a `string`;
@@ -41,7 +50,7 @@ where `TSource` is the source type of the mapping and `TTarget` is the target ty
        - `TSource` is a `string` and `TTarget` is `Uri` then the `System.UriBuilder` will be used for the mapping
        - `TTarget` is a `string` and `TSource` is any of the following types `DateTime`, `DateTimeOffset`, `DateOnly`, `TimeOnly`, `Guid` then their `TSource.ToString()` method will be used, possibly with the format and culture identified by the `MappaSettings` attribute, if any is provided on the class or on the method;
        - `TTarget` is a `string` then the `TSource.ToString` method will be used
-5. <u>Date & Time strategy</u>:
+6. <u>Date & Time strategy</u>:
    - _When_:
      - `TSource` is a `DateTime` and `TTarget` is `long` or,`DateTime` or, `TimeOnly` OR,
      - `TSource` is a `DateTimeOffset` and `TTarget` is `long` or, `DateTime` or, `DateTime` or, `TimeOnly` OR,
@@ -56,7 +65,7 @@ where `TSource` is the source type of the mapping and `TTarget` is the target ty
      - When a timezone is required UTC is implied;
    - _Notes_:
      - The mapping from `DateTime` to `DateTimeOffset` is handled by the identify strategy;
-6. <u>Container strategy</u>:
+7. <u>Container strategy</u>:
    - _When_:
      - `TSource` and `TTarget` are both either dictionaries or collections,
      - For dictionaries mappings exist from source key type to the target key type and from the source value type to the target value type,
@@ -81,7 +90,7 @@ where `TSource` is the source type of the mapping and `TTarget` is the target ty
    - _Notes_:
        - When possible for some types (e.g. `List<T>`) the usage of the constructor accepting capacity is preferred to reduce the number of allocations;
        - Explicit interface implementation is supported;
-7. <u>Tuples strategy</u>:
+8. <u>Tuples strategy</u>:
     - _When_:
         - `TSource` and `TTarget` are both tuple types,
         - The number of the elements in the tuple is the same,
@@ -92,10 +101,10 @@ where `TSource` is the source type of the mapping and `TTarget` is the target ty
     - _Notes_:
        - Both named and un-named tuples are supported
        - The type `Tuple<T>` (and its variations with more elements) are supported;
-8. <u>Constructor strategy</u>:
+9. <u>Constructor strategy</u>:
     - _When_:
-       - `TTarget` type has one constructor with no parameters and each property with a setter can be assigned from a `TSource` property with the same name (case sensitive) OR,
-       - `TTarget` type has one constructor with parameters and each constructor argument can be assigned from a `TSource` property with the same name (case insensitive);
+       - `TTarget` type has one constructor with no parameters and each property with a setter can be assigned from a `TSource` property with the same name (case-sensitive) OR,
+       - `TTarget` type has one constructor with parameters and each constructor argument can be assigned from a `TSource` property with the same name (case-insensitive);
     - _What_:
        - Each property or constructor argument is mapped and a new instance of `TTarget` is generated;
        - Get-only dictionary or collection properties for which a mapper exists are filled with mapped values from the corresponding source;

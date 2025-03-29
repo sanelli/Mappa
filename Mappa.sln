@@ -15,10 +15,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		nuget.config = nuget.config
 		.gitignore = .gitignore
 		README.md = README.md
-		TODO.md = TODO.md
 		Mappa.targets = Mappa.targets
 		MappaVersion.targets = MappaVersion.targets
-		DEVELOPMENT.md = DEVELOPMENT.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{01A7FC44-1956-4F7F-B29E-F53A08DE2146}"
@@ -55,6 +53,17 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mappa.Dependency.Bson.DependencyInjection", "Mappa.Dependency.Bson.DependencyInjection\Mappa.Dependency.Bson.DependencyInjection.csproj", "{C6B0723B-31BA-4380-B745-4CFB032576AA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mappa.Dependency.Bson.DependencyInjection.Tests", "Mappa.Dependency.Bson.DependencyInjection.Tests\Mappa.Dependency.Bson.DependencyInjection.Tests.csproj", "{FEAD074A-61E5-4AFC-9F1D-8A1F0B4790FF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentation", "{D908D42F-A75D-44A5-816A-53F0FAEDD99E}"
+	ProjectSection(SolutionItems) = preProject
+		Documentation\README.md = Documentation\README.md
+		Documentation\nuget.md = Documentation\nuget.md
+		Documentation\development.md = Documentation\development.md
+		Documentation\tutorial.md = Documentation\tutorial.md
+		Documentation\mappa-generator-algorithm.md = Documentation\mappa-generator-algorithm.md
+		Documentation\mappa-attributes.md = Documentation\mappa-attributes.md
+		Documentation\error-codes.md = Documentation\error-codes.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -131,6 +140,5 @@ Global
 		{FEAD074A-61E5-4AFC-9F1D-8A1F0B4790FF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{01A7FC44-1956-4F7F-B29E-F53A08DE2146} = {C9B7F1B1-3F59-44F3-BF02-FFCF1083FF8A}
 	EndGlobalSection
 EndGlobal

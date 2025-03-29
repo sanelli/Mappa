@@ -1,39 +1,106 @@
-# Mappa
-Mappa implements mapping via source generators.
+# 🗺️ Mappa
+Mappa (italian for _map_) is a source generator for `C#` that can generate code to allow the mapping between types, similarly to what [AutoMapper](https://www.nuget.org/packages/AutoMapper) (and other similar tools) does.
+See [Documentation](./Documentation/README.md) for more details.
 
-## How does it work?
-TODO
+The main different between Mappa and AutoMapper is that Mappa generates code at compile time while AutoMapper only at runtime;
+this has multiple benefits:
+- the code generated is optimised by the compiler;
+- the code generated is pure C# code that does not require any introspections;
+- the code generated works when AOT is required;
+- the code can be easily shared across different mappers;
+- fine-grained mapping can be obtained via attributes on the mapper methods without having to touch the source or the target classes;
+- mapper methods can be inside any class (static class and extension methods are supported!).
+- you do not need to specify every type that requires a mapping: if a mapping is missing Mappa will generate it for you;
 
-## Examples
-TODO
+## A simple example
+Consider the following code snipped:
+```csharp
+namespace Sample;
+  
+public enum MyEnumeration
+{
+    One,
+    Two,
+    Three,
+}
 
-## Algorithm
-TODO
+public class Source
+{
+    public int PropertyA {get;set;}
+    public int[] PropertyB {get;set;}
+    public MyEnumeration PropertyC {get;set;}
+}
 
-### Strategies
-This is the ordered list of strategies applied
-1. **Identity strategy**: the source is assigned directly to the target. This happens in the following scenario:
-   1. The source and the target are the same type
-   2. The target is of type `object`
-   3. An implicit conversion exists from source to target
-2. **Enum strategy**: either the source or the target is an `enum`
-   1. The source is an `enum` and the target is a `string`
-   2. The source is an `enum` and the target is an integral type (`int`, `short`, ...) and an implicit conversion exists from the underlying integral type of the source `enum`
-   3. The source is a `string` and the target is an `enum`
-   4. The source is an integral type (`int`, `short`, ...) and the target is an `anum` and an implicit conversion exists to the underlying integral type of the target `enum`
-3. **String strategy**: either the source of the target type is a a `string`
-   1. The source is a `string` and the target is any numeric type: the target `TargetType.Parse(string)` static method will be invoked (e.g. `int.Parse("3")`)
-   2. The source is a `string` and the target is `DateTime`: the target `DateTime.Parse(string)` static method will be invoked
-   3. The source is a `string` and the target is `DateOnly`: the target `DateOnly.Parse(string)` static method will be invoked (*TODO*)
-   4. The source is a `string` and the target is `TimeOnly`: the target `TimeOnly.Parse(string)` static method will be invoked (*TODO*)
-   5. The source is a `string` and the target is `Guid`: the target `Guid.Parse(string)` static method will be invoked (*TODO*)
-   6. The source is a `string` and the target is `TimeSpan`: the target `TimeSpan.Parse(string)` static method will be invoked (*TODO*)
-   7. The source is a `string` and the target is `URI`: the target `URI.Parse(string)` static method will be invoked (*TODO*)
-   8. The source is a `string` and the target type has a static `Parse` method accepting `string` as input an returning the target type itself (*TODO*)
-   9. The target is a `string`: The method `ToString()` will be invoked
+public class Target
+{
+    public long PropertyA {get;set;}
+    public List<string> PropertyB {get;set;}
+    public string PropertyC {get;set;}
+}
 
-## Attributes to control the mapping
-- `Mappa`: Enable the generation of mapping for a class.
+[Mappa]
+public partial class Mapper
+{
+    public partial Target Map(Source input);
+}
+```
 
-## Performances
-TODO
+will create mapping code like the following:
+```csharp
+namespace Sample;
+
+public partial class Mapper
+{
+   [System.CodeDom.Compiler.GeneratedCodeAttribute("Mappa", "0.0.1.0")]
+   public partial Sample.Target Map(Sample.Source input)
+   {
+       long __mappa_tmp_1 = input.PropertyA;
+       int[] __mappa_tmp_2 = input.PropertyB;
+       System.Collections.Generic.List<string> __mappa_tmp_3 = new System.Collections.Generic.List<string>(__mappa_tmp_2.Length);
+       for (int __mappa_tmp_3 = 0; __mappa_tmp_3 < __mappa_tmp_2.Length; ++__mappa_tmp_3)
+       {
+           int __mappa_tmp_4 = __mappa_tmp_2[__mappa_tmp_3];
+           string __mappa_tmp_5 = __mappa_tmp_4.ToString();
+           __mappa_tmp_3.Add(__mappa_tmp_5)
+       }
+       Sample.MyEnumeration __mappa_tmp_6 = input.PropertyC;
+       string __mappa_tmp_7;
+       switch(__mappa_tmp_6)
+       {
+           case Sample.MyEnumeration.One:
+              __mappa_tmp_7 = "One";
+              break;
+           case Sample.MyEnumeration.Two:
+              __mappa_tmp_7 = "Two";
+              break;
+           case Sample.MyEnumeration.Three:
+              __mappa_tmp_7 = "Three";
+              break;
+           default:
+              throw new System.OutOfRangeException(nameof(__mappa_tmp_6));
+       }
+       Sample.Target __mappa_tmp_8 = new Sample.Target()
+       {
+           PropertyA = __mappa_tmp_1,
+           PropertyB = __mappa_tmp_3,
+           PropertyC = __mappa_tmp_7;
+       }
+       return __mappa_tmp_8;
+   }
+}
+```
+
+## How to use Mappa
+The easiest way to is import the NuGet packages and apply the `[Mappa]` attribute on the partial classes that contains the partial methods that needs to be generated.
+
+Please see the [tutorial](./Documentation/tutorial.md) in the [documentation](./Documentation/README.md) provided.
+
+You can also find many examples in the [Mappa.Samples](Mappa.Samples) project.
+
+## NuGet packages
+- [Mappa](https://www.nuget.org/packages/Mappa/): source generator that allows to automatically generate mapping between classes and value types;
+- [Mappa source generator](https://www.nuget.org/packages/Mappa.Generator/): source generator that allows to automatically generate mapping between classes and value types;
+- [Mappa Protobuf](https://www.nuget.org/packages/Mappa.Dependency.Protobuf/): methods to map `Google.Protobuf.WellKnownTypes` objects from [Google.Protobuf](https://www.nuget.org/packages/Google.Protobuf) package into common objects.
+- [Mappa Protobuf dependency](https://www.nuget.org/packages/Mappa.Dependency.Protobuf.DependencyInjection/): utility methods to register the Protobuf mapper.
+- [Mappa Bson](https://www.nuget.org/packages/Mappa.Dependency.Bson/): methods to map `MongoDB.Bson` objects from [MongoDB.Bson](https://www.nuget.org/packages/MongoDB.Bson) package into common objects.
+- [Mappa Bson dependency](https://www.nuget.org/packages/Mappa.Dependency.Bson.DependencyInjection/): utility methods to register the Bson mapper.
