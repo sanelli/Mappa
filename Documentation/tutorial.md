@@ -11,8 +11,6 @@ and let's add the required libraries:
 ```powershell
 dotnet add MappaTutorial package Mappa
 dotnet add MappaTutorial package Mappa.Generator
-dotnet add MappaTutorial package Mappa.Dependency.Protobuf.DependencyInjection
-dotnet add MappaTutorial package Mappa.Dependency.Bson.DependencyInjection
 ```
 
 Optionally, you can edit your `MappaTutorial.csproj` file to emit the source generated files by adding the following property:
