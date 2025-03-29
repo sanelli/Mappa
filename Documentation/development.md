@@ -1,7 +1,7 @@
-# Mappa development
-This document explains how to develop
+# Development
+This document explains how to develop Mappa.
 
-## NuGet
+## NuGet Setup
 In order to be able to compile you need to setup a `nuget.config` like the following:
 ```XML
 <?xml version="1.0" encoding="utf-8"?>
@@ -15,12 +15,14 @@ In order to be able to compile you need to setup a `nuget.config` like the follo
 
 The `nuget.config` can be generated automatically by running: `./Scripts/CreateNuGetConfig.ps1`
 
-The projects automatically store all NuGet packages in `.packages\` folder.
+The solution automatically store all NuGet packages in `.packages\` folder;
+in order to have all the project compiled it is easy just to invoke the script `./Scripts/RebuildUponVersionChange.ps1`.
+
+Every time a change in the Mappa or Mappa.Generator project is provided a new version should be generated locally by:
+- Updating the `MappaVersion.targets` by increasing the alpha version
+- Run the `./Scripts/RebuildUponVersionChange.ps1` script
 
 ## Scripts
-### Check version matches
-`./Scripts/CheckVersions.ps1`
-
 ### Run tests and report code coverage
 `./Scripts/RunTestsAndReportCoverage.ps1`
 
