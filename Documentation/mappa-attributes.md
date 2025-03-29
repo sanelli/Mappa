@@ -24,6 +24,7 @@ Via `MappaSettings` the following settings can be identified:
 
 # .editorconfig
 Global configuration can be setup via the `.editorconfig` file; the following valus can be set (if not provided the default value is used):
+
 | ---- | ------ | ------- | ----------- |
 | Name | Values | Default | Description |
 | ---- | ------ | ------- | ----------- |
