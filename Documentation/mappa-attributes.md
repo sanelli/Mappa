@@ -25,7 +25,6 @@ Via `MappaSettings` the following settings can be identified:
 # .editorconfig
 Global configuration can be setup via the `.editorconfig` file; the following valus can be set (if not provided the default value is used):
 
-| ---- | ------ | ------- | ----------- |
 | Name | Values | Default | Description |
 | ---- | ------ | ------- | ----------- |
 | `mappa.debug` | `true`, `false` | `false` | Enable or disable reporting some debug diagnostics while the source generator is generating the mapping. |
