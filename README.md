@@ -15,6 +15,9 @@ this has multiple benefits:
 ## 🧑‍🔬 A simple example
 Consider the following code snipped:
 ```csharp
+using Mappa;
+using System.Collections.Generic;
+
 namespace Sample;
   
 public enum MyEnumeration
