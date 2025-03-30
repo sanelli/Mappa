@@ -2,7 +2,7 @@
 name: Bug report
 about: Create a report to help us improve
 title: "[BUG] Brief description here"
-labels: "\U0001F41E Bug"
+labels: "\U0001F41E Bug, \U0001F9D1\U0001F3FB‍⚕️ Triage"
 assignees: ''
 
 ---

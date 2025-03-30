@@ -2,7 +2,7 @@
 name: Feature request
 about: Suggest an idea for this project
 title: ''
-labels: "⚙️ Feature"
+labels: "⚙️ Feature, \U0001F9D1\U0001F3FB‍⚕️ Triage"
 assignees: ''
 
 ---
