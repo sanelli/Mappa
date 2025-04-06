@@ -19,6 +19,7 @@ internal sealed class MapMethod
 {
     private readonly Attribute[] attributes;
     private MethodParameterMapStrategy? methodParameterMapStrategy;
+    private bool pragmaWarningHasBeenSet;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MapMethod"/> class.
@@ -47,6 +48,7 @@ internal sealed class MapMethod
         this.Mapped = false;
         this.Location = methodDeclarationSyntax.GetLocation();
         this.NullableEnabled = nullableEnabled;
+        this.PragmaWarning = PragmaWarningSetting.Undefined;
         this.attributes = this.MethodSymbol.GetMethodMappaAttributes(semanticModel.Compilation);
     }
 
@@ -74,12 +76,18 @@ internal sealed class MapMethod
         this.Mapped = true;
         this.NullableEnabled = nullableEnabled;
         this.attributes = [];
+        this.PragmaWarning = PragmaWarningSetting.Undefined;
     }
 
     /// <summary>
     /// Gets a value indicating whether reference nullable is enabled.
     /// </summary>
     internal bool NullableEnabled { get; }
+
+    /// <summary>
+    /// Gets the pragma warning settings specific for the method being mapped.
+    /// </summary>
+    internal PragmaWarningSetting PragmaWarning { get; private set; }
 
     /// <summary>
     /// Gets the field name to access method.
@@ -237,5 +245,21 @@ internal sealed class MapMethod
         }
 
         return this.MethodSymbol.Parameters[1].Name;
+    }
+
+    /// <summary>
+    /// Set the <see cref="PragmaWarning"/> field.
+    /// </summary>
+    /// <param name="pragmaWarning">The value to apply to <see cref="PragmaWarning"/>.</param>
+    /// <exception cref="MappaGeneratorException">When the field has been set already.</exception>
+    internal void SetPragmaWarning(PragmaWarningSetting pragmaWarning)
+    {
+        if (this.pragmaWarningHasBeenSet)
+        {
+            throw new MappaGeneratorException("You are trying to set a pragma warning multiple times.");
+        }
+
+        this.pragmaWarningHasBeenSet = true;
+        this.PragmaWarning = pragmaWarning;
     }
 }

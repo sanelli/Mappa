@@ -110,6 +110,7 @@ internal sealed class MappaGeneratorClassAlgorithm
             var mappaSettingsAttribute = mapMethod.GetAttribute<MappaSettingsAttribute>();
             using (mappaUserSettings.Apply(mappaSettingsAttribute))
             {
+                mapMethod.SetPragmaWarning(mappaUserSettings.PragmaWarning);
                 var methodContext = new MappaMethodGeneratorContext(classContext, mappaUserSettings, mapMethod);
                 var typeIdentifierAlgorithm = new TypeMapIdentifierAlgorithm(
                     methodContext,
