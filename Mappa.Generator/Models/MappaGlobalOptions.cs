@@ -21,31 +21,31 @@ namespace Mappa.Generator.Models;
 ///     </item>
 ///     <item>
 ///         <term><c>mappa.datetimeformat</c></term>
-///         <description>Default format to be used for parsing strings and converting to string <see cref="DateTime"/> structs.</description>
+///         <description>Default format to be used for parsing strings and converting to string <see cref="DateTime"/> <c>struct</c>s.</description>
 ///     </item>
 ///     <item>
 ///         <term><c>mappa.datetimeoffsetformat</c></term>
-///         <description>Default format to be used for parsing strings and converting to string <see cref="DateTimeOffset"/> structs.</description>
+///         <description>Default format to be used for parsing strings and converting to string <see cref="DateTimeOffset"/> <c>struct</c>s.</description>
 ///     </item>
 ///     <item>
 ///         <term><c>mappa.dateonlyformat</c></term>
-///         <description>Default format to be used for parsing strings and converting to string DateOnly structs.</description>
+///         <description>Default format to be used for parsing strings and converting to string <c>DateOnly</c> <c>struct</c>s.</description>
 ///     </item>
 ///     <item>
 ///         <term><c>mappa.timeonlyformat</c></term>
-///         <description>Default format to be used for parsing strings and converting to string TimeOnly structs.</description>
+///         <description>Default format to be used for parsing strings and converting to string <c>TimeOnly</c> <c>struct</c>s.</description>
 ///     </item>
 ///     <item>
 ///         <term><c>mappa.timespanformat</c></term>
-///         <description>Default format to be used for parsing strings and converting to string <see cref="TimeSpan"/> structs.</description>
+///         <description>Default format to be used for parsing strings and converting to string <see cref="TimeSpan"/> <c>struct</c>s.</description>
 ///     </item>
 ///     <item>
 ///         <term><c>mappa.guidformat</c></term>
-///         <description>Default format to be used for parsing strings and converting to string <see cref="Guid"/> structs.</description>
+///         <description>Default format to be used for parsing strings and converting to string <see cref="Guid"/>  <c>struct</c>s.</description>
 ///     </item>
 ///     <item>
 ///         <term><c>mappa.cultureinfosettings</c></term>
-///         <description>Set the default culture info settings. Valid values are the values of the <see cref="CultureInfoSetting"/> enum.</description>
+///         <description>Set the default culture info settings. Valid values are the values of the <see cref="CultureInfoSetting"/> <c>enum</c>.</description>
 ///     </item>
 ///     <item>
 ///         <term><c>mappa.culturename</c></term>
@@ -53,7 +53,11 @@ namespace Mappa.Generator.Models;
 ///     </item>
 ///     <item>
 ///         <term><c>mappa.protobufoptional</c></term>
-///         <description>Set the default value to enable or disable the (protobuf) optional setting. Valid values are the values from the <see cref="BooleanSetting"/> enum.</description>
+///         <description>Set the default value to enable or disable the (protobuf) optional setting. Valid values are the values from the <see cref="BooleanSetting"/> <c>enum</c>.</description>
+///     </item>
+///     <item>
+///         <term><c>mappa.pragmawarning</c></term>
+///         <description>Set the default value disable or  nor apply the <c>#pragma warning</c> around the mapping method. Valid values are the values from the <see cref="PragmaWarningSetting"/> <c>enum</c>.</description>
 ///     </item>
 /// </list>
 /// </summary>
@@ -72,6 +76,7 @@ internal sealed class MappaGlobalOptions
     private const string MappaSettingsCultureInfoSettings = "cultureinfosettings";
     private const string MappaSettingsCultureName = "culturename";
     private const string MappaSettingsProtobufOptional = "protobufoptional";
+    private const string MappaSettingsPragmaWarning = "pragmawarning";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaGlobalOptions"/> class.
@@ -131,10 +136,13 @@ internal sealed class MappaGlobalOptions
             ? GetCultureInfoSettingsFromString(cultureInfoSettings)
             : CultureInfoSetting.None;
 
-        this.ProtobufOptional = options.TryGetValue(GetOptionName(MappaSettingsProtobufOptional), out var optional)
-                                  && !string.IsNullOrWhiteSpace(cultureInfoSettings)
-            ? GetEnableSettingsFromString(optional)
+        this.ProtobufOptional = options.TryGetValue(GetOptionName(MappaSettingsProtobufOptional), out var protobufOptional)
+            ? GetBooleanSettingFromString(protobufOptional)
             : BooleanSetting.Undefined;
+
+        this.PragmaWarning = options.TryGetValue(GetOptionName(MappaSettingsPragmaWarning), out var pragmaWarning)
+            ? GetPragmaWarningSettingFromString(pragmaWarning)
+            : PragmaWarningSetting.NoBlock;
 
         static CultureInfoSetting GetCultureInfoSettingsFromString(string cultureInfoSettings)
         {
@@ -161,7 +169,7 @@ internal sealed class MappaGlobalOptions
             return CultureInfoSetting.None;
         }
 
-        static BooleanSetting GetEnableSettingsFromString(string enableSettings)
+        static BooleanSetting GetBooleanSettingFromString(string enableSettings)
         {
             if (enableSettings.Equals(nameof(BooleanSetting.Undefined), StringComparison.OrdinalIgnoreCase))
             {
@@ -179,6 +187,26 @@ internal sealed class MappaGlobalOptions
             }
 
             return BooleanSetting.Undefined;
+        }
+
+        static PragmaWarningSetting GetPragmaWarningSettingFromString(string enableSettings)
+        {
+            if (enableSettings.Equals(nameof(PragmaWarningSetting.Undefined), StringComparison.OrdinalIgnoreCase))
+            {
+                return PragmaWarningSetting.Undefined;
+            }
+
+            if (enableSettings.Equals(nameof(PragmaWarningSetting.NoBlock), StringComparison.OrdinalIgnoreCase))
+            {
+                return PragmaWarningSetting.NoBlock;
+            }
+
+            if (enableSettings.Equals(nameof(BooleanSetting.Disable), StringComparison.OrdinalIgnoreCase))
+            {
+                return PragmaWarningSetting.Disable;
+            }
+
+            return PragmaWarningSetting.Undefined;
         }
     }
 
@@ -208,6 +236,9 @@ internal sealed class MappaGlobalOptions
 
     /// <inheritdoc/>
     public BooleanSetting ProtobufOptional { get; }
+
+    /// <inheritdoc/>
+    public PragmaWarningSetting PragmaWarning { get; }
 
     /// <summary>
     /// Gets a value indicating whether to report debug INFO diagnostics.

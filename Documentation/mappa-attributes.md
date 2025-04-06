@@ -20,7 +20,8 @@ Via `MappaSettings` the following settings can be identified:
 - `GuidFormat`: the format to use to map `string`s into `System.Guid` and vice versa;
 - `CultureInfoSetting`: define which culture use when mapping any of the above types (can be current culture, invariant culture or user defined culture);
 - `CultureName`: define the culture to use then user defined culture is selected by `CultureInfoSetting`;
-- `ProtobufOptional`: enable or disable the ability of [Mappa source generator](https://www.nuget.org/packages/Mappa.Generator/) to handle `optional` fields in protobuf models.
+- `ProtobufOptional`: enable or disable the ability of [Mappa source generator](https://www.nuget.org/packages/Mappa.Generator/) to handle `optional` fields in protobuf models;
+- `PragmaWarning`: allows to surround the code with a `#pragma warning disable` block.
 
 # .editorconfig
 Global configuration can be setup via the `.editorconfig` file; the following valus can be set (if not provided the default value is used):
@@ -37,3 +38,4 @@ Global configuration can be setup via the `.editorconfig` file; the following va
 | `mappa.cultureinfosettings`  | `Undefined`,`None`,`CurrentCulture`, `InvariantCulture`, `UserDefined`                                                                                                                                                                   | `None`      | Defined which culture use when invoking some `Parse` and `ToString` methods.                                                               |
 | `mappa.culturename`          | See supported culture names [here](https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-lcid/a9eac961-e77d-41a6-90a5-ce1a8b0cdb9c)                                                                                           | `""`        | Define the culture name when the `CultureInfoSettings` is `UserDefined`                                                                    |
 | `mappa.protobufoptional`     | `Enable`, `Disable`, `Undefined`                                                                                                                                                                                                         | `Undefined` | Enable the ability to handle the `optional` protobuf fields by using the `Has<propertyName>`.                                              |
+| `mappa.pragmawarning`        | `NoBlock`, `Disable`, `Undefined`                                                                                                                                                                                                        | `NoBlock`   | Allows to surround the code with a `#pragma warning disable` block                                                                         |

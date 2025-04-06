@@ -170,6 +170,10 @@ internal static class AttributeDataExtensions
                 case nameof(MappaSettingsAttribute.ProtobufOptional) when namedArgument.Value.Value is int value:
                     attribute.ProtobufOptional = (BooleanSetting)value;
                     break;
+
+                case nameof(MappaSettingsAttribute.PragmaWarning) when namedArgument.Value.Value is int value:
+                    attribute.PragmaWarning = (PragmaWarningSetting)value;
+                    break;
             }
         }
 
