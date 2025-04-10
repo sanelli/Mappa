@@ -24,7 +24,7 @@ public sealed class ExtensionMethodSupportTests
     {
         // Arrange
         const string sourceCode = """
-                                  #nullable disable
+                                  #nullable enable
                                   using Mappa.Attributes;
 
                                   namespace Mappa.Generator.Tests.UnitTests.SourceCode;

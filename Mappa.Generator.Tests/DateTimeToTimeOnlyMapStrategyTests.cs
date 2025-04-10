@@ -28,6 +28,7 @@ public sealed class DateTimeToTimeOnlyMapStrategyTests
 
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
                                   using System;
                                   using Mappa.Attributes;
 

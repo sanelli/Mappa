@@ -26,6 +26,7 @@ public sealed class IntegralToEnumMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
+            #nullable enable
             using Mappa.Attributes;
 
             namespace Mappa.Generator.Tests.UnitTests.SourceCode;

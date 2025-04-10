@@ -38,6 +38,7 @@ public sealed class LongToDateTimeOffsetMapStrategyTests
 
         // Arrange
         var sourceCode = $$"""
+                          #nullable enable
                           using System;
                           using Mappa.Attributes;
 

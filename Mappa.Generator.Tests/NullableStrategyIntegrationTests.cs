@@ -189,6 +189,7 @@ public class NullableStrategyIntegrationTests
                 NullableAnnotation.None,
                 "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
                 NullableAnnotation.None,
+                NullableSetup.Disable,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -306,6 +307,7 @@ public class NullableStrategyIntegrationTests
                 NullableAnnotation.Annotated,
                 "Mappa.Generator.Tests.UnitTests.SourceCode.TestEnum",
                 NullableAnnotation.NotAnnotated,
+                NullableSetup.Disable,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -374,6 +376,7 @@ public class NullableStrategyIntegrationTests
                 NullableAnnotation.NotAnnotated,
                 typeof(int?).ToString(),
                 NullableAnnotation.Annotated,
+                NullableSetup.Disable,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -449,6 +452,7 @@ public class NullableStrategyIntegrationTests
                 NullableAnnotation.Annotated,
                 typeof(int?).ToString(),
                 NullableAnnotation.Annotated,
+                NullableSetup.Disable,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -751,6 +755,7 @@ public class NullableStrategyIntegrationTests
                 NullableAnnotation.NotAnnotated,
                 typeof(string).ToString(),
                 NullableAnnotation.None,
+                NullableSetup.Disable,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -833,6 +838,7 @@ public class NullableStrategyIntegrationTests
                 NullableAnnotation.Annotated,
                 typeof(string).ToString(),
                 NullableAnnotation.None,
+                NullableSetup.Disable,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions

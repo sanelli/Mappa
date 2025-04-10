@@ -61,6 +61,7 @@ public sealed class MethodMapStrategyIntegrationTests
                 NullableAnnotation.None,
                 "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
                 NullableAnnotation.None,
+                NullableSetup.Disable,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -196,6 +197,8 @@ public sealed class MethodMapStrategyIntegrationTests
                 "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
                 NullableAnnotation.None,
                 2,
+                NullableSetup.Disable,
+                PragmaWarning.NoBlock,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions

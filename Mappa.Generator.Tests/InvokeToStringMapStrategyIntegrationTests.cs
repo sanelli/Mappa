@@ -41,6 +41,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
 
         // Arrange
         var sourceCode = $$"""
+                          #nullable enable
                           using Mappa.Attributes;
 
                           namespace Mappa.Generator.Tests.UnitTests.SourceCode;
@@ -63,7 +64,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 typeof(string).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 sourceType.ToString(),
                 NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
@@ -103,6 +104,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
 
         // Arrange
         var sourceCode = """
+                          #nullable enable
                           using Mappa.Attributes;
 
                           namespace Mappa.Generator.Tests.UnitTests.SourceCode;
@@ -126,7 +128,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 typeof(string).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 typeof(int).ToString(),
                 NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
@@ -174,6 +176,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
 
         // Arrange
         var sourceCode = $$"""
+                          #nullable enable
                           using Mappa.Attributes;
 
                           namespace Mappa.Generator.Tests.UnitTests.SourceCode;
@@ -197,7 +200,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 typeof(string).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 sourceType.ToString(),
                 NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
@@ -248,6 +251,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
 
         // Arrange
         var sourceCode = $$"""
+                          #nullable enable
                           using Mappa;
                           using Mappa.Attributes;
 
@@ -272,7 +276,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 typeof(string).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 sourceType.ToString(),
                 NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
@@ -324,6 +328,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
 
         // Arrange
         var sourceCode = $$"""
+                           #nullable enable
                            using Mappa;
                            using Mappa.Attributes;
 
@@ -348,7 +353,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 typeof(string).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 sourceType.ToString(),
                 NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
@@ -400,6 +405,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
 
         // Arrange
         var sourceCode = $$"""
+                           #nullable enable
                            using Mappa;
                            using Mappa.Attributes;
 
@@ -424,7 +430,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 typeof(string).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 sourceType.ToString(),
                 NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
@@ -478,6 +484,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
 
         // Arrange
         var sourceCode = $$"""
+                           #nullable enable
                            using Mappa;
                            using Mappa.Attributes;
 
@@ -502,7 +509,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 typeof(string).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 sourceType.ToString(),
                 NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
@@ -538,7 +545,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
     [InlineData(typeof(Guid))]
     [InlineData(typeof(TimeSpan))]
     [IntegrationTest]
-    public async Task CanMapdToStringWithoutFormatInvokesPlainToString(Type sourceType)
+    public async Task CanMapToStringWithoutFormatInvokesPlainToString(Type sourceType)
     {
         ArgumentNullException.ThrowIfNull(sourceType);
 
@@ -546,6 +553,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
 
         // Arrange
         var sourceCode = $$"""
+                           #nullable enable
                            using Mappa;
                            using Mappa.Attributes;
 
@@ -570,7 +578,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 typeof(string).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 sourceType.ToString(),
                 NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
@@ -615,6 +623,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
 
         // Arrange
         var sourceCode = $$"""
+                           #nullable enable
                            using Mappa;
                            using Mappa.Attributes;
 
@@ -639,7 +648,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 typeof(string).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 sourceType.ToString(),
                 NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
@@ -689,6 +698,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
 
         // Arrange
         var sourceCode = $$"""
+                          #nullable enable
                           using Mappa.Attributes;
 
                           namespace Mappa.Generator.Tests.UnitTests.SourceCode;
@@ -712,7 +722,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 typeof(string).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 sourceType.ToString(),
                 NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
@@ -763,6 +773,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
 
         // Arrange
         var sourceCode = $$"""
+                           #nullable enable
                            using Mappa.Attributes;
 
                            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
@@ -787,7 +798,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 typeof(string).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 sourceType.ToString(),
                 NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
@@ -841,6 +852,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
 
         // Arrange
         var sourceCode = $$"""
+                           #nullable enable
                            using Mappa.Attributes;
 
                            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
@@ -865,7 +877,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 typeof(string).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 sourceType.ToString(),
                 NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>

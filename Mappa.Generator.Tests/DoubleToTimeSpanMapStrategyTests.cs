@@ -41,6 +41,7 @@ public sealed class DoubleToTimeSpanMapStrategyTests
 
         // Arrange
         var sourceCode = $$"""
+                          #nullable enable
                           using System;
                           using Mappa.Attributes;
 
