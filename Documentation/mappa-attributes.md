@@ -21,7 +21,7 @@ Via `MappaSettings` the following settings can be identified:
 - `CultureInfoSetting`: define which culture use when mapping any of the above types (can be current culture, invariant culture or user defined culture);
 - `CultureName`: define the culture to use then user defined culture is selected by `CultureInfoSetting`;
 - `ProtobufOptional`: enable or disable the ability of [Mappa source generator](https://www.nuget.org/packages/Mappa.Generator/) to handle `optional` fields in protobuf models;
-- `PragmaWarning`: allows to surround the code with a `#pragma warning disable` block.
+- `PragmaWarning`: allows to surround the generated methods with a `#pragma warning disable` block.
 
 # .editorconfig
 Global configuration can be setup via the `.editorconfig` file; the following valus can be set (if not provided the default value is used):
