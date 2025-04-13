@@ -55,4 +55,10 @@ internal interface IMappaUserSettings
     /// Gets a value indicating whether the protobuf optional feature is enabled when performing mapping.
     /// </summary>
     public BooleanSetting ProtobufOptional { get; }
+
+    /// <summary>
+    /// Gets a value indicating weather the mapping method should be surrounded
+    /// by <c>#pragma warning disable</c>.
+    /// </summary>
+    public PragmaWarningSetting PragmaWarning { get; }
 }

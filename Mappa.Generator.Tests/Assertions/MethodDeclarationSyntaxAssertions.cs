@@ -40,7 +40,7 @@ internal sealed class MethodDeclarationSyntaxAssertions
     /// </summary>
     /// <param name="assert">The attribute syntax assertion.</param>
     /// <returns>The assertions.</returns>
-    public MethodDeclarationSyntaxAssertions HaveGeneratedCodeAttribute(Action<AttributeSyntaxAssertions> assert)
+    internal MethodDeclarationSyntaxAssertions HaveGeneratedCodeAttribute(Action<AttributeSyntaxAssertions> assert)
     {
         ArgumentNullException.ThrowIfNull(assert);
 
@@ -60,7 +60,7 @@ internal sealed class MethodDeclarationSyntaxAssertions
     /// </summary>
     /// <param name="modifiers">The expected modifier.</param>
     /// <returns>The assertions.</returns>
-    public MethodDeclarationSyntaxAssertions HaveModifiers(params SyntaxKind[] modifiers)
+    internal MethodDeclarationSyntaxAssertions HaveModifiers(params SyntaxKind[] modifiers)
     {
         var expectedModifiers = new HashSet<SyntaxKind>(modifiers);
         this.Subject.Modifiers.Should().HaveCount(expectedModifiers.Count);
@@ -75,7 +75,7 @@ internal sealed class MethodDeclarationSyntaxAssertions
     /// </summary>
     /// <param name="assert">The assertions on the method's body.</param>
     /// <returns>The method syntax assertion.</returns>
-    public MethodDeclarationSyntaxAssertions HaveBody(Action<BlockSyntaxAssertions> assert)
+    internal MethodDeclarationSyntaxAssertions HaveBody(Action<BlockSyntaxAssertions> assert)
     {
         ArgumentNullException.ThrowIfNull(assert);
 
@@ -83,6 +83,40 @@ internal sealed class MethodDeclarationSyntaxAssertions
         blockSyntaxes.Should().HaveCount(1);
         var blockSyntaxAssertions = new BlockSyntaxAssertions(blockSyntaxes.Single(), this.semanticModel, this.compilation);
         assert(blockSyntaxAssertions);
+        return this;
+    }
+
+    /// <summary>
+    /// Check that the method has a nullability annotation.
+    /// </summary>
+    /// <param name="nullableSetup">Define the required nullability.</param>
+    /// <returns>The method syntax assertion.</returns>
+    internal MethodDeclarationSyntaxAssertions HaveNullabilityAnnotation(NullableSetup nullableSetup)
+    {
+        var annotations = this.Subject.GetLeadingTrivia().Where(
+            trivia => trivia.Kind() is SyntaxKind.NullableDirectiveTrivia
+            && trivia.IsDirective
+            && trivia.ToString().Equals($"#nullable {(nullableSetup is NullableSetup.Enable ? "enable" : "disable")}", StringComparison.Ordinal))
+            .ToArray();
+
+        annotations.Should().HaveCount(1);
+        return this;
+    }
+
+    /// <summary>
+    /// Check that the method has a nullability annotation.
+    /// </summary>
+    /// <param name="pragmaWarning">The type of <c>#pragma warning</c>.</param>
+    /// <returns>The method syntax assertion.</returns>
+    internal MethodDeclarationSyntaxAssertions HavePragmaWarningDisableAnnotation(PragmaWarning pragmaWarning)
+    {
+        var annotations = this.Subject.GetLeadingTrivia().Where(
+                trivia => trivia.Kind() is SyntaxKind.PragmaWarningDirectiveTrivia
+                          && trivia.IsDirective
+                          && trivia.ToString().Equals("#pragma warning disable", StringComparison.Ordinal))
+            .ToArray();
+
+        annotations.Should().HaveCount(pragmaWarning is PragmaWarning.Disable ? 1 : 0);
         return this;
     }
 }

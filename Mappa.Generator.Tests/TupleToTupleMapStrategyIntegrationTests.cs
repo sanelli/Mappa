@@ -269,6 +269,7 @@ public sealed class TupleToTupleMapStrategyIntegrationTests
                 NullableAnnotation.None,
                 typeof((int, string)).ToString(),
                 NullableAnnotation.NotAnnotated,
+                NullableSetup.Disable,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -316,6 +317,7 @@ public sealed class TupleToTupleMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
                                   using Mappa.Attributes;
                                   using System;
 
@@ -385,6 +387,7 @@ public sealed class TupleToTupleMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
                                   using Mappa.Attributes;
                                   using System;
 
@@ -444,7 +447,7 @@ public sealed class TupleToTupleMapStrategyIntegrationTests
     }
 
     /// <summary>
-    /// Test a mapping can be created between from tuple
+    /// Test a mapping can be created from tuple
     /// with named elements to <see cref="Tuple{T1,T2}"/>.
     /// </summary>
     /// <returns>The async task.</returns>
@@ -480,6 +483,7 @@ public sealed class TupleToTupleMapStrategyIntegrationTests
                 NullableAnnotation.None,
                 "(int Alfa, string Beta)",
                 NullableAnnotation.NotAnnotated,
+                NullableSetup.Disable,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -527,6 +531,7 @@ public sealed class TupleToTupleMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
                                   using Mappa.Attributes;
                                   using System;
 
@@ -596,6 +601,7 @@ public sealed class TupleToTupleMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
                                   using Mappa.Attributes;
                                   using System;
 

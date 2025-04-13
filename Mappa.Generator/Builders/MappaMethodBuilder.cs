@@ -29,22 +29,34 @@ internal sealed class MappaMethodBuilder
     {
         var builder = new PrettyCode.StringBuilder();
         var isNullableEnabled = this.mapMethod.NullableEnabled;
-        using (builder.NullableDirective(isNullableEnabled))
-        {
-            builder
-                .AppendLine(new MappaGeneratedCodeAttributeBuilder().BuildSource(context, mappaGlobalOptions))
-                .AppendLine(this.GetSignature());
-            using (builder.CurlyBracesBlock())
-            {
-                var (strategySource, header) = this.mapMethod.Strategy.GetBuilder().BuildSource(this.mapMethod.SourceParameterName, context, mappaGlobalOptions);
-                if (!string.IsNullOrWhiteSpace(header))
-                {
-                    builder.AppendLine(header);
-                    builder.AppendEmptyLine();
-                }
 
-                builder.AppendLine(strategySource);
+        var pragmaWarningDisable = this.mapMethod.PragmaWarning is PragmaWarningSetting.Disable
+            ? builder.PragmaWarningDirective()
+            : null;
+
+        try
+        {
+            using (builder.NullableDirective(isNullableEnabled))
+            {
+                builder
+                    .AppendLine(new MappaGeneratedCodeAttributeBuilder().BuildSource(context, mappaGlobalOptions))
+                    .AppendLine(this.GetSignature());
+                using (builder.CurlyBracesBlock())
+                {
+                    var (strategySource, header) = this.mapMethod.Strategy.GetBuilder().BuildSource(this.mapMethod.SourceParameterName, context, mappaGlobalOptions);
+                    if (!string.IsNullOrWhiteSpace(header))
+                    {
+                        builder.AppendLine(header);
+                        builder.AppendEmptyLine();
+                    }
+
+                    builder.AppendLine(strategySource);
+                }
             }
+        }
+        finally
+        {
+            pragmaWarningDisable?.Dispose();
         }
 
         return builder.ToString();

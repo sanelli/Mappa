@@ -26,6 +26,7 @@ public sealed class EnumToStringMapStrategyIntegrationTests
     {
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
                                   using Mappa.Attributes;
 
                                   namespace Mappa.Generator.Tests.UnitTests.SourceCode;
@@ -55,7 +56,7 @@ public sealed class EnumToStringMapStrategyIntegrationTests
             .NotBeNull().And
             .HaveDefaultMapMethod(
                 typeof(string).ToString(),
-                NullableAnnotation.None,
+                NullableAnnotation.NotAnnotated,
                 "Mappa.Generator.Tests.UnitTests.SourceCode.TestEnum",
                 NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>

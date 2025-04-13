@@ -28,6 +28,7 @@ public sealed class DateTimeOffsetToDateTimeMapStrategyTests
 
         // Arrange
         var sourceCode = """
+                          #nullable enable
                           using System;
                           using Mappa.Attributes;
 

@@ -22,6 +22,7 @@ internal sealed class MappaUserSettings
     private readonly StackSetting<CultureInfoSetting> cultureInfoSetting;
     private readonly StackSetting<string?> cultureName;
     private readonly StackSetting<BooleanSetting> protobufOptional;
+    private readonly StackSetting<PragmaWarningSetting> pragmaWarning;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaUserSettings"/> class.
@@ -37,7 +38,8 @@ internal sealed class MappaUserSettings
             otherSettings.GuidFormat,
             otherSettings.CultureInfoSetting,
             otherSettings.CultureName,
-            otherSettings.ProtobufOptional)
+            otherSettings.ProtobufOptional,
+            otherSettings.PragmaWarning)
     {
     }
 
@@ -52,7 +54,8 @@ internal sealed class MappaUserSettings
     /// <param name="guidFormat">The default format for <see cref="Guid"/>.</param>
     /// <param name="cultureInfoSetting">The type of culture info settings to be provided.</param>
     /// <param name="cultureName">The default culture info to use to generate a format provider.</param>
-    /// <param name="optional">Enable or disable (protobuf) optional feature.</param>
+    /// <param name="protobufOptional">Enable or disable (protobuf) optional feature.</param>
+    /// <param name="pragmaWarningSetting">Allow to surround the code generated with a <c>#pragma warning disable</c> block.</param>
     private MappaUserSettings(
         string? dateTimeFormat,
         string? dateTimeOffsetFormat,
@@ -62,7 +65,8 @@ internal sealed class MappaUserSettings
         string? guidFormat,
         CultureInfoSetting cultureInfoSetting,
         string? cultureName,
-        BooleanSetting optional)
+        BooleanSetting protobufOptional,
+        PragmaWarningSetting pragmaWarningSetting)
     {
         this.dateTimeFormat = new(dateTimeFormat);
         this.dateTimeOffsetFormat = new(dateTimeOffsetFormat);
@@ -72,7 +76,8 @@ internal sealed class MappaUserSettings
         this.guidFormat = new(guidFormat);
         this.cultureInfoSetting = new(cultureInfoSetting);
         this.cultureName = new(cultureName);
-        this.protobufOptional = new(optional);
+        this.protobufOptional = new(protobufOptional);
+        this.pragmaWarning = new(pragmaWarningSetting);
     }
 
     /// <inheritdoc />
@@ -102,6 +107,9 @@ internal sealed class MappaUserSettings
     /// <inheritdoc/>
     public BooleanSetting ProtobufOptional => this.protobufOptional;
 
+    /// <inheritdoc/>
+    public PragmaWarningSetting PragmaWarning => this.pragmaWarning;
+
     /// <summary>
     /// Push the changes required by the <paramref name="mappaSettingsAttribute"/> on the stack.
     /// If <paramref name="mappaSettingsAttribute"/> is <c>null</c>
@@ -128,6 +136,7 @@ internal sealed class MappaUserSettings
             this.cultureInfoSetting.Apply(mappaSettingsAttribute.CultureInfoSetting is not CultureInfoSetting.Undefined ? mappaSettingsAttribute.CultureInfoSetting : this.cultureInfoSetting),
             this.cultureName.Apply(mappaSettingsAttribute.CultureName ?? this.cultureName),
             this.protobufOptional.Apply(mappaSettingsAttribute.ProtobufOptional is not BooleanSetting.Undefined ? mappaSettingsAttribute.ProtobufOptional : this.protobufOptional),
+            this.pragmaWarning.Apply(mappaSettingsAttribute.PragmaWarning is not PragmaWarningSetting.Undefined ? mappaSettingsAttribute.PragmaWarning : this.pragmaWarning),
  #pragma warning restore CA2000
         ]);
     }

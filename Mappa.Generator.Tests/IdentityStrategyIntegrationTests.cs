@@ -52,6 +52,7 @@ public sealed class IdentityStrategyIntegrationTests
                 NullableAnnotation.None,
                 typeof(string).ToString(),
                 NullableAnnotation.None,
+                NullableSetup.Disable,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -199,6 +200,7 @@ public sealed class IdentityStrategyIntegrationTests
                 NullableAnnotation.NotAnnotated,
                 typeof(int).ToString(),
                 NullableAnnotation.NotAnnotated,
+                NullableSetup.Disable,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -249,6 +251,7 @@ public sealed class IdentityStrategyIntegrationTests
                 NullableAnnotation.Annotated,
                 typeof(int).ToString(),
                 NullableAnnotation.NotAnnotated,
+                NullableSetup.Disable,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -348,6 +351,7 @@ public sealed class IdentityStrategyIntegrationTests
                 NullableAnnotation.None,
                 typeof(int).ToString(),
                 NullableAnnotation.NotAnnotated,
+                NullableSetup.Disable,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -447,6 +451,7 @@ public sealed class IdentityStrategyIntegrationTests
                 NullableAnnotation.None,
                 typeof(string).ToString(),
                 NullableAnnotation.None,
+                NullableSetup.Disable,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
@@ -644,6 +649,7 @@ public sealed class IdentityStrategyIntegrationTests
                 NullableAnnotation.NotAnnotated,
                 typeof(int).ToString(),
                 NullableAnnotation.NotAnnotated,
+                NullableSetup.Disable,
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions

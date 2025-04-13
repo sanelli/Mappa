@@ -60,4 +60,10 @@ public sealed class MappaSettingsAttribute
     /// It is not enabled by default.
     /// </summary>
     public BooleanSetting ProtobufOptional { get; set; } = BooleanSetting.Undefined;
+
+    /// <summary>
+    /// Gets or sets a value indicating weather the mapping method should be surrounded
+    /// by <c>#pragma warning disable</c>.
+    /// </summary>
+    public PragmaWarningSetting PragmaWarning { get; set; } = PragmaWarningSetting.Undefined;
 }
