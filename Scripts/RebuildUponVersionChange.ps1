@@ -1,21 +1,16 @@
-dotnet build Mappa
-dotnet build Mappa.Tests
+foreach ($project in $(
+    "Mappa", "Mappa.Tests",
+    "Mappa.Generator", "Mappa.Generator.Tests",
+    "Mappa.Samples", "Mappa.Samples.Tests", "Mappa.Samples.Aot", "Mappa.Benchmark",
+    "Mappa.Dependency.Protobuf", "Mappa.Dependency.Protobuf.DependencyInjection", "Mappa.Dependency.Protobuf.Tests", "Mappa.Dependency.Protobuf.DependencyInjection.Tests",
+    "Mappa.Dependency.Bson", "Mappa.Dependency.Bson.DependencyInjection", "Mappa.Dependency.Bson.Tests", "Mappa.Dependency.Bson.DependencyInjection.Tests"
+))
+{
+    dotnet build $project
+    if (-not $?)
+    {
+        exit 1
+    }
+}
 
-dotnet build Mappa.Generator
-dotnet build Mappa.Generator.Tests
-
-dotnet build Mappa.Samples
-dotnet build Mappa.Samples.Tests
-dotnet build Mappa.Samples.Aot
-
-dotnet build Mappa.Benchmark
-
-dotnet build Mappa.Dependency.Protobuf
-dotnet build Mappa.Dependency.Protobuf.DependencyInjection
-dotnet build Mappa.Dependency.Protobuf.Tests
-dotnet build Mappa.Dependency.Protobuf.DependencyInjection.Tests
-
-dotnet build Mappa.Dependency.Bson
-dotnet build Mappa.Dependency.Bson.Tests
-dotnet build Mappa.Dependency.Bson.DependencyInjection
-dotnet build Mappa.Dependency.Bson.DependencyInjection.Tests
+exit 0

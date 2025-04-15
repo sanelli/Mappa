@@ -23,3 +23,5 @@ if ($NuGetFileExists)
 }
 
 $NuGetFile | Out-File -FilePath "nuget.config" -NoNewline
+
+return 0
