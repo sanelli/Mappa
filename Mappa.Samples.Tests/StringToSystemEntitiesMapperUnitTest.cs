@@ -26,7 +26,7 @@ public sealed class StringToSystemEntitiesMapperUnitTest
     {
         // Arrange
         var expected = DateTime.UtcNow;
-        var input = expected.ToString("yyyy-MM-dd HH:mm:ss.ffffff", DateTimeFormatInfo.CurrentInfo);
+        var input = expected.ToString("yyyy-MM-dd HH:mm:ss.fffffff", DateTimeFormatInfo.CurrentInfo);
 
         // Act
         var actual = this.mapper.MapToDateTime(input);
@@ -62,7 +62,7 @@ public sealed class StringToSystemEntitiesMapperUnitTest
     {
         // Arrange
         var expected = TimeOnly.FromDateTime(DateTime.UtcNow);
-        var input = expected.ToString("HH:mm:ss.ffffff", DateTimeFormatInfo.CurrentInfo);
+        var input = expected.ToString("HH:mm:ss.fffffff", DateTimeFormatInfo.CurrentInfo);
 
         // Act
         var actual = this.mapper.MapToTimeOnly(input);

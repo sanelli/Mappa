@@ -1,0 +1,32 @@
+name: Pull Request
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch main
+        run: git fetch --no-tags --prune --depth=1 origin +refs/heads/*:refs/remotes/origin/*
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+      - name: Check version has been increased
+        shell: pwsh
+        run: ./Scripts/CheckVersionIncrease.ps1
+      - name: Initialize NuGet.Config
+        shell: pwsh
+        run:
+          ./Scripts/CreateNuGetConfig.ps1
+      - name: Build
+        shell: pwsh
+        run: ./Scripts/RebuildUponVersionChange.ps1
+      - name: Test and code coverage
+        shell: pwsh
+        run: ./Scripts/RunTestsAndReportCoverage.ps1
