@@ -9,7 +9,8 @@ if ($null -ne $currentMappaVersion.PreReleaseLabel -and -not $currentMappaVersio
 }
 
 # getversion diff with main
-[xml]$mainVersionFileDiff = git show main:./MappaVersion.targets
+git show main:MappaVersion.targets
+[xml]$mainVersionFileDiff = git show main:MappaVersion.targets
 [semver]$mainMappaVersion = $mainVersionFileDiff.Project.PropertyGroup.MappaVersion
 
 Write-Host "Current version: '$currentMappaVersion'"
