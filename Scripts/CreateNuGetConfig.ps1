@@ -16,6 +16,12 @@ $NuGetFile = @”
 
 Write-Host $NuGetFile
 
+$PackagesFolderExists = Test-Path -Path ".packages" -PathType Container
+if (-not $PackagesFolderExists)
+{
+    New-Item -Name ".packages" -ItemType "Directory"    
+}
+
 $NuGetFileExists = Test-Path -Path "nuget.config" -PathType Leaf
 if ($NuGetFileExists)
 {
