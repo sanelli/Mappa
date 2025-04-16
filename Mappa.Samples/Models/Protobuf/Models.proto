@@ -2,6 +2,8 @@ syntax = "proto3";
 
 option csharp_namespace = "Mappa.Samples.Models";
 
+import "google/protobuf/timestamp.proto";
+
 // Protobuf model for the CountingValues enum.
 enum ProtobufCountingValues
 {
@@ -43,4 +45,12 @@ message TargetProtobufClassWithCollections
 
   // A map from string to integers.
   map<string, int32> PropertyG = 2;
+}
+
+// Source model containing common types that can be mapped
+// using Protobuf mappa dependency package.
+message MappaDependencyTargetModel
+{
+    // A timestamp.
+    google.protobuf.Timestamp TimeStamp = 1;
 }

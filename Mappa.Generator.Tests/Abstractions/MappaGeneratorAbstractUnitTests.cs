@@ -2,6 +2,9 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Google.Protobuf.WellKnownTypes;
+
+using Mappa.Dependency.Protobuf;
 using Mappa.Generator.Tests.Models;
 
 namespace Mappa.Generator.Tests.Abstractions;
@@ -21,7 +24,7 @@ public abstract class MappaGeneratorAbstractUnitTests
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The driver, the cancellation output and the diagnostics.</returns>
     protected static Task<GeneratedResults> RunMappaGeneratorAsync(string source, CancellationToken cancellationToken)
-        => RunMappaGeneratorAsync(new[] { source }, cancellationToken);
+        => RunMappaGeneratorAsync([source], cancellationToken);
 
     /// <summary>
     /// Run the generator on the input sources.
@@ -55,6 +58,8 @@ public abstract class MappaGeneratorAbstractUnitTests
         var metadataReferences = new List<PortableExecutableReference>
         {
             MetadataReference.CreateFromFile(typeof(MappaAttribute).GetTypeInfo().Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(MappaProtobufMapper).GetTypeInfo().Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(Timestamp).GetTypeInfo().Assembly.Location),
             MetadataReference.CreateFromFile(typeof(object).GetTypeInfo().Assembly.Location),
             MetadataReference.CreateFromFile(typeof(Uri).GetTypeInfo().Assembly.Location),
             MetadataReference.CreateFromFile(Path.Combine(frameworkPath, "netstandard.dll")),

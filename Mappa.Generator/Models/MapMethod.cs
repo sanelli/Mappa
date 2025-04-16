@@ -176,11 +176,29 @@ internal sealed class MapMethod
     /// <paramref name="sourceType"/> to <paramref name="targetType"/>.</returns>
     internal bool IsMapFor(ITypeSymbol targetType, ITypeSymbol sourceType, bool includeNullability)
     {
-        var comparer = includeNullability
-            ? SymbolEqualityComparer.IncludeNullability
-            : SymbolEqualityComparer.Default;
+        return DoEqual(targetType, this.TargetType)
+               && DoEqual(sourceType, this.SourceType);
 
-        return comparer.Equals(targetType, this.TargetType) && comparer.Equals(sourceType, this.SourceType);
+        bool DoEqual(ITypeSymbol left, ITypeSymbol right)
+        {
+            if (SymbolEqualityComparer.Default.Equals(left, right))
+            {
+                if (includeNullability)
+                {
+                    if (left.NullableAnnotation == NullableAnnotation.None
+                        || right.NullableAnnotation == NullableAnnotation.None)
+                    {
+                        return true;
+                    }
+
+                    return left.NullableAnnotation == right.NullableAnnotation;
+                }
+
+                return true;
+            }
+
+            return false;
+        }
     }
 
     /// <summary>
