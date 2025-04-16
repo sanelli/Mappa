@@ -15,7 +15,6 @@ namespace Mappa.Samples;
 [Mappa]
 public sealed partial class IdentityStrategyMapperDup
 {
-#nullable enable
     /// <summary>
     /// Map <see cref="int"/> to nullable <see cref="int"/>
     /// when nullable is enabled.
@@ -23,9 +22,7 @@ public sealed partial class IdentityStrategyMapperDup
     /// <param name="input">The input string.</param>
     /// <returns>The output object.</returns>
     public partial int? MapIntToNullableIntWhenNullableIsEnabled(int input);
-#nullable restore
 
-#nullable enable
     /// <summary>
     /// Map <see cref="string"/> to <see cref="object"/>
     /// when nullable is enabled.
@@ -33,5 +30,4 @@ public sealed partial class IdentityStrategyMapperDup
     /// <param name="input">The input string.</param>
     /// <returns>The output object.</returns>
     public partial object MapStringToObjectWhenNullableIsEnabled(string input);
-#nullable restore
 }

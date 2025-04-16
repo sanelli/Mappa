@@ -189,7 +189,7 @@ internal sealed class MappaGeneratorClassAlgorithm
             }
         }
 
-        // Get all accessible properties that have MappaDependency attribute
+        // Get all accessible fields that have MappaDependency attribute
         foreach (var fieldDeclarationSyntax in classDeclarationSyntax.ChildNodes().OfType<FieldDeclarationSyntax>())
         {
             if (fieldDeclarationSyntax.AttributeLists.GetMappaDependencyAttributeSyntax(classContext.SemanticModel, cancellationToken) is null)
