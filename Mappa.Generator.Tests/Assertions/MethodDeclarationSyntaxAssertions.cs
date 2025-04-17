@@ -36,7 +36,7 @@ internal sealed class MethodDeclarationSyntaxAssertions
     }
 
     /// <summary>
-    /// Assert that the class have all the expected modifiers.
+    /// Check that the method has a <see cref="GeneratedCodeAttribute"/>.
     /// </summary>
     /// <param name="assert">The attribute syntax assertion.</param>
     /// <returns>The assertions.</returns>
@@ -46,11 +46,26 @@ internal sealed class MethodDeclarationSyntaxAssertions
 
         var attributes = this.Subject.AttributeLists.SelectMany(attributeList => attributeList.Attributes);
         var generatedCodeAttributes = attributes.Where(attributeSyntax =>
-                attributeSyntax.Name.ToString().Equals(typeof(GeneratedCodeAttribute).FullName, StringComparison.Ordinal))
+                attributeSyntax.Name.ToString().Equals($"global::{typeof(GeneratedCodeAttribute).FullName}", StringComparison.Ordinal))
             .ToArray();
         generatedCodeAttributes.Should().HaveCount(1);
         var generatedCodeAttribute = generatedCodeAttributes.Single();
         assert(new AttributeSyntaxAssertions(generatedCodeAttribute));
+
+        return this;
+    }
+
+    /// <summary>
+    /// Check that the method has a <see cref="DebuggerNonUserCodeAttribute"/>.
+    /// </summary>
+    /// <returns>The assertions.</returns>
+    internal MethodDeclarationSyntaxAssertions HaveDebuggerNonUserCodeAttribute()
+    {
+        var attributes = this.Subject.AttributeLists.SelectMany(attributeList => attributeList.Attributes);
+        var generatedCodeAttributes = attributes.Where(attributeSyntax =>
+                attributeSyntax.Name.ToString().Equals($"global::{typeof(DebuggerNonUserCodeAttribute).FullName}", StringComparison.Ordinal))
+            .ToArray();
+        generatedCodeAttributes.Should().HaveCount(1);
 
         return this;
     }
