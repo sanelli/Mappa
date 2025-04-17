@@ -66,9 +66,7 @@ internal sealed class IdentityMapStrategyDetector
         return (this.notNullableEnabled &&
                 SymbolEqualityComparer.Default.Equals(this.context.TargetType, this.context.SourceType))
                || (this.nullableEnabled &&
-                    SymbolEqualityComparer.IncludeNullability.Equals(
-                    this.context.TargetType,
-                    this.context.SourceType))
+                   this.context.TargetType.IsEqualTo(this.context.SourceType, true))
                || (this.nullableEnabled && SymbolEqualityComparer.Default.Equals(
                                            this.context.TargetType,
                                            this.context.SourceType)
