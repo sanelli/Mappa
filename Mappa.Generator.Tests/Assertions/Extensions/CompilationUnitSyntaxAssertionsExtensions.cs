@@ -312,6 +312,7 @@ internal static class CompilationUnitSyntaxAssertionsExtensions
                                             .HaveNullabilityAnnotation(nullableSetup)
                                             .HavePragmaWarningDisableAnnotation(pragmaWarningSetting)
                                             .HaveGeneratedCodeAttribute(attributeSyntaxAssertions => attributeSyntaxAssertions.BeMappaGeneratedCodeAttribute())
+                                            .HaveDebuggerNonUserCodeAttribute()
                                             .HaveModifiers(methodModifiers)
                                             .HaveBody(bodyAssertion);
                                     });

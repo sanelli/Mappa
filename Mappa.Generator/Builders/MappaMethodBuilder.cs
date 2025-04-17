@@ -2,6 +2,9 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using System.CodeDom.Compiler;
+using System.Diagnostics;
+
 using Mappa.Generator.Extensions;
 using Mappa.Generator.Models;
 
@@ -39,7 +42,8 @@ internal sealed class MappaMethodBuilder
             using (builder.NullableDirective(isNullableEnabled))
             {
                 builder
-                    .AppendLine(new MappaGeneratedCodeAttributeBuilder().BuildSource(context, mappaGlobalOptions))
+                    .AppendLine($"[global::{typeof(DebuggerNonUserCodeAttribute).FullName}]")
+                    .AppendLine($"[global::{typeof(GeneratedCodeAttribute).FullName}(\"Mappa\", \"{typeof(MappaGenerator).Assembly.GetName().Version}\")]")
                     .AppendLine(this.GetSignature());
                 using (builder.CurlyBracesBlock())
                 {

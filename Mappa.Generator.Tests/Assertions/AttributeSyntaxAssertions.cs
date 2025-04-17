@@ -33,7 +33,7 @@ internal sealed class AttributeSyntaxAssertions
     /// <returns>The assertions.</returns>
     public AttributeSyntaxAssertions BeGeneratedCodeAttribute(string tool, string version)
     {
-        this.Subject.Name.ToString().Should().Be(typeof(GeneratedCodeAttribute).FullName);
+        this.Subject.Name.ToString().Should().Be($"global::{typeof(GeneratedCodeAttribute).FullName}");
         this.Subject.ArgumentList.Should().NotBeNull();
         this.Subject.ArgumentList!.Arguments.Should().HaveCount(2);
         this.Subject.ArgumentList.Arguments.First().GetText().ToString().Should().Be(tool);
