@@ -175,31 +175,8 @@ internal sealed class MapMethod
     /// <returns><c>true</c> if the method is a map from
     /// <paramref name="sourceType"/> to <paramref name="targetType"/>.</returns>
     internal bool IsMapFor(ITypeSymbol targetType, ITypeSymbol sourceType, bool includeNullability)
-    {
-        return DoEqual(targetType, this.TargetType)
-               && DoEqual(sourceType, this.SourceType);
-
-        bool DoEqual(ITypeSymbol left, ITypeSymbol right)
-        {
-            if (SymbolEqualityComparer.Default.Equals(left, right))
-            {
-                if (includeNullability)
-                {
-                    if (left.NullableAnnotation == NullableAnnotation.None
-                        || right.NullableAnnotation == NullableAnnotation.None)
-                    {
-                        return true;
-                    }
-
-                    return left.NullableAnnotation == right.NullableAnnotation;
-                }
-
-                return true;
-            }
-
-            return false;
-        }
-    }
+        => this.TargetType.IsEqualTo(targetType, includeNullability)
+               && this.SourceType.IsEqualTo(sourceType, includeNullability);
 
     /// <summary>
     /// Gets all the attributes of type <typeparamref name="TAttribute"/>

@@ -817,9 +817,25 @@ internal static class TypeSymbolExtensions
     /// <param name="isNullableEnabled"><c>true</c> if nullable is enabled.</param>
     /// <returns><c>true</c> if the types are the same.</returns>
     internal static bool IsEqualTo(this ITypeSymbol left, ITypeSymbol right, bool isNullableEnabled)
-        => isNullableEnabled
-            ? SymbolEqualityComparer.IncludeNullability.Equals(left, right)
-            : SymbolEqualityComparer.Default.Equals(left, right);
+    {
+        if (SymbolEqualityComparer.Default.Equals(left, right))
+        {
+            if (isNullableEnabled)
+            {
+                if (left.NullableAnnotation == NullableAnnotation.None
+                    || right.NullableAnnotation == NullableAnnotation.None)
+                {
+                    return true;
+                }
+
+                return left.NullableAnnotation == right.NullableAnnotation;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
 
     /// <summary>
     /// Check if the type is <c>void</c>.
