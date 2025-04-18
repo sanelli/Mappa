@@ -161,6 +161,7 @@ internal sealed class MappaGeneratorClassAlgorithm
                      .GetAttributes()
                      .GetMappaStaticDependencies(this.Compilation))
         {
+            // TODO [#93] If no method can be used then provide a warning message.
             var methods = dependencyType.GetMembers().OfType<IMethodSymbol>().ToArray();
             var accessFieldName = $"global::{dependencyType.ToDisplayString()}";
             foreach (var method in methods)
@@ -202,6 +203,7 @@ internal sealed class MappaGeneratorClassAlgorithm
                         accessFieldName = $"this.{accessFieldName}";
                     }
 
+                    // TODO [#93] If no method can be used then provide a warning message.
                     var methods = propertySymbol.Type.GetMembers().OfType<IMethodSymbol>().ToArray();
                     foreach (var method in methods)
                     {
@@ -238,6 +240,7 @@ internal sealed class MappaGeneratorClassAlgorithm
                         accessFieldName = $"this.{accessFieldName}";
                     }
 
+                    // TODO [#93] If no method can be used then provide a warning message.
                     var methods = fieldSymbol.Type.GetMembers().OfType<IMethodSymbol>().ToArray();
                     foreach (var method in methods)
                     {
