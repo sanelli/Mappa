@@ -204,6 +204,7 @@ internal sealed class MappaGeneratorClassAlgorithm
                     var methods = propertySymbol.Type.GetMembers().OfType<IMethodSymbol>().ToArray();
                     foreach (var method in methods)
                     {
+                        // TODO [#93] Support static methods by invoking the class name.
                         this.AcceptMapMethodFromDependency(
                             propertyDeclarationSyntax,
                             method,
@@ -239,6 +240,7 @@ internal sealed class MappaGeneratorClassAlgorithm
                     var methods = fieldSymbol.Type.GetMembers().OfType<IMethodSymbol>().ToArray();
                     foreach (var method in methods)
                     {
+                        // TODO [#93] Support static methods by invoking the class name.
                         this.AcceptMapMethodFromDependency(
                             fieldDeclarationSyntax,
                             method,
