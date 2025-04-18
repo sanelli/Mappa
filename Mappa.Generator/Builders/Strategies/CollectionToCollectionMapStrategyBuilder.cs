@@ -245,7 +245,7 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
             stringBuilder.AppendLine($"global::System.Collections.Generic.HashSet<{targetTypeSymbol.GetElementType().ToDisplayString()}> {targetVariableName} = new global::System.Collections.Generic.HashSet<{targetTypeSymbol.GetElementType().ToDisplayString()}>({capacity});");
         }
         else if (targetTypeSymbol.ImplementISet(context.Compilation)
-                 && targetTypeSymbol.HasAccessibleZeroParametersConstructor(methodSymbol))
+                 && targetTypeSymbol.HasSymbolAccessibleZeroParametersConstructor(context.Compilation, methodSymbol))
         {
             insertionMethod = InsertionMethod.Add;
             var elementType = targetTypeSymbol.GetElementType();
@@ -309,7 +309,7 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
             stringBuilder.AppendLine($"global::System.Collections.Generic.List<{targetTypeSymbol.GetElementType().ToDisplayString()}> {targetVariableName} = new global::System.Collections.Generic.List<{targetTypeSymbol.GetElementType().ToDisplayString()}>({capacity});");
         }
         else if (targetTypeSymbol.ImplementICollection()
-                 && targetTypeSymbol.HasAccessibleZeroParametersConstructor(methodSymbol))
+                 && targetTypeSymbol.HasSymbolAccessibleZeroParametersConstructor(context.Compilation, methodSymbol))
         {
             // TODO [#109] Support constructor with 1 integer parameter (capacity) via mappaSettings.
             // here we handle the scenario of the a concrete type implementing ICollection<T>.

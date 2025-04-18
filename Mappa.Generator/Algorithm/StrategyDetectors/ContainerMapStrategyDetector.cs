@@ -114,7 +114,7 @@ internal sealed class ContainerMapStrategyDetector
                 return true;
             }
 
-            return this.context.TargetType.HasAccessibleZeroParametersConstructor(this.context.MapMethod?.MethodSymbol);
+            return this.context.TargetType.HasSymbolAccessibleZeroParametersConstructor(this.compilation, this.context.MapMethod?.MethodSymbol);
         }
     }
 
@@ -203,7 +203,7 @@ internal sealed class ContainerMapStrategyDetector
             }
 
             // TODO [#109] Support constructor with 1 integer parameter (capacity) via mappaSettings.
-            return this.context.TargetType.HasAccessibleZeroParametersConstructor(this.context.MapMethod?.MethodSymbol);
+            return this.context.TargetType.HasSymbolAccessibleZeroParametersConstructor(this.compilation, this.context.MapMethod?.MethodSymbol);
         }
     }
 }
