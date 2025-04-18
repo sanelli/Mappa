@@ -23,6 +23,7 @@ internal static class AttributeDataExtensions
     private static readonly string MappaAssignFromContextAttributeFullName = typeof(MappaAssignFromContextAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaAssignFromContextAttribute)}");
     private static readonly string MappaSettingsAttributeFullName = typeof(MappaSettingsAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaSettingsAttribute)}");
     private static readonly string MappaUsePropertyAttributeFullName = typeof(MappaUsePropertyAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaUsePropertyAttribute)}");
+    private static readonly string MappaStaticDependencyAttributeFullName = typeof(MappaStaticDependencyAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaStaticDependencyAttribute)}");
 
     /// <summary>
     /// Gets the <see cref="MappaInvokeMethodAttribute"/>s applied to the method.
@@ -199,6 +200,31 @@ internal static class AttributeDataExtensions
                 constructorArguments[1].Value is string sourcePropertyName)
             {
                 results.Add(new MappaUsePropertyAttribute(targetParameterName, sourcePropertyName));
+            }
+        }
+
+        return [..results];
+    }
+
+    /// <summary>
+    /// Gets the <see cref="INamedTypeSymbol"/> representing the static dependencies
+    /// for this class that have been applied via the <see cref="MappaStaticDependencyAttribute"/>.
+    /// </summary>
+    /// <param name="attributes">The attributes.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The <see cref="MappaUsePropertyAttribute"/> applied.</returns>
+    internal static INamedTypeSymbol[] GetMappaStaticDependencies(this ImmutableArray<AttributeData> attributes, Compilation compilation)
+    {
+        var mappaStaticDependencyAttributeSymbols = compilation.GetTypeByMetadataName(MappaStaticDependencyAttributeFullName);
+        List<INamedTypeSymbol> results = new();
+        foreach (var constructorArguments in attributes
+                     .Where(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, mappaStaticDependencyAttributeSymbols))
+                     .Select(attributeData => attributeData.ConstructorArguments))
+        {
+            if (constructorArguments.Length == 1 &&
+                constructorArguments[0].Value is INamedTypeSymbol namedTypeSymbol)
+            {
+                results.Add(namedTypeSymbol);
             }
         }
 

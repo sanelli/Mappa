@@ -16,7 +16,7 @@ namespace Mappa.Generator.Extensions;
 internal static class AttributeSyntaxExtensions
 {
     /// <summary>
-    /// Obtain the <see cref="MappaAttribute"/>.
+    /// Get the <see cref="MappaAttribute"/>.
     /// </summary>
     /// <param name="attributeLists">The attributes list to query.</param>
     /// <param name="semanticModel">The semantic model.</param>
@@ -26,9 +26,9 @@ internal static class AttributeSyntaxExtensions
         => attributeLists.GetAttributes<MappaAttribute>(semanticModel, cancellationToken).SingleOrDefault();
 
     /// <summary>
-    /// Obtain the <see cref="MappaDependencyAttribute"/>.
+    /// Get the <see cref="MappaDependencyAttribute"/>.
     /// </summary>
-    /// <param name="attributeLists">The attributes list to query.</param>
+    /// <param name="attributeLists">The attribute list to query.</param>
     /// <param name="semanticModel">The semantic model.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The <see cref="MappaDependencyAttribute"/> attribute, or <c>null</c> if the attribute does not exist.</returns>
@@ -36,9 +36,9 @@ internal static class AttributeSyntaxExtensions
         => attributeLists.GetAttributes<MappaDependencyAttribute>(semanticModel, cancellationToken).SingleOrDefault();
 
     /// <summary>
-    /// Obtain the <see cref="MappaIgnoreAttribute"/>.
+    /// Get the <see cref="MappaIgnoreAttribute"/>.
     /// </summary>
-    /// <param name="attributeLists">The attributes list to query.</param>
+    /// <param name="attributeLists">The attribute list to query.</param>
     /// <param name="semanticModel">The semantic model.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The <see cref="MappaIgnoreAttribute"/> attribute, or <c>null</c> if the attribute does not exist.</returns>
@@ -46,9 +46,9 @@ internal static class AttributeSyntaxExtensions
         => attributeLists.GetAttributes<MappaIgnoreAttribute>(semanticModel, cancellationToken).SingleOrDefault();
 
     /// <summary>
-    /// Obtain the attributes with the specified type.
+    /// Get the attributes with the specified type.
     /// </summary>
-    /// <param name="attributeLists">The attributes list to query.</param>
+    /// <param name="attributeLists">The attribute list to query.</param>
     /// <param name="semanticModel">The semantic model.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <typeparam name="TAttribute">The type of the attribute.</typeparam>

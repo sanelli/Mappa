@@ -12,6 +12,13 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Integration tests for <see cref="MethodMapStrategy"/>.
 /// </summary>
+// TODO [#93] Test that static methods are ignored on a property dependency.
+// TODO [#93] Test that private methods are ignored on a property dependency.
+// TODO [#93] Test that static methods are ignored on a field dependency.
+// TODO [#93] Test that private methods are ignored on a field dependency.
+// TODO [#93] Test static dependency attribute.
+// TODO [#93] Test static dependency ignores non static methods.
+// TODO [#93] Test static dependency ignores private methods.
 public sealed class MethodMapStrategyIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {
