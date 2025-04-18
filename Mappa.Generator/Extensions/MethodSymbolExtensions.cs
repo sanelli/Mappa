@@ -90,22 +90,6 @@ internal static class MethodSymbolExtensions
     }
 
     /// <summary>
-    /// Check if a method can be invoked from inside another method.
-    /// </summary>
-    /// <param name="calleeMethod">The symbol of the method being invoked.</param>
-    /// <param name="callerMethod">The method that is calling <paramref name="calleeMethod"/>.</param>
-    /// <returns><c>true</c> if <paramref name="calleeMethod"/> can be invoked by <paramref name="callerMethod"/>, <c>false</c> otherwise.</returns>
-    internal static bool IsAccessibleFromMethod(this IMethodSymbol calleeMethod, IMethodSymbol callerMethod)
-    {
-        return calleeMethod.DeclaredAccessibility switch
-        {
-            Accessibility.Public => true,
-            Accessibility.Internal => calleeMethod.ContainingAssembly.Equals(callerMethod.ContainingAssembly, SymbolEqualityComparer.Default),
-            _ => false,
-        };
-    }
-
-    /// <summary>
     /// Check if a method can be accessed directly or can be accessed
     /// via explicit interface.
     /// </summary>
