@@ -195,6 +195,7 @@ internal sealed class MappaGeneratorClassAlgorithm
                 var propertySymbol = classContext.SemanticModel.GetDeclaredSymbol(propertyDeclarationSyntax, cancellationToken);
                 if (propertySymbol is not null)
                 {
+                    var staticFieldAccessor = $"global::{propertySymbol.Type.ToDisplayString()}";
                     var accessFieldName = propertyDeclarationSyntax.Identifier.ToString();
                     if (!propertySymbol.IsStatic)
                     {
@@ -204,12 +205,11 @@ internal sealed class MappaGeneratorClassAlgorithm
                     var methods = propertySymbol.Type.GetMembers().OfType<IMethodSymbol>().ToArray();
                     foreach (var method in methods)
                     {
-                        // TODO [#93] Support static methods by invoking the class name.
                         this.AcceptMapMethodFromDependency(
                             propertyDeclarationSyntax,
                             method,
-                            accessFieldName,
-                            methodIsStatic: false,
+                            method.IsStatic ? staticFieldAccessor : accessFieldName,
+                            method.IsStatic,
                             classContext);
                     }
                 }
@@ -231,6 +231,7 @@ internal sealed class MappaGeneratorClassAlgorithm
             {
                 if (classContext.SemanticModel.GetDeclaredSymbol(variableDeclarationSyntax, cancellationToken) is IFieldSymbol fieldSymbol)
                 {
+                    var staticFieldAccessor = $"global::{fieldSymbol.Type.ToDisplayString()}";
                     var accessFieldName = variableDeclarationSyntax.Identifier.ToString();
                     if (!fieldDeclarationSyntax.Modifiers.Any(SyntaxKind.StaticKeyword))
                     {
@@ -240,12 +241,11 @@ internal sealed class MappaGeneratorClassAlgorithm
                     var methods = fieldSymbol.Type.GetMembers().OfType<IMethodSymbol>().ToArray();
                     foreach (var method in methods)
                     {
-                        // TODO [#93] Support static methods by invoking the class name.
                         this.AcceptMapMethodFromDependency(
                             fieldDeclarationSyntax,
                             method,
-                            accessFieldName,
-                            methodIsStatic: false,
+                            method.IsStatic ? staticFieldAccessor : accessFieldName,
+                            method.IsStatic,
                             classContext);
                     }
                 }

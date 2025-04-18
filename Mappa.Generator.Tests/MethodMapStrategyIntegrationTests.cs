@@ -12,9 +12,9 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Integration tests for <see cref="MethodMapStrategy"/>.
 /// </summary>
-// TODO [#93] Test that methods works on a property dependency (require invoking the method from the class).
+// TODO [#93] [#143] Test that methods works on a property dependency (require invoking the method from the class).
 // TODO [#93] Test that private methods are ignored on a property dependency.
-// TODO [#93] Test that methods works on a field dependency (require invoking the method from the class).
+// TODO [#93] [#143] Test that methods works on a field dependency (require invoking the method from the class).
 // TODO [#93] Test that private methods are ignored on a field dependency.
 // TODO [#93] Test static dependency attribute on static class.
 // TODO [#93] Test static dependency attribute on non-static class.
