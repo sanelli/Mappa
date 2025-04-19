@@ -115,6 +115,8 @@ You can also find many examples in the [Mappa.Samples](Mappa.Samples) project.
 - [Mappa Bson](https://www.nuget.org/packages/Mappa.Dependency.Bson/): methods to map `MongoDB.Bson` objects from [MongoDB.Bson](https://www.nuget.org/packages/MongoDB.Bson) package into common objects.
 - [Mappa Bson dependency](https://www.nuget.org/packages/Mappa.Dependency.Bson.DependencyInjection/): utility methods to register the Bson mapper.
 
-## 🔗 Other links
+# Code coverage history 
 - [Code Coverage gist](https://gist.github.com/sanelli/7f4a85bc809328b4821b03125f9190cb)
 - [Code Coverage history](https://gist.github.com/sanelli/7f4a85bc809328b4821b03125f9190cb#file-mappa-code-coverage-history-md)
+
+![Code coverage history](https://gist.githubusercontent.com/sanelli/7f4a85bc809328b4821b03125f9190cb/raw/MAPPA-CODE-COVERAGE-HISTORY.svg)
