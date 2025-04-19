@@ -27,6 +27,6 @@ jobs:
         run: ./Scripts/RunTestsAndReportCoverage.ps1 -AlwaysSuccess
       - name: Update code coverage Gist
         shell: pwsh
-        run: ./Scripts/UpdateCodeCoverageGists.ps1
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: ./Scripts/UpdateCodeCoverageGists.ps1
