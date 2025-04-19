@@ -1,4 +1,4 @@
-name: Code Coverage Badges
+name: Build main
 
 on:
   push:
