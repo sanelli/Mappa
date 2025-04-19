@@ -161,7 +161,7 @@ internal sealed class MappaGeneratorClassAlgorithm
                      .GetAttributes()
                      .GetMappaStaticDependencies(this.Compilation))
         {
-            // TODO [#93] If no method can be used then provide a warning message.
+            var anyMethodCanBeUsed = false;
             var methods = dependencyType.GetMembers().OfType<IMethodSymbol>().ToArray();
             var accessFieldName = $"global::{dependencyType.ToDisplayString()}";
             foreach (var method in methods)
@@ -172,12 +172,18 @@ internal sealed class MappaGeneratorClassAlgorithm
                     continue;
                 }
 
-                this.AcceptMapMethodFromDependency(
+                var added = this.AcceptMapMethodFromDependency(
                     classContext.ClassDeclarationSyntax,
                     method,
                     accessFieldName,
                     methodIsStatic: true,
                     classContext);
+                anyMethodCanBeUsed |= added;
+            }
+
+            if (!anyMethodCanBeUsed)
+            {
+                this.Context.ReportDiagnostic(MappaDiagnostics.DependencyDoesNotProvideAnyViableMethod(classContext.ClassDeclarationSyntax, dependencyType.ToDisplayString()));
             }
         }
 
@@ -197,22 +203,29 @@ internal sealed class MappaGeneratorClassAlgorithm
                 if (propertySymbol is not null)
                 {
                     var staticFieldAccessor = $"global::{propertySymbol.Type.ToDisplayString()}";
-                    var accessFieldName = propertyDeclarationSyntax.Identifier.ToString();
+                    var propertyIdentifier = propertyDeclarationSyntax.Identifier.ToString();
+                    var accessFieldName = propertyIdentifier;
                     if (!propertySymbol.IsStatic)
                     {
                         accessFieldName = $"this.{accessFieldName}";
                     }
 
-                    // TODO [#93] If no method can be used then provide a warning message.
+                    var anyMethodCanBeUsed = false;
                     var methods = propertySymbol.Type.GetMembers().OfType<IMethodSymbol>().ToArray();
                     foreach (var method in methods)
                     {
-                        this.AcceptMapMethodFromDependency(
+                        var added = this.AcceptMapMethodFromDependency(
                             propertyDeclarationSyntax,
                             method,
                             method.IsStatic ? staticFieldAccessor : accessFieldName,
                             method.IsStatic,
                             classContext);
+                        anyMethodCanBeUsed |= added;
+                    }
+
+                    if (!anyMethodCanBeUsed)
+                    {
+                        this.Context.ReportDiagnostic(MappaDiagnostics.DependencyDoesNotProvideAnyViableMethod(propertyDeclarationSyntax, propertyIdentifier));
                     }
                 }
             }
@@ -234,22 +247,29 @@ internal sealed class MappaGeneratorClassAlgorithm
                 if (classContext.SemanticModel.GetDeclaredSymbol(variableDeclarationSyntax, cancellationToken) is IFieldSymbol fieldSymbol)
                 {
                     var staticFieldAccessor = $"global::{fieldSymbol.Type.ToDisplayString()}";
-                    var accessFieldName = variableDeclarationSyntax.Identifier.ToString();
+                    var fieldIdentifier = variableDeclarationSyntax.Identifier.ToString();
+                    var accessFieldName = fieldIdentifier;
                     if (!fieldDeclarationSyntax.Modifiers.Any(SyntaxKind.StaticKeyword))
                     {
                         accessFieldName = $"this.{accessFieldName}";
                     }
 
-                    // TODO [#93] If no method can be used then provide a warning message.
+                    var anyMethodCanBeUsed = false;
                     var methods = fieldSymbol.Type.GetMembers().OfType<IMethodSymbol>().ToArray();
                     foreach (var method in methods)
                     {
-                        this.AcceptMapMethodFromDependency(
+                        var added = this.AcceptMapMethodFromDependency(
                             fieldDeclarationSyntax,
                             method,
                             method.IsStatic ? staticFieldAccessor : accessFieldName,
                             method.IsStatic,
                             classContext);
+                        anyMethodCanBeUsed |= added;
+                    }
+
+                    if (!anyMethodCanBeUsed)
+                    {
+                        this.Context.ReportDiagnostic(MappaDiagnostics.DependencyDoesNotProvideAnyViableMethod(fieldDeclarationSyntax, fieldIdentifier));
                     }
                 }
             }
@@ -355,7 +375,7 @@ internal sealed class MappaGeneratorClassAlgorithm
         return true;
     }
 
-    private void AcceptMapMethodFromDependency(
+    private bool AcceptMapMethodFromDependency(
         SyntaxNode referenceSyntaxNode,
         IMethodSymbol method,
         string accessFieldName,
@@ -364,39 +384,39 @@ internal sealed class MappaGeneratorClassAlgorithm
     {
         if (method.GetAttributes().GetMappaIgnoreAttribute(this.Compilation) is not null)
         {
-            return;
+            return false;
         }
 
         if (!this.Compilation.IsSymbolAccessibleWithin(method, classContext.ClassSymbol))
         {
-            return;
+            return false;
         }
 
         if (method.IsStatic != methodIsStatic)
         {
-            return;
+            return false;
         }
 
         if (method.Parameters.Length != 1
             && method.Parameters.Length != 2)
         {
-            return;
+            return false;
         }
 
         if (method.Parameters.Length == 2
             && !method.SecondParameterIsMappaContext(this.Compilation))
         {
-            return;
+            return false;
         }
 
         if (method.IsVoid())
         {
-            return;
+            return false;
         }
 
         if (method.ReturnsAnyTaskType(this.Compilation))
         {
-            return;
+            return false;
         }
 
         var mapMethod = new MapMethod(
@@ -404,10 +424,10 @@ internal sealed class MappaGeneratorClassAlgorithm
             accessFieldName,
             classContext.IsNullableEnabled(referenceSyntaxNode));
 
-        // If the method cannot be added it is OK:
+        // If the method cannot be added, it is OK:
         // method defined in the class takes precedence if they
         // declare the very same mapping.
-        classContext.TryAddMethod(mapMethod);
+        return classContext.TryAddMethod(mapMethod);
     }
 
     private void AcceptMapMethodAlreadyMapped(
