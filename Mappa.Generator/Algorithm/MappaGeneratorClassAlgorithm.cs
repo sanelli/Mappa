@@ -147,11 +147,43 @@ internal sealed class MappaGeneratorClassAlgorithm
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Try to add a method as either a method that define a mapping from Mappa
+            // Try to add a method as either a method that defines a mapping from Mappa
             // or as a method with already code that can be used for the mapping.
             if (!this.AcceptMapMethod(methodDeclarationSyntax, classContext, cancellationToken))
             {
                 this.AcceptMapMethodAlreadyMapped(methodDeclarationSyntax, classContext, cancellationToken);
+            }
+        }
+
+        // Get all the static types on the class listed as static dependencies
+        foreach (var dependencyType in classContext
+                     .ClassSymbol
+                     .GetAttributes()
+                     .GetMappaStaticDependencies(this.Compilation))
+        {
+            var anyMethodCanBeUsed = false;
+            var methods = dependencyType.GetMembers().OfType<IMethodSymbol>().ToArray();
+            var accessFieldName = $"global::{dependencyType.ToDisplayString()}";
+            foreach (var method in methods)
+            {
+                // Skip non-static methods
+                if (!method.IsStatic)
+                {
+                    continue;
+                }
+
+                var added = this.AcceptMapMethodFromDependency(
+                    classContext.ClassDeclarationSyntax,
+                    method,
+                    accessFieldName,
+                    methodIsStatic: true,
+                    classContext);
+                anyMethodCanBeUsed |= added;
+            }
+
+            if (!anyMethodCanBeUsed)
+            {
+                this.Context.ReportDiagnostic(MappaDiagnostics.DependencyDoesNotProvideAnyViableMethod(classContext.ClassDeclarationSyntax, dependencyType.ToDisplayString()));
             }
         }
 
@@ -170,20 +202,30 @@ internal sealed class MappaGeneratorClassAlgorithm
                 var propertySymbol = classContext.SemanticModel.GetDeclaredSymbol(propertyDeclarationSyntax, cancellationToken);
                 if (propertySymbol is not null)
                 {
-                    var accessFieldName = propertyDeclarationSyntax.Identifier.ToString();
+                    var staticFieldAccessor = $"global::{propertySymbol.Type.ToDisplayString()}";
+                    var propertyIdentifier = propertyDeclarationSyntax.Identifier.ToString();
+                    var accessFieldName = propertyIdentifier;
                     if (!propertySymbol.IsStatic)
                     {
                         accessFieldName = $"this.{accessFieldName}";
                     }
 
+                    var anyMethodCanBeUsed = false;
                     var methods = propertySymbol.Type.GetMembers().OfType<IMethodSymbol>().ToArray();
                     foreach (var method in methods)
                     {
-                        this.AcceptMapMethodFromDependency(
+                        var added = this.AcceptMapMethodFromDependency(
                             propertyDeclarationSyntax,
                             method,
-                            accessFieldName,
+                            method.IsStatic ? staticFieldAccessor : accessFieldName,
+                            method.IsStatic,
                             classContext);
+                        anyMethodCanBeUsed |= added;
+                    }
+
+                    if (!anyMethodCanBeUsed)
+                    {
+                        this.Context.ReportDiagnostic(MappaDiagnostics.DependencyDoesNotProvideAnyViableMethod(propertyDeclarationSyntax, propertyIdentifier));
                     }
                 }
             }
@@ -204,20 +246,30 @@ internal sealed class MappaGeneratorClassAlgorithm
             {
                 if (classContext.SemanticModel.GetDeclaredSymbol(variableDeclarationSyntax, cancellationToken) is IFieldSymbol fieldSymbol)
                 {
-                    var accessFieldName = variableDeclarationSyntax.Identifier.ToString();
+                    var staticFieldAccessor = $"global::{fieldSymbol.Type.ToDisplayString()}";
+                    var fieldIdentifier = variableDeclarationSyntax.Identifier.ToString();
+                    var accessFieldName = fieldIdentifier;
                     if (!fieldDeclarationSyntax.Modifiers.Any(SyntaxKind.StaticKeyword))
                     {
                         accessFieldName = $"this.{accessFieldName}";
                     }
 
+                    var anyMethodCanBeUsed = false;
                     var methods = fieldSymbol.Type.GetMembers().OfType<IMethodSymbol>().ToArray();
                     foreach (var method in methods)
                     {
-                        this.AcceptMapMethodFromDependency(
+                        var added = this.AcceptMapMethodFromDependency(
                             fieldDeclarationSyntax,
                             method,
-                            accessFieldName,
+                            method.IsStatic ? staticFieldAccessor : accessFieldName,
+                            method.IsStatic,
                             classContext);
+                        anyMethodCanBeUsed |= added;
+                    }
+
+                    if (!anyMethodCanBeUsed)
+                    {
+                        this.Context.ReportDiagnostic(MappaDiagnostics.DependencyDoesNotProvideAnyViableMethod(fieldDeclarationSyntax, fieldIdentifier));
                     }
                 }
             }
@@ -323,42 +375,48 @@ internal sealed class MappaGeneratorClassAlgorithm
         return true;
     }
 
-    private void AcceptMapMethodFromDependency(
+    private bool AcceptMapMethodFromDependency(
         SyntaxNode referenceSyntaxNode,
         IMethodSymbol method,
         string accessFieldName,
+        bool methodIsStatic,
         MappaClassGeneratorContext classContext)
     {
         if (method.GetAttributes().GetMappaIgnoreAttribute(this.Compilation) is not null)
         {
-            return;
+            return false;
         }
 
         if (!this.Compilation.IsSymbolAccessibleWithin(method, classContext.ClassSymbol))
         {
-            return;
+            return false;
+        }
+
+        if (method.IsStatic != methodIsStatic)
+        {
+            return false;
         }
 
         if (method.Parameters.Length != 1
             && method.Parameters.Length != 2)
         {
-            return;
+            return false;
         }
 
         if (method.Parameters.Length == 2
             && !method.SecondParameterIsMappaContext(this.Compilation))
         {
-            return;
+            return false;
         }
 
         if (method.IsVoid())
         {
-            return;
+            return false;
         }
 
         if (method.ReturnsAnyTaskType(this.Compilation))
         {
-            return;
+            return false;
         }
 
         var mapMethod = new MapMethod(
@@ -366,10 +424,10 @@ internal sealed class MappaGeneratorClassAlgorithm
             accessFieldName,
             classContext.IsNullableEnabled(referenceSyntaxNode));
 
-        // If the method cannot be added it is OK:
+        // If the method cannot be added, it is OK:
         // method defined in the class takes precedence if they
         // declare the very same mapping.
-        classContext.TryAddMethod(mapMethod);
+        return classContext.TryAddMethod(mapMethod);
     }
 
     private void AcceptMapMethodAlreadyMapped(

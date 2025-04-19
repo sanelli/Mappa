@@ -134,5 +134,11 @@ namespace Mappa.Generator.Diagnostics {
                 return ResourceManager.GetString("TooManyUsePropertyAttributesForTheSameTargetProperty", resourceCulture);
             }
         }
+        
+        internal static string DependencyDoesNotProvideAnyViableMethod {
+            get {
+                return ResourceManager.GetString("DependencyDoesNotProvideAnyViableMethod", resourceCulture);
+            }
+        }
     }
 }

@@ -75,7 +75,7 @@ public sealed class MappaGeneratorClassAlgorithmIntegrationTests
         // Assert
         generatedResults.Should()
             .HaveDiagnostics(1)
-            .ContainDiagnostic(MappaDiagnosticDescriptors.MethodHasInvalidNumberOfParameters, "Map");
+            .HaveDiagnostic(MappaDiagnosticDescriptors.MethodHasInvalidNumberOfParameters, "Map");
     }
 
     /// <summary>
@@ -107,7 +107,7 @@ public sealed class MappaGeneratorClassAlgorithmIntegrationTests
         // Assert
         generatedResults.Should()
             .HaveDiagnostics(1)
-            .ContainDiagnostic(MappaDiagnosticDescriptors.MethodHasInvalidNumberOfParameters, "Map");
+            .HaveDiagnostic(MappaDiagnosticDescriptors.MethodHasInvalidNumberOfParameters, "Map");
     }
 
     /// <summary>
@@ -139,7 +139,7 @@ public sealed class MappaGeneratorClassAlgorithmIntegrationTests
         // Assert
         generatedResults.Should()
             .HaveDiagnostics(1)
-            .ContainDiagnostic(MappaDiagnosticDescriptors.MethodIsVoid, "Map");
+            .HaveDiagnostic(MappaDiagnosticDescriptors.MethodIsVoid, "Map");
     }
 
     /// <summary>
@@ -172,7 +172,7 @@ public sealed class MappaGeneratorClassAlgorithmIntegrationTests
         // Assert
         generatedResults.Should()
             .HaveDiagnostics(1)
-            .ContainDiagnostic(MappaDiagnosticDescriptors.MethodReturnsTaskType, "Map");
+            .HaveDiagnostic(MappaDiagnosticDescriptors.MethodReturnsTaskType, "Map");
     }
 
     /// <summary>
@@ -205,7 +205,7 @@ public sealed class MappaGeneratorClassAlgorithmIntegrationTests
         // Assert
         generatedResults.Should()
             .HaveDiagnostics(1)
-            .ContainDiagnostic(MappaDiagnosticDescriptors.MethodReturnsTaskType, "Map");
+            .HaveDiagnostic(MappaDiagnosticDescriptors.MethodReturnsTaskType, "Map");
     }
 
     /// <summary>
@@ -238,7 +238,7 @@ public sealed class MappaGeneratorClassAlgorithmIntegrationTests
         // Assert
         generatedResults.Should()
             .HaveDiagnostics(1)
-            .ContainDiagnostic(MappaDiagnosticDescriptors.MethodReturnsTaskType, "Map");
+            .HaveDiagnostic(MappaDiagnosticDescriptors.MethodReturnsTaskType, "Map");
     }
 
     /// <summary>
@@ -271,7 +271,7 @@ public sealed class MappaGeneratorClassAlgorithmIntegrationTests
         // Assert
         generatedResults.Should()
             .HaveDiagnostics(1)
-            .ContainDiagnostic(MappaDiagnosticDescriptors.MethodReturnsTaskType, "Map");
+            .HaveDiagnostic(MappaDiagnosticDescriptors.MethodReturnsTaskType, "Map");
     }
 
     /// <summary>
@@ -303,7 +303,7 @@ public sealed class MappaGeneratorClassAlgorithmIntegrationTests
         // Assert
         generatedResults.Should()
             .HaveDiagnostics(1)
-            .ContainDiagnostic(MappaDiagnosticDescriptors.DuplicatedMapping, "AnotherMap", "int ", "int ");
+            .HaveDiagnostic(MappaDiagnosticDescriptors.DuplicatedMapping, "AnotherMap", "int ", "int ");
     }
 
     /// <summary>
@@ -334,7 +334,7 @@ public sealed class MappaGeneratorClassAlgorithmIntegrationTests
         // Assert
         generatedResults.Should()
             .HaveDiagnostics(1)
-            .ContainDiagnostic(
+            .HaveDiagnostic(
                 MappaDiagnosticDescriptors.CannotIdentifyStrategy,
                 "input",
                 "long",

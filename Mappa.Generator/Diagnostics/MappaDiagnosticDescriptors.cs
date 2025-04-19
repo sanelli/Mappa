@@ -29,6 +29,7 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? parseExactDoesNotAcceptOnlyFormat;
     private static DiagnosticDescriptor? propertySetterIsNotAccessible;
     private static DiagnosticDescriptor? tooManyUsePropertyAttributesForTheSameTargetProperty;
+    private static DiagnosticDescriptor? dependencyDoesNotProvideAnyViableMethod;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -149,6 +150,14 @@ internal static class MappaDiagnosticDescriptors
         => tooManyUsePropertyAttributesForTheSameTargetProperty ??= BuildError(
             MappaDiagnosticsKind.TooManyUsePropertyAttributesForTheSameTargetProperty,
             DiagnosticsResources.TooManyUsePropertyAttributesForTheSameTargetProperty);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.TooManyUsePropertyAttributesForTheSameTargetProperty"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor DependencyDoesNotProvideAnyViableMethod
+        => dependencyDoesNotProvideAnyViableMethod ??= BuildWarning(
+            MappaDiagnosticsKind.DependencyDoesNotProvideAnyViableMethod,
+            DiagnosticsResources.DependencyDoesNotProvideAnyViableMethod);
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(

@@ -50,7 +50,7 @@ public sealed partial class CollectionToCollectionMapStrategyIntegrationTests
         // Assert
         generatedResults.Should()
             .HaveDiagnostics(1)
-            .ContainDiagnostic(MappaDiagnosticDescriptors.CannotIdentifyStrategy, typeof(IEnumerable<int>).ToString(), "Mappa.Generator.Tests.UnitTests.SourceCode.Target");
+            .HaveDiagnostic(MappaDiagnosticDescriptors.CannotIdentifyStrategy, typeof(IEnumerable<int>).ToString(), "Mappa.Generator.Tests.UnitTests.SourceCode.Target");
     }
 
     /// <summary>
@@ -90,6 +90,6 @@ public sealed partial class CollectionToCollectionMapStrategyIntegrationTests
         // Assert
         generatedResults.Should()
             .HaveDiagnostics(1)
-            .ContainDiagnostic(MappaDiagnosticDescriptors.CannotIdentifyStrategy, typeof(IEnumerable<int>).ToString(), "Mappa.Generator.Tests.UnitTests.SourceCode.Target");
+            .HaveDiagnostic(MappaDiagnosticDescriptors.CannotIdentifyStrategy, typeof(IEnumerable<int>).ToString(), "Mappa.Generator.Tests.UnitTests.SourceCode.Target");
     }
 }

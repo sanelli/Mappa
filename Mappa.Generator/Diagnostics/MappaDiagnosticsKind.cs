@@ -93,4 +93,9 @@ internal enum MappaDiagnosticsKind
     /// A method has multiple <see cref="MappaUsePropertyAttribute"/>s for the same property.
     /// </summary>
     TooManyUsePropertyAttributesForTheSameTargetProperty,
+
+    /// <summary>
+    /// A dependency is not providing any viable method for mapping.
+    /// </summary>
+    DependencyDoesNotProvideAnyViableMethod,
 }

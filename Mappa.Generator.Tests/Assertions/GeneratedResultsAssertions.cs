@@ -57,7 +57,7 @@ internal sealed class GeneratedResultsAssertions
     /// <param name="diagnosticDescriptor">The specific diagnostic descriptor.</param>
     /// <param name="parameters">Parameters used to generate the message.</param>
     /// <returns>The assertions instance.</returns>
-    public GeneratedResultsAssertions ContainDiagnostic(
+    public GeneratedResultsAssertions HaveDiagnostic(
         DiagnosticDescriptor diagnosticDescriptor,
         params object?[] parameters)
     {

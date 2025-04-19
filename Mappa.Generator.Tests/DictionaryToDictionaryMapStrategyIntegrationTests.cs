@@ -721,7 +721,7 @@ public sealed class DictionaryToDictionaryMapStrategyIntegrationTests
         // Assert
         generatedResults.Should()
             .HaveDiagnostics(1)
-            .ContainDiagnostic(MappaDiagnosticDescriptors.CannotIdentifyStrategy, typeof(Dictionary<short, int>).ToString(), "Mappa.Generator.Tests.UnitTests.SourceCode.Target");
+            .HaveDiagnostic(MappaDiagnosticDescriptors.CannotIdentifyStrategy, typeof(Dictionary<short, int>).ToString(), "Mappa.Generator.Tests.UnitTests.SourceCode.Target");
     }
 
     /// <summary>
@@ -764,7 +764,7 @@ public sealed class DictionaryToDictionaryMapStrategyIntegrationTests
         // Assert
         generatedResults.Should()
             .HaveDiagnostics(1)
-            .ContainDiagnostic(MappaDiagnosticDescriptors.CannotIdentifyStrategy, typeof(Dictionary<short, int>).ToString(), "Mappa.Generator.Tests.UnitTests.SourceCode.Target");
+            .HaveDiagnostic(MappaDiagnosticDescriptors.CannotIdentifyStrategy, typeof(Dictionary<short, int>).ToString(), "Mappa.Generator.Tests.UnitTests.SourceCode.Target");
     }
 
     /// <summary>

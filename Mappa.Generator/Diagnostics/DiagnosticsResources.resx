@@ -63,4 +63,7 @@
     <data name="TooManyUsePropertyAttributesForTheSameTargetProperty" xml:space="preserve">
         <value>Method '{0}' has multiple MappaUseProperty attributes targeting the same property or parameter '{1}'.</value>
     </data>
+    <data name="DependencyDoesNotProvideAnyViableMethod" xml:space="preserve">
+        <value>Dependency '{0}' does not provide any method that could be used for mapping.</value>
+    </data>
 </root>

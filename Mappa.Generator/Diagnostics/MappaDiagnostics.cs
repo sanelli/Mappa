@@ -225,16 +225,32 @@ internal static class MappaDiagnostics
     /// targeting the same <paramref name="property"/>.
     /// </summary>
     /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
-    /// <param name="methodName">The name of the method.</param>
+    /// <param name="dependency">The name of the method.</param>
     /// <param name="property">The property (or parameter) that cannot be accessed.</param>
     /// <returns>The diagnostic.</returns>
     internal static Diagnostic TooManyUsePropertyAttributesForTheSameTargetProperty(
         MethodDeclarationSyntax? methodDeclarationSyntax,
-        string methodName,
+        string dependency,
         string property)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.TooManyUsePropertyAttributesForTheSameTargetProperty,
             methodDeclarationSyntax?.GetLocation(),
-            methodName,
+            dependency,
             property);
+
+    /// <summary>
+    /// Diagnostic to report that a dependency (identified via <see cref="MappaDependencyAttribute"/>
+    /// or <see cref="MappaStaticDependencyAttribute"/>) does not provide any viable method
+    /// that could be used for mapping..
+    /// </summary>
+    /// <param name="syntaxNode">The syntax element.</param>
+    /// <param name="dependency">The dependency.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic DependencyDoesNotProvideAnyViableMethod(
+        SyntaxNode? syntaxNode,
+        string dependency)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.DependencyDoesNotProvideAnyViableMethod,
+            syntaxNode?.GetLocation(),
+            dependency);
 }

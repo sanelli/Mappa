@@ -85,7 +85,7 @@ internal sealed class MappaClassGeneratorContext
     /// <summary>
     /// Gets a value indicating whether <c>nullable</c> is enabled for a syntax node.
     /// </summary>
-    /// <param name="syntaxNode">The suntax node to investigate.</param>
+    /// <param name="syntaxNode">The syntax node to investigate.</param>
     /// <returns><c>true</c> if the nullable context is enabled, <c>false</c> otherwise.</returns>
     internal bool IsNullableEnabled(SyntaxNode syntaxNode)
     {
