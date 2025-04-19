@@ -1,0 +1,32 @@
+name: Code Coverage Badges
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  code-coverage:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+      - name: Initialize NuGet.Config
+        shell: pwsh
+        run:
+          ./Scripts/CreateNuGetConfig.ps1
+      - name: Build
+        shell: pwsh
+        run: ./Scripts/RebuildUponVersionChange.ps1
+      - name: Test and code coverage
+        shell: pwsh
+        run: ./Scripts/RunTestsAndReportCoverage.ps1
+      - name: Update code coverage Gist
+        shell: pwsh
+        run: ./Scripts/UpdateCodeCoverageGists.ps1
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
