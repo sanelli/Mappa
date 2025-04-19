@@ -1,6 +1,6 @@
 # 🗺️ Mappa
 
-![Build main](https://github.com/sanelli/Mappa/actions/workflows/merge-main.yml/badge.svg)]
+![Build main](https://github.com/sanelli/Mappa/actions/workflows/merge-main.yml/badge.svg)
 ![Line Coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fgist.githubusercontent.com%2Fsanelli%2F7f4a85bc809328b4821b03125f9190cb%2Fraw%2FMAPPA-BADGE-LINE-COVERAGE.json)
 ![Branch Coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fgist.githubusercontent.com%2Fsanelli%2F7f4a85bc809328b4821b03125f9190cb%2Fraw%2FMAPPA-BADGE-BRANCH-COVERAGE.json)
 ![Method Coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fgist.githubusercontent.com%2Fsanelli%2F7f4a85bc809328b4821b03125f9190cb%2Fraw%2FMAPPA-BADGE-METHOD-COVERAGE.json)
