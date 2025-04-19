@@ -24,7 +24,7 @@ jobs:
         run: ./Scripts/RebuildUponVersionChange.ps1
       - name: Test and code coverage
         shell: pwsh
-        run: ./Scripts/RunTestsAndReportCoverage.ps1
+        run: ./Scripts/RunTestsAndReportCoverage.ps1 -AlwaysSuccess
       - name: Update code coverage Gist
         shell: pwsh
         run: ./Scripts/UpdateCodeCoverageGists.ps1

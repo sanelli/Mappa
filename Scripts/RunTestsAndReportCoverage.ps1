@@ -1,4 +1,4 @@
-param([switch]$AlwasySuccess);
+param([switch]$AlwaysSuccess);
 
 [double]$Threshold = 80.00
 $MappaTestsAndCoveragePath = ".mappa-tests-and-coverage"
@@ -76,7 +76,7 @@ if (($LineCoverage -lt $Threshold) -or ($Branchcoverage -lt $Threshold) -or ($Me
     Write-Host " - Branch Coverage: $Branchcoverage" -ForegroundColor Red
     Write-Host " - Method Coverage: $Methodcoverage" -ForegroundColor Red
 
-    if ($AlwasySuccess)
+    if ($AlwaysSuccess)
     {
         Exit 0
     }
