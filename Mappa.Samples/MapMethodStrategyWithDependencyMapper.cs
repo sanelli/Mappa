@@ -15,8 +15,8 @@ namespace Mappa.Samples;
 // TODO [#93] Map using static property.
 // TODO [#93] Map using field.
 // TODO [#93] Map using static field.
-// TODO [#93] Map using static method on property.
-// TODO [#93] Map using static method on field.
+// TODO [#93] [#143] Map using static method on property.
+// TODO [#93] [#143] Map using static method on field.
 [Mappa]
 public sealed partial class MapMethodStrategyWithDependencyMapper
 {
