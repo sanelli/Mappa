@@ -27,6 +27,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{01A7
 		Scripts\BuildRelease.ps1 = Scripts\BuildRelease.ps1
 		Scripts\RebuildUponVersionChange.ps1 = Scripts\RebuildUponVersionChange.ps1
 		Scripts\CheckVersionIncrease.ps1 = Scripts\CheckVersionIncrease.ps1
+		Scripts\UpdateCodeCoverageGists.ps1 = Scripts\UpdateCodeCoverageGists.ps1
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mappa.Samples", "Mappa.Samples\Mappa.Samples.csproj", "{0D70998F-986C-47B5-9989-23DD4A04340B}"
@@ -69,6 +70,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Github Workflows", "Github Workflows", "{A87AF029-B64B-4380-B0AE-C4801D6A5A3A}"
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\pr.yml = .github\workflows\pr.yml
+		.github\workflows\merge-main.yml = .github\workflows\merge-main.yml
 	EndProjectSection
 EndProject
 Global
