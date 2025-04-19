@@ -14,8 +14,6 @@ namespace Mappa.Generator.Tests;
 /// </summary>
 // TODO [#93] Test that private methods are ignored on a property dependency.
 // TODO [#93] Test that if property dependency does not provide any method a warning is returned.
-// TODO [#93] [#143] Test that methods works on a field dependency (require invoking the method from the class) - non-static field.
-// TODO [#93] [#143] Test that methods works on a field dependency (require invoking the method from the class) - static field.
 // TODO [#93] Test that private methods are ignored on a field dependency.
 // TODO [#93] Test that if field dependency does not provide any method a warning is returned.
 // TODO [#93] Test static dependency attribute on static class.
