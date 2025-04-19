@@ -1812,7 +1812,7 @@ public sealed class MappaInvokeMethodAttributeTests
         generatedResults.Should()
             .HaveDiagnostics(1)
             .HaveOnlyWarnings("MP00014")
-            .ContainDiagnostic(MappaDiagnosticDescriptors.PropertySetterIsNotAccessible, "Mappa.Generator.Tests.UnitTests.SourceCode.Target.PropertyB")
+            .HaveDiagnostic(MappaDiagnosticDescriptors.PropertySetterIsNotAccessible, "Mappa.Generator.Tests.UnitTests.SourceCode.Target.PropertyB")
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .NotBeNull().And

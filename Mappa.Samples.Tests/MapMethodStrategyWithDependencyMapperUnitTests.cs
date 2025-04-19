@@ -1,4 +1,4 @@
-// <copyright file="MapMethodStrategyMapperWithDependencyUnitTests.cs" company="Stefano Anelli">
+// <copyright file="MapMethodStrategyWithDependencyMapperUnitTests.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -12,14 +12,14 @@ using Xunit.Categories;
 namespace Mappa.Samples.Tests;
 
 /// <summary>
-/// Unit tests for <see cref="MapMethodStrategyMapperWithDependency"/>.
+/// Unit tests for <see cref="MapMethodStrategyWithDependencyMapper"/>.
 /// </summary>
-public sealed class MapMethodStrategyMapperWithDependencyUnitTests
+public sealed class MapMethodStrategyWithDependencyMapperUnitTests
 {
-    private readonly MapMethodStrategyMapperWithDependency mapper = new(new());
+    private readonly MapMethodStrategyWithDependencyMapper withDependencyMapper = new(new());
 
     /// <summary>
-    /// Unit test for <see cref="MapMethodStrategyMapperWithDependency.Map"/>.
+    /// Unit test for <see cref="MapMethodStrategyWithDependencyMapper.Map"/>.
     /// </summary>
     [Fact]
     [UnitTest]
@@ -36,7 +36,7 @@ public sealed class MapMethodStrategyMapperWithDependencyUnitTests
         };
 
         // Act
-        var target = this.mapper.Map(source);
+        var target = this.withDependencyMapper.Map(source);
 
         target.InnerModel.ParamA.Should().Be($"{source.InnerModel.ParamA}");
         target.InnerModel.ParamB.Should().Be((int)CountingValues.One);

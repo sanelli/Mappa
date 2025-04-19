@@ -721,7 +721,7 @@ public sealed class InvokeConstructorMapStrategyIntegrationTests
         // Assert
         generatedResults.Should()
             .HaveDiagnostics(1)
-            .ContainDiagnostic(
+            .HaveDiagnostic(
                 MappaDiagnosticDescriptors.CannotIdentifyStrategy,
                 "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
                 "Mappa.Generator.Tests.UnitTests.SourceCode.Target");
@@ -767,7 +767,7 @@ public sealed class InvokeConstructorMapStrategyIntegrationTests
         // Assert
         generatedResults.Should()
             .HaveDiagnostics(1)
-            .ContainDiagnostic(
+            .HaveDiagnostic(
                 MappaDiagnosticDescriptors.CannotIdentifyStrategy,
                 "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
                 "Mappa.Generator.Tests.UnitTests.SourceCode.Target");

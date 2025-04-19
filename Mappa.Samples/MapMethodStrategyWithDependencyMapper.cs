@@ -1,4 +1,4 @@
-// <copyright file="MapMethodStrategyMapperWithDependency.cs" company="Stefano Anelli">
+// <copyright file="MapMethodStrategyWithDependencyMapper.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -10,14 +10,21 @@ namespace Mappa.Samples;
 /// <summary>
 /// Mapper using the map method strategy.
 /// </summary>
+// TODO [#93] Map using static dependency on static class.
+// TODO [#93] Map using static dependency on non-static class with static method.
+// TODO [#93] Map using static property.
+// TODO [#93] Map using field.
+// TODO [#93] Map using static field.
+// TODO [#93] Map using static method on property.
+// TODO [#93] Map using static method on field.
 [Mappa]
-public sealed partial class MapMethodStrategyMapperWithDependency
+public sealed partial class MapMethodStrategyWithDependencyMapper
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="MapMethodStrategyMapperWithDependency"/> class.
+    /// Initializes a new instance of the <see cref="MapMethodStrategyWithDependencyMapper"/> class.
     /// </summary>
     /// <param name="dependency">The mapping dependency.</param>
-    public MapMethodStrategyMapperWithDependency(MapMethodStrategyMapperDependency dependency)
+    public MapMethodStrategyWithDependencyMapper(MapMethodStrategyMapperDependency dependency)
     {
         this.Dependency = dependency;
     }

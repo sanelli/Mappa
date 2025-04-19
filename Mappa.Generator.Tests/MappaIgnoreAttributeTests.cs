@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Tests.Abstractions;
 using Mappa.Generator.Tests.Assertions;
 using Mappa.Generator.Tests.Assertions.Extensions;
@@ -245,7 +246,8 @@ public sealed class MappaIgnoreAttributeTests
 
         // Assert
         generatedResults.Should()
-            .NotHaveDiagnostics()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.DependencyDoesNotProvideAnyViableMethod, "dependency")
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .NotBeNull().And

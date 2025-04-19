@@ -59,8 +59,8 @@ public sealed class MappaUsePropertyAttributeIntegrationTests
         // Assert
         generatedResults.Should()
             .HaveDiagnostics(2)
-            .ContainDiagnostic(MappaDiagnosticDescriptors.TooManyUsePropertyAttributesForTheSameTargetProperty, "Map", "PropertyA")
-            .ContainDiagnostic(MappaDiagnosticDescriptors.CannotIdentifyStrategy, "Mappa.Generator.Tests.UnitTests.SourceCode.Source", "Mappa.Generator.Tests.UnitTests.SourceCode.Target");
+            .HaveDiagnostic(MappaDiagnosticDescriptors.TooManyUsePropertyAttributesForTheSameTargetProperty, "Map", "PropertyA")
+            .HaveDiagnostic(MappaDiagnosticDescriptors.CannotIdentifyStrategy, "Mappa.Generator.Tests.UnitTests.SourceCode.Source", "Mappa.Generator.Tests.UnitTests.SourceCode.Target");
     }
 
     /// <summary>
@@ -299,8 +299,8 @@ public sealed class MappaUsePropertyAttributeIntegrationTests
         // Assert
         generatedResults.Should()
             .HaveDiagnostics(2)
-            .ContainDiagnostic(MappaDiagnosticDescriptors.TooManyUsePropertyAttributesForTheSameTargetProperty, "Map", "propertyA")
-            .ContainDiagnostic(MappaDiagnosticDescriptors.CannotIdentifyStrategy, "Mappa.Generator.Tests.UnitTests.SourceCode.Source", "Mappa.Generator.Tests.UnitTests.SourceCode.Target");
+            .HaveDiagnostic(MappaDiagnosticDescriptors.TooManyUsePropertyAttributesForTheSameTargetProperty, "Map", "propertyA")
+            .HaveDiagnostic(MappaDiagnosticDescriptors.CannotIdentifyStrategy, "Mappa.Generator.Tests.UnitTests.SourceCode.Source", "Mappa.Generator.Tests.UnitTests.SourceCode.Target");
     }
 
     /// <summary>
