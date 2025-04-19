@@ -1,6 +1,7 @@
 param([switch]$AlwasySuccess);
 
 [double]$Threshold = 80.00
+$MappaTestsAndCoveragePath = ".mappa-tests-and-coverage"
 
 function Get-CoverageColor
 {
@@ -25,8 +26,6 @@ function Get-ShieldsIoJson
     $color = Get-CoverageColor -Value $Value
     return "{ `"schemaVersion`": 1, `"label`": `"$Name`", `"message`": `"$Value%`", `"color`": `"$color`" }"
 }
-
-$MappaTestsAndCoveragePath = ".mappa-tests-and-coverage"
 
 if (Test-Path $MappaTestsAndCoveragePath)
 {
@@ -67,8 +66,8 @@ Get-ShieldsIoJson -Name "Method Coverage" -Value $Methodcoverage | Out-File "./$
 
 [xml]$currentVersionFile = Get-Content ./MappaVersion.targets
 $currentMappaVersion = $currentVersionFile.Project.PropertyGroup.MappaVersion
-$timestamp = Get-Date -Format "yyyy/MM/dd hh:mm:ss"
-"`n| $timestamp | $currentMappaVersion | LINE | $LineCoverage |`n| $timestamp | $currentMappaVersion | BRANCH | $Branchcoverage |`n| $timestamp | $currentMappaVersion | METHOD | $Methodcoverage |" | Out-File "./$MappaTestsAndCoveragePath/history-table.md"
+$timestamp = Get-Date -Format "yyyy/MM/dd HH:mm:ss"
+"| $timestamp | $currentMappaVersion | LINE | $LineCoverage |`n| $timestamp | $currentMappaVersion | BRANCH | $Branchcoverage |`n| $timestamp | $currentMappaVersion | METHOD | $Methodcoverage |" | Out-File "./$MappaTestsAndCoveragePath/history-table.md"
 
 if (($LineCoverage -lt $Threshold) -or ($Branchcoverage -lt $Threshold) -or ($Methodcoverage -lt $Threshold))
 {
