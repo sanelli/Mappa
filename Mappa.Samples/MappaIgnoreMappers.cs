@@ -37,10 +37,12 @@ public sealed partial class MappaIgnoreLocalMethodMapper
 [Mappa]
 public sealed partial class MappaIgnoreDependencyMethodMapper
 {
+#pragma warning disable CA1823
+#pragma warning disable MP00016
     [MappaDependency]
- #pragma warning disable CA1823
     private readonly DependencyMapper dependency = new();
- #pragma warning restore CA1823
+#pragma warning restore MP00016
+#pragma warning restore CA1823
 
     /// <summary>
     /// Map from <see cref="SourceClassModel"/> to <see cref="TargetClassModel"/>
