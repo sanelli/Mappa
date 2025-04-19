@@ -1,4 +1,9 @@
 # 🗺️ Mappa
+
+![Line Coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fgist.githubusercontent.com%2Fsanelli%2F7f4a85bc809328b4821b03125f9190cb%2Fraw%2FMAPPA-BADGE-LINE-COVERAGE.json)
+![Branch Coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fgist.githubusercontent.com%2Fsanelli%2F7f4a85bc809328b4821b03125f9190cb%2Fraw%2FMAPPA-BADGE-BRANCH-COVERAGE.json)
+![Method Coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fgist.githubusercontent.com%2Fsanelli%2F7f4a85bc809328b4821b03125f9190cb%2Fraw%2FMAPPA-BADGE-METHOD-COVERAGE.json)
+
 Mappa (italian for _map_) is a source generator for `C#` that can generate code to allow the mapping between types, similarly to what [AutoMapper](https://www.nuget.org/packages/AutoMapper) (and other similar tools) does.
 See [Documentation](./Documentation/README.md) for more details.
 
@@ -11,6 +16,7 @@ this has multiple benefits:
 - fine-grained mapping can be obtained via attributes on the mapper methods without having to touch the source or the target classes;
 - mapper methods can be inside any class (static class and extension methods are supported!).
 - you do not need to specify every type that requires a mapping: if a mapping is missing Mappa will generate it for you;
+
 
 ## 🧑‍🔬 A simple example
 Consider the following code snipped:
