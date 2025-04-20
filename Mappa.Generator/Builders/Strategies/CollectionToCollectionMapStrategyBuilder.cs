@@ -261,7 +261,8 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
 
             stringBuilder.AppendLine($"global::{targetTypeSymbol} {targetVariableName} = new global::{targetTypeSymbol}();");
         }
-        else if (targetTypeSymbol.IsOrImplementStack(context.Compilation))
+        else if (targetTypeSymbol.IsOrImplementStack(context.Compilation)
+                 || targetTypeSymbol.IsOrImplementConcurrentStack(context.Compilation))
         {
             insertionMethod = InsertionMethod.Push;
             var capacity = string.Empty;
@@ -273,7 +274,8 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
 
             stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {targetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}({capacity});");
         }
-        else if (targetTypeSymbol.IsOrImplementQueue(context.Compilation))
+        else if (targetTypeSymbol.IsOrImplementQueue(context.Compilation)
+                 || targetTypeSymbol.IsOrImplementConcurrentQueue(context.Compilation))
         {
             insertionMethod = InsertionMethod.Enqueue;
             var capacity = string.Empty;

@@ -43,15 +43,8 @@ namespace Mappa.Samples;
 // TODO [#118] List -> IMPLEMENT ConcurrentStack with generic.
 // TODO [#118] List -> IMPLEMENT ConcurrentStack without generic.
 // TODO [#118] IProducerConsumerCollection -> List.
+// TODO [#118] IEnumerable -> IS IProducerConsumerCollection.
 // TODO [#118] List -> IS IProducerConsumerCollection.
-// TODO [#118] IEnumerable -> IMPLEMENT IMPLICITLY IProducerConsumerCollection with generics.
-// TODO [#118] IEnumerable -> IMPLEMENT IMPLICITLY IProducerConsumerCollection without generics.
-// TODO [#118] IEnumerable -> IMPLEMENT EXPLICITLY IProducerConsumerCollection with generics.
-// TODO [#118] IEnumerable -> IMPLEMENT EXPLICITLY IProducerConsumerCollection without generics.
-// TODO [#118] List -> IMPLEMENT IMPLICITLY IProducerConsumerCollection with generics.
-// TODO [#118] List -> IMPLEMENT IMPLICITLY IProducerConsumerCollection without generics.
-// TODO [#118] List -> IMPLEMENT EXPLICITLY IProducerConsumerCollection with generics.
-// TODO [#118] List -> IMPLEMENT EXPLICITLY IProducerConsumerCollection without generics.
 [Mappa]
 public sealed partial class CollectionToCollectionMapper
 {
