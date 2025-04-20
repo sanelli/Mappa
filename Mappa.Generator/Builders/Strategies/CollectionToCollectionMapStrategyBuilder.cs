@@ -285,11 +285,12 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
 
             stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {targetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}({capacity});");
         }
-        else if (targetTypeSymbol.IsOrImplementBlockingCollection(context.Compilation))
+        else if (targetTypeSymbol.IsOrImplementBlockingCollection(context.Compilation)
+                 || targetTypeSymbol.IsOrImplementConcurrentBag(context.Compilation))
         {
             insertionMethod = InsertionMethod.Add;
             var capacity = string.Empty;
-            if (targetTypeSymbol.IsBlockingCollection(context.Compilation)
+            if ((targetTypeSymbol.IsBlockingCollection(context.Compilation) || targetTypeSymbol.IsConcurrentBag(context.Compilation))
                 && TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out var detectedCapacity))
             {
                 capacity = detectedCapacity;
