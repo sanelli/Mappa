@@ -158,7 +158,8 @@ internal sealed class ContainerMapStrategyDetector
                                  || this.context.TargetType.IsOrImplementBlockingCollection(this.compilation)
                                  || this.context.TargetType.IsOrImplementConcurrentBag(this.compilation)
                                  || this.context.TargetType.IsOrImplementConcurrentStack(this.compilation)
-                                 || this.context.TargetType.IsOrImplementConcurrentQueue(this.compilation))
+                                 || this.context.TargetType.IsOrImplementConcurrentQueue(this.compilation)
+                                 || this.context.TargetType.IsIProducerConsumerCollection(this.compilation))
                                  && InterfaceAndConstructorChecks();
 
         elementStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
@@ -187,7 +188,8 @@ internal sealed class ContainerMapStrategyDetector
                        || this.context.TargetType.IsIImmutableSet(this.compilation)
                        || this.context.TargetType.IsIImmutableList(this.compilation)
                        || this.context.TargetType.IsIImmutableQueue(this.compilation)
-                       || this.context.TargetType.IsIImmutableStack(this.compilation);
+                       || this.context.TargetType.IsIImmutableStack(this.compilation)
+                       || this.context.TargetType.IsIProducerConsumerCollection(this.compilation);
             }
 
             // Target type MUST have a constructor with no arguments

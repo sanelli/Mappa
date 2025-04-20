@@ -67,6 +67,7 @@ internal static class TypeSymbolExtensions
     private const string ConcurrentBagFullName = "System.Collections.Concurrent.ConcurrentBag`1";
     private const string ConcurrentStackFullName = "System.Collections.Concurrent.ConcurrentStack`1";
     private const string ConcurrentQueueFullName = "System.Collections.Concurrent.ConcurrentQueue`1";
+    private const string ProducerConsumerCollectionInterfaceFullName = "System.Collections.Concurrent.IProducerConsumerCollection`1";
 
     /// <summary>
     /// Check if the type is <see cref="Void"/>.
@@ -602,6 +603,19 @@ internal static class TypeSymbolExtensions
         }
 
         throw new MappaGeneratorException($"Cannot obtain key and value types of \"{typeSymbol.ToDisplayString()}\"");
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="System.Collections.Concurrent.IProducerConsumerCollection{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="System.Collections.Concurrent.IProducerConsumerCollection{T}"/>.</returns>
+    internal static bool IsIProducerConsumerCollection(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var interfaceType = compilation.GetTypeByMetadataName(ProducerConsumerCollectionInterfaceFullName);
+        var isProducerConsumerCollectionInterface = SymbolEqualityComparer.Default.Equals(interfaceType, typeSymbol.OriginalDefinition);
+        return isProducerConsumerCollectionInterface;
     }
 
     /// <summary>
