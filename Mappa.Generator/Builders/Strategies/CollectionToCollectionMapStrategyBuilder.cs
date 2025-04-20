@@ -261,10 +261,13 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
 
             stringBuilder.AppendLine($"global::{targetTypeSymbol} {targetVariableName} = new global::{targetTypeSymbol}();");
         }
-        else if (targetTypeSymbol.IsOrImplementStack(context.Compilation))
+        else if (targetTypeSymbol.IsOrImplementStack(context.Compilation)
+                 || targetTypeSymbol.IsOrImplementConcurrentStack(context.Compilation))
         {
             insertionMethod = InsertionMethod.Push;
             var capacity = string.Empty;
+
+            // NOTE: ConcurrentStack does not have a constructor accepting a capacity.
             if (targetTypeSymbol.IsStack(context.Compilation)
                 && TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out var detectedCapacity))
             {
@@ -273,11 +276,29 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
 
             stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {targetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}({capacity});");
         }
-        else if (targetTypeSymbol.IsOrImplementQueue(context.Compilation))
+        else if (targetTypeSymbol.IsOrImplementQueue(context.Compilation)
+                 || targetTypeSymbol.IsOrImplementConcurrentQueue(context.Compilation))
         {
             insertionMethod = InsertionMethod.Enqueue;
             var capacity = string.Empty;
+
+            // NOTE: ConcurrentQueue does not have a constructor accepting a capacity.
             if (targetTypeSymbol.IsQueue(context.Compilation)
+                && TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out var detectedCapacity))
+            {
+                capacity = detectedCapacity;
+            }
+
+            stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {targetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}({capacity});");
+        }
+        else if (targetTypeSymbol.IsOrImplementBlockingCollection(context.Compilation)
+                 || targetTypeSymbol.IsOrImplementConcurrentBag(context.Compilation))
+        {
+            insertionMethod = InsertionMethod.Add;
+            var capacity = string.Empty;
+
+            // NOTE: ConcurrentBag does not have a constructor accepting a capacity.
+            if (targetTypeSymbol.IsBlockingCollection(context.Compilation)
                 && TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out var detectedCapacity))
             {
                 capacity = detectedCapacity;
@@ -300,10 +321,10 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
             || targetTypeSymbol.IsImmutableArray(context.Compilation)
             || targetTypeSymbol.IsImmutableList(context.Compilation))
         {
-            // We are going to always use a list so Add method is best here.
+            // We are going to always use a list, so Add method is best here.
             insertionMethod = InsertionMethod.Add;
 
-            // Note: even if we set capacity the list would be empty so we cannot invoke an indexer, but only Add.
+            // Note: even if we set capacity, the list would be empty so we cannot invoke an indexer, but only Add.
             // (having an initial capacity is anyway an improvement on the performances).
             TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out var capacity);
             stringBuilder.AppendLine($"global::System.Collections.Generic.List<{targetTypeSymbol.GetElementType().ToDisplayString()}> {targetVariableName} = new global::System.Collections.Generic.List<{targetTypeSymbol.GetElementType().ToDisplayString()}>({capacity});");
@@ -327,6 +348,12 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
                 [elementType]);
 
             stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {targetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}();");
+        }
+        else if (targetTypeSymbol.IsIProducerConsumerCollection(context.Compilation))
+        {
+            // We are going to always use a concurrent bag, so Add method is best here.
+            insertionMethod = InsertionMethod.Add;
+            stringBuilder.AppendLine($"global::System.Collections.Concurrent.ConcurrentBag<{targetTypeSymbol.GetElementType().ToDisplayString()}> {targetVariableName} = new global::System.Collections.Concurrent.ConcurrentBag<{targetTypeSymbol.GetElementType().ToDisplayString()}>();");
         }
         else
         {

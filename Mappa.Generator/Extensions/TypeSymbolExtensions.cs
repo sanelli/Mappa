@@ -2,7 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Frozen;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
@@ -62,6 +62,11 @@ internal static class TypeSymbolExtensions
     private const string ImmutableStackFullName = "System.Collections.Immutable.ImmutableStack`1";
     private const string ImmutableQueueInterfaceFullName = "System.Collections.Immutable.IImmutableQueue`1";
     private const string ImmutableQueueFullName = "System.Collections.Immutable.ImmutableQueue`1";
+    private const string BlockingCollectionFullName = "System.Collections.Concurrent.BlockingCollection`1";
+    private const string ConcurrentBagFullName = "System.Collections.Concurrent.ConcurrentBag`1";
+    private const string ConcurrentStackFullName = "System.Collections.Concurrent.ConcurrentStack`1";
+    private const string ConcurrentQueueFullName = "System.Collections.Concurrent.ConcurrentQueue`1";
+    private const string ProducerConsumerCollectionInterfaceFullName = "System.Collections.Concurrent.IProducerConsumerCollection`1";
 
     /// <summary>
     /// Check if the type is <see cref="Void"/>.
@@ -600,6 +605,19 @@ internal static class TypeSymbolExtensions
     }
 
     /// <summary>
+    /// Check if the type is <see cref="System.Collections.Concurrent.IProducerConsumerCollection{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="System.Collections.Concurrent.IProducerConsumerCollection{T}"/>.</returns>
+    internal static bool IsIProducerConsumerCollection(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var interfaceType = compilation.GetTypeByMetadataName(ProducerConsumerCollectionInterfaceFullName);
+        var isProducerConsumerCollectionInterface = SymbolEqualityComparer.Default.Equals(interfaceType, typeSymbol.OriginalDefinition);
+        return isProducerConsumerCollectionInterface;
+    }
+
+    /// <summary>
     /// Gets all the type parameters of this type.
     /// </summary>
     /// <param name="typeSymbol">The type symbol.</param>
@@ -615,21 +633,6 @@ internal static class TypeSymbolExtensions
 
         typeArguments = [];
         return false;
-    }
-
-    /// <summary>
-    /// Gets the name of the property returning the number of items.
-    /// </summary>
-    /// <param name="typeSymbol">The type symbol.</param>
-    /// <returns> The name of the property returning the number of items.</returns>
-    internal static string GetCountProperty(this ITypeSymbol typeSymbol)
-    {
-        if (typeSymbol is IArrayTypeSymbol)
-        {
-            return nameof(Array.Length);
-        }
-
-        return nameof(ICollection.Count);
     }
 
     /// <summary>
@@ -1038,11 +1041,11 @@ internal static class TypeSymbolExtensions
     }
 
     /// <summary>
-    /// Check if the type is <see cref="Stack{T}"/>.
+    /// Check if the type is or implements <see cref="Stack{T}"/>.
     /// </summary>
     /// <param name="typeSymbol">The type symbol.</param>
     /// <param name="compilation">The compilation.</param>
-    /// <returns><c>true</c> if the type symbol is <see cref="Stack{T}"/>.</returns>
+    /// <returns><c>true</c> if the type symbol is or implements <see cref="Stack{T}"/>.</returns>
     internal static bool IsOrImplementStack(this ITypeSymbol typeSymbol, Compilation compilation)
     {
         var stackSymbol = compilation.GetTypeByMetadataName(StackFullName);
@@ -1074,16 +1077,16 @@ internal static class TypeSymbolExtensions
     internal static bool IsQueue(this ITypeSymbol typeSymbol, Compilation compilation)
     {
         var queueSymbol = compilation.GetTypeByMetadataName(QueueFullName);
-        var isStack = SymbolEqualityComparer.Default.Equals(queueSymbol, typeSymbol.OriginalDefinition);
-        return isStack;
+        var isQueue = SymbolEqualityComparer.Default.Equals(queueSymbol, typeSymbol.OriginalDefinition);
+        return isQueue;
     }
 
     /// <summary>
-    /// Check if the type is <see cref="Queue{T}"/>.
+    /// Check if the type is or implement <see cref="Queue{T}"/>.
     /// </summary>
     /// <param name="typeSymbol">The type symbol.</param>
     /// <param name="compilation">The compilation.</param>
-    /// <returns><c>true</c> if the type symbol is <see cref="Queue{T}"/>.</returns>
+    /// <returns><c>true</c> if the type symbol is or implement <see cref="Queue{T}"/>.</returns>
     internal static bool IsOrImplementQueue(this ITypeSymbol typeSymbol, Compilation compilation)
     {
         var queueType = compilation.GetTypeByMetadataName(QueueFullName);
@@ -1096,6 +1099,144 @@ internal static class TypeSymbolExtensions
         while (baseType is not null)
         {
             if (SymbolEqualityComparer.Default.Equals(queueType, baseType.OriginalDefinition))
+            {
+                return true;
+            }
+
+            baseType = baseType.BaseType;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="BlockingCollection{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="BlockingCollection{T}"/>.</returns>
+    internal static bool IsBlockingCollection(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var blockingCollectionSymbol = compilation.GetTypeByMetadataName(BlockingCollectionFullName);
+        var isBlockingCollections = SymbolEqualityComparer.Default.Equals(blockingCollectionSymbol, typeSymbol.OriginalDefinition);
+        return isBlockingCollections;
+    }
+
+    /// <summary>
+    /// Check if the type is or implement <see cref="BlockingCollection{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is or implement <see cref="BlockingCollection{T}"/>.</returns>
+    internal static bool IsOrImplementBlockingCollection(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var blockingCollectionSymbol = compilation.GetTypeByMetadataName(BlockingCollectionFullName);
+        if (SymbolEqualityComparer.Default.Equals(blockingCollectionSymbol, typeSymbol.OriginalDefinition))
+        {
+            return true;
+        }
+
+        INamedTypeSymbol? baseType = typeSymbol.BaseType;
+        while (baseType is not null)
+        {
+            if (SymbolEqualityComparer.Default.Equals(blockingCollectionSymbol, baseType.OriginalDefinition))
+            {
+                return true;
+            }
+
+            baseType = baseType.BaseType;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="ConcurrentBag{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="ConcurrentBag{T}"/>.</returns>
+    internal static bool IsConcurrentBag(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var blockingCollectionSymbol = compilation.GetTypeByMetadataName(ConcurrentBagFullName);
+        var isConcurrentBags = SymbolEqualityComparer.Default.Equals(blockingCollectionSymbol, typeSymbol.OriginalDefinition);
+        return isConcurrentBags;
+    }
+
+    /// <summary>
+    /// Check if the type is or implement <see cref="ConcurrentBag{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is or implement <see cref="ConcurrentBag{T}"/>.</returns>
+    internal static bool IsOrImplementConcurrentBag(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var blockingCollectionSymbol = compilation.GetTypeByMetadataName(ConcurrentBagFullName);
+        if (SymbolEqualityComparer.Default.Equals(blockingCollectionSymbol, typeSymbol.OriginalDefinition))
+        {
+            return true;
+        }
+
+        INamedTypeSymbol? baseType = typeSymbol.BaseType;
+        while (baseType is not null)
+        {
+            if (SymbolEqualityComparer.Default.Equals(blockingCollectionSymbol, baseType.OriginalDefinition))
+            {
+                return true;
+            }
+
+            baseType = baseType.BaseType;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Check if the type is or implement <see cref="ConcurrentStack{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is or implement <see cref="ConcurrentStack{T}"/>.</returns>
+    internal static bool IsOrImplementConcurrentStack(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var blockingCollectionSymbol = compilation.GetTypeByMetadataName(ConcurrentStackFullName);
+        if (SymbolEqualityComparer.Default.Equals(blockingCollectionSymbol, typeSymbol.OriginalDefinition))
+        {
+            return true;
+        }
+
+        INamedTypeSymbol? baseType = typeSymbol.BaseType;
+        while (baseType is not null)
+        {
+            if (SymbolEqualityComparer.Default.Equals(blockingCollectionSymbol, baseType.OriginalDefinition))
+            {
+                return true;
+            }
+
+            baseType = baseType.BaseType;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Check if the type is or implement <see cref="ConcurrentQueue{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is or implement <see cref="ConcurrentQueue{T}"/>.</returns>
+    internal static bool IsOrImplementConcurrentQueue(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var blockingCollectionSymbol = compilation.GetTypeByMetadataName(ConcurrentQueueFullName);
+        if (SymbolEqualityComparer.Default.Equals(blockingCollectionSymbol, typeSymbol.OriginalDefinition))
+        {
+            return true;
+        }
+
+        INamedTypeSymbol? baseType = typeSymbol.BaseType;
+        while (baseType is not null)
+        {
+            if (SymbolEqualityComparer.Default.Equals(blockingCollectionSymbol, baseType.OriginalDefinition))
             {
                 return true;
             }
