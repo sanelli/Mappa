@@ -154,7 +154,8 @@ internal sealed class ContainerMapStrategyDetector
                                  || this.context.TargetType.IsIImmutableQueue(this.compilation)
                                  || this.context.TargetType.IsImmutableQueue(this.compilation)
                                  || this.context.TargetType.IsIImmutableStack(this.compilation)
-                                 || this.context.TargetType.IsImmutableStack(this.compilation))
+                                 || this.context.TargetType.IsImmutableStack(this.compilation)
+                                 || this.context.TargetType.IsOrImplementBlockingCollection(this.compilation))
                                  && InterfaceAndConstructorChecks();
 
         elementStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);

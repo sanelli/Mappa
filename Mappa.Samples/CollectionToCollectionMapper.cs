@@ -15,17 +15,43 @@ namespace Mappa.Samples;
 /// Mapper showing mapping across different collection types.
 /// </summary>
 // TODO [#118] BlockingCollection -> List.
+// TODO [#118] IEnumerable -> IS BlockingCollection.
+// TODO [#118] IEnumerable -> IMPLEMENT BlockingCollection with generic.
+// TODO [#118] IEnumerable -> IMPLEMENT BlockingCollection without generic.
 // TODO [#118] List -> IS BlockingCollection.
-// TODO [#118] List -> IMPL BlockingCollection.
+// TODO [#118] List -> IMPLEMENT BlockingCollection with generic.
+// TODO [#118] List -> IMPLEMENT BlockingCollection without generic.
 // TODO [#118] ConcurrentBag -> List.
+// TODO [#118] IEnumerable -> IS ConcurrentBag.
+// TODO [#118] IEnumerable -> IMPLEMENT ConcurrentBag with generics.
+// TODO [#118] IEnumerable -> IMPLEMENT ConcurrentBag without generic.
 // TODO [#118] List -> IS ConcurrentBag.
-// TODO [#118] List -> IMPL ConcurrentBag.
+// TODO [#118] List -> IMPLEMENT ConcurrentBag with generics.
+// TODO [#118] List -> IMPLEMENT ConcurrentBag without generic.
+// TODO [#118] ConcurrentQueue -> List.
+// TODO [#118] IEnumerable -> IS ConcurrentQueue.
+// TODO [#118] IEnumerable -> IMPLEMENT ConcurrentQueue with generic.
+// TODO [#118] IEnumerable -> IMPLEMENT ConcurrentQueue without generic.
+// TODO [#118] List -> IS ConcurrentQueue.
+// TODO [#118] List -> IMPLEMENT ConcurrentQueue with generic.
+// TODO [#118] List -> IMPLEMENT ConcurrentQueue without generic.
+// TODO [#118] ConcurrentStack -> List.
+// TODO [#118] IEnumerable -> IS ConcurrentStack.
+// TODO [#118] IEnumerable -> IMPLEMENT ConcurrentStack with generic.
+// TODO [#118] IEnumerable -> IMPLEMENT ConcurrentStack without generic.
+// TODO [#118] List -> IS ConcurrentStack.
+// TODO [#118] List -> IMPLEMENT ConcurrentStack with generic.
+// TODO [#118] List -> IMPLEMENT ConcurrentStack without generic.
 // TODO [#118] IProducerConsumerCollection -> List.
 // TODO [#118] List -> IS IProducerConsumerCollection.
-// TODO [#118] List -> IMPL IProducerConsumerCollection.
-// TODO [#118] ConcurrentQueue -> List.
-// TODO [#118] List -> IS ConcurrentStack.
-// TODO [#118] List -> IMPL ConcurrentStack.
+// TODO [#118] IEnumerable -> IMPLEMENT IMPLICITLY IProducerConsumerCollection with generics.
+// TODO [#118] IEnumerable -> IMPLEMENT IMPLICITLY IProducerConsumerCollection without generics.
+// TODO [#118] IEnumerable -> IMPLEMENT EXPLICITLY IProducerConsumerCollection with generics.
+// TODO [#118] IEnumerable -> IMPLEMENT EXPLICITLY IProducerConsumerCollection without generics.
+// TODO [#118] List -> IMPLEMENT IMPLICITLY IProducerConsumerCollection with generics.
+// TODO [#118] List -> IMPLEMENT IMPLICITLY IProducerConsumerCollection without generics.
+// TODO [#118] List -> IMPLEMENT EXPLICITLY IProducerConsumerCollection with generics.
+// TODO [#118] List -> IMPLEMENT EXPLICITLY IProducerConsumerCollection without generics.
 [Mappa]
 public sealed partial class CollectionToCollectionMapper
 {

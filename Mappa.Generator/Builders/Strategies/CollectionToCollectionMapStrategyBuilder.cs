@@ -285,6 +285,18 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
 
             stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {targetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}({capacity});");
         }
+        else if (targetTypeSymbol.IsOrImplementBlockingCollection(context.Compilation))
+        {
+            insertionMethod = InsertionMethod.Add;
+            var capacity = string.Empty;
+            if (targetTypeSymbol.IsBlockingCollection(context.Compilation)
+                && TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out var detectedCapacity))
+            {
+                capacity = detectedCapacity;
+            }
+
+            stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {targetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}({capacity});");
+        }
         else if (targetTypeSymbol.IsIEnumerable()
             || targetTypeSymbol.IsList(context.Compilation)
             || targetTypeSymbol.IsIList()
