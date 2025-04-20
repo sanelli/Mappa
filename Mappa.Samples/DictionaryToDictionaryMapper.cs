@@ -14,6 +14,9 @@ namespace Mappa.Samples;
 /// <summary>
 /// Mapper using the dictionary-to-dictionary strategy.
 /// </summary>
+// TODO [#118] Test Dictionary -> IS ConcurrentDictionary.
+// TODO [#118] Test Dictionary -> IMPL ConcurrentDictionary.
+// TODO [#118] Test ConcurrentDictionary -> Dictionary.
 [Mappa]
 public sealed partial class DictionaryToDictionaryMapper
 {

@@ -12,6 +12,18 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Integration tests for the <see cref="CollectionToCollectionMapStrategy"/>.
 /// </summary>
+// TODO [#118] BlockingCollection -> List.
+// TODO [#118] List -> IS BlockingCollection.
+// TODO [#118] List -> IMPL BlockingCollection.
+// TODO [#118] ConcurrentBag -> List.
+// TODO [#118] List -> IS ConcurrentBag.
+// TODO [#118] List -> IMPL ConcurrentBag.
+// TODO [#118] IProducerConsumerCollection -> List.
+// TODO [#118] List -> IS IProducerConsumerCollection.
+// TODO [#118] List -> IMPL IProducerConsumerCollection.
+// TODO [#118] ConcurrentQueue -> List.
+// TODO [#118] List -> IS ConcurrentStack.
+// TODO [#118] List -> IMPL ConcurrentStack.
 public sealed partial class CollectionToCollectionMapStrategyIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {

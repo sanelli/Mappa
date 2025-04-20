@@ -13,6 +13,9 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Integration tests for <see cref="DictionaryToDictionaryMapStrategy"/> strategy.
 /// </summary>
+// TODO [#118] Test Dictionary -> IS ConcurrentDictionary.
+// TODO [#118] Test Dictionary -> IMPL ConcurrentDictionary.
+// TODO [#118] Test ConcurrentDictionary -> Dictionary.
 public sealed class DictionaryToDictionaryMapStrategyIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {
