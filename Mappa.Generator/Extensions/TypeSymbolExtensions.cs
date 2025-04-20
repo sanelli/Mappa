@@ -2,7 +2,6 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Frozen;
 using System.Collections.Immutable;
@@ -634,21 +633,6 @@ internal static class TypeSymbolExtensions
 
         typeArguments = [];
         return false;
-    }
-
-    /// <summary>
-    /// Gets the name of the property returning the number of items.
-    /// </summary>
-    /// <param name="typeSymbol">The type symbol.</param>
-    /// <returns> The name of the property returning the number of items.</returns>
-    internal static string GetCountProperty(this ITypeSymbol typeSymbol)
-    {
-        if (typeSymbol is IArrayTypeSymbol)
-        {
-            return nameof(Array.Length);
-        }
-
-        return nameof(ICollection.Count);
     }
 
     /// <summary>

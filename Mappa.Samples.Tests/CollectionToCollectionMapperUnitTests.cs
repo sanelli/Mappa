@@ -2,6 +2,8 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using System.Collections.Concurrent;
+
 using FluentAssertions;
 
 using Mappa.Samples.Models;
@@ -1714,6 +1716,533 @@ public sealed class CollectionToCollectionMapperUnitTests
 
         // Act
         var actual = this.mapper.MapFromIEnumerableToCustomCollectionImplementingExplicitlyISetOfIntegers(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromBlockingCollectionToList"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromBlockingCollectionToList()
+    {
+        // Arrange
+        BlockingCollection<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromBlockingCollectionToList(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIEnumerableToBlockingCollection"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIEnumerableToBlockingCollection()
+    {
+        // Arrange
+        IEnumerable<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIEnumerableToBlockingCollection(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIEnumerableToGenericCustomBlockingCollection"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIEnumerableToGenericCustomBlockingCollection()
+    {
+        // Arrange
+        IEnumerable<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIEnumerableToGenericCustomBlockingCollection(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIEnumerableToNonGenericCustomBlockingCollection"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIEnumerableToNonGenericCustomBlockingCollection()
+    {
+        // Arrange
+        IEnumerable<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIEnumerableToNonGenericCustomBlockingCollection(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromListToBlockingCollection"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromListToBlockingCollection()
+    {
+        // Arrange
+        List<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromListToBlockingCollection(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromListToGenericCustomBlockingCollection"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromListToGenericCustomBlockingCollection()
+    {
+        // Arrange
+        List<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromListToGenericCustomBlockingCollection(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromListToNonGenericCustomBlockingCollection"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromListToNonGenericCustomBlockingCollection()
+    {
+        // Arrange
+        List<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromListToNonGenericCustomBlockingCollection(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromConcurrentBagToList"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromConcurrentBagToList()
+    {
+        // Arrange
+        ConcurrentBag<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromConcurrentBagToList(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIEnumerableToConcurrentBag"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIEnumerableToConcurrentBag()
+    {
+        // Arrange
+        IEnumerable<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIEnumerableToConcurrentBag(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIEnumerableToGenericCustomConcurrentBag"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIEnumerableToGenericCustomConcurrentBag()
+    {
+        // Arrange
+        IEnumerable<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIEnumerableToGenericCustomConcurrentBag(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIEnumerableToNonGenericCustomConcurrentBag"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIEnumerableToNonGenericCustomConcurrentBag()
+    {
+        // Arrange
+        IEnumerable<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIEnumerableToNonGenericCustomConcurrentBag(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromListToConcurrentBag"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromListToConcurrentBag()
+    {
+        // Arrange
+        List<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromListToConcurrentBag(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromListToGenericCustomConcurrentBag"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromListToGenericCustomConcurrentBag()
+    {
+        // Arrange
+        List<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromListToGenericCustomConcurrentBag(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromListToNonGenericCustomConcurrentBag"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromListToNonGenericCustomConcurrentBag()
+    {
+        // Arrange
+        List<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromListToNonGenericCustomConcurrentBag(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromConcurrentQueueToList"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromConcurrentQueueToList()
+    {
+        // Arrange
+        ConcurrentQueue<CountingValues> input = new([CountingValues.One, CountingValues.Three]);
+
+        // Act
+        var actual = this.mapper.MapFromConcurrentQueueToList(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIEnumerableToConcurrentQueue"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIEnumerableToConcurrentQueue()
+    {
+        // Arrange
+        IEnumerable<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIEnumerableToConcurrentQueue(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIEnumerableToGenericCustomConcurrentQueue"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIEnumerableToGenericCustomConcurrentQueue()
+    {
+        // Arrange
+        IEnumerable<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIEnumerableToGenericCustomConcurrentQueue(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIEnumerableToNonGenericCustomConcurrentQueue"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIEnumerableToNonGenericCustomConcurrentQueue()
+    {
+        // Arrange
+        IEnumerable<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIEnumerableToNonGenericCustomConcurrentQueue(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromListToConcurrentQueue"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromListToConcurrentQueue()
+    {
+        // Arrange
+        List<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromListToConcurrentQueue(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromListToGenericCustomConcurrentQueue"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromListToGenericCustomConcurrentQueue()
+    {
+        // Arrange
+        List<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromListToGenericCustomConcurrentQueue(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromListToNonGenericCustomConcurrentQueue"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromListToNonGenericCustomConcurrentQueue()
+    {
+        // Arrange
+        List<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromListToNonGenericCustomConcurrentQueue(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromConcurrentStackToList"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromConcurrentStackToList()
+    {
+        // Arrange
+        ConcurrentStack<CountingValues> input = new([CountingValues.One, CountingValues.Three]);
+
+        // Act
+        var actual = this.mapper.MapFromConcurrentStackToList(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIEnumerableToConcurrentStack"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIEnumerableToConcurrentStack()
+    {
+        // Arrange
+        IEnumerable<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIEnumerableToConcurrentStack(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIEnumerableToGenericCustomConcurrentStack"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIEnumerableToGenericCustomConcurrentStack()
+    {
+        // Arrange
+        IEnumerable<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIEnumerableToGenericCustomConcurrentStack(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIEnumerableToNonGenericCustomConcurrentStack"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIEnumerableToNonGenericCustomConcurrentStack()
+    {
+        // Arrange
+        IEnumerable<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIEnumerableToNonGenericCustomConcurrentStack(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromListToConcurrentStack"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromListToConcurrentStack()
+    {
+        // Arrange
+        List<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromListToConcurrentStack(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromListToGenericCustomConcurrentStack"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromListToGenericCustomConcurrentStack()
+    {
+        // Arrange
+        List<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromListToGenericCustomConcurrentStack(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromListToNonGenericCustomConcurrentStack"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromListToNonGenericCustomConcurrentStack()
+    {
+        // Arrange
+        List<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromListToNonGenericCustomConcurrentStack(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIProducerConsumerCollectionToList"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIProducerConsumerCollectionToList()
+    {
+        // Arrange
+        IProducerConsumerCollection<CountingValues> input = new ConcurrentBag<CountingValues>([CountingValues.One, CountingValues.Three]);
+
+        // Act
+        var actual = this.mapper.MapFromIProducerConsumerCollectionToList(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromIEnumerableToIProducerConsumerCollection"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromIEnumerableToIProducerConsumerCollection()
+    {
+        // Arrange
+        IEnumerable<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromIEnumerableToIProducerConsumerCollection(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo([0, 2]);
+    }
+
+    /// <summary>
+    /// Unit test <see cref="CollectionToCollectionMapper.MapFromListToIProducerConsumerCollection"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapFromListToIProducerConsumerCollection()
+    {
+        // Arrange
+        List<CountingValues> input = [CountingValues.One, CountingValues.Three];
+
+        // Act
+        var actual = this.mapper.MapFromListToIProducerConsumerCollection(input);
 
         // Assert
         actual.Should().BeEquivalentTo([0, 2]);

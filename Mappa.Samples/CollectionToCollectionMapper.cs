@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using System.Collections.Concurrent;
 using System.Collections.Frozen;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
@@ -14,37 +15,6 @@ namespace Mappa.Samples;
 /// <summary>
 /// Mapper showing mapping across different collection types.
 /// </summary>
-// TODO [#118] BlockingCollection -> List.
-// TODO [#118] IEnumerable -> IS BlockingCollection.
-// TODO [#118] IEnumerable -> IMPLEMENT BlockingCollection with generic.
-// TODO [#118] IEnumerable -> IMPLEMENT BlockingCollection without generic.
-// TODO [#118] List -> IS BlockingCollection.
-// TODO [#118] List -> IMPLEMENT BlockingCollection with generic.
-// TODO [#118] List -> IMPLEMENT BlockingCollection without generic.
-// TODO [#118] ConcurrentBag -> List.
-// TODO [#118] IEnumerable -> IS ConcurrentBag.
-// TODO [#118] IEnumerable -> IMPLEMENT ConcurrentBag with generics.
-// TODO [#118] IEnumerable -> IMPLEMENT ConcurrentBag without generic.
-// TODO [#118] List -> IS ConcurrentBag.
-// TODO [#118] List -> IMPLEMENT ConcurrentBag with generics.
-// TODO [#118] List -> IMPLEMENT ConcurrentBag without generic.
-// TODO [#118] ConcurrentQueue -> List.
-// TODO [#118] IEnumerable -> IS ConcurrentQueue.
-// TODO [#118] IEnumerable -> IMPLEMENT ConcurrentQueue with generic.
-// TODO [#118] IEnumerable -> IMPLEMENT ConcurrentQueue without generic.
-// TODO [#118] List -> IS ConcurrentQueue.
-// TODO [#118] List -> IMPLEMENT ConcurrentQueue with generic.
-// TODO [#118] List -> IMPLEMENT ConcurrentQueue without generic.
-// TODO [#118] ConcurrentStack -> List.
-// TODO [#118] IEnumerable -> IS ConcurrentStack.
-// TODO [#118] IEnumerable -> IMPLEMENT ConcurrentStack with generic.
-// TODO [#118] IEnumerable -> IMPLEMENT ConcurrentStack without generic.
-// TODO [#118] List -> IS ConcurrentStack.
-// TODO [#118] List -> IMPLEMENT ConcurrentStack with generic.
-// TODO [#118] List -> IMPLEMENT ConcurrentStack without generic.
-// TODO [#118] IProducerConsumerCollection -> List.
-// TODO [#118] IEnumerable -> IS IProducerConsumerCollection.
-// TODO [#118] List -> IS IProducerConsumerCollection.
 [Mappa]
 public sealed partial class CollectionToCollectionMapper
 {
@@ -847,4 +817,252 @@ public sealed partial class CollectionToCollectionMapper
     /// <param name="input">The input collection.</param>
     /// <returns>The output collection.</returns>
     public partial CustomCollectionImplementingExplicitlyISetOfIntegers MapFromIEnumerableToCustomCollectionImplementingExplicitlyISetOfIntegers(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map a <see cref="BlockingCollection{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="List{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial List<int> MapFromBlockingCollectionToList(BlockingCollection<CountingValues> input);
+
+    /// <summary>
+    /// Map a <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="BlockingCollection{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial BlockingCollection<int> MapFromIEnumerableToBlockingCollection(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map a <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="CustomBlockingCollection{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial CustomBlockingCollection<int> MapFromIEnumerableToGenericCustomBlockingCollection(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map a <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="CustomBlockingCollection"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial CustomBlockingCollection MapFromIEnumerableToNonGenericCustomBlockingCollection(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map a <see cref="List{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="BlockingCollection{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial BlockingCollection<int> MapFromListToBlockingCollection(List<CountingValues> input);
+
+    /// <summary>
+    /// Map a <see cref="List{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="CustomBlockingCollection{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial CustomBlockingCollection<int> MapFromListToGenericCustomBlockingCollection(List<CountingValues> input);
+
+    /// <summary>
+    /// Map a <see cref="List{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="CustomBlockingCollection"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial CustomBlockingCollection MapFromListToNonGenericCustomBlockingCollection(List<CountingValues> input);
+
+    /// <summary>
+    /// Map a <see cref="ConcurrentBag{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="List{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial List<int> MapFromConcurrentBagToList(ConcurrentBag<CountingValues> input);
+
+    /// <summary>
+    /// Map a <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="ConcurrentBag{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial ConcurrentBag<int> MapFromIEnumerableToConcurrentBag(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map a <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="CustomConcurrentBag{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial CustomConcurrentBag<int> MapFromIEnumerableToGenericCustomConcurrentBag(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map a <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="CustomConcurrentBag"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial CustomConcurrentBag MapFromIEnumerableToNonGenericCustomConcurrentBag(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map a <see cref="List{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="ConcurrentBag{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial ConcurrentBag<int> MapFromListToConcurrentBag(List<CountingValues> input);
+
+    /// <summary>
+    /// Map a <see cref="List{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="CustomConcurrentBag{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial CustomConcurrentBag<int> MapFromListToGenericCustomConcurrentBag(List<CountingValues> input);
+
+    /// <summary>
+    /// Map a <see cref="List{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="CustomConcurrentBag"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial CustomConcurrentBag MapFromListToNonGenericCustomConcurrentBag(List<CountingValues> input);
+
+    /// <summary>
+    /// Map a <see cref="ConcurrentQueue{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="List{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial List<int> MapFromConcurrentQueueToList(ConcurrentQueue<CountingValues> input);
+
+    /// <summary>
+    /// Map a <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="ConcurrentQueue{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial ConcurrentQueue<int> MapFromIEnumerableToConcurrentQueue(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map a <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="CustomConcurrentQueue{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial CustomConcurrentQueue<int> MapFromIEnumerableToGenericCustomConcurrentQueue(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map a <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="CustomConcurrentQueue"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial CustomConcurrentQueue MapFromIEnumerableToNonGenericCustomConcurrentQueue(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map a <see cref="List{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="ConcurrentQueue{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial ConcurrentQueue<int> MapFromListToConcurrentQueue(List<CountingValues> input);
+
+    /// <summary>
+    /// Map a <see cref="List{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="CustomConcurrentQueue{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial CustomConcurrentQueue<int> MapFromListToGenericCustomConcurrentQueue(List<CountingValues> input);
+
+    /// <summary>
+    /// Map a <see cref="List{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="CustomConcurrentQueue"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial CustomConcurrentQueue MapFromListToNonGenericCustomConcurrentQueue(List<CountingValues> input);
+
+    /// <summary>
+    /// Map a <see cref="ConcurrentStack{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="List{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial List<int> MapFromConcurrentStackToList(ConcurrentStack<CountingValues> input);
+
+    /// <summary>
+    /// Map a <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="ConcurrentStack{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial ConcurrentStack<int> MapFromIEnumerableToConcurrentStack(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map a <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="CustomConcurrentStack{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial CustomConcurrentStack<int> MapFromIEnumerableToGenericCustomConcurrentStack(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map a <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="CustomConcurrentStack"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial CustomConcurrentStack MapFromIEnumerableToNonGenericCustomConcurrentStack(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map a <see cref="List{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="ConcurrentStack{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial ConcurrentStack<int> MapFromListToConcurrentStack(List<CountingValues> input);
+
+    /// <summary>
+    /// Map a <see cref="List{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="CustomConcurrentStack{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial CustomConcurrentStack<int> MapFromListToGenericCustomConcurrentStack(List<CountingValues> input);
+
+    /// <summary>
+    /// Map a <see cref="List{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="CustomConcurrentStack"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial CustomConcurrentStack MapFromListToNonGenericCustomConcurrentStack(List<CountingValues> input);
+
+    /// <summary>
+    /// Map a <see cref="IProducerConsumerCollection{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="List{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial List<int> MapFromIProducerConsumerCollectionToList(IProducerConsumerCollection<CountingValues> input);
+
+    /// <summary>
+    /// Map a <see cref="IEnumerable{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="IProducerConsumerCollection{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial IProducerConsumerCollection<int> MapFromIEnumerableToIProducerConsumerCollection(IEnumerable<CountingValues> input);
+
+    /// <summary>
+    /// Map a <see cref="List{T}"/> of <see cref="CountingValues"/>
+    /// to a <see cref="IProducerConsumerCollection{T}"/> of <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input collection.</param>
+    /// <returns>The output collection.</returns>
+    public partial IProducerConsumerCollection<int> MapFromListToIProducerConsumerCollection(List<CountingValues> input);
 }
