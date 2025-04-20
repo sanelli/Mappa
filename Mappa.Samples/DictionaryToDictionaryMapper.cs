@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using System.Collections.Concurrent;
 using System.Collections.Frozen;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
@@ -152,4 +153,25 @@ public sealed partial class DictionaryToDictionaryMapper
     /// <param name="input">The input dictionary.</param>
     /// <returns>The mapped dictionary.</returns>
     public partial CustomDictionaryWithNonGenericAndExplicitImplementation MapDictionaryToCustomDictionaryWithNonGenericAndExplicitImplementation(Dictionary<int, CountingValues> input);
+
+    /// <summary>
+    /// Map a <see cref="Dictionary{TKey,TValue}"/> to <see cref="ConcurrentDictionary{TKey,TValue}"/>.
+    /// </summary>
+    /// <param name="input">The input dictionary.</param>
+    /// <returns>The mapped dictionary.</returns>
+    public partial ConcurrentDictionary<string, string> MapDictionaryToConcurrentDictionary(Dictionary<int, CountingValues> input);
+
+    /// <summary>
+    /// Map a <see cref="ConcurrentDictionary{TKey,TValue}"/> to <see cref="Dictionary{TKey,TValue}"/>.
+    /// </summary>
+    /// <param name="input">The input dictionary.</param>
+    /// <returns>The mapped dictionary.</returns>
+    public partial Dictionary<string, string> MapConcurrentDictionaryToDictionary(ConcurrentDictionary<int, CountingValues> input);
+
+    /// <summary>
+    /// Map a <see cref="Dictionary{TKey,TValue}"/> to <see cref="CustomConcurrentDictionary{TKey,TValue}"/>.
+    /// </summary>
+    /// <param name="input">The input dictionary.</param>
+    /// <returns>The mapped dictionary.</returns>
+    public partial CustomConcurrentDictionary<string, string> MapDictionaryToCustomConcurrentDictionary(Dictionary<int, CountingValues> input);
 }

@@ -2,6 +2,8 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using System.Collections.Concurrent;
+
 using FluentAssertions;
 
 using Mappa.Samples.Models;
@@ -521,6 +523,87 @@ public sealed class DictionaryToDictionaryMapperUnitTests
 
         // Act
         var actual = this.mapper.MapDictionaryToCustomDictionaryWithNonGenericAndExplicitImplementation(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo(new Dictionary<string, string>
+        {
+            { "1", "One" },
+            { "2", "Two" },
+            { "3", "Three" },
+        });
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="DictionaryToDictionaryMapper.MapDictionaryToConcurrentDictionary"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDictionaryToConcurrentDictionary()
+    {
+        // Arrange
+        Dictionary<int, CountingValues> input = new()
+        {
+            { 1, CountingValues.One },
+            { 2, CountingValues.Two },
+            { 3, CountingValues.Three },
+        };
+
+        // Act
+        var actual = this.mapper.MapDictionaryToConcurrentDictionary(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo(new Dictionary<string, string>
+        {
+            { "1", "One" },
+            { "2", "Two" },
+            { "3", "Three" },
+        });
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="DictionaryToDictionaryMapper.MapConcurrentDictionaryToDictionary"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapConcurrentDictionaryToDictionary()
+    {
+        // Arrange
+        ConcurrentDictionary<int, CountingValues> input = new()
+        {
+            [1] = CountingValues.One,
+            [2] = CountingValues.Two,
+            [3] = CountingValues.Three,
+        };
+
+        // Act
+        var actual = this.mapper.MapConcurrentDictionaryToDictionary(input);
+
+        // Assert
+        actual.Should().BeEquivalentTo(new Dictionary<string, string>
+        {
+            { "1", "One" },
+            { "2", "Two" },
+            { "3", "Three" },
+        });
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="DictionaryToDictionaryMapper.MapDictionaryToCustomConcurrentDictionary"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDictionaryToCustomConcurrentDictionary()
+    {
+        // Arrange
+        Dictionary<int, CountingValues> input = new()
+        {
+            { 1, CountingValues.One },
+            { 2, CountingValues.Two },
+            { 3, CountingValues.Three },
+        };
+
+        // Act
+        var actual = this.mapper.MapDictionaryToCustomConcurrentDictionary(input);
 
         // Assert
         actual.Should().BeEquivalentTo(new Dictionary<string, string>
