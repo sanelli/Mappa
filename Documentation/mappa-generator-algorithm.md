@@ -73,8 +73,8 @@ the source generator attempt to identify a mapping from `TSource` to `TTarget` b
 7. <u>Container strategy</u>:
     - _When_:
         - `TSource` and `TTarget` are both either dictionaries or collections,
-        - For dictionaries mappings exist from source key type to the target key type and from the source value type to the target value type,
-        - For collections a mapping exist from source element type to the target element type,
+        - For dictionaries, mappings exist from source key type to the target key type and from the source value type to the target value type,
+        - For collections, a mapping exists from the source element type to the target element type,
         - `TSource` dictionary types accepted:
             - any type implementing `IDictionary<TKey, TValue>`;
             - any type implementing `IReadOnlyDictionary<TKey, TValue>`;
@@ -82,19 +82,20 @@ the source generator attempt to identify a mapping from `TSource` to `TTarget` b
         - `TTarget` dictionary types accepted:
             - any type implementing `IDictionary<TKey, TValue>` that has a constructor with zero arguments;
             - the following interfaces: `IDictionary<TKey, TValue>`, `IReadOnlyDictionary<TKey, TValue>`, `IImmutableDictionary<TKey, TValue>`;
-            - the following classes: `ImmutableDictionary<TKey, TValue>`, `ImmutableSortedDictionary<TKey, TValue>`, `FrozenDictionary<TKey, TValue>`
+            - the following classes: `ImmutableDictionary<TKey, TValue>`, `ImmutableSortedDictionary<TKey, TValue>`, `FrozenDictionary<TKey, TValue>`, `ConcurrentDictionary<TKey, TValue>`;
         - `TSource` collection types accepted: any type implementing `IEnumerable<T>`, arrays, `Span<T>`, `ReadOnlySpan<T>`, `Memory<T>` and `ReadOnlyMemory<T>`;
         - `TTarget` collection types accepted:
             - any type implementing `ICollection<T>` or `ISet<T>` that has a constructor with zero arguments;
             - any type derived from `Stack<T>` or `Queue<T>` that has a constructor with zero arguments;
-            - the following interfaces: `IEnumerable<T>`, `ICollection<T>`, `IReadOnlyCollection<T>`, `ISet<T>`, `IList<T>`, `IReadOnlyList<T>`, `IReadOnlySet<T>`, `IImmutableSet<T>`, `IImmutableList<T>`, `IImmutableQueue<T>`, `IImmutableStack<T>`;
-            - the following classes: arrays, `List<T>`, `ReadOnlyCollection<T>`, `Span<T>`, `ReadOnlySpan<T>`, `Memory<T>`, `ReadOnlyMemory<T>`, `Stack<T>`, `Queue<T>`, `ReadOnlySet<T>`, `HashSet<T>`, `SortedSet<T>`, `ReadOnlyColletion<T>`, `FrozenSet<T>`, `ImmutableHashSet<T>`, `ImmutableSortedSet<T>`, `ImmutableArray<T>`, `ImmutableList<T>`, `ImmutableQueue<T>`, `ImmutableStack<T>`;
+            - the following interfaces: `IEnumerable<T>`, `ICollection<T>`, `IReadOnlyCollection<T>`, `ISet<T>`, `IList<T>`, `IReadOnlyList<T>`, `IReadOnlySet<T>`, `IImmutableSet<T>`, `IImmutableList<T>`, `IImmutableQueue<T>`, `IImmutableStack<T>`, `IProducerConsumerCollection<T>`;
+            - the following classes: arrays, `List<T>`, `ReadOnlyCollection<T>`, `Span<T>`, `ReadOnlySpan<T>`, `Memory<T>`, `ReadOnlyMemory<T>`, `Stack<T>`, `Queue<T>`, `ReadOnlySet<T>`, `HashSet<T>`, `SortedSet<T>`, `ReadOnlyColletion<T>`, `FrozenSet<T>`, `ImmutableHashSet<T>`, `ImmutableSortedSet<T>`, `ImmutableArray<T>`, `ImmutableList<T>`, `ImmutableQueue<T>`, `ImmutableStack<T>`, `BlockingColletion<T>`, `ConcurrentBag<T>`, `ConcurrentQueue<T>`, `ConcurrentStack<T>`;
     - _What_:
         - A `for` loop or `foreach` loop is added to the code;
-        - In the loop each element from the source collection is mapped in an element of the target collection and then added to the target collection;
+        - In the loop, each element from the source collection is mapped in an element of the target collection and then added to the target collection;
     - _Notes_:
         - When possible for some types (e.g. `List<T>`) the usage of the constructor accepting capacity is preferred to reduce the number of allocations;
         - Explicit interface implementation is supported;
+        - Type with an empty constructor are supported if they are derived from any of the supported interfaces or classes;
 8. <u>Tuples strategy</u>:
     - _When_:
         - `TSource` and `TTarget` are both tuple types,
