@@ -350,6 +350,27 @@ internal sealed class ExpressionSyntaxAssertions
     }
 
     /// <summary>
+    /// Assert that the expression is a postfix unary expression syntax.
+    /// </summary>
+    /// <param name="operator">The operator token.</param>
+    /// <param name="operandAssertions">The operand expression assertion.</param>
+    /// <returns>The assertions.</returns>
+    public ExpressionSyntaxAssertions BePostfixUnaryExpressionSyntax(
+        SyntaxKind @operator,
+        Action<ExpressionSyntaxAssertions> operandAssertions)
+    {
+        ArgumentNullException.ThrowIfNull(operandAssertions);
+
+        this.Subject.Should().BeOfType<PostfixUnaryExpressionSyntax>();
+        var postfixUnaryExpressionSyntax = (PostfixUnaryExpressionSyntax)this.Subject;
+
+        postfixUnaryExpressionSyntax.OperatorToken.Kind().Should().Be(@operator);
+        operandAssertions(new ExpressionSyntaxAssertions(postfixUnaryExpressionSyntax.Operand, this.semanticModel, this.compilation));
+
+        return this;
+    }
+
+    /// <summary>
     /// Assert that the expression is an object creation expression.
     /// </summary>
     /// <param name="type">The type being created.</param>

@@ -1,6 +1,7 @@
 // <copyright file="MappaBuilderContext.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
+using Mappa.Generator.Exceptions;
 using Mappa.Generator.Helpers;
 
 using Microsoft.CodeAnalysis;
@@ -14,6 +15,7 @@ internal sealed class MappaBuilderContext
 {
     private readonly StackSetting<string> compositeTypeSourceName = new(string.Empty);
     private readonly StackSetting<string> compositeTypeTargetName = new(string.Empty);
+    private readonly StackSetting<MapMethod> mapMethodBeingBuilt = new(null!);
     private uint temporaryCounter;
 
     /// <summary>
@@ -60,8 +62,23 @@ internal sealed class MappaBuilderContext
         => this.compositeTypeTargetName.Apply(sourceName);
 
     /// <summary>
+    /// Select which method is being built.
+    /// </summary>
+    /// <param name="mapMethod">The map method.</param>
+    /// <returns>Disposable value used to remove the method from the stack.</returns>
+    internal IDisposable PushMapMethod(MapMethod mapMethod)
+        => this.mapMethodBeingBuilt.Apply(mapMethod);
+
+    /// <summary>
     /// Gets the current value of the target pushed.
     /// </summary>
     /// <returns>The current source.</returns>
     internal string GetCompositeTypeTargetName() => this.compositeTypeTargetName.CurrentValue;
+
+    /// <summary>
+    /// Gets the current map method.
+    /// </summary>
+    /// <returns>The current map method.</returns>
+    internal MapMethod GetMapMethod() => this.mapMethodBeingBuilt.CurrentValue
+        ?? throw new MappaGeneratorException("Cannot obtain the map method.");
 }
