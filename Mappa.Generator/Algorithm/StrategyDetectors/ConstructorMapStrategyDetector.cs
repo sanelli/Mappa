@@ -68,7 +68,7 @@ internal sealed class ConstructorMapStrategyDetector
             mapStrategy = emptyConstructorStrategy;
         }
 
-        // 03. If there is no empty constructor try identifying the best one -> InvokeConstructorMapStrategy( IMapStrategy[] parameters, IMapStrategy[] initProperties )
+        // 03. If there is no empty constructor then try identifying the best one -> InvokeConstructorMapStrategy( IMapStrategy[] parameters, IMapStrategy[] initProperties )
         else if (this.CanInvokeConstructorWithParameters(out var nonEmptyConstructorStrategy))
         {
             mapStrategy = nonEmptyConstructorStrategy;
@@ -359,8 +359,8 @@ internal sealed class ConstructorMapStrategyDetector
                 .Where(property => !property.IsIndexer)
                 .ToArray();
 
-            // If no target properties exist there is no point in applying this strategy
-            // this way we can avoid to attempt using this strategy for basic types
+            // If no target properties exist, then there is no point in applying this strategy
+            // this way we can avoid using this strategy for basic types
             // like string, int, etc...
             if (targetProperties.Length > 0)
             {
@@ -508,20 +508,32 @@ internal sealed class ConstructorMapStrategyDetector
                 {
                     // Filter out properties that have no mapping.
                     // TODO [#20] Allow to prevent skipping some non required parameters.
-                    initializerStrategies = initializerStrategies
+                    var propertiesWithStrategies = initializerStrategies
                         .Where(propertyStrategy => propertyStrategy.PropertyStrategy is not NoMapStrategy)
                         .ToArray();
 
-                    // If no property can be mapped then we should not be applying this.
-                    if (initializerStrategies.Length > 0)
+                    var propertiesWithoutStrategy = initializerStrategies
+                        .Where(propertyStrategy => propertyStrategy.PropertyStrategy is NoMapStrategy)
+                        .ToArray();
+
+                    // If no property can be mapped, then we should not be applying this.
+                    if (propertiesWithStrategies.Length > 0)
                     {
-                        // TODO [#21] Allow to return an error if some source properties are not mapped.
+                        // Report a warning for every property that cannot be mapped.
+                        foreach (var propertyWithoutStrategy in propertiesWithoutStrategy)
+                        {
+                            this.context.ReportDiagnostic(MappaDiagnostics.CannotMapNonRequiredProperty(
+                                this.context.GetRootMapMethod().MethodDeclarationSyntax,
+                                propertyWithoutStrategy.TargetType,
+                                propertyWithoutStrategy.TargetProperty));
+                        }
+
                         strategy = new InvokeConstructorMapStrategy(
                             this.context.TargetType,
                             this.context.SourceType,
                             constructors.Single(),
                             [],
-                            initializerStrategies);
+                            propertiesWithStrategies);
                     }
                     else
                     {

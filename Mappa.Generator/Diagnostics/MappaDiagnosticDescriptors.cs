@@ -30,6 +30,7 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? propertySetterIsNotAccessible;
     private static DiagnosticDescriptor? tooManyUsePropertyAttributesForTheSameTargetProperty;
     private static DiagnosticDescriptor? dependencyDoesNotProvideAnyViableMethod;
+    private static DiagnosticDescriptor? cannotMapNonRequiredProperty;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -158,6 +159,14 @@ internal static class MappaDiagnosticDescriptors
         => dependencyDoesNotProvideAnyViableMethod ??= BuildWarning(
             MappaDiagnosticsKind.DependencyDoesNotProvideAnyViableMethod,
             DiagnosticsResources.DependencyDoesNotProvideAnyViableMethod);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.CannotMapNonRequiredProperty"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor CannotMapNonRequiredProperty
+        => cannotMapNonRequiredProperty ??= BuildWarning(
+            MappaDiagnosticsKind.CannotMapNonRequiredProperty,
+            DiagnosticsResources.CannotMapNonRequiredProperty);
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(

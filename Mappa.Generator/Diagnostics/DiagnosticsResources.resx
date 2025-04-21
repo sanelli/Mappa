@@ -66,4 +66,7 @@
     <data name="DependencyDoesNotProvideAnyViableMethod" xml:space="preserve">
         <value>Dependency '{0}' does not provide any method that could be used for mapping.</value>
     </data>
+    <data name="CannotMapNonRequiredProperty" xml:space="preserve">
+        <value>Cannot find a suitable mappin for property '{0}.{1}'.</value>
+    </data>
 </root>

@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Tests.Abstractions;
 using Mappa.Generator.Tests.Assertions;
 using Mappa.Generator.Tests.Assertions.Extensions;
@@ -1827,7 +1828,8 @@ public sealed class OptionalStrategyIntegrationTests
 
         // Assert
         generatedResults.Should()
-            .NotHaveDiagnostics()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.CannotMapNonRequiredProperty, "Mappa.Generator.Tests.UnitTests.SourceCode.Target", "HasPropertyA")
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .NotBeNull().And
@@ -2283,7 +2285,8 @@ public sealed class OptionalStrategyIntegrationTests
 
         // Assert
         generatedResults.Should()
-            .NotHaveDiagnostics()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.CannotMapNonRequiredProperty, "Mappa.Generator.Tests.UnitTests.SourceCode.Target", "HasPropertyA")
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .NotBeNull().And

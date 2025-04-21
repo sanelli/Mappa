@@ -241,7 +241,7 @@ internal static class MappaDiagnostics
     /// <summary>
     /// Diagnostic to report that a dependency (identified via <see cref="MappaDependencyAttribute"/>
     /// or <see cref="MappaStaticDependencyAttribute"/>) does not provide any viable method
-    /// that could be used for mapping..
+    /// that could be used for mapping.
     /// </summary>
     /// <param name="syntaxNode">The syntax element.</param>
     /// <param name="dependency">The dependency.</param>
@@ -253,4 +253,21 @@ internal static class MappaDiagnostics
             MappaDiagnosticDescriptors.DependencyDoesNotProvideAnyViableMethod,
             syntaxNode?.GetLocation(),
             dependency);
+
+    /// <summary>
+    /// Diagnostic to report that a non-required property cannot be mapped.
+    /// </summary>
+    /// <param name="syntaxNode">The syntax element.</param>
+    /// <param name="parentType">The type the property lives on.</param>
+    /// <param name="property">The property that cannot be mapped.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic CannotMapNonRequiredProperty(
+        SyntaxNode? syntaxNode,
+        ITypeSymbol parentType,
+        IPropertySymbol property)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.CannotMapNonRequiredProperty,
+            syntaxNode?.GetLocation(),
+            parentType.ToDisplayString(),
+            property.Name);
 }

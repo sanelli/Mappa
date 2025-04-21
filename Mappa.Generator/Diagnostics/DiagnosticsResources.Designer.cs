@@ -140,5 +140,11 @@ namespace Mappa.Generator.Diagnostics {
                 return ResourceManager.GetString("DependencyDoesNotProvideAnyViableMethod", resourceCulture);
             }
         }
+        
+        internal static string CannotMapNonRequiredProperty {
+            get {
+                return ResourceManager.GetString("CannotMapNonRequiredProperty", resourceCulture);
+            }
+        }
     }
 }

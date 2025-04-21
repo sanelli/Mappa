@@ -1763,7 +1763,7 @@ public sealed class MappaInvokeMethodAttributeTests
     /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
-    public async Task MapGenerateAWarninsWhenUsingInvokeMethodAttributeButTargetPropertyIsPrivate()
+    public async Task MapGenerateWarningsWhenUsingInvokeMethodAttributeButTargetPropertyIsPrivate()
     {
         // Arrange
         const string sourceCode = """
@@ -1810,8 +1810,9 @@ public sealed class MappaInvokeMethodAttributeTests
 
         // Assert
         generatedResults.Should()
-            .HaveDiagnostics(1)
-            .HaveOnlyWarnings("MP00014")
+            .HaveDiagnostics(2)
+            .HaveOnlyWarnings("MP00014", "MP00017")
+            .HaveDiagnostic(MappaDiagnosticDescriptors.CannotMapNonRequiredProperty, "Mappa.Generator.Tests.UnitTests.SourceCode.Target", "PropertyB")
             .HaveDiagnostic(MappaDiagnosticDescriptors.PropertySetterIsNotAccessible, "Mappa.Generator.Tests.UnitTests.SourceCode.Target.PropertyB")
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()

@@ -59,4 +59,7 @@
     <data name="DependencyDoesNotProvideAnyViableMethod" xml:space="preserve">
         <value>La dipendenza '{0}' non fornisce nessun metodo che potrebbe essere utilizzato come mapping.</value>
     </data>
+    <data name="CannotMapNonRequiredProperty" xml:space="preserve">
+        <value>Non è possibile identifier un mapping per la propertietà '{0}.{1}'.</value>
+    </data>
 </root>
