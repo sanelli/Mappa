@@ -6,6 +6,8 @@ using Mappa.Generator.Extensions;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
+using Microsoft.CodeAnalysis;
+
 namespace Mappa.Generator.Builders.Strategies;
 
 /// <summary>
@@ -80,8 +82,21 @@ internal sealed class NullableStrategyBuilder
         stringBuilder.AppendLine("else");
         using (stringBuilder.CurlyBracesBlock())
         {
+            // If target nullability is None, but we are working in a nullable-enabled context
+            // and the target type is a reference type, then we need to use <c>null!</c> and not just <c>null</c>
+            // to avoid the CS8600 warning.
+            var @suppressNullableWarningNull = string.Empty;
+            if (context.GetMapMethod().NullableEnabled && this.strategy.TargetType is
+                {
+                    IsReferenceType: true,
+                    NullableAnnotation: NullableAnnotation.None,
+                })
+            {
+                suppressNullableWarningNull = "!";
+            }
+
             stringBuilder.AppendLine(this.strategy.TargetType.IsNullable()
-                ? $"{targetTemporary} = ({this.strategy.TargetType.ToDisplayString()}) null;"
+                ? $"{targetTemporary} = ({this.strategy.TargetType.ToDisplayString()}) null{suppressNullableWarningNull};"
                 : $"throw new System.NullReferenceException(\"\\\"{originalSourceTemporary}\\\" is null.\");");
         }
 
