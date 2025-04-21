@@ -355,7 +355,6 @@ internal sealed class ConstructorMapStrategyDetector
             var targetProperties = allTargetProperties
 
                 // Ignore indexer properties.
-                // Ignore properties without a setter.
                 .Where(property => !property.IsIndexer)
                 .ToArray();
 
@@ -520,12 +519,22 @@ internal sealed class ConstructorMapStrategyDetector
                     if (propertiesWithStrategies.Length > 0)
                     {
                         // Report a warning for every property that cannot be mapped.
-                        foreach (var propertyWithoutStrategy in propertiesWithoutStrategy)
+                        foreach (var propertyWithoutStrategy in propertiesWithoutStrategy.Select(propertyStrategy => propertyStrategy.TargetProperty))
                         {
-                            this.context.ReportDiagnostic(MappaDiagnostics.CannotMapNonRequiredProperty(
-                                this.context.GetRootMapMethod().MethodDeclarationSyntax,
-                                propertyWithoutStrategy.TargetType,
-                                propertyWithoutStrategy.TargetProperty));
+                            // Check if targets a collections that could be filled even without a getter
+                            // TODO [#110] Support more types.
+                            var targetCollections = propertyWithoutStrategy.Type.IsOrImplementIDictionary(this.compilation)
+                                                     || propertyWithoutStrategy.Type.IsOrImplementICollection();
+                            var hasSetter = propertyWithoutStrategy.SetMethod is not null && propertyWithoutStrategy.IsSetterAccessible(this.compilation, this.context.GetRootMapMethod());
+
+                            if (hasSetter || targetCollections)
+                            {
+                                // Report diagnostics
+                                this.context.ReportDiagnostic(MappaDiagnostics.CannotMapNonRequiredProperty(
+                                    this.context.GetRootMapMethod().MethodDeclarationSyntax,
+                                    this.context.TargetType,
+                                    propertyWithoutStrategy));
+                            }
                         }
 
                         strategy = new InvokeConstructorMapStrategy(

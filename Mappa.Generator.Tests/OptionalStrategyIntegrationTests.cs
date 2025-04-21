@@ -1828,8 +1828,7 @@ public sealed class OptionalStrategyIntegrationTests
 
         // Assert
         generatedResults.Should()
-            .HaveDiagnostics(1)
-            .HaveDiagnostic(MappaDiagnosticDescriptors.CannotMapNonRequiredProperty, "Mappa.Generator.Tests.UnitTests.SourceCode.Target", "HasPropertyA")
+            .NotHaveDiagnostics()
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .NotBeNull().And
@@ -2285,8 +2284,7 @@ public sealed class OptionalStrategyIntegrationTests
 
         // Assert
         generatedResults.Should()
-            .HaveDiagnostics(1)
-            .HaveDiagnostic(MappaDiagnosticDescriptors.CannotMapNonRequiredProperty, "Mappa.Generator.Tests.UnitTests.SourceCode.Target", "HasPropertyA")
+            .NotHaveDiagnostics()
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .NotBeNull().And

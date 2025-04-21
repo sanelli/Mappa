@@ -551,8 +551,7 @@ public sealed class InvokeConstructorMapStrategyIntegrationTests
 
         // Assert
         generatedResults.Should()
-            .HaveDiagnostics(1)
-            .HaveDiagnostic(MappaDiagnosticDescriptors.CannotMapNonRequiredProperty, "Mappa.Generator.Tests.UnitTests.SourceCode.Target", "PropertyB")
+            .NotHaveDiagnostics()
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .NotBeNull().And
@@ -800,6 +799,10 @@ public sealed class InvokeConstructorMapStrategyIntegrationTests
                                       public string PropertyA { get; set; }
                                       public long PropertyB { get; set; }
                                       public System.DateTime PropertyC { get; set; }
+                                      public System.Collections.Generic.List<float> PropertyD { get; }
+                                      public System.Collections.Generic.Dictionary<string, float> PropertyE { get; }
+                                      public string PropertyF { get; private set; } /* No warning */
+                                      public string PropertyG { get; } /* No warning */
                                   }
 
                                   [Mappa]
@@ -815,9 +818,11 @@ public sealed class InvokeConstructorMapStrategyIntegrationTests
 
         // Assert
         generatedResults.Should()
-            .HaveDiagnostics(2)
+            .HaveDiagnostics(4)
             .HaveDiagnostic(MappaDiagnosticDescriptors.CannotMapNonRequiredProperty, "Mappa.Generator.Tests.UnitTests.SourceCode.Target", "PropertyB")
             .HaveDiagnostic(MappaDiagnosticDescriptors.CannotMapNonRequiredProperty, "Mappa.Generator.Tests.UnitTests.SourceCode.Target", "PropertyC")
+            .HaveDiagnostic(MappaDiagnosticDescriptors.CannotMapNonRequiredProperty, "Mappa.Generator.Tests.UnitTests.SourceCode.Target", "PropertyD")
+            .HaveDiagnostic(MappaDiagnosticDescriptors.CannotMapNonRequiredProperty, "Mappa.Generator.Tests.UnitTests.SourceCode.Target", "PropertyE")
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .NotBeNull().And

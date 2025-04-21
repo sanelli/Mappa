@@ -60,6 +60,6 @@
         <value>Dependency '{0}' does not provide any method that could be used for mapping.</value>
     </data>
     <data name="CannotMapNonRequiredProperty" xml:space="preserve">
-        <value>Cannot find a suitable mappin for property '{0}.{1}'.</value>
+        <value>Cannot find a suitable mapping for property '{0}.{1}'.</value>
     </data>
 </root>
