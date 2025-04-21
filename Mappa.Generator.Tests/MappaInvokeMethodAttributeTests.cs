@@ -1763,7 +1763,7 @@ public sealed class MappaInvokeMethodAttributeTests
     /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
-    public async Task MapGenerateAWarninsWhenUsingInvokeMethodAttributeButTargetPropertyIsPrivate()
+    public async Task MapGenerateWarningsWhenUsingInvokeMethodAttributeButTargetPropertyIsPrivate()
     {
         // Arrange
         const string sourceCode = """

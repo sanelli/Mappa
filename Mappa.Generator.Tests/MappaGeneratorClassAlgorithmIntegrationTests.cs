@@ -107,7 +107,7 @@ public sealed class MappaGeneratorClassAlgorithmIntegrationTests
         // Assert
         generatedResults.Should()
             .HaveDiagnostics(1)
-            .HaveDiagnostic(MappaDiagnosticDescriptors.MethodHasInvalidNumberOfParameters, "Map");
+            .HaveDiagnostic(MappaDiagnosticDescriptors.MethodHasInvalidMappaContextParameter, "Map");
     }
 
     /// <summary>
@@ -334,12 +334,7 @@ public sealed class MappaGeneratorClassAlgorithmIntegrationTests
         // Assert
         generatedResults.Should()
             .HaveDiagnostics(1)
-            .HaveDiagnostic(
-                MappaDiagnosticDescriptors.CannotIdentifyStrategy,
-                "input",
-                "long",
-                string.Empty,
-                "int");
+            .HaveDiagnostic(MappaDiagnosticDescriptors.CannotIdentifyStrategy, "long", "int");
     }
 
     /// <summary>

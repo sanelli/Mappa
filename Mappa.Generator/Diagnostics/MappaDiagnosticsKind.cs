@@ -98,4 +98,9 @@ internal enum MappaDiagnosticsKind
     /// A dependency is not providing any viable method for mapping.
     /// </summary>
     DependencyDoesNotProvideAnyViableMethod,
+
+    /// <summary>
+    /// A property that is not marked as required cannot be mapped.
+    /// </summary>
+    CannotMapNonRequiredProperty,
 }

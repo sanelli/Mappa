@@ -95,22 +95,14 @@ internal sealed class GeneratorRunResultAssertions
         params object?[] parameters)
     {
         ArgumentNullException.ThrowIfNull(diagnosticDescriptor);
-        try
-        {
-            var expectedMessage = string.Format(
-                CultureInfo.CurrentCulture,
-                diagnosticDescriptor.MessageFormat.ToString(CultureInfo.CurrentCulture),
-                parameters);
-            this.Subject.Diagnostics.Should().Contain(diagnostic =>
-                diagnostic.Descriptor.Equals(diagnosticDescriptor) &&
-                diagnostic.GetMessage(CultureInfo.CurrentCulture).Equals(expectedMessage, StringComparison.Ordinal));
-        }
- #pragma warning disable CA1031
-        catch
- #pragma warning restore CA1031
-        {
-            // Skip it
-        }
+
+        var expectedMessage = string.Format(
+            CultureInfo.CurrentCulture,
+            diagnosticDescriptor.MessageFormat.ToString(CultureInfo.CurrentCulture),
+            parameters);
+        this.Subject.Diagnostics.Should().Contain(diagnostic =>
+            diagnostic.Descriptor.Equals(diagnosticDescriptor) &&
+            diagnostic.GetMessage(CultureInfo.CurrentCulture).Equals(expectedMessage, StringComparison.Ordinal));
 
         return this;
     }
