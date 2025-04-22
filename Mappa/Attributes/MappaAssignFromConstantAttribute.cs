@@ -10,7 +10,7 @@ namespace Mappa.Attributes;
 /// <param name="targetPropertyName">The name of the target property or constructor parameter.</param>
 /// <param name="value">The name of the context.</param>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-public sealed class MappaAssignFromConstantAttribute(string targetPropertyName, object value)
+public sealed class MappaAssignFromConstantAttribute(string targetPropertyName, object? value)
         : Attribute, IMappaTargetPropertyNameAttribute
 {
     /// <summary>
@@ -21,5 +21,5 @@ public sealed class MappaAssignFromConstantAttribute(string targetPropertyName, 
     /// <summary>
     /// Gets the source property name.
     /// </summary>
-    public object Value { get; } = value;
+    public object? Value { get; } = value;
 }

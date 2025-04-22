@@ -112,7 +112,6 @@ internal sealed class ConstructorMapStrategyDetector
                         .Select<IParameterSymbol, (IParameterSymbol Parameter, IPropertySymbol Property, MapStrategy Strategy)>(
                             targetParameter =>
                             {
-                                // TODO [#8] Allow property mapping where source property name differ from target parameter name using an attribute.
                                 var usePropertyAttributes = this.context.MapMethod is not null
                                     ? this.context.MapMethod.GetAttributes<MappaUsePropertyAttribute>().Where(attribute => attribute.TargetPropertyName.Equals(targetParameter.Name, StringComparison.OrdinalIgnoreCase)).ToArray()
                                     : [];
