@@ -77,6 +77,14 @@ internal sealed class ConstructorMapStrategyDetector
         return mapStrategy is not NoMapStrategy;
     }
 
+    private static void TryGetStrategyUsingMappaAssignFromConstantAttribute(
+        ITypeSymbol targetType,
+        MappaAssignFromConstantAttribute attribute,
+        out MapStrategy strategy)
+    {
+        strategy = new MappaAssignFromConstantAttributeStrategy(targetType, attribute);
+    }
+
     private bool CanInvokeConstructorWithParameters(out MapStrategy strategy)
     {
         var noMapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
@@ -641,6 +649,12 @@ internal sealed class ConstructorMapStrategyDetector
                     targetType,
                     mappaAssignFromContextAttribute,
                     ref sourceProperty,
+                    out strategy);
+                break;
+            case MappaAssignFromConstantAttribute mappaAssignFromConstantAttribute:
+                TryGetStrategyUsingMappaAssignFromConstantAttribute(
+                    targetType,
+                    mappaAssignFromConstantAttribute,
                     out strategy);
                 break;
         }
