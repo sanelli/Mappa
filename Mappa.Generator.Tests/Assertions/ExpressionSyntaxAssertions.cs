@@ -113,6 +113,23 @@ internal sealed class ExpressionSyntaxAssertions
     }
 
     /// <summary>
+    /// Assert that the expression is a typeof expression.
+    /// </summary>
+    /// <param name="expectedType">The type inside the typeof expression.</param>
+    /// <returns>The assertions.</returns>
+    public ExpressionSyntaxAssertions BeTypeOfExpressionSyntax(string expectedType)
+    {
+        this.Subject.Should().BeOfType<TypeOfExpressionSyntax>();
+        var typeofExpressionSyntax = (TypeOfExpressionSyntax)this.Subject;
+        var actualTypeSymbol = this.compilation.GetTypeSymbol(typeofExpressionSyntax.Type.ToString());
+        var expectedTypeSymbol = this.compilation.GetTypeSymbol(expectedType);
+        SymbolEqualityComparer.IncludeNullability
+            .Equals(actualTypeSymbol, expectedTypeSymbol)
+            .Should().BeTrue();
+        return this;
+    }
+
+    /// <summary>
     /// Assert that the expression is a default literal expression.
     /// </summary>
     /// <returns>The expression.</returns>

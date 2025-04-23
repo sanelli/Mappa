@@ -39,7 +39,7 @@ internal sealed class SyntaxNodeAssertions
     /// </summary>
     /// <param name="expressionAssertion">The assertion on the expression returned.</param>
     /// <returns>The assertions.</returns>
-    public SyntaxNodeAssertions BeReturnStatement(Action<ExpressionSyntaxAssertions>? expressionAssertion = null)
+    internal SyntaxNodeAssertions BeReturnStatement(Action<ExpressionSyntaxAssertions>? expressionAssertion = null)
     {
         this.Subject.Should().BeOfType<ReturnStatementSyntax>();
         var returnStatement = (ReturnStatementSyntax)this.Subject;
@@ -58,7 +58,7 @@ internal sealed class SyntaxNodeAssertions
     /// <param name="type">The type of the variable.</param>
     /// <param name="names">The names of the variables declared.</param>
     /// <returns>The assertion.</returns>
-    public SyntaxNodeAssertions BeLocalDeclarationStatementSyntax(string type, params string[] names)
+    internal SyntaxNodeAssertions BeLocalDeclarationStatementSyntax(string type, params string[] names)
         => this.BeLocalDeclarationStatementSyntax(type, names, null);
 
     /// <summary>
@@ -69,7 +69,7 @@ internal sealed class SyntaxNodeAssertions
     /// <param name="name">The names of the variable declared.</param>
     /// <param name="assertInitialization">Assert the initialization expression.</param>
     /// <returns>The assertion.</returns>
-    public SyntaxNodeAssertions BeLocalDeclarationStatementSyntax(string type, string name, Action<ExpressionSyntaxAssertions> assertInitialization)
+    internal SyntaxNodeAssertions BeLocalDeclarationStatementSyntax(string type, string name, Action<ExpressionSyntaxAssertions> assertInitialization)
         => this.BeLocalDeclarationStatementSyntax(type, [name], [assertInitialization]);
 
     /// <summary>
@@ -79,7 +79,7 @@ internal sealed class SyntaxNodeAssertions
     /// <param name="names">The names of the variables declared.</param>
     /// <param name="assertInitializations">Assert the initialization expressions.</param>
     /// <returns>The assertion.</returns>
-    public SyntaxNodeAssertions BeLocalDeclarationStatementSyntax(string type, string[] names, Action<ExpressionSyntaxAssertions>[]? assertInitializations)
+    internal SyntaxNodeAssertions BeLocalDeclarationStatementSyntax(string type, string[] names, Action<ExpressionSyntaxAssertions>[]? assertInitializations)
     {
         ArgumentNullException.ThrowIfNull(type);
         ArgumentNullException.ThrowIfNull(names);
@@ -88,7 +88,7 @@ internal sealed class SyntaxNodeAssertions
         {
             if (names.Length != assertInitializations.Length)
             {
-                throw new ArgumentException($"'{nameof(names)}' and '{nameof(assertInitializations)}' must have the same length", nameof(assertInitializations));
+                throw new ArgumentException($@"'{nameof(names)}' and '{nameof(assertInitializations)}' must have the same length", nameof(assertInitializations));
             }
         }
 
@@ -160,7 +160,7 @@ internal sealed class SyntaxNodeAssertions
     /// <param name="assertExpression">Assertions on the expression of the switch statement.</param>
     /// <param name="assertCase">Assertions on the case statements.</param>
     /// <returns>The assertions.</returns>
-    public SyntaxNodeAssertions BeSwitchStatementSyntax(
+    internal SyntaxNodeAssertions BeSwitchStatementSyntax(
         Action<ExpressionSyntaxAssertions> assertExpression,
         params Action<ISwitchLabelSyntaxAssertions[], IStatementSyntaxBaseAssertions[]>[] assertCase)
     {
@@ -195,7 +195,7 @@ internal sealed class SyntaxNodeAssertions
     /// Assert that the syntax node is a break statement.
     /// </summary>
     /// <returns>The assertions.</returns>
-    public SyntaxNodeAssertions BeBreakStatement()
+    internal SyntaxNodeAssertions BeBreakStatement()
     {
         this.Subject.Should().BeOfType<BreakStatementSyntax>();
         return this;
@@ -207,7 +207,7 @@ internal sealed class SyntaxNodeAssertions
     /// <param name="identifierName">The name of the identifier.</param>
     /// <param name="assert">Assertion on the right hande side expression.</param>
     /// <returns>The assertions.</returns>
-    public SyntaxNodeAssertions BeAssignmentExpressionStatement(string identifierName, Action<ExpressionSyntaxAssertions> assert)
+    internal SyntaxNodeAssertions BeAssignmentExpressionStatement(string identifierName, Action<ExpressionSyntaxAssertions> assert)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(identifierName);
 
@@ -222,7 +222,7 @@ internal sealed class SyntaxNodeAssertions
     /// <param name="leftExpressionAssertions">The left expression assertions.</param>
     /// <param name="rightExpressionAssertions">The right expression assertions.</param>
     /// <returns>The assertions.</returns>
-    public SyntaxNodeAssertions BeAssignmentExpressionStatement(Action<ExpressionSyntaxAssertions> leftExpressionAssertions, Action<ExpressionSyntaxAssertions> rightExpressionAssertions)
+    internal SyntaxNodeAssertions BeAssignmentExpressionStatement(Action<ExpressionSyntaxAssertions> leftExpressionAssertions, Action<ExpressionSyntaxAssertions> rightExpressionAssertions)
     {
         ArgumentNullException.ThrowIfNull(leftExpressionAssertions);
         ArgumentNullException.ThrowIfNull(rightExpressionAssertions);
@@ -244,7 +244,7 @@ internal sealed class SyntaxNodeAssertions
     /// <param name="parameterAssertions">Assertions on the parameters of the created exception.</param>
     /// <returns>The assertions.</returns>
     /// <typeparam name="TException">The type of the exception thrown.</typeparam>
-    public SyntaxNodeAssertions BeThrowStatementSyntax<TException>(
+    internal SyntaxNodeAssertions BeThrowStatementSyntax<TException>(
         params Action<ExpressionSyntaxAssertions>[] parameterAssertions)
     {
         ArgumentNullException.ThrowIfNull(parameterAssertions);
@@ -274,7 +274,7 @@ internal sealed class SyntaxNodeAssertions
     /// <param name="incrementorAssertion">Assertions on the incrementor expression.</param>
     /// <param name="statementAssertion">Assertion on the statement.</param>
     /// <returns>The assertions.</returns>
-    public SyntaxNodeAssertions BeForStatementSyntax(
+    internal SyntaxNodeAssertions BeForStatementSyntax(
         Action<VariableDeclarationSyntaxAssertions>? declarationAssertion,
         Action<ExpressionSyntaxAssertions>? conditionAssertion,
         Action<ExpressionSyntaxAssertions>? incrementorAssertion,
@@ -293,7 +293,7 @@ internal sealed class SyntaxNodeAssertions
     /// <param name="incrementorAssertions">Assertions on the incrementor expressions.</param>
     /// <param name="statementAssertion">Assertion on the statement.</param>
     /// <returns>The assertions.</returns>
-    public SyntaxNodeAssertions BeForStatementSyntax(
+    internal SyntaxNodeAssertions BeForStatementSyntax(
         Action<VariableDeclarationSyntaxAssertions>? declarationAssertion,
         Action<ExpressionSyntaxAssertions>? conditionAssertion,
         Action<ExpressionSyntaxAssertions>[]? incrementorAssertions,
@@ -350,7 +350,7 @@ internal sealed class SyntaxNodeAssertions
     /// <param name="accessIdentifier">Describe the access to the method.</param>
     /// <param name="argumentExpressionAssertions">The assertions on the arguments.</param>
     /// <returns>The assertions.</returns>
-    public SyntaxNodeAssertions BeInvocationExpressionSyntaxStatement(
+    internal SyntaxNodeAssertions BeInvocationExpressionSyntaxStatement(
         string accessIdentifier,
         params Action<ExpressionSyntaxAssertions>[] argumentExpressionAssertions)
     {
@@ -383,7 +383,7 @@ internal sealed class SyntaxNodeAssertions
     /// <param name="expressionAssertions">The expression assertions.</param>
     /// <param name="statementAssertions">Assertions on the statement.</param>
     /// <returns>The assertions.</returns>
-    public SyntaxNodeAssertions BeForEachStatementSyntax(
+    internal SyntaxNodeAssertions BeForEachStatementSyntax(
         string type,
         string identifier,
         Action<ExpressionSyntaxAssertions> expressionAssertions,
@@ -419,7 +419,7 @@ internal sealed class SyntaxNodeAssertions
     /// <param name="thenStatementAssertions">The assertions on the then statement.</param>
     /// <param name="elseStatementAssertions">The assertions on the else condition.</param>
     /// <returns>The assertions.</returns>
-    public SyntaxNodeAssertions BeIfStatementSyntax(
+    internal SyntaxNodeAssertions BeIfStatementSyntax(
         Action<ExpressionSyntaxAssertions> conditionAssertions,
         Action<IStatementSyntaxBaseAssertions> thenStatementAssertions,
         Action<IStatementSyntaxBaseAssertions>? elseStatementAssertions = null)

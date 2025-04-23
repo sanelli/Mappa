@@ -8,6 +8,8 @@ using Mappa.Generator.Exceptions;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
+using Microsoft.CodeAnalysis;
+
 namespace Mappa.Generator.Builders.Strategies;
 
 /// <summary>
@@ -66,7 +68,7 @@ internal sealed class MappaAssignFromConstantAttributeStrategyBuilder
             sbyte or byte or short or ushort or int or uint or long or ulong or float or double => $"{value}",
             bool b => b ? "true" : "false",
             char c => $"'{c}'",
-            Type t => $"typeof({t.FullName})",
+            ITypeSymbol t => $"typeof({t.ToDisplayString()})",
             _ => throw new MappaGeneratorException("Unexpected MappaAssignFromConstant attribute value."),
         };
     }
