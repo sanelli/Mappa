@@ -146,5 +146,11 @@ namespace Mappa.Generator.Diagnostics {
                 return ResourceManager.GetString("CannotMapNonRequiredProperty", resourceCulture);
             }
         }
+        
+        internal static string InvalidEnumValueForMappaAssignFromConstant {
+            get {
+                return ResourceManager.GetString("InvalidEnumValueForMappaAssignFromConstant", resourceCulture);
+            }
+        }
     }
 }

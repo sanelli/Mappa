@@ -103,4 +103,10 @@ internal enum MappaDiagnosticsKind
     /// A property that is not marked as required cannot be mapped.
     /// </summary>
     CannotMapNonRequiredProperty,
+
+    /// <summary>
+    /// The user provided a value that cannot be mapped to an enumeration
+    /// inside the <see cref="MappaAssignFromConstantAttribute"/>.
+    /// </summary>
+    InvalidEnumValueForMappaAssignFromConstant,
 }

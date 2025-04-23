@@ -314,7 +314,9 @@ internal sealed class MappaGeneratorClassAlgorithm
 
         var builder = new MappaFileBuilder(classContext);
         var hintName = builder.HintName;
-        var sourceFile = builder.BuildSource(new(this.Compilation), options);
+        var mappaBuilderContext = new MappaBuilderContext(this.Compilation);
+        var sourceFile = builder.BuildSource(mappaBuilderContext, options);
+        classContext.ReportDiagnostics(mappaBuilderContext.Diagnostics);
         this.Context.AddSource(hintName, sourceFile);
     }
 

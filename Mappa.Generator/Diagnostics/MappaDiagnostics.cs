@@ -270,4 +270,22 @@ internal static class MappaDiagnostics
             syntaxNode?.GetLocation(),
             parentType.ToDisplayString(),
             property.Name);
+
+    /// <summary>
+    /// Diagnostic to report that a value provided for enum
+    /// via <see cref="MappaAssignFromConstantAttribute"/> is invalid.
+    /// </summary>
+    /// <param name="syntaxNode">The syntax element.</param>
+    /// <param name="enumType">The type of the enumeration.</param>
+    /// <param name="value">The value that cannot be used.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic InvalidEnumValueForMappaAssignFromConstant(
+        SyntaxNode? syntaxNode,
+        ITypeSymbol enumType,
+        object? value)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.InvalidEnumValueForMappaAssignFromConstant,
+            syntaxNode?.GetLocation(),
+            $"{value}",
+            enumType.ToDisplayString());
 }

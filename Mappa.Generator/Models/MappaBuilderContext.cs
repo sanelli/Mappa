@@ -16,6 +16,7 @@ internal sealed class MappaBuilderContext
     private readonly StackSetting<string> compositeTypeSourceName = new(string.Empty);
     private readonly StackSetting<string> compositeTypeTargetName = new(string.Empty);
     private readonly StackSetting<MapMethod> mapMethodBeingBuilt = new(null!);
+    private readonly List<Diagnostic> diagnostics = new();
     private uint temporaryCounter;
 
     /// <summary>
@@ -31,6 +32,11 @@ internal sealed class MappaBuilderContext
     /// Gets the compilation.
     /// </summary>
     internal Compilation Compilation { get; }
+
+    /// <summary>
+    /// Gets any diagnostics reported while generating the code.
+    /// </summary>
+    internal IReadOnlyList<Diagnostic> Diagnostics => this.diagnostics;
 
     /// <summary>
     /// Gets a new unique temporary value.
@@ -81,4 +87,10 @@ internal sealed class MappaBuilderContext
     /// <returns>The current map method.</returns>
     internal MapMethod GetMapMethod() => this.mapMethodBeingBuilt.CurrentValue
         ?? throw new MappaGeneratorException("Cannot obtain the map method.");
+
+    /// <summary>
+    /// Report a new diagnostic information.
+    /// </summary>
+    /// <param name="diagnostic">The diagnostic to be reported.</param>
+    internal void ReportDiagnostic(Diagnostic diagnostic) => this.diagnostics.Add(diagnostic);
 }

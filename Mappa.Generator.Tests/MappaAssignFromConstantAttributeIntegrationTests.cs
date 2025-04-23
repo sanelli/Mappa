@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Tests.Abstractions;
 using Mappa.Generator.Tests.Assertions;
 using Mappa.Generator.Tests.Assertions.Extensions;
@@ -13,8 +14,6 @@ namespace Mappa.Generator.Tests;
 /// </summary>
 // TODO [#53] An error is emitted when multiple attributes target the same property.
 // TODO [#53] An error is emitted when multiple attributes target the same constructor parameter.
-// TODO [#53] Can assign an enumeration to a value for property.
-// TODO [#53] Can assign an enumeration to a value for ctor parameter.
 // TODO [#53] Can assign an array of numeric values for property.
 // TODO [#53] Can assign an array of numeric values for ctor parameter.
 // TODO [#53] Can assign an array of strings for property.
@@ -57,6 +56,8 @@ public sealed class MappaAssignFromConstantAttributeIntegrationTests
     [InlineData("bool", "false", false)]
     [InlineData("string?", "null", null)]
     [InlineData("System.Type", "typeof(string)", typeof(string))]
+    [InlineData("Mappa.Generator.Tests.UnitTests.SourceCode.MyEnum", "MyEnum.Two", "Mappa.Generator.Tests.UnitTests.SourceCode.MyEnum.Two")]
+    [InlineData("Mappa.Generator.Tests.UnitTests.SourceCode.MyEnum", "1", "Mappa.Generator.Tests.UnitTests.SourceCode.MyEnum.Two")]
     public async Task CanAssignPropertyValueViaMappaAssignFromConstantAttribute(
         string type,
         string attributeValue,
@@ -69,6 +70,12 @@ public sealed class MappaAssignFromConstantAttributeIntegrationTests
                           using Mappa.Attributes;
 
                           namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                          
+                          public enum MyEnum
+                          {
+                            One,
+                            Two,
+                          }
 
                           public class Source { }
                           public class Target {
@@ -113,6 +120,10 @@ public sealed class MappaAssignFromConstantAttributeIntegrationTests
                                         && expectedValue is Type expectedValueAsType)
                                     {
                                         initializationAssertions.BeTypeOfExpressionSyntax(expectedValueAsType.ToString());
+                                    }
+                                    else if (type.Equals("Mappa.Generator.Tests.UnitTests.SourceCode.MyEnum", StringComparison.Ordinal) && expectedValue is string s)
+                                    {
+                                        initializationAssertions.BeMemberAccessExpressionSyntax(s);
                                     }
                                     else
                                     {
@@ -165,6 +176,8 @@ public sealed class MappaAssignFromConstantAttributeIntegrationTests
     [InlineData("bool", "false", false)]
     [InlineData("string?", "null", null)]
     [InlineData("System.Type", "typeof(string)", typeof(string))]
+    [InlineData("Mappa.Generator.Tests.UnitTests.SourceCode.MyEnum", "MyEnum.Two", "Mappa.Generator.Tests.UnitTests.SourceCode.MyEnum.Two")]
+    [InlineData("Mappa.Generator.Tests.UnitTests.SourceCode.MyEnum", "1", "Mappa.Generator.Tests.UnitTests.SourceCode.MyEnum.Two")]
     public async Task CanAssignConstructorParameterValueViaMappaAssignFromConstantAttribute(
         string type,
         string attributeValue,
@@ -178,6 +191,12 @@ public sealed class MappaAssignFromConstantAttributeIntegrationTests
 
                           namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
+                          public enum MyEnum
+                          {
+                            One,
+                            Two,
+                          }
+                          
                           public class Source { }
                           public class Target {
                              public Target({{type}} value) { }
@@ -222,6 +241,10 @@ public sealed class MappaAssignFromConstantAttributeIntegrationTests
                                     {
                                         initializationAssertions.BeTypeOfExpressionSyntax(expectedValueAsType.ToString());
                                     }
+                                    else if (type.Equals("Mappa.Generator.Tests.UnitTests.SourceCode.MyEnum", StringComparison.Ordinal) && expectedValue is string s)
+                                    {
+                                        initializationAssertions.BeMemberAccessExpressionSyntax(s);
+                                    }
                                     else
                                     {
                                         initializationAssertions.BeLiteralExpressionSyntax(expectedValue);
@@ -237,7 +260,7 @@ public sealed class MappaAssignFromConstantAttributeIntegrationTests
                                 {
                                     initializationAssertions.BeObjectCreationExpressionSyntax(
                                         "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
-                                        parameterAssertion => parameterAssertion.BeIdentifierNameSyntax("__mappa_tmp_1"));
+                                        parameterAssertions => parameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_1"));
                                 });
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
@@ -245,5 +268,50 @@ public sealed class MappaAssignFromConstantAttributeIntegrationTests
                             syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_2"));
                         });
                 });
+    }
+
+    /// <summary>
+    /// Test that when assigning an integer with an invalid value to an enum an error is reported.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [UnitTest]
+    public async Task TestAnErrorIsReportedWhenTryingToUseInvalidIntegerValueForEnumeration()
+    {
+        // Arrange
+        const string sourceCode = """
+                           #nullable enable
+                           using Mappa;
+                           using Mappa.Attributes;
+
+                           namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                           public enum MyEnum
+                           {
+                             One,
+                             Two,
+                           }
+                           
+                           public class Source { }
+                           public class Target {
+                              public Target(MyEnum value) { }
+                           }
+
+                           [Mappa]
+                           public sealed partial class Mapper
+                           {
+                               [MappaAssignFromConstant("value", 14)]
+                               public partial Target Map(Source input, MappaContext context);
+                           }
+                           #nullable restore
+                           """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.InvalidEnumValueForMappaAssignFromConstant, "14", "Mappa.Generator.Tests.UnitTests.SourceCode.MyEnum");
     }
 }

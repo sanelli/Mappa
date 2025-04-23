@@ -69,4 +69,7 @@
     <data name="CannotMapNonRequiredProperty" xml:space="preserve">
         <value>Cannot find a suitable mapping for property '{0}.{1}'.</value>
     </data>
+    <data name="InvalidEnumValueForMappaAssignFromConstant" xml:space="preserve">
+        <value>Cannot use value '{0}' for enum '{1}'.</value>
+    </data>
 </root>
