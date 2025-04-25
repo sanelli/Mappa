@@ -14,6 +14,7 @@ namespace Mappa.Generator.Tests;
 /// Tests around <see cref="MappaAssignFromConstantAttribute"/>.
 /// </summary>
 // TODO [#53] An error is emitted when multiple attributes target the same property.
+// TODO [#53] An error is emitted when multiple attributes target the same constructor parameter.
 public sealed class MappaAssignFromConstantAttributeIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {
