@@ -31,7 +31,6 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? tooManyUsePropertyAttributesForTheSameTargetProperty;
     private static DiagnosticDescriptor? dependencyDoesNotProvideAnyViableMethod;
     private static DiagnosticDescriptor? cannotMapNonRequiredProperty;
-    private static DiagnosticDescriptor? invalidEnumValueForMappaAssignFromConstant;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -168,14 +167,6 @@ internal static class MappaDiagnosticDescriptors
         => cannotMapNonRequiredProperty ??= BuildWarning(
             MappaDiagnosticsKind.CannotMapNonRequiredProperty,
             DiagnosticsResources.CannotMapNonRequiredProperty);
-
-    /// <summary>
-    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.InvalidEnumValueForMappaAssignFromConstant"/>.
-    /// </summary>
-    internal static DiagnosticDescriptor InvalidEnumValueForMappaAssignFromConstant
-        => invalidEnumValueForMappaAssignFromConstant ??= BuildError(
-            MappaDiagnosticsKind.InvalidEnumValueForMappaAssignFromConstant,
-            DiagnosticsResources.InvalidEnumValueForMappaAssignFromConstant);
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(

@@ -39,7 +39,7 @@ internal sealed class ExpressionSyntaxAssertions
     /// </summary>
     /// <param name="identifierName">The identifier.</param>
     /// <returns>The assertion.</returns>
-    public ExpressionSyntaxAssertions BeIdentifierNameSyntax(string identifierName)
+    internal ExpressionSyntaxAssertions BeIdentifierNameSyntax(string identifierName)
     {
         this.Subject.Should().BeOfType<IdentifierNameSyntax>();
         var identifierNameSyntax = (IdentifierNameSyntax)this.Subject;
@@ -53,7 +53,7 @@ internal sealed class ExpressionSyntaxAssertions
     /// <param name="type">The type the expression is being cast to.</param>
     /// <param name="assert">Assert the expression.</param>
     /// <returns>The assertion.</returns>
-    public ExpressionSyntaxAssertions BeCastExpressionSyntax(
+    internal ExpressionSyntaxAssertions BeCastExpressionSyntax(
         string type,
         Action<ExpressionSyntaxAssertions> assert)
     {
@@ -90,7 +90,7 @@ internal sealed class ExpressionSyntaxAssertions
     /// </summary>
     /// <param name="fullAccessPath">The string representation of the expression.</param>
     /// <returns>The assertions.</returns>
-    public ExpressionSyntaxAssertions BeMemberAccessExpressionSyntax(string fullAccessPath)
+    internal ExpressionSyntaxAssertions BeMemberAccessExpressionSyntax(string fullAccessPath)
     {
         this.Subject.Should().BeOfType<MemberAccessExpressionSyntax>();
         var memberAccessExpressionSyntax = (MemberAccessExpressionSyntax)this.Subject;
@@ -103,7 +103,7 @@ internal sealed class ExpressionSyntaxAssertions
     /// </summary>
     /// <param name="value">The expected value of the expression.</param>
     /// <returns>The expression.</returns>
-    public ExpressionSyntaxAssertions BeLiteralExpressionSyntax(object? value)
+    internal ExpressionSyntaxAssertions BeLiteralExpressionSyntax(object? value)
     {
         this.Subject.Should().BeOfType<LiteralExpressionSyntax>();
         var literalExpressionSyntax = (LiteralExpressionSyntax)this.Subject;
@@ -117,7 +117,7 @@ internal sealed class ExpressionSyntaxAssertions
     /// </summary>
     /// <param name="expectedType">The type inside the typeof expression.</param>
     /// <returns>The assertions.</returns>
-    public ExpressionSyntaxAssertions BeTypeOfExpressionSyntax(string expectedType)
+    internal ExpressionSyntaxAssertions BeTypeOfExpressionSyntax(string expectedType)
     {
         this.Subject.Should().BeOfType<TypeOfExpressionSyntax>();
         var typeofExpressionSyntax = (TypeOfExpressionSyntax)this.Subject;
@@ -133,7 +133,7 @@ internal sealed class ExpressionSyntaxAssertions
     /// Assert that the expression is a default literal expression.
     /// </summary>
     /// <returns>The expression.</returns>
-    public ExpressionSyntaxAssertions BeDefaultLiteralExpressionSyntax()
+    internal ExpressionSyntaxAssertions BeDefaultLiteralExpressionSyntax()
     {
         this.Subject.Should().BeOfType<LiteralExpressionSyntax>();
         var literalExpressionSyntax = (LiteralExpressionSyntax)this.Subject;
@@ -147,7 +147,7 @@ internal sealed class ExpressionSyntaxAssertions
     /// </summary>
     /// <param name="name">The expected value of the expression.</param>
     /// <returns>The expression.</returns>
-    public ExpressionSyntaxAssertions BeNameofWithMemberAccess(string name)
+    internal ExpressionSyntaxAssertions BeNameofWithMemberAccess(string name)
     {
         this.Subject.Should().BeOfType<InvocationExpressionSyntax>();
         var invocationExpressionSyntax = (InvocationExpressionSyntax)this.Subject;
@@ -165,7 +165,7 @@ internal sealed class ExpressionSyntaxAssertions
     /// <param name="memberAccess">The name of the method being invoked.</param>
     /// <param name="assertArguments">Assertions on the arguments.</param>
     /// <returns>The assertion.</returns>
-    public ExpressionSyntaxAssertions BeInvocationExpressionSyntax(
+    internal ExpressionSyntaxAssertions BeInvocationExpressionSyntax(
         string memberAccess,
         params Action<ExpressionSyntaxAssertions>[] assertArguments)
     {
@@ -191,7 +191,7 @@ internal sealed class ExpressionSyntaxAssertions
     /// <param name="memberAccess">The name of the method being invoked.</param>
     /// <param name="assertArguments">Assertions on the arguments.</param>
     /// <returns>The assertion.</returns>
-    public ExpressionSyntaxAssertions BeInvocationExpressionUsingIdentifierNameSyntax(
+    internal ExpressionSyntaxAssertions BeInvocationExpressionUsingIdentifierNameSyntax(
         string memberAccess,
         params Action<ExpressionSyntaxAssertions>[] assertArguments)
     {
@@ -216,10 +216,15 @@ internal sealed class ExpressionSyntaxAssertions
     /// </summary>
     /// <param name="elementType">The element type of the array being created.</param>
     /// <param name="sizeAssertion">The assertions on the size expression.</param>
+    /// <param name="initializerAssertions">The initializer assertions.</param>
     /// <returns>The assertion.</returns>
-    public ExpressionSyntaxAssertions BeArrayCreationExpressionSyntax(string elementType, Action<ExpressionSyntaxAssertions> sizeAssertion)
+    internal ExpressionSyntaxAssertions BeArrayCreationExpressionSyntax(
+        string elementType,
+        Action<ExpressionSyntaxAssertions> sizeAssertion,
+        params Action<ExpressionSyntaxAssertions>[] initializerAssertions)
     {
         ArgumentNullException.ThrowIfNull(sizeAssertion);
+        ArgumentNullException.ThrowIfNull(initializerAssertions);
 
         this.Subject.Should().BeOfType<ArrayCreationExpressionSyntax>();
         var arrayCreationExpressionSyntax = (ArrayCreationExpressionSyntax)this.Subject;
@@ -237,6 +242,30 @@ internal sealed class ExpressionSyntaxAssertions
         var size = arrayCreationExpressionSyntax.Type.RankSpecifiers[0].Sizes[0];
         sizeAssertion(new ExpressionSyntaxAssertions(size, this.semanticModel, this.compilation));
 
+        if (initializerAssertions.Length > 0)
+        {
+            arrayCreationExpressionSyntax.Initializer.Should().NotBeNull();
+            arrayCreationExpressionSyntax.Initializer.Expressions.Should().HaveCount(initializerAssertions.Length);
+            for (int initIndex = 0; initIndex < initializerAssertions.Length; ++initIndex)
+            {
+                initializerAssertions[initIndex](new ExpressionSyntaxAssertions(arrayCreationExpressionSyntax.Initializer.Expressions[initIndex], this.semanticModel, this.compilation));
+            }
+        }
+        else
+        {
+            arrayCreationExpressionSyntax.Initializer.Should().BeNull();
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Ensure the expression is of type <see cref="OmittedArraySizeExpressionSyntax"/>.
+    /// </summary>
+    /// <returns>The assertions.</returns>
+    internal ExpressionSyntaxAssertions BeOmittedSizeExpressionSyntax()
+    {
+        this.Subject.Should().BeOfType<OmittedArraySizeExpressionSyntax>();
         return this;
     }
 
@@ -247,7 +276,7 @@ internal sealed class ExpressionSyntaxAssertions
     /// <param name="variableName">The name of the variable.</param>
     /// <param name="stringLiteral">The name of the index variable.</param>
     /// <returns>The assertions.</returns>
-    public ExpressionSyntaxAssertions BeElementAccessExpressionSyntaxWithIdentifierNameSyntax(string variableName, string stringLiteral)
+    internal ExpressionSyntaxAssertions BeElementAccessExpressionSyntaxWithIdentifierNameSyntax(string variableName, string stringLiteral)
     {
         this.Subject.Should().BeOfType<ElementAccessExpressionSyntax>();
 
@@ -274,7 +303,7 @@ internal sealed class ExpressionSyntaxAssertions
     /// <param name="fullAccessPath">The path to access the variable.</param>
     /// <param name="stringLiteral">The name of the index variable.</param>
     /// <returns>The assertions.</returns>
-    public ExpressionSyntaxAssertions BeElementAccessExpressionSyntaxWithMemberAccessNameSyntax(string fullAccessPath, string stringLiteral)
+    internal ExpressionSyntaxAssertions BeElementAccessExpressionSyntaxWithMemberAccessNameSyntax(string fullAccessPath, string stringLiteral)
     {
         this.Subject.Should().BeOfType<ElementAccessExpressionSyntax>();
 
@@ -300,7 +329,7 @@ internal sealed class ExpressionSyntaxAssertions
     /// <param name="variableName">The name of the variable.</param>
     /// <param name="stringLiteral">The name of the index variable.</param>
     /// <returns>The assertions.</returns>
-    public ExpressionSyntaxAssertions BeElementAccessExpressionSyntaxWithLiteralSyntax(string variableName, string stringLiteral)
+    internal ExpressionSyntaxAssertions BeElementAccessExpressionSyntaxWithLiteralSyntax(string variableName, string stringLiteral)
     {
         this.Subject.Should().BeOfType<ElementAccessExpressionSyntax>();
 
@@ -326,7 +355,7 @@ internal sealed class ExpressionSyntaxAssertions
     /// <param name="operator">The operator token.</param>
     /// <param name="rightExpressionAssertions">The right expression assertion.</param>
     /// <returns>The assertions.</returns>
-    public ExpressionSyntaxAssertions BeBinaryExpressionSyntax(
+    internal ExpressionSyntaxAssertions BeBinaryExpressionSyntax(
         Action<ExpressionSyntaxAssertions> leftExpressionAssertions,
         SyntaxKind @operator,
         Action<ExpressionSyntaxAssertions> rightExpressionAssertions)
@@ -351,7 +380,7 @@ internal sealed class ExpressionSyntaxAssertions
     /// <param name="operator">The operator token.</param>
     /// <param name="operandAssertions">The operand expression assertion.</param>
     /// <returns>The assertions.</returns>
-    public ExpressionSyntaxAssertions BePrefixUnaryExpressionSyntax(
+    internal ExpressionSyntaxAssertions BePrefixUnaryExpressionSyntax(
         SyntaxKind @operator,
         Action<ExpressionSyntaxAssertions> operandAssertions)
     {
@@ -372,7 +401,7 @@ internal sealed class ExpressionSyntaxAssertions
     /// <param name="operator">The operator token.</param>
     /// <param name="operandAssertions">The operand expression assertion.</param>
     /// <returns>The assertions.</returns>
-    public ExpressionSyntaxAssertions BePostfixUnaryExpressionSyntax(
+    internal ExpressionSyntaxAssertions BePostfixUnaryExpressionSyntax(
         SyntaxKind @operator,
         Action<ExpressionSyntaxAssertions> operandAssertions)
     {
@@ -394,7 +423,7 @@ internal sealed class ExpressionSyntaxAssertions
     /// <param name="argumentExpressionAssertions">The assertions on the argument expressions.</param>
     /// <param name="initializationAssertions">The assertions on the initialization expressions.</param>
     /// <returns>The assertions.</returns>
-    public ExpressionSyntaxAssertions BeObjectCreationExpressionSyntax(
+    internal ExpressionSyntaxAssertions BeObjectCreationExpressionSyntax(
         string type,
         Action<ExpressionSyntaxAssertions>[] argumentExpressionAssertions,
         (string PropertyName, Action<ExpressionSyntaxAssertions> Assertions)[] initializationAssertions)
@@ -460,7 +489,7 @@ internal sealed class ExpressionSyntaxAssertions
     /// <param name="type">The type being created.</param>
     /// <param name="argumentExpressionAssertions">The assertions on the argument expressions.</param>
     /// <returns>The assertions.</returns>
-    public ExpressionSyntaxAssertions BeObjectCreationExpressionSyntax(
+    internal ExpressionSyntaxAssertions BeObjectCreationExpressionSyntax(
         string type,
         params Action<ExpressionSyntaxAssertions>[] argumentExpressionAssertions)
         => this.BeObjectCreationExpressionSyntax(type, argumentExpressionAssertions, []);
@@ -471,7 +500,7 @@ internal sealed class ExpressionSyntaxAssertions
     /// <param name="type">The type being created.</param>
     /// <param name="initializationAssertions">The assertions on the initialization expressions.</param>
     /// <returns>The assertions.</returns>
-    public ExpressionSyntaxAssertions BeObjectCreationExpressionSyntax(
+    internal ExpressionSyntaxAssertions BeObjectCreationExpressionSyntax(
         string type,
         params (string PropertyName, Action<ExpressionSyntaxAssertions> Assertions)[] initializationAssertions)
         => this.BeObjectCreationExpressionSyntax(type, [], initializationAssertions);
@@ -481,7 +510,7 @@ internal sealed class ExpressionSyntaxAssertions
     /// </summary>
     /// <param name="type">The type being created.</param>
     /// <returns>The assertions.</returns>
-    public ExpressionSyntaxAssertions BeObjectCreationExpressionSyntax(string type)
+    internal ExpressionSyntaxAssertions BeObjectCreationExpressionSyntax(string type)
         => this.BeObjectCreationExpressionSyntax(type, [], []);
 
     /// <summary>
@@ -490,7 +519,7 @@ internal sealed class ExpressionSyntaxAssertions
     /// <param name="expressionAssertions">The assertions for the expression on the left side of the <c>is</c>.</param>
     /// <param name="patternAssertions">The assertions on the pattern.</param>
     /// <returns>The assertions.</returns>
-    public ExpressionSyntaxAssertions BeIsPatternExpressionSyntax(
+    internal ExpressionSyntaxAssertions BeIsPatternExpressionSyntax(
         Action<ExpressionSyntaxAssertions> expressionAssertions,
         Action<PatternSyntaxAssertions> patternAssertions)
     {
@@ -511,7 +540,7 @@ internal sealed class ExpressionSyntaxAssertions
     /// </summary>
     /// <param name="argumentAssertions">The arguments of the tuple.</param>
     /// <returns>The assertions.</returns>
-    public ExpressionSyntaxAssertions BeTupleExpressionSyntax(params Action<ExpressionSyntaxAssertions>[] argumentAssertions)
+    internal ExpressionSyntaxAssertions BeTupleExpressionSyntax(params Action<ExpressionSyntaxAssertions>[] argumentAssertions)
     {
         ArgumentNullException.ThrowIfNull(argumentAssertions);
 

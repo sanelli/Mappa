@@ -62,7 +62,4 @@
     <data name="CannotMapNonRequiredProperty" xml:space="preserve">
         <value>Non è possibile identifier un mapping per la propertietà '{0}.{1}'.</value>
     </data>
-    <data name="InvalidEnumValueForMappaAssignFromConstant" xml:space="preserve">
-        <value>Impossibole usare il valore '{0}' per l'enum '{1}'.</value>
-    </data>
 </root>

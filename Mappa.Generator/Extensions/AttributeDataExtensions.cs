@@ -119,7 +119,7 @@ internal static class AttributeDataExtensions
             if (constructorArguments.Length == 2
                 && constructorArguments[0].Value is string targetParameterName)
             {
-                results.Add(new MappaAssignFromConstantAttribute(targetParameterName, constructorArguments[1].Value));
+                results.Add(new MappaAssignFromConstantAttribute(targetParameterName, constructorArguments[1]));
             }
         }
 

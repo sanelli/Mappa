@@ -2,9 +2,6 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using System.Collections;
-
-using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Exceptions;
 using Mappa.Generator.Extensions;
 using Mappa.Generator.Models;
@@ -36,40 +33,16 @@ internal sealed class MappaAssignFromConstantAttributeStrategyBuilder
     {
         var temporary = context.NextTemporary();
         var targetType = this.strategy.TargetType.ToDisplayString();
-        var value = ValueToString(this.strategy.Attribute.Value, context.GetMapMethod(), this.strategy.TargetType, context.ReportDiagnostic);
+        var value = ValueToCode(this.strategy.Attribute.Value);
         var code = $"{targetType} {temporary} = {value};";
         return (temporary, code);
     }
 
-    private static string ValueToString(object? value, MapMethod mapMethod, ITypeSymbol typeSymbol, Action<Diagnostic> reportDiagnostic)
+    private static string ValueToCode(object? value)
     {
         if (value is null)
         {
             return "null";
-        }
-
-        var valueType = value.GetType();
-        if (valueType.IsArray && valueType.GetArrayRank() == 1 && value is IEnumerable enumerable)
-        {
-            var items = new List<string>(from object? innerValue in enumerable select ValueToString(innerValue, mapMethod, typeSymbol, reportDiagnostic));
-
-            var arrayInitialValues = string.Join(", ", items);
-            var elementType = valueType.GetElementType()?.FullName ?? throw new MappaGeneratorException("Cannot detect array type for MappaAssignFromConstant attribute.");
-            return $"new {elementType}[]{{ {arrayInitialValues} }}";
-        }
-
-        if (typeSymbol.IsEnum() && value is int integerValue)
-        {
-            foreach (var enumValue in typeSymbol.GetEnumValues())
-            {
-                if (enumValue.Value is not null && integerValue.Equals(enumValue.Value))
-                {
-                    return $"{typeSymbol.ToDisplayString()}.{enumValue.Name}";
-                }
-            }
-
-            reportDiagnostic(MappaDiagnostics.InvalidEnumValueForMappaAssignFromConstant(mapMethod.MethodDeclarationSyntax, typeSymbol, value));
-            return $"/* Unknown '{value}' for '{typeSymbol.ToDisplayString()}' */";
         }
 
         return value switch
@@ -78,8 +51,44 @@ internal sealed class MappaAssignFromConstantAttributeStrategyBuilder
             sbyte or byte or short or ushort or int or uint or long or ulong or float or double => $"{value}",
             bool b => b ? "true" : "false",
             char c => $"'{c}'",
-            ITypeSymbol t => $"typeof({t.ToDisplayString()})",
+            TypedConstant typedConstant when
+                typedConstant.Kind is TypedConstantKind.Enum &&
+                typedConstant.Value is not null &&
+                typedConstant.Type is not null &&
+                typedConstant.Type.IsEnum() => GetCodeForEnum(typedConstant.Type, typedConstant.Value),
+            TypedConstant typedConstant when
+                typedConstant.Kind is TypedConstantKind.Primitive => ValueToCode(typedConstant.Value),
+            TypedConstant typedConstant when
+                typedConstant.Kind is TypedConstantKind.Array => GetCodeForArrays(typedConstant),
+            TypedConstant typedConstant when
+                typedConstant.Kind is TypedConstantKind.Type &&
+                typedConstant.Value is ITypeSymbol typeSymbol => $"typeof({typeSymbol.ToDisplayString()})",
             _ => throw new MappaGeneratorException("Unexpected MappaAssignFromConstant attribute value."),
         };
+
+        static string GetCodeForEnum(ITypeSymbol typeSymbol, object integerEnumValue)
+        {
+            foreach (var enumValue in typeSymbol.GetEnumValues())
+            {
+                if (enumValue.Value is not null && integerEnumValue.Equals(enumValue.Value))
+                {
+                    return $"{typeSymbol.ToDisplayString()}.{enumValue.Name}";
+                }
+            }
+
+            throw new MappaGeneratorException("Unexpected enumeration value");
+        }
+
+        static string GetCodeForArrays(TypedConstant array)
+        {
+            var arrayValues = array.Values;
+            var valuesAsCode = new string[arrayValues.Length];
+            for (var i = 0; i < arrayValues.Length; i++)
+            {
+                valuesAsCode[i] = ValueToCode(arrayValues[i]);
+            }
+
+            return $"new {array.Type?.ToDisplayString()}{{ {string.Join(", ", valuesAsCode)} }}";
+        }
     }
 }
