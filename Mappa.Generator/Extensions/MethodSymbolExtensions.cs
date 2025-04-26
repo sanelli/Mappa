@@ -59,9 +59,13 @@ internal static class MethodSymbolExtensions
             result.Add(mappaSettingAttribute);
         }
 
-        // Mappa Assign From Context Attributes
+        // Mappa Use Property Attribute
         var usePropertyAttributes = attributeDatas.GetMappaUsePropertyAttributes(compilation);
         result.AddRange(usePropertyAttributes);
+
+        // Mappa Assign From Constant Attributes
+        var assignFromConstantAttributes = attributeDatas.GetMappaAssignFromConstantAttributes(compilation);
+        result.AddRange(assignFromConstantAttributes);
 
         // All done.
         return [.. result];

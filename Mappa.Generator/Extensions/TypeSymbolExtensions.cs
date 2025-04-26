@@ -1425,6 +1425,7 @@ internal static class TypeSymbolExtensions
             "nint" => typeof(nint).ToString(),
             "nuint" => typeof(nuint).ToString(),
             "void" => typeof(void).ToString(),
+            "bool" => typeof(bool).ToString(),
             _ => type,
         };
 

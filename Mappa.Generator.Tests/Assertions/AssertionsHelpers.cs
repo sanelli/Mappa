@@ -59,7 +59,8 @@ internal static partial class AssertionsHelpers
 
         if (type.EndsWith("[]", StringComparison.Ordinal))
         {
-            var elementType = compilation.GetTypeByMetadataName(type.Replace("[]", string.Empty, StringComparison.Ordinal));
+            var arrayElementTypeStr = TypeSymbolExtensions.NormalizeType(type.Replace("[]", string.Empty, StringComparison.Ordinal));
+            var elementType = compilation.GetTypeByMetadataName(arrayElementTypeStr);
             var arraySymbol = compilation.CreateArrayTypeSymbol(elementType!, 1);
             return arraySymbol;
         }

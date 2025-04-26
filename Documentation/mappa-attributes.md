@@ -9,6 +9,7 @@ This is the list of attributes provided:
 - `MappaUseProperty`: When mapping structured types (`class`, `struct` and `records`) allows specifying which property uses from the source property for a target property or constructor parameter;
 - `MappaAssignFromContext`:  When mapping structured types (`class`, `struct` and `records`) allows specifying which value from the context of type `MappaContext` use for a target property or constructor parameter;
 - `MappaInvokeMethodAttribute`:  When mapping structured types (`class`, `struct` and `records`) allows specifying that a property or attribute should be mapped by invoking a method.
+- `MappaAssignFromConstant`: When mapping structured types (`class`, `struct` and `records`) allows specifying a constant value for a target property or constructor parameter;
 
 The [Mappa](https://www.nuget.org/packages/Mappa/) package also provides the `MappaContext` class that can be used to pass contextual values to mappers via the `MappaAssignFromContext` attribute.
 
@@ -22,7 +23,7 @@ Via `MappaSettings` the following settings can be identified:
 - `CultureInfoSetting`: define which culture use when mapping any of the above types (can be current culture, invariant culture or user defined culture);
 - `CultureName`: define the culture to use then user defined culture is selected by `CultureInfoSetting`;
 - `ProtobufOptional`: enable or disable the ability of [Mappa source generator](https://www.nuget.org/packages/Mappa.Generator/) to handle `optional` fields in protobuf models;
-- `PragmaWarning`: allows to surround the generated methods with a `#pragma warning disable` block.
+- `PragmaWarning`: allows surrounding the generated methods with a `#pragma warning disable` block.
 
 # .editorconfig
 Global configuration can be setup via the `.editorconfig` file; the following values can be set (if not provided the default value is used):
