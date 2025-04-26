@@ -4,6 +4,7 @@
 
 using System.Collections;
 
+using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Tests.Abstractions;
 using Mappa.Generator.Tests.Assertions;
 using Mappa.Generator.Tests.Assertions.Extensions;
@@ -13,8 +14,6 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Tests around <see cref="MappaAssignFromConstantAttribute"/>.
 /// </summary>
-// TODO [#53] An error is emitted when multiple attributes target the same property.
-// TODO [#53] An error is emitted when multiple attributes target the same constructor parameter.
 public sealed class MappaAssignFromConstantAttributeIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {
@@ -486,6 +485,102 @@ public sealed class MappaAssignFromConstantAttributeIntegrationTests
                             syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_2"));
                         });
                 });
+    }
+
+    /// <summary>
+    /// Test an error is emitted when multiple <see cref="MappaAssignFromConstantAttribute"/>
+    /// target the same property.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task AnErrorIsEmittedWhenMultipleAttributesTargetTheSameProperty()
+    {
+        // Arrange
+        const string sourceCode = """
+                           #nullable enable
+                           using Mappa;
+                           using Mappa.Attributes;
+
+                           namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                           public enum MyEnum
+                           {
+                             One,
+                             Two,
+                           }
+
+                           public class Source { }
+                           public class Target {
+                              public int Property { get; set; }
+                           }
+
+                           [Mappa]
+                           public sealed partial class Mapper
+                           {
+                               [MappaAssignFromConstant(nameof(Target.Property), -1)]
+                               [MappaAssignFromConstant(nameof(Target.Property), 1)]
+                               public partial Target Map(Source input, MappaContext context);
+                           }
+                           #nullable restore
+                           """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(2)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.MultipleAttributesTargetTheSamePropertyOrParameter, "Map", "Property")
+            .HaveDiagnostic(MappaDiagnosticDescriptors.CannotIdentifyStrategy, "Mappa.Generator.Tests.UnitTests.SourceCode.Source", "Mappa.Generator.Tests.UnitTests.SourceCode.Target");
+    }
+
+    /// <summary>
+    /// Test an error is emitted when multiple <see cref="MappaAssignFromConstantAttribute"/>
+    /// target the same constructor parameter.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task AnErrorIsEmittedWhenMultipleAttributesTargetTheSameConstructorParameter()
+    {
+        // Arrange
+        const string sourceCode = """
+                           #nullable enable
+                           using Mappa;
+                           using Mappa.Attributes;
+
+                           namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                           public enum MyEnum
+                           {
+                             One,
+                             Two,
+                           }
+
+                           public class Source { }
+                           public class Target {
+                              public Target(int value) { }
+                           }
+
+                           [Mappa]
+                           public sealed partial class Mapper
+                           {
+                               [MappaAssignFromConstant("value", -1)]
+                               [MappaAssignFromConstant("value", 1)]
+                               public partial Target Map(Source input, MappaContext context);
+                           }
+                           #nullable restore
+                           """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(2)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.MultipleAttributesTargetTheSamePropertyOrParameter, "Map", "value")
+            .HaveDiagnostic(MappaDiagnosticDescriptors.CannotIdentifyStrategy, "Mappa.Generator.Tests.UnitTests.SourceCode.Source", "Mappa.Generator.Tests.UnitTests.SourceCode.Target");
     }
 
     private static void AssertInitArrayValue(ExpressionSyntaxAssertions initializationAssertions, string type, object? value)
