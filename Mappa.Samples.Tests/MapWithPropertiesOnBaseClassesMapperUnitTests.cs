@@ -77,4 +77,34 @@ public sealed class MapWithPropertiesOnBaseClassesMapperUnitTests
         target.IntegerProperty.Should().Be(source.IntegerProperty);
         target.LongProperty.Should().Be(source.LongProperty);
     }
+
+    /// <summary>
+    /// Test for <see cref="MapWithPropertiesOnBaseClassesMapper.MapFromInterface"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void TestMapFromInterface()
+    {
+        // Arrange
+        var source = new DerivedInterfaceModelImpl
+        {
+            LongProperty = 124,
+            DoubleProperty = 12.34,
+        };
+
+        // Act
+        var target = this.mapper.MapFromInterface(source);
+
+        // Assert
+        target.LongProperty.Should().Be(source.LongProperty);
+        target.DoubleProperty.Should().Be(source.DoubleProperty);
+    }
+
+    private sealed class DerivedInterfaceModelImpl
+        : IDerivedInterfaceModel
+    {
+        public long LongProperty { get; set; }
+
+        public double DoubleProperty { get; set; }
+    }
 }
