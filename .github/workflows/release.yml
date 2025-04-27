@@ -23,9 +23,9 @@ jobs:
         shell: pwsh
         run:
           ./Scripts/CreateNuGetConfig.ps1
-      - name: Build
+      - name: Build Release Packages
         shell: pwsh
-        run: ./Scripts/RebuildUponVersionChange.ps1
+        run: ./Scripts/BuildRelease.ps1
       - name: Publish Nuget packages
         shell: pwsh
         run: |
