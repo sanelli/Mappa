@@ -919,7 +919,20 @@ internal static class TypeSymbolExtensions
     /// <returns>The symbol properties.</returns>
     internal static IEnumerable<IPropertySymbol> GetTypeProperties(this ITypeSymbol typeSymbol)
     {
-        return typeSymbol.GetMembers().OfType<IPropertySymbol>();
+        HashSet<string> propertyNames = new();
+        List<IPropertySymbol> properties = new();
+        ITypeSymbol? currentType = typeSymbol;
+        while (currentType is not null)
+        {
+            properties.AddRange(currentType
+                .GetMembers()
+                .OfType<IPropertySymbol>()
+                .Where(property => propertyNames.Add(property.Name)));
+
+            currentType = currentType.BaseType;
+        }
+
+        return properties;
     }
 
     /// <summary>
