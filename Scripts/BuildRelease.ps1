@@ -1,19 +1,14 @@
-dotnet clean -c Release ./Mappa
-dotnet clean -c Release ./Mappa.Generator
-dotnet clean -c Release ./Mappa.Samples
-dotnet clean -c Release ./Mappa.Samples.Aot
-dotnet clean -c Release ./Mappa.Benchmark
-dotnet clean -c Release ./Mappa.Dependency.Protobuf
-dotnet clean -c Release ./Mappa.Dependency.Protobuf.DependencyInjection
-dotnet clean -c Release ./Mappa.Dependency.Bson
-dotnet clean -c Release ./Mappa.Dependency.Bson.DependencyInjection
+foreach ($project in $(
+        "Mappa", "Mappa.Generator",
+        "Mappa.Dependency.Protobuf", "Mappa.Dependency.Protobuf.DependencyInjection",
+        "Mappa.Dependency.Bson", "Mappa.Dependency.Bson.DependencyInjection"))
+{
+    dotnet clean -c Release $project
+    dotnet build -c Release $project
+    if (-not $?)
+    {
+        exit 1
+    }
+}
 
-dotnet build -c Release ./Mappa
-dotnet build -c Release ./Mappa.Generator
-dotnet build -c Release ./Mappa.Samples
-dotnet build -c Release ./Mappa.Samples.Aot
-dotnet build -c Release ./Mappa.Benchmark
-dotnet build -c Release ./Mappa.Dependency.Protobuf
-dotnet build -c Release ./Mappa.Dependency.Protobuf.DependencyInjection
-dotnet build -c Release ./Mappa.Dependency.Bson
-dotnet build -c Release ./Mappa.Dependency.Bson.DependencyInjection
+exit 0
