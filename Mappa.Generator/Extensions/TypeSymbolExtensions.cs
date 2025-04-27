@@ -921,15 +921,34 @@ internal static class TypeSymbolExtensions
     {
         HashSet<string> propertyNames = new();
         List<IPropertySymbol> properties = new();
-        ITypeSymbol? currentType = typeSymbol;
-        while (currentType is not null)
+
+        if (typeSymbol.TypeKind == TypeKind.Interface)
         {
-            properties.AddRange(currentType
+            properties.AddRange(typeSymbol
                 .GetMembers()
                 .OfType<IPropertySymbol>()
                 .Where(property => propertyNames.Add(property.Name)));
 
-            currentType = currentType.BaseType;
+            foreach (var currentType in typeSymbol.AllInterfaces)
+            {
+                properties.AddRange(currentType
+                    .GetMembers()
+                    .OfType<IPropertySymbol>()
+                    .Where(property => propertyNames.Add(property.Name)));
+            }
+        }
+        else
+        {
+            ITypeSymbol? currentType = typeSymbol;
+            while (currentType is not null)
+            {
+                properties.AddRange(currentType
+                    .GetMembers()
+                    .OfType<IPropertySymbol>()
+                    .Where(property => propertyNames.Add(property.Name)));
+
+                currentType = currentType.BaseType;
+            }
         }
 
         return properties;

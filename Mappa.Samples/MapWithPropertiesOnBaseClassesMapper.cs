@@ -27,4 +27,11 @@ public sealed partial class MapWithPropertiesOnBaseClassesMapper
     /// <param name="input">The input model.</param>
     /// <returns>The target model.</returns>
     public partial DerivedClassTargetModelWithConstructor MapToClassWithConstructor(DerivedClassSourceModel input);
+
+    /// <summary>
+    /// Map from <see cref="IDerivedInterfaceModel"/> to <see cref="TargetForDerivedInterfaceModel"/>.
+    /// </summary>
+    /// <param name="input">The input model.</param>
+    /// <returns>The target model.</returns>
+    public partial TargetForDerivedInterfaceModel MapFromInterface(IDerivedInterfaceModel input);
 }
