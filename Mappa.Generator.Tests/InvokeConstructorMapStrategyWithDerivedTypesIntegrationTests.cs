@@ -453,4 +453,86 @@ public sealed class InvokeConstructorMapStrategyWithDerivedTypesIntegrationTests
                                 expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_3")));
                 });
     }
+
+    /// <summary>
+    /// Can map to and from properties derived from interfaces.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapToAndFromPropertiesImplementedFromInterfaces()
+    {
+        // Arrange
+        const string sourceCode = """
+                                #nullable enable
+                                using Mappa.Attributes;
+
+                                namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                                
+                                public interface TheSourceInterface
+                                {
+                                   public string Property {get; set;}
+                                }
+                                
+                                public class Source
+                                    : TheSourceInterface
+                                {
+                                    public string Property {get; set;}
+                                }
+                                
+                                public interface TheTargetInterface
+                                {
+                                   public string Property {get; set;}
+                                }
+
+                                public class Target
+                                    : TheTargetInterface
+                                {
+                                    public string Property {get; set;}
+                                }
+                                  
+                                [Mappa]
+                                public sealed partial class Mapper
+                                {
+                                    public partial Target Map(Source input);
+                                }
+                                #nullable restore
+                                """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                NullableAnnotation.NotAnnotated,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(3)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                "string",
+                                "__mappa_tmp_1",
+                                initializerAssertions => initializerAssertions.BeMemberAccessExpressionSyntax("input.Property")))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                "__mappa_tmp_2",
+                                initializerAssertions =>
+                                    initializerAssertions.BeObjectCreationExpressionSyntax(
+                                        "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                        ("Property", initAssertions => initAssertions.BeIdentifierNameSyntax("__mappa_tmp_1")))))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeReturnStatement(
+                                expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_2")));
+                });
+    }
 }
