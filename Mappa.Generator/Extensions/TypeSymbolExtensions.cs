@@ -919,13 +919,16 @@ internal static class TypeSymbolExtensions
     /// <returns>The symbol properties.</returns>
     internal static IEnumerable<IPropertySymbol> GetTypeProperties(this ITypeSymbol typeSymbol)
     {
-        // TODO [#153] Handle overridden property.
-        // TODO [#153] Handle "new" property.
+        HashSet<string> propertyNames = new();
         List<IPropertySymbol> properties = new();
         ITypeSymbol? currentType = typeSymbol;
         while (currentType is not null)
         {
-            properties.AddRange(currentType.GetMembers().OfType<IPropertySymbol>());
+            properties.AddRange(currentType
+                .GetMembers()
+                .OfType<IPropertySymbol>()
+                .Where(property => propertyNames.Add(property.Name)));
+
             currentType = currentType.BaseType;
         }
 

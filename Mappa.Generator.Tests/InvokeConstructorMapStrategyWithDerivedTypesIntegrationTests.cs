@@ -12,14 +12,11 @@ namespace Mappa.Generator.Tests;
 /// Class to test mapping between structured types works
 /// on derived classes.
 /// </summary>
-// TODO [#153] Test overridden property on parent class.
-// TODO [#153] Test "new" property on parent class.
-// TODO [#153] Test implicitly implemented property from interface.
 public sealed class InvokeConstructorMapStrategyWithDerivedTypesIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {
     /// <summary>
-    /// Test for bug <a href="https://github.com/sanelli/Mappa/issues/153">#153</a>.
+    /// Test for bug <see href="https://github.com/sanelli/Mappa/issues/153">#153</see>.
     /// </summary>
     /// <returns>The async task.</returns>
     [Fact]
@@ -269,6 +266,188 @@ public sealed class InvokeConstructorMapStrategyWithDerivedTypesIntegrationTests
                                         "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
                                         firstParameterAssertions => firstParameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_1"),
                                         secondParameterAssertions => secondParameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_2"))))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeReturnStatement(
+                                expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_3")));
+                });
+    }
+
+    /// <summary>
+    /// Can map using overridden properties in both source and target.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapFromPropertyToPropertyThatAreOverridden()
+    {
+        // Arrange
+        const string sourceCode = """
+                                #nullable enable
+                                using Mappa.Attributes;
+
+                                namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                                
+                                public class BaseSource
+                                {
+                                   public virtual string VirtualOnSourceProperty {get; set;}
+                                }
+                                
+                                public class Source
+                                    : BaseSource
+                                {
+                                   public override string VirtualOnSourceProperty {get; set;}
+                                   public string VirtualOnTargetProperty {get; set;}
+                                }
+
+                                public class BaseTarget
+                                {
+                                   public virtual string VirtualOnTargetProperty {get; set;}
+                                }
+                                
+                                public class Target
+                                    : BaseTarget
+                                {
+                                   public string VirtualOnSourceProperty {get; set;}
+                                   public override string VirtualOnTargetProperty {get; set;}
+                                }
+                                  
+                                [Mappa]
+                                public sealed partial class Mapper
+                                {
+                                    public partial Target Map(Source input);
+                                }
+                                #nullable restore
+                                """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                NullableAnnotation.NotAnnotated,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(4)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                "string",
+                                "__mappa_tmp_1",
+                                initializerAssertions => initializerAssertions.BeMemberAccessExpressionSyntax("input.VirtualOnSourceProperty")))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                "string",
+                                "__mappa_tmp_2",
+                                initializerAssertions => initializerAssertions.BeMemberAccessExpressionSyntax("input.VirtualOnTargetProperty")))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                "__mappa_tmp_3",
+                                initializerAssertions =>
+                                    initializerAssertions.BeObjectCreationExpressionSyntax(
+                                        "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                        ("VirtualOnSourceProperty", initAssertions => initAssertions.BeIdentifierNameSyntax("__mappa_tmp_1")),
+                                        ("VirtualOnTargetProperty", initAssertions => initAssertions.BeIdentifierNameSyntax("__mappa_tmp_2")))))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeReturnStatement(
+                                expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_3")));
+                });
+    }
+
+    /// <summary>
+    /// Can map using hidden properties in both source and target.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapFromPropertyToPropertyThatAreHidden()
+    {
+        // Arrange
+        const string sourceCode = """
+                                #nullable enable
+                                using Mappa.Attributes;
+
+                                namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                                
+                                public class BaseSource
+                                {
+                                   public string PropertyA {get; set;}
+                                   public string PropertyB {get; set;}
+                                }
+                                
+                                public class Source
+                                    : BaseSource
+                                {
+                                   public new string PropertyA {get; set;}
+                                   public string PropertyB {get; set;}
+                                }
+
+                                public class BaseTarget
+                                {
+                                  public string PropertyA {get; set;}
+                                  public string PropertyB {get; set;}
+                                }
+                                
+                                public class Target
+                                    : BaseTarget
+                                {
+                                  public string PropertyA {get; set;}
+                                  public new string PropertyB {get; set;}
+                                }
+                                  
+                                [Mappa]
+                                public sealed partial class Mapper
+                                {
+                                    public partial Target Map(Source input);
+                                }
+                                #nullable restore
+                                """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                NullableAnnotation.NotAnnotated,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(4)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                "string",
+                                "__mappa_tmp_1",
+                                initializerAssertions => initializerAssertions.BeMemberAccessExpressionSyntax("input.PropertyA")))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                "string",
+                                "__mappa_tmp_2",
+                                initializerAssertions => initializerAssertions.BeMemberAccessExpressionSyntax("input.PropertyB")))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                "__mappa_tmp_3",
+                                initializerAssertions =>
+                                    initializerAssertions.BeObjectCreationExpressionSyntax(
+                                        "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                        ("PropertyA", initAssertions => initAssertions.BeIdentifierNameSyntax("__mappa_tmp_1")),
+                                        ("PropertyB", initAssertions => initAssertions.BeIdentifierNameSyntax("__mappa_tmp_2")))))
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                             syntaxNodeAssertions.BeReturnStatement(
                                 expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_3")));
