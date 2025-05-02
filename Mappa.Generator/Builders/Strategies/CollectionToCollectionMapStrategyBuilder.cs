@@ -407,8 +407,8 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
         return sourceTypeSymbol.IsArray()
                || sourceTypeSymbol.IsSpan(context.Compilation)
                || sourceTypeSymbol.IsReadOnlySpan(context.Compilation)
-               || sourceTypeSymbol.IsMemory(context.Compilation) // Indexer by accessing the Span property
-               || sourceTypeSymbol.IsReadOnlyMemory(context.Compilation) // Indexer by accessing the Span property
+               || sourceTypeSymbol.IsMemory(context.Compilation) // Indexed by accessing the Span property
+               || sourceTypeSymbol.IsReadOnlyMemory(context.Compilation) // Indexed by accessing the Span property
                || sourceTypeSymbol.IsOrImplementIList();
     }
 
