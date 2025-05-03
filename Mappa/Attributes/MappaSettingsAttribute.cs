@@ -66,4 +66,10 @@ public sealed class MappaSettingsAttribute
     /// by <c>#pragma warning disable</c>.
     /// </summary>
     public PragmaWarningSetting PragmaWarning { get; set; } = PragmaWarningSetting.Undefined;
+
+    /// <summary>
+    /// Gets or sets a value indicating weather to use <c>Span{T}</c> for fast iterations
+    /// over arrays and <see cref="List{T}"/> by.
+    /// </summary>
+    public BooleanSetting FastCollections { get; set; } = BooleanSetting.Undefined;
 }
