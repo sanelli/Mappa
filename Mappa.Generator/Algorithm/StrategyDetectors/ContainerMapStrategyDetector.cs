@@ -53,7 +53,6 @@ internal sealed class ContainerMapStrategyDetector
         }
 
         // 02. Collection -> Collection strategy.
-        // TODO [#24] Add support for faster iteration using Span<>.
         // TODO [#29] Allow to prefer returning array over lists for interfaces.
         // TODO [#108] Prevent using Enumerable.Count() when the user asks for it.
         else if (this.CanMapCollectionToCollection(out var elementStrategy))
@@ -62,7 +61,8 @@ internal sealed class ContainerMapStrategyDetector
                 this.context.TargetType,
                 this.context.SourceType,
                 elementStrategy,
-                this.context.MapMethod?.MethodSymbol);
+                this.context.MapMethod?.MethodSymbol,
+                this.context.MappaUserSettings.FastCollections);
         }
 
         return mapStrategy is not NoMapStrategy;
