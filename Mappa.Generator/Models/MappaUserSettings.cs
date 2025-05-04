@@ -23,6 +23,7 @@ internal sealed class MappaUserSettings
     private readonly StackSetting<string?> cultureName;
     private readonly StackSetting<BooleanSetting> protobufOptional;
     private readonly StackSetting<PragmaWarningSetting> pragmaWarning;
+    private readonly StackSetting<BooleanSetting> fastCollections;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaUserSettings"/> class.
@@ -39,7 +40,8 @@ internal sealed class MappaUserSettings
             otherSettings.CultureInfoSetting,
             otherSettings.CultureName,
             otherSettings.ProtobufOptional,
-            otherSettings.PragmaWarning)
+            otherSettings.PragmaWarning,
+            otherSettings.FastCollections)
     {
     }
 
@@ -56,6 +58,7 @@ internal sealed class MappaUserSettings
     /// <param name="cultureName">The default culture info to use to generate a format provider.</param>
     /// <param name="protobufOptional">Enable or disable (protobuf) optional feature.</param>
     /// <param name="pragmaWarningSetting">Allow to surround the code generated with a <c>#pragma warning disable</c> block.</param>
+    /// <param name="fastCollections">Enable or disable fast collection iterations for arrays and <see cref="List{T}"/> via <c>Span{T}</c>.</param>
     private MappaUserSettings(
         string? dateTimeFormat,
         string? dateTimeOffsetFormat,
@@ -66,7 +69,8 @@ internal sealed class MappaUserSettings
         CultureInfoSetting cultureInfoSetting,
         string? cultureName,
         BooleanSetting protobufOptional,
-        PragmaWarningSetting pragmaWarningSetting)
+        PragmaWarningSetting pragmaWarningSetting,
+        BooleanSetting fastCollections)
     {
         this.dateTimeFormat = new(dateTimeFormat);
         this.dateTimeOffsetFormat = new(dateTimeOffsetFormat);
@@ -78,6 +82,7 @@ internal sealed class MappaUserSettings
         this.cultureName = new(cultureName);
         this.protobufOptional = new(protobufOptional);
         this.pragmaWarning = new(pragmaWarningSetting);
+        this.fastCollections = new(fastCollections);
     }
 
     /// <inheritdoc />
@@ -110,6 +115,9 @@ internal sealed class MappaUserSettings
     /// <inheritdoc/>
     public PragmaWarningSetting PragmaWarning => this.pragmaWarning;
 
+    /// <inheritdoc/>
+    public BooleanSetting FastCollections => this.fastCollections;
+
     /// <summary>
     /// Push the changes required by the <paramref name="mappaSettingsAttribute"/> on the stack.
     /// If <paramref name="mappaSettingsAttribute"/> is <c>null</c>
@@ -137,6 +145,7 @@ internal sealed class MappaUserSettings
             this.cultureName.Apply(mappaSettingsAttribute.CultureName ?? this.cultureName),
             this.protobufOptional.Apply(mappaSettingsAttribute.ProtobufOptional is not BooleanSetting.Undefined ? mappaSettingsAttribute.ProtobufOptional : this.protobufOptional),
             this.pragmaWarning.Apply(mappaSettingsAttribute.PragmaWarning is not PragmaWarningSetting.Undefined ? mappaSettingsAttribute.PragmaWarning : this.pragmaWarning),
+            this.fastCollections.Apply(mappaSettingsAttribute.FastCollections is not BooleanSetting.Undefined ? mappaSettingsAttribute.FastCollections : this.fastCollections),
  #pragma warning restore CA2000
         ]);
     }

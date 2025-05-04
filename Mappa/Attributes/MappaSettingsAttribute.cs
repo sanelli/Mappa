@@ -69,7 +69,7 @@ public sealed class MappaSettingsAttribute
 
     /// <summary>
     /// Gets or sets a value indicating weather to use <c>Span{T}</c> for fast iterations
-    /// over arrays and <see cref="List{T}"/> by.
+    /// over arrays and <see cref="List{T}"/>.
     /// </summary>
     public BooleanSetting FastCollections { get; set; } = BooleanSetting.Undefined;
 }

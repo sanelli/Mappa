@@ -54,11 +54,17 @@ internal interface IMappaUserSettings
     /// <summary>
     /// Gets a value indicating whether the protobuf optional feature is enabled when performing mapping.
     /// </summary>
-    public BooleanSetting ProtobufOptional { get; }
+    BooleanSetting ProtobufOptional { get; }
 
     /// <summary>
     /// Gets a value indicating weather the mapping method should be surrounded
     /// by <c>#pragma warning disable</c>.
     /// </summary>
-    public PragmaWarningSetting PragmaWarning { get; }
+    PragmaWarningSetting PragmaWarning { get; }
+
+    /// <summary>
+    /// Gets a value indicating weather to use <c>Span{T}</c> for fast iterations
+    /// over arrays and <see cref="List{T}"/>.
+    /// </summary>
+    BooleanSetting FastCollections { get; }
 }

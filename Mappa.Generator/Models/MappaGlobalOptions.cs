@@ -57,7 +57,11 @@ namespace Mappa.Generator.Models;
 ///     </item>
 ///     <item>
 ///         <term><c>mappa.pragmawarning</c></term>
-///         <description>Set the default value disable or  nor apply the <c>#pragma warning</c> around the mapping method. Valid values are the values from the <see cref="PragmaWarningSetting"/> <c>enum</c>.</description>
+///         <description>Set the default value disable or not apply the <c>#pragma warning</c> around the mapping method. Valid values are the values from the <see cref="PragmaWarningSetting"/> <c>enum</c>.</description>
+///     </item>
+///     <item>
+///         <term><c>mappa.fastcollections</c></term>
+///         <description>Set the default value to enable or disable the fast iteration for arrays and list using <c>span{T}</c>.</description>
 ///     </item>
 /// </list>
 /// </summary>
@@ -77,6 +81,7 @@ internal sealed class MappaGlobalOptions
     private const string MappaSettingsCultureName = "culturename";
     private const string MappaSettingsProtobufOptional = "protobufoptional";
     private const string MappaSettingsPragmaWarning = "pragmawarning";
+    private const string MappaSettingsFastCollections = "fastcollections";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaGlobalOptions"/> class.
@@ -143,6 +148,10 @@ internal sealed class MappaGlobalOptions
         this.PragmaWarning = options.TryGetValue(GetOptionName(MappaSettingsPragmaWarning), out var pragmaWarning)
             ? GetPragmaWarningSettingFromString(pragmaWarning)
             : PragmaWarningSetting.NoBlock;
+
+        this.FastCollections = options.TryGetValue(GetOptionName(MappaSettingsFastCollections), out var fastCollections)
+            ? GetBooleanSettingFromString(fastCollections)
+            : BooleanSetting.Undefined;
 
         static CultureInfoSetting GetCultureInfoSettingsFromString(string cultureInfoSettings)
         {
@@ -239,6 +248,9 @@ internal sealed class MappaGlobalOptions
 
     /// <inheritdoc/>
     public PragmaWarningSetting PragmaWarning { get; }
+
+    /// <inheritdoc/>
+    public BooleanSetting FastCollections { get; }
 
     /// <summary>
     /// Gets a value indicating whether to report debug INFO diagnostics.
