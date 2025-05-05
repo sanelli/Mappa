@@ -200,6 +200,10 @@ internal static class AttributeDataExtensions
                 case nameof(MappaSettingsAttribute.PragmaWarning) when namedArgument.Value.Value is int value:
                     attribute.PragmaWarning = (PragmaWarningSetting)value;
                     break;
+
+                case nameof(MappaSettingsAttribute.FastCollections) when namedArgument.Value.Value is int value:
+                    attribute.FastCollections = (BooleanSetting)value;
+                    break;
             }
         }
 
