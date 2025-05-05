@@ -224,14 +224,6 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
             stringBuilder.AppendLine($"{targetTypeSymbol.GetElementType().ToDisplayString()}[] {targetVariableName} = new {targetTypeSymbol.GetElementType().ToDisplayString()}[{capacity}];");
             stringBuilder.AppendLine($"global::System.Span<{targetTypeSymbol.GetElementType().ToDisplayString()}> {variableToAccessFrom} = {targetVariableName}.AsSpan();");
         }
-        else if (isFastCollectionOnSource && targetTypeSymbol.IsList(context.Compilation))
-        {
-            insertionMethod = InsertionMethod.Indexer;
-            TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out var capacity);
-            variableToAccessFrom = context.NextTemporary();
-            stringBuilder.AppendLine($"global::System.Collections.Generic.List<{targetTypeSymbol.GetElementType().ToDisplayString()}> {targetVariableName} = new global::System.Collections.Generic.List<{targetTypeSymbol.GetElementType().ToDisplayString()}>({capacity});");
-            stringBuilder.AppendLine($"global::System.Span<{targetTypeSymbol.GetElementType().ToDisplayString()}> {variableToAccessFrom} = global::System.Runtime.InteropServices.CollectionsMarshal.AsSpan<{targetTypeSymbol.GetElementType().ToDisplayString()}>({targetVariableName});");
-        }
         else if (targetTypeSymbol.IsArray()
                   || targetTypeSymbol.IsSpan(context.Compilation)
                   || targetTypeSymbol.IsReadOnlySpan(context.Compilation)
