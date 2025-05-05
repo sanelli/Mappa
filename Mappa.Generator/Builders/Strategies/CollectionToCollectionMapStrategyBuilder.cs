@@ -227,9 +227,9 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
         else if (isFastCollectionOnSource && targetTypeSymbol.IsList(context.Compilation))
         {
             insertionMethod = InsertionMethod.Indexer;
-            var capacity = GetLengthExpression(source, sourceTypeSymbol, context.Compilation);
+            TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out var capacity);
             variableToAccessFrom = context.NextTemporary();
-            stringBuilder.AppendLine($"{targetTypeSymbol.GetElementType().ToDisplayString()}[] {targetVariableName} = new {targetTypeSymbol.GetElementType().ToDisplayString()}[{capacity}];");
+            stringBuilder.AppendLine($"global::System.Collections.Generic.List<{targetTypeSymbol.GetElementType().ToDisplayString()}> {targetVariableName} = new global::System.Collections.Generic.List<{targetTypeSymbol.GetElementType().ToDisplayString()}>({capacity});");
             stringBuilder.AppendLine($"global::System.Span<{targetTypeSymbol.GetElementType().ToDisplayString()}> {variableToAccessFrom} = global::System.Runtime.InteropServices.CollectionsMarshal.AsSpan<{targetTypeSymbol.GetElementType().ToDisplayString()}>({targetVariableName});");
         }
         else if (targetTypeSymbol.IsArray()
