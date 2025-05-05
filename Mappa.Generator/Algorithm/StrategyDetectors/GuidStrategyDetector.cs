@@ -40,13 +40,13 @@ internal sealed class GuidStrategyDetector
         // 1. Guid -> byte[] or Span<byte> or ReadOnlySpan<byte> or Memory<byte> or ReadOnlyMemory<byte>
         if (this.CanMapFromGuidToArray())
         {
-            // TODO [#47] Implement me.
+            mapStrategy = new GuidToArrayLikeStrategy(this.context.TargetType, this.context.SourceType);
         }
 
         // 2. byte[] or Span<byte> or ReadOnlySpan<byte> or ReadOnlyMemory<byte> or Memory<byte?-> Guid
         else if (this.CanMapFromArrayToGuid())
         {
-            // TODO [#47] Implement me.
+            mapStrategy = new ArrayLikeToGuidStrategy(this.context.TargetType, this.context.SourceType);
         }
 
         return mapStrategy is not NoMapStrategy;
