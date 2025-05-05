@@ -102,7 +102,13 @@ where `TSource` is the source type of the mapping and `TTarget` is the target ty
     - _Notes_:
        - Both named and un-named tuples are supported
        - The type `Tuple<T>` (and its variations with more elements) are supported;
-9. <u>Constructor strategy</u>:
+9. <u>Guid strategy</u>:
+    - _When_:
+      - `TSource` is `Guid` and `TTarget` is `byte[]` or `Span<byte>` or `ReadOnlySpan<byte>` or `Memory<byte>` or `ReadOnlyMemory<byte>`, OR
+      - `TSource` is `byte[]` or `Span<byte>` or `ReadOnlySpan<byte>` or `Memory<byte>` or `ReadOnlyMemory<byte>` and `TTarget` is `Guid`;
+   - _What_:
+     - A mapping from `Guid` to `byte[]`/`Span<byte>` is defined using the relevant `Guid` constructors or the `Guid.ToByteArray()` method
+10. <u>Constructor strategy</u>:
     - _When_:
        - `TTarget` type has one constructor with no parameters and each property with a setter can be assigned from a `TSource` property with the same name (case-sensitive) OR,
        - `TTarget` type has one constructor with parameters and each constructor argument can be assigned from a `TSource` property with the same name (case-insensitive);
