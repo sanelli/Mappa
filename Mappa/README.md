@@ -23,7 +23,8 @@ Via `MappaSettings` the following settings can be identified:
 - `CultureInfoSetting`: define which culture use when mapping any of the above types (can be current culture, invariant culture or user defined culture);
 - `CultureName`: define the culture to use then user defined culture is selected by `CultureInfoSetting`;
 - `ProtobufOptional`: enable or disable the ability of [Mappa source generator](https://www.nuget.org/packages/Mappa.Generator/) to handle `optional` fields in protobuf models;
-- `PragmaWarning`: allows surrounding the generated methods with a `#pragma warning disable` block.
+- `PragmaWarning`: allows surrounding the generated methods with a `#pragma warning disable` block;
+- `FastCollections`: uses `Span<T>` to make mappings involving arrays and `System.Collections.Generic.List<T>` faster.
 
 Relevant packages:
 - [Mappa source generator](https://www.nuget.org/packages/Mappa.Generator/): source generator that allows to automatically generate mapping between classes and value types;

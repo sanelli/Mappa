@@ -48,16 +48,19 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
             this.strategy.MethodSymbol,
             this.strategy.TargetType,
             this.strategy.SourceType,
+            this.strategy.FastCollections,
             out var targetVariableName,
             out var addMethod,
             out var targetCounterTemporary,
             out var interfaceMethodAccessMode,
-            out var interfaceToAccessFrom);
+            out var interfaceToAccessFrom,
+            out var variableToAccessFrom);
         using (AppendLoopBlock(
                    stringBuilder,
                    source,
                    context,
                    this.strategy.SourceType,
+                   this.strategy.FastCollections,
                    out var loopVariableName,
                    out var loopCounterTemporary))
         {
@@ -72,7 +75,7 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
             {
                 case InsertionMethod.Indexer:
                     var index = loopCounterTemporary ?? targetCounterTemporary ?? throw new MappaGeneratorException("Cannot identify a suitable index");
-                    stringBuilder.AppendLine($"{targetVariableName}[{index}] = {targetElementVariable};");
+                    stringBuilder.AppendLine($"{variableToAccessFrom ?? targetVariableName}[{index}] = {targetElementVariable};");
 
                     // If there is no counting variable from the loop the target counter must be increased.
                     if (string.IsNullOrWhiteSpace(loopCounterTemporary))
@@ -196,26 +199,40 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
         IMethodSymbol? methodSymbol,
         ITypeSymbol targetTypeSymbol,
         ITypeSymbol sourceTypeSymbol,
+        BooleanSetting fastCollections,
         out string targetVariableName,
         out InsertionMethod insertionMethod,
         out string? counterVariableName,
         out InterfaceMethodAccessMode interfaceMethodAccessMode,
-        out string interfaceToAccessFrom)
+        out string interfaceToAccessFrom,
+        out string? variableToAccessFrom)
     {
         targetVariableName = context.NextTemporary();
         counterVariableName = null;
         interfaceMethodAccessMode = InterfaceMethodAccessMode.None;
         interfaceToAccessFrom = string.Empty;
+        variableToAccessFrom = null;
 
-        if (targetTypeSymbol.IsArray()
-            || targetTypeSymbol.IsSpan(context.Compilation)
-            || targetTypeSymbol.IsReadOnlySpan(context.Compilation)
-            || targetTypeSymbol.IsMemory(context.Compilation)
-            || targetTypeSymbol.IsReadOnlyMemory(context.Compilation)
-            || targetTypeSymbol.IsIImmutableQueue(context.Compilation)
-            || targetTypeSymbol.IsImmutableQueue(context.Compilation)
-            || targetTypeSymbol.IsIImmutableStack(context.Compilation)
-            || targetTypeSymbol.IsImmutableStack(context.Compilation))
+        var isFastCollectionOnSource = fastCollections is BooleanSetting.Enable
+            && (sourceTypeSymbol.IsList(context.Compilation) || sourceTypeSymbol.IsArray());
+
+        if (isFastCollectionOnSource && targetTypeSymbol.IsArray())
+        {
+            insertionMethod = InsertionMethod.Indexer;
+            var capacity = GetLengthExpression(source, sourceTypeSymbol, context.Compilation);
+            variableToAccessFrom = context.NextTemporary();
+            stringBuilder.AppendLine($"{targetTypeSymbol.GetElementType().ToDisplayString()}[] {targetVariableName} = new {targetTypeSymbol.GetElementType().ToDisplayString()}[{capacity}];");
+            stringBuilder.AppendLine($"global::System.Span<{targetTypeSymbol.GetElementType().ToDisplayString()}> {variableToAccessFrom} = {targetVariableName}.AsSpan();");
+        }
+        else if (targetTypeSymbol.IsArray()
+                  || targetTypeSymbol.IsSpan(context.Compilation)
+                  || targetTypeSymbol.IsReadOnlySpan(context.Compilation)
+                  || targetTypeSymbol.IsMemory(context.Compilation)
+                  || targetTypeSymbol.IsReadOnlyMemory(context.Compilation)
+                  || targetTypeSymbol.IsIImmutableQueue(context.Compilation)
+                  || targetTypeSymbol.IsImmutableQueue(context.Compilation)
+                  || targetTypeSymbol.IsIImmutableStack(context.Compilation)
+                  || targetTypeSymbol.IsImmutableStack(context.Compilation))
         {
             // Array need indexers.
             insertionMethod = InsertionMethod.Indexer;
@@ -361,54 +378,13 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
         }
     }
 
-    private static IDisposable AppendLoopBlock(
-        PrettyCode.StringBuilder stringBuilder,
-        string source,
-        MappaBuilderContext context,
-        ITypeSymbol sourceTypeSymbol,
-        out string loopVariableName,
-        out string? countingVariableName)
-    {
-        // For array, Span<T> or anything implementing IList we can use a for loop
-        // this way we can also use Span<> for ever better performances.
-        string? spanTemporary = null;
-        if (HasIndexer(context, sourceTypeSymbol))
-        {
-            // For Memory<T> or ReadOnlyMemory<T> we need to access the Span<T>/ReadOnlySpan<T> instance via the Span property.
-            if (sourceTypeSymbol.IsMemory(context.Compilation))
-            {
-                spanTemporary = context.NextTemporary();
-                stringBuilder.AppendLine($"global::System.Span<{sourceTypeSymbol.GetElementType().ToDisplayString()}> {spanTemporary} = {source}.Span;");
-            }
-            else if (sourceTypeSymbol.IsReadOnlyMemory(context.Compilation))
-            {
-                spanTemporary = context.NextTemporary();
-                stringBuilder.AppendLine($"global::System.ReadOnlySpan<{sourceTypeSymbol.GetElementType().ToDisplayString()}> {spanTemporary} = {source}.Span;");
-            }
-
-            countingVariableName = context.NextTemporary();
-            loopVariableName = context.NextTemporary();
-
-            stringBuilder.AppendLine($"for (int {countingVariableName} = 0; {countingVariableName} < {GetLengthExpression(spanTemporary ?? source, sourceTypeSymbol, context.Compilation)}; ++{countingVariableName})");
-            var block = stringBuilder.CurlyBracesBlock();
-            stringBuilder.AppendLine($"{sourceTypeSymbol.GetElementType().ToDisplayString()} {loopVariableName} = {spanTemporary ?? source}[{countingVariableName}];");
-            return block;
-        }
-
-        // Let's use a generic foreach loop (therefore without a counter)!
-        countingVariableName = null;
-        loopVariableName = context.NextTemporary();
-        stringBuilder.AppendLine($"foreach ({sourceTypeSymbol.GetElementType().ToDisplayString()} {loopVariableName} in {source})");
-        return stringBuilder.CurlyBracesBlock();
-    }
-
     private static bool HasIndexer(MappaBuilderContext context, ITypeSymbol sourceTypeSymbol)
     {
         return sourceTypeSymbol.IsArray()
                || sourceTypeSymbol.IsSpan(context.Compilation)
                || sourceTypeSymbol.IsReadOnlySpan(context.Compilation)
-               || sourceTypeSymbol.IsMemory(context.Compilation) // Indexer by accessing the Span property
-               || sourceTypeSymbol.IsReadOnlyMemory(context.Compilation) // Indexer by accessing the Span property
+               || sourceTypeSymbol.IsMemory(context.Compilation) // Indexed by accessing the Span property
+               || sourceTypeSymbol.IsReadOnlyMemory(context.Compilation) // Indexed by accessing the Span property
                || sourceTypeSymbol.IsOrImplementIList();
     }
 
@@ -447,5 +423,61 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
         }
 
         return $"global::System.Linq.Enumerable.Count<{sourceTypeSymbol.GetElementType().ToDisplayString()}>({source})";
+    }
+
+    private static IDisposable AppendLoopBlock(
+        PrettyCode.StringBuilder stringBuilder,
+        string source,
+        MappaBuilderContext context,
+        ITypeSymbol sourceTypeSymbol,
+        BooleanSetting fastCollections,
+        out string loopVariableName,
+        out string? countingVariableName)
+    {
+        // For array, Span<T> or anything implementing IList we can use a for loop
+        // this way we can also use Span<> for ever better performances.
+        string? spanTemporary = null;
+        string? lengthExpression = null;
+        if (HasIndexer(context, sourceTypeSymbol))
+        {
+            // For Memory<T> or ReadOnlyMemory<T> we need to access the Span<T>/ReadOnlySpan<T> instance via the Span property.
+            if (sourceTypeSymbol.IsMemory(context.Compilation))
+            {
+                spanTemporary = context.NextTemporary();
+                stringBuilder.AppendLine($"global::System.Span<{sourceTypeSymbol.GetElementType().ToDisplayString()}> {spanTemporary} = {source}.Span;");
+            }
+            else if (sourceTypeSymbol.IsReadOnlyMemory(context.Compilation))
+            {
+                spanTemporary = context.NextTemporary();
+                stringBuilder.AppendLine($"global::System.ReadOnlySpan<{sourceTypeSymbol.GetElementType().ToDisplayString()}> {spanTemporary} = {source}.Span;");
+            }
+
+            // For arrays and list we can use Spans when the FastCollection settings is enabled.
+            else if (fastCollections is BooleanSetting.Enable && sourceTypeSymbol.IsArray())
+            {
+                spanTemporary = context.NextTemporary();
+                stringBuilder.AppendLine($"global::System.Span<{sourceTypeSymbol.GetElementType().ToDisplayString()}> {spanTemporary} = {source}.AsSpan();");
+            }
+            else if (fastCollections is BooleanSetting.Enable && sourceTypeSymbol.IsList(context.Compilation))
+            {
+                spanTemporary = context.NextTemporary();
+                lengthExpression = $"{spanTemporary}.Length"; // Force using length, GetLengthExpression uses the original type which usually is correct but not in this context.
+                stringBuilder.AppendLine($"global::System.Span<{sourceTypeSymbol.GetElementType().ToDisplayString()}> {spanTemporary} = global::System.Runtime.InteropServices.CollectionsMarshal.AsSpan<{sourceTypeSymbol.GetElementType().ToDisplayString()}>({source});");
+            }
+
+            countingVariableName = context.NextTemporary();
+            loopVariableName = context.NextTemporary();
+
+            stringBuilder.AppendLine($"for (int {countingVariableName} = 0; {countingVariableName} < {lengthExpression ?? GetLengthExpression(spanTemporary ?? source, sourceTypeSymbol, context.Compilation)}; ++{countingVariableName})");
+            var block = stringBuilder.CurlyBracesBlock();
+            stringBuilder.AppendLine($"{sourceTypeSymbol.GetElementType().ToDisplayString()} {loopVariableName} = {spanTemporary ?? source}[{countingVariableName}];");
+            return block;
+        }
+
+        // Let's use a generic foreach loop (therefore without a counter)!
+        countingVariableName = null;
+        loopVariableName = context.NextTemporary();
+        stringBuilder.AppendLine($"foreach ({sourceTypeSymbol.GetElementType().ToDisplayString()} {loopVariableName} in {source})");
+        return stringBuilder.CurlyBracesBlock();
     }
 }
