@@ -662,6 +662,22 @@ internal static class TypeSymbolExtensions
     }
 
     /// <summary>
+    /// Check if the type is <see cref="byte"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="byte"/>.</returns>
+    internal static bool IsByte(this ITypeSymbol typeSymbol)
+    {
+        switch (typeSymbol.SpecialType)
+        {
+            case SpecialType.System_Byte:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /// <summary>
     /// Check if the type is a boolean type.
     /// </summary>
     /// <param name="typeSymbol">The type symbol.</param>
