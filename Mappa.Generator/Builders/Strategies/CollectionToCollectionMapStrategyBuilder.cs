@@ -470,7 +470,7 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
             {
                 spanTemporary = context.NextTemporary();
                 lengthExpression = $"{spanTemporary}.Length"; // Force using length, GetLengthExpression uses the original type which usually is correct but not in this context.
-                stringBuilder.AppendLine($"global::System.Span<{sourceTypeSymbol.GetElementType().ToDisplayString()}> {spanTemporary} = global::System.Runtime.InteropServices.CollectionsMarshal.CollectionsMarshal.AsSpan<{sourceTypeSymbol.GetElementType().ToDisplayString()}>({source});");
+                stringBuilder.AppendLine($"global::System.Span<{sourceTypeSymbol.GetElementType().ToDisplayString()}> {spanTemporary} = global::System.Runtime.InteropServices.CollectionsMarshal.AsSpan<{sourceTypeSymbol.GetElementType().ToDisplayString()}>({source});");
             }
 
             countingVariableName = context.NextTemporary();
