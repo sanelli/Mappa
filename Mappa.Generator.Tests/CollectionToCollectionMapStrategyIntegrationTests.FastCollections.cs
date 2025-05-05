@@ -985,7 +985,105 @@ public sealed partial class CollectionToCollectionMapStrategyIntegrationTests
                 });
     }
 
-    // TODO [#24] Test T[] -> List<S> : Use span on both source and target (feature enabled on method).
+    /// <summary>
+    /// Test map from <see cref="List{T}"/> to <see cref="List{T}"/>.
+    /// with <see cref="MappaSettingsAttribute.FastCollections"/> enabled on method.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapFromListToListWhenFastCollectionsIsEnabled()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+
+                                  using Mappa.Attributes;
+                                  using System.Collections.Generic;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaSettings(FastCollections = BooleanSetting.Enable)]
+                                      public partial List<string> Map(List<int> input);
+                                  }
+
+                                  #nullable restore
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                typeof(List<string>).ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(List<int>).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(5)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(List<string>).ToString(),
+                                "__mappa_tmp_1",
+                                initializerAssertions => initializerAssertions.BeObjectCreationExpressionSyntax(
+                                    typeof(List<string>).ToString(),
+                                    parameterAssertions => parameterAssertions.BeMemberAccessExpressionSyntax("input.Count"))))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(Span<string>).ToString(),
+                                "__mappa_tmp_2",
+                                initializerAssertions => initializerAssertions.BeInvocationExpressionSyntax(
+                                    "global::System.Runtime.InteropServices.CollectionsMarshal.AsSpan<string>",
+                                    parameterAssertions => parameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_1"))))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(Span<int>).ToString(),
+                                "__mappa_tmp_3",
+                                initializerAssertions => initializerAssertions.BeInvocationExpressionSyntax(
+                                    "global::System.Runtime.InteropServices.CollectionsMarshal.AsSpan<int>",
+                                    parameterAssertions => parameterAssertions.BeIdentifierNameSyntax("input"))))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeForStatementSyntax(
+                                declarationAssertions => declarationAssertions.BeAssignmentFromConstant(typeof(int).ToString(), "__mappa_tmp_4", 0),
+                                conditionAssertions => conditionAssertions.BeBinaryExpressionSyntax(
+                                    leftExpressionAssertions => leftExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_4"),
+                                    SyntaxKind.LessThanToken,
+                                    rightExpressionAssertions => rightExpressionAssertions.BeMemberAccessExpressionSyntax("__mappa_tmp_3.Length")),
+                                incrementorAssertions => incrementorAssertions.BePrefixUnaryExpressionSyntax(SyntaxKind.PlusPlusToken, operandAssertions => operandAssertions.BeIdentifierNameSyntax("__mappa_tmp_4")),
+                                statementAssertions =>
+                                    statementAssertions
+                                        .BeBlockStatement()
+                                        .AsBlock()
+                                        .HasSyntaxNodesCount(3)
+                                        .HasNextSyntaxNode(foreachStatementAssertions =>
+                                            foreachStatementAssertions.BeLocalDeclarationStatementSyntax(
+                                                typeof(int).ToString(),
+                                                "__mappa_tmp_5",
+                                                initializerAssertions => initializerAssertions.BeElementAccessExpressionSyntaxWithIdentifierNameSyntax("__mappa_tmp_3", "__mappa_tmp_4")))
+                                        .HasNextSyntaxNode(foreachStatementAssertions =>
+                                            foreachStatementAssertions.BeLocalDeclarationStatementSyntax(
+                                                typeof(string).ToString(),
+                                                "__mappa_tmp_6",
+                                                initializerAssertions => initializerAssertions.BeInvocationExpressionSyntax("__mappa_tmp_5.ToString")))
+                                        .HasNextSyntaxNode(foreachStatementAssertions =>
+                                            foreachStatementAssertions.BeAssignmentExpressionStatement(
+                                                leftExpression => leftExpression.BeElementAccessExpressionSyntaxWithIdentifierNameSyntax("__mappa_tmp_2", "__mappa_tmp_4"),
+                                                rightExpression => rightExpression.BeIdentifierNameSyntax("__mappa_tmp_6")))))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeReturnStatement(expressionAssertions => expressionAssertions
+                                .BeIdentifierNameSyntax("__mappa_tmp_1")));
+                });
+    }
+
     // TODO [#24] Test List<T> -> S[] : Use span on both source and target (feature enabled on method).
-    // TODO [#24] Test List<T> -> List<S> : Use span on both source and target (feature enabled on method).
 }
