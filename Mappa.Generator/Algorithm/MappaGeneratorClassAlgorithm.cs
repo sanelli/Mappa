@@ -355,6 +355,11 @@ internal sealed class MappaGeneratorClassAlgorithm
             return false;
         }
 
+        if (!mapMethod.MethodSymbol.AreParametersRefModifiersValid())
+        {
+            return false;
+        }
+
         if (mapMethod.MethodSymbol.IsVoid())
         {
             classContext.ReportDiagnostic(MappaDiagnostics.MethodIsVoid(methodDeclarationSyntax));
@@ -411,6 +416,11 @@ internal sealed class MappaGeneratorClassAlgorithm
             return false;
         }
 
+        if (!method.AreParametersRefModifiersValid())
+        {
+            return false;
+        }
+
         if (method.IsVoid())
         {
             return false;
@@ -461,6 +471,11 @@ internal sealed class MappaGeneratorClassAlgorithm
 
         if (methodDeclarationSyntax.HasArity(2)
             && !mapMethod.MethodSymbol.SecondParameterIsMappaContext(this.Compilation))
+        {
+            return;
+        }
+
+        if (!mapMethod.MethodSymbol.AreParametersRefModifiersValid())
         {
             return;
         }
