@@ -257,4 +257,28 @@ internal static class MethodSymbolExtensions
             return hasIndexer;
         }
     }
+
+    /// <summary>
+    /// Validate that the ref kind for the method parameters are
+    /// either <see cref="RefKind.None"/> or <see cref="RefKind.In"/>.
+    /// </summary>
+    /// <param name="methodSymbol">The method symbol.</param>
+    /// <returns><c>true</c> if the ref modifiers are valid, <c>false</c> otherwise.</returns>
+    internal static bool AreParametersRefModifiersValid(this IMethodSymbol methodSymbol)
+    {
+        if (methodSymbol.Parameters[0].RefKind != RefKind.None
+            && methodSymbol.Parameters[0].RefKind != RefKind.In)
+        {
+            return false;
+        }
+
+        if (methodSymbol.Parameters.Length == 2
+            && methodSymbol.Parameters[1].RefKind != RefKind.None
+            && methodSymbol.Parameters[1].RefKind != RefKind.In)
+        {
+            return false;
+        }
+
+        return true;
+    }
 }

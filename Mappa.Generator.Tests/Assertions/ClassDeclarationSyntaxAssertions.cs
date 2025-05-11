@@ -76,7 +76,7 @@ internal sealed class ClassDeclarationSyntaxAssertions
         Type returnType,
         NullableAnnotation returnTypeNullableAnnotation,
         string name,
-        IEnumerable<(Type Type, NullableAnnotation NullableAnnotation, string Name)> parameters,
+        IEnumerable<(Type Type, NullableAnnotation NullableAnnotation, string Name, RefKind RefKind, bool IsParams)> parameters,
         Action<MethodDeclarationSyntaxAssertions> assert)
     {
         ArgumentNullException.ThrowIfNull(returnType);
@@ -86,7 +86,7 @@ internal sealed class ClassDeclarationSyntaxAssertions
             returnType.ToString(),
             returnTypeNullableAnnotation,
             name,
-            parameters.Select(parameter => (parameter.Type.ToString(), parameter.NullableAnnotation, parameter.Name)).ToArray(),
+            parameters.Select(parameter => (parameter.Type.ToString(), parameter.NullableAnnotation, parameter.Name, parameter.RefKind, parameter.IsParams)).ToArray(),
             assert);
     }
 
@@ -103,7 +103,7 @@ internal sealed class ClassDeclarationSyntaxAssertions
         string returnType,
         NullableAnnotation returnTypeNullableAnnotation,
         string name,
-        (string Type, NullableAnnotation NullableAnnotation, string Name)[] parameters,
+        (string Type, NullableAnnotation NullableAnnotation, string Name, RefKind RefKind, bool IsParams)[] parameters,
         Action<MethodDeclarationSyntaxAssertions> assert)
         => this.HaveMethod(
             returnType,
@@ -128,7 +128,7 @@ internal sealed class ClassDeclarationSyntaxAssertions
         NullableAnnotation returnTypeNullableAnnotation,
         string name,
         bool isExtensionMethod,
-        (string Type, NullableAnnotation NullableAnnotation, string Name)[] parameters,
+        (string Type, NullableAnnotation NullableAnnotation, string Name, RefKind RefKind, bool IsParams)[] parameters,
         Action<MethodDeclarationSyntaxAssertions> assert)
     {
         ArgumentNullException.ThrowIfNull(assert);
@@ -173,25 +173,34 @@ internal sealed class ClassDeclarationSyntaxAssertions
 
                 for (int parameterIndex = 0; parameterIndex < parameters.Length; ++parameterIndex)
                 {
-                    if (!parameters[parameterIndex].Name.Equals(
-                            methodSymbol.Parameters[parameterIndex].Name,
-                            StringComparison.Ordinal))
+                    var expectedParameter = parameters[parameterIndex];
+                    var actualParameter = methodSymbol.Parameters[parameterIndex];
+
+                    if (!expectedParameter.Name.Equals(actualParameter.Name, StringComparison.Ordinal))
                     {
                         return false;
                     }
 
-                    var expectedType = this.compilation.GetTypeSymbol(parameters[parameterIndex].Type);
-                    var correctParameterType = (expectedType != null && SymbolEqualityComparer.Default.Equals(
-                                                   expectedType,
-                                                   methodSymbol.Parameters[parameterIndex].Type))
-                                               || (expectedType == null && methodSymbol.Parameters[parameterIndex].Type.ToDisplayString().Equals(parameters[parameterIndex].Type, StringComparison.Ordinal));
+                    var expectedType = this.compilation.GetTypeSymbol(expectedParameter.Type);
+                    var correctParameterType = (expectedType is not null && SymbolEqualityComparer.Default.Equals(expectedType, actualParameter.Type))
+                                               || (expectedType is null && actualParameter.Type.ToDisplayString().Equals(expectedParameter.Type, StringComparison.Ordinal));
                     if (!correctParameterType)
                     {
                         return false;
                     }
 
-                    if (parameters[parameterIndex].NullableAnnotation !=
-                        methodSymbol.Parameters[parameterIndex].Type.NullableAnnotation)
+                    if (expectedParameter.NullableAnnotation !=
+                        actualParameter.Type.NullableAnnotation)
+                    {
+                        return false;
+                    }
+
+                    if (actualParameter.RefKind != expectedParameter.RefKind)
+                    {
+                        return false;
+                    }
+
+                    if (actualParameter.IsParams != expectedParameter.IsParams)
                     {
                         return false;
                     }

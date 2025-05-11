@@ -8,6 +8,8 @@ using System.Diagnostics;
 using Mappa.Generator.Extensions;
 using Mappa.Generator.Models;
 
+using Microsoft.CodeAnalysis;
+
 namespace Mappa.Generator.Builders;
 
 /// <summary>
@@ -76,12 +78,15 @@ internal sealed class MappaMethodBuilder
             .Trim();
 
         var extensionMethod = this.mapMethod.MethodSymbol.IsExtensionMethod ? "this " : string.Empty;
-        var sourceParameter = $"{extensionMethod}{this.mapMethod.SourceType.ToDisplayString()} {this.mapMethod.SourceParameterName}";
+        var paramsModifier = this.mapMethod.MethodSymbol.Parameters[0].IsParams ? "params " : string.Empty;
+        var refModifiers = this.mapMethod.MethodSymbol.Parameters[0].RefKind == RefKind.In ? "in " : string.Empty;
+        var sourceParameter = $"{extensionMethod}{refModifiers}{paramsModifier}{this.mapMethod.SourceType.ToDisplayString()} {this.mapMethod.SourceParameterName}";
 
         var contextParameter = string.Empty;
         if (this.mapMethod.RequireMappaContextWhenInvoked())
         {
-            contextParameter = $", {typeof(MappaContext).FullName} {this.mapMethod.GetMappaContextParameterName()}";
+            var contextRefModifier = this.mapMethod.MethodSymbol.Parameters[1].RefKind == RefKind.In ? "in " : string.Empty;
+            contextParameter = $", {contextRefModifier}{typeof(MappaContext).FullName} {this.mapMethod.GetMappaContextParameterName()}";
         }
 
         var signature = $"{modifiersWithReturnType} {this.mapMethod.MethodName}({sourceParameter}{contextParameter})";

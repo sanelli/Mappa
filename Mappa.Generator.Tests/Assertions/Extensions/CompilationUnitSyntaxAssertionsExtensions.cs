@@ -233,7 +233,55 @@ internal static class CompilationUnitSyntaxAssertionsExtensions
             parameterType,
             null,
             parameterNullableAnnotation,
+            RefKind.None,
+            false,
+            RefKind.None,
             expectedGeneratedCount,
+            NullableSetup.Enable,
+            PragmaWarning.NoBlock,
+            bodyAssertion);
+
+    /// <summary>
+    /// Assert that the compilation unit has a mapper method.
+    /// </summary>
+    /// <param name="this">The compilation unit syntax assertions.</param>
+    /// <param name="returnType">The return type of the method.</param>
+    /// <param name="returnTypeNullableAnnotation">The nullable annotation on the return type.</param>
+    /// <param name="parameterType">The parameter type of the method.</param>
+    /// <param name="parameterNullableAnnotation">The nullable annotation of the parameter.</param>
+    /// <param name="parameterRefKind">The parameter ref kind.</param>
+    /// <param name="isParameterParams"><c>true</c> if parameter is <c>params</c>, <c>false</c> otherwise.</param>
+    /// <param name="contextName">The name of the context.</param>
+    /// <param name="contextRefKind">The context ref kind.</param>
+    /// <param name="bodyAssertion">The assertions on the body of the method.</param>
+    /// <returns>The input compilation unit syntax assertions.</returns>
+    public static CompilationUnitSyntaxAssertions HaveMapMethod(
+        this CompilationUnitSyntaxAssertions @this,
+        string returnType,
+        NullableAnnotation returnTypeNullableAnnotation,
+        string parameterType,
+        NullableAnnotation parameterNullableAnnotation,
+        RefKind parameterRefKind,
+        bool isParameterParams,
+        string? contextName,
+        RefKind contextRefKind,
+        Action<BlockSyntaxAssertions> bodyAssertion)
+        => @this.HaveMapMethod(
+            "Mapper",
+            [SyntaxKind.PublicKeyword, SyntaxKind.StaticKeyword, SyntaxKind.PartialKeyword],
+            "Map",
+            [SyntaxKind.PublicKeyword, SyntaxKind.StaticKeyword, SyntaxKind.PartialKeyword],
+            false,
+            returnType,
+            returnTypeNullableAnnotation,
+            "input",
+            parameterType,
+            contextName,
+            parameterNullableAnnotation,
+            parameterRefKind,
+            isParameterParams,
+            contextRefKind,
+            1,
             NullableSetup.Enable,
             PragmaWarning.NoBlock,
             bodyAssertion);
@@ -253,6 +301,9 @@ internal static class CompilationUnitSyntaxAssertionsExtensions
     /// <param name="parameterType">The parameter type of the method.</param>
     /// <param name="contextName">The (optional) name of the context.</param>
     /// <param name="parameterNullableAnnotation">The nullable annotation of the parameter.</param>
+    /// <param name="parameterRefKind">The parameter ref kind.</param>
+    /// <param name="isParameterParams"><c>true</c> if the parameter is a <c>params</c>, <c>false</c> otherwise.</param>
+    /// <param name="contextRefKind">The ref kind for the context.</param>
     /// <param name="expectedGeneratedCount">The number of expected methods generated.</param>
     /// <param name="nullableSetup">The nullable setup.</param>
     /// <param name="pragmaWarningSetting">The pragma warning settings.</param>
@@ -271,6 +322,9 @@ internal static class CompilationUnitSyntaxAssertionsExtensions
         string parameterType,
         string? contextName,
         NullableAnnotation parameterNullableAnnotation,
+        RefKind parameterRefKind,
+        bool isParameterParams,
+        RefKind contextRefKind,
         int expectedGeneratedCount,
         NullableSetup nullableSetup,
         PragmaWarning pragmaWarningSetting,
@@ -287,14 +341,14 @@ internal static class CompilationUnitSyntaxAssertionsExtensions
                         className,
                         classDeclarationSyntaxAssertions =>
                         {
-                            var parameters = new List<(string Type, NullableAnnotation NullableAnnotation, string Name)>
+                            var parameters = new List<(string Type, NullableAnnotation NullableAnnotation, string Name, RefKind RefKind, bool IsParms)>
                             {
-                                (parameterType, parameterNullableAnnotation, parameterName),
+                                (parameterType, parameterNullableAnnotation, parameterName, parameterRefKind, isParameterParams),
                             };
 
                             if (contextName is not null)
                             {
-                                parameters.Add((typeof(MappaContext).FullName ?? string.Empty, NullableAnnotation.NotAnnotated, contextName));
+                                parameters.Add((typeof(MappaContext).FullName ?? string.Empty, NullableAnnotation.NotAnnotated, contextName, contextRefKind, false));
                             }
 
                             classDeclarationSyntaxAssertions
@@ -408,6 +462,9 @@ internal static class CompilationUnitSyntaxAssertionsExtensions
             parameterType,
             null,
             parameterNullableAnnotation,
+            RefKind.None,
+            false,
+            RefKind.None,
             expectedGeneratedCount,
             NullableSetup.Enable,
             PragmaWarning.NoBlock,
@@ -450,6 +507,9 @@ internal static class CompilationUnitSyntaxAssertionsExtensions
             parameterType,
             null,
             parameterNullableAnnotation,
+            RefKind.None,
+            false,
+            RefKind.None,
             expectedGeneratedMethodsCount,
             nullableSetup,
             pragmaWarningSetting,
@@ -488,6 +548,9 @@ internal static class CompilationUnitSyntaxAssertionsExtensions
             parameterType,
             "context",
             parameterNullableAnnotation,
+            RefKind.None,
+            false,
+            RefKind.None,
             expectedGeneratedMethodsCount,
             NullableSetup.Enable,
             PragmaWarning.NoBlock,
