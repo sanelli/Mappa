@@ -884,10 +884,77 @@ public sealed class ParamsAndInRefKindParametersSupportIntegrationTests
                 });
     }
 
-    // TODO [#164] Test input parameter cannot be out -> no code generated.
-    // TODO [#164] Test input parameter cannot be ref -> no code generated.
-    // TODO [#164] Test context parameter cannot be out -> no code generated.
-    // TODO [#164] Test context parameter cannot be ref -> no code generated.
+    /// <summary>
+    /// Test that input parameter cannot be <c>ref</c> or <c>out</c>.
+    /// </summary>
+    /// <param name="refKind">The ref kind to test.</param>
+    /// <returns>The async task.</returns>
+    [Theory]
+    [IntegrationTest]
+    [InlineData("ref")]
+    [InlineData("out")]
+    public async Task TestNoMappingIsGeneratedWhenInputIsUnsupportedRefKind(string refKind)
+    {
+        // Arrange
+        var sourceCode = $$"""
+                          #nullable enable
+                          using Mappa.Attributes;
+
+                          namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                          [Mappa]
+                          public static partial class Mapper
+                          {
+                              public static partial long Map({{refKind}} int input);
+                          }
+                          #nullable restore
+                          """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .NotHaveGeneratedAnySourceCode();
+    }
+
+    /// <summary>
+    /// Test that context parameter cannot be <c>ref</c> or <c>out</c>.
+    /// </summary>
+    /// <param name="refKind">The ref kind to test.</param>
+    /// <returns>The async task.</returns>
+    [Theory]
+    [IntegrationTest]
+    [InlineData("ref")]
+    [InlineData("out")]
+    public async Task TestNoMappingIsGeneratedWhenContextIsUnsupportedRefKind(string refKind)
+    {
+        // Arrange
+        var sourceCode = $$"""
+                           #nullable enable
+                           using Mappa;
+                           using Mappa.Attributes;
+
+                           namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                           [Mappa]
+                           public static partial class Mapper
+                           {
+                               public static partial long Map(int input, {{refKind}} MappaContext context);
+                           }
+                           #nullable restore
+                           """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .NotHaveGeneratedAnySourceCode();
+    }
+
     // TODO [#164] Test method from local class is ignored for dependency when input is ref.
     // TODO [#164] Test method from local class is ignored for dependency when context is ref.
     // TODO [#164] Test method from local class is ignored for dependency when input is out.
