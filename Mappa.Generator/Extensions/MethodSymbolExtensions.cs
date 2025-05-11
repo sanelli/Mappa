@@ -273,8 +273,8 @@ internal static class MethodSymbolExtensions
         }
 
         if (methodSymbol.Parameters.Length == 2
-            && methodSymbol.Parameters[0].RefKind != RefKind.None
-            && methodSymbol.Parameters[0].RefKind != RefKind.In)
+            && methodSymbol.Parameters[1].RefKind != RefKind.None
+            && methodSymbol.Parameters[1].RefKind != RefKind.In)
         {
             return false;
         }
