@@ -68,9 +68,9 @@ public sealed partial class InvokeToStringMapper
 /// <summary>
 /// Common settings used for the invoke to string strategy.
 /// </summary>
- #pragma warning disable SA1204
+#pragma warning disable SA1204
 public static class InvokeToStringStrategySettings
- #pragma warning restore SA1204
+#pragma warning restore SA1204
 {
     /// <summary>
     /// The <see cref="DateTimeOffset"/> format applied.
