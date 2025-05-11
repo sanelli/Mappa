@@ -7,8 +7,6 @@ namespace Mappa.Samples;
 
 #pragma warning disable SA1402 // File may only contain a single type
 
-// TODO [#56] Add tests using various combinations of MappaSettings.
-
 /// <summary>
 /// Mapper using the strategies from string to other system entities.
 /// </summary>
