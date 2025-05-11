@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Tests.Abstractions;
 using Mappa.Generator.Tests.Assertions;
 using Mappa.Generator.Tests.Assertions.Extensions;
@@ -1090,12 +1091,293 @@ public sealed class ParamsAndInRefKindParametersSupportIntegrationTests
                 });
     }
 
-    // TODO [#164] Test method from [MappaDependency] field is ignored when input is ref.
-    // TODO [#164] Test method from [MappaDependency] field is ignored when context is ref.
-    // TODO [#164] Test method from [MappaDependency] field is ignored when input is out.
-    // TODO [#164] Test method from [MappaDependency] field is ignored when context is out.
-    // TODO [#164] Test method from [MappaStaticDependency] is ignored when input is ref.
-    // TODO [#164] Test method from [MappaStaticDependency] is ignored when context is ref.
-    // TODO [#164] Test method from [MappaStaticDependency] is ignored when input is out.
-    // TODO [#164] Test method from [MappaStaticDependency] is ignored when context is out.
+    /// <summary>
+    /// Test that <see cref="MappaDependencyAttribute"/> dependency method not is picked up when
+    /// input parameter is <c>ref</c> or <c>out</c>.
+    /// </summary>
+    /// <param name="refKind">The unsupported reference kind.</param>
+    /// <returns>The async task.</returns>
+    [Theory]
+    [IntegrationTest]
+    [InlineData("out")]
+    [InlineData("ref")]
+    public async Task TestMappaDependencyAttributeDependencyMethodIsNotPickedUpWhenInputIsUnsupportedRefKind(string refKind)
+    {
+        // Arrange
+        var sourceCode = $$"""
+                          #nullable enable
+                          using Mappa.Attributes;
+
+                          namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                          
+                          public record Target(long Property){}
+                          public record Source(int Property){}
+                          
+                          public sealed class Dependency
+                          {
+                              public long MapIntToLong({{refKind}} int input) => input + 1;
+                          }
+
+                          [Mappa]
+                          public sealed partial class Mapper
+                          {
+                              [MappaDependency]
+                              private readonly Dependency dependency = new();
+                          
+                              public partial Target Map(Source input);
+                          }
+                          #nullable restore
+                          """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostic(MappaDiagnosticDescriptors.DependencyDoesNotProvideAnyViableMethod, "dependency")
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                NullableAnnotation.NotAnnotated,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(3)
+                        .HasNextSyntaxNode(nodeAssertions =>
+                            nodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(int).ToString(),
+                                "__mappa_tmp_1",
+                                initializerAssertions => initializerAssertions.BeMemberAccessExpressionSyntax("input.Property")))
+                        .HasNextSyntaxNode(nodeAssertions =>
+                            nodeAssertions.BeLocalDeclarationStatementSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                "__mappa_tmp_2",
+                                initializerAssertions => initializerAssertions.BeObjectCreationExpressionSyntax(
+                                    "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                    parameterAssertions => parameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_1"))))
+                        .HasNextSyntaxNode(nodeAssertions =>
+                            nodeAssertions.BeReturnStatement(expressionSyntaxAssertions => expressionSyntaxAssertions.BeIdentifierNameSyntax("__mappa_tmp_2")));
+                });
+    }
+
+    /// <summary>
+    /// Test that <see cref="MappaDependencyAttribute"/> dependency method not is
+    /// picked up when context parameter is <c>ref</c> or <c>out</c>.
+    /// </summary>
+    /// <param name="refKind">The unsupported reference kind.</param>
+    /// <returns>The async task.</returns>
+    [Theory]
+    [IntegrationTest]
+    [InlineData("out")]
+    [InlineData("ref")]
+    public async Task TestMappaDependencyAttributeDependencyMethodIsNotPickedUpWhenContextIsUnsupportedRefKind(string refKind)
+    {
+        // Arrange
+        var sourceCode = $$"""
+                          #nullable enable
+                          using Mappa;
+                          using Mappa.Attributes;
+
+                          namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                          
+                          public record Target(long Property){}
+                          public record Source(int Property){}
+                          
+                          public sealed class Dependency
+                          {
+                            public long MapIntToLong(int input, {{refKind}} MappaContext context) => input + 1;
+                          }
+
+                          [Mappa]
+                          public sealed partial class Mapper
+                          {
+                              [MappaDependency]
+                              private readonly Dependency dependency = new Dependency();
+                          
+                              public partial Target Map(Source input, MappaContext context);
+                          }
+                          #nullable restore
+                          """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostic(MappaDiagnosticDescriptors.DependencyDoesNotProvideAnyViableMethod, "dependency")
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethodWithContext(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                NullableAnnotation.NotAnnotated,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(3)
+                        .HasNextSyntaxNode(nodeAssertions =>
+                            nodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(int).ToString(),
+                                "__mappa_tmp_1",
+                                initializerAssertions => initializerAssertions.BeMemberAccessExpressionSyntax("input.Property")))
+                        .HasNextSyntaxNode(nodeAssertions =>
+                            nodeAssertions.BeLocalDeclarationStatementSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                "__mappa_tmp_2",
+                                initializerAssertions => initializerAssertions.BeObjectCreationExpressionSyntax(
+                                    "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                    parameterAssertions => parameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_1"))))
+                        .HasNextSyntaxNode(nodeAssertions =>
+                            nodeAssertions.BeReturnStatement(expressionSyntaxAssertions => expressionSyntaxAssertions.BeIdentifierNameSyntax("__mappa_tmp_2")));
+                });
+    }
+
+    /// <summary>
+    /// Test that <see cref="MappaStaticDependencyAttribute"/> dependency method not is picked up when
+    /// input parameter is <c>ref</c> or <c>out</c>.
+    /// </summary>
+    /// <param name="refKind">The unsupported reference kind.</param>
+    /// <returns>The async task.</returns>
+    [Theory]
+    [IntegrationTest]
+    [InlineData("out")]
+    [InlineData("ref")]
+    public async Task TestMappaStaticDependencyAttributeDependencyMethodIsNotPickedUpWhenInputIsUnsupportedRefKind(string refKind)
+    {
+        // Arrange
+        var sourceCode = $$"""
+                          #nullable enable
+                          using Mappa.Attributes;
+
+                          namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                          
+                          public record Target(long Property){}
+                          public record Source(int Property){}
+                          
+                          public static class Dependency
+                          {
+                              public static long MapIntToLong({{refKind}} int input) => input + 1;
+                          }
+
+                          [Mappa]
+                          [MappaStaticDependency(typeof(Dependency))]
+                          public sealed partial class Mapper
+                          {
+                              public partial Target Map(Source input);
+                          }
+                          #nullable restore
+                          """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostic(MappaDiagnosticDescriptors.DependencyDoesNotProvideAnyViableMethod, "Mappa.Generator.Tests.UnitTests.SourceCode.Dependency")
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                NullableAnnotation.NotAnnotated,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(3)
+                        .HasNextSyntaxNode(nodeAssertions =>
+                            nodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(int).ToString(),
+                                "__mappa_tmp_1",
+                                initializerAssertions => initializerAssertions.BeMemberAccessExpressionSyntax("input.Property")))
+                        .HasNextSyntaxNode(nodeAssertions =>
+                            nodeAssertions.BeLocalDeclarationStatementSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                "__mappa_tmp_2",
+                                initializerAssertions => initializerAssertions.BeObjectCreationExpressionSyntax(
+                                    "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                    parameterAssertions => parameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_1"))))
+                        .HasNextSyntaxNode(nodeAssertions =>
+                            nodeAssertions.BeReturnStatement(expressionSyntaxAssertions => expressionSyntaxAssertions.BeIdentifierNameSyntax("__mappa_tmp_2")));
+                });
+    }
+
+    /// <summary>
+    /// Test that <see cref="MappaStaticDependencyAttribute"/> dependency method not is
+    /// picked up when context parameter is <c>ref</c> or <c>out</c>.
+    /// </summary>
+    /// <param name="refKind">The unsupported reference kind.</param>
+    /// <returns>The async task.</returns>
+    [Theory]
+    [IntegrationTest]
+    [InlineData("out")]
+    [InlineData("ref")]
+    public async Task TestMappaStaticDependencyAttributeDependencyMethodIsNotPickedUpWhenContextIsUnsupportedRefKind(string refKind)
+    {
+        // Arrange
+        var sourceCode = $$"""
+                          #nullable enable
+                          using Mappa;
+                          using Mappa.Attributes;
+
+                          namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                          
+                          public record Target(long Property){}
+                          public record Source(int Property){}
+                          
+                          public static class Dependency
+                          {
+                            public static long MapIntToLong(int input, {{refKind}} MappaContext context) => input + 1;
+                          }
+
+                          [Mappa]
+                          [MappaStaticDependency(typeof(Dependency))]
+                          public sealed partial class Mapper
+                          {
+                              public partial Target Map(Source input, MappaContext context);
+                          }
+                          #nullable restore
+                          """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostic(MappaDiagnosticDescriptors.DependencyDoesNotProvideAnyViableMethod, "Mappa.Generator.Tests.UnitTests.SourceCode.Dependency")
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethodWithContext(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                NullableAnnotation.NotAnnotated,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(3)
+                        .HasNextSyntaxNode(nodeAssertions =>
+                            nodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(int).ToString(),
+                                "__mappa_tmp_1",
+                                initializerAssertions => initializerAssertions.BeMemberAccessExpressionSyntax("input.Property")))
+                        .HasNextSyntaxNode(nodeAssertions =>
+                            nodeAssertions.BeLocalDeclarationStatementSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                "__mappa_tmp_2",
+                                initializerAssertions => initializerAssertions.BeObjectCreationExpressionSyntax(
+                                    "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                    parameterAssertions => parameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_1"))))
+                        .HasNextSyntaxNode(nodeAssertions =>
+                            nodeAssertions.BeReturnStatement(expressionSyntaxAssertions => expressionSyntaxAssertions.BeIdentifierNameSyntax("__mappa_tmp_2")));
+                });
+    }
 }
