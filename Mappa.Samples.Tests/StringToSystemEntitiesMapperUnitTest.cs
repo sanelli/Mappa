@@ -16,6 +16,7 @@ namespace Mappa.Samples.Tests;
 public sealed class StringToSystemEntitiesMapperUnitTest
 {
     private readonly StringToSystemEntitiesMapper mapper = new();
+    private readonly StringToSystemEntitiesWithSettingsMapper mapperWithSettings = new();
 
     /// <summary>
     /// Unit test for <see cref="StringToSystemEntitiesMapper.MapToDateTime"/>.
@@ -30,6 +31,24 @@ public sealed class StringToSystemEntitiesMapperUnitTest
 
         // Act
         var actual = this.mapper.MapToDateTime(input);
+
+        // Assert
+        actual.Should().Be(expected);
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="StringToSystemEntitiesMapper.MapToDateTimeOffset"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapStringToDateTimeOffset()
+    {
+        // Arrange
+        var expected = DateTimeOffset.UtcNow;
+        var input = expected.ToString("yyyy-MM-dd HH:mm:ss.fffffff zzz", DateTimeFormatInfo.CurrentInfo);
+
+        // Act
+        var actual = this.mapper.MapToDateTimeOffset(input);
 
         // Assert
         actual.Should().Be(expected);
@@ -120,6 +139,115 @@ public sealed class StringToSystemEntitiesMapperUnitTest
 
         // Act
         var actual = this.mapper.MapToUri(input);
+
+        // Assert
+        actual.Should().Be(expected);
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="StringToSystemEntitiesWithSettingsMapper.MapToDateTime"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapStringToDateTimeWithSettings()
+    {
+        // Arrange
+        var expected = DateTime.UtcNow;
+        var input = expected.ToString(StringToSystemEntitiesSettings.DateTimeFormat, DateTimeFormatInfo.CurrentInfo);
+        var reallyExpected = DateTime.ParseExact(input, StringToSystemEntitiesSettings.DateTimeFormat, DateTimeFormatInfo.CurrentInfo);
+
+        // Act
+        var actual = this.mapperWithSettings.MapToDateTime(input);
+
+        // Assert
+        actual.Should().Be(reallyExpected);
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="StringToSystemEntitiesWithSettingsMapper.MapToDateTimeOffset"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapStringToDateTimeOffsetWithSettings()
+    {
+        // Arrange
+        var expected = DateTimeOffset.UtcNow;
+        var input = expected.ToString(StringToSystemEntitiesSettings.DateTimeOffsetFormat, DateTimeFormatInfo.CurrentInfo);
+
+        // Act
+        var actual = this.mapperWithSettings.MapToDateTimeOffset(input);
+
+        // Assert
+        actual.Should().Be(expected);
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="StringToSystemEntitiesWithSettingsMapper.MapToTimeSpan"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapStringToTimeSpanWithSettings()
+    {
+        // Arrange
+        var expected = DateTime.UtcNow - DateTime.UtcNow.AddHours(7).AddMinutes(13).AddSeconds(17);
+        var input = expected.ToString(StringToSystemEntitiesSettings.TimeSpanFormat, CultureInfo.CurrentCulture);
+
+        // Act
+        var actual = this.mapperWithSettings.MapToTimeSpan(input);
+
+        // Assert
+        actual.Should().Be(expected);
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="StringToSystemEntitiesWithSettingsMapper.MapToTimeOnly"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapStringToTimeOnlyWithSettings()
+    {
+        // Arrange
+        var expected = TimeOnly.FromDateTime(DateTime.UtcNow);
+        var input = expected.ToString(StringToSystemEntitiesSettings.TimeOnlyFormat, DateTimeFormatInfo.CurrentInfo);
+
+        // Act
+        var actual = this.mapperWithSettings.MapToTimeOnly(input);
+
+        // Assert
+        actual.Should().Be(expected);
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="StringToSystemEntitiesWithSettingsMapper.MapToDateOnly"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapStringToDateOnlyWithSettings()
+    {
+        // Arrange
+        var expected = DateOnly.FromDateTime(DateTime.UtcNow);
+        var input = expected.ToString(StringToSystemEntitiesSettings.DateOnlyFormat, DateTimeFormatInfo.CurrentInfo);
+
+        // Act
+        var actual = this.mapperWithSettings.MapToDateOnly(input);
+
+        // Assert
+        actual.Should().Be(expected);
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="StringToSystemEntitiesWithSettingsMapper.MapToGuid"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapStringToGuidWithSettings()
+    {
+        // Arrange
+        var expected = Guid.NewGuid();
+        var input = expected.ToString(StringToSystemEntitiesSettings.GuidFormat, DateTimeFormatInfo.CurrentInfo);
+
+        // Act
+        var actual = this.mapperWithSettings.MapToGuid(input);
 
         // Assert
         actual.Should().Be(expected);
