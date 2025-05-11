@@ -154,12 +154,13 @@ public sealed class StringToSystemEntitiesMapperUnitTest
         // Arrange
         var expected = DateTime.UtcNow;
         var input = expected.ToString(StringToSystemEntitiesSettings.DateTimeFormat, DateTimeFormatInfo.CurrentInfo);
+        var reallyExpected = DateTime.ParseExact(input, StringToSystemEntitiesSettings.DateTimeFormat, DateTimeFormatInfo.CurrentInfo);
 
         // Act
         var actual = this.mapperWithSettings.MapToDateTime(input);
 
         // Assert
-        actual.Should().Be(expected);
+        actual.Should().Be(reallyExpected);
     }
 
     /// <summary>
