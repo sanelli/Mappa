@@ -247,7 +247,6 @@ internal static class CompilationUnitSyntaxAssertionsExtensions
     /// <param name="this">The compilation unit syntax assertions.</param>
     /// <param name="returnType">The return type of the method.</param>
     /// <param name="returnTypeNullableAnnotation">The nullable annotation on the return type.</param>
-    /// <param name="parameterName">The name of the parameter.</param>
     /// <param name="parameterType">The parameter type of the method.</param>
     /// <param name="parameterNullableAnnotation">The nullable annotation of the parameter.</param>
     /// <param name="parameterRefKind">The parameter ref kind.</param>
@@ -260,7 +259,6 @@ internal static class CompilationUnitSyntaxAssertionsExtensions
         this CompilationUnitSyntaxAssertions @this,
         string returnType,
         NullableAnnotation returnTypeNullableAnnotation,
-        string parameterName,
         string parameterType,
         NullableAnnotation parameterNullableAnnotation,
         RefKind parameterRefKind,
@@ -276,7 +274,7 @@ internal static class CompilationUnitSyntaxAssertionsExtensions
             false,
             returnType,
             returnTypeNullableAnnotation,
-            parameterName,
+            "input",
             parameterType,
             contextName,
             parameterNullableAnnotation,
