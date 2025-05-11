@@ -6,8 +6,6 @@ using FluentAssertions;
 
 using Mappa.Samples.Models;
 
-using Microsoft.VisualBasic;
-
 using Xunit;
 using Xunit.Categories;
 
@@ -75,5 +73,25 @@ public sealed class TupleToTupleMapperUnitTests
         actual.First.Should().Be("3");
         actual.Second.Should().Be("Three");
         actual.Third.Should().Be("30");
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="TupleToTupleMapper.MapSystemValueTupleToSystemValueTuple"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapSystemValueTupleToSystemValueTuple()
+    {
+        // Arrange
+        ValueTuple<int, CountingValues, long, string> input = new(3, CountingValues.Three, 30L, "Stefano");
+
+        // Act
+        var actual = this.mapper.MapSystemValueTupleToSystemValueTuple(input);
+
+        // Assert
+        actual.Item1.Should().Be("3");
+        actual.Item2.Should().Be("Three");
+        actual.Item3.Should().Be("30");
+        actual.Item4.Should().Be("Stefano");
     }
 }

@@ -520,7 +520,7 @@ public sealed class TupleToTupleMapStrategyIntegrationTests
                 });
     }
 
-     /// <summary>
+    /// <summary>
     /// Test a mapping can be created from tuple with named elements
     /// to tuple with anonymous elements.
     /// </summary>
@@ -648,6 +648,75 @@ public sealed class TupleToTupleMapStrategyIntegrationTests
                         {
                             syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
                                 "(string First, string Second)",
+                                "__mappa_tmp_4",
+                                initializationAssertions => initializationAssertions.BeTupleExpressionSyntax(
+                                        parametersAssertions => parametersAssertions.BeIdentifierNameSyntax("__mappa_tmp_2"),
+                                        parametersAssertions => parametersAssertions.BeIdentifierNameSyntax("__mappa_tmp_3")));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_4"));
+                        });
+                });
+    }
+
+    /// <summary>
+    /// Test can map from <see cref="ValueTuple"/> to <see cref="ValueTuple"/>.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapValueTupleToValueTuple()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+                                  using System;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial ValueTuple<string, string> Map(ValueTuple<int, string> input);
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                typeof(ValueTuple<string, string>).ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(ValueTuple<int, string>).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(5)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax("int", "__mappa_tmp_1", initializationAssertions => initializationAssertions.BeMemberAccessExpressionSyntax("input.Item1"));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax("string", "__mappa_tmp_2", initializationAssertions => initializationAssertions.BeInvocationExpressionSyntax("__mappa_tmp_1.ToString"));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax("string", "__mappa_tmp_3", initializationAssertions => initializationAssertions.BeMemberAccessExpressionSyntax("input.Item2"));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof((string, string)).ToString(),
                                 "__mappa_tmp_4",
                                 initializationAssertions => initializationAssertions.BeTupleExpressionSyntax(
                                         parametersAssertions => parametersAssertions.BeIdentifierNameSyntax("__mappa_tmp_2"),

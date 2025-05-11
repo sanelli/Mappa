@@ -12,7 +12,6 @@
         <AnalysisLevel>latest-all</AnalysisLevel>
         <WarningsNotAsErrors>MP00000</WarningsNotAsErrors>
         <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-        <NoWarn>CS8600,CS8601</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

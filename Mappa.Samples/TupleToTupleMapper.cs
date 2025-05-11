@@ -17,7 +17,7 @@ public sealed partial class TupleToTupleMapper
     /// Map a <see cref="Tuple"/> to <see cref="Tuple"/>.
     /// </summary>
     /// <param name="input">The input dictionary.</param>
-    /// <returns>The mapper dictionary.</returns>
+    /// <returns>The mapped tuple.</returns>
     public partial Tuple<string, string, string> MapSystemTupleToSystemTuple(Tuple<int, CountingValues, long> input);
 
     /// <summary>
@@ -25,7 +25,7 @@ public sealed partial class TupleToTupleMapper
     /// with un-named elements.
     /// </summary>
     /// <param name="input">The input dictionary.</param>
-    /// <returns>The mapper dictionary.</returns>
+    /// <returns>The mapped tuple.</returns>
     public partial (string, string, string) MapTupleToTuple((int, CountingValues, long) input);
 
     /// <summary>
@@ -33,6 +33,13 @@ public sealed partial class TupleToTupleMapper
     /// with named elements.
     /// </summary>
     /// <param name="input">The input dictionary.</param>
-    /// <returns>The mapper dictionary.</returns>
+    /// <returns>The mapped tuple.</returns>
     public partial (string First, string Second, string Third) MapTupleWithNamesElementsToTupleWithNamesElements((int Alpha, CountingValues Beta, long Gamma) input);
+
+    /// <summary>
+    /// Map a <see cref="ValueTuple"/> to <see cref="ValueTuple"/>.
+    /// </summary>
+    /// <param name="input">The input tuple.</param>
+    /// <returns>The mapped tuple.</returns>
+    public partial ValueTuple<string, string, string, string> MapSystemValueTupleToSystemValueTuple(ValueTuple<int, CountingValues, long, string> input);
 }

@@ -19,6 +19,7 @@ public sealed partial class ProtobufOptionalMapper
     /// </summary>
     /// <param name="input">The protobuf message model with optional values.</param>
     /// <returns>The target model.</returns>
+    [MappaSettings(PragmaWarning = PragmaWarningSetting.Disable)]
     public partial TargetClassModel Map(SourceProtobufOptionalModel input);
 
     /// <summary>
