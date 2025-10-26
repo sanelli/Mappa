@@ -72,7 +72,6 @@ namespace Mappa.Generator.Models;
 internal sealed class MappaGlobalOptions
     : IMappaUserSettings
 {
-    // TODO [#198] Support ContainerCapacityConstructors setting.
     private const string MappaDebugFlagName = "debug";
     private const string MappaDebugCommentsFlagName = "debugcomments";
 
@@ -87,6 +86,7 @@ internal sealed class MappaGlobalOptions
     private const string MappaSettingsProtobufOptional = "protobufoptional";
     private const string MappaSettingsPragmaWarning = "pragmawarning";
     private const string MappaSettingsFastCollections = "fastcollections";
+    private const string MappaSettingsContainerCapacityConstructors = "containercapacityconstructors";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaGlobalOptions"/> class.
@@ -156,6 +156,10 @@ internal sealed class MappaGlobalOptions
 
         this.FastCollections = options.TryGetValue(GetOptionName(MappaSettingsFastCollections), out var fastCollections)
             ? GetBooleanSettingFromString(fastCollections)
+            : BooleanSetting.Undefined;
+
+        this.ContainerCapacityConstructors = options.TryGetValue(GetOptionName(MappaSettingsContainerCapacityConstructors), out var containerCapacityConstructors)
+            ? GetBooleanSettingFromString(containerCapacityConstructors)
             : BooleanSetting.Undefined;
 
         static CultureInfoSetting GetCultureInfoSettingsFromString(string cultureInfoSettings)
@@ -256,6 +260,9 @@ internal sealed class MappaGlobalOptions
 
     /// <inheritdoc/>
     public BooleanSetting FastCollections { get; }
+
+    /// <inheritdoc/>
+    public BooleanSetting ContainerCapacityConstructors { get; }
 
     /// <summary>
     /// Gets a value indicating whether to report debug INFO diagnostics.

@@ -24,6 +24,7 @@ internal sealed class MappaUserSettings
     private readonly StackSetting<BooleanSetting> protobufOptional;
     private readonly StackSetting<PragmaWarningSetting> pragmaWarning;
     private readonly StackSetting<BooleanSetting> fastCollections;
+    private readonly StackSetting<BooleanSetting> containerCapacityConstructors;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaUserSettings"/> class.
@@ -41,7 +42,8 @@ internal sealed class MappaUserSettings
             otherSettings.CultureName,
             otherSettings.ProtobufOptional,
             otherSettings.PragmaWarning,
-            otherSettings.FastCollections)
+            otherSettings.FastCollections,
+            otherSettings.ContainerCapacityConstructors)
     {
     }
 
@@ -59,6 +61,7 @@ internal sealed class MappaUserSettings
     /// <param name="protobufOptional">Enable or disable (protobuf) optional feature.</param>
     /// <param name="pragmaWarningSetting">Allow to surround the code generated with a <c>#pragma warning disable</c> block.</param>
     /// <param name="fastCollections">Enable or disable fast collection iterations for arrays and <see cref="List{T}"/> via <c>Span{T}</c>.</param>
+    /// <param name="containerCapacityConstructors">Enable or disable the ability to support custom collection with capacity constructor.</param>
     private MappaUserSettings(
         string? dateTimeFormat,
         string? dateTimeOffsetFormat,
@@ -70,7 +73,8 @@ internal sealed class MappaUserSettings
         string? cultureName,
         BooleanSetting protobufOptional,
         PragmaWarningSetting pragmaWarningSetting,
-        BooleanSetting fastCollections)
+        BooleanSetting fastCollections,
+        BooleanSetting containerCapacityConstructors)
     {
         this.dateTimeFormat = new(dateTimeFormat);
         this.dateTimeOffsetFormat = new(dateTimeOffsetFormat);
@@ -83,6 +87,7 @@ internal sealed class MappaUserSettings
         this.protobufOptional = new(protobufOptional);
         this.pragmaWarning = new(pragmaWarningSetting);
         this.fastCollections = new(fastCollections);
+        this.containerCapacityConstructors = new(containerCapacityConstructors);
     }
 
     /// <inheritdoc />
@@ -118,6 +123,9 @@ internal sealed class MappaUserSettings
     /// <inheritdoc/>
     public BooleanSetting FastCollections => this.fastCollections;
 
+    /// <inheritdoc/>
+    public BooleanSetting ContainerCapacityConstructors => this.containerCapacityConstructors;
+
     /// <summary>
     /// Push the changes required by the <paramref name="mappaSettingsAttribute"/> on the stack.
     /// If <paramref name="mappaSettingsAttribute"/> is <c>null</c>
@@ -146,6 +154,7 @@ internal sealed class MappaUserSettings
             this.protobufOptional.Apply(mappaSettingsAttribute.ProtobufOptional is not BooleanSetting.Undefined ? mappaSettingsAttribute.ProtobufOptional : this.protobufOptional),
             this.pragmaWarning.Apply(mappaSettingsAttribute.PragmaWarning is not PragmaWarningSetting.Undefined ? mappaSettingsAttribute.PragmaWarning : this.pragmaWarning),
             this.fastCollections.Apply(mappaSettingsAttribute.FastCollections is not BooleanSetting.Undefined ? mappaSettingsAttribute.FastCollections : this.fastCollections),
+            this.containerCapacityConstructors.Apply(mappaSettingsAttribute.ContainerCapacityConstructors is not BooleanSetting.Undefined ? mappaSettingsAttribute.FastCollections : this.fastCollections),
  #pragma warning restore CA2000
         ]);
     }

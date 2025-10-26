@@ -16,6 +16,7 @@ namespace Mappa.Generator.Algorithm.StrategyDetectors;
 internal sealed class ContainerMapStrategyDetector
     : IMapStrategyDetector
 {
+    // TODO [#109] Support constructor with 1 integer parameter (capacity) via mappaSettings.
     private readonly MappaMapAlgorithmContext context;
     private readonly Compilation compilation;
     private readonly CancellationToken cancellationToken;

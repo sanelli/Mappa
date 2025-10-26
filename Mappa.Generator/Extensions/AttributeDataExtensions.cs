@@ -204,6 +204,10 @@ internal static class AttributeDataExtensions
                 case nameof(MappaSettingsAttribute.FastCollections) when namedArgument.Value.Value is int value:
                     attribute.FastCollections = (BooleanSetting)value;
                     break;
+
+                case nameof(MappaSettingsAttribute.ContainerCapacityConstructors) when namedArgument.Value.Value is int value:
+                    attribute.ContainerCapacityConstructors = (BooleanSetting)value;
+                    break;
             }
         }
 
