@@ -268,6 +268,7 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
             var elementType = targetTypeSymbol.GetElementType();
 
             // Use ICollection because ISet derive the Add from ICollection
+            // TODO [#109] Support constructor with 1 integer parameter (capacity) via mappaSettings.
             interfaceToAccessFrom = $"System.Collections.Generic.ICollection<{TypeSymbolExtensions.NormalizeType(elementType.ToDisplayString())}>";
             interfaceMethodAccessMode = targetTypeSymbol.GetInterfaceMethodAccessMode(
                 "Add",
@@ -285,6 +286,7 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
             var capacity = string.Empty;
 
             // NOTE: ConcurrentStack does not have a constructor accepting a capacity.
+            // TODO [#109] Support constructor with 1 integer parameter (capacity) via mappaSettings.
             if (targetTypeSymbol.IsStack(context.Compilation)
                 && TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out var detectedCapacity))
             {
@@ -300,6 +302,7 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
             var capacity = string.Empty;
 
             // NOTE: ConcurrentQueue does not have a constructor accepting a capacity.
+            // TODO [#109] Support constructor with 1 integer parameter (capacity) via mappaSettings.
             if (targetTypeSymbol.IsQueue(context.Compilation)
                 && TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out var detectedCapacity))
             {
@@ -315,6 +318,7 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
             var capacity = string.Empty;
 
             // NOTE: ConcurrentBag does not have a constructor accepting a capacity.
+            // TODO [#109] Support constructor with 1 integer parameter (capacity) via mappaSettings.
             if (targetTypeSymbol.IsBlockingCollection(context.Compilation)
                 && TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out var detectedCapacity))
             {
