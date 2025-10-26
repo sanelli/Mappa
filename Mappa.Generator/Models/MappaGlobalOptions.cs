@@ -63,11 +63,16 @@ namespace Mappa.Generator.Models;
 ///         <term><c>mappa.fastcollections</c></term>
 ///         <description>Set the default value to enable or disable the fast iteration for arrays and list using <c>span{T}</c>.</description>
 ///     </item>
+///     <item>
+///         <term><c>mappa.containercapacityconstructors</c></term>
+///         <description>Set the default value to enable or disable the support for mapping custom containers using (if available) a constructor accepting an integer value representing the initial capacity of the container.</description>
+///     </item>
 /// </list>
 /// </summary>
 internal sealed class MappaGlobalOptions
     : IMappaUserSettings
 {
+    // TODO [#198] Support ContainerCapacityConstructors setting.
     private const string MappaDebugFlagName = "debug";
     private const string MappaDebugCommentsFlagName = "debugcomments";
 

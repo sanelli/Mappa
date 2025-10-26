@@ -72,4 +72,12 @@ public sealed class MappaSettingsAttribute
     /// over arrays and <see cref="List{T}"/>.
     /// </summary>
     public BooleanSetting FastCollections { get; set; } = BooleanSetting.Undefined;
+
+    /// <summary>
+    /// Gets or sets a value indicating weather the source generator is allowed to use
+    /// a constructor with a single integer parameters when mapping collections. The
+    /// single integer parameter represents the initial collection capacity,
+    /// similar to <see cref="List{T}(int)"/>.
+    /// </summary>
+    public BooleanSetting ContainerCapacityConstructors { get; set; } = BooleanSetting.Undefined;
 }
