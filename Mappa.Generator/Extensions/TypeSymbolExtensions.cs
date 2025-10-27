@@ -1445,7 +1445,9 @@ internal static class TypeSymbolExtensions
         Compilation compilation,
         IMethodSymbol? accessibleFromMethod = null)
     {
-        var constructor = namedTypeSymbol.Constructors.FirstOrDefault(constructor => constructor.Parameters is [{ Type.SpecialType: SpecialType.System_Int32 }]);
+        var constructor = namedTypeSymbol.Constructors.FirstOrDefault(constructor =>
+            constructor.Parameters.Length == 1 &&
+            constructor.Parameters[0].Type.SpecialType is SpecialType.System_Int32);
         if (constructor is null)
         {
             return false;
