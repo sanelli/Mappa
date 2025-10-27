@@ -355,8 +355,10 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
         {
             // TODO [#109] Support constructor with 1 integer parameter (capacity) via mappaSettings.
             // here we handle the scenario of the a concrete type implementing ICollection<T>.
-            // We are sure that is concrete because ICollection<T> is implemented in a different branch
-            // and we re also sure it has a constructor with 0 arguments that can be used.
+            // We are sure that is concrete because ICollection<T> is addressed in a different branch
+            // and we re also sure it has a constructor with 0 or 1 arguments that can be used.
+            // And if it is one argument is must be an integer (and the ContainerCapacityConstructors
+            // must be enabled too).
             insertionMethod = InsertionMethod.Add;
 
             var elementType = targetTypeSymbol.GetElementType();
