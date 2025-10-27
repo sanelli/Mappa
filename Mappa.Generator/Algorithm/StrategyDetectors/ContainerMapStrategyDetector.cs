@@ -63,7 +63,8 @@ internal sealed class ContainerMapStrategyDetector
                 this.context.SourceType,
                 elementStrategy,
                 this.context.MapMethod?.MethodSymbol,
-                this.context.MappaUserSettings.FastCollections);
+                this.context.MappaUserSettings.FastCollections,
+                this.context.MappaUserSettings.ContainerCapacityConstructors);
         }
 
         return mapStrategy is not NoMapStrategy;

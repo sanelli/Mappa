@@ -16,12 +16,14 @@ namespace Mappa.Generator.Models.Strategies;
 /// <param name="elementStrategy">The strategy for the element.</param>
 /// <param name="methodSymbol">The method this strategy is used for.</param>
 /// <param name="fastCollections">Enable or disable the fast collection iterations.</param>
+/// <param name="containerCapacityConstructors">Enable or disable support for custom collection with capacity constructor.</param>
 internal sealed class CollectionToCollectionMapStrategy(
     ITypeSymbol targetType,
     ITypeSymbol sourceType,
     MapStrategy elementStrategy,
     IMethodSymbol? methodSymbol,
-    BooleanSetting fastCollections)
+    BooleanSetting fastCollections,
+    BooleanSetting containerCapacityConstructors)
         : MapStrategy(targetType, sourceType)
 {
     /// <summary>
@@ -38,6 +40,12 @@ internal sealed class CollectionToCollectionMapStrategy(
     /// Gets a value indicating whether to enable the fast collection iterations.
     /// </summary>
     internal BooleanSetting FastCollections { get; } = fastCollections;
+
+    /// <summary>
+    /// Gets a value indicating whether to support custom collections with constructor
+    /// with a single integer parameter representing the capacity.
+    /// </summary>
+    internal BooleanSetting ContainerCapacityConstructors { get; } = containerCapacityConstructors;
 
     /// <inheritdoc/>
     internal override IMappaStrategyBuilder GetBuilder() => new CollectionToCollectionMapStrategyBuilder(this);

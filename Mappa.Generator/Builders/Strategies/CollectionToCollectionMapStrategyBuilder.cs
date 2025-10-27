@@ -49,6 +49,7 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
             this.strategy.TargetType,
             this.strategy.SourceType,
             this.strategy.FastCollections,
+            this.strategy.ContainerCapacityConstructors,
             out var targetVariableName,
             out var addMethod,
             out var targetCounterTemporary,
@@ -200,6 +201,7 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
         ITypeSymbol targetTypeSymbol,
         ITypeSymbol sourceTypeSymbol,
         BooleanSetting fastCollections,
+        BooleanSetting containerCapacityConstructors,
         out string targetVariableName,
         out InsertionMethod insertionMethod,
         out string? counterVariableName,
@@ -370,7 +372,23 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
                 returnType => returnType.IsVoid(),
                 [elementType]);
 
-            stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {targetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}();");
+            // TODO [#109] Add tests to cover this branch mainly.
+            var capacity = string.Empty;
+            if (containerCapacityConstructors is BooleanSetting.Enable &&
+                targetTypeSymbol.HasSymbolAccessibleZeroParametersConstructor(context.Compilation, methodSymbol))
+            {
+                if (!targetTypeSymbol.HasSymbolAccessibleZeroParametersConstructor(context.Compilation, methodSymbol))
+                {
+                    // Since only the constructor with one integer parameter exists the capacity MUST be used.
+                    capacity = GetLengthExpression(source, sourceTypeSymbol, context.Compilation);
+                }
+                else
+                {
+                    TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out capacity);
+                }
+            }
+
+            stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {targetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}({capacity});");
         }
         else if (targetTypeSymbol.IsIProducerConsumerCollection(context.Compilation))
         {

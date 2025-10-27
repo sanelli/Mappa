@@ -57,19 +57,19 @@ internal interface IMappaUserSettings
     BooleanSetting ProtobufOptional { get; }
 
     /// <summary>
-    /// Gets a value indicating weather the mapping method should be surrounded
+    /// Gets a value indicating whether the mapping method should be surrounded
     /// by <c>#pragma warning disable</c>.
     /// </summary>
     PragmaWarningSetting PragmaWarning { get; }
 
     /// <summary>
-    /// Gets a value indicating weather to use <c>Span{T}</c> for fast iterations
+    /// Gets a value indicating whether to use <c>Span{T}</c> for fast iterations
     /// over arrays and <see cref="List{T}"/>.
     /// </summary>
     BooleanSetting FastCollections { get; }
 
     /// <summary>
-    /// Gets a value indicating weather the source generator is allowed to use
+    /// Gets a value indicating whether the source generator is allowed to use
     /// a constructor with a single integer parameters when mapping collections. The
     /// single integer parameter represents the initial collection capacity,
     /// similar to <see cref="List{T}(int)"/>.
