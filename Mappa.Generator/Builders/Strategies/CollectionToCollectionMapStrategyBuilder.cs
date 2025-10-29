@@ -353,9 +353,10 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
             stringBuilder.AppendLine($"global::System.Collections.Generic.List<{targetTypeSymbol.GetElementType().ToDisplayString()}> {targetVariableName} = new global::System.Collections.Generic.List<{targetTypeSymbol.GetElementType().ToDisplayString()}>({capacity});");
         }
         else if (targetTypeSymbol.ImplementICollection()
-                 && targetTypeSymbol.HasSymbolAccessibleZeroParametersConstructor(context.Compilation, methodSymbol))
+                 && (targetTypeSymbol.HasSymbolAccessibleZeroParametersConstructor(context.Compilation, methodSymbol)
+                 || (containerCapacityConstructors is BooleanSetting.Enable &&
+                     targetTypeSymbol.HasSymbolAccessibleSingleIntegerParametersConstructor(context.Compilation, methodSymbol))))
         {
-            // TODO [#109] Support constructor with 1 integer parameter (capacity) via mappaSettings.
             // here we handle the scenario of the a concrete type implementing ICollection<T>.
             // We are sure that is concrete because ICollection<T> is addressed in a different branch
             // and we re also sure it has a constructor with 0 or 1 arguments that can be used.
@@ -372,10 +373,9 @@ internal sealed class CollectionToCollectionMapStrategyBuilder
                 returnType => returnType.IsVoid(),
                 [elementType]);
 
-            // TODO [#109] Add tests to cover this branch mainly.
             var capacity = string.Empty;
             if (containerCapacityConstructors is BooleanSetting.Enable &&
-                targetTypeSymbol.HasSymbolAccessibleZeroParametersConstructor(context.Compilation, methodSymbol))
+                targetTypeSymbol.HasSymbolAccessibleSingleIntegerParametersConstructor(context.Compilation, methodSymbol))
             {
                 if (!targetTypeSymbol.HasSymbolAccessibleZeroParametersConstructor(context.Compilation, methodSymbol))
                 {

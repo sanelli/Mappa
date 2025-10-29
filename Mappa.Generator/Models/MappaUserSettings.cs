@@ -154,7 +154,7 @@ internal sealed class MappaUserSettings
             this.protobufOptional.Apply(mappaSettingsAttribute.ProtobufOptional is not BooleanSetting.Undefined ? mappaSettingsAttribute.ProtobufOptional : this.protobufOptional),
             this.pragmaWarning.Apply(mappaSettingsAttribute.PragmaWarning is not PragmaWarningSetting.Undefined ? mappaSettingsAttribute.PragmaWarning : this.pragmaWarning),
             this.fastCollections.Apply(mappaSettingsAttribute.FastCollections is not BooleanSetting.Undefined ? mappaSettingsAttribute.FastCollections : this.fastCollections),
-            this.containerCapacityConstructors.Apply(mappaSettingsAttribute.ContainerCapacityConstructors is not BooleanSetting.Undefined ? mappaSettingsAttribute.FastCollections : this.fastCollections),
+            this.containerCapacityConstructors.Apply(mappaSettingsAttribute.ContainerCapacityConstructors is not BooleanSetting.Undefined ? mappaSettingsAttribute.ContainerCapacityConstructors : this.containerCapacityConstructors),
  #pragma warning restore CA2000
         ]);
     }
