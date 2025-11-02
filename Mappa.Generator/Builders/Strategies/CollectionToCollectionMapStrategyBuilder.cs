@@ -348,7 +348,7 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
                  || (containerCapacityConstructors is BooleanSetting.Enable &&
                      targetTypeSymbol.HasSymbolAccessibleSingleIntegerParametersConstructor(context.Compilation, methodSymbol))))
         {
-            // here we handle the scenario of the a concrete type implementing ICollection<T>.
+            // Here we handle the scenario of a concrete type implementing ICollection<T>.
             // We are sure that is concrete because ICollection<T> is addressed in a different branch
             // and we re also sure it has a constructor with 0 or 1 arguments that can be used.
             // And if it is one argument is must be an integer (and the ContainerCapacityConstructors

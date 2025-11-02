@@ -16,7 +16,6 @@ namespace Mappa.Generator.Algorithm.StrategyDetectors;
 internal sealed class ContainerMapStrategyDetector
     : IMapStrategyDetector
 {
-    // TODO [#109] Support constructor for impl ISet{T} with 1 integer parameter (capacity) via mappaSettings.
     // TODO [#109] Support constructor for impl IStack{T} with 1 integer parameter (capacity) via mappaSettings.
     // TODO [#109] Support constructor for impl IQueue{T} with 1 integer parameter (capacity) via mappaSettings.
     // TODO [#109] Support constructor for impl BlockingCollection{T} with 1 integer parameter (capacity) via mappaSettings.
@@ -197,9 +196,7 @@ internal sealed class ContainerMapStrategyDetector
                        || this.context.TargetType.IsIProducerConsumerCollection(this.compilation);
             }
 
-            // Target type MUST have a constructor with no arguments
-            // unless it is a ReadOnlyDictionary, ImmutableDictionary or a FrozenDictionary
-            // for which special coding is provided.
+            // For the following concrete types a suitable constructor exists.
             if (this.context.TargetType.IsReadOnlyCollection(this.compilation)
                 || this.context.TargetType.IsReadOnlySet(this.compilation)
                 || this.context.TargetType.IsFrozenSet(this.compilation)
@@ -213,14 +210,20 @@ internal sealed class ContainerMapStrategyDetector
                 return true;
             }
 
+            // Any other concrete type must either have:
+            // - a constructor with no parameters
+            // - (only if ContainerCapacityConstructors is enabled) a constructor with one integer
+            //   parameter and implement either: ICollection{T}, ISet{T}, IQueue{T}, IStack{T}
+            //   or derive BlockingCollection{T}.
             return this.context.TargetType.HasSymbolAccessibleZeroParametersConstructor(this.compilation, this.context.MapMethod?.MethodSymbol)
                 || (this.context.MappaUserSettings.ContainerCapacityConstructors is BooleanSetting.Enable
+                    && this.context.TargetType.TypeKind != TypeKind.Interface
                     && CanSupportImplementationWithCapacityConstructor()
                     && this.context.TargetType.HasSymbolAccessibleSingleIntegerParametersConstructor(this.compilation, this.context.MapMethod?.MethodSymbol));
         }
 
         bool CanSupportImplementationWithCapacityConstructor()
-            => this.context.TargetType.TypeKind != TypeKind.Interface
-               && this.context.TargetType.ImplementICollection();
+            => this.context.TargetType.ImplementICollection()
+            || this.context.TargetType.ImplementISet(this.compilation);
     }
 }
