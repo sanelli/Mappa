@@ -1406,4 +1406,28 @@ public sealed class ContainerCapacityConstructorsIntegrationTests
                                 .BeIdentifierNameSyntax("__mappa_tmp_1")));
                 });
     }
+
+    // TODO [#109] derive Stack{T} + array + enabled on class + capacity constructor.
+    // TODO [#109] derive Stack{T} + array + enabled on method + capacity constructor.
+    // TODO [#109] derive Stack{T} + array + enabled on class + capacity constructor + empty constructor.
+    // TODO [#109] derive Stack{T} + array + disabled on class + capacity constructor + empty constructor.
+    // TODO [#109] derive Stack{T} + array + undefined on class + capacity constructor + empty constructor.
+    // TODO [#109] derive Stack{T} + IEnumerable{S} + enabled on class + capacity constructor + empty constructor.
+    // TODO [#109] derive Stack{T} + IEnumerable{S} + enabled on class + capacity constructor.
+
+    // TODO [#109] derive Queue{T} + array + enabled on class + capacity constructor.
+    // TODO [#109] derive Queue{T} + array + enabled on method + capacity constructor.
+    // TODO [#109] derive Queue{T} + array + enabled on class + capacity constructor + empty constructor.
+    // TODO [#109] derive Queue{T} + array + disabled on class + capacity constructor + empty constructor.
+    // TODO [#109] derive Queue{T} + array + undefined on class + capacity constructor + empty constructor.
+    // TODO [#109] derive Queue{T} + IEnumerable{S} + enabled on class + capacity constructor + empty constructor.
+    // TODO [#109] derive Queue{T} + IEnumerable{S} + enabled on class + capacity constructor.
+
+    // TODO [#109] derive ConcurrentBag{T} + array + enabled on class + capacity constructor.
+    // TODO [#109] derive ConcurrentBag{T} + array + enabled on method + capacity constructor.
+    // TODO [#109] derive ConcurrentBag{T} + array + enabled on class + capacity constructor + empty constructor.
+    // TODO [#109] derive ConcurrentBag{T} + array + disabled on class + capacity constructor + empty constructor.
+    // TODO [#109] derive ConcurrentBag{T} + array + undefined on class + capacity constructor + empty constructor.
+    // TODO [#109] derive ConcurrentBag{T} + IEnumerable{S} + enabled on class + capacity constructor + empty constructor.
+    // TODO [#109] derive ConcurrentBag{T} + IEnumerable{S} + enabled on class + capacity constructor.
 }

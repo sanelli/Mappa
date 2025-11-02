@@ -1094,7 +1094,7 @@ internal static class TypeSymbolExtensions
     /// <param name="typeSymbol">The type symbol.</param>
     /// <param name="compilation">The compilation.</param>
     /// <returns><c>true</c> if the type symbol is or implements <see cref="Stack{T}"/>.</returns>
-    internal static bool IsOrImplementStack(this ITypeSymbol typeSymbol, Compilation compilation)
+    internal static bool IsOrDerivedFromStack(this ITypeSymbol typeSymbol, Compilation compilation)
     {
         var stackSymbol = compilation.GetTypeByMetadataName(StackFullName);
         if (SymbolEqualityComparer.Default.Equals(stackSymbol, typeSymbol.OriginalDefinition))
@@ -1135,7 +1135,7 @@ internal static class TypeSymbolExtensions
     /// <param name="typeSymbol">The type symbol.</param>
     /// <param name="compilation">The compilation.</param>
     /// <returns><c>true</c> if the type symbol is or implement <see cref="Queue{T}"/>.</returns>
-    internal static bool IsOrImplementQueue(this ITypeSymbol typeSymbol, Compilation compilation)
+    internal static bool IsOrDerivedFromQueue(this ITypeSymbol typeSymbol, Compilation compilation)
     {
         var queueType = compilation.GetTypeByMetadataName(QueueFullName);
         if (SymbolEqualityComparer.Default.Equals(queueType, typeSymbol.OriginalDefinition))
@@ -1240,12 +1240,12 @@ internal static class TypeSymbolExtensions
     }
 
     /// <summary>
-    /// Check if the type is or implement <see cref="ConcurrentStack{T}"/>.
+    /// Check if the type is or is derived from <see cref="ConcurrentStack{T}"/>.
     /// </summary>
     /// <param name="typeSymbol">The type symbol.</param>
     /// <param name="compilation">The compilation.</param>
     /// <returns><c>true</c> if the type symbol is or implement <see cref="ConcurrentStack{T}"/>.</returns>
-    internal static bool IsOrImplementConcurrentStack(this ITypeSymbol typeSymbol, Compilation compilation)
+    internal static bool IsOrDerivedFromConcurrentStack(this ITypeSymbol typeSymbol, Compilation compilation)
     {
         var blockingCollectionSymbol = compilation.GetTypeByMetadataName(ConcurrentStackFullName);
         if (SymbolEqualityComparer.Default.Equals(blockingCollectionSymbol, typeSymbol.OriginalDefinition))

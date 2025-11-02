@@ -254,14 +254,29 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
             TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out var capacity);
             stringBuilder.AppendLine($"global::System.Collections.Generic.HashSet<{targetTypeSymbol.GetElementType().ToDisplayString()}> {targetVariableName} = new global::System.Collections.Generic.HashSet<{targetTypeSymbol.GetElementType().ToDisplayString()}>({capacity});");
         }
-        else if (targetTypeSymbol.IsOrImplementStack(context.Compilation)
-                 || targetTypeSymbol.IsOrImplementConcurrentStack(context.Compilation))
+        else if (targetTypeSymbol.IsOrDerivedFromStack(context.Compilation))
         {
             insertionMethod = InsertionMethod.Push;
             var capacity = string.Empty;
 
-            // NOTE: ConcurrentStack does not have a constructor accepting a capacity.
-            // TODO [#109] Support constructor with 1 integer parameter (capacity) via mappaSettings.
+            if (targetTypeSymbol.IsStack(context.Compilation))
+            {
+                TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out capacity);
+            }
+            else if (containerCapacityConstructors is BooleanSetting.Enable &&
+                      targetTypeSymbol.HasSymbolAccessibleSingleIntegerParametersConstructor(context.Compilation, methodSymbol))
+            {
+                if (!targetTypeSymbol.HasSymbolAccessibleZeroParametersConstructor(context.Compilation, methodSymbol))
+                {
+                    // Since only the constructor with one integer parameter exists the capacity MUST be used.
+                    capacity = GetLengthExpression(source, sourceTypeSymbol, context.Compilation);
+                }
+                else
+                {
+                    TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out capacity);
+                }
+            }
+
             if (targetTypeSymbol.IsStack(context.Compilation)
                 && TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out var detectedCapacity))
             {
@@ -270,7 +285,12 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
 
             stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {targetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}({capacity});");
         }
-        else if (targetTypeSymbol.IsOrImplementQueue(context.Compilation)
+        else if (targetTypeSymbol.IsOrDerivedFromConcurrentStack(context.Compilation))
+        {
+            insertionMethod = InsertionMethod.Push;
+            stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {targetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}();");
+        }
+        else if (targetTypeSymbol.IsOrDerivedFromQueue(context.Compilation)
                  || targetTypeSymbol.IsOrImplementConcurrentQueue(context.Compilation))
         {
             insertionMethod = InsertionMethod.Enqueue;

@@ -16,9 +16,9 @@ namespace Mappa.Generator.Algorithm.StrategyDetectors;
 internal sealed class ContainerMapStrategyDetector
     : IMapStrategyDetector
 {
-    // TODO [#109] Support constructor for impl IStack{T} with 1 integer parameter (capacity) via mappaSettings.
-    // TODO [#109] Support constructor for impl IQueue{T} with 1 integer parameter (capacity) via mappaSettings.
-    // TODO [#109] Support constructor for impl BlockingCollection{T} with 1 integer parameter (capacity) via mappaSettings.
+    // TODO [#109] Support constructor for derived Stack{T} with 1 integer parameter (capacity) via mappaSettings.
+    // TODO [#109] Support constructor for derived IQueue{T} with 1 integer parameter (capacity) via mappaSettings.
+    // TODO [#109] Support constructor for derived BlockingCollection{T} with 1 integer parameter (capacity) via mappaSettings.
     private readonly MappaMapAlgorithmContext context;
     private readonly Compilation compilation;
     private readonly CancellationToken cancellationToken;
@@ -141,8 +141,8 @@ internal sealed class ContainerMapStrategyDetector
                                  || this.context.TargetType.IsReadOnlySpan(this.compilation)
                                  || this.context.TargetType.IsMemory(this.compilation)
                                  || this.context.TargetType.IsReadOnlyMemory(this.compilation)
-                                 || this.context.TargetType.IsOrImplementStack(this.compilation)
-                                 || this.context.TargetType.IsOrImplementQueue(this.compilation)
+                                 || this.context.TargetType.IsOrDerivedFromStack(this.compilation)
+                                 || this.context.TargetType.IsOrDerivedFromQueue(this.compilation)
                                  || this.context.TargetType.IsOrImplementISet(this.compilation)
                                  || this.context.TargetType.IsIReadOnlySet(this.compilation)
                                  || this.context.TargetType.IsHashSet(this.compilation)
@@ -161,7 +161,7 @@ internal sealed class ContainerMapStrategyDetector
                                  || this.context.TargetType.IsImmutableStack(this.compilation)
                                  || this.context.TargetType.IsOrImplementBlockingCollection(this.compilation)
                                  || this.context.TargetType.IsOrImplementConcurrentBag(this.compilation)
-                                 || this.context.TargetType.IsOrImplementConcurrentStack(this.compilation)
+                                 || this.context.TargetType.IsOrDerivedFromConcurrentStack(this.compilation)
                                  || this.context.TargetType.IsOrImplementConcurrentQueue(this.compilation)
                                  || this.context.TargetType.IsIProducerConsumerCollection(this.compilation))
                                  && InterfaceAndConstructorChecks();
@@ -224,6 +224,7 @@ internal sealed class ContainerMapStrategyDetector
 
         bool CanSupportImplementationWithCapacityConstructor()
             => this.context.TargetType.ImplementICollection()
-            || this.context.TargetType.ImplementISet(this.compilation);
+            || this.context.TargetType.ImplementISet(this.compilation)
+            || this.context.TargetType.IsOrDerivedFromStack(this.compilation);
     }
 }
