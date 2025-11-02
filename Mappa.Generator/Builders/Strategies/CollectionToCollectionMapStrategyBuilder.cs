@@ -14,19 +14,10 @@ namespace Mappa.Generator.Builders.Strategies;
 /// <summary>
 /// Builder for <see cref="CollectionToCollectionMapStrategy"/>.
 /// </summary>
-internal sealed class CollectionToCollectionMapStrategyBuilder
+internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToCollectionMapStrategy strategy)
     : IMappaStrategyBuilder
 {
-    private readonly CollectionToCollectionMapStrategy strategy;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="CollectionToCollectionMapStrategyBuilder"/> class.
-    /// </summary>
-    /// <param name="strategy">The strategy.</param>
-    public CollectionToCollectionMapStrategyBuilder(CollectionToCollectionMapStrategy strategy)
-    {
-        this.strategy = strategy;
-    }
+    private readonly CollectionToCollectionMapStrategy strategy = strategy;
 
     private enum InsertionMethod
     {
