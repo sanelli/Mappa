@@ -254,24 +254,6 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
             TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out var capacity);
             stringBuilder.AppendLine($"global::System.Collections.Generic.HashSet<{targetTypeSymbol.GetElementType().ToDisplayString()}> {targetVariableName} = new global::System.Collections.Generic.HashSet<{targetTypeSymbol.GetElementType().ToDisplayString()}>({capacity});");
         }
-        else if (targetTypeSymbol.ImplementISet(context.Compilation)
-                 && targetTypeSymbol.HasSymbolAccessibleZeroParametersConstructor(context.Compilation, methodSymbol))
-        {
-            insertionMethod = InsertionMethod.Add;
-            var elementType = targetTypeSymbol.GetElementType();
-
-            // Use ICollection because ISet derive the Add from ICollection
-            // TODO [#109] Support constructor with 1 integer parameter (capacity) via mappaSettings.
-            interfaceToAccessFrom = $"System.Collections.Generic.ICollection<{TypeSymbolExtensions.NormalizeType(elementType.ToDisplayString())}>";
-            interfaceMethodAccessMode = targetTypeSymbol.GetInterfaceMethodAccessMode(
-                "Add",
-                "System.Collections.Generic.ICollection",
-                TypeSymbolExtensions.NormalizeType(elementType.ToDisplayString()),
-                returnType => returnType.IsVoid(),
-                [elementType]);
-
-            stringBuilder.AppendLine($"global::{targetTypeSymbol} {targetVariableName} = new global::{targetTypeSymbol}();");
-        }
         else if (targetTypeSymbol.IsOrImplementStack(context.Compilation)
                  || targetTypeSymbol.IsOrImplementConcurrentStack(context.Compilation))
         {
@@ -343,10 +325,45 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
             TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out var capacity);
             stringBuilder.AppendLine($"global::System.Collections.Generic.List<{targetTypeSymbol.GetElementType().ToDisplayString()}> {targetVariableName} = new global::System.Collections.Generic.List<{targetTypeSymbol.GetElementType().ToDisplayString()}>({capacity});");
         }
-        else if (targetTypeSymbol.ImplementICollection()
-                 && (targetTypeSymbol.HasSymbolAccessibleZeroParametersConstructor(context.Compilation, methodSymbol)
-                 || (containerCapacityConstructors is BooleanSetting.Enable &&
-                     targetTypeSymbol.HasSymbolAccessibleSingleIntegerParametersConstructor(context.Compilation, methodSymbol))))
+        else if (targetTypeSymbol.IsIProducerConsumerCollection(context.Compilation))
+        {
+            // We are going to always use a concurrent bag, so Add method is best here.
+            insertionMethod = InsertionMethod.Add;
+            stringBuilder.AppendLine($"global::System.Collections.Concurrent.ConcurrentBag<{targetTypeSymbol.GetElementType().ToDisplayString()}> {targetVariableName} = new global::System.Collections.Concurrent.ConcurrentBag<{targetTypeSymbol.GetElementType().ToDisplayString()}>();");
+        }
+        else if (targetTypeSymbol.ImplementISet(context.Compilation))
+        {
+            insertionMethod = InsertionMethod.Add;
+            var elementType = targetTypeSymbol.GetElementType();
+
+            // Use ICollection because ISet derive the Add from ICollection
+            interfaceToAccessFrom = $"System.Collections.Generic.ICollection<{TypeSymbolExtensions.NormalizeType(elementType.ToDisplayString())}>";
+            interfaceMethodAccessMode = targetTypeSymbol.GetInterfaceMethodAccessMode(
+                "Add",
+                "System.Collections.Generic.ICollection",
+                TypeSymbolExtensions.NormalizeType(elementType.ToDisplayString()),
+                returnType => returnType.IsVoid(),
+                [elementType]);
+
+            var capacity = string.Empty;
+            if (targetTypeSymbol.TypeKind != TypeKind.Interface &&
+                containerCapacityConstructors is BooleanSetting.Enable &&
+                targetTypeSymbol.HasSymbolAccessibleSingleIntegerParametersConstructor(context.Compilation, methodSymbol))
+            {
+                if (!targetTypeSymbol.HasSymbolAccessibleZeroParametersConstructor(context.Compilation, methodSymbol))
+                {
+                    // Since only the constructor with one integer parameter exists the capacity MUST be used.
+                    capacity = GetLengthExpression(source, sourceTypeSymbol, context.Compilation);
+                }
+                else
+                {
+                    TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out capacity);
+                }
+            }
+
+            stringBuilder.AppendLine($"global::{targetTypeSymbol} {targetVariableName} = new global::{targetTypeSymbol}({capacity});");
+        }
+        else if (targetTypeSymbol.ImplementICollection())
         {
             // Here we handle the scenario of a concrete type implementing ICollection<T>.
             // We are sure that is concrete because ICollection<T> is addressed in a different branch
@@ -365,7 +382,8 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
                 [elementType]);
 
             var capacity = string.Empty;
-            if (containerCapacityConstructors is BooleanSetting.Enable &&
+            if (targetTypeSymbol.TypeKind != TypeKind.Interface &&
+                containerCapacityConstructors is BooleanSetting.Enable &&
                 targetTypeSymbol.HasSymbolAccessibleSingleIntegerParametersConstructor(context.Compilation, methodSymbol))
             {
                 if (!targetTypeSymbol.HasSymbolAccessibleZeroParametersConstructor(context.Compilation, methodSymbol))
@@ -380,12 +398,6 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
             }
 
             stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {targetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}({capacity});");
-        }
-        else if (targetTypeSymbol.IsIProducerConsumerCollection(context.Compilation))
-        {
-            // We are going to always use a concurrent bag, so Add method is best here.
-            insertionMethod = InsertionMethod.Add;
-            stringBuilder.AppendLine($"global::System.Collections.Concurrent.ConcurrentBag<{targetTypeSymbol.GetElementType().ToDisplayString()}> {targetVariableName} = new global::System.Collections.Concurrent.ConcurrentBag<{targetTypeSymbol.GetElementType().ToDisplayString()}>();");
         }
         else
         {
