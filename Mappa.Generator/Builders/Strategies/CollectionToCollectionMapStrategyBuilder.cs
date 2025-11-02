@@ -311,7 +311,7 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
             var capacity = string.Empty;
 
             // NOTE: ConcurrentBag does not have a constructor accepting a capacity.
-            // TODO [#109] Support constructor with 1 integer parameter (capacity) via mappaSettings.
+            // TODO [#109] Support constructor for impl BlockingCollection{T} with 1 integer parameter (capacity) via mappaSettings.
             if (targetTypeSymbol.IsBlockingCollection(context.Compilation)
                 && TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out var detectedCapacity))
             {

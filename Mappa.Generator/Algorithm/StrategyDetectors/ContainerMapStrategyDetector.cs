@@ -16,7 +16,10 @@ namespace Mappa.Generator.Algorithm.StrategyDetectors;
 internal sealed class ContainerMapStrategyDetector
     : IMapStrategyDetector
 {
-    // TODO [#109] Support constructor with 1 integer parameter (capacity) via mappaSettings.
+    // TODO [#109] Support constructor for impl ISet{T} with 1 integer parameter (capacity) via mappaSettings.
+    // TODO [#109] Support constructor for impl IStack{T} with 1 integer parameter (capacity) via mappaSettings.
+    // TODO [#109] Support constructor for impl IQueue{T} with 1 integer parameter (capacity) via mappaSettings.
+    // TODO [#109] Support constructor for impl BlockingCollection{T} with 1 integer parameter (capacity) via mappaSettings.
     private readonly MappaMapAlgorithmContext context;
     private readonly Compilation compilation;
     private readonly CancellationToken cancellationToken;
@@ -211,7 +214,13 @@ internal sealed class ContainerMapStrategyDetector
             }
 
             return this.context.TargetType.HasSymbolAccessibleZeroParametersConstructor(this.compilation, this.context.MapMethod?.MethodSymbol)
-                || (this.context.MappaUserSettings.ContainerCapacityConstructors is BooleanSetting.Enable && this.context.TargetType.HasSymbolAccessibleSingleIntegerParametersConstructor(this.compilation, this.context.MapMethod?.MethodSymbol));
+                || (this.context.MappaUserSettings.ContainerCapacityConstructors is BooleanSetting.Enable
+                    && CanSupportImplementationWithCapacityConstructor()
+                    && this.context.TargetType.HasSymbolAccessibleSingleIntegerParametersConstructor(this.compilation, this.context.MapMethod?.MethodSymbol));
         }
+
+        bool CanSupportImplementationWithCapacityConstructor()
+            => this.context.TargetType.TypeKind != TypeKind.Interface
+               && this.context.TargetType.ImplementICollection();
     }
 }
