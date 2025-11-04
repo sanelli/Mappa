@@ -225,6 +225,7 @@ internal sealed class ContainerMapStrategyDetector
         bool CanSupportImplementationWithCapacityConstructor()
             => this.context.TargetType.ImplementICollection()
             || this.context.TargetType.ImplementISet(this.compilation)
-            || this.context.TargetType.IsOrDerivedFromStack(this.compilation);
+            || this.context.TargetType.IsOrDerivedFromStack(this.compilation)
+            || this.context.TargetType.IsOrDerivedFromQueue(this.compilation);
     }
 }

@@ -277,34 +277,44 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
                 }
             }
 
-            if (targetTypeSymbol.IsStack(context.Compilation)
-                && TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out var detectedCapacity))
-            {
-                capacity = detectedCapacity;
-            }
-
             stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {targetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}({capacity});");
         }
         else if (targetTypeSymbol.IsOrDerivedFromConcurrentStack(context.Compilation))
         {
+            // NOTE: ConcurrentStack{T} does not have a constructor accepting a capacity.
             insertionMethod = InsertionMethod.Push;
             stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {targetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}();");
         }
-        else if (targetTypeSymbol.IsOrDerivedFromQueue(context.Compilation)
-                 || targetTypeSymbol.IsOrImplementConcurrentQueue(context.Compilation))
+        else if (targetTypeSymbol.IsOrDerivedFromQueue(context.Compilation))
         {
             insertionMethod = InsertionMethod.Enqueue;
             var capacity = string.Empty;
 
-            // NOTE: ConcurrentQueue does not have a constructor accepting a capacity.
-            // TODO [#109] Support constructor with 1 integer parameter (capacity) via mappaSettings.
-            if (targetTypeSymbol.IsQueue(context.Compilation)
-                && TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out var detectedCapacity))
+            if (targetTypeSymbol.IsQueue(context.Compilation))
             {
-                capacity = detectedCapacity;
+                TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out capacity);
+            }
+            else if (containerCapacityConstructors is BooleanSetting.Enable &&
+                     targetTypeSymbol.HasSymbolAccessibleSingleIntegerParametersConstructor(context.Compilation, methodSymbol))
+            {
+                if (!targetTypeSymbol.HasSymbolAccessibleZeroParametersConstructor(context.Compilation, methodSymbol))
+                {
+                    // Since only the constructor with one integer parameter exists the capacity MUST be used.
+                    capacity = GetLengthExpression(source, sourceTypeSymbol, context.Compilation);
+                }
+                else
+                {
+                    TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out capacity);
+                }
             }
 
             stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {targetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}({capacity});");
+        }
+        else if (targetTypeSymbol.IsOrImplementConcurrentQueue(context.Compilation))
+        {
+            // NOTE: ConcurrentQueue{T} does not have a constructor accepting a capacity.
+            insertionMethod = InsertionMethod.Enqueue;
+            stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {targetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}();");
         }
         else if (targetTypeSymbol.IsOrImplementBlockingCollection(context.Compilation)
                  || targetTypeSymbol.IsOrImplementConcurrentBag(context.Compilation))
