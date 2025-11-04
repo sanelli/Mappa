@@ -316,18 +316,30 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
             insertionMethod = InsertionMethod.Enqueue;
             stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {targetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}();");
         }
-        else if (targetTypeSymbol.IsOrImplementBlockingCollection(context.Compilation)
-                 || targetTypeSymbol.IsOrImplementConcurrentBag(context.Compilation))
+        else if (targetTypeSymbol.IsOrDerivedFromBlockingCollection(context.Compilation)
+                 || targetTypeSymbol.IsOrDerivedFromConcurrentBag(context.Compilation))
         {
             insertionMethod = InsertionMethod.Add;
             var capacity = string.Empty;
 
             // NOTE: ConcurrentBag does not have a constructor accepting a capacity.
-            // TODO [#109] Support constructor for impl BlockingCollection{T} with 1 integer parameter (capacity) via mappaSettings.
-            if (targetTypeSymbol.IsBlockingCollection(context.Compilation)
-                && TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out var detectedCapacity))
+            if (targetTypeSymbol.IsBlockingCollection(context.Compilation))
             {
-                capacity = detectedCapacity;
+                TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out capacity);
+            }
+            else if (containerCapacityConstructors is BooleanSetting.Enable &&
+                     targetTypeSymbol.IsDerivedFromBlockingCollection(context.Compilation) &&
+                     targetTypeSymbol.HasSymbolAccessibleSingleIntegerParametersConstructor(context.Compilation, methodSymbol))
+            {
+                if (!targetTypeSymbol.HasSymbolAccessibleZeroParametersConstructor(context.Compilation, methodSymbol))
+                {
+                    // Since only the constructor with one integer parameter exists the capacity MUST be used.
+                    capacity = GetLengthExpression(source, sourceTypeSymbol, context.Compilation);
+                }
+                else
+                {
+                    TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out capacity);
+                }
             }
 
             stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {targetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}({capacity});");

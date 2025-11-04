@@ -16,9 +16,6 @@ namespace Mappa.Generator.Algorithm.StrategyDetectors;
 internal sealed class ContainerMapStrategyDetector
     : IMapStrategyDetector
 {
-    // TODO [#109] Support constructor for derived Stack{T} with 1 integer parameter (capacity) via mappaSettings.
-    // TODO [#109] Support constructor for derived IQueue{T} with 1 integer parameter (capacity) via mappaSettings.
-    // TODO [#109] Support constructor for derived BlockingCollection{T} with 1 integer parameter (capacity) via mappaSettings.
     private readonly MappaMapAlgorithmContext context;
     private readonly Compilation compilation;
     private readonly CancellationToken cancellationToken;
@@ -159,8 +156,8 @@ internal sealed class ContainerMapStrategyDetector
                                  || this.context.TargetType.IsImmutableQueue(this.compilation)
                                  || this.context.TargetType.IsIImmutableStack(this.compilation)
                                  || this.context.TargetType.IsImmutableStack(this.compilation)
-                                 || this.context.TargetType.IsOrImplementBlockingCollection(this.compilation)
-                                 || this.context.TargetType.IsOrImplementConcurrentBag(this.compilation)
+                                 || this.context.TargetType.IsOrDerivedFromBlockingCollection(this.compilation)
+                                 || this.context.TargetType.IsOrDerivedFromConcurrentBag(this.compilation)
                                  || this.context.TargetType.IsOrDerivedFromConcurrentStack(this.compilation)
                                  || this.context.TargetType.IsOrImplementConcurrentQueue(this.compilation)
                                  || this.context.TargetType.IsIProducerConsumerCollection(this.compilation))
@@ -226,6 +223,7 @@ internal sealed class ContainerMapStrategyDetector
             => this.context.TargetType.ImplementICollection()
             || this.context.TargetType.ImplementISet(this.compilation)
             || this.context.TargetType.IsOrDerivedFromStack(this.compilation)
-            || this.context.TargetType.IsOrDerivedFromQueue(this.compilation);
+            || this.context.TargetType.IsOrDerivedFromQueue(this.compilation)
+            || this.context.TargetType.IsOrDerivedFromBlockingCollection(this.compilation);
     }
 }

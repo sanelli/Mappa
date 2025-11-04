@@ -1171,19 +1171,23 @@ internal static class TypeSymbolExtensions
     }
 
     /// <summary>
-    /// Check if the type is or implement <see cref="BlockingCollection{T}"/>.
+    /// Check if the type is or derived from <see cref="BlockingCollection{T}"/>.
     /// </summary>
     /// <param name="typeSymbol">The type symbol.</param>
     /// <param name="compilation">The compilation.</param>
     /// <returns><c>true</c> if the type symbol is or implement <see cref="BlockingCollection{T}"/>.</returns>
-    internal static bool IsOrImplementBlockingCollection(this ITypeSymbol typeSymbol, Compilation compilation)
+    internal static bool IsOrDerivedFromBlockingCollection(this ITypeSymbol typeSymbol, Compilation compilation)
+        => typeSymbol.IsBlockingCollection(compilation) || typeSymbol.IsDerivedFromBlockingCollection(compilation);
+
+    /// <summary>
+    /// Check if the type is derived from <see cref="BlockingCollection{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is or implement <see cref="BlockingCollection{T}"/>.</returns>
+    internal static bool IsDerivedFromBlockingCollection(this ITypeSymbol typeSymbol, Compilation compilation)
     {
         var blockingCollectionSymbol = compilation.GetTypeByMetadataName(BlockingCollectionFullName);
-        if (SymbolEqualityComparer.Default.Equals(blockingCollectionSymbol, typeSymbol.OriginalDefinition))
-        {
-            return true;
-        }
-
         INamedTypeSymbol? baseType = typeSymbol.BaseType;
         while (baseType is not null)
         {
@@ -1217,7 +1221,7 @@ internal static class TypeSymbolExtensions
     /// <param name="typeSymbol">The type symbol.</param>
     /// <param name="compilation">The compilation.</param>
     /// <returns><c>true</c> if the type symbol is or implement <see cref="ConcurrentBag{T}"/>.</returns>
-    internal static bool IsOrImplementConcurrentBag(this ITypeSymbol typeSymbol, Compilation compilation)
+    internal static bool IsOrDerivedFromConcurrentBag(this ITypeSymbol typeSymbol, Compilation compilation)
     {
         var blockingCollectionSymbol = compilation.GetTypeByMetadataName(ConcurrentBagFullName);
         if (SymbolEqualityComparer.Default.Equals(blockingCollectionSymbol, typeSymbol.OriginalDefinition))
