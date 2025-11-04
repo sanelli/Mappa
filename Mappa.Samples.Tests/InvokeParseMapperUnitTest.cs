@@ -5,6 +5,8 @@ using System.Globalization;
 
 using FluentAssertions;
 
+using Mappa.Samples.Models;
+
 using Xunit;
 using Xunit.Categories;
 
@@ -1459,5 +1461,22 @@ public sealed class InvokeParseMapperUnitTest
 
         // Assert
         actual.Should().Be(Guid.ParseExact(input, InvokeParseStrategySettings.GuidFormat));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="CustomClassWithStaticParse"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapCustomClassWithStaticParse()
+    {
+        // Arrange
+        const string input = "this-is-a-string";
+
+        // Act
+        var actual = this.mapperWithoutAnySettings.MapCustomClassWithStaticParse(input);
+
+        // Assert
+        actual.TheString.Should().Be(input);
     }
 }

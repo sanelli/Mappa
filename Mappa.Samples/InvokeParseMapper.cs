@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 using Mappa.Attributes;
+using Mappa.Samples.Models;
 
 namespace Mappa.Samples;
 
@@ -154,6 +155,13 @@ public sealed partial class ParseMapperWithoutAnySettings
     /// <param name="input">The input string.</param>
     /// <returns>The input mapped to the target type.</returns>
     public partial Guid MapGuid(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="CustomClassWithStaticParse"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial CustomClassWithStaticParse MapCustomClassWithStaticParse(string input);
 }
 
 /// <summary>
