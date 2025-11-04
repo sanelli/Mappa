@@ -130,7 +130,15 @@ internal sealed class StringMapStrategyDetector
                 this.context.SourceType);
         }
 
-        // 09. S -> string : InvokeToStringStrategy
+        // 09. string -> T when static T T.Parse(string) method exists
+        else if (this.CanMapUsingStaticParseMethod())
+        {
+           mapStrategy = new InvokeParseMethodMapStrategy(
+               this.context.TargetType,
+               this.context.SourceType);
+        }
+
+        // 10. S -> string : InvokeToStringStrategy
         else if (this.CanMapToString())
         {
             var formatAndCulture = this.IdentifyFormatAndCulture();
@@ -270,29 +278,48 @@ internal sealed class StringMapStrategyDetector
 
     private bool CanMapStringToTimeOnly()
     {
-        var isTimeOnly = this.context.TargetType.IsTimeOnly(this.compilation);
+        var isTargetTimeOnly = this.context.TargetType.IsTimeOnly(this.compilation);
         var isSourceString = this.context.SourceType.IsString();
-        return isTimeOnly && isSourceString;
+        return isTargetTimeOnly && isSourceString;
     }
 
     private bool CanMapStringToDateOnly()
     {
-        var isDateOnly = this.context.TargetType.IsDateOnly(this.compilation);
+        var isTargetDateOnly = this.context.TargetType.IsDateOnly(this.compilation);
         var isSourceString = this.context.SourceType.IsString();
-        return isDateOnly && isSourceString;
+        return isTargetDateOnly && isSourceString;
     }
 
     private bool CanMapStringToUri()
     {
-        var isUri = this.context.TargetType.IsUri(this.compilation);
+        var isTargetUri = this.context.TargetType.IsUri(this.compilation);
         var isSourceString = this.context.SourceType.IsString();
-        return isUri && isSourceString;
+        return isTargetUri && isSourceString;
     }
 
     private bool CanMapStringToGuid()
     {
-        var isGuid = this.context.TargetType.IsGuid(this.compilation);
+        var isTargetGuid = this.context.TargetType.IsGuid(this.compilation);
         var isSourceString = this.context.SourceType.IsString();
-        return isGuid && isSourceString;
+        return isTargetGuid && isSourceString;
+    }
+
+    private bool CanMapUsingStaticParseMethod()
+    {
+        var isSourceString = this.context.SourceType.IsString();
+        var targetHasParseMethod = false;
+        if (this.context.TargetType is INamedTypeSymbol namedTypeSymbol)
+        {
+            var parseMethod = namedTypeSymbol
+                .GetMembers()
+                .OfType<IMethodSymbol>()
+                .Where(method => nameof(Guid.Parse).Equals(method.Name, StringComparison.Ordinal))
+                .Where(method => method.IsStatic)
+                .Where(method => this.context.MapMethod is not null && this.compilation.IsSymbolAccessibleWithin(method, this.context.MapMethod.MethodSymbol.ContainingSymbol))
+                .FirstOrDefault(method => method.Parameters.Length == 1 && method.Parameters[0].Type.IsString());
+            targetHasParseMethod = parseMethod is not null;
+        }
+
+        return isSourceString && targetHasParseMethod;
     }
 }

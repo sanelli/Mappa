@@ -43,13 +43,17 @@ where `TSource` is the source type of the mapping and `TTarget` is the target ty
        - a `switch` statement is introduced to quickly map `TSource` to `TTarget` using all the possible values of the `enum`,
 5. <u>`string` strategy</u>:
     - _When_:
+        - `TSource` is a `string` and `TTarget` is any of the numeric types OR,
         - `TSource` is a `string` and `TTarget` is any of the following types `DateTime`, `DateTimeOffset`, `DateOnly`, `TimeOnly`, `Guid`, `Uri` OR,
-        - `TTarget` is a `string`;
+        - `TTarget` is a `string` OR
+        - `TSource` is a `string` and `TTarget` is any type with an accessible static `Parse` method;
     - _What_:
+      - `TSource` is a `string` and `TTarget` is any of the numeric types then the relevant `Parse` method will be invoked;
        - `TSource` is a `string` and `TTarget` is any of the following types `DateTime`, `DateTimeOffset`, `DateOnly`, `TimeOnly`, `Guid` then their `TTarget.Parse` method will be used, possibly with the format and culture identified by the `MappaSettings` attribute, if any is provided on the class or on the method;
        - `TSource` is a `string` and `TTarget` is `Uri` then the `System.UriBuilder` will be used for the mapping
        - `TTarget` is a `string` and `TSource` is any of the following types `DateTime`, `DateTimeOffset`, `DateOnly`, `TimeOnly`, `Guid` then their `TSource.ToString()` method will be used, possibly with the format and culture identified by the `MappaSettings` attribute, if any is provided on the class or on the method;
-       - `TTarget` is a `string` then the `TSource.ToString` method will be used
+       - `TTarget` is a `string` then the `TSource.ToString` method will be used;
+       - `TSource` is a `string` and `TTarget` is any type with an accessible static `Parse` method then the `Parse` method is invoked (note: an existing constructor accepting only a single string parameter will take priority over this);
 6. <u>Date & Time strategy</u>:
    - _When_:
      - `TSource` is a `DateTime` and `TTarget` is `long` or,`DateTime` or, `TimeOnly` OR,
