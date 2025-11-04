@@ -15,7 +15,9 @@ namespace Mappa.Benchmark.Spotify;
 /// Spotify benchmark.
 /// </summary>
 [MemoryDiagnoser]
-internal sealed class SpotifyBenchmark
+#pragma warning disable CA1515
+public class SpotifyBenchmark
+#pragma warning restore CA1515
 {
     private readonly SpotifyAlbumDto spotifyAlbumDto;
     private readonly AutoMapper.IMapper automapperMapper;

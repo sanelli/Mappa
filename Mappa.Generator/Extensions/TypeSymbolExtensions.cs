@@ -1094,7 +1094,7 @@ internal static class TypeSymbolExtensions
     /// <param name="typeSymbol">The type symbol.</param>
     /// <param name="compilation">The compilation.</param>
     /// <returns><c>true</c> if the type symbol is or implements <see cref="Stack{T}"/>.</returns>
-    internal static bool IsOrImplementStack(this ITypeSymbol typeSymbol, Compilation compilation)
+    internal static bool IsOrDerivedFromStack(this ITypeSymbol typeSymbol, Compilation compilation)
     {
         var stackSymbol = compilation.GetTypeByMetadataName(StackFullName);
         if (SymbolEqualityComparer.Default.Equals(stackSymbol, typeSymbol.OriginalDefinition))
@@ -1135,7 +1135,7 @@ internal static class TypeSymbolExtensions
     /// <param name="typeSymbol">The type symbol.</param>
     /// <param name="compilation">The compilation.</param>
     /// <returns><c>true</c> if the type symbol is or implement <see cref="Queue{T}"/>.</returns>
-    internal static bool IsOrImplementQueue(this ITypeSymbol typeSymbol, Compilation compilation)
+    internal static bool IsOrDerivedFromQueue(this ITypeSymbol typeSymbol, Compilation compilation)
     {
         var queueType = compilation.GetTypeByMetadataName(QueueFullName);
         if (SymbolEqualityComparer.Default.Equals(queueType, typeSymbol.OriginalDefinition))
@@ -1171,19 +1171,23 @@ internal static class TypeSymbolExtensions
     }
 
     /// <summary>
-    /// Check if the type is or implement <see cref="BlockingCollection{T}"/>.
+    /// Check if the type is or derived from <see cref="BlockingCollection{T}"/>.
     /// </summary>
     /// <param name="typeSymbol">The type symbol.</param>
     /// <param name="compilation">The compilation.</param>
     /// <returns><c>true</c> if the type symbol is or implement <see cref="BlockingCollection{T}"/>.</returns>
-    internal static bool IsOrImplementBlockingCollection(this ITypeSymbol typeSymbol, Compilation compilation)
+    internal static bool IsOrDerivedFromBlockingCollection(this ITypeSymbol typeSymbol, Compilation compilation)
+        => typeSymbol.IsBlockingCollection(compilation) || typeSymbol.IsDerivedFromBlockingCollection(compilation);
+
+    /// <summary>
+    /// Check if the type is derived from <see cref="BlockingCollection{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is or implement <see cref="BlockingCollection{T}"/>.</returns>
+    internal static bool IsDerivedFromBlockingCollection(this ITypeSymbol typeSymbol, Compilation compilation)
     {
         var blockingCollectionSymbol = compilation.GetTypeByMetadataName(BlockingCollectionFullName);
-        if (SymbolEqualityComparer.Default.Equals(blockingCollectionSymbol, typeSymbol.OriginalDefinition))
-        {
-            return true;
-        }
-
         INamedTypeSymbol? baseType = typeSymbol.BaseType;
         while (baseType is not null)
         {
@@ -1217,7 +1221,7 @@ internal static class TypeSymbolExtensions
     /// <param name="typeSymbol">The type symbol.</param>
     /// <param name="compilation">The compilation.</param>
     /// <returns><c>true</c> if the type symbol is or implement <see cref="ConcurrentBag{T}"/>.</returns>
-    internal static bool IsOrImplementConcurrentBag(this ITypeSymbol typeSymbol, Compilation compilation)
+    internal static bool IsOrDerivedFromConcurrentBag(this ITypeSymbol typeSymbol, Compilation compilation)
     {
         var blockingCollectionSymbol = compilation.GetTypeByMetadataName(ConcurrentBagFullName);
         if (SymbolEqualityComparer.Default.Equals(blockingCollectionSymbol, typeSymbol.OriginalDefinition))
@@ -1240,12 +1244,12 @@ internal static class TypeSymbolExtensions
     }
 
     /// <summary>
-    /// Check if the type is or implement <see cref="ConcurrentStack{T}"/>.
+    /// Check if the type is or is derived from <see cref="ConcurrentStack{T}"/>.
     /// </summary>
     /// <param name="typeSymbol">The type symbol.</param>
     /// <param name="compilation">The compilation.</param>
     /// <returns><c>true</c> if the type symbol is or implement <see cref="ConcurrentStack{T}"/>.</returns>
-    internal static bool IsOrImplementConcurrentStack(this ITypeSymbol typeSymbol, Compilation compilation)
+    internal static bool IsOrDerivedFromConcurrentStack(this ITypeSymbol typeSymbol, Compilation compilation)
     {
         var blockingCollectionSymbol = compilation.GetTypeByMetadataName(ConcurrentStackFullName);
         if (SymbolEqualityComparer.Default.Equals(blockingCollectionSymbol, typeSymbol.OriginalDefinition))
@@ -1434,6 +1438,29 @@ internal static class TypeSymbolExtensions
     }
 
     /// <summary>
+    /// Check if <paramref name="namedTypeSymbol"/> has a constructor with one parameter of type integer.
+    /// </summary>
+    /// <param name="namedTypeSymbol">The symbol to check has a constructor with a single integer parameter.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <param name="accessibleFromMethod">Optional method, if provided (and not <c>null</c>) we will check that the constructor can be invoked from <paramref name="accessibleFromMethod"/>.</param>
+    /// <returns><c>true</c> if <paramref name="namedTypeSymbol"/> has a constructor with one integer parameter, <c>false</c> otherwise.</returns>
+    internal static bool HasNamedTypeSymbolAccessibleSingleIntegerParametersConstructor(
+        this INamedTypeSymbol namedTypeSymbol,
+        Compilation compilation,
+        IMethodSymbol? accessibleFromMethod = null)
+    {
+        var constructor = namedTypeSymbol.Constructors.FirstOrDefault(constructor =>
+            constructor.Parameters.Length == 1 &&
+            constructor.Parameters[0].Type.SpecialType is SpecialType.System_Int32);
+        if (constructor is null)
+        {
+            return false;
+        }
+
+        return accessibleFromMethod == null || compilation.IsSymbolAccessibleWithin(constructor, accessibleFromMethod.ContainingSymbol);
+    }
+
+    /// <summary>
     /// Check if <paramref name="typeSymbol"/> has a constructor with empty parameters.
     /// </summary>
     /// <param name="typeSymbol">The symbol to check has a constructor without parameters.</param>
@@ -1447,6 +1474,21 @@ internal static class TypeSymbolExtensions
         => typeSymbol.TypeKind != TypeKind.Interface &&
            typeSymbol is INamedTypeSymbol namedTypeSymbol &&
            namedTypeSymbol.HasNamedTypeSymbolAccessibleZeroParametersConstructor(compilation, accessibleFromMethod);
+
+    /// <summary>
+    /// Check if <paramref name="typeSymbol"/> has a constructor with one parameter of type integer.
+    /// </summary>
+    /// <param name="typeSymbol">The symbol to check has a constructor with one integer parameter.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <param name="accessibleFromMethod">Optional method, if provided (and not <c>null</c>) we will check that the constructor can be invoked from <paramref name="accessibleFromMethod"/>.</param>
+    /// <returns><c>true</c> if <paramref name="typeSymbol"/> has a constructor with one integer parameter, <c>false</c> otherwise.</returns>
+    internal static bool HasSymbolAccessibleSingleIntegerParametersConstructor(
+        this ITypeSymbol typeSymbol,
+        Compilation compilation,
+        IMethodSymbol? accessibleFromMethod = null)
+        => typeSymbol.TypeKind != TypeKind.Interface &&
+           typeSymbol is INamedTypeSymbol namedTypeSymbol &&
+           namedTypeSymbol.HasNamedTypeSymbolAccessibleSingleIntegerParametersConstructor(compilation, accessibleFromMethod);
 
     /// <summary>
     /// Normalize a type name (e.g. <c>"string"</c>

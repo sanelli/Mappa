@@ -15,7 +15,9 @@ namespace Mappa.Benchmark.Enums;
 /// to <see cref="Enum"/> mapper.
 /// </summary>
 [MemoryDiagnoser]
-internal sealed class StringToEnumBenchmark
+#pragma warning disable CA1515
+public class StringToEnumBenchmark
+#pragma warning restore CA1515
 {
     private const string Input = nameof(StringComparison.InvariantCulture);
 

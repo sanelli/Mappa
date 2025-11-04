@@ -45,7 +45,7 @@ internal abstract class MappaMapAlgorithmContext
     internal abstract MappaUserSettings MappaUserSettings { get; }
 
     /// <summary>
-    /// Gets a value indicating weather the nullable flag
+    /// Gets a value indicating whether the nullable flag
     /// is enabled in the current context.
     /// </summary>
     /// <returns><c>true</c> if nullable is enabled, <c>false</c> otherwise.</returns>

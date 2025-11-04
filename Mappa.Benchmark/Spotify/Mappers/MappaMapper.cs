@@ -11,6 +11,7 @@ namespace Mappa.Benchmark.Spotify.Mappers;
 /// Mapper using <see cref="Mappa"/>.
 /// </summary>
 [Mappa]
+[MappaSettings(ContainerCapacityConstructors = BooleanSetting.Enable, FastCollections = BooleanSetting.Enable)]
 internal sealed partial class MappaMapper
 {
     /// <summary>

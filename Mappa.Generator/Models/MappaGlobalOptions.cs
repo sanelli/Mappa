@@ -63,6 +63,10 @@ namespace Mappa.Generator.Models;
 ///         <term><c>mappa.fastcollections</c></term>
 ///         <description>Set the default value to enable or disable the fast iteration for arrays and list using <c>span{T}</c>.</description>
 ///     </item>
+///     <item>
+///         <term><c>mappa.containercapacityconstructors</c></term>
+///         <description>Set the default value to enable or disable the support for mapping custom containers using (if available) a constructor accepting an integer value representing the initial capacity of the container.</description>
+///     </item>
 /// </list>
 /// </summary>
 internal sealed class MappaGlobalOptions
@@ -82,6 +86,7 @@ internal sealed class MappaGlobalOptions
     private const string MappaSettingsProtobufOptional = "protobufoptional";
     private const string MappaSettingsPragmaWarning = "pragmawarning";
     private const string MappaSettingsFastCollections = "fastcollections";
+    private const string MappaSettingsContainerCapacityConstructors = "containercapacityconstructors";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaGlobalOptions"/> class.
@@ -151,6 +156,10 @@ internal sealed class MappaGlobalOptions
 
         this.FastCollections = options.TryGetValue(GetOptionName(MappaSettingsFastCollections), out var fastCollections)
             ? GetBooleanSettingFromString(fastCollections)
+            : BooleanSetting.Undefined;
+
+        this.ContainerCapacityConstructors = options.TryGetValue(GetOptionName(MappaSettingsContainerCapacityConstructors), out var containerCapacityConstructors)
+            ? GetBooleanSettingFromString(containerCapacityConstructors)
             : BooleanSetting.Undefined;
 
         static CultureInfoSetting GetCultureInfoSettingsFromString(string cultureInfoSettings)
@@ -251,6 +260,9 @@ internal sealed class MappaGlobalOptions
 
     /// <inheritdoc/>
     public BooleanSetting FastCollections { get; }
+
+    /// <inheritdoc/>
+    public BooleanSetting ContainerCapacityConstructors { get; }
 
     /// <summary>
     /// Gets a value indicating whether to report debug INFO diagnostics.

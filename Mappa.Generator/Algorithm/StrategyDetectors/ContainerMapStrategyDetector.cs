@@ -62,7 +62,8 @@ internal sealed class ContainerMapStrategyDetector
                 this.context.SourceType,
                 elementStrategy,
                 this.context.MapMethod?.MethodSymbol,
-                this.context.MappaUserSettings.FastCollections);
+                this.context.MappaUserSettings.FastCollections,
+                this.context.MappaUserSettings.ContainerCapacityConstructors);
         }
 
         return mapStrategy is not NoMapStrategy;
@@ -137,8 +138,8 @@ internal sealed class ContainerMapStrategyDetector
                                  || this.context.TargetType.IsReadOnlySpan(this.compilation)
                                  || this.context.TargetType.IsMemory(this.compilation)
                                  || this.context.TargetType.IsReadOnlyMemory(this.compilation)
-                                 || this.context.TargetType.IsOrImplementStack(this.compilation)
-                                 || this.context.TargetType.IsOrImplementQueue(this.compilation)
+                                 || this.context.TargetType.IsOrDerivedFromStack(this.compilation)
+                                 || this.context.TargetType.IsOrDerivedFromQueue(this.compilation)
                                  || this.context.TargetType.IsOrImplementISet(this.compilation)
                                  || this.context.TargetType.IsIReadOnlySet(this.compilation)
                                  || this.context.TargetType.IsHashSet(this.compilation)
@@ -155,9 +156,9 @@ internal sealed class ContainerMapStrategyDetector
                                  || this.context.TargetType.IsImmutableQueue(this.compilation)
                                  || this.context.TargetType.IsIImmutableStack(this.compilation)
                                  || this.context.TargetType.IsImmutableStack(this.compilation)
-                                 || this.context.TargetType.IsOrImplementBlockingCollection(this.compilation)
-                                 || this.context.TargetType.IsOrImplementConcurrentBag(this.compilation)
-                                 || this.context.TargetType.IsOrImplementConcurrentStack(this.compilation)
+                                 || this.context.TargetType.IsOrDerivedFromBlockingCollection(this.compilation)
+                                 || this.context.TargetType.IsOrDerivedFromConcurrentBag(this.compilation)
+                                 || this.context.TargetType.IsOrDerivedFromConcurrentStack(this.compilation)
                                  || this.context.TargetType.IsOrImplementConcurrentQueue(this.compilation)
                                  || this.context.TargetType.IsIProducerConsumerCollection(this.compilation))
                                  && InterfaceAndConstructorChecks();
@@ -192,9 +193,7 @@ internal sealed class ContainerMapStrategyDetector
                        || this.context.TargetType.IsIProducerConsumerCollection(this.compilation);
             }
 
-            // Target type MUST have a constructor with no arguments
-            // unless it is a ReadOnlyDictionary, ImmutableDictionary or a FrozenDictionary
-            // for which special coding is provided.
+            // For the following concrete types a suitable constructor exists.
             if (this.context.TargetType.IsReadOnlyCollection(this.compilation)
                 || this.context.TargetType.IsReadOnlySet(this.compilation)
                 || this.context.TargetType.IsFrozenSet(this.compilation)
@@ -208,8 +207,23 @@ internal sealed class ContainerMapStrategyDetector
                 return true;
             }
 
-            // TODO [#109] Support constructor with 1 integer parameter (capacity) via mappaSettings.
-            return this.context.TargetType.HasSymbolAccessibleZeroParametersConstructor(this.compilation, this.context.MapMethod?.MethodSymbol);
+            // Any other concrete type must either have:
+            // - a constructor with no parameters
+            // - (only if ContainerCapacityConstructors is enabled) a constructor with one integer
+            //   parameter and implement either: ICollection{T}, ISet{T}, IQueue{T}, IStack{T}
+            //   or derive BlockingCollection{T}.
+            return this.context.TargetType.HasSymbolAccessibleZeroParametersConstructor(this.compilation, this.context.MapMethod?.MethodSymbol)
+                || (this.context.MappaUserSettings.ContainerCapacityConstructors is BooleanSetting.Enable
+                    && this.context.TargetType.TypeKind != TypeKind.Interface
+                    && CanSupportImplementationWithCapacityConstructor()
+                    && this.context.TargetType.HasSymbolAccessibleSingleIntegerParametersConstructor(this.compilation, this.context.MapMethod?.MethodSymbol));
         }
+
+        bool CanSupportImplementationWithCapacityConstructor()
+            => this.context.TargetType.ImplementICollection()
+            || this.context.TargetType.ImplementISet(this.compilation)
+            || this.context.TargetType.IsOrDerivedFromStack(this.compilation)
+            || this.context.TargetType.IsOrDerivedFromQueue(this.compilation)
+            || this.context.TargetType.IsOrDerivedFromBlockingCollection(this.compilation);
     }
 }
