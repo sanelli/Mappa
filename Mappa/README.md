@@ -8,8 +8,9 @@ This is the list of attributes provided:
 - `MappaSettings`: Allows specifying the behavior while mapping sometimes (e.g., it allows specifying culture when mapping `string`s into `System.DateTime` and to specify the format when mapping `string`s into `System.Guid`);
 - `MappaUseProperty`: When mapping structured types (`class`, `struct` and `records`) allows specifying which property uses from the source property for a target property or constructor parameter;
 - `MappaAssignFromContext`: When mapping structured types (`class`, `struct` and `records`) allows specifying which value from the context of type `MappaContext` use for a target property or constructor parameter;
-- `MappaInvokeMethodAttribute`: When mapping structured types (`class`, `struct` and `records`) allows specifying that a property or attribute should be mapped by invoking a method.
+- `MappaInvokeMethodAttribute`: When mapping structured types (`class`, `struct` and `records`) allows specifying that a property or attribute should be mapped by invoking a method;
 - `MappaAssignFromConstant`: When mapping structured types (`class`, `struct` and `records`) allows specifying a constant value for a target property or constructor parameter;
+- `MappaTypeMapping`: When mapping structured types (`class`, `struct` and `records`) or interfaces it allows to define the target type depending on the source type.
 
 This package also provides the `MappaContext` class that can be used to pass contextual values to mappers via the `MappaAssignFromContext` attribute.
 

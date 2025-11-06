@@ -10,6 +10,7 @@ This is the list of attributes provided:
 - `MappaAssignFromContext`:  When mapping structured types (`class`, `struct` and `records`) allows specifying which value from the context of type `MappaContext` use for a target property or constructor parameter;
 - `MappaInvokeMethodAttribute`:  When mapping structured types (`class`, `struct` and `records`) allows specifying that a property or attribute should be mapped by invoking a method.
 - `MappaAssignFromConstant`: When mapping structured types (`class`, `struct` and `records`) allows specifying a constant value for a target property or constructor parameter;
+- `MappaTypeMapping`: When mapping structured types (`class`, `struct` and `records`) or interfaces it allows to define the target type depending on the source type.
 
 The [Mappa](https://www.nuget.org/packages/Mappa/) package also provides the `MappaContext` class that can be used to pass contextual values to mappers via the `MappaAssignFromContext` attribute.
 
