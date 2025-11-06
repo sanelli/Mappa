@@ -25,6 +25,32 @@ internal static class AttributeDataExtensions
     private static readonly string MappaUsePropertyAttributeFullName = typeof(MappaUsePropertyAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaUsePropertyAttribute)}");
     private static readonly string MappaStaticDependencyAttributeFullName = typeof(MappaStaticDependencyAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaStaticDependencyAttribute)}");
     private static readonly string MappaAssignFromConstantAttributeFullName = typeof(MappaAssignFromConstantAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaAssignFromConstantAttribute)}");
+    private static readonly string MappaTypeMappingAttributeFullName = typeof(MappaTypeMappingAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaTypeMappingAttribute)}");
+
+    /// <summary>
+    /// Gets the <see cref="MappaTypeMappingAttribute"/>s applied to the method.
+    /// </summary>
+    /// <param name="attributes">The attributes.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The <see cref="MappaTypeMappingAttribute"/>s.</returns>
+    internal static MappaTypeMappingAttribute[] GetTypeMappingAttributes(this ImmutableArray<AttributeData> attributes, Compilation compilation)
+    {
+        var mappaTypeMappingAttributeSymbol = compilation.GetTypeByMetadataName(MappaTypeMappingAttributeFullName);
+        List<MappaTypeMappingAttribute> results = new();
+
+        foreach (var constructorArguments in attributes
+                     .Where(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, mappaTypeMappingAttributeSymbol))
+                     .Select(attributeData => attributeData.ConstructorArguments))
+        {
+            if (constructorArguments[0].Value is INamedTypeSymbol targetType &&
+                constructorArguments[1].Value is INamedTypeSymbol sourceType)
+            {
+                results.Add(new MappaTypeMappingAttribute(new FakeType(targetType.ToDisplayString()), new FakeType(sourceType.ToDisplayString())));
+            }
+        }
+
+        return [.. results];
+    }
 
     /// <summary>
     /// Gets the <see cref="MappaInvokeMethodAttribute"/>s applied to the method.
