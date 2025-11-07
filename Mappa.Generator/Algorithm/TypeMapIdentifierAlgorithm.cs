@@ -57,31 +57,34 @@ internal class TypeMapIdentifierAlgorithm
     {
         IMapStrategyDetector[] detectors = [
 
-            // 01. Identity strategy.
+            // 01. Type mapping.
+            new TypeMappingStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
+
+            // 02. Identity strategy.
             new IdentityMapStrategyDetector(this.Context, this.Compilation),
 
-            // 02. Nullable related strategies.
+            // 03. Nullable related strategies.
             new NullableMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
 
-            // 03. Enum related strategies.
+            // 04. Enum related strategies.
             new EnumMapStrategyDetector(this.Context, this.Compilation),
 
-            // 04. String related strategies.
+            // 05. String related strategies.
             new StringMapStrategyDetector(this.Context, this.Compilation),
 
-            // 05. Date and time related strategies.
+            // 06. Date and time related strategies.
             new DateAndTimeMapStrategyDetector(this.Context, this.Compilation),
 
-            // 06. Container related strategies.
+            // 07. Container related strategies.
             new ContainerMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
 
-            // 07. Tuple related strategies.
+            // 08. Tuple related strategies.
             new TupleMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
 
-            // 08. Guid related strategies.
+            // 09. Guid related strategies.
             new GuidStrategyDetector(this.Context, this.Compilation),
 
-            // 09. Constructor related strategies.
+            // 10. Constructor related strategies.
             new ConstructorMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
         ];
 
