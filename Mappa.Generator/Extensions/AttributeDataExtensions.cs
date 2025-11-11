@@ -28,6 +28,38 @@ internal static class AttributeDataExtensions
     private static readonly string MappaTypeMappingAttributeFullName = typeof(MappaTypeMappingAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaTypeMappingAttribute)}");
 
     /// <summary>
+    /// Gets the <see cref="MappaTypeMappingDefaultAttribute"/> applied to the method (if any).
+    /// </summary>
+    /// <param name="attributes">The attributes.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The <see cref="MappaTypeMappingDefaultAttribute"/> (if any).</returns>
+    internal static MappaTypeMappingDefaultAttribute? GetMappaTypeMappingDefaultAttribute(this ImmutableArray<AttributeData> attributes, Compilation compilation)
+    {
+        var mappaTypeMappingAttributeSymbol = compilation.GetTypeByMetadataName(MappaTypeMappingAttributeFullName);
+        MappaTypeMappingDefaultAttribute? attribute = null;
+
+        foreach (var constructorArguments in attributes
+                     .Where(attributeData => SymbolEqualityComparer.Default.Equals(attributeData.AttributeClass, mappaTypeMappingAttributeSymbol))
+                     .Select(attributeData => attributeData.ConstructorArguments))
+        {
+            attribute = constructorArguments.Length switch
+            {
+                1 when constructorArguments[0].Value is string methodName
+                    => new MappaTypeMappingDefaultAttribute(methodName),
+                1 when constructorArguments[0].Value is int behavior
+                    => new MappaTypeMappingDefaultAttribute((MappaTypeMappingDefaultBehavior)behavior),
+                2 when constructorArguments[0].Value is INamedTypeSymbol invokeType && constructorArguments[1].Value is string methodName
+                    => new MappaTypeMappingDefaultAttribute(new FakeType(invokeType.ToDisplayString()), methodName),
+                2 when constructorArguments[0].Value is int behavior && constructorArguments[1].Value is INamedTypeSymbol type
+                    => new MappaTypeMappingDefaultAttribute((MappaTypeMappingDefaultBehavior)behavior, new FakeType(type.ToDisplayString())),
+                _ => null,
+            };
+        }
+
+        return attribute;
+    }
+
+    /// <summary>
     /// Gets the <see cref="MappaTypeMappingAttribute"/>s applied to the method.
     /// </summary>
     /// <param name="attributes">The attributes.</param>

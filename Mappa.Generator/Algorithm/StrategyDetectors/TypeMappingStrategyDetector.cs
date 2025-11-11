@@ -3,6 +3,7 @@
 // </copyright>
 
 using Mappa.Attributes;
+using Mappa.Generator.Extensions;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -23,7 +24,7 @@ internal sealed class TypeMappingStrategyDetector(MappaMapAlgorithmContext conte
     /// <inheritdoc/>
     public bool TryDetect(out MapStrategy mapStrategy)
     {
-        mapStrategy = new NoMapStrategy(null!, null!);
+        mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
 
         // Check the method is being mapped.
         if (this.context.MapMethod is null)
@@ -41,7 +42,7 @@ internal sealed class TypeMappingStrategyDetector(MappaMapAlgorithmContext conte
 
         // Check the attributes.
         var sourceTypeFullNames = new HashSet<string>();
-        var attributeStrategies = new List<(MappaTypeMappingAttribute Attribute, MapStrategy Strategy)>();
+        var subtypesMappingsStrategies = new List<MapStrategy>();
         foreach (var attribute in typeMappingAttributes)
         {
             // Check attribute source type name is valid.
@@ -81,17 +82,26 @@ internal sealed class TypeMappingStrategyDetector(MappaMapAlgorithmContext conte
                 return false;
             }
 
-            // For map type source type interfaces: check attribute source type implement map method source type.
-            // TODO [#49] Implement me.
+            // Check attribute source type and map method source type are different types.
+            if (SymbolEqualityComparer.Default.Equals(attributeSourceType, this.context.SourceType))
+            {
+                // TODO [#49] Add diagnostic that attribute source type should be different than map method source type and to use MappaTypeMappingDefault default attribute.
+                return false;
+            }
 
-            // For map type source type NOT interfaces: check attribute source type derived from map method source type.
-            // TODO [#49] Implement me.
+            // Check attribute source type is derived form the source type in the map method somehow.
+            if (!attributeSourceType.IsImplementingOrIsDerivedFromClass(this.context.SourceType))
+            {
+                // TODO [#49] Add diagnostic that source type is not derived from map source type.
+                return false;
+            }
 
-            // For map type target type interfaces: check attribute target type implement map method source type.
-            // TODO [#49] Implement me.
-
-            // For map type target type NOT interfaces: check attribute target type derived from map method source type.
-            // TODO [#49] Implement me.
+            // Check attribute source type is derived form the source type in the map method somehow.
+            if (!attributeSourceType.IsImplementingOrIsDerivedFromClass(this.context.SourceType))
+            {
+                // TODO [#49] Add diagnostic that target type is not derived from map target type.
+                return false;
+            }
 
             // Generate source type and target type by adding the same annotations of the map methods for consistency.
             var sourceType = attributeSourceType.WithNullableAnnotation(this.context.MapMethod.SourceType.NullableAnnotation);
@@ -107,14 +117,28 @@ internal sealed class TypeMappingStrategyDetector(MappaMapAlgorithmContext conte
                 return false;
             }
 
-            attributeStrategies.Add((attribute, attributeStrategy));
+            subtypesMappingsStrategies.Add(attributeStrategy);
         }
 
-        /* TODO [#49] Identify (if possible) strategy from mapMethod source -> mapMethod target.
-         This is to take into account the default; if this is not possible then
-         the default should just be implements as throwing an ArgumentException. */
+        var mappaTypeMappingDefaultAttribute = mapMethod.GetAttribute<MappaTypeMappingDefaultAttribute>()
+                                               ?? new MappaTypeMappingDefaultAttribute(MappaTypeMappingDefaultBehavior.Throw);
 
-        // TODO [#49] Create the strategy by collating attributeStrategis into a new ad-host strategy.
+        var validationSuccessful = mappaTypeMappingDefaultAttribute.IsValid(mapMethod, this.compilation, out var validationDiagnosis);
+        if (validationDiagnosis is not null)
+        {
+            this.context.ReportDiagnostic(validationDiagnosis);
+        }
+
+        if (!validationSuccessful)
+        {
+            return false;
+        }
+
+        mapStrategy = new TypeMappingStrategyDetectorStrategy(
+            this.context.TargetType,
+            this.context.SourceType,
+            [.. subtypesMappingsStrategies],
+            mappaTypeMappingDefaultAttribute);
         return true;
     }
 }

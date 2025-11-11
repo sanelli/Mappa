@@ -43,33 +43,39 @@ internal static class MethodSymbolExtensions
     internal static Attribute[] GetMethodMappaAttributes(this IMethodSymbol methodSymbol, Compilation compilation)
     {
         var result = new List<Attribute>();
-        var attributeDatas = methodSymbol.GetAttributes();
+        var attributes = methodSymbol.GetAttributes();
 
         // Mappa Invoke Method Attributes
-        var invokeMethodAttributes = attributeDatas.GetInvokeMethodAttributes(compilation);
+        var invokeMethodAttributes = attributes.GetInvokeMethodAttributes(compilation);
         result.AddRange(invokeMethodAttributes);
 
         // Mappa Assign From Context Attributes
-        var assignFromContextAttributes = attributeDatas.GetMappaAssignFromContextAttributes(compilation);
+        var assignFromContextAttributes = attributes.GetMappaAssignFromContextAttributes(compilation);
         result.AddRange(assignFromContextAttributes);
 
         // Mappa Setting Attribute
-        if (attributeDatas.GetMappaSettingsAttribute(compilation) is { } mappaSettingAttribute)
+        if (attributes.GetMappaSettingsAttribute(compilation) is { } mappaSettingAttribute)
         {
             result.Add(mappaSettingAttribute);
         }
 
         // Mappa Use Property Attribute
-        var usePropertyAttributes = attributeDatas.GetMappaUsePropertyAttributes(compilation);
+        var usePropertyAttributes = attributes.GetMappaUsePropertyAttributes(compilation);
         result.AddRange(usePropertyAttributes);
 
         // Mappa Assign From Constant Attributes
-        var assignFromConstantAttributes = attributeDatas.GetMappaAssignFromConstantAttributes(compilation);
+        var assignFromConstantAttributes = attributes.GetMappaAssignFromConstantAttributes(compilation);
         result.AddRange(assignFromConstantAttributes);
 
         // Mappa type mapping attributes
-        var typeMappingAttributes = attributeDatas.GetTypeMappingAttributes(compilation);
+        var typeMappingAttributes = attributes.GetTypeMappingAttributes(compilation);
         result.AddRange(typeMappingAttributes);
+
+        // Mappa type mapping default attribute
+        if (attributes.GetMappaTypeMappingDefaultAttribute(compilation) is { } mappaTypeMappingDefaultAttribute)
+        {
+            result.Add(mappaTypeMappingDefaultAttribute);
+        }
 
         // All done.
         return [.. result];
