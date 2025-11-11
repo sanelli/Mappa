@@ -89,7 +89,8 @@ internal static class MappaTypeMappingDefaultAttributeExtensions
                     // TODO [#49] Generate the warning diagnostic: method name will not be used.
                 }
 
-                // TODO [#49] Check target tpe in the attribute is derived from method target type.
+                // TODO [#49] Check target type in the attribute is derived from method target type (if present).
+                // TODO [#49] Check if target type is not present it must not be an interface.
                 break;
             case MappaTypeMappingDefaultBehavior.InvokeMethod:
                 // Check the method name is not defined.
