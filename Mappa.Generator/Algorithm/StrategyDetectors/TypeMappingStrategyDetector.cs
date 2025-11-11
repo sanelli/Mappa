@@ -134,7 +134,7 @@ internal sealed class TypeMappingStrategyDetector(MappaMapAlgorithmContext conte
             return false;
         }
 
-        mapStrategy = new TypeMappingStrategyDetectorStrategy(
+        mapStrategy = new TypeMappingStrategy(
             this.context.TargetType,
             this.context.SourceType,
             [.. subtypesMappingsStrategies],

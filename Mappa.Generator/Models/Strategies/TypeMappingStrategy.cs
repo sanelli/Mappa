@@ -1,4 +1,4 @@
-// <copyright file="TypeMappingStrategyDetectorStrategy.cs" company="Stefano Anelli">
+// <copyright file="TypeMappingStrategy.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -16,7 +16,7 @@ namespace Mappa.Generator.Models.Strategies;
 /// <param name="sourceType">The source type.</param>
 /// <param name="defaultBehavior">The attribute defining the default behavior when subtype mapping can be applied.</param>
 /// <param name="subtypesMappingsStrategies">The list of strategies for the source subtypes.</param>
-internal sealed class TypeMappingStrategyDetectorStrategy(
+internal sealed class TypeMappingStrategy(
     ITypeSymbol targetType,
     ITypeSymbol sourceType,
     MapStrategy[] subtypesMappingsStrategies,
