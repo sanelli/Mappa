@@ -1657,4 +1657,30 @@ internal static class TypeSymbolExtensions
 
         return false;
     }
+
+    /// <summary>
+    /// Locate all the methods in the type hierarchy with the given name.
+    /// Methods are sorted by most derived class first.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to investigate.</param>
+    /// <param name="compilation">the compilation.</param>
+    /// <param name="methodName">The method name.</param>
+    /// <returns>The methods with name <paramref name="methodName"/> in the hierarchy.</returns>
+    internal static IMethodSymbol[] LocateMethods(this ITypeSymbol typeSymbol, Compilation compilation, string methodName)
+    {
+        var methods = new List<IMethodSymbol>();
+        INamedTypeSymbol? currentType = typeSymbol.BaseType;
+        while (currentType is not null)
+        {
+            var currentTypeMethods = currentType
+                .GetMembers()
+                .OfType<IMethodSymbol>()
+                .Where(m => m.Name.Equals(methodName, StringComparison.Ordinal));
+
+            methods.AddRange(currentTypeMethods);
+            currentType = currentType.BaseType;
+        }
+
+        return [.. methods];
+    }
 }

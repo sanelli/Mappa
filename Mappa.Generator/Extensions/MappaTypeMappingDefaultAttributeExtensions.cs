@@ -58,6 +58,12 @@ internal static class MappaTypeMappingDefaultAttributeExtensions
                         return false;
                     }
 
+                    if (typeSymbol.IsAbstract)
+                    {
+                        // TODO [#49] Generate the error diagnostic: the exception cannot be abstract.
+                        return false;
+                    }
+
                     if (!typeSymbol.HasNamedTypeSymbolAccessibleZeroParametersConstructor(compilation)
                         && !typeSymbol.HasNamedTypeSymbolAccessibleSingleStringParametersConstructor(compilation))
                     {
@@ -89,12 +95,38 @@ internal static class MappaTypeMappingDefaultAttributeExtensions
                     // TODO [#49] Generate the warning diagnostic: method name will not be used.
                 }
 
-                // TODO [#49] Check target type in the attribute is derived from method target type (if present).
-                // TODO [#49] Check if target type is not present it must not be an interface.
+                if (attribute.Type is { } targetType && !string.IsNullOrWhiteSpace(targetType.FullName))
+                {
+                    var typeSymbol = compilation.GetTypeByMetadataName(targetType.FullName);
+                    if (typeSymbol is null)
+                    {
+                        // TODO [#49] Generate the error diagnostic: the type cannot be loaded.
+                        return false;
+                    }
+
+                    if (!typeSymbol.IsImplementingOrIsDerivedFromClass(mapMethod.TargetType))
+                    {
+                        // TODO [#49] Generate the error diagnostic: the type is not deriving/implementing target type.
+                        return false;
+                    }
+
+                    if (typeSymbol.TypeKind == TypeKind.Interface)
+                    {
+                        // TODO [#49] Generate the error diagnostic: the type is not deriving/implementing target type.
+                        return false;
+                    }
+
+                    if (typeSymbol.IsAbstract)
+                    {
+                        // TODO [#49] Generate the error diagnostic: the target type cannot be abstract.
+                        return false;
+                    }
+                }
+
                 break;
             case MappaTypeMappingDefaultBehavior.InvokeMethod:
                 // Check the method name is not defined.
-                if (string.IsNullOrEmpty(attribute.MethodName))
+                if (string.IsNullOrWhiteSpace(attribute.MethodName))
                 {
                     // TODO [#49] Generate the error diagnostic: method name is mandatory.
                     return false;
@@ -111,14 +143,41 @@ internal static class MappaTypeMappingDefaultAttributeExtensions
                     return false;
                 }
 
-                // TODO [#49] Check the methodName exists in the class or the parent classes.
-                // TODO [#49] Check the methodName is static if attribute.Type is not null.
-                // TODO [#49] Check the methodName has the right number of parameters.
+                var methods = invokeMethodTypeSymbol.LocateMethods(compilation, attribute.MethodName!);
+                var method = methods.FirstOrDefault(m => IsMethodValidToMapToTargetSymbol(m, attribute.Type is not null));
+                if (method is null)
+                {
+                    // TODO [#49] Generate the error diagnostic: a suitable method with the given name cannot be found.
+                    return false;
+                }
+
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(attribute));
         }
 
         return true;
+
+        bool IsMethodValidToMapToTargetSymbol(IMethodSymbol methodSymbol, bool mustBeStatic)
+        {
+            switch (methodSymbol.Parameters.Length)
+            {
+                case 1:
+                    return methodSymbol.AreParametersRefModifiersValid()
+                           && methodSymbol.Parameters[0].Type.IsEqualTo(mapMethod.SourceType, mapMethod.NullableEnabled)
+                           && (!mustBeStatic || methodSymbol.IsStatic);
+
+                // Accept 2 parameters only when the original method support 2 parameters too.
+                case 2 when mapMethod.MethodSymbol.Parameters.Length == 2:
+                    var isFirstParameterOk = methodSymbol.Parameters[0].Type.IsEqualTo(mapMethod.SourceType, mapMethod.NullableEnabled);
+                    var isSecondParameterOk = methodSymbol.SecondParameterIsMappaContext(compilation);
+                    return methodSymbol.AreParametersRefModifiersValid()
+                           && isFirstParameterOk
+                           && isSecondParameterOk
+                           && (!mustBeStatic || methodSymbol.IsStatic);
+            }
+
+            return false;
+        }
     }
 }
