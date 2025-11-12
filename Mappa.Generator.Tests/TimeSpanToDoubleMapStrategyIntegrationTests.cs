@@ -1,4 +1,4 @@
-// <copyright file="TimeSpanToDoubleMapStrategyTests.cs" company="Stefano Anelli">
+// <copyright file="TimeSpanToDoubleMapStrategyIntegrationTests.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -12,7 +12,7 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Tests for <see cref="TimeSpanToDoubleMapStrategy"/>.
 /// </summary>
-public sealed class TimeSpanToDoubleMapStrategyTests
+public sealed class TimeSpanToDoubleMapStrategyIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {
     /// <summary>
