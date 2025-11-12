@@ -14,6 +14,8 @@ namespace Mappa.Generator.Algorithm.StrategyDetectors;
 /// <summary>
 /// Strategy detector to support polymorphism.
 /// </summary>
+// TODO [#49] This strategy detector should not be invoked by the algorithm a second time, use the algo context to prevent this (to prevent loops).
+// TODO [#49] Most of this code was written under the assumption that is was the first to run (therefore mapMethod is populated) but this is not necesarily true because of nullability.
 internal sealed class TypeMappingStrategyDetector(MappaMapAlgorithmContext context, Compilation compilation, CancellationToken cancellationToken)
     : IMapStrategyDetector
 {
@@ -108,6 +110,7 @@ internal sealed class TypeMappingStrategyDetector(MappaMapAlgorithmContext conte
             var targetType = attributeSourceType.WithNullableAnnotation(this.context.MapMethod.TargetType.NullableAnnotation);
 
             // Identify mapping from attribute source type to attribute target type.
+            // TODO [#49] Apply a flag to prevent this strategy to run twice.
             var attributeContext = new DerivedMappaMapAlgorithmContext(this.context, targetType, sourceType);
             var attributeAlgorithm = new TypeMapIdentifierWithMapMethodAlgorithm(attributeContext, this.compilation, this.cancellationToken);
             var attributeStrategy = attributeAlgorithm.GetStrategy();
@@ -156,6 +159,7 @@ internal sealed class TypeMappingStrategyDetector(MappaMapAlgorithmContext conte
                 return false;
             }
 
+            // TODO [#49] Apply a flag to prevent this strategy to run twice.
             var derivedContext = new DerivedMappaMapAlgorithmContext(this.context, targetSymbol, this.context.SourceType);
             var algorithm = new TypeMapIdentifierAlgorithm(derivedContext, this.compilation, this.cancellationToken);
             defaultMappingStrategy = algorithm.GetStrategy();
