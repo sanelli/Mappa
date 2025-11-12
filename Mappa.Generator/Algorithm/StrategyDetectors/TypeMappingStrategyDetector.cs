@@ -107,7 +107,7 @@ internal sealed class TypeMappingStrategyDetector(MappaMapAlgorithmContext conte
 
             // Generate source type and target type by adding the same annotations of the map methods for consistency.
             var sourceType = attributeSourceType.WithNullableAnnotation(this.context.MapMethod.SourceType.NullableAnnotation);
-            var targetType = attributeSourceType.WithNullableAnnotation(this.context.MapMethod.TargetType.NullableAnnotation);
+            var targetType = attributeTargetType.WithNullableAnnotation(this.context.MapMethod.TargetType.NullableAnnotation);
 
             // Identify mapping from attribute source type to attribute target type.
             // TODO [#49] Apply a flag to prevent this strategy to run twice.
