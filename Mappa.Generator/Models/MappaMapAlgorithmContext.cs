@@ -88,7 +88,7 @@ internal abstract class MappaMapAlgorithmContext
     }
 
     /// <summary>
-    /// Gets the root map method which is acrtually being mapped.
+    /// Gets the root map method which is actually being mapped.
     /// </summary>
     /// <returns>The map method from the root chain of calls.</returns>
     /// <exception cref="MappaGeneratorException">When the map method cannot be obtained.</exception>

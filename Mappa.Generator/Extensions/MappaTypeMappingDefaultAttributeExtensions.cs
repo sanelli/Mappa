@@ -20,15 +20,15 @@ internal static class MappaTypeMappingDefaultAttributeExtensions
     /// <param name="attribute">The attribute to validate.</param>
     /// <param name="mapMethod">The method being mapped.</param>
     /// <param name="compilation">The compilation.</param>
-    /// <param name="diagnostic">The optional diagnostic in case of errors or warnings.</param>
+    /// <param name="diagnostics">The generated diagnostic in case of error or warnings.</param>
     /// <returns><c>true</c> if the attribute is valid, <c>false</c> otherwise.</returns>
     internal static bool IsValid(
         this MappaTypeMappingDefaultAttribute attribute,
         MapMethod mapMethod,
         Compilation compilation,
-        out Diagnostic? diagnostic)
+        out Diagnostic[] diagnostics)
     {
-        diagnostic = null;
+        diagnostics = [];
         switch (attribute.Behavior)
         {
             case MappaTypeMappingDefaultBehavior.Undefined:
@@ -143,8 +143,13 @@ internal static class MappaTypeMappingDefaultAttributeExtensions
                     return false;
                 }
 
-                var methods = invokeMethodTypeSymbol.LocateMethods(compilation, attribute.MethodName!);
-                var method = methods.FirstOrDefault(m => IsMethodValidToMapToTargetSymbol(m, attribute.Type is not null));
+                var methods = invokeMethodTypeSymbol.LocateMethods(attribute.MethodName!);
+                var method = methods.FirstOrDefault(m => m.IsMethodValidToMapToTargetSymbol(
+                    mapMethod.SourceType,
+                    compilation,
+                    attribute.Type is not null,
+                    mapMethod.NullableEnabled,
+                    mapMethod.MethodSymbol.Parameters.Length == 2));
                 if (method is null)
                 {
                     // TODO [#49] Generate the error diagnostic: a suitable method with the given name cannot be found.
@@ -157,27 +162,5 @@ internal static class MappaTypeMappingDefaultAttributeExtensions
         }
 
         return true;
-
-        bool IsMethodValidToMapToTargetSymbol(IMethodSymbol methodSymbol, bool mustBeStatic)
-        {
-            switch (methodSymbol.Parameters.Length)
-            {
-                case 1:
-                    return methodSymbol.AreParametersRefModifiersValid()
-                           && methodSymbol.Parameters[0].Type.IsEqualTo(mapMethod.SourceType, mapMethod.NullableEnabled)
-                           && (!mustBeStatic || methodSymbol.IsStatic);
-
-                // Accept 2 parameters only when the original method support 2 parameters too.
-                case 2 when mapMethod.MethodSymbol.Parameters.Length == 2:
-                    var isFirstParameterOk = methodSymbol.Parameters[0].Type.IsEqualTo(mapMethod.SourceType, mapMethod.NullableEnabled);
-                    var isSecondParameterOk = methodSymbol.SecondParameterIsMappaContext(compilation);
-                    return methodSymbol.AreParametersRefModifiersValid()
-                           && isFirstParameterOk
-                           && isSecondParameterOk
-                           && (!mustBeStatic || methodSymbol.IsStatic);
-            }
-
-            return false;
-        }
     }
 }

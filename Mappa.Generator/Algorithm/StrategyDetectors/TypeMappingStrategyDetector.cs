@@ -124,21 +124,57 @@ internal sealed class TypeMappingStrategyDetector(MappaMapAlgorithmContext conte
                                                ?? new MappaTypeMappingDefaultAttribute(MappaTypeMappingDefaultBehavior.Throw);
 
         var validationSuccessful = mappaTypeMappingDefaultAttribute.IsValid(mapMethod, this.compilation, out var validationDiagnosis);
-        if (validationDiagnosis is not null)
+        foreach (var diagnostic in validationDiagnosis)
         {
-            this.context.ReportDiagnostic(validationDiagnosis);
+            this.context.ReportDiagnostic(diagnostic);
         }
 
         if (!validationSuccessful)
         {
+            // No need to report any extra diagnostic.
             return false;
+        }
+
+        // Identify a mapping if required.
+        MapStrategy defaultMappingStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
+        if (mappaTypeMappingDefaultAttribute.Behavior is MappaTypeMappingDefaultBehavior.MapSourceType)
+        {
+            var targetTypeFullNameFromAttribute = mappaTypeMappingDefaultAttribute.Type?.FullName;
+
+            var targetSymbol = (!string.IsNullOrWhiteSpace(targetTypeFullNameFromAttribute) ? this.compilation.GetTypeByMetadataName(targetTypeFullNameFromAttribute!) : null)
+                               ?? this.context.TargetType;
+
+            if (targetSymbol.TypeKind == TypeKind.Interface)
+            {
+                // TODO [#49] Report diagnostic that default mapping is trying to map to an interface.
+                return false;
+            }
+
+            if (targetSymbol.IsAbstract)
+            {
+                // TODO [#49] Report diagnostic that default mapping is trying to map to an abstract type.
+                return false;
+            }
+
+            var derivedContext = new DerivedMappaMapAlgorithmContext(this.context, targetSymbol, this.context.SourceType);
+            var algorithm = new TypeMapIdentifierAlgorithm(derivedContext, this.compilation, this.cancellationToken);
+            defaultMappingStrategy = algorithm.GetStrategy();
+
+            if (defaultMappingStrategy is NoMapStrategy)
+            {
+                // TODO [#49] Report diagnostic that default mapping cannot be identified.
+                return false;
+            }
         }
 
         mapStrategy = new TypeMappingStrategy(
             this.context.TargetType,
             this.context.SourceType,
             [.. subtypesMappingsStrategies],
-            mappaTypeMappingDefaultAttribute);
+            mappaTypeMappingDefaultAttribute,
+            defaultMappingStrategy,
+            mapMethod.NullableEnabled,
+            mapMethod.MaybeGetMappaContextParameterName());
         return true;
     }
 }

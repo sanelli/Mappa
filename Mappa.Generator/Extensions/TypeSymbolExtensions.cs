@@ -1663,10 +1663,9 @@ internal static class TypeSymbolExtensions
     /// Methods are sorted by most derived class first.
     /// </summary>
     /// <param name="typeSymbol">The type symbol to investigate.</param>
-    /// <param name="compilation">the compilation.</param>
     /// <param name="methodName">The method name.</param>
     /// <returns>The methods with name <paramref name="methodName"/> in the hierarchy.</returns>
-    internal static IMethodSymbol[] LocateMethods(this ITypeSymbol typeSymbol, Compilation compilation, string methodName)
+    internal static IMethodSymbol[] LocateMethods(this ITypeSymbol typeSymbol, string methodName)
     {
         var methods = new List<IMethodSymbol>();
         INamedTypeSymbol? currentType = typeSymbol.BaseType;
@@ -1682,5 +1681,44 @@ internal static class TypeSymbolExtensions
         }
 
         return [.. methods];
+    }
+
+    /// <summary>
+    /// Check if method <paramref name="methodSymbol"/> is a method with the
+    /// given characteristic to be used for mapping.
+    /// </summary>
+    /// <param name="methodSymbol">The method to validate.</param>
+    /// <param name="expectedSourceType">The expected source type.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <param name="mustBeStatic"><c>true</c> when the method must be static, <c>false</c> otherwise.</param>
+    /// <param name="nullableEnabled"><c>true</c> when nullable is enabled, <c>false</c> otherwise.</param>
+    /// <param name="acceptTwoParameters"><c>true</c> when mapping method can provide a context parameter, <c>false</c> otherwise.</param>
+    /// <returns><c>true</c> when the <paramref name="methodSymbol"/> is a method with the expected constraints, <c>false</c> otherwise.</returns>
+    internal static bool IsMethodValidToMapToTargetSymbol(
+        this IMethodSymbol methodSymbol,
+        ITypeSymbol expectedSourceType,
+        Compilation compilation,
+        bool mustBeStatic,
+        bool nullableEnabled,
+        bool acceptTwoParameters)
+    {
+        switch (methodSymbol.Parameters.Length)
+        {
+            case 1:
+                return methodSymbol.AreParametersRefModifiersValid()
+                       && methodSymbol.Parameters[0].Type.IsEqualTo(expectedSourceType, nullableEnabled)
+                       && (!mustBeStatic || methodSymbol.IsStatic);
+
+            // Accept 2 parameters only when the original method support 2 parameters too.
+            case 2 when acceptTwoParameters:
+                var isFirstParameterOk = methodSymbol.Parameters[0].Type.IsEqualTo(expectedSourceType, nullableEnabled);
+                var isSecondParameterOk = methodSymbol.SecondParameterIsMappaContext(compilation);
+                return methodSymbol.AreParametersRefModifiersValid()
+                       && isFirstParameterOk
+                       && isSecondParameterOk
+                       && (!mustBeStatic || methodSymbol.IsStatic);
+        }
+
+        return false;
     }
 }

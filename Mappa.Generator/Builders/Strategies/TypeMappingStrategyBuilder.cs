@@ -2,8 +2,13 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Attributes;
+using Mappa.Generator.Exceptions;
+using Mappa.Generator.Extensions;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
+
+using Microsoft.CodeAnalysis;
 
 namespace Mappa.Generator.Builders.Strategies;
 
@@ -45,11 +50,131 @@ internal sealed class TypeMappingStrategyBuilder(TypeMappingStrategy strategy)
             builder.AppendLine("default:");
             using (builder.Indent())
             {
-                // TODO [#49] Implement the default section.
-                builder.AppendLine("break;");
+                AppendDefaultCode(
+                    this.strategy.DefaultBehavior,
+                    source,
+                    targetTemporary,
+                    this.strategy.DefaultBehaviorStrategy,
+                    this.strategy.NullableEnabled,
+                    this.strategy.MapMethodContextParameterName,
+                    builder,
+                    context,
+                    mappaGlobalOptions);
             }
         }
 
         return (targetTemporary, builder.ToString());
+    }
+
+    private static void AppendDefaultCode(
+        MappaTypeMappingDefaultAttribute attribute,
+        string source,
+        string targetTemporary,
+        MapStrategy defaultBehaviorStrategy,
+        bool nullableEnabled,
+        string? contextParameterName,
+        PrettyCode.StringBuilder builder,
+        MappaBuilderContext context,
+        MappaGlobalOptions mappaGlobalOptions)
+    {
+        switch (attribute.Behavior)
+        {
+            case MappaTypeMappingDefaultBehavior.Undefined:
+                throw new MappaGeneratorException("Unexpected undefined behavior while generating default branch for type mapping.");
+            case MappaTypeMappingDefaultBehavior.Throw:
+
+                var exceptionToThrow = attribute.Type is { } exceptionType
+                    ? (exceptionType.FullName ?? throw new MappaGeneratorException("Cannot obtain exception type name"))
+                    : "System.ArgumentOutOfRangeException";
+
+                var exceptionSymbol = context.Compilation.GetTypeByMetadataName(exceptionToThrow)
+                    ?? throw new MappaGeneratorException("Cannot obtain exception type by name");
+                var parameters = string.Empty;
+
+                if (exceptionSymbol.HasNamedTypeSymbolAccessibleSingleStringParametersConstructor(context.Compilation))
+                {
+                    parameters = $"nameof({source})";
+                }
+                else if (!exceptionSymbol.HasNamedTypeSymbolAccessibleZeroParametersConstructor(context.Compilation))
+                {
+                    throw new MappaGeneratorException("Cannot identify a suitable constructor to generate the exception");
+                }
+
+                builder.AppendLine($"throw new global::{exceptionToThrow}({parameters})");
+                break;
+            case MappaTypeMappingDefaultBehavior.Default:
+                builder.AppendLine($"{targetTemporary} = default;");
+                builder.AppendLine("break;");
+                break;
+            case MappaTypeMappingDefaultBehavior.Null:
+                builder.AppendLine($"{targetTemporary} = null;");
+                builder.AppendLine("break;");
+                break;
+            case MappaTypeMappingDefaultBehavior.MapSourceType:
+                var defaultStrategyBuilder = defaultBehaviorStrategy.GetBuilder();
+                var (defaultVariable, defaultCode) = defaultStrategyBuilder.BuildSource(source, context, mappaGlobalOptions);
+                if (!string.IsNullOrWhiteSpace(defaultCode))
+                {
+                    builder.AppendLine(defaultCode);
+                }
+
+                builder.AppendLine($"{targetTemporary} = {defaultVariable};");
+                builder.AppendLine("break;");
+                break;
+            case MappaTypeMappingDefaultBehavior.InvokeMethod:
+                var invokeMethodTypeSymbol =
+                    (attribute.Type is { } invokingType && !string.IsNullOrWhiteSpace(invokingType.FullName))
+                        ? context.Compilation.GetTypeByMetadataName(invokingType.FullName)
+                        : context.GetMapMethod().MethodSymbol.ContainingSymbol as ITypeSymbol;
+                if (invokeMethodTypeSymbol is null)
+                {
+                    throw new MappaGeneratorException("Cannot identify the type on which the method is being invoked on.");
+                }
+
+                var methods = invokeMethodTypeSymbol.LocateMethods(attribute.MethodName!);
+                var method = methods.FirstOrDefault(m => m.IsMethodValidToMapToTargetSymbol(
+                    defaultBehaviorStrategy.SourceType,
+                    context.Compilation,
+                    attribute.Type is not null,
+                    nullableEnabled,
+                    contextParameterName is not null));
+                if (method is null)
+                {
+                    throw new MappaGeneratorException("Cannot identify the method to be invoked.");
+                }
+
+                var methodInvocationCode = BuildMethodInvocationCode(invokeMethodTypeSymbol, method, source, contextParameterName);
+                builder.AppendLine($"{targetTemporary} = {methodInvocationCode};");
+                builder.AppendLine("break;");
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(attribute));
+        }
+
+        static string BuildMethodInvocationCode(
+            ITypeSymbol? typeSymbol,
+            IMethodSymbol method,
+            string source,
+            string? contextParameterName)
+        {
+            var head = string.Empty;
+            if (typeSymbol is not null)
+            {
+                head = $"global::{typeSymbol.ToDisplayString()}.";
+            }
+
+            var parameters = source;
+            if (method.Parameters.Length == 2)
+            {
+                if (string.IsNullOrWhiteSpace(contextParameterName))
+                {
+                    throw new MappaGeneratorException("Default mapping method requires to parameters but context on original mapping is not provided.");
+                }
+
+                parameters = $"{parameters}, {contextParameterName}";
+            }
+
+            return $"{head}{method.Name}({parameters})";
+        }
     }
 }
