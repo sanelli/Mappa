@@ -100,7 +100,7 @@ internal sealed class TypeMappingStrategyBuilder(TypeMappingStrategy strategy)
                     throw new MappaGeneratorException("Cannot identify a suitable constructor to generate the exception");
                 }
 
-                builder.AppendLine($"throw new global::{exceptionToThrow}({parameters})");
+                builder.AppendLine($"throw new global::{exceptionToThrow}({parameters});");
                 break;
             case MappaTypeMappingDefaultBehavior.Default:
                 builder.AppendLine($"{targetTemporary} = default;");

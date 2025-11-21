@@ -7,10 +7,9 @@ using Mappa.Samples.Models;
 
 namespace Mappa.Samples;
 
-// TODO [#109] int[] -> Target(int capacity) : BlockingCollection<string>.
-// TODO [#109] IEnumerable<int> -> Target(int capacity) : BlockingCollection<string>.
-#pragma warning disable
-
+/// <summary>
+/// Mapper to test custom containers with capacity constructors.
+/// </summary>
 [Mappa]
 [MappaSettings(ContainerCapacityConstructors = BooleanSetting.Enable)]
 public sealed partial class ContainersWithCapacityConstructorMapper
