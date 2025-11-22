@@ -35,7 +35,7 @@ internal sealed class TypeMappingStrategyBuilder(TypeMappingStrategy strategy)
             {
                 var subtypeStrategyTemporary = context.NextTemporary();
                 builder.AppendLine($"case {subtypeStrategy.SourceType.ToDisplayString()} {subtypeStrategyTemporary}:");
-                using (builder.Indent())
+                using (builder.CurlyBracesBlock())
                 {
                     var subtypeStrategyBuilder = subtypeStrategy.GetBuilder();
                     var (subtypeStrategyTargetVariable, subtypeStrategyCode) = subtypeStrategyBuilder.BuildSource(subtypeStrategyTemporary, context, mappaGlobalOptions);
@@ -48,7 +48,7 @@ internal sealed class TypeMappingStrategyBuilder(TypeMappingStrategy strategy)
             }
 
             builder.AppendLine("default:");
-            using (builder.Indent())
+            using (builder.CurlyBracesBlock())
             {
                 AppendDefaultCode(
                     this.strategy.DefaultBehavior,

@@ -2,6 +2,8 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using System.Text.RegularExpressions;
+
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Mappa.Generator.Tests.Assertions;
@@ -29,7 +31,7 @@ internal sealed class PatternSyntaxAssertions
     }
 
     /// <summary>
-    /// Assert that the pattern is a unary pattern.
+    /// Assert that the pattern is a <see cref="UnaryPatternSyntax"/>.
     /// </summary>
     /// <param name="kind">The kind of the unary pattern.</param>
     /// <param name="argumentAssertions">Assertions on the argument expression.</param>
@@ -49,7 +51,7 @@ internal sealed class PatternSyntaxAssertions
     }
 
     /// <summary>
-    /// Assert that the pattern is a constant pattern.
+    /// Assert that the pattern is a <see cref="ConstantPatternSyntax"/>.
     /// </summary>
     /// <param name="value">The value of the constant.</param>
     /// <returns>The assertions.</returns>
@@ -63,6 +65,25 @@ internal sealed class PatternSyntaxAssertions
 
         literalExpressionSyntax.Token.Should().BeOfType<SyntaxToken>();
         literalExpressionSyntax.Token.Value.Should().Be(value);
+
+        return this;
+    }
+
+    /// <summary>
+    /// Assert that the pattern is a <see cref="DeclarationPatternSyntax"/>.
+    /// </summary>
+    /// <param name="type">The type of the declaration pattern.</param>
+    /// <param name="variableName">The name of the variable.</param>
+    /// <returns>The assertions.</returns>
+    public PatternSyntaxAssertions BeDeclarationPatternSyntax(string type, string variableName)
+    {
+        this.Subject.Should().BeOfType<DeclarationPatternSyntax>();
+        var declarationPatternSyntax = (DeclarationPatternSyntax)this.Subject;
+
+        declarationPatternSyntax.Type.ToString().Should().MatchRegex($"(global::)*{Regex.Escape(type)}");
+        declarationPatternSyntax.Designation.Should().BeOfType<SingleVariableDesignationSyntax>();
+        var designation = (SingleVariableDesignationSyntax)declarationPatternSyntax.Designation;
+        designation.Identifier.ValueText.Should().Be(variableName);
 
         return this;
     }

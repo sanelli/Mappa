@@ -182,6 +182,7 @@ internal static partial class AssertionsHelpers
             {
                 CaseSwitchLabelSyntax caseSwitchLabelSyntax => (ISwitchLabelSyntaxAssertions)new CaseSwitchLabelSyntaxAssertions(caseSwitchLabelSyntax, semanticModel, compilation),
                 DefaultSwitchLabelSyntax defaultSwitchLabelSyntax => new DefaultSwitchLabelSyntaxAssertions(defaultSwitchLabelSyntax),
+                CasePatternSwitchLabelSyntax defaultSwitchLabelSyntax => new CasePatternSwitchLabelSyntaxAssertions(defaultSwitchLabelSyntax, semanticModel, compilation),
                 _ => throw new ArgumentException($"Unknown switch label of type {statement.GetType().FullName}"),
             })
             .ToArray();

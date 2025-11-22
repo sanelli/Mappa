@@ -143,19 +143,19 @@ internal sealed class ExpressionSyntaxAssertions
     }
 
     /// <summary>
-    /// Assert that the expression is a <c>nameof</c> expression.
+    /// Assert that the expression is a <c>nameof</c> expression
+    /// around a member access.
     /// </summary>
-    /// <param name="name">The expected value of the expression.</param>
+    /// <param name="parameterAssertions">The assertions on the parameter.</param>
     /// <returns>The expression.</returns>
-    internal ExpressionSyntaxAssertions BeNameofWithMemberAccess(string name)
+    internal ExpressionSyntaxAssertions BeNameOf(Action<ExpressionSyntaxAssertions> parameterAssertions)
     {
         this.Subject.Should().BeOfType<InvocationExpressionSyntax>();
         var invocationExpressionSyntax = (InvocationExpressionSyntax)this.Subject;
         new ExpressionSyntaxAssertions(invocationExpressionSyntax.Expression, this.semanticModel, this.compilation)
             .BeIdentifierNameSyntax("nameof");
         invocationExpressionSyntax.ArgumentList.Arguments.Should().HaveCount(1);
-        new ExpressionSyntaxAssertions(invocationExpressionSyntax.ArgumentList.Arguments[0].Expression, this.semanticModel, this.compilation)
-            .BeMemberAccessExpressionSyntax(name);
+        parameterAssertions(new ExpressionSyntaxAssertions(invocationExpressionSyntax.ArgumentList.Arguments[0].Expression, this.semanticModel, this.compilation));
         return this;
     }
 

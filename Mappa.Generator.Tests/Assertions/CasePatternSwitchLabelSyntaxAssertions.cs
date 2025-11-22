@@ -1,4 +1,4 @@
-// <copyright file="CaseSwitchLabelSyntaxAssertions.cs" company="Stefano Anelli">
+// <copyright file="CasePatternSwitchLabelSyntaxAssertions.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -7,25 +7,23 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace Mappa.Generator.Tests.Assertions;
 
 /// <summary>
-/// Assertions on <see cref="CaseSwitchLabelSyntax"/>.
+/// Assertions for <see cref="CasePatternSwitchLabelSyntax"/>.
 /// </summary>
-internal sealed class CaseSwitchLabelSyntaxAssertions
-    : ObjectAssertions<CaseSwitchLabelSyntax, CaseSwitchLabelSyntaxAssertions>,
+internal sealed class CasePatternSwitchLabelSyntaxAssertions
+    : ObjectAssertions<CasePatternSwitchLabelSyntax, CasePatternSwitchLabelSyntaxAssertions>,
         ISwitchLabelSyntaxAssertions
 {
     private readonly SemanticModel semanticModel;
     private readonly Compilation compilation;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="CaseSwitchLabelSyntaxAssertions"/> class.
+    /// Initializes a new instance of the <see cref="CasePatternSwitchLabelSyntaxAssertions"/> class.
     /// </summary>
     /// <param name="value">The target of the assertions.</param>
     /// <param name="semanticModel">The semantic model.</param>
     /// <param name="compilation">The compilation.</param>
-    internal CaseSwitchLabelSyntaxAssertions(
-        CaseSwitchLabelSyntax value,
-        SemanticModel semanticModel,
-        Compilation compilation)
+    public CasePatternSwitchLabelSyntaxAssertions(
+        CasePatternSwitchLabelSyntax value, SemanticModel semanticModel, Compilation compilation)
         : base(value, FluentAssertions.Execution.AssertionChain.GetOrCreate())
     {
         this.semanticModel = semanticModel;
@@ -33,14 +31,13 @@ internal sealed class CaseSwitchLabelSyntaxAssertions
     }
 
     /// <summary>
-    /// Assert on the value of the case.
+    /// Assert on the pattern.
     /// </summary>
-    /// <param name="assert">The assertion on the value of the case.</param>
     /// <returns>The assertions.</returns>
-    public CaseSwitchLabelSyntaxAssertions HasValue(Action<ExpressionSyntaxAssertions> assert)
+    /// <param name="assert">The assertion on the pattern.</param>
+    public CasePatternSwitchLabelSyntaxAssertions HasPattern(Action<PatternSyntaxAssertions> assert)
     {
-        ArgumentNullException.ThrowIfNull(assert);
-        assert(new ExpressionSyntaxAssertions(this.Subject.Value, this.semanticModel, this.compilation));
+        assert(new PatternSyntaxAssertions(this.Subject.Pattern, this.semanticModel, this.compilation));
         return this;
     }
 

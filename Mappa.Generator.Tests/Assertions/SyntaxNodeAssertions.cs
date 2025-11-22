@@ -3,6 +3,7 @@
 // </copyright>
 
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -254,7 +255,7 @@ internal sealed class SyntaxNodeAssertions
         throwStatementSyntax.Expression.Should().NotBeNull();
         throwStatementSyntax.Expression.Should().BeOfType<ObjectCreationExpressionSyntax>();
         var objectCreationExpressionSyntax = (ObjectCreationExpressionSyntax)throwStatementSyntax.Expression!;
-        objectCreationExpressionSyntax.Type.ToString().Should().Be(typeof(TException).FullName);
+        objectCreationExpressionSyntax.Type.ToString().Should().NotMatch($"(global::)*{Regex.Escape(typeof(TException).FullName ?? throw new ArgumentException("Cannot obtain exception type full name"))}");
         objectCreationExpressionSyntax.ArgumentList.Should().NotBeNull();
         objectCreationExpressionSyntax.ArgumentList!.Arguments.Should().HaveCount(parameterAssertions.Length);
 

@@ -75,7 +75,7 @@ public sealed class StringToEnumMapStrategyIntegrationTests
                                 {
                                     labelsAssertions.Should().HaveCount(1);
                                     labelsAssertions[0].IsCase();
-                                    labelsAssertions[0].AsCase().HasValue(expressionSyntaxAssertions => expressionSyntaxAssertions.BeNameofWithMemberAccess("Mappa.Generator.Tests.UnitTests.SourceCode.TestEnum.One"));
+                                    labelsAssertions[0].AsCase().HasValue(expressionSyntaxAssertions => expressionSyntaxAssertions.BeNameOf(paramAssertions => paramAssertions.BeMemberAccessExpressionSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.TestEnum.One")));
                                     statementAssertions.Should().HaveCount(1);
                                     statementAssertions[0].BeBlockStatement();
                                     statementAssertions[0].AsBlock()
@@ -87,7 +87,7 @@ public sealed class StringToEnumMapStrategyIntegrationTests
                                 {
                                     labelsAssertions.Should().HaveCount(1);
                                     labelsAssertions[0].IsCase();
-                                    labelsAssertions[0].AsCase().HasValue(expressionSyntaxAssertions => expressionSyntaxAssertions.BeNameofWithMemberAccess("Mappa.Generator.Tests.UnitTests.SourceCode.TestEnum.Two"));
+                                    labelsAssertions[0].AsCase().HasValue(expressionSyntaxAssertions => expressionSyntaxAssertions.BeNameOf(paramAssertions => paramAssertions.BeMemberAccessExpressionSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.TestEnum.Two")));
                                     statementAssertions.Should().HaveCount(1);
                                     statementAssertions[0].BeBlockStatement();
                                     statementAssertions[0].AsBlock()
@@ -99,7 +99,7 @@ public sealed class StringToEnumMapStrategyIntegrationTests
                                 {
                                     labelsAssertions.Should().HaveCount(1);
                                     labelsAssertions[0].IsCase();
-                                    labelsAssertions[0].AsCase().HasValue(expressionSyntaxAssertions => expressionSyntaxAssertions.BeNameofWithMemberAccess("Mappa.Generator.Tests.UnitTests.SourceCode.TestEnum.Three"));
+                                    labelsAssertions[0].AsCase().HasValue(expressionSyntaxAssertions => expressionSyntaxAssertions.BeNameOf(paramAssertions => paramAssertions.BeMemberAccessExpressionSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.TestEnum.Three")));
                                     statementAssertions.Should().HaveCount(1);
                                     statementAssertions[0].BeBlockStatement();
                                     statementAssertions[0].AsBlock()

@@ -23,23 +23,6 @@ internal sealed class DefaultSwitchLabelSyntaxAssertions
     {
     }
 
-    /// <summary>
-    /// Assert that the syntax is a case.
-    /// </summary>
-    /// <returns>The current assertion.</returns>
-    public ISwitchLabelSyntaxAssertions IsCase()
-    {
-        this.Subject.Should().BeOfType<CaseSwitchLabelSyntax>();
-        return this;
-    }
-
-    /// <summary>
-    /// Assert that the syntax is a default.
-    /// </summary>
-    /// <returns>The current assertion.</returns>
-    public ISwitchLabelSyntaxAssertions IsDefault()
-    {
-        this.Subject.Should().BeOfType<DefaultSwitchLabelSyntax>();
-        return this;
-    }
+    /// <inheritdoc/>
+    public SwitchLabelSyntax GetSubject() => this.Subject;
 }
