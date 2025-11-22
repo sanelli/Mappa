@@ -178,7 +178,20 @@ public sealed class TypeMappingStrategyIntegrationTests
                                 labelAssertions[0]
                                     .AsCasePattern()
                                     .HasPattern(pattern => pattern.BeDeclarationPatternSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.SourceThirdDerivedClass", "__mappa_tmp_2"));
-                                /* TODO [#49] Add assertions. */
+
+                                caseBodyAssertions.Should().HaveCount(1);
+                                caseBodyAssertions[0].BeBlockStatement();
+                                caseBodyAssertions[0]
+                                    .AsBlock()
+                                    .HasSyntaxNodesCount(8)
+                                    .HasNextSyntaxNode(statementAssertions => { /* TODO [#49] Add assertions. */ })
+                                    .HasNextSyntaxNode(statementAssertions => { /* TODO [#49] Add assertions. */ })
+                                    .HasNextSyntaxNode(statementAssertions => { /* TODO [#49] Add assertions. */ })
+                                    .HasNextSyntaxNode(statementAssertions => { /* TODO [#49] Add assertions. */ })
+                                    .HasNextSyntaxNode(statementAssertions => { /* TODO [#49] Add assertions. */ })
+                                    .HasNextSyntaxNode(statementAssertions => { /* TODO [#49] Add assertions. */ })
+                                    .HasNextSyntaxNode(statementAssertions => { /* TODO [#49] Add assertions. */ })
+                                    .HasNextSyntaxNode(statementAssertions => statementAssertions.BeBreakStatement());
                             },
                             (labelAssertions, caseBodyAssertions) =>
                             {
@@ -187,7 +200,18 @@ public sealed class TypeMappingStrategyIntegrationTests
                                 labelAssertions[0]
                                     .AsCasePattern()
                                     .HasPattern(pattern => pattern.BeDeclarationPatternSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.SourceSecondDerivedClass", "__mappa_tmp_9"));
-                                 /* TODO [#49] Add assertions. */
+
+                                caseBodyAssertions.Should().HaveCount(1);
+                                caseBodyAssertions[0].BeBlockStatement();
+                                caseBodyAssertions[0]
+                                    .AsBlock()
+                                    .HasSyntaxNodesCount(6)
+                                    .HasNextSyntaxNode(statementAssertions => { /* TODO [#49] Add assertions. */ })
+                                    .HasNextSyntaxNode(statementAssertions => { /* TODO [#49] Add assertions. */ })
+                                    .HasNextSyntaxNode(statementAssertions => { /* TODO [#49] Add assertions. */ })
+                                    .HasNextSyntaxNode(statementAssertions => { /* TODO [#49] Add assertions. */ })
+                                    .HasNextSyntaxNode(statementAssertions => { /* TODO [#49] Add assertions. */ })
+                                    .HasNextSyntaxNode(statementAssertions => statementAssertions.BeBreakStatement());
                             },
                             (labelAssertions, caseBodyAssertions) =>
                             {
@@ -196,12 +220,24 @@ public sealed class TypeMappingStrategyIntegrationTests
                                 labelAssertions[0]
                                     .AsCasePattern()
                                     .HasPattern(pattern => pattern.BeDeclarationPatternSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.SourceFirstDerivedClass", "__mappa_tmp_14"));
-                                /* TODO [#49] Add assertions. */
+
+                                caseBodyAssertions.Should().HaveCount(1);
+                                caseBodyAssertions[0].BeBlockStatement();
+                                caseBodyAssertions[0]
+                                    .AsBlock()
+                                    .HasSyntaxNodesCount(6)
+                                    .HasNextSyntaxNode(statementAssertions => { /* TODO [#49] Add assertions. */ })
+                                    .HasNextSyntaxNode(statementAssertions => { /* TODO [#49] Add assertions. */ })
+                                    .HasNextSyntaxNode(statementAssertions => { /* TODO [#49] Add assertions. */ })
+                                    .HasNextSyntaxNode(statementAssertions => { /* TODO [#49] Add assertions. */ })
+                                    .HasNextSyntaxNode(statementAssertions => { /* TODO [#49] Add assertions. */ })
+                                    .HasNextSyntaxNode(statementAssertions => statementAssertions.BeBreakStatement());
                             },
                             (labelAssertions, caseBodyAssertions) =>
                             {
                                 labelAssertions.Should().HaveCount(1);
                                 labelAssertions[0].IsDefault();
+
                                 caseBodyAssertions.Should().HaveCount(1);
                                 caseBodyAssertions[0].BeBlockStatement();
                                 caseBodyAssertions[0].AsBlock()
