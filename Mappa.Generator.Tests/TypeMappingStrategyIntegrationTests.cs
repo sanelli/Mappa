@@ -189,8 +189,15 @@ public sealed class TypeMappingStrategyIntegrationTests
                                     .HasNextSyntaxNode(statementAssertions => { /* TODO [#49] Add assertions. */ })
                                     .HasNextSyntaxNode(statementAssertions => { /* TODO [#49] Add assertions. */ })
                                     .HasNextSyntaxNode(statementAssertions => { /* TODO [#49] Add assertions. */ })
-                                    .HasNextSyntaxNode(statementAssertions => { /* TODO [#49] Add assertions. */ })
-                                    .HasNextSyntaxNode(statementAssertions => { /* TODO [#49] Add assertions. */ })
+                                    .HasNextSyntaxNode(statementAssertions => statementAssertions.BeLocalDeclarationStatementSyntax(
+                                        "Mappa.Generator.Tests.UnitTests.SourceCode.TargetThirdDerivedClass",
+                                        "__mappa_tmp_8",
+                                        initializationAssertions => initializationAssertions.BeObjectCreationExpressionSyntax(
+                                            "Mappa.Generator.Tests.UnitTests.SourceCode.TargetThirdDerivedClass",
+                                            ("ThirdDerivedClassProperty", expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_4")),
+                                            ("SecondDerivedClassProperty", expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_6")),
+                                            ("BaseClassProperty", expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_7")))))
+                                    .HasNextSyntaxNode(statementAssertions => statementAssertions.BeAssignmentExpressionStatement("__mappa_tmp_1", expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_8")))
                                     .HasNextSyntaxNode(statementAssertions => statementAssertions.BeBreakStatement());
                             },
                             (labelAssertions, caseBodyAssertions) =>
@@ -209,8 +216,14 @@ public sealed class TypeMappingStrategyIntegrationTests
                                     .HasNextSyntaxNode(statementAssertions => { /* TODO [#49] Add assertions. */ })
                                     .HasNextSyntaxNode(statementAssertions => { /* TODO [#49] Add assertions. */ })
                                     .HasNextSyntaxNode(statementAssertions => { /* TODO [#49] Add assertions. */ })
-                                    .HasNextSyntaxNode(statementAssertions => { /* TODO [#49] Add assertions. */ })
-                                    .HasNextSyntaxNode(statementAssertions => { /* TODO [#49] Add assertions. */ })
+                                    .HasNextSyntaxNode(statementAssertions => statementAssertions.BeLocalDeclarationStatementSyntax(
+                                        "Mappa.Generator.Tests.UnitTests.SourceCode.TargetSecondDerivedClass",
+                                        "__mappa_tmp_13",
+                                        initializationAssertions => initializationAssertions.BeObjectCreationExpressionSyntax(
+                                            "Mappa.Generator.Tests.UnitTests.SourceCode.TargetSecondDerivedClass",
+                                            ("SecondDerivedClassProperty", expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_11")),
+                                            ("BaseClassProperty", expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_12")))))
+                                    .HasNextSyntaxNode(statementAssertions => statementAssertions.BeAssignmentExpressionStatement("__mappa_tmp_1", expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_13")))
                                     .HasNextSyntaxNode(statementAssertions => statementAssertions.BeBreakStatement());
                             },
                             (labelAssertions, caseBodyAssertions) =>
@@ -229,8 +242,14 @@ public sealed class TypeMappingStrategyIntegrationTests
                                     .HasNextSyntaxNode(statementAssertions => { /* TODO [#49] Add assertions. */ })
                                     .HasNextSyntaxNode(statementAssertions => { /* TODO [#49] Add assertions. */ })
                                     .HasNextSyntaxNode(statementAssertions => { /* TODO [#49] Add assertions. */ })
-                                    .HasNextSyntaxNode(statementAssertions => { /* TODO [#49] Add assertions. */ })
-                                    .HasNextSyntaxNode(statementAssertions => { /* TODO [#49] Add assertions. */ })
+                                    .HasNextSyntaxNode(statementAssertions => statementAssertions.BeLocalDeclarationStatementSyntax(
+                                        "Mappa.Generator.Tests.UnitTests.SourceCode.TargetFirstDerivedClass",
+                                        "__mappa_tmp_18",
+                                        initializationAssertions => initializationAssertions.BeObjectCreationExpressionSyntax(
+                                            "Mappa.Generator.Tests.UnitTests.SourceCode.TargetFirstDerivedClass",
+                                            ("FirstDerivedClassProperty", expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_16")),
+                                            ("BaseClassProperty", expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_17")))))
+                                    .HasNextSyntaxNode(statementAssertions => statementAssertions.BeAssignmentExpressionStatement("__mappa_tmp_1", expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_18")))
                                     .HasNextSyntaxNode(statementAssertions => statementAssertions.BeBreakStatement());
                             },
                             (labelAssertions, caseBodyAssertions) =>
