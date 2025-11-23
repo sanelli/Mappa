@@ -344,77 +344,6 @@ public sealed class PolymorphismMapStrategyIntegrationTests
                 NullableAnnotation.Annotated,
                 blockSyntaxAssertions =>
                 {
-#pragma warning disable S125
-                    /*
-                          Mappa.Generator.Tests.UnitTests.SourceCode.TargetBaseClass? __mappa_tmp_1;
-                          if (input is not null)
-                          {
-                             Mappa.Generator.Tests.UnitTests.SourceCode.SourceBaseClass __mappa_tmp_2 = input;
-
-                             Mappa.Generator.Tests.UnitTests.SourceCode.TargetBaseClass? __mappa_tmp_3;
-                             switch (__mappa_tmp_2)
-                             {
-                                case Mappa.Generator.Tests.UnitTests.SourceCode.SourceThirdDerivedClass __mappa_tmp_4:
-                                {
-                                   string __mappa_tmp_5 = __mappa_tmp_4.ThirdDerivedClassProperty;
-                                   long __mappa_tmp_6 = long.Parse(__mappa_tmp_5);
-                                   System.DateTime __mappa_tmp_7 = __mappa_tmp_4.SecondDerivedClassProperty;
-                                   System.DateOnly __mappa_tmp_8 = System.DateOnly.FromDateTime(__mappa_tmp_7);
-                                   byte __mappa_tmp_9 = __mappa_tmp_4.BaseClassProperty;
-                                   Mappa.Generator.Tests.UnitTests.SourceCode.TargetThirdDerivedClass __mappa_tmp_10 = new Mappa.Generator.Tests.UnitTests.SourceCode.TargetThirdDerivedClass()
-                                   {
-                                   ThirdDerivedClassProperty = __mappa_tmp_6,
-                                   SecondDerivedClassProperty = __mappa_tmp_8,
-                                   BaseClassProperty = __mappa_tmp_9,
-                                   };
-                                   __mappa_tmp_3 = __mappa_tmp_10;
-                                   break;
-                                }
-
-                                case Mappa.Generator.Tests.UnitTests.SourceCode.SourceSecondDerivedClass __mappa_tmp_11:
-                                {
-                                   System.DateTime __mappa_tmp_12 = __mappa_tmp_11.SecondDerivedClassProperty;
-                                   System.DateOnly __mappa_tmp_13 = System.DateOnly.FromDateTime(__mappa_tmp_12);
-                                   byte __mappa_tmp_14 = __mappa_tmp_11.BaseClassProperty;
-                                   Mappa.Generator.Tests.UnitTests.SourceCode.TargetSecondDerivedClass __mappa_tmp_15 = new Mappa.Generator.Tests.UnitTests.SourceCode.TargetSecondDerivedClass()
-                                   {
-                                   SecondDerivedClassProperty = __mappa_tmp_13,
-                                   BaseClassProperty = __mappa_tmp_14,
-                                   };
-                                   __mappa_tmp_3 = __mappa_tmp_15;
-                                   break;
-                                }
-
-                                case Mappa.Generator.Tests.UnitTests.SourceCode.SourceFirstDerivedClass __mappa_tmp_16:
-                                {
-                                   float __mappa_tmp_17 = __mappa_tmp_16.FirstDerivedClassProperty;
-                                   string __mappa_tmp_18 = __mappa_tmp_17.ToString();
-                                   byte __mappa_tmp_19 = __mappa_tmp_16.BaseClassProperty;
-                                   Mappa.Generator.Tests.UnitTests.SourceCode.TargetFirstDerivedClass __mappa_tmp_20 = new Mappa.Generator.Tests.UnitTests.SourceCode.TargetFirstDerivedClass()
-                                   {
-                                   FirstDerivedClassProperty = __mappa_tmp_18,
-                                   BaseClassProperty = __mappa_tmp_19,
-                                   };
-                                   __mappa_tmp_3 = __mappa_tmp_20;
-                                   break;
-                                }
-
-                                default:
-                                {
-                                   throw new global::System.ArgumentOutOfRangeException(nameof(__mappa_tmp_2));
-                                }
-                             }
-                             __mappa_tmp_1 = __mappa_tmp_3;
-                          }
-                          else
-                          {
-                             __mappa_tmp_1 = (Mappa.Generator.Tests.UnitTests.SourceCode.TargetBaseClass?) null;
-                          }
-
-                          return __mappa_tmp_1;
-                     */
-#pragma warning restore S125
-
                     blockSyntaxAssertions
                         .HasSyntaxNodesCount(3)
                         .HasNextSyntaxNode(statementAssertions => statementAssertions.BeLocalDeclarationStatementSyntax(
@@ -424,7 +353,158 @@ public sealed class PolymorphismMapStrategyIntegrationTests
                             conditionAssertions => conditionAssertions.BeIsPatternExpressionSyntax(
                                 expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("input"),
                                 patternAssertions => patternAssertions.BeUnaryPatternSyntax(SyntaxKind.NotKeyword, argumentAssertions => argumentAssertions.BeConstantPatternSyntax(null))),
-                            themStatementAssertions => { /* TODO [#49] Add assertions. */ },
+                            themStatementAssertions =>
+                                 themStatementAssertions
+                                     .BeBlockStatement()
+                                     .AsBlock()
+                                     .HasSyntaxNodesCount(4)
+                                     .HasNextSyntaxNode(thenStatement => thenStatement.BeLocalDeclarationStatementSyntax(
+                                         "Mappa.Generator.Tests.UnitTests.SourceCode.SourceBaseClass",
+                                         "__mappa_tmp_2",
+                                         initializationAssignment => initializationAssignment.BeIdentifierNameSyntax("input")))
+                                     .HasNextSyntaxNode(thenStatement => thenStatement.BeLocalDeclarationStatementSyntax(
+                                         "Mappa.Generator.Tests.UnitTests.SourceCode.TargetBaseClass?",
+                                         "__mappa_tmp_3"))
+                                     .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeSwitchStatementSyntax(
+                                            switchExpression => switchExpression.BeIdentifierNameSyntax("__mappa_tmp_2"),
+                                            (labelAssertions, caseBodyAssertions) =>
+                                            {
+                                                labelAssertions.Should().HaveCount(1);
+                                                labelAssertions[0].IsCasePattern();
+                                                labelAssertions[0]
+                                                    .AsCasePattern()
+                                                    .HasPattern(pattern => pattern.BeDeclarationPatternSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.SourceThirdDerivedClass", "__mappa_tmp_4"));
+
+                                                caseBodyAssertions.Should().HaveCount(1);
+                                                caseBodyAssertions[0].BeBlockStatement();
+                                                caseBodyAssertions[0]
+                                                    .AsBlock()
+                                                    .HasSyntaxNodesCount(8)
+                                                    .HasNextSyntaxNode(caseAssertion => caseAssertion.BeLocalDeclarationStatementSyntax(
+                                                        typeof(string).ToString(),
+                                                        "__mappa_tmp_5",
+                                                        initializationAssertions => initializationAssertions.BeMemberAccessExpressionSyntax("__mappa_tmp_4.ThirdDerivedClassProperty")))
+                                                    .HasNextSyntaxNode(caseAssertion => caseAssertion.BeLocalDeclarationStatementSyntax(
+                                                        typeof(long).ToString(),
+                                                        "__mappa_tmp_6",
+                                                        initializationAssertions => initializationAssertions.BeInvocationExpressionSyntax(
+                                                            "long.Parse",
+                                                            parameterAssertions => parameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_5"))))
+                                                    .HasNextSyntaxNode(caseAssertion => caseAssertion.BeLocalDeclarationStatementSyntax(
+                                                        "System.DateTime",
+                                                        "__mappa_tmp_7",
+                                                        initializationAssertions => initializationAssertions.BeMemberAccessExpressionSyntax("__mappa_tmp_4.SecondDerivedClassProperty")))
+                                                    .HasNextSyntaxNode(caseAssertion => caseAssertion.BeLocalDeclarationStatementSyntax(
+                                                        "System.DateOnly",
+                                                        "__mappa_tmp_8",
+                                                        initializationAssertions => initializationAssertions.BeInvocationExpressionSyntax(
+                                                            "System.DateOnly.FromDateTime",
+                                                            parameterAssertions => parameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_7"))))
+                                                    .HasNextSyntaxNode(caseAssertion => caseAssertion.BeLocalDeclarationStatementSyntax(
+                                                        typeof(byte).ToString(),
+                                                        "__mappa_tmp_9",
+                                                        initializationAssertions => initializationAssertions.BeMemberAccessExpressionSyntax("__mappa_tmp_4.BaseClassProperty")))
+                                                    .HasNextSyntaxNode(caseAssertion => caseAssertion.BeLocalDeclarationStatementSyntax(
+                                                        "Mappa.Generator.Tests.UnitTests.SourceCode.TargetThirdDerivedClass",
+                                                        "__mappa_tmp_10",
+                                                        initializationAssertions => initializationAssertions.BeObjectCreationExpressionSyntax(
+                                                            "Mappa.Generator.Tests.UnitTests.SourceCode.TargetThirdDerivedClass",
+                                                            ("ThirdDerivedClassProperty", expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_6")),
+                                                            ("SecondDerivedClassProperty", expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_8")),
+                                                            ("BaseClassProperty", expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_9")))))
+                                                    .HasNextSyntaxNode(caseAssertions => caseAssertions.BeAssignmentExpressionStatement("__mappa_tmp_3", expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_10")))
+                                                    .HasNextSyntaxNode(caseAssertions => caseAssertions.BeBreakStatement());
+                                            },
+                                            (labelAssertions, caseBodyAssertions) =>
+                                            {
+                                                labelAssertions.Should().HaveCount(1);
+                                                labelAssertions[0].IsCasePattern();
+                                                labelAssertions[0]
+                                                    .AsCasePattern()
+                                                    .HasPattern(pattern => pattern.BeDeclarationPatternSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.SourceSecondDerivedClass", "__mappa_tmp_11"));
+
+                                                caseBodyAssertions.Should().HaveCount(1);
+                                                caseBodyAssertions[0].BeBlockStatement();
+                                                caseBodyAssertions[0]
+                                                    .AsBlock()
+                                                    .HasSyntaxNodesCount(6)
+                                                    .HasNextSyntaxNode(caseAssertion => caseAssertion.BeLocalDeclarationStatementSyntax(
+                                                        typeof(DateTime).ToString(),
+                                                        "__mappa_tmp_12",
+                                                        initializationAssertions => initializationAssertions.BeMemberAccessExpressionSyntax("__mappa_tmp_11.SecondDerivedClassProperty")))
+                                                    .HasNextSyntaxNode(caseAssertion => caseAssertion.BeLocalDeclarationStatementSyntax(
+                                                        "System.DateOnly",
+                                                        "__mappa_tmp_13",
+                                                        initializationAssertions => initializationAssertions.BeInvocationExpressionSyntax(
+                                                            "System.DateOnly.FromDateTime",
+                                                            parameterAssertions => parameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_12"))))
+                                                    .HasNextSyntaxNode(caseAssertion => caseAssertion.BeLocalDeclarationStatementSyntax(
+                                                        typeof(byte).ToString(),
+                                                        "__mappa_tmp_14",
+                                                        initializationAssertions => initializationAssertions.BeMemberAccessExpressionSyntax("__mappa_tmp_11.BaseClassProperty")))
+                                                    .HasNextSyntaxNode(caseAssertion => caseAssertion.BeLocalDeclarationStatementSyntax(
+                                                        "Mappa.Generator.Tests.UnitTests.SourceCode.TargetSecondDerivedClass",
+                                                        "__mappa_tmp_15",
+                                                        initializationAssertions => initializationAssertions.BeObjectCreationExpressionSyntax(
+                                                            "Mappa.Generator.Tests.UnitTests.SourceCode.TargetSecondDerivedClass",
+                                                            ("SecondDerivedClassProperty", expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_13")),
+                                                            ("BaseClassProperty", expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_14")))))
+                                                    .HasNextSyntaxNode(caseAssertion => caseAssertion.BeAssignmentExpressionStatement("__mappa_tmp_3", expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_15")))
+                                                    .HasNextSyntaxNode(caseAssertion => caseAssertion.BeBreakStatement());
+                                            },
+                                            (labelAssertions, caseBodyAssertions) =>
+                                            {
+                                                labelAssertions.Should().HaveCount(1);
+                                                labelAssertions[0].IsCasePattern();
+                                                labelAssertions[0]
+                                                    .AsCasePattern()
+                                                    .HasPattern(pattern => pattern.BeDeclarationPatternSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.SourceFirstDerivedClass", "__mappa_tmp_16"));
+
+                                                caseBodyAssertions.Should().HaveCount(1);
+                                                caseBodyAssertions[0].BeBlockStatement();
+                                                caseBodyAssertions[0]
+                                                    .AsBlock()
+                                                    .HasSyntaxNodesCount(6)
+                                                    .HasNextSyntaxNode(caseAssertion => caseAssertion.BeLocalDeclarationStatementSyntax(
+                                                        typeof(float).ToString(),
+                                                        "__mappa_tmp_17",
+                                                        initializationAssertions => initializationAssertions.BeMemberAccessExpressionSyntax("__mappa_tmp_16.FirstDerivedClassProperty")))
+                                                    .HasNextSyntaxNode(caseAssertion => caseAssertion.BeLocalDeclarationStatementSyntax(
+                                                        typeof(string).ToString(),
+                                                        "__mappa_tmp_18",
+                                                        initializationAssertions => initializationAssertions.BeInvocationExpressionSyntax("__mappa_tmp_17.ToString")))
+                                                    .HasNextSyntaxNode(caseAssertion => caseAssertion.BeLocalDeclarationStatementSyntax(
+                                                        typeof(byte).ToString(),
+                                                        "__mappa_tmp_19",
+                                                        initializationAssertions => initializationAssertions.BeMemberAccessExpressionSyntax("__mappa_tmp_16.BaseClassProperty")))
+                                                    .HasNextSyntaxNode(caseAssertion => caseAssertion.BeLocalDeclarationStatementSyntax(
+                                                        "Mappa.Generator.Tests.UnitTests.SourceCode.TargetFirstDerivedClass",
+                                                        "__mappa_tmp_20",
+                                                        initializationAssertions => initializationAssertions.BeObjectCreationExpressionSyntax(
+                                                            "Mappa.Generator.Tests.UnitTests.SourceCode.TargetFirstDerivedClass",
+                                                            ("FirstDerivedClassProperty", expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_18")),
+                                                            ("BaseClassProperty", expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_19")))))
+                                                    .HasNextSyntaxNode(caseAssertion => caseAssertion.BeAssignmentExpressionStatement("__mappa_tmp_3", expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_20")))
+                                                    .HasNextSyntaxNode(caseAssertion => caseAssertion.BeBreakStatement());
+                                            },
+                                            (labelAssertions, caseBodyAssertions) =>
+                                            {
+                                                labelAssertions.Should().HaveCount(1);
+                                                labelAssertions[0].IsDefault();
+
+                                                caseBodyAssertions.Should().HaveCount(1);
+                                                caseBodyAssertions[0].BeBlockStatement();
+                                                caseBodyAssertions[0].AsBlock()
+                                                    .HasSyntaxNodesCount(1)
+                                                    .HasNextSyntaxNode(caseAssertion =>
+                                                        caseAssertion
+                                                            .BeThrowStatementSyntax<ArgumentOutOfRangeException>(exceptionParameterAssertions =>
+                                                                exceptionParameterAssertions.BeNameOf(paramAssertions =>
+                                                                    paramAssertions.BeIdentifierNameSyntax("__mappa_tmp_2"))));
+                                            }))
+                                     .HasNextSyntaxNode(thenStatement => thenStatement.BeAssignmentExpressionStatement(
+                                         leftSideAssignment => leftSideAssignment.BeIdentifierNameSyntax("__mappa_tmp_1"),
+                                         rightSideAssignment => rightSideAssignment.BeIdentifierNameSyntax("__mappa_tmp_3"))),
                             elseStatementAssertions =>
                             {
                                 elseStatementAssertions
