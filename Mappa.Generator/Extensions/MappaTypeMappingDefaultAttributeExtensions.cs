@@ -3,7 +3,6 @@
 // </copyright>
 
 using Mappa.Attributes;
-using Mappa.Generator.Models;
 
 using Microsoft.CodeAnalysis;
 
@@ -18,13 +17,21 @@ internal static class MappaTypeMappingDefaultAttributeExtensions
     /// Check if the attribute provided is valid or not.
     /// </summary>
     /// <param name="attribute">The attribute to validate.</param>
-    /// <param name="mapMethod">The method being mapped.</param>
+    /// <param name="targetType">The target type.</param>
+    /// <param name="sourceType">The source type.</param>
+    /// <param name="mapMethodParentClassSymbol">The symbol of the class containing the method being mapped.</param>
+    /// <param name="nullableEnabled"><c>true</c> if nullability is enabled, <c>false</c> otherwise.</param>
+    /// <param name="mapMethodHasTwoParameters"><c>true</c> if the mapping method has two parameters, <c>false</c> otherwise.</param>
     /// <param name="compilation">The compilation.</param>
     /// <param name="diagnostics">The generated diagnostic in case of error or warnings.</param>
     /// <returns><c>true</c> if the attribute is valid, <c>false</c> otherwise.</returns>
     internal static bool IsValid(
         this MappaTypeMappingDefaultAttribute attribute,
-        MapMethod mapMethod,
+        ITypeSymbol targetType,
+        ITypeSymbol sourceType,
+        ITypeSymbol mapMethodParentClassSymbol,
+        bool nullableEnabled,
+        bool mapMethodHasTwoParameters,
         Compilation compilation,
         out Diagnostic[] diagnostics)
     {
@@ -95,16 +102,16 @@ internal static class MappaTypeMappingDefaultAttributeExtensions
                     // TODO [#49] Generate the warning diagnostic: method name will not be used.
                 }
 
-                if (attribute.Type is { } targetType && !string.IsNullOrWhiteSpace(targetType.FullName))
+                if (attribute.Type is { } attributeTargetType && !string.IsNullOrWhiteSpace(attributeTargetType.FullName))
                 {
-                    var typeSymbol = compilation.GetTypeByMetadataName(targetType.FullName);
+                    var typeSymbol = compilation.GetTypeByMetadataName(attributeTargetType.FullName);
                     if (typeSymbol is null)
                     {
                         // TODO [#49] Generate the error diagnostic: the type cannot be loaded.
                         return false;
                     }
 
-                    if (!typeSymbol.IsImplementingOrIsDerivedFromClass(mapMethod.TargetType))
+                    if (!typeSymbol.IsImplementingOrIsDerivedFromClass(targetType))
                     {
                         // TODO [#49] Generate the error diagnostic: the type is not deriving/implementing target type.
                         return false;
@@ -135,7 +142,7 @@ internal static class MappaTypeMappingDefaultAttributeExtensions
                 var invokeMethodTypeSymbol =
                     (attribute.Type is { } invokingType && !string.IsNullOrWhiteSpace(invokingType.FullName))
                         ? compilation.GetTypeByMetadataName(invokingType.FullName)
-                        : mapMethod.MethodSymbol.ContainingSymbol as ITypeSymbol;
+                        : mapMethodParentClassSymbol;
 
                 if (invokeMethodTypeSymbol is null)
                 {
@@ -145,11 +152,11 @@ internal static class MappaTypeMappingDefaultAttributeExtensions
 
                 var methods = invokeMethodTypeSymbol.LocateMethods(attribute.MethodName!);
                 var method = methods.FirstOrDefault(m => m.IsMethodValidToMapToTargetSymbol(
-                    mapMethod.SourceType,
+                    sourceType,
                     compilation,
                     attribute.Type is not null,
-                    mapMethod.NullableEnabled,
-                    mapMethod.MethodSymbol.Parameters.Length == 2));
+                    nullableEnabled,
+                    mapMethodHasTwoParameters));
                 if (method is null)
                 {
                     // TODO [#49] Generate the error diagnostic: a suitable method with the given name cannot be found.

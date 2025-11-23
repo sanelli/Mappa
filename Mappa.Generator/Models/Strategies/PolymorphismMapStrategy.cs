@@ -1,4 +1,4 @@
-// <copyright file="TypeMappingStrategy.cs" company="Stefano Anelli">
+// <copyright file="PolymorphismMapStrategy.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -19,7 +19,7 @@ namespace Mappa.Generator.Models.Strategies;
 /// <param name="defaultBehaviorStrategy">Strategy to map <see cref="MappaTypeMappingDefaultBehavior.MapSourceType"/> behavior.</param>
 /// <param name="nullableEnabled"><c>true</c> if nullable is enabled, <c>false</c> otherwise.</param>
 /// <param name="mapMethodContextParameterName">The name of the map method context parameter (if present).</param>
-internal sealed class TypeMappingStrategy(
+internal sealed class PolymorphismMapStrategy(
     ITypeSymbol targetType,
     ITypeSymbol sourceType,
     MapStrategy[] subtypesMappingsStrategies,
@@ -55,5 +55,5 @@ internal sealed class TypeMappingStrategy(
     internal MapStrategy[] SubtypesMappingsStrategies => subtypesMappingsStrategies;
 
     /// <inheritdoc/>
-    internal override IMappaStrategyBuilder GetBuilder() => new TypeMappingStrategyBuilder(this);
+    internal override IMappaStrategyBuilder GetBuilder() => new PolymorphismMapStrategyBuilder(this);
 }

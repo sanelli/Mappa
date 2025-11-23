@@ -65,6 +65,17 @@ internal sealed class MappaMapAlgorithmContextSettings
     internal StackSetting<MappaAttributesForConstructorDetectorSettings> UseAttributesForConstructorDetectorSettings { get; } = new(MappaAttributesForConstructorDetectorSettings.Enable);
 
     /// <summary>
+    /// Gets the stack of detectors.
+    /// </summary>
+    /// <remarks>
+    /// This can be used to ensure that some detectors only runs in certain
+    /// condition (e.g. the polymorphism detector one can only be run as root or after
+    /// the nullable detectors one, or that the identity detector does not run at root
+    /// when the polymorphism attribute is present but can run at any other time).
+    /// </remarks>
+    internal StackSetting<Type> Detectors { get; } = new(null!);
+
+    /// <summary>
     /// Apply default values.
     /// </summary>
     /// <returns>The disposable object that once dispose will restore default values.</returns>

@@ -31,6 +31,11 @@ internal sealed class StackSetting<TSettings>
     internal TSettings CurrentValue => this.stack.Peek();
 
     /// <summary>
+    /// Gets the number of elements on the stack.
+    /// </summary>
+    internal int Count => this.stack.Count;
+
+    /// <summary>
     /// Convert the settings to the current settings value.
     /// </summary>
     /// <param name="setting">The settings.</param>

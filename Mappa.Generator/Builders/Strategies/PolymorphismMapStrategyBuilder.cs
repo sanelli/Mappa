@@ -1,4 +1,4 @@
-// <copyright file="TypeMappingStrategyBuilder.cs" company="Stefano Anelli">
+// <copyright file="PolymorphismMapStrategyBuilder.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -13,13 +13,13 @@ using Microsoft.CodeAnalysis;
 namespace Mappa.Generator.Builders.Strategies;
 
 /// <summary>
-/// Builder for <see cref="TypeMappingStrategy"/> strategy.
+/// Builder for <see cref="PolymorphismMapStrategy"/> strategy.
 /// </summary>
 /// <param name="strategy">The strategy.</param>
-internal sealed class TypeMappingStrategyBuilder(TypeMappingStrategy strategy)
+internal sealed class PolymorphismMapStrategyBuilder(PolymorphismMapStrategy strategy)
     : IMappaStrategyBuilder
 {
-    private readonly TypeMappingStrategy strategy = strategy;
+    private readonly PolymorphismMapStrategy strategy = strategy;
 
     /// <inheritdoc/>
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)

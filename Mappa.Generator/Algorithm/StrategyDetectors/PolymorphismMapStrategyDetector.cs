@@ -1,8 +1,9 @@
-// <copyright file="TypeMappingStrategyDetector.cs" company="Stefano Anelli">
+// <copyright file="PolymorphismMapStrategyDetector.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
 using Mappa.Attributes;
+using Mappa.Generator.Exceptions;
 using Mappa.Generator.Extensions;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
@@ -14,9 +15,7 @@ namespace Mappa.Generator.Algorithm.StrategyDetectors;
 /// <summary>
 /// Strategy detector to support polymorphism.
 /// </summary>
-// TODO [#49] This strategy detector should not be invoked by the algorithm a second time, use the algo context to prevent this (to prevent loops).
-// TODO [#49] Most of this code was written under the assumption that is was the first to run (therefore mapMethod is populated) but this is not necesarily true because of nullability.
-internal sealed class TypeMappingStrategyDetector(MappaMapAlgorithmContext context, Compilation compilation, CancellationToken cancellationToken)
+internal sealed class PolymorphismMapStrategyDetector(MappaMapAlgorithmContext context, Compilation compilation, CancellationToken cancellationToken)
     : IMapStrategyDetector
 {
     private readonly MappaMapAlgorithmContext context = context;
@@ -28,15 +27,8 @@ internal sealed class TypeMappingStrategyDetector(MappaMapAlgorithmContext conte
     {
         mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
 
-        // Check the method is being mapped.
-        if (this.context.MapMethod is null)
-        {
-            return false;
-        }
-
         // Check the method has the type mapping attributes.
-        var mapMethod = this.context.GetMapMethod();
-        var typeMappingAttributes = mapMethod.GetAttributes<MappaTypeMappingAttribute>();
+        var typeMappingAttributes = this.GetTypeMappingAttributes();
         if (typeMappingAttributes.Length == 0)
         {
             return false;
@@ -106,8 +98,8 @@ internal sealed class TypeMappingStrategyDetector(MappaMapAlgorithmContext conte
             }
 
             // Generate source type and target type by adding the same annotations of the map methods for consistency.
-            var sourceType = attributeSourceType.WithNullableAnnotation(this.context.MapMethod.SourceType.NullableAnnotation);
-            var targetType = attributeTargetType.WithNullableAnnotation(this.context.MapMethod.TargetType.NullableAnnotation);
+            var sourceType = attributeSourceType.WithNullableAnnotation(this.context.SourceType.NullableAnnotation);
+            var targetType = attributeTargetType.WithNullableAnnotation(this.context.TargetType.NullableAnnotation);
 
             // Identify mapping from attribute source type to attribute target type.
             // TODO [#49] Apply a flag to prevent this strategy to run twice.
@@ -123,10 +115,20 @@ internal sealed class TypeMappingStrategyDetector(MappaMapAlgorithmContext conte
             subtypesMappingsStrategies.Add(attributeStrategy);
         }
 
-        var mappaTypeMappingDefaultAttribute = mapMethod.GetAttribute<MappaTypeMappingDefaultAttribute>()
+        var mappaTypeMappingDefaultAttribute = this.GetTypeMappingDefaultAttribute()
                                                ?? new MappaTypeMappingDefaultAttribute(MappaTypeMappingDefaultBehavior.Throw);
 
-        var validationSuccessful = mappaTypeMappingDefaultAttribute.IsValid(mapMethod, this.compilation, out var validationDiagnosis);
+        var rootMapMethod = this.context.GetRootMapMethod();
+        var methodSymbolContainingSymbol = rootMapMethod.MethodSymbol.ContainingSymbol as ITypeSymbol ?? throw new MappaGeneratorException("Method parent is not a type symbol");
+        var mapMethodHasTwoParameters = rootMapMethod.MethodSymbol.Parameters.Length == 2;
+        var validationSuccessful = mappaTypeMappingDefaultAttribute.IsValid(
+            this.context.TargetType,
+            this.context.SourceType,
+            methodSymbolContainingSymbol,
+            rootMapMethod.NullableEnabled,
+            mapMethodHasTwoParameters,
+            this.compilation,
+            out var validationDiagnosis);
         foreach (var diagnostic in validationDiagnosis)
         {
             this.context.ReportDiagnostic(diagnostic);
@@ -171,14 +173,20 @@ internal sealed class TypeMappingStrategyDetector(MappaMapAlgorithmContext conte
             }
         }
 
-        mapStrategy = new TypeMappingStrategy(
+        mapStrategy = new PolymorphismMapStrategy(
             this.context.TargetType,
             this.context.SourceType,
             [.. subtypesMappingsStrategies],
             mappaTypeMappingDefaultAttribute,
             defaultMappingStrategy,
-            mapMethod.NullableEnabled,
-            mapMethod.MaybeGetMappaContextParameterName());
+            rootMapMethod.NullableEnabled,
+            rootMapMethod.MaybeGetMappaContextParameterName());
         return true;
     }
+
+    private MappaTypeMappingAttribute[] GetTypeMappingAttributes()
+        => this.context.GetRootMapMethod().GetAttributes<MappaTypeMappingAttribute>();
+
+    private MappaTypeMappingDefaultAttribute? GetTypeMappingDefaultAttribute()
+        => this.context.GetRootMapMethod().GetAttribute<MappaTypeMappingDefaultAttribute>();
 }

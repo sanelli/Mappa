@@ -13,7 +13,6 @@ namespace Mappa.Generator.Algorithm.StrategyDetectors;
 /// <summary>
 /// Detect if strategy <see cref="IdentityMapStrategy"/> can be applied.
 /// </summary>
-// TODO [#49] If the method has a TyepMapping attribute then skip identity mapping.
 internal sealed class IdentityMapStrategyDetector
     : IMapStrategyDetector
 {
