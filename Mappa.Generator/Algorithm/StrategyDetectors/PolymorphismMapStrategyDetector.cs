@@ -97,9 +97,11 @@ internal sealed class PolymorphismMapStrategyDetector(MappaMapAlgorithmContext c
                 return false;
             }
 
-            // Generate source type and target type by adding the same annotations of the map methods for consistency.
-            var sourceType = attributeSourceType.WithNullableAnnotation(this.context.SourceType.NullableAnnotation);
-            var targetType = attributeTargetType.WithNullableAnnotation(this.context.TargetType.NullableAnnotation);
+            // At this stage any nullability concern is already handled by the nullability detector
+            // and if we do not force it to be NotAnnotated it will be None which is handled like
+            // annotated to support the non-nullable context.
+            var sourceType = attributeSourceType.WithNullableAnnotation(NullableAnnotation.NotAnnotated);
+            var targetType = attributeTargetType.WithNullableAnnotation(NullableAnnotation.NotAnnotated);
 
             // Identify mapping from attribute source type to attribute target type.
             // TODO [#49] Apply a flag to prevent this strategy to run twice.

@@ -344,6 +344,7 @@ public sealed class TypeMappingStrategyIntegrationTests
                 NullableAnnotation.Annotated,
                 blockSyntaxAssertions =>
                 {
+                    // TODO [#49] Add assertions.
                 });
     }
 }
