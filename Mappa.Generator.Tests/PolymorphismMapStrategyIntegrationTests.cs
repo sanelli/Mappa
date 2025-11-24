@@ -12,8 +12,9 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Integration tests for <see cref="PolymorphismMapStrategy"/>.
 /// </summary>
-// TODO [#49] Test with nested classes.
 // TODO [#49] Test identity detector is bypassed when polymorphism can instead be applied.
+// TODO [#49] Test identity detector is bypassed when polymorphism can instead be applied + nullability.
+// TODO [#49] Test with nested classes.
 // TODO [#49] Test with explicit throw behaviour without class.
 // TODO [#49] Test with explicit throw behaviour with exception class.
 // TODO [#49] Test with explicit map to behaviour without type.
@@ -27,6 +28,7 @@ namespace Mappa.Generator.Tests;
 // TODO [#49] Test with invoke method to behaviour with static method in a different class mapper.
 // TODO [#49] Test with invoke method to behaviour with static method in mapper with context parameter.
 // TODO [#49] Test with invoke method to behaviour with static method defined in mapper base class.
+// TODO [#49] Tests all corner case scenarios where the disgnostic is returned.
 public sealed class PolymorphismMapStrategyIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {

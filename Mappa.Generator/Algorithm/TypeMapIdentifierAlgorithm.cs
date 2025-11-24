@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Attributes;
 using Mappa.Generator.Algorithm.StrategyDetectors;
 using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Helpers;
@@ -109,14 +110,22 @@ internal class TypeMapIdentifierAlgorithm
                 // Polymorphism detector can only run at the root or if following a
                 // nullable detector.
                 case PolymorphismMapStrategyDetector:
-                    if (!CanExecutePolymorphism(this.Context.AlgorithmSettings.Detectors))
+                    if (!CanExecutePolymorphismMapStrategyDetector(this.Context.AlgorithmSettings.Detectors, this.Context.GetRootMapMethod()))
                     {
                         continue;
                     }
 
                     break;
 
-                // TODO [#49] Disable identity detector when root or second entry (and polymorphism attribute is present).
+                // Do not run the identity mapper if we could instead run the mappa polymorphism strategy
+                // where there is at least one TypeMapping attribute.
+                case IdentityMapStrategyDetector:
+                    if (CanExecutePolymorphismMapStrategyDetector(this.Context.AlgorithmSettings.Detectors, this.Context.GetRootMapMethod()))
+                    {
+                        continue;
+                    }
+
+                    break;
             }
 
             using (this.Context.AlgorithmSettings.ApplyAlgorithmContextDefaults())
@@ -139,8 +148,8 @@ internal class TypeMapIdentifierAlgorithm
         return new NoMapStrategy(this.Context.TargetType, this.Context.SourceType);
 
         // Identify if the polymorphism detector can actually be executed.
-        static bool CanExecutePolymorphism(StackSetting<Type> detectorsStack)
-            => detectorsStack.Count switch
+        static bool CanExecutePolymorphismMapStrategyDetector(StackSetting<Type> detectorsStack, MapMethod mapMethod)
+            => mapMethod.HasAnyAttribute<MappaTypeMappingAttribute>() && detectorsStack.Count switch
             {
                 // If only one item is present on the stack then
                 // there is actually nothing on the stack beside

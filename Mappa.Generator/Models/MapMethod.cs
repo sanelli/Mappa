@@ -187,7 +187,19 @@ internal sealed class MapMethod
     internal TAttribute[] GetAttributes<TAttribute>()
         where TAttribute : Attribute
     {
-        return this.attributes.OfType<TAttribute>().ToArray();
+        return [.. this.attributes.OfType<TAttribute>()];
+    }
+
+    /// <summary>
+    /// Check if any parameter of type <typeparamref name="TAttribute"/> exist
+    /// on the method.
+    /// </summary>
+    /// <typeparam name="TAttribute">The type of the attribute.</typeparam>
+    /// <returns><c>true</c> if any attribute of type <typeparamref name="TAttribute"/> exist, <c>false</c> otherwise.</returns>
+    internal bool HasAnyAttribute<TAttribute>()
+        where TAttribute : Attribute
+    {
+        return this.attributes.Any(attribute => attribute is TAttribute);
     }
 
     /// <summary>
