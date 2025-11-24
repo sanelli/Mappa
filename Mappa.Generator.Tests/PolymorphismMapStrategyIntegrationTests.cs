@@ -14,6 +14,7 @@ namespace Mappa.Generator.Tests;
 /// </summary>
 // TODO [#49] Test identity detector is bypassed when polymorphism can instead be applied.
 // TODO [#49] Test identity detector is bypassed when polymorphism can instead be applied + nullability.
+// TODO [#49] Test with identity detector picked when nested.
 // TODO [#49] Test with nested classes.
 // TODO [#49] Test with explicit throw behaviour without class.
 // TODO [#49] Test with explicit throw behaviour with exception class.
