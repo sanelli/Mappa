@@ -57,3 +57,24 @@ public sealed partial class PolymorphismMapperNullable
     [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetSecondClass), typeof(Models.Polymorphism.One.SourceSecondClass))]
     public partial Models.Polymorphism.One.TargetBaseClass? Map(Models.Polymorphism.One.SourceBaseClass? source);
 }
+
+/// <summary>
+/// Mapper to showcase the usage of <see cref="MappaUsePropertyAttribute"/>.
+/// </summary>
+[Mappa]
+public sealed partial class PolymorphismMapperBetweenInterfaces
+{
+    /// <summary>
+    /// Map from <see cref="Models.Polymorphism.Two.ISourceBaseClass"/>
+    /// to <see cref="Models.Polymorphism.Two.ITargetBaseClass"/> by supporting
+    /// polymorphism.
+    /// This will use the <see cref="MappaTypeMappingDefaultAttribute"/> default
+    /// value (i.e. throw if the input is neither of the expected input values).
+    /// </summary>
+    /// <param name="source">The source model.</param>
+    /// <returns>The target model.</returns>
+    [MappaTypeMapping(typeof(Models.Polymorphism.Two.TargetFirstClass), typeof(Models.Polymorphism.Two.SourceFirstClass))]
+    [MappaTypeMapping(typeof(Models.Polymorphism.Two.TargetThirdClass), typeof(Models.Polymorphism.Two.SourceThirdClass))]
+    [MappaTypeMapping(typeof(Models.Polymorphism.Two.TargetSecondClass), typeof(Models.Polymorphism.Two.SourceSecondClass))]
+    public partial Models.Polymorphism.Two.ITargetBaseClass Map(Models.Polymorphism.Two.ISourceBaseClass source);
+}
