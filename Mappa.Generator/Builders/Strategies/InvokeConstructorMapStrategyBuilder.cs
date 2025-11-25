@@ -65,7 +65,7 @@ internal sealed class InvokeConstructorMapStrategyBuilder
             builder.AppendLine(initializerCodeLine);
             if (hasPropertyInitializers)
             {
-                using (builder.CurlyBracesBlock(trailingSemicolon: true, indent: false))
+                using (builder.CurlyBracesBlock(trailingSemicolon: true))
                 {
                     foreach (var propertyInitializersMapping in propertyInitializersMappings)
                     {

@@ -12,7 +12,6 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Integration tests for <see cref="PolymorphismMapStrategy"/>.
 /// </summary>
-// TODO [#49] Test identity detector is bypassed when polymorphism can instead be applied.
 // TODO [#49] Test identity detector is bypassed when polymorphism can instead be applied + nullability.
 // TODO [#49] Test with identity detector picked when nested.
 // TODO [#49] Test with nested classes.
@@ -754,6 +753,71 @@ public sealed class PolymorphismMapStrategyIntegrationTests
                                                     paramAssertions.BeIdentifierNameSyntax("input"))));
                             }))
                         .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement(expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_1")));
+                });
+    }
+
+    /// <summary>
+    /// Test mapping works between classes using multiple
+    /// <see cref="MappaTypeMappingAttribute"/> and no
+    /// <see cref="MappaTypeMappingDefaultAttribute"/>
+    /// when input and output type are the same. This will
+    /// test that the identity strategy is not picked up.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapBetweenClassesUsingPolymorphismAndDefaultDefaultBehaviorInsteadOfIdentityMapping()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using System;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class SourceBaseClass 
+                                  {
+                                     public byte BaseProperty {get; set;}
+                                  }
+
+                                  public class SourceFirstDerivedClass : SourceBaseClass
+                                  {
+                                     public string DerivedProperty {get; set;}
+                                  }
+
+                                  public class SourceSecondDerivedClass : SourceBaseClass
+                                  {
+                                     public int DerivedProperty {get; set;}
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaTypeMapping(typeof(SourceSecondDerivedClass), typeof(SourceFirstDerivedClass))]
+                                      [MappaTypeMapping(typeof(SourceFirstDerivedClass), typeof(SourceSecondDerivedClass))]
+                                      public partial SourceBaseClass Map(SourceBaseClass input);
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults =
+            await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.SourceBaseClass",
+                NullableAnnotation.NotAnnotated,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.SourceBaseClass",
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    // TODO [#49] Add assertions.
                 });
     }
 }
