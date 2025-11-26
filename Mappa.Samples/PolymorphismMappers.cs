@@ -6,8 +6,6 @@
 
 using Mappa.Attributes;
 
-// TODO [#49] Source -> Source WITH TypeMapping attribute -> identity is bypassed at root.
-// TODO [#49] Source -> Source WITHOUT TypeMapping attribute -> identity works (maybe overkill as this test already exists).
 // TODO [#49] Add more mappers in order to cover the interface -> interface scenarios.
 // TODO [#49] Add more mappers in order to cover the interface -> class scenarios.
 // TODO [#49] Add more mappers in order to cover the class -> interface scenarios.
@@ -19,6 +17,7 @@ namespace Mappa.Samples;
 /// Mapper to showcase the usage of <see cref="MappaUsePropertyAttribute"/>.
 /// </summary>
 [Mappa]
+[MappaSettings(CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
 public sealed partial class PolymorphismMapper
 {
     /// <summary>
@@ -41,11 +40,12 @@ public sealed partial class PolymorphismMapper
 /// with nullability.
 /// </summary>
 [Mappa]
+[MappaSettings(CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
 public sealed partial class PolymorphismMapperNullable
 {
     /// <summary>
-    /// Map from <see cref="Models.Polymorphism.One.SourceBaseClass"/>
-    /// to <see cref="Models.Polymorphism.One.TargetBaseClass"/> by supporting
+    /// Map from nullable <see cref="Models.Polymorphism.One.SourceBaseClass"/>
+    /// to nullable <see cref="Models.Polymorphism.One.TargetBaseClass"/> by supporting
     /// polymorphism.
     /// This will use the <see cref="MappaTypeMappingDefaultAttribute"/> default
     /// value (i.e. throw if the input is neither of the expected input values).
@@ -62,6 +62,7 @@ public sealed partial class PolymorphismMapperNullable
 /// Mapper to showcase the usage of <see cref="MappaUsePropertyAttribute"/>.
 /// </summary>
 [Mappa]
+[MappaSettings(CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
 public sealed partial class PolymorphismMapperBetweenInterfaces
 {
     /// <summary>
@@ -77,4 +78,48 @@ public sealed partial class PolymorphismMapperBetweenInterfaces
     [MappaTypeMapping(typeof(Models.Polymorphism.Two.TargetThirdClass), typeof(Models.Polymorphism.Two.SourceThirdClass))]
     [MappaTypeMapping(typeof(Models.Polymorphism.Two.TargetSecondClass), typeof(Models.Polymorphism.Two.SourceSecondClass))]
     public partial Models.Polymorphism.Two.ITargetBaseClass Map(Models.Polymorphism.Two.ISourceBaseClass source);
+}
+
+/// <summary>
+/// Mapper to showcase the usage of <see cref="MappaUsePropertyAttribute"/>
+/// overriding the identity mapping.
+/// </summary>
+[Mappa]
+[MappaSettings(CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
+public sealed partial class PolymorphismMapperOverridingIdentityMapper
+{
+    /// <summary>
+    /// Map from <see cref="Models.Polymorphism.Three.SourceBaseClass"/>
+    /// to <see cref="Models.Polymorphism.Three.SourceBaseClass"/> by supporting
+    /// polymorphism.
+    /// This will use the <see cref="MappaTypeMappingDefaultAttribute"/> default
+    /// value (i.e. throw if the input is neither of the expected input values).
+    /// </summary>
+    /// <param name="source">The source model.</param>
+    /// <returns>The target model.</returns>
+    [MappaTypeMapping(typeof(Models.Polymorphism.Three.SourceSecondClass), typeof(Models.Polymorphism.Three.SourceFirstClass))]
+    [MappaTypeMapping(typeof(Models.Polymorphism.Three.SourceFirstClass), typeof(Models.Polymorphism.Three.SourceSecondClass))]
+    public partial Models.Polymorphism.Three.SourceBaseClass Map(Models.Polymorphism.Three.SourceBaseClass source);
+}
+
+/// <summary>
+/// Mapper to showcase the usage of <see cref="MappaUsePropertyAttribute"/>
+/// overriding the identity mapping but using nullability.
+/// </summary>
+[Mappa]
+[MappaSettings(CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
+public sealed partial class PolymorphismMapperOverridingIdentityMapperWithNullable
+{
+    /// <summary>
+    /// Map from nullable <see cref="Models.Polymorphism.Three.SourceBaseClass"/>
+    /// to nullable <see cref="Models.Polymorphism.Three.SourceBaseClass"/> by supporting
+    /// polymorphism.
+    /// This will use the <see cref="MappaTypeMappingDefaultAttribute"/> default
+    /// value (i.e. throw if the input is neither of the expected input values).
+    /// </summary>
+    /// <param name="source">The source model.</param>
+    /// <returns>The target model.</returns>
+    [MappaTypeMapping(typeof(Models.Polymorphism.Three.SourceSecondClass), typeof(Models.Polymorphism.Three.SourceFirstClass))]
+    [MappaTypeMapping(typeof(Models.Polymorphism.Three.SourceFirstClass), typeof(Models.Polymorphism.Three.SourceSecondClass))]
+    public partial Models.Polymorphism.Three.SourceBaseClass? Map(Models.Polymorphism.Three.SourceBaseClass? source);
 }

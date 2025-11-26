@@ -2,6 +2,8 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using System.Globalization;
+
 using FluentAssertions;
 
 using Xunit;
@@ -17,6 +19,8 @@ public sealed class PolymorphismMappersUnitTests
     private static readonly PolymorphismMapper PolymorphismMapper = new();
     private static readonly PolymorphismMapperNullable PolymorphismMapperNullable = new();
     private static readonly PolymorphismMapperBetweenInterfaces PolymorphismMapperBetweenInterfaces = new();
+    private static readonly PolymorphismMapperOverridingIdentityMapper PolymorphismMapperOverridingIdentityMapper = new();
+    private static readonly PolymorphismMapperOverridingIdentityMapperWithNullable PolymorphismMapperOverridingIdentityMapperWithNullable = new();
 
     /// <summary>
     /// Tests mapping via <see cref="PolymorphismMapper.Map"/>
@@ -41,10 +45,7 @@ public sealed class PolymorphismMappersUnitTests
         target.Should().BeOfType<Models.Polymorphism.One.TargetFirstClass>();
         var typedTarget = (Models.Polymorphism.One.TargetFirstClass)target;
         typedTarget.NumericProperty.Should().Be(source.NumericProperty);
-#pragma warning disable CA1305
-        // ReSharper disable once SpecifyACultureInStringConversionExplicitly
-        typedTarget.DateTimeProperty.Should().Be(source.DateTimeProperty.ToString());
-#pragma warning restore CA1305
+        typedTarget.DateTimeProperty.Should().Be(source.DateTimeProperty.ToString(CultureInfo.InvariantCulture));
     }
 
     /// <summary>
@@ -146,10 +147,7 @@ public sealed class PolymorphismMappersUnitTests
         target.Should().BeOfType<Models.Polymorphism.One.TargetFirstClass>();
         var typedTarget = (Models.Polymorphism.One.TargetFirstClass)target;
         typedTarget.NumericProperty.Should().Be(source.NumericProperty);
-#pragma warning disable CA1305
-        // ReSharper disable once SpecifyACultureInStringConversionExplicitly
-        typedTarget.DateTimeProperty.Should().Be(source.DateTimeProperty.ToString());
-#pragma warning restore CA1305
+        typedTarget.DateTimeProperty.Should().Be(source.DateTimeProperty.ToString(CultureInfo.InvariantCulture));
     }
 
     /// <summary>
@@ -269,10 +267,7 @@ public sealed class PolymorphismMappersUnitTests
         target.Should().BeOfType<Models.Polymorphism.Two.TargetFirstClass>();
         var typedTarget = (Models.Polymorphism.Two.TargetFirstClass)target;
         typedTarget.NumericProperty.Should().Be(source.NumericProperty);
-#pragma warning disable CA1305
-        // ReSharper disable once SpecifyACultureInStringConversionExplicitly
-        typedTarget.DateTimeProperty.Should().Be(source.DateTimeProperty.ToString());
-#pragma warning restore CA1305
+        typedTarget.DateTimeProperty.Should().Be(source.DateTimeProperty.ToString(CultureInfo.InvariantCulture));
     }
 
     /// <summary>
@@ -350,5 +345,173 @@ public sealed class PolymorphismMappersUnitTests
 
         // Assert.
         action.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperOverridingIdentityMapper.Map"/>
+    /// from <see cref="Models.Polymorphism.Three.SourceFirstClass"/>
+    /// to <see cref="Models.Polymorphism.Three.SourceSecondClass"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperOverridingIdentityMapperAndMapFromFirstToSecond()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.Three.SourceFirstClass
+        {
+            BaseProperty = 17,
+            DerivedProperty = new DateTime(2000, 1, 2, 3, 4, 5, DateTimeKind.Utc),
+        };
+
+        // Act.
+        var target = PolymorphismMapperOverridingIdentityMapper.Map(source);
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.Three.SourceSecondClass>();
+        var typedTarget = (Models.Polymorphism.Three.SourceSecondClass)target;
+        typedTarget.BaseProperty.Should().Be(source.BaseProperty);
+        typedTarget.DerivedProperty.Should().Be(source.DerivedProperty.ToString(CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperOverridingIdentityMapper.Map"/>
+    /// from <see cref="Models.Polymorphism.Three.SourceSecondClass"/>
+    /// to <see cref="Models.Polymorphism.Three.SourceFirstClass"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperOverridingIdentityMapperAndMapFromSecondToFirst()
+    {
+        // Arrange.
+        var datetime = new DateTime(2000, 1, 2, 3, 4, 5, DateTimeKind.Utc);
+        var source = new Models.Polymorphism.Three.SourceSecondClass
+        {
+            BaseProperty = 17,
+            DerivedProperty = datetime.ToString(CultureInfo.InvariantCulture),
+        };
+
+        // Act.
+        var target = PolymorphismMapperOverridingIdentityMapper.Map(source);
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.Three.SourceFirstClass>();
+        var typedTarget = (Models.Polymorphism.Three.SourceFirstClass)target;
+        typedTarget.BaseProperty.Should().Be(source.BaseProperty);
+        typedTarget.DerivedProperty.Should().Be(datetime);
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperOverridingIdentityMapper.Map"/>
+    /// from <see cref="Models.Polymorphism.Three.SourceBaseClass"/>
+    /// and the method will throw.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperOverridingIdentityMapperAndMapFromBaseSoItWillThrow()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.Three.SourceBaseClass
+        {
+            BaseProperty = 17,
+        };
+
+        // Act.
+        var action = () => PolymorphismMapperOverridingIdentityMapper.Map(source);
+
+        // Assert.
+        action.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperOverridingIdentityMapperWithNullable.Map"/>
+    /// from <see cref="Models.Polymorphism.Three.SourceFirstClass"/>
+    /// to <see cref="Models.Polymorphism.Three.SourceSecondClass"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void PolymorphismMapperOverridingIdentityMapperWithNullableAndMapFromFirstToSecond()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.Three.SourceFirstClass
+        {
+            BaseProperty = 17,
+            DerivedProperty = new DateTime(2000, 1, 2, 3, 4, 5, DateTimeKind.Utc),
+        };
+
+        // Act.
+        var target = PolymorphismMapperOverridingIdentityMapperWithNullable.Map(source);
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.Three.SourceSecondClass>();
+        var typedTarget = (Models.Polymorphism.Three.SourceSecondClass)target;
+        typedTarget.BaseProperty.Should().Be(source.BaseProperty);
+        typedTarget.DerivedProperty.Should().Be(source.DerivedProperty.ToString(CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperOverridingIdentityMapperWithNullable.Map"/>
+    /// from <see cref="Models.Polymorphism.Three.SourceSecondClass"/>
+    /// to <see cref="Models.Polymorphism.Three.SourceFirstClass"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void PolymorphismMapperOverridingIdentityMapperWithNullableAndMapFromSecondToFirst()
+    {
+        // Arrange.
+        var datetime = new DateTime(2000, 1, 2, 3, 4, 5, DateTimeKind.Utc);
+        var source = new Models.Polymorphism.Three.SourceSecondClass
+        {
+            BaseProperty = 17,
+            DerivedProperty = datetime.ToString(CultureInfo.InvariantCulture),
+        };
+
+        // Act.
+        var target = PolymorphismMapperOverridingIdentityMapperWithNullable.Map(source);
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.Three.SourceFirstClass>();
+        var typedTarget = (Models.Polymorphism.Three.SourceFirstClass)target;
+        typedTarget.BaseProperty.Should().Be(source.BaseProperty);
+        typedTarget.DerivedProperty.Should().Be(datetime);
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperOverridingIdentityMapperWithNullable.Map"/>
+    /// from <see cref="Models.Polymorphism.Three.SourceBaseClass"/>
+    /// and the method will throw.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void PolymorphismMapperOverridingIdentityMapperWithNullableAndMapFromBaseSoItWillThrow()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.Three.SourceBaseClass
+        {
+            BaseProperty = 17,
+        };
+
+        // Act.
+        var action = () => PolymorphismMapperOverridingIdentityMapperWithNullable.Map(source);
+
+        // Assert.
+        action.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperOverridingIdentityMapperWithNullable.Map"/>
+    /// from <c>null</c> and the method will return <c>null</c>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void PolymorphismMapperOverridingIdentityMapperWithNullableAndMapFromNullSoItWillReturnNull()
+    {
+        // Arrange.
+        Models.Polymorphism.Three.SourceBaseClass? source = null;
+
+        // Act.
+        var target = PolymorphismMapperOverridingIdentityMapperWithNullable.Map(source);
+
+        // Assert.
+        target.Should().BeNull();
     }
 }
