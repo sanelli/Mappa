@@ -6,12 +6,6 @@
 
 using Mappa.Attributes;
 
-// TODO [#49] Add more mappers in order to cover the interface -> class scenarios.
-// TODO [#49] Add more mappers in order to cover the class -> interface scenarios.
-// TODO [#49] Test with explicit throw behaviour without class.
-// TODO [#49] Test with explicit throw behaviour with exception class with empty constructor only.
-// TODO [#49] Test with explicit throw behaviour with exception class with string constructor only.
-// TODO [#49] Test with explicit throw behaviour with exception class both empty and string constructor.
 // TODO [#49] Add more mappers to cover different defaults.
 namespace Mappa.Samples;
 
@@ -124,4 +118,54 @@ public sealed partial class PolymorphismMapperOverridingIdentityMapperWithNullab
     [MappaTypeMapping(typeof(Models.Polymorphism.Three.SourceSecondClass), typeof(Models.Polymorphism.Three.SourceFirstClass))]
     [MappaTypeMapping(typeof(Models.Polymorphism.Three.SourceFirstClass), typeof(Models.Polymorphism.Three.SourceSecondClass))]
     public partial Models.Polymorphism.Three.SourceBaseClass? Map(Models.Polymorphism.Three.SourceBaseClass? source);
+}
+
+/// <summary>
+/// Mapper to showcase the usage of <see cref="MappaUsePropertyAttribute"/>
+/// with <see cref="MappaTypeMappingDefaultBehavior.Throw"/>
+/// for <see cref="MappaTypeMappingDefaultAttribute"/>.
+/// </summary>
+[Mappa]
+[MappaSettings(CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
+public sealed partial class PolymorphismMapperWithThrowDefaultBehaviour
+{
+    /// <summary>
+    /// Map from <see cref="Models.Polymorphism.One.SourceBaseClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetBaseClass"/> by supporting
+    /// polymorphism.
+    /// This will use the <see cref="MappaTypeMappingDefaultBehavior.Throw"/>
+    /// for <see cref="MappaTypeMappingDefaultAttribute"/>.
+    /// </summary>
+    /// <param name="source">The source model.</param>
+    /// <returns>The target model.</returns>
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetFirstClass), typeof(Models.Polymorphism.One.SourceFirstClass))]
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetThirdClass), typeof(Models.Polymorphism.One.SourceThirdClass))]
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetSecondClass), typeof(Models.Polymorphism.One.SourceSecondClass))]
+    [MappaTypeMappingDefault(MappaTypeMappingDefaultBehavior.Throw)]
+    public partial Models.Polymorphism.One.TargetBaseClass Map(Models.Polymorphism.One.SourceBaseClass source);
+}
+
+/// <summary>
+/// Mapper to showcase the usage of <see cref="MappaUsePropertyAttribute"/>
+/// with <see cref="MappaTypeMappingDefaultBehavior.Throw"/> and custom exception
+/// for <see cref="MappaTypeMappingDefaultAttribute"/>.
+/// </summary>
+[Mappa]
+[MappaSettings(CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
+public sealed partial class PolymorphismMapperWithThrowDefaultAndCustomExceptionBehaviour
+{
+    /// <summary>
+    /// Map from <see cref="Models.Polymorphism.One.SourceBaseClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetBaseClass"/> by supporting
+    /// polymorphism.
+    /// This will use the <see cref="MappaTypeMappingDefaultBehavior.Throw"/>
+    /// for <see cref="MappaTypeMappingDefaultAttribute"/>.
+    /// </summary>
+    /// <param name="source">The source model.</param>
+    /// <returns>The target model.</returns>
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetFirstClass), typeof(Models.Polymorphism.One.SourceFirstClass))]
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetThirdClass), typeof(Models.Polymorphism.One.SourceThirdClass))]
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetSecondClass), typeof(Models.Polymorphism.One.SourceSecondClass))]
+    [MappaTypeMappingDefault(MappaTypeMappingDefaultBehavior.Throw, typeof(Models.Polymorphism.PolymorphismCustomException))]
+    public partial Models.Polymorphism.One.TargetBaseClass Map(Models.Polymorphism.One.SourceBaseClass source);
 }

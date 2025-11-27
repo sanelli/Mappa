@@ -1,5 +1,5 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
-        <MappaVersion>1.3.0-alpha.11</MappaVersion>
+        <MappaVersion>1.3.0-alpha.12</MappaVersion>
     </PropertyGroup>
 </Project>

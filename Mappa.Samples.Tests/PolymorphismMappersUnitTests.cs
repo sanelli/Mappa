@@ -21,6 +21,8 @@ public sealed class PolymorphismMappersUnitTests
     private static readonly PolymorphismMapperBetweenInterfaces PolymorphismMapperBetweenInterfaces = new();
     private static readonly PolymorphismMapperOverridingIdentityMapper PolymorphismMapperOverridingIdentityMapper = new();
     private static readonly PolymorphismMapperOverridingIdentityMapperWithNullable PolymorphismMapperOverridingIdentityMapperWithNullable = new();
+    private static readonly PolymorphismMapperWithThrowDefaultBehaviour PolymorphismMapperWithThrowDefaultBehaviour = new();
+    private static readonly PolymorphismMapperWithThrowDefaultAndCustomExceptionBehaviour PolymorphismMapperWithThrowDefaultAndCustomExceptionBehaviour = new();
 
     /// <summary>
     /// Tests mapping via <see cref="PolymorphismMapper.Map"/>
@@ -513,5 +515,209 @@ public sealed class PolymorphismMappersUnitTests
 
         // Assert.
         target.Should().BeNull();
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithThrowDefaultBehaviour.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceFirstClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetFirstClass"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithThrowDefaultBehaviourAndMapFromFirstToFirst()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceFirstClass
+        {
+            NumericProperty = 17,
+            DateTimeProperty = new DateTime(2000, 1, 2, 3, 4, 5, DateTimeKind.Utc),
+        };
+
+        // Act.
+        var target = PolymorphismMapperWithThrowDefaultBehaviour.Map(source);
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.One.TargetFirstClass>();
+        var typedTarget = (Models.Polymorphism.One.TargetFirstClass)target;
+        typedTarget.NumericProperty.Should().Be(source.NumericProperty);
+        typedTarget.DateTimeProperty.Should().Be(source.DateTimeProperty.ToString(CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithThrowDefaultBehaviour.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceSecondClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetSecondClass"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithThrowDefaultBehaviourAndMapFromSecondToSecond()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceSecondClass
+        {
+            NumericProperty = 17,
+            GuidProperty = Guid.NewGuid(),
+        };
+
+        // Act.
+        var target = PolymorphismMapperWithThrowDefaultBehaviour.Map(source);
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.One.TargetSecondClass>();
+        var typedTarget = (Models.Polymorphism.One.TargetSecondClass)target;
+        typedTarget.NumericProperty.Should().Be(source.NumericProperty);
+        typedTarget.GuidProperty.Should().Be(source.GuidProperty.ToString());
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithThrowDefaultBehaviour.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceThirdClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetThirdClass"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithThrowDefaultBehaviourAndMapFromThirdToThird()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceThirdClass
+        {
+            NumericProperty = 17,
+            GuidProperty = Guid.NewGuid(),
+            Numbers = ["1", "2", "3", "4", "5", "6", "7", "8", "9"],
+        };
+
+        // Act.
+        var target = PolymorphismMapperWithThrowDefaultBehaviour.Map(source);
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.One.TargetThirdClass>();
+        var typedTarget = (Models.Polymorphism.One.TargetThirdClass)target;
+        typedTarget.NumericProperty.Should().Be(source.NumericProperty);
+        typedTarget.GuidProperty.Should().Be(source.GuidProperty.ToString());
+        typedTarget.Numbers.Should().BeEquivalentTo(source.Numbers.Select(long.Parse));
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithThrowDefaultBehaviour.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceBaseClass"/>
+    /// and the method will throw.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithThrowDefaultBehaviourAndMapFromBaseSoItWillThrow()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceBaseClass()
+        {
+            NumericProperty = 17,
+        };
+
+        // Act.
+        var action = () => PolymorphismMapperWithThrowDefaultBehaviour.Map(source);
+
+        // Assert.
+        action.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithThrowDefaultAndCustomExceptionBehaviour.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceFirstClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetFirstClass"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithThrowDefaultAndCustomExceptionBehaviourAndMapFromFirstToFirst()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceFirstClass
+        {
+            NumericProperty = 17,
+            DateTimeProperty = new DateTime(2000, 1, 2, 3, 4, 5, DateTimeKind.Utc),
+        };
+
+        // Act.
+        var target = PolymorphismMapperWithThrowDefaultAndCustomExceptionBehaviour.Map(source);
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.One.TargetFirstClass>();
+        var typedTarget = (Models.Polymorphism.One.TargetFirstClass)target;
+        typedTarget.NumericProperty.Should().Be(source.NumericProperty);
+        typedTarget.DateTimeProperty.Should().Be(source.DateTimeProperty.ToString(CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithThrowDefaultAndCustomExceptionBehaviour.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceSecondClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetSecondClass"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithThrowDefaultAndCustomExceptionBehaviourAndMapFromSecondToSecond()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceSecondClass
+        {
+            NumericProperty = 17,
+            GuidProperty = Guid.NewGuid(),
+        };
+
+        // Act.
+        var target = PolymorphismMapperWithThrowDefaultAndCustomExceptionBehaviour.Map(source);
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.One.TargetSecondClass>();
+        var typedTarget = (Models.Polymorphism.One.TargetSecondClass)target;
+        typedTarget.NumericProperty.Should().Be(source.NumericProperty);
+        typedTarget.GuidProperty.Should().Be(source.GuidProperty.ToString());
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithThrowDefaultAndCustomExceptionBehaviour.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceThirdClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetThirdClass"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithThrowDefaultAndCustomExceptionBehaviourAndMapFromThirdToThird()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceThirdClass
+        {
+            NumericProperty = 17,
+            GuidProperty = Guid.NewGuid(),
+            Numbers = ["1", "2", "3", "4", "5", "6", "7", "8", "9"],
+        };
+
+        // Act.
+        var target = PolymorphismMapperWithThrowDefaultAndCustomExceptionBehaviour.Map(source);
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.One.TargetThirdClass>();
+        var typedTarget = (Models.Polymorphism.One.TargetThirdClass)target;
+        typedTarget.NumericProperty.Should().Be(source.NumericProperty);
+        typedTarget.GuidProperty.Should().Be(source.GuidProperty.ToString());
+        typedTarget.Numbers.Should().BeEquivalentTo(source.Numbers.Select(long.Parse));
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithThrowDefaultAndCustomExceptionBehaviour.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceBaseClass"/>
+    /// and the method will throw.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithThrowDefaultAndCustomExceptionBehaviourAndMapFromBaseSoItWillThrow()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceBaseClass()
+        {
+            NumericProperty = 17,
+        };
+
+        // Act.
+        var action = () => PolymorphismMapperWithThrowDefaultAndCustomExceptionBehaviour.Map(source);
+
+        // Assert.
+        action.Should().Throw<Models.Polymorphism.PolymorphismCustomException>();
     }
 }
