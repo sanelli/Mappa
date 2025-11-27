@@ -6,10 +6,8 @@
 
 using Mappa.Attributes;
 
-// TODO [#49] Add more mappers in order to cover the interface -> interface scenarios.
 // TODO [#49] Add more mappers in order to cover the interface -> class scenarios.
 // TODO [#49] Add more mappers in order to cover the class -> interface scenarios.
-// TODO [#49] Add more mappers in order to cover the nullable scenarios.
 // TODO [#49] Add more mappers to cover different defaults.
 namespace Mappa.Samples;
 
