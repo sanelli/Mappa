@@ -8,8 +8,10 @@ using Mappa.Attributes;
 
 // TODO [#49] Add more mappers in order to cover the interface -> class scenarios.
 // TODO [#49] Add more mappers in order to cover the class -> interface scenarios.
-// TODO [#49] Test with explicit default behaviour.
 // TODO [#49] Test with explicit throw behaviour without class.
+// TODO [#49] Test with explicit throw behaviour with exception class with empty constructor only.
+// TODO [#49] Test with explicit throw behaviour with exception class with string constructor only.
+// TODO [#49] Test with explicit throw behaviour with exception class both empty and string constructor.
 // TODO [#49] Add more mappers to cover different defaults.
 namespace Mappa.Samples;
 

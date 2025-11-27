@@ -218,7 +218,7 @@ internal sealed class SyntaxNodeAssertions
     }
 
     /// <summary>
-    /// Assert that that the syntax node is an assignment.
+    /// Assert that the syntax node is an assignment.
     /// </summary>
     /// <param name="leftExpressionAssertions">The left expression assertions.</param>
     /// <param name="rightExpressionAssertions">The right expression assertions.</param>
@@ -247,6 +247,20 @@ internal sealed class SyntaxNodeAssertions
     /// <typeparam name="TException">The type of the exception thrown.</typeparam>
     internal SyntaxNodeAssertions BeThrowStatementSyntax<TException>(
         params Action<ExpressionSyntaxAssertions>[] parameterAssertions)
+        where TException : Exception
+        => this.BeThrowStatementSyntax(
+            typeof(TException).FullName ?? throw new ArgumentException("Cannot obtain exception type full name"),
+            parameterAssertions);
+
+    /// <summary>
+    /// Assert that the syntax node is a throw statement.
+    /// </summary>
+    /// <param name="exceptionType">The type of the exception.</param>
+    /// <param name="parameterAssertions">Assertions on the parameters of the created exception.</param>
+    /// <returns>The assertions.</returns>
+    internal SyntaxNodeAssertions BeThrowStatementSyntax(
+        string exceptionType,
+        params Action<ExpressionSyntaxAssertions>[] parameterAssertions)
     {
         ArgumentNullException.ThrowIfNull(parameterAssertions);
 
@@ -255,7 +269,7 @@ internal sealed class SyntaxNodeAssertions
         throwStatementSyntax.Expression.Should().NotBeNull();
         throwStatementSyntax.Expression.Should().BeOfType<ObjectCreationExpressionSyntax>();
         var objectCreationExpressionSyntax = (ObjectCreationExpressionSyntax)throwStatementSyntax.Expression!;
-        objectCreationExpressionSyntax.Type.ToString().Should().NotMatch($"(global::)*{Regex.Escape(typeof(TException).FullName ?? throw new ArgumentException("Cannot obtain exception type full name"))}");
+        objectCreationExpressionSyntax.Type.ToString().Should().NotMatch($"(global::)*{Regex.Escape(exceptionType)}");
         objectCreationExpressionSyntax.ArgumentList.Should().NotBeNull();
         objectCreationExpressionSyntax.ArgumentList!.Arguments.Should().HaveCount(parameterAssertions.Length);
 

@@ -26,6 +26,7 @@ internal static class AttributeDataExtensions
     private static readonly string MappaStaticDependencyAttributeFullName = typeof(MappaStaticDependencyAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaStaticDependencyAttribute)}");
     private static readonly string MappaAssignFromConstantAttributeFullName = typeof(MappaAssignFromConstantAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaAssignFromConstantAttribute)}");
     private static readonly string MappaTypeMappingAttributeFullName = typeof(MappaTypeMappingAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaTypeMappingAttribute)}");
+    private static readonly string MappaTypeMappingDefaultAttributeFullName = typeof(MappaTypeMappingDefaultAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaTypeMappingDefaultAttribute)}");
 
     /// <summary>
     /// Gets the <see cref="MappaTypeMappingDefaultAttribute"/> applied to the method (if any).
@@ -35,7 +36,7 @@ internal static class AttributeDataExtensions
     /// <returns>The <see cref="MappaTypeMappingDefaultAttribute"/> (if any).</returns>
     internal static MappaTypeMappingDefaultAttribute? GetMappaTypeMappingDefaultAttribute(this ImmutableArray<AttributeData> attributes, Compilation compilation)
     {
-        var mappaTypeMappingAttributeSymbol = compilation.GetTypeByMetadataName(MappaTypeMappingAttributeFullName);
+        var mappaTypeMappingAttributeSymbol = compilation.GetTypeByMetadataName(MappaTypeMappingDefaultAttributeFullName);
         MappaTypeMappingDefaultAttribute? attribute = null;
 
         foreach (var constructorArguments in attributes
