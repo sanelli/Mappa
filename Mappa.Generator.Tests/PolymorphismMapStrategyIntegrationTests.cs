@@ -13,7 +13,8 @@ namespace Mappa.Generator.Tests;
 /// Integration tests for <see cref="PolymorphismMapStrategy"/>.
 /// </summary>
 // TODO [#49] Test with explicit throw behaviour without class.
-// TODO [#49] Test with explicit throw behaviour with exception class.
+// TODO [#49] Test with explicit throw behaviour with exception class without string constructor.
+// TODO [#49] Test with explicit throw behaviour with exception class with string constructor.
 // TODO [#49] Test with explicit map to behaviour without type.
 // TODO [#49] Test with explicit map to behaviour failing because target is interface.
 // TODO [#49] Test with explicit map to behaviour failing because target is virtual.
