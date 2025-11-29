@@ -6,6 +6,8 @@
 
 using Mappa.Attributes;
 
+// TODO [#49] Test with MapSourceType to behaviour without type.
+// TODO [#49] Test with MapSourceType to behaviour with specific type.
 // TODO [#49] Add more mappers to cover different defaults.
 namespace Mappa.Samples;
 
