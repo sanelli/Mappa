@@ -6,8 +6,6 @@
 
 using Mappa.Attributes;
 
-// TODO [#49] Test with MapSourceType to behaviour without type.
-// TODO [#49] Test with MapSourceType to behaviour with specific type.
 // TODO [#49] Add more mappers to cover different defaults.
 namespace Mappa.Samples;
 
@@ -169,5 +167,53 @@ public sealed partial class PolymorphismMapperWithThrowDefaultAndCustomException
     [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetThirdClass), typeof(Models.Polymorphism.One.SourceThirdClass))]
     [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetSecondClass), typeof(Models.Polymorphism.One.SourceSecondClass))]
     [MappaTypeMappingDefault(MappaTypeMappingDefaultBehavior.Throw, typeof(Models.Polymorphism.PolymorphismCustomException))]
+    public partial Models.Polymorphism.One.TargetBaseClass Map(Models.Polymorphism.One.SourceBaseClass source);
+}
+
+/// <summary>
+/// Mapper to showcase the usage of <see cref="MappaUsePropertyAttribute"/> with
+/// <see cref="MappaTypeMappingDefaultAttribute"/> and behavior
+/// <see cref="MappaTypeMappingDefaultBehavior.MapSourceType"/> without
+/// specific type.
+/// </summary>
+[Mappa]
+[MappaSettings(CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
+public sealed partial class PolymorphismMapperWithMapDefaultWithoutExplicitType
+{
+    /// <summary>
+    /// Map from <see cref="Models.Polymorphism.One.SourceBaseClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetBaseClass"/> by supporting
+    /// polymorphism.
+    /// </summary>
+    /// <param name="source">The source model.</param>
+    /// <returns>The target model.</returns>
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetFirstClass), typeof(Models.Polymorphism.One.SourceFirstClass))]
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetThirdClass), typeof(Models.Polymorphism.One.SourceThirdClass))]
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetSecondClass), typeof(Models.Polymorphism.One.SourceSecondClass))]
+    [MappaTypeMappingDefault(MappaTypeMappingDefaultBehavior.MapSourceType)]
+    public partial Models.Polymorphism.One.TargetBaseClass Map(Models.Polymorphism.One.SourceBaseClass source);
+}
+
+/// <summary>
+/// Mapper to showcase the usage of <see cref="MappaUsePropertyAttribute"/> with
+/// <see cref="MappaTypeMappingDefaultAttribute"/> and behavior
+/// <see cref="MappaTypeMappingDefaultBehavior.MapSourceType"/> with
+/// specific target type.
+/// </summary>
+[Mappa]
+[MappaSettings(CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
+public sealed partial class PolymorphismMapperWithMapDefaultWithExplicitType
+{
+    /// <summary>
+    /// Map from <see cref="Models.Polymorphism.One.SourceBaseClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetBaseClass"/> by supporting
+    /// polymorphism.
+    /// </summary>
+    /// <param name="source">The source model.</param>
+    /// <returns>The target model.</returns>
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetFirstClass), typeof(Models.Polymorphism.One.SourceFirstClass))]
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetThirdClass), typeof(Models.Polymorphism.One.SourceThirdClass))]
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetSecondClass), typeof(Models.Polymorphism.One.SourceSecondClass))]
+    [MappaTypeMappingDefault(MappaTypeMappingDefaultBehavior.MapSourceType, typeof(Models.Polymorphism.One.TargetUnmappedBaseClass))]
     public partial Models.Polymorphism.One.TargetBaseClass Map(Models.Polymorphism.One.SourceBaseClass source);
 }
