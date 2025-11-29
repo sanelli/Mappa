@@ -1,5 +1,5 @@
 # Errors and warnings
-The follow table describe the list of errors and warnings that can be produced by the Mappa source generator:
+The follow table describes the list of errors and warnings that can be produced by the Mappa source generator:
 
 | Code    | Type | Description                                                                                                                                                  | How to solve it ?                                                                                                                                                                                                       |
 |---------|------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|

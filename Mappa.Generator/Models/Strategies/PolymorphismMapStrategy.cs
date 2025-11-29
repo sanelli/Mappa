@@ -19,6 +19,11 @@ namespace Mappa.Generator.Models.Strategies;
 /// <param name="defaultBehaviorStrategy">Strategy to map <see cref="MappaTypeMappingDefaultBehavior.MapSourceType"/> behavior.</param>
 /// <param name="nullableEnabled"><c>true</c> if nullable is enabled, <c>false</c> otherwise.</param>
 /// <param name="mapMethodContextParameterName">The name of the map method context parameter (if present).</param>
+// TODO [#49] Update Documentation/mappa-attributes.md.
+// TODO [#49] Update Mappa/README.md.
+// TODO [#49] Update Documentation/mappa-generator-algorithm.md.
+// TODO [#49] Update Mappa.Generator/README.md.
+// TODO [#49] Update Documentation/tutorial.md.
 internal sealed class PolymorphismMapStrategy(
     ITypeSymbol targetType,
     ITypeSymbol sourceType,
