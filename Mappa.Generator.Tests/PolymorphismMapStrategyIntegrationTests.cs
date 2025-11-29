@@ -12,10 +12,10 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Integration tests for <see cref="PolymorphismMapStrategy"/>.
 /// </summary>
-// TODO [#49] Test with MapSourceType to behaviour failing because target is interface.
-// TODO [#49] Test with MapSourceType to behaviour failing because target is virtual.
 // TODO [#49] Test with explicit map to behaviour with null.
 // TODO [#49] Test with explicit map to behaviour with default.
+// TODO [#49] Test with MapSourceType to behaviour failing because target is interface.
+// TODO [#49] Test with MapSourceType to behaviour failing because target is virtual.
 // TODO [#49] Test with invoke method to behaviour with static method in mapper with single parameter.
 // TODO [#49] Test with invoke method to behaviour with non-static method in mapper.
 // TODO [#49] Test with invoke method to behaviour with static method in a different class mapper.

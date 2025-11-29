@@ -25,6 +25,8 @@ public sealed class PolymorphismMappersUnitTests
     private static readonly PolymorphismMapperWithThrowDefaultAndCustomExceptionBehaviour PolymorphismMapperWithThrowDefaultAndCustomExceptionBehaviour = new();
     private static readonly PolymorphismMapperWithMapDefaultWithoutExplicitType PolymorphismMapperWithMapDefaultWithoutExplicitType = new();
     private static readonly PolymorphismMapperWithMapDefaultWithExplicitType PolymorphismMapperWithMapDefaultWithExplicitType = new();
+    private static readonly PolymorphismMapperWithDefaultNull PolymorphismMapperWithDefaultNull = new();
+    private static readonly PolymorphismMapperWithDefaultDefault PolymorphismMapperWithDefaultDefault = new();
 
     /// <summary>
     /// Tests mapping via <see cref="PolymorphismMapper.Map"/>
@@ -928,5 +930,209 @@ public sealed class PolymorphismMappersUnitTests
         target.Should().BeOfType<Models.Polymorphism.One.TargetUnmappedBaseClass>();
         var typedTarget = (Models.Polymorphism.One.TargetUnmappedBaseClass)target;
         typedTarget.NumericProperty.Should().Be(source.NumericProperty);
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithDefaultNull.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceFirstClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetFirstClass"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithDefaultNullAndMapFromFirstToFirst()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceFirstClass
+        {
+            NumericProperty = 17,
+            DateTimeProperty = new DateTime(2000, 1, 2, 3, 4, 5, DateTimeKind.Utc),
+        };
+
+        // Act.
+        var target = PolymorphismMapperWithDefaultNull.Map(source);
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.One.TargetFirstClass>();
+        var typedTarget = (Models.Polymorphism.One.TargetFirstClass)target;
+        typedTarget.NumericProperty.Should().Be(source.NumericProperty);
+        typedTarget.DateTimeProperty.Should().Be(source.DateTimeProperty.ToString(CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithDefaultNull.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceSecondClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetSecondClass"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithDefaultNullAndMapFromSecondToSecond()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceSecondClass
+        {
+            NumericProperty = 17,
+            GuidProperty = Guid.NewGuid(),
+        };
+
+        // Act.
+        var target = PolymorphismMapperWithDefaultNull.Map(source);
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.One.TargetSecondClass>();
+        var typedTarget = (Models.Polymorphism.One.TargetSecondClass)target;
+        typedTarget.NumericProperty.Should().Be(source.NumericProperty);
+        typedTarget.GuidProperty.Should().Be(source.GuidProperty.ToString());
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithDefaultNull.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceThirdClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetThirdClass"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithDefaultNullAndMapFromThirdToThird()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceThirdClass
+        {
+            NumericProperty = 17,
+            GuidProperty = Guid.NewGuid(),
+            Numbers = ["1", "2", "3", "4", "5", "6", "7", "8", "9"],
+        };
+
+        // Act.
+        var target = PolymorphismMapperWithDefaultNull.Map(source);
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.One.TargetThirdClass>();
+        var typedTarget = (Models.Polymorphism.One.TargetThirdClass)target;
+        typedTarget.NumericProperty.Should().Be(source.NumericProperty);
+        typedTarget.GuidProperty.Should().Be(source.GuidProperty.ToString());
+        typedTarget.Numbers.Should().BeEquivalentTo(source.Numbers.Select(long.Parse));
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithDefaultNull.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceBaseClass"/>
+    /// and the method will return <c>null</c>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithDefaultNullAndMapFromBaseSoItWillThrow()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceBaseClass()
+        {
+            NumericProperty = 17,
+        };
+
+        // Act.
+        var target = PolymorphismMapperWithDefaultNull.Map(source);
+
+        // Assert.
+        target.Should().BeNull();
+    }
+
+     /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithDefaultDefault.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceFirstClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetFirstClass"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithDefaultDefaultAndMapFromFirstToFirst()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceFirstClass
+        {
+            NumericProperty = 17,
+            DateTimeProperty = new DateTime(2000, 1, 2, 3, 4, 5, DateTimeKind.Utc),
+        };
+
+        // Act.
+        var target = PolymorphismMapperWithDefaultDefault.Map(source);
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.One.TargetFirstClass>();
+        var typedTarget = (Models.Polymorphism.One.TargetFirstClass)target;
+        typedTarget.NumericProperty.Should().Be(source.NumericProperty);
+        typedTarget.DateTimeProperty.Should().Be(source.DateTimeProperty.ToString(CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithDefaultDefault.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceSecondClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetSecondClass"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithDefaultDefaultAndMapFromSecondToSecond()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceSecondClass
+        {
+            NumericProperty = 17,
+            GuidProperty = Guid.NewGuid(),
+        };
+
+        // Act.
+        var target = PolymorphismMapperWithDefaultDefault.Map(source);
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.One.TargetSecondClass>();
+        var typedTarget = (Models.Polymorphism.One.TargetSecondClass)target;
+        typedTarget.NumericProperty.Should().Be(source.NumericProperty);
+        typedTarget.GuidProperty.Should().Be(source.GuidProperty.ToString());
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithDefaultDefault.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceThirdClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetThirdClass"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithDefaultDefaultAndMapFromThirdToThird()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceThirdClass
+        {
+            NumericProperty = 17,
+            GuidProperty = Guid.NewGuid(),
+            Numbers = ["1", "2", "3", "4", "5", "6", "7", "8", "9"],
+        };
+
+        // Act.
+        var target = PolymorphismMapperWithDefaultDefault.Map(source);
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.One.TargetThirdClass>();
+        var typedTarget = (Models.Polymorphism.One.TargetThirdClass)target;
+        typedTarget.NumericProperty.Should().Be(source.NumericProperty);
+        typedTarget.GuidProperty.Should().Be(source.GuidProperty.ToString());
+        typedTarget.Numbers.Should().BeEquivalentTo(source.Numbers.Select(long.Parse));
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithDefaultDefault.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceBaseClass"/>
+    /// and the method will return <c>null</c>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithDefaultDefaultAndMapFromBaseSoItWillThrow()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceBaseClass()
+        {
+            NumericProperty = 17,
+        };
+
+        // Act.
+        var target = PolymorphismMapperWithDefaultDefault.Map(source);
+
+        // Assert.
+        target.Should().BeNull();
     }
 }

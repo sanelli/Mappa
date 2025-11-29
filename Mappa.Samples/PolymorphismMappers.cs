@@ -217,3 +217,50 @@ public sealed partial class PolymorphismMapperWithMapDefaultWithExplicitType
     [MappaTypeMappingDefault(MappaTypeMappingDefaultBehavior.MapSourceType, typeof(Models.Polymorphism.One.TargetUnmappedBaseClass))]
     public partial Models.Polymorphism.One.TargetBaseClass Map(Models.Polymorphism.One.SourceBaseClass source);
 }
+
+/// <summary>
+/// Mapper to showcase the usage of <see cref="MappaUsePropertyAttribute"/>
+/// with <see cref="MappaTypeMappingDefaultBehavior.Null"/> for <see cref="MappaTypeMappingDefaultAttribute"/>.
+/// </summary>
+[Mappa]
+[MappaSettings(CultureInfoSetting = CultureInfoSetting.InvariantCulture, PragmaWarning = PragmaWarningSetting.Disable)]
+public sealed partial class PolymorphismMapperWithDefaultNull
+{
+    /// <summary>
+    /// Map from <see cref="Models.Polymorphism.One.SourceBaseClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetBaseClass"/> by supporting
+    /// polymorphism.
+    /// </summary>
+    /// <param name="source">The source model.</param>
+    /// <returns>The target model.</returns>
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetFirstClass), typeof(Models.Polymorphism.One.SourceFirstClass))]
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetThirdClass), typeof(Models.Polymorphism.One.SourceThirdClass))]
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetSecondClass), typeof(Models.Polymorphism.One.SourceSecondClass))]
+    [MappaTypeMappingDefault(MappaTypeMappingDefaultBehavior.Null)]
+    [MappaSettings(PragmaWarning = PragmaWarningSetting.Disable)]
+    public partial Models.Polymorphism.One.TargetBaseClass Map(Models.Polymorphism.One.SourceBaseClass source);
+}
+
+/// <summary>
+/// Mapper to showcase the usage of <see cref="MappaUsePropertyAttribute"/>
+/// with <see cref="MappaTypeMappingDefaultBehavior.Default"/> for <see cref="MappaTypeMappingDefaultAttribute"/>.
+/// </summary>
+[Mappa]
+[MappaSettings(CultureInfoSetting = CultureInfoSetting.InvariantCulture, PragmaWarning = PragmaWarningSetting.Disable)]
+public sealed partial class PolymorphismMapperWithDefaultDefault
+{
+    /// <summary>
+    /// Map from <see cref="Models.Polymorphism.One.SourceBaseClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetBaseClass"/> by supporting
+    /// polymorphism.
+    /// This will use the <see cref="MappaTypeMappingDefaultAttribute"/> default
+    /// value (i.e. throw if the input is neither of the expected input values).
+    /// </summary>
+    /// <param name="source">The source model.</param>
+    /// <returns>The target model.</returns>
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetFirstClass), typeof(Models.Polymorphism.One.SourceFirstClass))]
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetThirdClass), typeof(Models.Polymorphism.One.SourceThirdClass))]
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetSecondClass), typeof(Models.Polymorphism.One.SourceSecondClass))]
+    [MappaTypeMappingDefault(MappaTypeMappingDefaultBehavior.Default)]
+    public partial Models.Polymorphism.One.TargetBaseClass Map(Models.Polymorphism.One.SourceBaseClass source);
+}
