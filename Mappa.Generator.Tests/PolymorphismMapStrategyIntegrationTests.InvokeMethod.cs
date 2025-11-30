@@ -14,7 +14,8 @@ namespace Mappa.Generator.Tests;
 /// </summary>
 // TODO [#49] Test with invoke method to behaviour with static method in mapper with no parameters in the mapper.
 // TODO [#49] Test diagnostic reported with invoke static method requiring context but context is not available.
-// TODO [#49] Test diagnostic reported with invoke method to behaviour with static method in mapper with incorrect input type.
+// TODO [#49] Test diagnostic reported with invoke method to behaviour with static method in mapper with incorrect source type.
+// TODO [#49] Test diagnostic reported with invoke method to behaviour with static method in mapper with incorrect target type.
 // TODO [#49] Test diagnostic reported with InvokeMapMethod + specific-type + NON-STATIC method.
 public sealed partial class PolymorphismMapStrategyIntegrationTests
 {
