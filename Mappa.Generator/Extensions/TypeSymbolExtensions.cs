@@ -1668,7 +1668,7 @@ internal static class TypeSymbolExtensions
     internal static IMethodSymbol[] LocateMethods(this ITypeSymbol typeSymbol, string methodName)
     {
         var methods = new List<IMethodSymbol>();
-        INamedTypeSymbol? currentType = typeSymbol.BaseType;
+        ITypeSymbol? currentType = typeSymbol;
         while (currentType is not null)
         {
             var currentTypeMethods = currentType

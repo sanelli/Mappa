@@ -17,6 +17,7 @@ namespace Mappa.Generator.Tests;
 // TODO [#49] Test with invoke method to behaviour with static method in a different class mapper.
 // TODO [#49] Test with invoke method to behaviour with static method in mapper with context parameter.
 // TODO [#49] Test with invoke method to behaviour with static method defined in mapper base class.
+// TODO [#49] Test failure with InvokeMe + specific-type + NON-STATIC method.
 // TODO [#49] Tests all corner case scenarios where the diagnostic is returned.
 // TODO [#49] Test with MapSourceType to behaviour failing because target is interface.
 // TODO [#49] Test with MapSourceType to behaviour failing because target is virtual.
@@ -3656,7 +3657,7 @@ public sealed class PolymorphismMapStrategyIntegrationTests
                                       [MappaTypeMapping(typeof(TargetThirdDerivedClass), typeof(SourceThirdDerivedClass))]
                                       [MappaTypeMapping(typeof(TargetSecondDerivedClass), typeof(SourceSecondDerivedClass))]
                                       [MappaTypeMapping(typeof(TargetFirstDerivedClass), typeof(SourceFirstDerivedClass))]
-                                      [MappaTypeMappingDefault(MappaTypeMappingDefaultBehavior.InvokeMethod, nameof(InvokeMe))]
+                                      [MappaTypeMappingDefault(nameof(InvokeMe))]
                                       public partial TargetBaseClass Map(SourceBaseClass input);
                                   }
                                   """;
@@ -3804,7 +3805,6 @@ public sealed class PolymorphismMapStrategyIntegrationTests
                             },
                             (labelAssertions, caseBodyAssertions) =>
                             {
-                                /* TODO [#49] This still default to throw. */
                                 labelAssertions.Should().HaveCount(1);
                                 labelAssertions[0].IsDefault();
 
@@ -3813,7 +3813,7 @@ public sealed class PolymorphismMapStrategyIntegrationTests
                                 caseBodyAssertions[0].AsBlock()
                                     .HasSyntaxNodesCount(2)
                                     .HasNextSyntaxNode(statementAssertions => statementAssertions.BeAssignmentExpressionStatement(
-                                        leftExpression => leftExpression.BeIdentifierNameSyntax("__Mappa_tmp_1"),
+                                        leftExpression => leftExpression.BeIdentifierNameSyntax("__mappa_tmp_1"),
                                         rightExpression => rightExpression.BeInvocationExpressionUsingIdentifierNameSyntax(
                                             "InvokeMe",
                                             parameterExpression => parameterExpression.BeIdentifierNameSyntax("input"))))

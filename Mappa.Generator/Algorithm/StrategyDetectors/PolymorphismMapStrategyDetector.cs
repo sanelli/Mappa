@@ -104,7 +104,6 @@ internal sealed class PolymorphismMapStrategyDetector(MappaMapAlgorithmContext c
             var targetType = attributeTargetType.WithNullableAnnotation(NullableAnnotation.NotAnnotated);
 
             // Identify mapping from attribute source type to attribute target type.
-            // TODO [#49] Apply a flag to prevent this strategy to run twice.
             var attributeContext = new DerivedMappaMapAlgorithmContext(this.context, targetType, sourceType);
             var attributeAlgorithm = new TypeMapIdentifierWithMapMethodAlgorithm(attributeContext, this.compilation, this.cancellationToken);
             var attributeStrategy = attributeAlgorithm.GetStrategy();

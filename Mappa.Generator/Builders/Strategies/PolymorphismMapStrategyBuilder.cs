@@ -143,7 +143,12 @@ internal sealed class PolymorphismMapStrategyBuilder(PolymorphismMapStrategy str
                     throw new MappaGeneratorException("Cannot identify the method to be invoked.");
                 }
 
-                var methodInvocationCode = BuildMethodInvocationCode(invokeMethodTypeSymbol, method, source, contextParameterName);
+                var methodInvocationCode = BuildMethodInvocationCode(
+                    context.GetMapMethod().MethodSymbol.ContainingType,
+                    invokeMethodTypeSymbol,
+                    method,
+                    source,
+                    contextParameterName);
                 builder.AppendLine($"{targetTemporary} = {methodInvocationCode};");
                 builder.AppendLine("break;");
                 break;
@@ -152,15 +157,20 @@ internal sealed class PolymorphismMapStrategyBuilder(PolymorphismMapStrategy str
         }
 
         static string BuildMethodInvocationCode(
+            ITypeSymbol mapMethodTypeSymbol,
             ITypeSymbol? typeSymbol,
             IMethodSymbol method,
             string source,
             string? contextParameterName)
         {
             var head = string.Empty;
-            if (typeSymbol is not null)
+            if (typeSymbol is not null && !SymbolEqualityComparer.Default.Equals(typeSymbol, mapMethodTypeSymbol))
             {
                 head = $"global::{typeSymbol.ToDisplayString()}.";
+            }
+            else if (!method.IsStatic)
+            {
+                head = "this.";
             }
 
             var parameters = source;
