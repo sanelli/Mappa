@@ -8,7 +8,6 @@ using Mappa.Attributes;
 
 // TODO [#49] Test with invoke method to behaviour with static method in mapper with single parameter.
 // TODO [#49] Test with invoke method to behaviour with static method in mapper with no parameters.
-// TODO [#49] Test with invoke method to behaviour with non-static method in mapper.
 // TODO [#49] Test with invoke method to behaviour with static method in a different class mapper.
 // TODO [#49] Test with invoke method to behaviour with static method in mapper with context parameter.
 // TODO [#49] Test with invoke method to behaviour with static method defined in mapper base class.
