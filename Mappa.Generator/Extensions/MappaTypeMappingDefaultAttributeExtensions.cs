@@ -151,7 +151,7 @@ internal static class MappaTypeMappingDefaultAttributeExtensions
                 }
 
                 var methods = invokeMethodTypeSymbol.LocateMethods(attribute.MethodName!);
-                var method = methods.FirstOrDefault(m => m.IsMethodValidToMapToTargetSymbol(
+                var method = methods.FirstOrDefault(m => m.IsMethodValidToMapToTargetSymbolForPolymorphism(
                     sourceType,
                     compilation,
                     attribute.Type is not null,

@@ -132,7 +132,7 @@ internal sealed class PolymorphismMapStrategyBuilder(PolymorphismMapStrategy str
                 }
 
                 var methods = invokeMethodTypeSymbol.LocateMethods(attribute.MethodName!);
-                var method = methods.FirstOrDefault(m => m.IsMethodValidToMapToTargetSymbol(
+                var method = methods.FirstOrDefault(m => m.IsMethodValidToMapToTargetSymbolForPolymorphism(
                     defaultBehaviorStrategy.SourceType,
                     context.Compilation,
                     attribute.Type is not null,
@@ -173,15 +173,28 @@ internal sealed class PolymorphismMapStrategyBuilder(PolymorphismMapStrategy str
                 head = "this.";
             }
 
-            var parameters = source;
-            if (method.Parameters.Length == 2)
+            string parameters;
+            switch (method.Parameters.Length)
             {
-                if (string.IsNullOrWhiteSpace(contextParameterName))
-                {
-                    throw new MappaGeneratorException("Default mapping method requires to parameters but context on original mapping is not provided.");
-                }
+                case 0:
+                    parameters = string.Empty;
+                    break;
 
-                parameters = $"{parameters}, {contextParameterName}";
+                case 1:
+                    parameters = source;
+                    break;
+
+                case 2:
+                    if (string.IsNullOrWhiteSpace(contextParameterName))
+                    {
+                        throw new MappaGeneratorException("Default mapping method requires to parameters but context on original mapping is not provided.");
+                    }
+
+                    parameters = $"{source}, {contextParameterName}";
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(method), $@"Unexpected number of parameters for method '{method.Name}'.");
             }
 
             return $"{head}{method.Name}({parameters})";

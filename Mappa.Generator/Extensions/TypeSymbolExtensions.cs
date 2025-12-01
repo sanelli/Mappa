@@ -1694,7 +1694,7 @@ internal static class TypeSymbolExtensions
     /// <param name="nullableEnabled"><c>true</c> when nullable is enabled, <c>false</c> otherwise.</param>
     /// <param name="acceptTwoParameters"><c>true</c> when mapping method can provide a context parameter, <c>false</c> otherwise.</param>
     /// <returns><c>true</c> when the <paramref name="methodSymbol"/> is a method with the expected constraints, <c>false</c> otherwise.</returns>
-    internal static bool IsMethodValidToMapToTargetSymbol(
+    internal static bool IsMethodValidToMapToTargetSymbolForPolymorphism(
         this IMethodSymbol methodSymbol,
         ITypeSymbol expectedSourceType,
         Compilation compilation,
@@ -1704,6 +1704,9 @@ internal static class TypeSymbolExtensions
     {
         switch (methodSymbol.Parameters.Length)
         {
+            case 0:
+                return !mustBeStatic || methodSymbol.IsStatic;
+
             case 1:
                 return methodSymbol.AreParametersRefModifiersValid()
                        && methodSymbol.Parameters[0].Type.IsEqualTo(expectedSourceType, nullableEnabled)
