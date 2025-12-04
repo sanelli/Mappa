@@ -27,6 +27,12 @@ public sealed class PolymorphismMappersUnitTests
     private static readonly PolymorphismMapperWithMapDefaultWithExplicitType PolymorphismMapperWithMapDefaultWithExplicitType = new();
     private static readonly PolymorphismMapperWithDefaultNull PolymorphismMapperWithDefaultNull = new();
     private static readonly PolymorphismMapperWithDefaultDefault PolymorphismMapperWithDefaultDefault = new();
+    private static readonly PolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapper PolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapper = new();
+    private static readonly PolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapperWithoutParameters PolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapperWithoutParameters = new();
+    private static readonly PolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapperWithContext PolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapperWithContext = new();
+    private static readonly PolymorphismMapperWithInvokeMethodAndStaticMethodInADifferentClass PolymorphismMapperWithInvokeMethodAndStaticMethodInADifferentClass = new();
+    private static readonly PolymorphismMapperWithInvokeMethodAndStaticMethodInTheBaseClass PolymorphismMapperWithInvokeMethodAndStaticMethodInTheBaseClass = new();
+    private static readonly PolymorphismMapperWithInvokeMethodAndNonStaticMethodInTheMapper PolymorphismMapperWithInvokeMethodAndNonStaticMethodInTheMapper = new();
 
     /// <summary>
     /// Tests mapping via <see cref="PolymorphismMapper.Map"/>
@@ -1134,5 +1140,626 @@ public sealed class PolymorphismMappersUnitTests
 
         // Assert.
         target.Should().BeNull();
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapper.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceFirstClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetFirstClass"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapperAndMapFromFirstToFirst()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceFirstClass
+        {
+            NumericProperty = 17,
+            DateTimeProperty = new DateTime(2000, 1, 2, 3, 4, 5, DateTimeKind.Utc),
+        };
+
+        // Act.
+        var target = PolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapper.Map(source);
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.One.TargetFirstClass>();
+        var typedTarget = (Models.Polymorphism.One.TargetFirstClass)target;
+        typedTarget.NumericProperty.Should().Be(source.NumericProperty);
+        typedTarget.DateTimeProperty.Should().Be(source.DateTimeProperty.ToString(CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapper.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceSecondClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetSecondClass"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapperAndMapFromSecondToSecond()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceSecondClass
+        {
+            NumericProperty = 17,
+            GuidProperty = Guid.NewGuid(),
+        };
+
+        // Act.
+        var target = PolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapper.Map(source);
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.One.TargetSecondClass>();
+        var typedTarget = (Models.Polymorphism.One.TargetSecondClass)target;
+        typedTarget.NumericProperty.Should().Be(source.NumericProperty);
+        typedTarget.GuidProperty.Should().Be(source.GuidProperty.ToString());
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapper.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceThirdClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetThirdClass"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapperAndMapFromThirdToThird()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceThirdClass
+        {
+            NumericProperty = 17,
+            GuidProperty = Guid.NewGuid(),
+            Numbers = ["1", "2", "3", "4", "5", "6", "7", "8", "9"],
+        };
+
+        // Act.
+        var target = PolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapper.Map(source);
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.One.TargetThirdClass>();
+        var typedTarget = (Models.Polymorphism.One.TargetThirdClass)target;
+        typedTarget.NumericProperty.Should().Be(source.NumericProperty);
+        typedTarget.GuidProperty.Should().Be(source.GuidProperty.ToString());
+        typedTarget.Numbers.Should().BeEquivalentTo(source.Numbers.Select(long.Parse));
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapper.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceBaseClass"/>
+    /// and the method will invoke the static method.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapperAndMapFromBaseSoItWillInvokeTheMethod()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceBaseClass
+        {
+            NumericProperty = 17,
+        };
+
+        // Act.
+        var target = PolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapper.Map(source);
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.One.TargetBaseClass>();
+        target.NumericProperty.Should().Be(PolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapper.InvokeMe(source).NumericProperty);
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapperWithoutParameters.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceFirstClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetFirstClass"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapperWithoutParametersAndMapFromFirstToFirst()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceFirstClass
+        {
+            NumericProperty = 17,
+            DateTimeProperty = new DateTime(2000, 1, 2, 3, 4, 5, DateTimeKind.Utc),
+        };
+
+        // Act.
+        var target = PolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapperWithoutParameters.Map(source);
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.One.TargetFirstClass>();
+        var typedTarget = (Models.Polymorphism.One.TargetFirstClass)target;
+        typedTarget.NumericProperty.Should().Be(source.NumericProperty);
+        typedTarget.DateTimeProperty.Should().Be(source.DateTimeProperty.ToString(CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapperWithoutParameters.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceSecondClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetSecondClass"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapperWithoutParametersAndMapFromSecondToSecond()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceSecondClass
+        {
+            NumericProperty = 17,
+            GuidProperty = Guid.NewGuid(),
+        };
+
+        // Act.
+        var target = PolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapperWithoutParameters.Map(source);
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.One.TargetSecondClass>();
+        var typedTarget = (Models.Polymorphism.One.TargetSecondClass)target;
+        typedTarget.NumericProperty.Should().Be(source.NumericProperty);
+        typedTarget.GuidProperty.Should().Be(source.GuidProperty.ToString());
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapperWithoutParameters.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceThirdClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetThirdClass"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapperWithoutParametersAndMapFromThirdToThird()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceThirdClass
+        {
+            NumericProperty = 17,
+            GuidProperty = Guid.NewGuid(),
+            Numbers = ["1", "2", "3", "4", "5", "6", "7", "8", "9"],
+        };
+
+        // Act.
+        var target = PolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapperWithoutParameters.Map(source);
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.One.TargetThirdClass>();
+        var typedTarget = (Models.Polymorphism.One.TargetThirdClass)target;
+        typedTarget.NumericProperty.Should().Be(source.NumericProperty);
+        typedTarget.GuidProperty.Should().Be(source.GuidProperty.ToString());
+        typedTarget.Numbers.Should().BeEquivalentTo(source.Numbers.Select(long.Parse));
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapperWithoutParameters.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceBaseClass"/>
+    /// and the method will invoke the static method.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapperWithoutParametersAndMapFromBaseSoItWillInvokeTheMethod()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceBaseClass
+        {
+            NumericProperty = 17,
+        };
+
+        // Act.
+        var target = PolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapperWithoutParameters.Map(source);
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.One.TargetBaseClass>();
+        target.NumericProperty.Should().Be(PolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapperWithoutParameters.InvokeMe().NumericProperty);
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapperWithContext.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceFirstClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetFirstClass"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapperWithContextAndMapFromFirstToFirst()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceFirstClass
+        {
+            NumericProperty = 17,
+            DateTimeProperty = new DateTime(2000, 1, 2, 3, 4, 5, DateTimeKind.Utc),
+        };
+
+        // Act.
+        var target = PolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapperWithContext.Map(source, new());
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.One.TargetFirstClass>();
+        var typedTarget = (Models.Polymorphism.One.TargetFirstClass)target;
+        typedTarget.NumericProperty.Should().Be(source.NumericProperty);
+        typedTarget.DateTimeProperty.Should().Be(source.DateTimeProperty.ToString(CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapperWithContext.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceSecondClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetSecondClass"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapperWithContextAndMapFromSecondToSecond()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceSecondClass
+        {
+            NumericProperty = 17,
+            GuidProperty = Guid.NewGuid(),
+        };
+
+        // Act.
+        var target = PolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapperWithContext.Map(source, new());
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.One.TargetSecondClass>();
+        var typedTarget = (Models.Polymorphism.One.TargetSecondClass)target;
+        typedTarget.NumericProperty.Should().Be(source.NumericProperty);
+        typedTarget.GuidProperty.Should().Be(source.GuidProperty.ToString());
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapperWithContext.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceThirdClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetThirdClass"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapperWithContextAndMapFromThirdToThird()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceThirdClass
+        {
+            NumericProperty = 17,
+            GuidProperty = Guid.NewGuid(),
+            Numbers = ["1", "2", "3", "4", "5", "6", "7", "8", "9"],
+        };
+
+        // Act.
+        var target = PolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapperWithContext.Map(source, new());
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.One.TargetThirdClass>();
+        var typedTarget = (Models.Polymorphism.One.TargetThirdClass)target;
+        typedTarget.NumericProperty.Should().Be(source.NumericProperty);
+        typedTarget.GuidProperty.Should().Be(source.GuidProperty.ToString());
+        typedTarget.Numbers.Should().BeEquivalentTo(source.Numbers.Select(long.Parse));
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapperWithContext.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceBaseClass"/>
+    /// and the method will invoke the static method.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapperWithContextAndMapFromBaseSoItWillInvokeTheMethod()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceBaseClass
+        {
+            NumericProperty = 17,
+        };
+
+        // Act.
+        var context = new MappaContext { [nameof(Models.Polymorphism.One.TargetBaseClass.NumericProperty)] = 2025L, };
+        var target = PolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapperWithContext.Map(source, context);
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.One.TargetBaseClass>();
+        target.NumericProperty.Should().Be(PolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapperWithContext.InvokeMe(source, context).NumericProperty);
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithInvokeMethodAndStaticMethodInADifferentClass.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceFirstClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetFirstClass"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithInvokeMethodAndStaticMethodInADifferentClassAndMapFromFirstToFirst()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceFirstClass
+        {
+            NumericProperty = 17,
+            DateTimeProperty = new DateTime(2000, 1, 2, 3, 4, 5, DateTimeKind.Utc),
+        };
+
+        // Act.
+        var target = PolymorphismMapperWithInvokeMethodAndStaticMethodInADifferentClass.Map(source);
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.One.TargetFirstClass>();
+        var typedTarget = (Models.Polymorphism.One.TargetFirstClass)target;
+        typedTarget.NumericProperty.Should().Be(source.NumericProperty);
+        typedTarget.DateTimeProperty.Should().Be(source.DateTimeProperty.ToString(CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithInvokeMethodAndStaticMethodInADifferentClass.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceSecondClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetSecondClass"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithInvokeMethodAndStaticMethodInADifferentClassAndMapFromSecondToSecond()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceSecondClass
+        {
+            NumericProperty = 17,
+            GuidProperty = Guid.NewGuid(),
+        };
+
+        // Act.
+        var target = PolymorphismMapperWithInvokeMethodAndStaticMethodInADifferentClass.Map(source);
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.One.TargetSecondClass>();
+        var typedTarget = (Models.Polymorphism.One.TargetSecondClass)target;
+        typedTarget.NumericProperty.Should().Be(source.NumericProperty);
+        typedTarget.GuidProperty.Should().Be(source.GuidProperty.ToString());
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithInvokeMethodAndStaticMethodInADifferentClass.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceThirdClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetThirdClass"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithInvokeMethodAndStaticMethodInADifferentClassAndMapFromThirdToThird()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceThirdClass
+        {
+            NumericProperty = 17,
+            GuidProperty = Guid.NewGuid(),
+            Numbers = ["1", "2", "3", "4", "5", "6", "7", "8", "9"],
+        };
+
+        // Act.
+        var target = PolymorphismMapperWithInvokeMethodAndStaticMethodInADifferentClass.Map(source);
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.One.TargetThirdClass>();
+        var typedTarget = (Models.Polymorphism.One.TargetThirdClass)target;
+        typedTarget.NumericProperty.Should().Be(source.NumericProperty);
+        typedTarget.GuidProperty.Should().Be(source.GuidProperty.ToString());
+        typedTarget.Numbers.Should().BeEquivalentTo(source.Numbers.Select(long.Parse));
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithInvokeMethodAndStaticMethodInADifferentClass.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceBaseClass"/>
+    /// and the method will invoke the static method.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithInvokeMethodAndStaticMethodInADifferentClassAndMapFromBaseSoItWillInvokeTheMethod()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceBaseClass
+        {
+            NumericProperty = 17,
+        };
+
+        // Act.
+        var target = PolymorphismMapperWithInvokeMethodAndStaticMethodInADifferentClass.Map(source);
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.One.TargetBaseClass>();
+        target.NumericProperty.Should().Be(Models.Polymorphism.One.MapperHelper.InvokeMe(source).NumericProperty);
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithInvokeMethodAndStaticMethodInTheBaseClass.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceFirstClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetFirstClass"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithInvokeMethodAndStaticMethodInTheBaseClassAndMapFromFirstToFirst()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceFirstClass
+        {
+            NumericProperty = 17,
+            DateTimeProperty = new DateTime(2000, 1, 2, 3, 4, 5, DateTimeKind.Utc),
+        };
+
+        // Act.
+        var target = PolymorphismMapperWithInvokeMethodAndStaticMethodInTheBaseClass.Map(source);
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.One.TargetFirstClass>();
+        var typedTarget = (Models.Polymorphism.One.TargetFirstClass)target;
+        typedTarget.NumericProperty.Should().Be(source.NumericProperty);
+        typedTarget.DateTimeProperty.Should().Be(source.DateTimeProperty.ToString(CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithInvokeMethodAndStaticMethodInTheBaseClass.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceSecondClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetSecondClass"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithInvokeMethodAndStaticMethodInTheBaseClassAndMapFromSecondToSecond()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceSecondClass
+        {
+            NumericProperty = 17,
+            GuidProperty = Guid.NewGuid(),
+        };
+
+        // Act.
+        var target = PolymorphismMapperWithInvokeMethodAndStaticMethodInTheBaseClass.Map(source);
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.One.TargetSecondClass>();
+        var typedTarget = (Models.Polymorphism.One.TargetSecondClass)target;
+        typedTarget.NumericProperty.Should().Be(source.NumericProperty);
+        typedTarget.GuidProperty.Should().Be(source.GuidProperty.ToString());
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithInvokeMethodAndStaticMethodInTheBaseClass.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceThirdClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetThirdClass"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithInvokeMethodAndStaticMethodInTheBaseClassAndMapFromThirdToThird()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceThirdClass
+        {
+            NumericProperty = 17,
+            GuidProperty = Guid.NewGuid(),
+            Numbers = ["1", "2", "3", "4", "5", "6", "7", "8", "9"],
+        };
+
+        // Act.
+        var target = PolymorphismMapperWithInvokeMethodAndStaticMethodInTheBaseClass.Map(source);
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.One.TargetThirdClass>();
+        var typedTarget = (Models.Polymorphism.One.TargetThirdClass)target;
+        typedTarget.NumericProperty.Should().Be(source.NumericProperty);
+        typedTarget.GuidProperty.Should().Be(source.GuidProperty.ToString());
+        typedTarget.Numbers.Should().BeEquivalentTo(source.Numbers.Select(long.Parse));
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithInvokeMethodAndStaticMethodInTheBaseClass.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceBaseClass"/>
+    /// and the method will invoke the static method.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithInvokeMethodAndStaticMethodInTheBaseClassAndMapFromBaseSoItWillInvokeTheMethod()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceBaseClass
+        {
+            NumericProperty = 17,
+        };
+
+        // Act.
+        var target = PolymorphismMapperWithInvokeMethodAndStaticMethodInTheBaseClass.Map(source);
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.One.TargetBaseClass>();
+
+        // ReSharper disable once AccessToStaticMemberViaDerivedType
+        target.NumericProperty.Should().Be(PolymorphismMapperWithInvokeMethodAndStaticMethodInTheBaseClass.InvokeMe(source).NumericProperty);
+    }
+
+     /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithInvokeMethodAndNonStaticMethodInTheMapper.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceFirstClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetFirstClass"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithInvokeMethodAndNonStaticMethodInTheMapperAndMapFromFirstToFirst()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceFirstClass
+        {
+            NumericProperty = 17,
+            DateTimeProperty = new DateTime(2000, 1, 2, 3, 4, 5, DateTimeKind.Utc),
+        };
+
+        // Act.
+        var target = PolymorphismMapperWithInvokeMethodAndNonStaticMethodInTheMapper.Map(source);
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.One.TargetFirstClass>();
+        var typedTarget = (Models.Polymorphism.One.TargetFirstClass)target;
+        typedTarget.NumericProperty.Should().Be(source.NumericProperty);
+        typedTarget.DateTimeProperty.Should().Be(source.DateTimeProperty.ToString(CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithInvokeMethodAndNonStaticMethodInTheMapper.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceSecondClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetSecondClass"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithInvokeMethodAndNonStaticMethodInTheMapperAndMapFromSecondToSecond()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceSecondClass
+        {
+            NumericProperty = 17,
+            GuidProperty = Guid.NewGuid(),
+        };
+
+        // Act.
+        var target = PolymorphismMapperWithInvokeMethodAndNonStaticMethodInTheMapper.Map(source);
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.One.TargetSecondClass>();
+        var typedTarget = (Models.Polymorphism.One.TargetSecondClass)target;
+        typedTarget.NumericProperty.Should().Be(source.NumericProperty);
+        typedTarget.GuidProperty.Should().Be(source.GuidProperty.ToString());
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithInvokeMethodAndNonStaticMethodInTheMapper.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceThirdClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetThirdClass"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithInvokeMethodAndNonStaticMethodInTheMapperAndMapFromThirdToThird()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceThirdClass
+        {
+            NumericProperty = 17,
+            GuidProperty = Guid.NewGuid(),
+            Numbers = ["1", "2", "3", "4", "5", "6", "7", "8", "9"],
+        };
+
+        // Act.
+        var target = PolymorphismMapperWithInvokeMethodAndNonStaticMethodInTheMapper.Map(source);
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.One.TargetThirdClass>();
+        var typedTarget = (Models.Polymorphism.One.TargetThirdClass)target;
+        typedTarget.NumericProperty.Should().Be(source.NumericProperty);
+        typedTarget.GuidProperty.Should().Be(source.GuidProperty.ToString());
+        typedTarget.Numbers.Should().BeEquivalentTo(source.Numbers.Select(long.Parse));
+    }
+
+    /// <summary>
+    /// Tests mapping via <see cref="PolymorphismMapperWithInvokeMethodAndNonStaticMethodInTheMapper.Map"/>
+    /// from <see cref="Models.Polymorphism.One.SourceBaseClass"/>
+    /// and the method will invoke the static method.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void UsePolymorphismMapperWithInvokeMethodAndNonStaticMethodInTheMapperAndMapFromBaseSoItWillInvokeTheMethod()
+    {
+        // Arrange.
+        var source = new Models.Polymorphism.One.SourceBaseClass
+        {
+            NumericProperty = 17,
+        };
+
+        // Act.
+        var target = PolymorphismMapperWithInvokeMethodAndNonStaticMethodInTheMapper.Map(source);
+
+        // Assert.
+        target.Should().BeOfType<Models.Polymorphism.One.TargetBaseClass>();
+        target.NumericProperty.Should().Be(PolymorphismMapperWithInvokeMethodAndNonStaticMethodInTheMapper.InvokeMe(source).NumericProperty);
     }
 }

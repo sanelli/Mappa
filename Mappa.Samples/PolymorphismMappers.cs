@@ -6,13 +6,6 @@
 
 using Mappa.Attributes;
 
-// TODO [#49] Test with invoke method to behaviour with non-static method in mapper with single parameter.
-// TODO [#49] Test with invoke method to behaviour with static method in mapper with single parameter.
-// TODO [#49] Test with invoke method to behaviour with static method in mapper with no parameters.
-// TODO [#49] Test with invoke method to behaviour with static method in a different class mapper.
-// TODO [#49] Test with invoke method to behaviour with static method in mapper with context parameter.
-// TODO [#49] Test with invoke method to behaviour with static method defined in mapper base class.
-// TODO [#49] Add more mappers to cover different defaults.
 namespace Mappa.Samples;
 
 /// <summary>
@@ -268,5 +261,192 @@ public sealed partial class PolymorphismMapperWithDefaultDefault
     [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetThirdClass), typeof(Models.Polymorphism.One.SourceThirdClass))]
     [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetSecondClass), typeof(Models.Polymorphism.One.SourceSecondClass))]
     [MappaTypeMappingDefault(MappaTypeMappingDefaultBehavior.Default)]
+    public partial Models.Polymorphism.One.TargetBaseClass Map(Models.Polymorphism.One.SourceBaseClass source);
+}
+
+/// <summary>
+/// Mapper to showcase the usage of <see cref="MappaUsePropertyAttribute"/>
+/// with <see cref="MappaTypeMappingDefaultBehavior.InvokeMethod"/> for <see cref="MappaTypeMappingDefaultAttribute"/>.
+/// Invoked method is static in the mapper with one input parameter.
+/// </summary>
+[Mappa]
+[MappaSettings(CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
+public sealed partial class PolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapper
+{
+    /// <summary>
+    /// Default method to generate a new <see cref="Models.Polymorphism.One.TargetBaseClass"/>.
+    /// </summary>
+    /// <param name="source">The source of the mapping.</param>
+    /// <returns>The target.</returns>
+    [MappaIgnore]
+    public static Models.Polymorphism.One.TargetBaseClass InvokeMe(Models.Polymorphism.One.SourceBaseClass source)
+    {
+        return new Models.Polymorphism.One.TargetBaseClass { NumericProperty = 1984, };
+    }
+
+    /// <summary>
+    /// Map from <see cref="Models.Polymorphism.One.SourceBaseClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetBaseClass"/> by supporting
+    /// polymorphism.
+    /// </summary>
+    /// <param name="source">The source model.</param>
+    /// <returns>The target model.</returns>
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetFirstClass), typeof(Models.Polymorphism.One.SourceFirstClass))]
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetThirdClass), typeof(Models.Polymorphism.One.SourceThirdClass))]
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetSecondClass), typeof(Models.Polymorphism.One.SourceSecondClass))]
+    [MappaTypeMappingDefault(nameof(InvokeMe))]
+    public partial Models.Polymorphism.One.TargetBaseClass Map(Models.Polymorphism.One.SourceBaseClass source);
+}
+
+/// <summary>
+/// Mapper to showcase the usage of <see cref="MappaUsePropertyAttribute"/>
+/// with <see cref="MappaTypeMappingDefaultBehavior.InvokeMethod"/> for <see cref="MappaTypeMappingDefaultAttribute"/>.
+/// Invoked method is static in the mapper with no input parameters.
+/// </summary>
+[Mappa]
+[MappaSettings(CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
+public sealed partial class PolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapperWithoutParameters
+{
+    /// <summary>
+    /// Default method to generate a new <see cref="Models.Polymorphism.One.TargetBaseClass"/>.
+    /// </summary>
+    /// <returns>The target.</returns>
+    [MappaIgnore]
+    public static Models.Polymorphism.One.TargetBaseClass InvokeMe()
+    {
+        return new Models.Polymorphism.One.TargetBaseClass { NumericProperty = 1984, };
+    }
+
+    /// <summary>
+    /// Map from <see cref="Models.Polymorphism.One.SourceBaseClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetBaseClass"/> by supporting
+    /// polymorphism.
+    /// </summary>
+    /// <param name="source">The source model.</param>
+    /// <returns>The target model.</returns>
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetFirstClass), typeof(Models.Polymorphism.One.SourceFirstClass))]
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetThirdClass), typeof(Models.Polymorphism.One.SourceThirdClass))]
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetSecondClass), typeof(Models.Polymorphism.One.SourceSecondClass))]
+    [MappaTypeMappingDefault(nameof(InvokeMe))]
+    public partial Models.Polymorphism.One.TargetBaseClass Map(Models.Polymorphism.One.SourceBaseClass source);
+}
+
+/// <summary>
+/// Mapper to showcase the usage of <see cref="MappaUsePropertyAttribute"/>
+/// with <see cref="MappaTypeMappingDefaultBehavior.InvokeMethod"/> for <see cref="MappaTypeMappingDefaultAttribute"/>.
+/// Invoked method is static in the mapper with context parameter.
+/// </summary>
+[Mappa]
+[MappaSettings(CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
+public sealed partial class PolymorphismMapperWithInvokeMethodAndStaticMethodInTheMapperWithContext
+{
+    /// <summary>
+    /// Default method to generate a new <see cref="Models.Polymorphism.One.TargetBaseClass"/>.
+    /// </summary>
+    /// <param name="source">The source of the mapping.</param>
+    /// <param name="context">The mapping context.</param>
+    /// <returns>The target.</returns>
+    [MappaIgnore]
+    public static Models.Polymorphism.One.TargetBaseClass InvokeMe(Models.Polymorphism.One.SourceBaseClass source, MappaContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        return new Models.Polymorphism.One.TargetBaseClass { NumericProperty = (long)context[nameof(Models.Polymorphism.One.TargetBaseClass.NumericProperty)], };
+    }
+
+    /// <summary>
+    /// Map from <see cref="Models.Polymorphism.One.SourceBaseClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetBaseClass"/> by supporting
+    /// polymorphism.
+    /// </summary>
+    /// <param name="source">The source model.</param>
+    /// <param name="context">The mapping context.</param>
+    /// <returns>The target model.</returns>
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetFirstClass), typeof(Models.Polymorphism.One.SourceFirstClass))]
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetThirdClass), typeof(Models.Polymorphism.One.SourceThirdClass))]
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetSecondClass), typeof(Models.Polymorphism.One.SourceSecondClass))]
+    [MappaTypeMappingDefault(nameof(InvokeMe))]
+    public partial Models.Polymorphism.One.TargetBaseClass Map(Models.Polymorphism.One.SourceBaseClass source, MappaContext context);
+}
+
+/// <summary>
+/// Mapper to showcase the usage of <see cref="MappaUsePropertyAttribute"/>
+/// with <see cref="MappaTypeMappingDefaultBehavior.InvokeMethod"/> for <see cref="MappaTypeMappingDefaultAttribute"/>.
+/// Invoked method is static in the mapper with one input parameter in a different mapper.
+/// </summary>
+[Mappa]
+[MappaSettings(CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
+public sealed partial class PolymorphismMapperWithInvokeMethodAndStaticMethodInADifferentClass
+{
+    /// <summary>
+    /// Map from <see cref="Models.Polymorphism.One.SourceBaseClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetBaseClass"/> by supporting
+    /// polymorphism.
+    /// </summary>
+    /// <param name="source">The source model.</param>
+    /// <returns>The target model.</returns>
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetFirstClass), typeof(Models.Polymorphism.One.SourceFirstClass))]
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetThirdClass), typeof(Models.Polymorphism.One.SourceThirdClass))]
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetSecondClass), typeof(Models.Polymorphism.One.SourceSecondClass))]
+    [MappaTypeMappingDefault(typeof(Models.Polymorphism.One.MapperHelper), nameof(Models.Polymorphism.One.MapperHelper.InvokeMe))]
+    public partial Models.Polymorphism.One.TargetBaseClass Map(Models.Polymorphism.One.SourceBaseClass source);
+}
+
+/// <summary>
+/// Mapper to showcase the usage of <see cref="MappaUsePropertyAttribute"/>
+/// with <see cref="MappaTypeMappingDefaultBehavior.InvokeMethod"/> for <see cref="MappaTypeMappingDefaultAttribute"/>.
+/// Invoked method is static in the mapper with one input parameter in mapper base class.
+/// </summary>
+[Mappa]
+[MappaSettings(CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
+public sealed partial class PolymorphismMapperWithInvokeMethodAndStaticMethodInTheBaseClass
+    : Models.Polymorphism.One.MapperHelper
+{
+    /// <summary>
+    /// Map from <see cref="Models.Polymorphism.One.SourceBaseClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetBaseClass"/> by supporting
+    /// polymorphism.
+    /// </summary>
+    /// <param name="source">The source model.</param>
+    /// <returns>The target model.</returns>
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetFirstClass), typeof(Models.Polymorphism.One.SourceFirstClass))]
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetThirdClass), typeof(Models.Polymorphism.One.SourceThirdClass))]
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetSecondClass), typeof(Models.Polymorphism.One.SourceSecondClass))]
+    [MappaTypeMappingDefault(nameof(InvokeMe))]
+    public partial Models.Polymorphism.One.TargetBaseClass Map(Models.Polymorphism.One.SourceBaseClass source);
+}
+
+/// <summary>
+/// Mapper to showcase the usage of <see cref="MappaUsePropertyAttribute"/>
+/// with <see cref="MappaTypeMappingDefaultBehavior.InvokeMethod"/> for <see cref="MappaTypeMappingDefaultAttribute"/>.
+/// Invoked method is non-static in the mapper with one input parameter.
+/// </summary>
+[Mappa]
+[MappaSettings(CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
+public sealed partial class PolymorphismMapperWithInvokeMethodAndNonStaticMethodInTheMapper
+{
+    /// <summary>
+    /// Default method to generate a new <see cref="Models.Polymorphism.One.TargetBaseClass"/>.
+    /// </summary>
+    /// <param name="source">The source of the mapping.</param>
+    /// <returns>The target.</returns>
+    [MappaIgnore]
+#pragma warning disable CA1822
+    public Models.Polymorphism.One.TargetBaseClass InvokeMe(Models.Polymorphism.One.SourceBaseClass source)
+#pragma warning restore CA1822
+    {
+        return new Models.Polymorphism.One.TargetBaseClass { NumericProperty = 1984, };
+    }
+
+    /// <summary>
+    /// Map from <see cref="Models.Polymorphism.One.SourceBaseClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetBaseClass"/> by supporting
+    /// polymorphism.
+    /// </summary>
+    /// <param name="source">The source model.</param>
+    /// <returns>The target model.</returns>
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetFirstClass), typeof(Models.Polymorphism.One.SourceFirstClass))]
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetThirdClass), typeof(Models.Polymorphism.One.SourceThirdClass))]
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetSecondClass), typeof(Models.Polymorphism.One.SourceSecondClass))]
+    [MappaTypeMappingDefault(nameof(InvokeMe))]
     public partial Models.Polymorphism.One.TargetBaseClass Map(Models.Polymorphism.One.SourceBaseClass source);
 }
