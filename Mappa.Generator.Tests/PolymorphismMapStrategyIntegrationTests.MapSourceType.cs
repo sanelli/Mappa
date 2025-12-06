@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Models.Strategies;
 using Mappa.Generator.Tests.Assertions;
 using Mappa.Generator.Tests.Assertions.Extensions;
@@ -11,8 +12,8 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Integration tests for <see cref="PolymorphismMapStrategy"/>.
 /// </summary>
-// TODO [#49] Test with MapSourceType to behaviour failing because target is interface.
-// TODO [#49] Test with MapSourceType to behaviour failing because target is virtual.
+// TODO [#49] Test with MapSourceType to behaviour failing because target is abstract from return type.
+// TODO [#49] Test with MapSourceType to behaviour failing because target is abstract from specific type.
 // TODO [#49] Test with explicit throw behaviour with exception class without valid constructor -> diagnostic is thrown.
 public sealed partial class PolymorphismMapStrategyIntegrationTests
 {
@@ -500,5 +501,167 @@ public sealed partial class PolymorphismMapStrategyIntegrationTests
                             }))
                         .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement(expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_1")));
                 });
+    }
+
+    /// <summary>
+    /// Test diagnostic is returned when the MapSourceType target type is the map method
+    /// return type and that type is an interface.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task TestDiagnosticReturnedWhenInvokeMapSourceTypeTargetTheInterfaceTypeReturnedFromTheMapMethod()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using System;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class SourceBaseClass 
+                                  {
+                                     public byte BaseClassProperty {get; set;}
+                                  }
+
+                                  public class SourceFirstDerivedClass : SourceBaseClass
+                                  {
+                                     public float FirstDerivedClassProperty {get; set;}
+                                  }
+
+                                  public class SourceSecondDerivedClass : SourceBaseClass
+                                  {
+                                     public DateTime SecondDerivedClassProperty {get; set;}
+                                  }
+
+                                  public class SourceThirdDerivedClass : SourceSecondDerivedClass
+                                  {
+                                     public string ThirdDerivedClassProperty {get; set;}
+                                  }
+
+                                  public interface ITargetBaseClass 
+                                  {
+                                     int BaseClassProperty {get; set;}
+                                  }
+
+                                  public class TargetFirstDerivedClass : ITargetBaseClass
+                                  {
+                                     public string FirstDerivedClassProperty {get; set;}
+                                     public int BaseClassProperty {get; set;}
+                                  }
+
+                                  public class TargetSecondDerivedClass : ITargetBaseClass
+                                  {
+                                     public DateOnly SecondDerivedClassProperty {get; set;}
+                                     public int BaseClassProperty {get; set;}
+                                  }
+
+                                  public class TargetThirdDerivedClass : TargetSecondDerivedClass
+                                  {
+                                     public long ThirdDerivedClassProperty {get; set;}
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaTypeMapping(typeof(TargetThirdDerivedClass), typeof(SourceThirdDerivedClass))]
+                                      [MappaTypeMapping(typeof(TargetSecondDerivedClass), typeof(SourceSecondDerivedClass))]
+                                      [MappaTypeMapping(typeof(TargetFirstDerivedClass), typeof(SourceFirstDerivedClass))]
+                                      [MappaTypeMappingDefault(MappaTypeMappingDefaultBehavior.MapSourceType)]
+                                      public partial ITargetBaseClass Map(SourceBaseClass input);
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.CannotIdentifyStrategy, "Mappa.Generator.Tests.UnitTests.SourceCode.SourceBaseClass", "Mappa.Generator.Tests.UnitTests.SourceCode.ITargetBaseClass");
+    }
+
+    /// <summary>
+    /// Test diagnostic is returned when the MapSourceType target type is a specific type
+    /// and that type is an interface.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task TestDiagnosticReturnedWhenInvokeMapSourceTypeTargetTheInterfaceSpecifiedInTheAttribute()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using System;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class SourceBaseClass 
+                                  {
+                                     public byte BaseClassProperty {get; set;}
+                                  }
+
+                                  public class SourceFirstDerivedClass : SourceBaseClass
+                                  {
+                                     public float FirstDerivedClassProperty {get; set;}
+                                  }
+
+                                  public class SourceSecondDerivedClass : SourceBaseClass
+                                  {
+                                     public DateTime SecondDerivedClassProperty {get; set;}
+                                  }
+
+                                  public class SourceThirdDerivedClass : SourceSecondDerivedClass
+                                  {
+                                     public string ThirdDerivedClassProperty {get; set;}
+                                  }
+                                  
+                                  public interface ITargetBaseClass 
+                                  {
+                                      int BaseClassProperty {get; set;}
+                                  }
+
+                                  public class TargetBaseClass : ITargetBaseClass
+                                  {
+                                     public int BaseClassProperty {get; set;}
+                                  }
+
+                                  public class TargetFirstDerivedClass : TargetBaseClass
+                                  {
+                                     public string FirstDerivedClassProperty {get; set;}
+                                  }
+
+                                  public class TargetSecondDerivedClass : TargetBaseClass
+                                  {
+                                     public DateOnly SecondDerivedClassProperty {get; set;}
+                                  }
+
+                                  public class TargetThirdDerivedClass : TargetSecondDerivedClass
+                                  {
+                                     public long ThirdDerivedClassProperty {get; set;}
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaTypeMapping(typeof(TargetThirdDerivedClass), typeof(SourceThirdDerivedClass))]
+                                      [MappaTypeMapping(typeof(TargetSecondDerivedClass), typeof(SourceSecondDerivedClass))]
+                                      [MappaTypeMapping(typeof(TargetFirstDerivedClass), typeof(SourceFirstDerivedClass))]
+                                      [MappaTypeMappingDefault(MappaTypeMappingDefaultBehavior.MapSourceType, typeof(ITargetBaseClass))]
+                                      public partial TargetBaseClass Map(SourceBaseClass input);
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        // TODO [#49] Fix test.
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.CannotIdentifyStrategy, "Mappa.Generator.Tests.UnitTests.SourceCode.SourceBaseClass", "Mappa.Generator.Tests.UnitTests.SourceCode.ITargetBaseClass");
     }
 }
