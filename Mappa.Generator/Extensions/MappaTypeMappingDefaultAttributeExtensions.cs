@@ -3,6 +3,7 @@
 // </copyright>
 
 using Mappa.Attributes;
+using Mappa.Generator.Diagnostics;
 
 using Microsoft.CodeAnalysis;
 
@@ -23,6 +24,7 @@ internal static class MappaTypeMappingDefaultAttributeExtensions
     /// <param name="nullableEnabled"><c>true</c> if nullability is enabled, <c>false</c> otherwise.</param>
     /// <param name="mapMethodHasTwoParameters"><c>true</c> if the mapping method has two parameters, <c>false</c> otherwise.</param>
     /// <param name="compilation">The compilation.</param>
+    /// <param name="location">The location on which the diagnostic should be pointing to.</param>
     /// <param name="diagnostics">The generated diagnostic in case of error or warnings.</param>
     /// <returns><c>true</c> if the attribute is valid, <c>false</c> otherwise.</returns>
     internal static bool IsValid(
@@ -33,7 +35,8 @@ internal static class MappaTypeMappingDefaultAttributeExtensions
         bool nullableEnabled,
         bool mapMethodHasTwoParameters,
         Compilation compilation,
-        out Diagnostic[] diagnostics)
+        Location? location,
+        out ICollection<Diagnostic> diagnostics)
     {
         diagnostics = [];
         switch (attribute.Behavior)
@@ -119,7 +122,7 @@ internal static class MappaTypeMappingDefaultAttributeExtensions
 
                     if (typeSymbol.TypeKind == TypeKind.Interface)
                     {
-                        // TODO [#49] Generate the error diagnostic: the type is not deriving/implementing target type.
+                        diagnostics.Add(MappaDiagnostics.CannotIdentifyStrategy(typeSymbol, sourceType, location));
                         return false;
                     }
 

@@ -129,6 +129,7 @@ internal sealed class PolymorphismMapStrategyDetector(MappaMapAlgorithmContext c
             rootMapMethod.NullableEnabled,
             mapMethodHasTwoParameters,
             this.compilation,
+            rootMapMethod.Location,
             out var validationDiagnosis);
         foreach (var diagnostic in validationDiagnosis)
         {

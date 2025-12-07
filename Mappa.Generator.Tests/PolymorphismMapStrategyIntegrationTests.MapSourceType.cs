@@ -14,6 +14,8 @@ namespace Mappa.Generator.Tests;
 /// </summary>
 // TODO [#49] Test with MapSourceType to behaviour failing because target is abstract from return type.
 // TODO [#49] Test with MapSourceType to behaviour failing because target is abstract from specific type.
+// TODO [#49] Test with MapSourceType to behaviour failing because explicit target type is not implementing the interface map method target type.
+// TODO [#49] Test with MapSourceType to behaviour failing because explicit target type is the derived from concrete map method target type.
 // TODO [#49] Test with explicit throw behaviour with exception class without valid constructor -> diagnostic is thrown.
 public sealed partial class PolymorphismMapStrategyIntegrationTests
 {
@@ -659,7 +661,6 @@ public sealed partial class PolymorphismMapStrategyIntegrationTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         // Assert
-        // TODO [#49] Fix test.
         generatedResults.Should()
             .HaveDiagnostics(1)
             .HaveDiagnostic(MappaDiagnosticDescriptors.CannotIdentifyStrategy, "Mappa.Generator.Tests.UnitTests.SourceCode.SourceBaseClass", "Mappa.Generator.Tests.UnitTests.SourceCode.ITargetBaseClass");
