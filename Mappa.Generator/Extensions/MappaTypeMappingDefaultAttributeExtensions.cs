@@ -4,6 +4,7 @@
 
 using Mappa.Attributes;
 using Mappa.Generator.Diagnostics;
+using Mappa.Generator.Exceptions;
 
 using Microsoft.CodeAnalysis;
 
@@ -99,19 +100,12 @@ internal static class MappaTypeMappingDefaultAttributeExtensions
 
                 break;
             case MappaTypeMappingDefaultBehavior.MapSourceType:
-                // Check the method name is not defined.
-                if (!string.IsNullOrEmpty(attribute.MethodName))
-                {
-                    // TODO [#49] Generate the warning diagnostic: method name will not be used.
-                }
-
                 if (attribute.Type is { } attributeTargetType && !string.IsNullOrWhiteSpace(attributeTargetType.FullName))
                 {
                     var typeSymbol = compilation.GetTypeByMetadataName(attributeTargetType.FullName.NormalizeType());
                     if (typeSymbol is null)
                     {
-                        // TODO [#49] Generate the error diagnostic: the type cannot be loaded.
-                        return false;
+                        throw new MappaGeneratorException("Type cannot be identified.");
                     }
 
                     if (!typeSymbol.IsImplementingOrIsDerivedFromClass(targetType))
@@ -138,7 +132,7 @@ internal static class MappaTypeMappingDefaultAttributeExtensions
                 // Check the method name is not defined.
                 if (string.IsNullOrWhiteSpace(attribute.MethodName))
                 {
-                    // TODO [#49] Generate the error diagnostic: method name is mandatory.
+                    diagnostics.Add(MappaDiagnostics.MethodToInvokeUndefined(location));
                     return false;
                 }
 
@@ -149,8 +143,7 @@ internal static class MappaTypeMappingDefaultAttributeExtensions
 
                 if (invokeMethodTypeSymbol is null)
                 {
-                    // TODO [#49] Generate the error diagnostic: cannot load the type on which invoke the method.
-                    return false;
+                    throw new MappaGeneratorException("Type that can be used to identify the method to invoke cannot be loaded.");
                 }
 
                 var methods = invokeMethodTypeSymbol.LocateMethods(attribute.MethodName!);
@@ -162,7 +155,10 @@ internal static class MappaTypeMappingDefaultAttributeExtensions
                     mapMethodHasTwoParameters));
                 if (method is null)
                 {
-                    // TODO [#49] Generate the error diagnostic: a suitable method with the given name cannot be found.
+                    diagnostics.Add(MappaDiagnostics.CannotIdentifySuitableMethodToInvoke(
+                        invokeMethodTypeSymbol.ToDisplayString(),
+                        attribute.MethodName!,
+                        location));
                     return false;
                 }
 

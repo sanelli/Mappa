@@ -32,7 +32,7 @@
     <data name="MultipleAttributesTargetTheSamePropertyOrParameter" xml:space="preserve">
         <value>Multiple mapping attributes on method '{0}' target property or constructor parameter '{1}'.</value>
     </data>
-    <data name="CannotDetectSuitableMethodToInvoke" xml:space="preserve">
+    <data name="CannotDetectSuitableMethodToInvokeForParameter" xml:space="preserve">
         <value>Cannot identify a method with name '{0}' in class '{1}' for target property or constructor parameter '{2}'.</value>
     </data>
     <data name="CannotDetectType" xml:space="preserve">
@@ -64,5 +64,11 @@
     </data>
     <data name="ExplicitTargetTypeDoesNotDeriveMapMethodTargetType" xml:space="preserve">
         <value>Type '{0}' does not derive or implement '{1}'.</value>
+    </data>
+    <data name="MethodToInvokeUndefined" xml:space="preserve">
+        <value>The method to invoke is undefined.</value>
+    </data>
+    <data name="CannotIdentifySuitableMethodToInvoke" xml:space="preserve">
+        <value>Cannot identify a method with name '{0}' in class '{1}': the method does not exist or does not have the correct number of parameters or the types of the parameters do not match the expected types.</value>
     </data>
 </root>

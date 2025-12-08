@@ -117,13 +117,13 @@ internal static class MappaDiagnostics
     /// <param name="methodName">The name of the method to invoke.</param>
     /// <param name="typeName">The type on which the method is being looked for.</param>
     /// <returns>The diagnostic.</returns>
-    internal static Diagnostic CannotDetectSuitableMethodToInvoke(
+    internal static Diagnostic CannotDetectSuitableMethodToInvokeForParameter(
         MethodDeclarationSyntax methodDeclarationSyntax,
         string propertyOrParameterName,
         string methodName,
         string typeName)
         => Diagnostic.Create(
-            MappaDiagnosticDescriptors.CannotDetectSuitableMethodToInvoke,
+            MappaDiagnosticDescriptors.CannotDetectSuitableMethodToInvokeForParameter,
             methodDeclarationSyntax.GetLocation(),
             methodName,
             typeName,
@@ -288,4 +288,32 @@ internal static class MappaDiagnostics
             location,
             explicitTargetType.ToDisplayString(),
             mapMethodTargetType.ToDisplayString());
+
+    /// <summary>
+    /// Diagnostic to report that the method to invoke is not correctly
+    /// identified.
+    /// </summary>
+    /// <param name="location">The location of the diagnostic.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MethodToInvokeUndefined(Location? location)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MethodToInvokeUndefined,
+            location);
+
+    /// <summary>
+    /// Diagnostic to report the fact that it is not possible identify a suitable method to invoke.
+    /// </summary>
+    /// <param name="typeName">The type on which the method is being looked for.</param>
+    /// <param name="methodName">The name of the method to invoke.</param>
+    /// <param name="location">The location of the diagnostic.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic CannotIdentifySuitableMethodToInvoke(
+        string typeName,
+        string methodName,
+        Location? location)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.CannotIdentifySuitableMethodToInvoke,
+            location,
+            methodName,
+            typeName);
 }

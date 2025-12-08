@@ -54,7 +54,7 @@ internal enum MappaDiagnosticsKind
     /// <summary>
     /// Cannot identify a suitable method to invoke.
     /// </summary>
-    CannotDetectSuitableMethodToInvoke,
+    CannotDetectSuitableMethodToInvokeForParameter,
 
     /// <summary>
     /// The type cannot be identified.
@@ -108,4 +108,15 @@ internal enum MappaDiagnosticsKind
     /// An explicit target type does not implement or derive from the map method target type.
     /// </summary>
     ExplicitTargetTypeDoesNotDeriveMapMethodTargetType,
+
+    /// <summary>
+    /// The method to invoke is undefined.
+    /// </summary>
+    MethodToInvokeUndefined,
+
+    /// <summary>
+    /// The method to invoke cannot be identified: it does not exist or does not have the correct
+    /// number of parameters.
+    /// </summary>
+    CannotIdentifySuitableMethodToInvoke,
 }

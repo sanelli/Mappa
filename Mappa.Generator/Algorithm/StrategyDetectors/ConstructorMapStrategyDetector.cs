@@ -775,7 +775,7 @@ internal sealed class ConstructorMapStrategyDetector
 
         if (method is null)
         {
-            this.context.ReportDiagnostic(MappaDiagnostics.CannotDetectSuitableMethodToInvoke(
+            this.context.ReportDiagnostic(MappaDiagnostics.CannotDetectSuitableMethodToInvokeForParameter(
                 mapMethodMethodDeclarationSyntax,
                 targetName,
                 mappaInvokeMethodAttribute.MethodName,

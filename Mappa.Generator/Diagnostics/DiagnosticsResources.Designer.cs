@@ -87,9 +87,9 @@ namespace Mappa.Generator.Diagnostics {
             }
         }
         
-        internal static string CannotDetectSuitableMethodToInvoke {
+        internal static string CannotDetectSuitableMethodToInvokeForParameter {
             get {
-                return ResourceManager.GetString("CannotDetectSuitableMethodToInvoke", resourceCulture);
+                return ResourceManager.GetString("CannotDetectSuitableMethodToInvokeForParameter", resourceCulture);
             }
         }
         
@@ -150,6 +150,18 @@ namespace Mappa.Generator.Diagnostics {
         internal static string ExplicitTargetTypeDoesNotDeriveMapMethodTargetType {
             get {
                 return ResourceManager.GetString("ExplicitTargetTypeDoesNotDeriveMapMethodTargetType", resourceCulture);
+            }
+        }
+        
+        internal static string MethodToInvokeUndefined {
+            get {
+                return ResourceManager.GetString("MethodToInvokeUndefined", resourceCulture);
+            }
+        }
+        
+        internal static string CannotIdentifySuitableMethodToInvoke {
+            get {
+                return ResourceManager.GetString("CannotIdentifySuitableMethodToInvoke", resourceCulture);
             }
         }
     }

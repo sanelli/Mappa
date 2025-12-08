@@ -32,6 +32,8 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? dependencyDoesNotProvideAnyViableMethod;
     private static DiagnosticDescriptor? cannotMapNonRequiredProperty;
     private static DiagnosticDescriptor? explicitTargetTypeDoesNotDeriveMapMethodTargetType;
+    private static DiagnosticDescriptor? methodToInvokeUndefined;
+    private static DiagnosticDescriptor? cannotIdentifySuitableMethodToInvoke;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -90,12 +92,12 @@ internal static class MappaDiagnosticDescriptors
             DiagnosticsResources.MultipleAttributesTargetTheSamePropertyOrParameter);
 
     /// <summary>
-    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.CannotDetectSuitableMethodToInvoke"/>.
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.CannotDetectSuitableMethodToInvokeForParameter"/>.
     /// </summary>
-    internal static DiagnosticDescriptor CannotDetectSuitableMethodToInvoke
+    internal static DiagnosticDescriptor CannotDetectSuitableMethodToInvokeForParameter
         => cannotDetectSuitableMethodToInvoke ??= BuildError(
-            MappaDiagnosticsKind.CannotDetectSuitableMethodToInvoke,
-            DiagnosticsResources.CannotDetectSuitableMethodToInvoke);
+            MappaDiagnosticsKind.CannotDetectSuitableMethodToInvokeForParameter,
+            DiagnosticsResources.CannotDetectSuitableMethodToInvokeForParameter);
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.CannotDetectType"/>.
@@ -176,6 +178,22 @@ internal static class MappaDiagnosticDescriptors
         => explicitTargetTypeDoesNotDeriveMapMethodTargetType ??= BuildError(
             MappaDiagnosticsKind.ExplicitTargetTypeDoesNotDeriveMapMethodTargetType,
             DiagnosticsResources.ExplicitTargetTypeDoesNotDeriveMapMethodTargetType);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodToInvokeUndefined"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MethodToInvokeUndefined
+        => methodToInvokeUndefined ??= BuildError(
+            MappaDiagnosticsKind.MethodToInvokeUndefined,
+            DiagnosticsResources.MethodToInvokeUndefined);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.CannotIdentifySuitableMethodToInvoke"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor CannotIdentifySuitableMethodToInvoke
+        => cannotIdentifySuitableMethodToInvoke ??= BuildError(
+            MappaDiagnosticsKind.CannotIdentifySuitableMethodToInvoke,
+            DiagnosticsResources.CannotIdentifySuitableMethodToInvoke);
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(
