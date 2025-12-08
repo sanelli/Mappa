@@ -12,8 +12,6 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Integration tests for <see cref="PolymorphismMapStrategy"/>.
 /// </summary>
-// TODO [#49] Test with MapSourceType to behaviour failing because explicit target type is not implementing the interface map method target type.
-// TODO [#49] Test with MapSourceType to behaviour failing because explicit target type is the derived from concrete map method target type.
 public sealed partial class PolymorphismMapStrategyIntegrationTests
 {
     /// <summary>
