@@ -1702,26 +1702,18 @@ internal static class TypeSymbolExtensions
         bool nullableEnabled,
         bool acceptTwoParameters)
     {
-        switch (methodSymbol.Parameters.Length)
+        return (!mustBeStatic || methodSymbol.IsStatic) && methodSymbol.Parameters.Length switch
         {
-            case 0:
-                return !mustBeStatic || methodSymbol.IsStatic;
+            0 => true,
+            1 => methodSymbol.AreParametersRefModifiersValid()
+                 && methodSymbol.Parameters[0].Type.IsEqualTo(expectedSourceType, nullableEnabled),
+            2 when acceptTwoParameters => methodSymbol.AreParametersRefModifiersValid()
+                                          && IsFirstParameterOk()
+                                          && IsSecondParameterOk(),
+            _ => false,
+        };
 
-            case 1:
-                return methodSymbol.AreParametersRefModifiersValid()
-                       && methodSymbol.Parameters[0].Type.IsEqualTo(expectedSourceType, nullableEnabled)
-                       && (!mustBeStatic || methodSymbol.IsStatic);
-
-            // Accept 2 parameters only when the original method support 2 parameters too.
-            case 2 when acceptTwoParameters:
-                var isFirstParameterOk = methodSymbol.Parameters[0].Type.IsEqualTo(expectedSourceType, nullableEnabled);
-                var isSecondParameterOk = methodSymbol.SecondParameterIsMappaContext(compilation);
-                return methodSymbol.AreParametersRefModifiersValid()
-                       && isFirstParameterOk
-                       && isSecondParameterOk
-                       && (!mustBeStatic || methodSymbol.IsStatic);
-        }
-
-        return false;
+        bool IsFirstParameterOk() => methodSymbol.Parameters[0].Type.IsEqualTo(expectedSourceType, nullableEnabled);
+        bool IsSecondParameterOk() => methodSymbol.SecondParameterIsMappaContext(compilation);
     }
 }
