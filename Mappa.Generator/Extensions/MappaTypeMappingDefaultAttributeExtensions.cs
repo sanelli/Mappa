@@ -128,7 +128,7 @@ internal static class MappaTypeMappingDefaultAttributeExtensions
 
                     if (typeSymbol.IsAbstract)
                     {
-                        // TODO [#49] Generate the error diagnostic: the target type cannot be abstract.
+                        diagnostics.Add(MappaDiagnostics.CannotIdentifyStrategy(typeSymbol, sourceType, location));
                         return false;
                     }
                 }
