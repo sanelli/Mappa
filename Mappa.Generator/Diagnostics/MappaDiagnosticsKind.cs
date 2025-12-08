@@ -103,4 +103,9 @@ internal enum MappaDiagnosticsKind
     /// A property that is not marked as required cannot be mapped.
     /// </summary>
     CannotMapNonRequiredProperty,
+
+    /// <summary>
+    /// An explicit target type does not implement or derive from the map method target type.
+    /// </summary>
+    ExplicitTargetTypeDoesNotDeriveMapMethodTargetType,
 }

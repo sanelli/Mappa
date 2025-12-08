@@ -52,6 +52,9 @@ internal sealed class MappaMethodGeneratorContext
     internal override MappaUserSettings MappaUserSettings { get; }
 
     /// <inheritdoc/>
+    internal override bool HasErrorDiagnostics => this.ClassContext.HasErrorDiagnostics;
+
+    /// <inheritdoc/>
     internal override bool IsNullableEnabled()
         => this.GetMapMethod().NullableEnabled;
 

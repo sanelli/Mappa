@@ -13,6 +13,7 @@ namespace Mappa.Generator.Tests;
 /// Integration tests for <see cref="PolymorphismMapStrategy"/> and
 /// <see cref="MappaTypeMappingDefaultAttribute"/> with <see cref="MappaTypeMappingDefaultBehavior.MapSourceType"/>.
 /// </summary>
+// TODO [#49] Test with explicit throw behaviour with exception class without valid constructor -> diagnostic is thrown.
 // TODO [#49] Tests all corner case scenarios where the diagnostic is returned.
 public sealed partial class PolymorphismMapStrategyIntegrationTests
     : MappaGeneratorAbstractUnitTests

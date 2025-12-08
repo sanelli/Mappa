@@ -62,4 +62,7 @@
     <data name="CannotMapNonRequiredProperty" xml:space="preserve">
         <value>Cannot find a suitable mapping for property '{0}.{1}'.</value>
     </data>
+    <data name="ExplicitTargetTypeDoesNotDeriveMapMethodTargetType" xml:space="preserve">
+        <value>Type '{0}' does not derive or implement '{1}'.</value>
+    </data>
 </root>

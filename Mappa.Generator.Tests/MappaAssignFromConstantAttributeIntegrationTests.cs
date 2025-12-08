@@ -530,9 +530,8 @@ public sealed class MappaAssignFromConstantAttributeIntegrationTests
 
         // Assert
         generatedResults.Should()
-            .HaveDiagnostics(2)
-            .HaveDiagnostic(MappaDiagnosticDescriptors.MultipleAttributesTargetTheSamePropertyOrParameter, "Map", "Property")
-            .HaveDiagnostic(MappaDiagnosticDescriptors.CannotIdentifyStrategy, "Mappa.Generator.Tests.UnitTests.SourceCode.Source", "Mappa.Generator.Tests.UnitTests.SourceCode.Target");
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.MultipleAttributesTargetTheSamePropertyOrParameter, "Map", "Property");
     }
 
     /// <summary>
@@ -578,9 +577,8 @@ public sealed class MappaAssignFromConstantAttributeIntegrationTests
 
         // Assert
         generatedResults.Should()
-            .HaveDiagnostics(2)
-            .HaveDiagnostic(MappaDiagnosticDescriptors.MultipleAttributesTargetTheSamePropertyOrParameter, "Map", "value")
-            .HaveDiagnostic(MappaDiagnosticDescriptors.CannotIdentifyStrategy, "Mappa.Generator.Tests.UnitTests.SourceCode.Source", "Mappa.Generator.Tests.UnitTests.SourceCode.Target");
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.MultipleAttributesTargetTheSamePropertyOrParameter, "Map", "value");
     }
 
     private static void AssertInitArrayValue(ExpressionSyntaxAssertions initializationAssertions, string type, object? value)

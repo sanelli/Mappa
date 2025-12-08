@@ -270,4 +270,22 @@ internal static class MappaDiagnostics
             syntaxNode?.GetLocation(),
             parentType.ToDisplayString(),
             property.Name);
+
+    /// <summary>
+    /// Diagnostic to report that an explicit target type does not derive or implement
+    /// the method target type.
+    /// </summary>
+    /// <param name="explicitTargetType">The explicit target type.</param>
+    /// <param name="mapMethodTargetType">The map method target type.</param>
+    /// <param name="location">The location of the diagnostic.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic ExplicitTargetTypeDoesNotDeriveMapMethodTargetType(
+        ITypeSymbol explicitTargetType,
+        ITypeSymbol mapMethodTargetType,
+        Location? location)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.ExplicitTargetTypeDoesNotDeriveMapMethodTargetType,
+            location,
+            explicitTargetType.ToDisplayString(),
+            mapMethodTargetType.ToDisplayString());
 }

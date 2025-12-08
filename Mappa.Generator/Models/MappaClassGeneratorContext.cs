@@ -15,8 +15,8 @@ namespace Mappa.Generator.Models;
 /// </summary>
 internal sealed class MappaClassGeneratorContext
 {
-    private readonly List<MapMethod> mapMethods = new();
-    private readonly List<Diagnostic> diagnostics = new();
+    private readonly List<MapMethod> mapMethods = [];
+    private readonly List<Diagnostic> diagnostics = [];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaClassGeneratorContext"/> class.
@@ -81,6 +81,12 @@ internal sealed class MappaClassGeneratorContext
     /// Gets the diagnostics associated with the mapping.
     /// </summary>
     internal IReadOnlyCollection<Diagnostic> Diagnostics => this.diagnostics;
+
+    /// <summary>
+    /// Gets a value indicating whether a diagnostic with severity error has been reported.
+    /// </summary>
+    internal bool HasErrorDiagnostics =>
+        this.diagnostics.Any(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error);
 
     /// <summary>
     /// Gets a value indicating whether <c>nullable</c> is enabled for a syntax node.
@@ -157,14 +163,14 @@ internal sealed class MappaClassGeneratorContext
     /// <summary>
     /// Records a new set of diagnostics.
     /// </summary>
-    /// <param name="diagnostics">The diagnostics to be added.</param>
-    internal void ReportDiagnostics(IEnumerable<Diagnostic> diagnostics)
-        => this.diagnostics.AddRange(diagnostics);
+    /// <param name="generatedDiagnostics">The diagnostics to be added.</param>
+    internal void ReportDiagnostics(IEnumerable<Diagnostic> generatedDiagnostics)
+        => this.diagnostics.AddRange(generatedDiagnostics);
 
     /// <summary>
     /// Record a new diagnostic.
     /// </summary>
     /// <param name="diagnostic">The diagnostic to be added.</param>
     internal void ReportDiagnostic(Diagnostic diagnostic)
-        => this.ReportDiagnostics(new[] { diagnostic });
+        => this.ReportDiagnostics([diagnostic]);
 }

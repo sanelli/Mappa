@@ -45,6 +45,11 @@ internal abstract class MappaMapAlgorithmContext
     internal abstract MappaUserSettings MappaUserSettings { get; }
 
     /// <summary>
+    /// Gets a value indicating whether a diagnostic with severity error has been reported.
+    /// </summary>
+    internal abstract bool HasErrorDiagnostics { get; }
+
+    /// <summary>
     /// Gets a value indicating whether the nullable flag
     /// is enabled in the current context.
     /// </summary>

@@ -92,6 +92,7 @@ internal class TypeMapIdentifierAlgorithm
 
         foreach (var detector in detectors)
         {
+            // If the operation has been cancelled: stop!
             this.CancellationToken.ThrowIfCancellationRequested();
 
             switch (detector)
@@ -138,13 +139,24 @@ internal class TypeMapIdentifierAlgorithm
                     }
                 }
             }
+
+            // If any error diagnostic has been reported there is no point in going ahead.
+            if (this.Context.HasErrorDiagnostics)
+            {
+                break;
+            }
         }
 
-        // Report error because a mapping cannot be identified.
-        this.Context.ReportDiagnostic(MappaDiagnostics.CannotIdentifyStrategy(
-            this.Context.TargetType,
-            this.Context.SourceType,
-            this.Context.GetLocation()));
+        // Report error because a mapping cannot be identified but only if no other error
+        // diagnostic has been reported before that.
+        if (!this.Context.HasErrorDiagnostics)
+        {
+            this.Context.ReportDiagnostic(MappaDiagnostics.CannotIdentifyStrategy(
+                this.Context.TargetType,
+                this.Context.SourceType,
+                this.Context.GetLocation()));
+        }
+
         return new NoMapStrategy(this.Context.TargetType, this.Context.SourceType);
 
         // Identify if the polymorphism detector can actually be executed.

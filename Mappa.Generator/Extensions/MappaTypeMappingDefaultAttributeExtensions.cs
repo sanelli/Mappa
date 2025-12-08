@@ -107,7 +107,7 @@ internal static class MappaTypeMappingDefaultAttributeExtensions
 
                 if (attribute.Type is { } attributeTargetType && !string.IsNullOrWhiteSpace(attributeTargetType.FullName))
                 {
-                    var typeSymbol = compilation.GetTypeByMetadataName(attributeTargetType.FullName);
+                    var typeSymbol = compilation.GetTypeByMetadataName(attributeTargetType.FullName.NormalizeType());
                     if (typeSymbol is null)
                     {
                         // TODO [#49] Generate the error diagnostic: the type cannot be loaded.
@@ -116,7 +116,7 @@ internal static class MappaTypeMappingDefaultAttributeExtensions
 
                     if (!typeSymbol.IsImplementingOrIsDerivedFromClass(targetType))
                     {
-                        // TODO [#49] Generate the error diagnostic: the type is not deriving/implementing target type.
+                        diagnostics.Add(MappaDiagnostics.ExplicitTargetTypeDoesNotDeriveMapMethodTargetType(typeSymbol, targetType, location));
                         return false;
                     }
 

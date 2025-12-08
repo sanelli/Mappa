@@ -146,5 +146,11 @@ namespace Mappa.Generator.Diagnostics {
                 return ResourceManager.GetString("CannotMapNonRequiredProperty", resourceCulture);
             }
         }
+        
+        internal static string ExplicitTargetTypeDoesNotDeriveMapMethodTargetType {
+            get {
+                return ResourceManager.GetString("ExplicitTargetTypeDoesNotDeriveMapMethodTargetType", resourceCulture);
+            }
+        }
     }
 }

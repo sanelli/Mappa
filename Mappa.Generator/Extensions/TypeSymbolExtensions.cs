@@ -1520,7 +1520,7 @@ internal static class TypeSymbolExtensions
     /// </summary>
     /// <param name="type">The type name to be normalised.</param>
     /// <returns>The normalised name of the type.</returns>
-    internal static string NormalizeType(string type)
+    internal static string NormalizeType(this string type)
         => type switch
         {
             "sbyte" => typeof(sbyte).ToString(),
@@ -1610,7 +1610,7 @@ internal static class TypeSymbolExtensions
             baseType = baseType.BaseType;
         }
 
-        return true;
+        return false;
     }
 
     /// <summary>
