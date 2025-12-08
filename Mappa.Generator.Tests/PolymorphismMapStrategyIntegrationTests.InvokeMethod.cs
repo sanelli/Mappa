@@ -12,6 +12,7 @@ namespace Mappa.Generator.Tests;
 /// Integration tests for <see cref="PolymorphismMapStrategy"/> around
 /// <see cref="MappaTypeMappingDefaultAttribute"/> with <see cref="MappaTypeMappingDefaultBehavior.InvokeMethod"/>.
 /// </summary>
+// TODO [#49] Test diagnostic reported with invoke method but method cannot be located.
 // TODO [#49] Test diagnostic reported with invoke static method requiring context but context is not available.
 // TODO [#49] Test diagnostic reported with invoke method to behaviour with static method in mapper with incorrect source type.
 // TODO [#49] Test diagnostic reported with invoke method to behaviour with static method in mapper with incorrect target type.
