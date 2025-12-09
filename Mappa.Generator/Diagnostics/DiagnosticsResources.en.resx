@@ -69,6 +69,6 @@
         <value>The method to invoke is undefined.</value>
     </data>
     <data name="CannotIdentifySuitableMethodToInvoke" xml:space="preserve">
-        <value>Cannot identify a method with name '{0}' in class '{1}': the method does not exist or does not have the correct number of parameters or the types of the parameters do not match the expected types.</value>
+        <value>Cannot identify a method with name '{0}' in class '{1}': the method does not exist or does not have the correct number of parameters or the types of the parameters do not match the expected types or the method must be static.</value>
     </data>
 </root>

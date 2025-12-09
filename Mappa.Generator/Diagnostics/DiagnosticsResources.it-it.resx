@@ -69,6 +69,6 @@
         <value>Il metodo da invocare non è correttamente definito.</value>
     </data>
     <data name="CannotIdentifySuitableMethodToInvoke" xml:space="preserve">
-        <value>Non è possibile identificare un metodo con nome '{0}' nella classe '{1}': il metodo non esiste o il metodo non ha il numero corretto di parametri o il tipo dei parametri non è corretto.</value>
+        <value>Non è possibile identificare un metodo con nome '{0}' nella classe '{1}': il metodo non esiste o il metodo non ha il numero corretto di parametri o il tipo dei parametri non è corretto or il metodo deve essere dichiarato 'static'.</value>
     </data>
 </root>
