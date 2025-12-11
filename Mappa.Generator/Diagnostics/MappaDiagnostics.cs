@@ -398,4 +398,57 @@ internal static class MappaDiagnostics
             MappaDiagnosticDescriptors.MappaTypeMappingAttributeHaveTheSameSourceType,
             location,
             typeName);
+
+    /// <summary>
+    /// Diagnostic to report the fact <see cref="MappaTypeMappingDefaultAttribute"/>
+    /// have the same source type of the method being mapped.
+    /// </summary>
+    /// <param name="typeName">The name of the source type.</param>
+    /// <param name="location">The location of the diagnostic.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappaTypeMappingAttributeMapsSourceType(
+        string typeName,
+        Location? location)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappaTypeMappingAttributeMapsSourceType,
+            location,
+            typeName);
+
+    /// <summary>
+    /// Diagnostic to report the fact that <see cref="MappaTypeMappingDefaultAttribute"/>
+    /// source type does not implement nor is derived from the source type of the method
+    /// being mapped.
+    /// </summary>
+    /// <param name="attributeTypeName">The name of the source type in the attribute.</param>
+    /// <param name="mapMethodTypeName">The name of the source type in the method.</param>
+    /// <param name="location">The location of the diagnostic.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappaTypeMappingAttributeSourceTypeNotDeriveOrImplementMapMethodSourceType(
+        string attributeTypeName,
+        string mapMethodTypeName,
+        Location? location)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappaTypeMappingAttributeSourceTypeNotDeriveOrImplementMapMethodSourceType,
+            location,
+            attributeTypeName,
+            mapMethodTypeName);
+
+    /// <summary>
+    /// Diagnostic to report the fact that <see cref="MappaTypeMappingDefaultAttribute"/>
+    /// target type does not implement nor is derived from the target type of the method
+    /// being mapped.
+    /// </summary>
+    /// <param name="attributeTypeName">The name of the target type in the attribute.</param>
+    /// <param name="mapMethodTypeName">The name of the target type in the method.</param>
+    /// <param name="location">The location of the diagnostic.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappaTypeMappingAttributeTargetTypeNotDeriveOrImplementMapMethodTargetType(
+        string attributeTypeName,
+        string mapMethodTypeName,
+        Location? location)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappaTypeMappingAttributeTargetTypeNotDeriveOrImplementMapMethodTargetType,
+            location,
+            attributeTypeName,
+            mapMethodTypeName);
 }

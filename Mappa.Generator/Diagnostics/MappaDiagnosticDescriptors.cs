@@ -40,6 +40,9 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? mappaTypeDefaultBehaviorUndefined;
     private static DiagnosticDescriptor? mappaTypeMappingDefaultAttributeUnused;
     private static DiagnosticDescriptor? mappaTypeMappingAttributeHaveTheSameSourceType;
+    private static DiagnosticDescriptor? mappaTypeMappingAttributeMapsSourceType;
+    private static DiagnosticDescriptor? mappaTypeMappingAttributeSourceTypeNotDeriveOrImplementMapMethodSourceType;
+    private static DiagnosticDescriptor? mappaTypeMappingAttributeTargetTypeNotDeriveOrImplementMapMethodTargetType;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -248,6 +251,30 @@ internal static class MappaDiagnosticDescriptors
         => mappaTypeMappingAttributeHaveTheSameSourceType ??= BuildError(
             MappaDiagnosticsKind.MappaTypeMappingAttributeHaveTheSameSourceType,
             DiagnosticsResources.MappaTypeMappingAttributeHaveTheSameSourceType);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MappaTypeMappingAttributeMapsSourceType"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MappaTypeMappingAttributeMapsSourceType
+        => mappaTypeMappingAttributeMapsSourceType ??= BuildError(
+            MappaDiagnosticsKind.MappaTypeMappingAttributeMapsSourceType,
+            DiagnosticsResources.MappaTypeMappingAttributeMapsSourceType);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MappaTypeMappingAttributeSourceTypeNotDeriveOrImplementMapMethodSourceType"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MappaTypeMappingAttributeSourceTypeNotDeriveOrImplementMapMethodSourceType
+        => mappaTypeMappingAttributeSourceTypeNotDeriveOrImplementMapMethodSourceType ??= BuildError(
+            MappaDiagnosticsKind.MappaTypeMappingAttributeSourceTypeNotDeriveOrImplementMapMethodSourceType,
+            DiagnosticsResources.MappaTypeMappingAttributeSourceTypeNotDeriveOrImplementMapMethodSourceType);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MappaTypeMappingAttributeTargetTypeNotDeriveOrImplementMapMethodTargetType"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MappaTypeMappingAttributeTargetTypeNotDeriveOrImplementMapMethodTargetType
+        => mappaTypeMappingAttributeTargetTypeNotDeriveOrImplementMapMethodTargetType ??= BuildError(
+            MappaDiagnosticsKind.MappaTypeMappingAttributeTargetTypeNotDeriveOrImplementMapMethodTargetType,
+            DiagnosticsResources.MappaTypeMappingAttributeTargetTypeNotDeriveOrImplementMapMethodTargetType);
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(

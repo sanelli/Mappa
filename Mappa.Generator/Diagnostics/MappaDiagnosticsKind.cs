@@ -149,4 +149,19 @@ internal enum MappaDiagnosticsKind
     /// Two or more <see cref="MappaTypeMappingAttribute"/> target the same type.
     /// </summary>
     MappaTypeMappingAttributeHaveTheSameSourceType,
+
+    /// <summary>
+    /// The <see cref="MappaTypeMappingAttribute"/> has the same source type as the method being mapped.
+    /// </summary>
+    MappaTypeMappingAttributeMapsSourceType,
+
+    /// <summary>
+    /// The <see cref="MappaTypeMappingAttribute"/> source type does not derive nor implement the source type of the method being mapped.
+    /// </summary>
+    MappaTypeMappingAttributeSourceTypeNotDeriveOrImplementMapMethodSourceType,
+
+    /// <summary>
+    /// The <see cref="MappaTypeMappingAttribute"/> target type does not derive nor implement the target type of the method being mapped.
+    /// </summary>
+    MappaTypeMappingAttributeTargetTypeNotDeriveOrImplementMapMethodTargetType,
 }

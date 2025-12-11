@@ -89,4 +89,13 @@
     <data name="MappaTypeMappingAttributeHaveTheSameSourceType" xml:space="preserve">
         <value>Due o più attributi MappaTypeMappingAttributehanno il medesimo tipo sorgente '{0}'.</value>
     </data>
+    <data name="MappaTypeMappingAttributeMapsSourceType" xml:space="preserve">
+        <value>L'attribute MappaTypeMapping ha lo stesso tipo sorgente '{0}' del metodo che sta venendo mappato.</value>
+    </data>
+    <data name="MappaTypeMappingAttributeSourceTypeNotDeriveOrImplementMapMethodSourceType" xml:space="preserve">
+        <value>Il tipo sorgente '{0}' dell'attributo MappaTypeMapping non deriva ne implementa il tipo sorgente '{1}' del metodo che sta venendo mappato.</value>
+    </data>
+    <data name="MappaTypeMappingAttributeTargetTypeNotDeriveOrImplementMapMethodTargetType" xml:space="preserve">
+        <value>Il tipo obiettivo '{0}' dell'attributo MappaTypeMapping non deriva ne implementa il tipo obiettivo '{1}' del metodo che sta venendo mappato.</value>
+    </data>
 </root>

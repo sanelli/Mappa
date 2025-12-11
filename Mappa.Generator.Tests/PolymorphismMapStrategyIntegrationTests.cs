@@ -11,10 +11,8 @@ using Mappa.Generator.Tests.Assertions.Extensions;
 namespace Mappa.Generator.Tests;
 
 /// <summary>
-/// Integration tests for <see cref="PolymorphismMapStrategy"/> and
-/// <see cref="MappaTypeMappingDefaultAttribute"/> with <see cref="MappaTypeMappingDefaultBehavior.MapSourceType"/>.
+/// Integration tests for <see cref="PolymorphismMapStrategy"/>.
 /// </summary>
-// TODO [#49] Tests all corner case scenarios where the diagnostic is returned.
 public sealed partial class PolymorphismMapStrategyIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {
@@ -1832,5 +1830,348 @@ public sealed partial class PolymorphismMapStrategyIntegrationTests
         generatedResults.Should()
             .HaveDiagnostics(1)
             .HaveDiagnostic(MappaDiagnosticDescriptors.MappaTypeMappingAttributeHaveTheSameSourceType, "Mappa.Generator.Tests.UnitTests.SourceCode.SourceFirstDerivedClass");
+    }
+
+    /// <summary>
+    /// Test diagnostic is returned when <see cref="MappaTypeMappingAttribute"/>
+    /// has the same source type of the method being mapped.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task TestDiagnosticIsReturnedWhenMappaTypeMappingAttributeHasTheSameSourceTypeOfTheMethodBeingMapped()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using System;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                                  
+                                  public class SourceBaseClass 
+                                  {
+                                     public byte BaseClassProperty {get; set;}
+                                  }
+                                  
+                                  public class SourceFirstDerivedClass : SourceBaseClass
+                                  {
+                                     public float FirstDerivedClassProperty {get; set;}
+                                  }
+                                  
+                                  public class TargetBaseClass 
+                                  {
+                                     public int BaseClassProperty {get; set;}
+                                  }
+                                  
+                                  public class TargetFirstDerivedClass : TargetBaseClass
+                                  {
+                                     public string FirstDerivedClassProperty {get; set;}
+                                  }
+                                  
+                                  
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaTypeMapping(typeof(TargetFirstDerivedClass), typeof(SourceBaseClass))]
+                                      public partial TargetBaseClass Map(SourceBaseClass input);
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.MappaTypeMappingAttributeMapsSourceType, "Mappa.Generator.Tests.UnitTests.SourceCode.SourceBaseClass");
+    }
+
+    /// <summary>
+    /// Test diagnostic is returned when <see cref="MappaTypeMappingAttribute"/>
+    /// source type is not derived from source map method class type.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task TestDiagnosticIsReturnedWhenMappaTypeMappingAttributeSourceTypeDoesNotDeriveSourceTypeMapMethod()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using System;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                                  
+                                  public class SourceBaseClass 
+                                  {
+                                     public byte BaseClassProperty {get; set;}
+                                  }
+                                  
+                                  public class SourceFirstDerivedClass
+                                  {
+                                     public float FirstDerivedClassProperty {get; set;}
+                                  }
+                                  
+                                  public class TargetBaseClass 
+                                  {
+                                     public int BaseClassProperty {get; set;}
+                                  }
+                                  
+                                  public class TargetFirstDerivedClass : TargetBaseClass
+                                  {
+                                     public string FirstDerivedClassProperty {get; set;}
+                                  }
+                                  
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaTypeMapping(typeof(TargetFirstDerivedClass), typeof(SourceFirstDerivedClass))]
+                                      public partial TargetBaseClass Map(SourceBaseClass input);
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(
+                MappaDiagnosticDescriptors.MappaTypeMappingAttributeSourceTypeNotDeriveOrImplementMapMethodSourceType,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.SourceFirstDerivedClass",
+                "Mappa.Generator.Tests.UnitTests.SourceCode.SourceBaseClass");
+    }
+
+    /// <summary>
+    /// Test diagnostic is returned when <see cref="MappaTypeMappingAttribute"/>
+    /// source type is not implementing the source map method class interface.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task TestDiagnosticIsReturnedWhenMappaTypeMappingAttributeSourceTypeDoesNotImplementSourceTypeOfMethod()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using System;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                                  
+                                  public interface ISourceBaseClass 
+                                  {
+                                      byte BaseClassProperty {get; set;}
+                                  }
+                                  
+                                  public class SourceFirstDerivedClass
+                                  {
+                                     public float FirstDerivedClassProperty {get; set;}
+                                  }
+                                  
+                                  public class TargetBaseClass 
+                                  {
+                                     public int BaseClassProperty {get; set;}
+                                  }
+                                  
+                                  public class TargetFirstDerivedClass : TargetBaseClass
+                                  {
+                                     public string FirstDerivedClassProperty {get; set;}
+                                  }
+                                  
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaTypeMapping(typeof(TargetFirstDerivedClass), typeof(SourceFirstDerivedClass))]
+                                      public partial TargetBaseClass Map(ISourceBaseClass input);
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(
+                MappaDiagnosticDescriptors.MappaTypeMappingAttributeSourceTypeNotDeriveOrImplementMapMethodSourceType,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.SourceFirstDerivedClass",
+                "Mappa.Generator.Tests.UnitTests.SourceCode.ISourceBaseClass");
+    }
+
+    /// <summary>
+    /// Test diagnostic is returned when <see cref="MappaTypeMappingAttribute"/>
+    /// target type is not derived from target map method class type.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task TestDiagnosticIsReturnedWhenMappaTypeMappingAttributeTargetTypeDoesNotDeriveTargetTypeOfMapMethod()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using System;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                                  
+                                  public class SourceBaseClass 
+                                  {
+                                     public byte BaseClassProperty {get; set;}
+                                  }
+                                  
+                                  public class SourceFirstDerivedClass : SourceBaseClass
+                                  {
+                                     public float FirstDerivedClassProperty {get; set;}
+                                  }
+                                  
+                                  public class TargetBaseClass 
+                                  {
+                                     public int BaseClassProperty {get; set;}
+                                  }
+                                  
+                                  public class TargetFirstDerivedClass
+                                  {
+                                     public string FirstDerivedClassProperty {get; set;}
+                                  }
+                                  
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaTypeMapping(typeof(TargetFirstDerivedClass), typeof(SourceFirstDerivedClass))]
+                                      public partial TargetBaseClass Map(SourceBaseClass input);
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(
+                MappaDiagnosticDescriptors.MappaTypeMappingAttributeTargetTypeNotDeriveOrImplementMapMethodTargetType,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.TargetFirstDerivedClass",
+                "Mappa.Generator.Tests.UnitTests.SourceCode.TargetBaseClass");
+    }
+
+    /// <summary>
+    /// Test diagnostic is returned when <see cref="MappaTypeMappingAttribute"/>
+    /// target type is not implementing the target map method class interface.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task TestDiagnosticIsReturnedWhenMappaTypeMappingAttributeTargetTypeDoesNotImplementTargetTypeOfMapMethod()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using System;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                                  
+                                  public class SourceBaseClass 
+                                  {
+                                     public byte BaseClassProperty {get; set;}
+                                  }
+                                  
+                                  public class SourceFirstDerivedClass : SourceBaseClass
+                                  {
+                                     public float FirstDerivedClassProperty {get; set;}
+                                  }
+                                  
+                                  public interface ITargetBaseClass 
+                                  {
+                                  int BaseClassProperty {get; set;}
+                                  }
+                                  
+                                  public class TargetFirstDerivedClass
+                                  {
+                                     public string FirstDerivedClassProperty {get; set;}
+                                  }
+                                  
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaTypeMapping(typeof(TargetFirstDerivedClass), typeof(SourceFirstDerivedClass))]
+                                      public partial ITargetBaseClass Map(SourceBaseClass input);
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(
+                MappaDiagnosticDescriptors.MappaTypeMappingAttributeTargetTypeNotDeriveOrImplementMapMethodTargetType,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.TargetFirstDerivedClass",
+                "Mappa.Generator.Tests.UnitTests.SourceCode.ITargetBaseClass");
+    }
+
+    /// <summary>
+    /// Test diagnostic is returned when <see cref="MappaTypeMappingAttribute"/>
+    /// define a mapping that cannot be satisfied.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task TestDiagnosticIsReturnedWhenMappaTypeMappingAttributeDefineAMappingThatCannotBeSatisfied()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using System;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                                  
+                                  public class SourceBaseClass 
+                                  {
+                                     public byte BaseClassProperty {get; set;}
+                                  }
+                                  
+                                  public class SourceFirstDerivedClass : SourceBaseClass
+                                  {
+                                     public float FirstDerivedClassProperty {get; set;}
+                                  }
+                                  
+                                  public class TargetBaseClass 
+                                  {
+                                     public int BaseClassProperty {get; set;}
+                                  }
+                                  
+                                  public class TargetFirstDerivedClass : TargetBaseClass
+                                  {
+                                     public TargetFirstDerivedClass(int baseClassProperty, int anotherProperty)
+                                     {
+                                        this.BaseClassProperty = baseClassProperty;
+                                     }
+                                  }
+                                  
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaTypeMapping(typeof(TargetFirstDerivedClass), typeof(SourceFirstDerivedClass))]
+                                      public partial TargetBaseClass Map(SourceBaseClass input);
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(
+                MappaDiagnosticDescriptors.CannotIdentifyStrategy,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.SourceFirstDerivedClass",
+                "Mappa.Generator.Tests.UnitTests.SourceCode.TargetFirstDerivedClass");
     }
 }

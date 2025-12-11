@@ -11,7 +11,9 @@ namespace Mappa.Generator.Tests;
 
 /// <summary>
 /// Integration tests for <see cref="PolymorphismMapStrategy"/> and
-/// <see cref="MappaTypeMappingDefaultAttribute"/> with <see cref="MappaTypeMappingDefaultBehavior.MapSourceType"/>.
+/// <see cref="MappaTypeMappingDefaultAttribute"/> with either
+/// <see cref="MappaTypeMappingDefaultBehavior.Default"/> or
+/// <see cref="MappaTypeMappingDefaultBehavior.Null"/>.
 /// </summary>
 public sealed partial class PolymorphismMapStrategyIntegrationTests
 {

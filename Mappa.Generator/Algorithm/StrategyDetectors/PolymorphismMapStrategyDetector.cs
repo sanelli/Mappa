@@ -79,21 +79,27 @@ internal sealed class PolymorphismMapStrategyDetector(MappaMapAlgorithmContext c
             // Check attribute source type and map method source type are different types.
             if (SymbolEqualityComparer.Default.Equals(attributeSourceType, this.context.SourceType))
             {
-                // TODO [#49] Add diagnostic that attribute source type should be different than map method source type and to use MappaTypeMappingDefault default attribute.
+                this.context.ReportDiagnostic(MappaDiagnostics.MappaTypeMappingAttributeMapsSourceType(attribute.SourceType.FullName, rootMapMethod.Location));
                 return false;
             }
 
             // Check attribute source type is derived form the source type in the map method somehow.
             if (!attributeSourceType.IsImplementingOrIsDerivedFromClass(this.context.SourceType))
             {
-                // TODO [#49] Add diagnostic that source type is not derived from map source type.
+                this.context.ReportDiagnostic(MappaDiagnostics.MappaTypeMappingAttributeSourceTypeNotDeriveOrImplementMapMethodSourceType(
+                    attributeSourceType.ToDisplayString(),
+                    this.context.SourceType.ToDisplayString(),
+                    rootMapMethod.Location));
                 return false;
             }
 
-            // Check attribute source type is derived form the source type in the map method somehow.
-            if (!attributeSourceType.IsImplementingOrIsDerivedFromClass(this.context.SourceType))
+            // Check attribute target type is derived form the target type in the map method somehow.
+            if (!attributeTargetType.IsImplementingOrIsDerivedFromClass(this.context.TargetType))
             {
-                // TODO [#49] Add diagnostic that target type is not derived from map target type.
+                this.context.ReportDiagnostic(MappaDiagnostics.MappaTypeMappingAttributeTargetTypeNotDeriveOrImplementMapMethodTargetType(
+                        attributeTargetType.ToDisplayString(),
+                        this.context.TargetType.ToDisplayString(),
+                        rootMapMethod.Location));
                 return false;
             }
 
@@ -109,7 +115,7 @@ internal sealed class PolymorphismMapStrategyDetector(MappaMapAlgorithmContext c
             var attributeStrategy = attributeAlgorithm.GetStrategy();
             if (attributeStrategy is NoMapStrategy)
             {
-                // TODO [#49] Add diagnostic mapping cannot be found for attribute.
+                // No need to add a diagnostic: the algorithm will add one if needed.
                 return false;
             }
 
@@ -152,24 +158,23 @@ internal sealed class PolymorphismMapStrategyDetector(MappaMapAlgorithmContext c
 
             if (targetSymbol.TypeKind == TypeKind.Interface)
             {
-                // TODO [#49] Report diagnostic that default mapping is trying to map to an interface.
+                this.context.ReportDiagnostic(MappaDiagnostics.TypeMustBeConcrete(targetSymbol.ToDisplayString(), rootMapMethod.Location));
                 return false;
             }
 
             if (targetSymbol.IsAbstract)
             {
-                // TODO [#49] Report diagnostic that default mapping is trying to map to an abstract type.
+                this.context.ReportDiagnostic(MappaDiagnostics.TypeMustBeConcrete(targetSymbol.ToDisplayString(), rootMapMethod.Location));
                 return false;
             }
 
-            // TODO [#49] Apply a flag to prevent this strategy to run twice.
             var derivedContext = new DerivedMappaMapAlgorithmContext(this.context, targetSymbol, this.context.SourceType);
             var algorithm = new TypeMapIdentifierAlgorithm(derivedContext, this.compilation, this.cancellationToken);
             defaultMappingStrategy = algorithm.GetStrategy();
 
             if (defaultMappingStrategy is NoMapStrategy)
             {
-                // TODO [#49] Report diagnostic that default mapping cannot be identified.
+                // No need to add a diagnostic: the algorithm will add one if needed.
                 return false;
             }
         }

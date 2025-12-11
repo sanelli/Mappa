@@ -200,5 +200,23 @@ namespace Mappa.Generator.Diagnostics {
                 return ResourceManager.GetString("MappaTypeMappingAttributeHaveTheSameSourceType", resourceCulture);
             }
         }
+        
+        internal static string MappaTypeMappingAttributeMapsSourceType {
+            get {
+                return ResourceManager.GetString("MappaTypeMappingAttributeMapsSourceType", resourceCulture);
+            }
+        }
+        
+        internal static string MappaTypeMappingAttributeSourceTypeNotDeriveOrImplementMapMethodSourceType {
+            get {
+                return ResourceManager.GetString("MappaTypeMappingAttributeSourceTypeNotDeriveOrImplementMapMethodSourceType", resourceCulture);
+            }
+        }
+        
+        internal static string MappaTypeMappingAttributeTargetTypeNotDeriveOrImplementMapMethodTargetType {
+            get {
+                return ResourceManager.GetString("MappaTypeMappingAttributeTargetTypeNotDeriveOrImplementMapMethodTargetType", resourceCulture);
+            }
+        }
     }
 }

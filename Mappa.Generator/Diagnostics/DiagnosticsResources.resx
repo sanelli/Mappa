@@ -96,4 +96,13 @@
     <data name="MappaTypeMappingAttributeHaveTheSameSourceType" xml:space="preserve">
         <value>Two or more MappaTypeMappingAttribute have the same sorce type '{0}'.</value>
     </data>
+    <data name="MappaTypeMappingAttributeMapsSourceType" xml:space="preserve">
+        <value>The MappaTypeMapping attribute has the same source type of the source type '{0}' of the method being mapped.</value>
+    </data>
+    <data name="MappaTypeMappingAttributeSourceTypeNotDeriveOrImplementMapMethodSourceType" xml:space="preserve">
+        <value>The MappaTypeMapping attribute source type '{0}' does not derive nor implement map method source type '{1}'.</value>
+    </data>
+    <data name="MappaTypeMappingAttributeTargetTypeNotDeriveOrImplementMapMethodTargetType" xml:space="preserve">
+        <value>The MappaTypeMapping attribute target type '{0}' does not derive nor implement map method target type '{1}'.</value>
+    </data>
 </root>
