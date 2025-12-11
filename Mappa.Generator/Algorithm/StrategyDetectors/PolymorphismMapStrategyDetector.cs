@@ -66,16 +66,14 @@ internal sealed class PolymorphismMapStrategyDetector(MappaMapAlgorithmContext c
             var attributeSourceType = this.compilation.GetTypeByMetadataName(attribute.SourceType.FullName);
             if (attributeSourceType is null)
             {
-                // TODO [#49] Add diagnostic that the type cannot be loaded.
-                return false;
+                throw new MappaGeneratorException($"The source type '{attribute.SourceType.FullName}' cannot be correctly laded at compile time.");
             }
 
             // Check attribute target type can be loaded.
             var attributeTargetType = this.compilation.GetTypeByMetadataName(attribute.TargetType.FullName);
             if (attributeTargetType is null)
             {
-                // TODO [#49] Add diagnostic that the type cannot be loaded.
-                return false;
+                throw new MappaGeneratorException($"The target type '{attribute.SourceType.FullName}' cannot be correctly laded at compile time.");
             }
 
             // Check attribute source type and map method source type are different types.
