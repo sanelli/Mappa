@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Models.Strategies;
 using Mappa.Generator.Tests.Assertions;
 using Mappa.Generator.Tests.Assertions.Extensions;
@@ -948,5 +949,343 @@ public sealed partial class PolymorphismMapStrategyIntegrationTests
                             }))
                         .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement(expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_1")));
                 });
+    }
+
+    /// <summary>
+    /// Test a diagnostic is returned when the type used by
+    /// <see cref="MappaTypeMappingDefaultAttribute"/>
+    /// with value <see cref="MappaTypeMappingDefaultBehavior.Throw"/>
+    /// is not an exception.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task TestDiagnosticIsReturnedWhenThExceptionTypeForThrowIsNotAnException()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using System;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                                  
+                                  public class SourceBaseClass 
+                                  {
+                                     public byte BaseClassProperty {get; set;}
+                                  }
+                                  
+                                  public class SourceFirstDerivedClass : SourceBaseClass
+                                  {
+                                     public float FirstDerivedClassProperty {get; set;}
+                                  }
+                                  
+                                  public class SourceSecondDerivedClass : SourceBaseClass
+                                  {
+                                     public DateTime SecondDerivedClassProperty {get; set;}
+                                  }
+                                  
+                                  public class SourceThirdDerivedClass : SourceSecondDerivedClass
+                                  {
+                                     public string ThirdDerivedClassProperty {get; set;}
+                                  }
+                                  
+                                  public class TargetBaseClass 
+                                  {
+                                     public int BaseClassProperty {get; set;}
+                                  }
+                                  
+                                  public class TargetFirstDerivedClass : TargetBaseClass
+                                  {
+                                     public string FirstDerivedClassProperty {get; set;}
+                                  }
+                                  
+                                  public class TargetSecondDerivedClass : TargetBaseClass
+                                  {
+                                     public DateOnly SecondDerivedClassProperty {get; set;}
+                                  }
+                                  
+                                  public class TargetThirdDerivedClass : TargetSecondDerivedClass
+                                  {
+                                     public long ThirdDerivedClassProperty {get; set;}
+                                  }
+                                  
+                                  public class CustomException
+                                  {
+                                     public CustomException() { }
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaTypeMapping(typeof(TargetThirdDerivedClass), typeof(SourceThirdDerivedClass))]
+                                      [MappaTypeMapping(typeof(TargetSecondDerivedClass), typeof(SourceSecondDerivedClass))]
+                                      [MappaTypeMapping(typeof(TargetFirstDerivedClass), typeof(SourceFirstDerivedClass))]
+                                      [MappaTypeMappingDefault(MappaTypeMappingDefaultBehavior.Throw, typeof(CustomException)]
+                                      public partial TargetBaseClass Map(SourceBaseClass input);
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.TypeMustBeAnException, "Mappa.Generator.Tests.UnitTests.SourceCode.CustomException");
+    }
+
+    /// <summary>
+    /// Test a diagnostic is returned when the type used by
+    /// <see cref="MappaTypeMappingDefaultAttribute"/>
+    /// with value <see cref="MappaTypeMappingDefaultBehavior.Throw"/>
+    /// is defined as <c>abstract</c>.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task TestDiagnosticIsReturnedWhenThExceptionTypeForThrowIsVirtual()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using System;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                                  
+                                  public class SourceBaseClass 
+                                  {
+                                     public byte BaseClassProperty {get; set;}
+                                  }
+                                  
+                                  public class SourceFirstDerivedClass : SourceBaseClass
+                                  {
+                                     public float FirstDerivedClassProperty {get; set;}
+                                  }
+                                  
+                                  public class SourceSecondDerivedClass : SourceBaseClass
+                                  {
+                                     public DateTime SecondDerivedClassProperty {get; set;}
+                                  }
+                                  
+                                  public class SourceThirdDerivedClass : SourceSecondDerivedClass
+                                  {
+                                     public string ThirdDerivedClassProperty {get; set;}
+                                  }
+                                  
+                                  public class TargetBaseClass 
+                                  {
+                                     public int BaseClassProperty {get; set;}
+                                  }
+                                  
+                                  public class TargetFirstDerivedClass : TargetBaseClass
+                                  {
+                                     public string FirstDerivedClassProperty {get; set;}
+                                  }
+                                  
+                                  public class TargetSecondDerivedClass : TargetBaseClass
+                                  {
+                                     public DateOnly SecondDerivedClassProperty {get; set;}
+                                  }
+                                  
+                                  public class TargetThirdDerivedClass : TargetSecondDerivedClass
+                                  {
+                                     public long ThirdDerivedClassProperty {get; set;}
+                                  }
+                                  
+                                  public abstract class CustomException : Exception
+                                  {
+                                     public CustomException() { }
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaTypeMapping(typeof(TargetThirdDerivedClass), typeof(SourceThirdDerivedClass))]
+                                      [MappaTypeMapping(typeof(TargetSecondDerivedClass), typeof(SourceSecondDerivedClass))]
+                                      [MappaTypeMapping(typeof(TargetFirstDerivedClass), typeof(SourceFirstDerivedClass))]
+                                      [MappaTypeMappingDefault(MappaTypeMappingDefaultBehavior.Throw, typeof(CustomException)]
+                                      public partial TargetBaseClass Map(SourceBaseClass input);
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.TypeMustBeConcrete, "Mappa.Generator.Tests.UnitTests.SourceCode.CustomException");
+    }
+
+    /// <summary>
+    /// Test a diagnostic is returned when the type used by
+    /// <see cref="MappaTypeMappingDefaultAttribute"/>
+    /// with value <see cref="MappaTypeMappingDefaultBehavior.Throw"/>
+    /// does not have a constructor with no parameters or a constructor
+    /// with only one string parameter.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task TestDiagnosticIsReturnedWhenThExceptionDoesNotHaveEitherAnEmptyConstructorOrAConstructorWithOneStringParameter()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using System;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                                  
+                                  public class SourceBaseClass 
+                                  {
+                                     public byte BaseClassProperty {get; set;}
+                                  }
+                                  
+                                  public class SourceFirstDerivedClass : SourceBaseClass
+                                  {
+                                     public float FirstDerivedClassProperty {get; set;}
+                                  }
+                                  
+                                  public class SourceSecondDerivedClass : SourceBaseClass
+                                  {
+                                     public DateTime SecondDerivedClassProperty {get; set;}
+                                  }
+                                  
+                                  public class SourceThirdDerivedClass : SourceSecondDerivedClass
+                                  {
+                                     public string ThirdDerivedClassProperty {get; set;}
+                                  }
+                                  
+                                  public class TargetBaseClass 
+                                  {
+                                     public int BaseClassProperty {get; set;}
+                                  }
+                                  
+                                  public class TargetFirstDerivedClass : TargetBaseClass
+                                  {
+                                     public string FirstDerivedClassProperty {get; set;}
+                                  }
+                                  
+                                  public class TargetSecondDerivedClass : TargetBaseClass
+                                  {
+                                     public DateOnly SecondDerivedClassProperty {get; set;}
+                                  }
+                                  
+                                  public class TargetThirdDerivedClass : TargetSecondDerivedClass
+                                  {
+                                     public long ThirdDerivedClassProperty {get; set;}
+                                  }
+                                  
+                                  public class CustomException : Exception
+                                  {
+                                     public CustomException(string a, string b) { }
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaTypeMapping(typeof(TargetThirdDerivedClass), typeof(SourceThirdDerivedClass))]
+                                      [MappaTypeMapping(typeof(TargetSecondDerivedClass), typeof(SourceSecondDerivedClass))]
+                                      [MappaTypeMapping(typeof(TargetFirstDerivedClass), typeof(SourceFirstDerivedClass))]
+                                      [MappaTypeMappingDefault(MappaTypeMappingDefaultBehavior.Throw, typeof(CustomException)]
+                                      public partial TargetBaseClass Map(SourceBaseClass input);
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.TypeMustHaveAConstructorWithNoParametersOrAConstructorWithOneStringParameter, "Mappa.Generator.Tests.UnitTests.SourceCode.CustomException");
+    }
+
+    /// <summary>
+    /// Test a diagnostic is returned when the type used by
+    /// <see cref="MappaTypeMappingDefaultAttribute"/>
+    /// with value <see cref="MappaTypeMappingDefaultBehavior.Throw"/>
+    /// has only a constructor with one parameter but that parameter is
+    /// not of type <see cref="string"/>.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task TestDiagnosticIsReturnedWhenThExceptionHasAConstructorWithOneParameterOfTypeThatIsNotString()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using System;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                                  
+                                  public class SourceBaseClass 
+                                  {
+                                     public byte BaseClassProperty {get; set;}
+                                  }
+                                  
+                                  public class SourceFirstDerivedClass : SourceBaseClass
+                                  {
+                                     public float FirstDerivedClassProperty {get; set;}
+                                  }
+                                  
+                                  public class SourceSecondDerivedClass : SourceBaseClass
+                                  {
+                                     public DateTime SecondDerivedClassProperty {get; set;}
+                                  }
+                                  
+                                  public class SourceThirdDerivedClass : SourceSecondDerivedClass
+                                  {
+                                     public string ThirdDerivedClassProperty {get; set;}
+                                  }
+                                  
+                                  public class TargetBaseClass 
+                                  {
+                                     public int BaseClassProperty {get; set;}
+                                  }
+                                  
+                                  public class TargetFirstDerivedClass : TargetBaseClass
+                                  {
+                                     public string FirstDerivedClassProperty {get; set;}
+                                  }
+                                  
+                                  public class TargetSecondDerivedClass : TargetBaseClass
+                                  {
+                                     public DateOnly SecondDerivedClassProperty {get; set;}
+                                  }
+                                  
+                                  public class TargetThirdDerivedClass : TargetSecondDerivedClass
+                                  {
+                                     public long ThirdDerivedClassProperty {get; set;}
+                                  }
+                                  
+                                  public class CustomException : Exception
+                                  {
+                                     public CustomException(int x) { }
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaTypeMapping(typeof(TargetThirdDerivedClass), typeof(SourceThirdDerivedClass))]
+                                      [MappaTypeMapping(typeof(TargetSecondDerivedClass), typeof(SourceSecondDerivedClass))]
+                                      [MappaTypeMapping(typeof(TargetFirstDerivedClass), typeof(SourceFirstDerivedClass))]
+                                      [MappaTypeMappingDefault(MappaTypeMappingDefaultBehavior.Throw, typeof(CustomException)]
+                                      public partial TargetBaseClass Map(SourceBaseClass input);
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.TypeMustHaveAConstructorWithNoParametersOrAConstructorWithOneStringParameter, "Mappa.Generator.Tests.UnitTests.SourceCode.CustomException");
     }
 }

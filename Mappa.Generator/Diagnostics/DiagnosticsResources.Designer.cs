@@ -164,5 +164,23 @@ namespace Mappa.Generator.Diagnostics {
                 return ResourceManager.GetString("CannotIdentifySuitableMethodToInvoke", resourceCulture);
             }
         }
+        
+        internal static string TypeMustBeAnException {
+            get {
+                return ResourceManager.GetString("TypeMustBeAnException", resourceCulture);
+            }
+        }
+        
+        internal static string TypeMustBeConcrete {
+            get {
+                return ResourceManager.GetString("TypeMustBeConcrete", resourceCulture);
+            }
+        }
+        
+        internal static string TypeMustHaveAConstructorWithNoParametersOrAConstructorWithOneStringParameter {
+            get {
+                return ResourceManager.GetString("TypeMustHaveAConstructorWithNoParametersOrAConstructorWithOneStringParameter", resourceCulture);
+            }
+        }
     }
 }

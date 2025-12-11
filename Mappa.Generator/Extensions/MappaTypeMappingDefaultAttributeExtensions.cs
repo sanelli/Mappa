@@ -57,20 +57,20 @@ internal static class MappaTypeMappingDefaultAttributeExtensions
 
                     if (!typeSymbol.CanBeThrown(compilation))
                     {
-                        // TODO [#49] Generate the error diagnostic: an exception type is expected.
+                        diagnostics.Add(MappaDiagnostics.TypeMustBeAnException(attributeType.FullName, location));
                         return false;
                     }
 
                     if (typeSymbol.IsAbstract)
                     {
-                        // TODO [#49] Generate the error diagnostic: the exception cannot be abstract.
+                        diagnostics.Add(MappaDiagnostics.TypeMustBeConcrete(attributeType.FullName, location));
                         return false;
                     }
 
                     if (!typeSymbol.HasNamedTypeSymbolAccessibleZeroParametersConstructor(compilation)
                         && !typeSymbol.HasNamedTypeSymbolAccessibleSingleStringParametersConstructor(compilation))
                     {
-                        // TODO [#49] Generate the error diagnostic: expected to be able to access either empty constructor or constructor with one string parameter.
+                        diagnostics.Add(MappaDiagnostics.TypeMustHaveAConstructorWithNoParametersOrAConstructorWithOneStringParameter(attributeType.FullName, location));
                         return false;
                     }
                 }

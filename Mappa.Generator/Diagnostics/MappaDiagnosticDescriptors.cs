@@ -34,6 +34,9 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? explicitTargetTypeDoesNotDeriveMapMethodTargetType;
     private static DiagnosticDescriptor? methodToInvokeUndefined;
     private static DiagnosticDescriptor? cannotIdentifySuitableMethodToInvoke;
+    private static DiagnosticDescriptor? typeMustBeAnException;
+    private static DiagnosticDescriptor? typeMustBeConcrete;
+    private static DiagnosticDescriptor? typeMustHaveAConstructorWithNoParametersOrAConstructorWithOneStringParameter;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -194,6 +197,30 @@ internal static class MappaDiagnosticDescriptors
         => cannotIdentifySuitableMethodToInvoke ??= BuildError(
             MappaDiagnosticsKind.CannotIdentifySuitableMethodToInvoke,
             DiagnosticsResources.CannotIdentifySuitableMethodToInvoke);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.TypeMustBeAnException"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor TypeMustBeAnException
+        => typeMustBeAnException ??= BuildError(
+            MappaDiagnosticsKind.TypeMustBeAnException,
+            DiagnosticsResources.TypeMustBeAnException);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.TypeMustBeConcrete"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor TypeMustBeConcrete
+        => typeMustBeConcrete ??= BuildError(
+            MappaDiagnosticsKind.TypeMustBeConcrete,
+            DiagnosticsResources.TypeMustBeConcrete);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.TypeMustHaveAConstructorWithNoParametersOrAConstructorWithOneStringParameter"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor TypeMustHaveAConstructorWithNoParametersOrAConstructorWithOneStringParameter
+        => typeMustHaveAConstructorWithNoParametersOrAConstructorWithOneStringParameter ??= BuildError(
+            MappaDiagnosticsKind.TypeMustHaveAConstructorWithNoParametersOrAConstructorWithOneStringParameter,
+            DiagnosticsResources.TypeMustHaveAConstructorWithNoParametersOrAConstructorWithOneStringParameter);
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(

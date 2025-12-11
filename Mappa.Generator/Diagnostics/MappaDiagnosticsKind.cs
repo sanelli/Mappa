@@ -119,4 +119,19 @@ internal enum MappaDiagnosticsKind
     /// number of parameters.
     /// </summary>
     CannotIdentifySuitableMethodToInvoke,
+
+    /// <summary>
+    /// The type must be an exception.
+    /// </summary>
+    TypeMustBeAnException,
+
+    /// <summary>
+    /// The type must be a concrete type (i.e. non-abstract).
+    /// </summary>
+    TypeMustBeConcrete,
+
+    /// <summary>
+    /// The type must have a constructor with no parameters or a constructor with one string parameter.
+    /// </summary>
+    TypeMustHaveAConstructorWithNoParametersOrAConstructorWithOneStringParameter,
 }

@@ -38,7 +38,6 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
 
         // TODO [#13] `GetStrategy` should also allow to get compatible methods in some scenarios.
         // TODO [#49] This method should be able to pick up also polymorphic methods defined via type mapping.
-        // TODO [#49] This might should be able to pick up method where the source/target are compatible.
         // This will require identifying a mapping between input & target parameter.
         if (this.Context.TryGetMethod(this.Context.TargetType, this.Context.SourceType, out var mapMethod))
         {

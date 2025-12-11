@@ -316,4 +316,47 @@ internal static class MappaDiagnostics
             location,
             methodName,
             typeName);
+
+    /// <summary>
+    /// Diagnostic to report the fact that the type must be an exception.
+    /// </summary>
+    /// <param name="typeName">The type that must be an exception.</param>
+    /// <param name="location">The location of the diagnostic.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic TypeMustBeAnException(
+        string typeName,
+        Location? location)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.TypeMustBeAnException,
+            location,
+            typeName);
+
+    /// <summary>
+    /// Diagnostic to report the fact that the type must be a concrete type.
+    /// </summary>
+    /// <param name="typeName">The type that must be a concrete type.</param>
+    /// <param name="location">The location of the diagnostic.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic TypeMustBeConcrete(
+        string typeName,
+        Location? location)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.TypeMustBeConcrete,
+            location,
+            typeName);
+
+    /// <summary>
+    /// Diagnostic to report the fact that the type must have a constructor with no parameters
+    /// or a constructor with a single string parameter.
+    /// </summary>
+    /// <param name="typeName">The type that must be a concrete type.</param>
+    /// <param name="location">The location of the diagnostic.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic TypeMustHaveAConstructorWithNoParametersOrAConstructorWithOneStringParameter(
+        string typeName,
+        Location? location)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.TypeMustHaveAConstructorWithNoParametersOrAConstructorWithOneStringParameter,
+            location,
+            typeName);
 }
