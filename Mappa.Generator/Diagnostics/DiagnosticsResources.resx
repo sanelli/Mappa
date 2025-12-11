@@ -93,4 +93,7 @@
     <data name="MappaTypeMappingDefaultAttributeUnusedType" xml:space="preserve">
         <value>The type specified in the MappaTypeMappingDefault attribute will not be used.</value>
     </data>
+    <data name="MappaTypeMappingAttributeHaveTheSameSourceType" xml:space="preserve">
+        <value>Two or more MappaTypeMappingAttribute have the same sorce type '{0}'.</value>
+    </data>
 </root>

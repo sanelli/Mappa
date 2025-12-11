@@ -194,5 +194,11 @@ namespace Mappa.Generator.Diagnostics {
                 return ResourceManager.GetString("MappaTypeMappingDefaultAttributeUnusedType", resourceCulture);
             }
         }
+        
+        internal static string MappaTypeMappingAttributeHaveTheSameSourceType {
+            get {
+                return ResourceManager.GetString("MappaTypeMappingAttributeHaveTheSameSourceType", resourceCulture);
+            }
+        }
     }
 }

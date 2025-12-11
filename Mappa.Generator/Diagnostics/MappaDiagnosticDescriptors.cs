@@ -39,6 +39,7 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? typeMustHaveAConstructorWithNoParametersOrAConstructorWithOneStringParameter;
     private static DiagnosticDescriptor? mappaTypeDefaultBehaviorUndefined;
     private static DiagnosticDescriptor? mappaTypeMappingDefaultAttributeUnused;
+    private static DiagnosticDescriptor? mappaTypeMappingAttributeHaveTheSameSourceType;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -239,6 +240,14 @@ internal static class MappaDiagnosticDescriptors
         => mappaTypeMappingDefaultAttributeUnused ??= BuildWarning(
             MappaDiagnosticsKind.MappaTypeMappingDefaultAttributeUnusedType,
             DiagnosticsResources.MappaTypeMappingDefaultAttributeUnusedType);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MappaTypeMappingAttributeHaveTheSameSourceType"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MappaTypeMappingAttributeHaveTheSameSourceType
+        => mappaTypeMappingAttributeHaveTheSameSourceType ??= BuildError(
+            MappaDiagnosticsKind.MappaTypeMappingAttributeHaveTheSameSourceType,
+            DiagnosticsResources.MappaTypeMappingAttributeHaveTheSameSourceType);
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(

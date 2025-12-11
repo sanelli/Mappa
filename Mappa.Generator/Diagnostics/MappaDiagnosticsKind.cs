@@ -144,4 +144,9 @@ internal enum MappaDiagnosticsKind
     /// The type specified in <see cref="MappaTypeMappingDefaultAttribute"/> will not be used.
     /// </summary>
     MappaTypeMappingDefaultAttributeUnusedType,
+
+    /// <summary>
+    /// Two or more <see cref="MappaTypeMappingAttribute"/> target the same type.
+    /// </summary>
+    MappaTypeMappingAttributeHaveTheSameSourceType,
 }

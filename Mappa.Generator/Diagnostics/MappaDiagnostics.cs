@@ -383,4 +383,19 @@ internal static class MappaDiagnostics
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.MappaTypeMappingDefaultAttributeUnusedType,
             location);
+
+    /// <summary>
+    /// Diagnostic to report the fact that multiple <see cref="MappaTypeMappingDefaultAttribute"/>
+    /// have the same source type.
+    /// </summary>
+    /// <param name="typeName">The name of the source type.</param>
+    /// <param name="location">The location of the diagnostic.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappaTypeMappingAttributeHaveTheSameSourceType(
+        string typeName,
+        Location? location)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappaTypeMappingAttributeHaveTheSameSourceType,
+            location,
+            typeName);
 }

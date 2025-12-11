@@ -3,6 +3,7 @@
 // </copyright>
 
 using Mappa.Attributes;
+using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Exceptions;
 using Mappa.Generator.Extensions;
 using Mappa.Generator.Models;
@@ -37,6 +38,7 @@ internal sealed class PolymorphismMapStrategyDetector(MappaMapAlgorithmContext c
         // Check the attributes.
         var sourceTypeFullNames = new HashSet<string>();
         var subtypesMappingsStrategies = new List<MapStrategy>();
+        var rootMapMethod = this.context.GetRootMapMethod();
         foreach (var attribute in typeMappingAttributes)
         {
             // Check attribute source type name is valid.
@@ -49,7 +51,7 @@ internal sealed class PolymorphismMapStrategyDetector(MappaMapAlgorithmContext c
             // Check attribute source type is not duplicated.
             if (!sourceTypeFullNames.Add(attribute.SourceType.FullName))
             {
-                // TODO [#49] Add diagnostic: duplicated attribute with the same source type.
+                this.context.ReportDiagnostic(MappaDiagnostics.MappaTypeMappingAttributeHaveTheSameSourceType(attribute.SourceType.FullName, rootMapMethod.Location));
                 return false;
             }
 
@@ -119,7 +121,6 @@ internal sealed class PolymorphismMapStrategyDetector(MappaMapAlgorithmContext c
         var mappaTypeMappingDefaultAttribute = this.GetTypeMappingDefaultAttribute()
                                                ?? new MappaTypeMappingDefaultAttribute(MappaTypeMappingDefaultBehavior.Throw);
 
-        var rootMapMethod = this.context.GetRootMapMethod();
         var methodSymbolContainingSymbol = rootMapMethod.MethodSymbol.ContainingSymbol as ITypeSymbol ?? throw new MappaGeneratorException("Method parent is not a type symbol");
         var mapMethodHasTwoParameters = rootMapMethod.MethodSymbol.Parameters.Length == 2;
         var validationSuccessful = mappaTypeMappingDefaultAttribute.IsValid(

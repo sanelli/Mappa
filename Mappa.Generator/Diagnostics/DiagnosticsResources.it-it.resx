@@ -86,4 +86,7 @@
     <data name="MappaTypeMappingDefaultAttributeUnusedType" xml:space="preserve">
         <value>Il tipo specification dall'attributo MappaTypeMappingDefault non verrà utilizzato.</value>
     </data>
+    <data name="MappaTypeMappingAttributeHaveTheSameSourceType" xml:space="preserve">
+        <value>Due o più attributi MappaTypeMappingAttributehanno il medesimo tipo sorgente '{0}'.</value>
+    </data>
 </root>
