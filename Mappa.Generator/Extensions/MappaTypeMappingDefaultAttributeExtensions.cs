@@ -46,21 +46,13 @@ internal static class MappaTypeMappingDefaultAttributeExtensions
                 // TODO [#49] Generate the error diagnostic: unsupported value.
                 return false;
             case MappaTypeMappingDefaultBehavior.Throw:
-
-                // Check the method name is not defined.
-                if (!string.IsNullOrEmpty(attribute.MethodName))
-                {
-                    // TODO [#49] Generate the warning diagnostic: method name will not be used.
-                }
-
                 // Check the type is an exception and there is a constructor that can be used.
-                if (attribute.Type is { } type && !string.IsNullOrWhiteSpace(type.FullName))
+                if (attribute.Type is { } attributeType && !string.IsNullOrWhiteSpace(attributeType.FullName))
                 {
-                    var typeSymbol = compilation.GetTypeByMetadataName(type.FullName);
+                    var typeSymbol = compilation.GetTypeByMetadataName(attributeType.FullName.NormalizeType());
                     if (typeSymbol is null)
                     {
-                        // TODO [#49] Generate the error diagnostic: the type cannot be loaded.
-                        return false;
+                        throw new MappaGeneratorException($"Type '{attributeType.FullName}' cannot be loaded at compile time.");
                     }
 
                     if (!typeSymbol.CanBeThrown(compilation))
@@ -105,7 +97,7 @@ internal static class MappaTypeMappingDefaultAttributeExtensions
                     var typeSymbol = compilation.GetTypeByMetadataName(attributeTargetType.FullName.NormalizeType());
                     if (typeSymbol is null)
                     {
-                        throw new MappaGeneratorException("Type cannot be identified.");
+                        throw new MappaGeneratorException($"Type '{attributeTargetType.FullName}' cannot be loaded at compile time.");
                     }
 
                     if (!typeSymbol.IsImplementingOrIsDerivedFromClass(targetType))
