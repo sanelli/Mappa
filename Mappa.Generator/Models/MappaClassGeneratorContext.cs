@@ -2,8 +2,10 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Attributes;
 using Mappa.Generator.Diagnostics.Debug;
 using Mappa.Generator.Exceptions;
+using Mappa.Generator.Extensions;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -128,6 +130,57 @@ internal sealed class MappaClassGeneratorContext
             this.mapMethods.Find(method => method.IsMapFor(targetType, sourceType, nullableEnabled));
         mapMethod = foundMethod!;
         return foundMethod is not null;
+    }
+
+    /// <summary>
+    /// Try getting the method for mapping from <paramref name="sourceType"/> to
+    /// <paramref name="targetType"/> by checking the polymorphic methods.
+    /// </summary>
+    /// <param name="targetType">The target type.</param>
+    /// <param name="sourceType">The source type.</param>
+    /// <param name="nullableEnabled">Nullable enabled.</param>
+    /// <param name="mapMethod">The map method, if it exists.</param>
+    /// <returns><c>true</c> if the method to map from <paramref name="sourceType"/> to
+    /// <paramref name="targetType"/>, <c>false</c> otherwise.</returns>
+    internal bool TryGetPolymorphicMethod(
+        ITypeSymbol targetType,
+        ITypeSymbol sourceType,
+        bool nullableEnabled,
+        out MapMethod mapMethod)
+    {
+        foreach (var method in this.mapMethods)
+        {
+           var typeMappingAttributes = method.GetAttributes<MappaTypeMappingAttribute>();
+           if (typeMappingAttributes.Length <= 0)
+           {
+               // Only look for methods that have any MappaTypeMappingAttribute.
+               break;
+           }
+
+           if (nullableEnabled)
+           {
+                // TODO [#49] Add checks to validate nullability can be satisfied.
+           }
+
+           // Search in the attributes to see if there is a mapping that can be used.
+           foreach (var typeMappingAttribute in typeMappingAttributes)
+           {
+               var attributeSourceType = this.Compilation.GetTypeByMetadataName(typeMappingAttribute.SourceType.FullName!);
+               var attributeTargetType = this.Compilation.GetTypeByMetadataName(typeMappingAttribute.TargetType.FullName!);
+
+               if (attributeSourceType is not null &&
+                   attributeTargetType is not null &&
+                   attributeSourceType.IsEqualTo(sourceType, false) &&
+                   attributeTargetType.IsEqualTo(targetType, false))
+               {
+                   mapMethod = method;
+                   return true;
+               }
+           }
+        }
+
+        mapMethod = null!;
+        return false;
     }
 
     /// <summary>

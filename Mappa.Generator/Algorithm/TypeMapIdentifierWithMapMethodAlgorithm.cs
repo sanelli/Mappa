@@ -51,6 +51,18 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
             }
         }
 
+        if (this.Context.TryGetPolymorphicMethod(this.Context.TargetType, this.Context.SourceType, out mapMethod))
+        {
+            var mapMethodRequireMappaContext = mapMethod.RequireMappaContextWhenInvoked();
+            var rootMapMethod = this.Context.GetRootMapMethod();
+            var callerMethodProvideMappaContext = rootMapMethod.ProvideMappaContextWhenInvoked();
+
+            if (!mapMethodRequireMappaContext || /* mapMethodRequireMappaContext && */ callerMethodProvideMappaContext)
+            {
+                return new PolymorphicMethodMapStrategy(mapMethod, rootMapMethod.MaybeGetMappaContextParameterName());
+            }
+        }
+
         return base.GetStrategy();
     }
 }

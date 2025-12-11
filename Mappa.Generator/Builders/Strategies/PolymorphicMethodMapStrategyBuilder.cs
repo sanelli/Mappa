@@ -1,4 +1,4 @@
-// <copyright file="MethodMapStrategyBuilder.cs" company="Stefano Anelli">
+// <copyright file="PolymorphicMethodMapStrategyBuilder.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -8,12 +8,12 @@ using Mappa.Generator.Models.Strategies;
 namespace Mappa.Generator.Builders.Strategies;
 
 /// <summary>
-/// Builder for <see cref="MethodMapStrategy"/>.
+/// Builder for <see cref="PolymorphicMethodMapStrategy"/>.
 /// </summary>
-internal sealed class MethodMapStrategyBuilder(MethodMapStrategy strategy)
+internal sealed class PolymorphicMethodMapStrategyBuilder(PolymorphicMethodMapStrategy strategy)
     : IMappaStrategyBuilder
 {
-    private readonly MethodMapStrategy strategy = strategy;
+    private readonly PolymorphicMethodMapStrategy strategy = strategy;
 
     /// <inheritdoc/>
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
@@ -33,7 +33,7 @@ internal sealed class MethodMapStrategyBuilder(MethodMapStrategy strategy)
             contextParameter = $", {this.strategy.ContextParameterName}";
         }
 
-        var code = $"{this.strategy.TargetType.ToDisplayString()} {temporary} = {methodName}({source}{contextParameter});";
+        var code = $"{this.strategy.TargetType.ToDisplayString()} {temporary} = ({this.strategy.TargetType.ToDisplayString()}) {methodName}({source}{contextParameter});";
 
         return (temporary, code);
     }
