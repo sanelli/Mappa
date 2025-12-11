@@ -44,8 +44,8 @@ internal sealed class PolymorphismMapStrategyDetector(MappaMapAlgorithmContext c
             // Check attribute source type name is valid.
             if (string.IsNullOrWhiteSpace(attribute.SourceType.FullName))
             {
-                // TODO [#49] Add diagnostic that the type name cannot be loaded.
-                return false;
+                // We ignore attribute will null values so this should never happen.
+                throw new MappaGeneratorException("The source type cannot be loaded at compile time");
             }
 
             // Check attribute source type is not duplicated.
@@ -58,8 +58,8 @@ internal sealed class PolymorphismMapStrategyDetector(MappaMapAlgorithmContext c
             // Check attribute target type name is valid.
             if (string.IsNullOrWhiteSpace(attribute.TargetType.FullName))
             {
-                // TODO [#49] Add diagnostic that the type name cannot be loaded.
-                return false;
+                // We ignore attribute will null values so this should never happen.
+                throw new MappaGeneratorException("The target type cannot be loaded at compile time");
             }
 
             // Check attribute source type can be loaded.
