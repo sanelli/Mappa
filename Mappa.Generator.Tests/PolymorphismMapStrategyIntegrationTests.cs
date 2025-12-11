@@ -1781,7 +1781,7 @@ public sealed partial class PolymorphismMapStrategyIntegrationTests
     /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
-    public async Task DiagnosticIsReturnedWhenMultipleMappaTypeMappingHaveTheSameSourceType()
+    public async Task TestDiagnosticIsReturnedWhenMultipleMappaTypeMappingHaveTheSameSourceType()
     {
         // Arrange
         const string sourceCode = """
@@ -1813,14 +1813,14 @@ public sealed partial class PolymorphismMapStrategyIntegrationTests
                                   
                                   public class TargetSecondDerivedClass : TargetBaseClass
                                   {
-                                  public string FirstDerivedClassProperty {get; set;}
+                                    public string FirstDerivedClassProperty {get; set;}
                                   }
                                   
                                   [Mappa]
                                   public sealed partial class Mapper
                                   {
-                                      [MappaTypeMapping(typeof(TargetThirdDerivedClass), typeof(SourceThirdDerivedClass))]
-                                      [MappaTypeMapping(typeof(TargetThirdDerivedClass), typeof(SourceFirstDerivedClass))]
+                                      [MappaTypeMapping(typeof(TargetFirstDerivedClass), typeof(SourceFirstDerivedClass))]
+                                      [MappaTypeMapping(typeof(TargetSecondDerivedClass), typeof(SourceFirstDerivedClass))]
                                       public partial TargetBaseClass Map(SourceBaseClass input);
                                   }
                                   """;
@@ -1831,6 +1831,6 @@ public sealed partial class PolymorphismMapStrategyIntegrationTests
         // Assert
         generatedResults.Should()
             .HaveDiagnostics(1)
-            .HaveDiagnostic(MappaDiagnosticDescriptors.MappaTypeMappingAttributeHaveTheSameSourceType, "Mappa.Generator.Tests.UnitTests.SourceCode.TargetThirdDerivedClass");
+            .HaveDiagnostic(MappaDiagnosticDescriptors.MappaTypeMappingAttributeHaveTheSameSourceType, "Mappa.Generator.Tests.UnitTests.SourceCode.SourceFirstDerivedClass");
     }
 }
