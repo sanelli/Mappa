@@ -37,6 +37,8 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? typeMustBeAnException;
     private static DiagnosticDescriptor? typeMustBeConcrete;
     private static DiagnosticDescriptor? typeMustHaveAConstructorWithNoParametersOrAConstructorWithOneStringParameter;
+    private static DiagnosticDescriptor? mappaTypeDefaultBehaviorUndefined;
+    private static DiagnosticDescriptor? mappaTypeMappingDefaultAttributeUnused;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -221,6 +223,22 @@ internal static class MappaDiagnosticDescriptors
         => typeMustHaveAConstructorWithNoParametersOrAConstructorWithOneStringParameter ??= BuildError(
             MappaDiagnosticsKind.TypeMustHaveAConstructorWithNoParametersOrAConstructorWithOneStringParameter,
             DiagnosticsResources.TypeMustHaveAConstructorWithNoParametersOrAConstructorWithOneStringParameter);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MappaTypeDefaultBehaviorUndefined"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MappaTypeDefaultBehaviorUndefined
+        => mappaTypeDefaultBehaviorUndefined ??= BuildError(
+            MappaDiagnosticsKind.MappaTypeDefaultBehaviorUndefined,
+            DiagnosticsResources.MappaTypeDefaultBehaviorUndefined);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MappaTypeMappingDefaultAttributeUnusedType"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MappaTypeMappingDefaultAttributeUnusedType
+        => mappaTypeMappingDefaultAttributeUnused ??= BuildWarning(
+            MappaDiagnosticsKind.MappaTypeMappingDefaultAttributeUnusedType,
+            DiagnosticsResources.MappaTypeMappingDefaultAttributeUnusedType);
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(

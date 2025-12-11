@@ -80,4 +80,10 @@
     <data name="TypeMustHaveAConstructorWithNoParametersOrAConstructorWithOneStringParameter" xml:space="preserve">
         <value>Il tipo '{0}' deve avere un costruttore senza nessun parametro oppure un costruttore con un solo parametro di tipo string.</value>
     </data>
+    <data name="MappaTypeDefaultBehaviorUndefined" xml:space="preserve">
+        <value>L'attribute MappaTypeDefaultBehaviorUndefined è Undefined.</value>
+    </data>
+    <data name="MappaTypeMappingDefaultAttributeUnusedType" xml:space="preserve">
+        <value>Il tipo specification dall'attributo MappaTypeMappingDefault non verrà utilizzato.</value>
+    </data>
 </root>

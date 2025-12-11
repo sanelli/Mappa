@@ -43,8 +43,9 @@ internal static class MappaTypeMappingDefaultAttributeExtensions
         switch (attribute.Behavior)
         {
             case MappaTypeMappingDefaultBehavior.Undefined:
-                // TODO [#49] Generate the error diagnostic: unsupported value.
+                diagnostics.Add(MappaDiagnostics.MappaTypeDefaultBehaviorUndefined(location));
                 return false;
+
             case MappaTypeMappingDefaultBehavior.Throw:
                 // Check the type is an exception and there is a constructor that can be used.
                 if (attribute.Type is { } attributeType && !string.IsNullOrWhiteSpace(attributeType.FullName))
@@ -76,21 +77,17 @@ internal static class MappaTypeMappingDefaultAttributeExtensions
                 }
 
                 break;
+
             case MappaTypeMappingDefaultBehavior.Default:
             case MappaTypeMappingDefaultBehavior.Null:
-                // Check the method name is not defined.
-                if (!string.IsNullOrEmpty(attribute.MethodName))
-                {
-                    // TODO [#49] Generate the warning diagnostic: method name will not be used.
-                }
-
                 // Check the type is not set.
                 if (attribute.Type is not null)
                 {
-                    // TODO [#49] Generate the warning diagnostic: type will not be used.
+                    diagnostics.Add(MappaDiagnostics.MappaTypeMappingDefaultAttributeUnusedType(location));
                 }
 
                 break;
+
             case MappaTypeMappingDefaultBehavior.MapSourceType:
                 if (attribute.Type is { } attributeTargetType && !string.IsNullOrWhiteSpace(attributeTargetType.FullName))
                 {
@@ -139,7 +136,7 @@ internal static class MappaTypeMappingDefaultAttributeExtensions
                 }
 
                 var methods = invokeMethodTypeSymbol.LocateMethods(attribute.MethodName!);
-                var method = methods.FirstOrDefault(m => m.IsMethodValidToMapToTargetSymbolForPolymorphism(
+                var method = methods.FirstOrDefault(methodSymbol => methodSymbol.IsMethodValidToMapToTargetSymbolForPolymorphism(
                     sourceType,
                     compilation,
                     attribute.Type is not null,
@@ -155,6 +152,7 @@ internal static class MappaTypeMappingDefaultAttributeExtensions
                 }
 
                 break;
+
             default:
                 throw new ArgumentOutOfRangeException(nameof(attribute));
         }

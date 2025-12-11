@@ -80,4 +80,10 @@
     <data name="TypeMustHaveAConstructorWithNoParametersOrAConstructorWithOneStringParameter" xml:space="preserve">
         <value>Type '{0}' must have a construtcor with no parameters or a constructor with one string parameter.</value>
     </data>
+    <data name="MappaTypeDefaultBehaviorUndefined" xml:space="preserve">
+        <value>The MappaTypeDefaultBehaviorUndefined is undefined.</value>
+    </data>
+    <data name="MappaTypeMappingDefaultAttributeUnusedType" xml:space="preserve">
+        <value>The type specified in the MappaTypeMappingDefault attribute will not be used.</value>
+    </data>
 </root>

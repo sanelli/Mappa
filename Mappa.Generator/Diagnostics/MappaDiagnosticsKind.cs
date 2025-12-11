@@ -134,4 +134,14 @@ internal enum MappaDiagnosticsKind
     /// The type must have a constructor with no parameters or a constructor with one string parameter.
     /// </summary>
     TypeMustHaveAConstructorWithNoParametersOrAConstructorWithOneStringParameter,
+
+    /// <summary>
+    /// The <see cref="MappaTypeMappingDefaultAttribute"/> is undefined.
+    /// </summary>
+    MappaTypeDefaultBehaviorUndefined,
+
+    /// <summary>
+    /// The type specified in <see cref="MappaTypeMappingDefaultAttribute"/> will not be used.
+    /// </summary>
+    MappaTypeMappingDefaultAttributeUnusedType,
 }

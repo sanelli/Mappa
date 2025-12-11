@@ -359,4 +359,28 @@ internal static class MappaDiagnostics
             MappaDiagnosticDescriptors.TypeMustHaveAConstructorWithNoParametersOrAConstructorWithOneStringParameter,
             location,
             typeName);
+
+    /// <summary>
+    /// Diagnostic to report the fact that the <see cref="MappaTypeMappingDefaultAttribute"/>
+    /// is <see cref="MappaTypeMappingDefaultBehavior.Undefined"/>.
+    /// </summary>
+    /// <param name="location">The location of the diagnostic.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappaTypeDefaultBehaviorUndefined(
+        Location? location)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappaTypeDefaultBehaviorUndefined,
+            location);
+
+    /// <summary>
+    /// Diagnostic to report the fact that the <see cref="MappaTypeMappingDefaultAttribute"/>
+    /// specify a type that will not be used.
+    /// </summary>
+    /// <param name="location">The location of the diagnostic.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappaTypeMappingDefaultAttributeUnusedType(
+        Location? location)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappaTypeMappingDefaultAttributeUnusedType,
+            location);
 }

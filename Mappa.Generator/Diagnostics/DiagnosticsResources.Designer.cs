@@ -182,5 +182,17 @@ namespace Mappa.Generator.Diagnostics {
                 return ResourceManager.GetString("TypeMustHaveAConstructorWithNoParametersOrAConstructorWithOneStringParameter", resourceCulture);
             }
         }
+        
+        internal static string MappaTypeDefaultBehaviorUndefined {
+            get {
+                return ResourceManager.GetString("MappaTypeDefaultBehaviorUndefined", resourceCulture);
+            }
+        }
+        
+        internal static string MappaTypeMappingDefaultAttributeUnusedType {
+            get {
+                return ResourceManager.GetString("MappaTypeMappingDefaultAttributeUnusedType", resourceCulture);
+            }
+        }
     }
 }
