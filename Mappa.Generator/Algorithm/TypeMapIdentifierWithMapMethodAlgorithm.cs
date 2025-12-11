@@ -37,7 +37,6 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
         this.CancellationToken.ThrowIfCancellationRequested();
 
         // TODO [#13] `GetStrategy` should also allow to get compatible methods in some scenarios.
-        // TODO [#49] This method should be able to pick up also polymorphic methods defined via type mapping.
         // This will require identifying a mapping between input & target parameter.
         if (this.Context.TryGetMethod(this.Context.TargetType, this.Context.SourceType, out var mapMethod))
         {
@@ -51,7 +50,8 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
             }
         }
 
-        if (this.Context.TryGetPolymorphicMethod(this.Context.TargetType, this.Context.SourceType, out mapMethod))
+        if (this.Context.TryGetPolymorphicMethod(this.Context.TargetType, this.Context.SourceType, out mapMethod)
+            && !ReferenceEquals(mapMethod.MethodSymbol, this.Context.GetRootMapMethod().MethodSymbol))
         {
             var mapMethodRequireMappaContext = mapMethod.RequireMappaContextWhenInvoked();
             var rootMapMethod = this.Context.GetRootMapMethod();

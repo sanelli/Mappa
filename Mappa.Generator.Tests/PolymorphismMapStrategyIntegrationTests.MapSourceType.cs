@@ -577,7 +577,7 @@ public sealed partial class PolymorphismMapStrategyIntegrationTests
         // Assert
         generatedResults.Should()
             .HaveDiagnostics(1)
-            .HaveDiagnostic(MappaDiagnosticDescriptors.CannotIdentifyStrategy, "Mappa.Generator.Tests.UnitTests.SourceCode.SourceBaseClass", "Mappa.Generator.Tests.UnitTests.SourceCode.ITargetBaseClass");
+            .HaveDiagnostic(MappaDiagnosticDescriptors.TypeMustBeConcrete, "Mappa.Generator.Tests.UnitTests.SourceCode.ITargetBaseClass");
     }
 
     /// <summary>
@@ -737,7 +737,7 @@ public sealed partial class PolymorphismMapStrategyIntegrationTests
         // Assert
         generatedResults.Should()
             .HaveDiagnostics(1)
-            .HaveDiagnostic(MappaDiagnosticDescriptors.CannotIdentifyStrategy, "Mappa.Generator.Tests.UnitTests.SourceCode.SourceBaseClass", "Mappa.Generator.Tests.UnitTests.SourceCode.TargetBaseClass");
+            .HaveDiagnostic(MappaDiagnosticDescriptors.TypeMustBeConcrete, "Mappa.Generator.Tests.UnitTests.SourceCode.TargetBaseClass");
     }
 
     /// <summary>
