@@ -1,4 +1,4 @@
-// <copyright file="MappaContextTests.cs" company="Stefano Anelli">
+// <copyright file="MappaContextIntegrationTests.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -11,7 +11,7 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Tests for maps using <see cref="MappaContext"/>.
 /// </summary>
-public sealed class MappaContextTests
+public sealed class MappaContextIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {
     /// <summary>

@@ -1,4 +1,4 @@
-// <copyright file="ExtensionMethodSupportTests.cs" company="Stefano Anelli">
+// <copyright file="ExtensionMethodSupportIntegrationTests.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -11,7 +11,7 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Tests to check that extension methods are supported.
 /// </summary>
-public sealed class ExtensionMethodSupportTests
+public sealed class ExtensionMethodSupportIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {
     /// <summary>
