@@ -61,7 +61,11 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
 
             if (!mapMethodRequireMappaContext || /* mapMethodRequireMappaContext && */ callerMethodProvideMappaContext)
             {
-                return new PolymorphicMethodMapStrategy(mapMethod, rootMapMethod.MaybeGetMappaContextParameterName());
+                return new PolymorphicMethodMapStrategy(
+                    this.Context.TargetType,
+                    this.Context.SourceType,
+                    mapMethod,
+                    rootMapMethod.MaybeGetMappaContextParameterName());
             }
         }
 

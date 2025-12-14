@@ -86,10 +86,10 @@ public sealed class PolymorphicMethodMapStrategyIntegrationTests
                             "__mappa_tmp_7",
                             initializerAssertions => initializerAssertions.BeMemberAccessExpressionSyntax("input.DependencyProperty")))
                         .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
-                            "Mappa.Generator.Tests.UnitTests.SourceCode.TargetBase",
+                            "Mappa.Generator.Tests.UnitTests.SourceCode.TargetFirst",
                             "__mappa_tmp_8",
                             initializerAssertions => initializerAssertions.BeCastExpressionSyntax(
-                                "Mappa.Generator.Tests.UnitTests.SourceCode.TargetBase",
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.TargetFirst",
                                 expressionAssertions => expressionAssertions.BeInvocationExpressionSyntax(
                                     "this.MapDependency",
                                     parameterAssertions => parameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_7")))))
