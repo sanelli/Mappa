@@ -13,7 +13,6 @@ namespace Mappa.Generator.Tests;
 /// Integration tests for <see cref="PolymorphicMethodMapStrategy"/>.
 /// </summary>
 // TODO [#49] Add samples before adding more tests.
-// TODO [#49] Add tests to check we can pick up polymorphic method when mapping when types are defined in MappaTypeMapping attribute.
 // TODO [#49] Add tests to check we can pick up polymorphic method when mapping when types are defined in the MappaTypeMappingDefault attribute.
 // TODO [#49] Add tests to check we can pick up polymorphic when nullability is disabled.
 // TODO [#49] Add tests to check we can pick up polymorphic when nullability is enabled and match but is not the same.
@@ -80,7 +79,28 @@ public sealed class PolymorphicMethodMapStrategyIntegrationTests
                 PragmaWarning.NoBlock,
                 blockSyntaxAssertions =>
                 {
-                    // TODO [#49] Add assertions.
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(4)
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                            "Mappa.Generator.Tests.UnitTests.SourceCode.SourceFirst",
+                            "__mappa_tmp_7",
+                            initializerAssertions => initializerAssertions.BeMemberAccessExpressionSyntax("input.DependencyProperty")))
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                            "Mappa.Generator.Tests.UnitTests.SourceCode.TargetBase",
+                            "__mappa_tmp_8",
+                            initializerAssertions => initializerAssertions.BeCastExpressionSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.TargetBase",
+                                expressionAssertions => expressionAssertions.BeInvocationExpressionSyntax(
+                                    "this.MapDependency",
+                                    parameterAssertions => parameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_7")))))
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                            "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                            "__mappa_tmp_9",
+                            initializerAssertions => initializerAssertions.BeObjectCreationExpressionSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                ("DependencyProperty", expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_8")))))
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement(
+                            expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_9")));
                 });
     }
 }
