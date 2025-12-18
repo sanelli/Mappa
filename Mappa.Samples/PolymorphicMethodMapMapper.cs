@@ -10,6 +10,8 @@ namespace Mappa.Samples;
 /// Mapper to showcase the ability of Mappa to pick up
 /// polymorphic methods.
 /// </summary>
+// TODO [#49] Add sample to check we can pick up polymorphic method when mapping when types are defined in the MappaTypeMappingDefault attribute explicitly.
+// TODO [#49] Add sample to check we can pick up polymorphic method when mapping when types are defined in the MappaTypeMappingDefault attribute implicitly.
 [Mappa]
 [MappaSettings(CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
 public sealed partial class PolymorphicMethodMapMapper
