@@ -10,37 +10,65 @@ using Xunit.Categories;
 namespace Mappa.Samples.Tests;
 
 /// <summary>
-/// Unit tests for <see cref="Samples.PolymorphicMethodMapMapper"/>.
+/// Unit tests for Polymorphic Map Method strategy.
 /// </summary>
 public sealed class PolymorphicMethodMapMapperUnitTests
 {
-    private static readonly PolymorphicMethodMapMapper PolymorphicMethodMapMapper = new();
+    private static readonly PolymorphicMethodMapMapperIdentifiedViaMappaTypeMappingAttributeMapper PolymorphicMethodMapMapperIdentifiedViaMappaTypeMappingAttributeMapper = new();
+    private static readonly PolymorphicMethodMapMapperIdentifiedViaMappaTypeMappingDefaultAttributeMapper PolymorphicMethodMapMapperIdentifiedViaMappaTypeMappingDefaultAttributeMapper = new();
 
     /// <summary>
-    /// Test <see cref="PolymorphicMethodMapMapper.Map(Models.Polymorphism.One.SourceWithDependency)"/>.
+    /// Test <see cref="PolymorphicMethodMapMapperIdentifiedViaMappaTypeMappingAttributeMapper.Map(Models.Polymorphism.One.SourceWithDependency)"/>.
     /// </summary>
     [Fact]
     [UnitTest]
-    private void PolymorphicMethodMapMapperCanMapCorrectlyPickingUpThePolymorphicMethod()
+    private void TestPolymorphicMethodMapMapperIdentifiedViaMappaTypeMappingAttributeMapper()
     {
         // Arrange
         var source = new Models.Polymorphism.One.SourceWithDependency
         {
             NumericProperty = 125,
-            ThirdClass = new Models.Polymorphism.One.SourceThirdClass
+            NestedProperty = new Models.Polymorphism.One.SourceThirdClass
             {
                 NumericProperty = 456, GuidProperty = Guid.NewGuid(), Numbers = ["7", "8", "9"],
             },
         };
 
         // Act
-        var target = PolymorphicMethodMapMapper.Map(source);
+        var target = PolymorphicMethodMapMapperIdentifiedViaMappaTypeMappingAttributeMapper.Map(source);
 
         // Assert
         target.NumericProperty.Should().Be(125L);
-        target.ThirdClass.Should().NotBeNull();
-        target.ThirdClass.NumericProperty.Should().Be(456);
-        target.ThirdClass.GuidProperty.Should().Be(source.ThirdClass.GuidProperty.ToString());
-        target.ThirdClass.Numbers.Should().BeEquivalentTo([7, 8, 9]);
+        target.NestedProperty.Should().NotBeNull();
+        target.NestedProperty.NumericProperty.Should().Be(456);
+        target.NestedProperty.GuidProperty.Should().Be(source.NestedProperty.GuidProperty.ToString());
+        target.NestedProperty.Numbers.Should().BeEquivalentTo([7, 8, 9]);
+    }
+
+    /// <summary>
+    /// Test <see cref="PolymorphicMethodMapMapperIdentifiedViaMappaTypeMappingDefaultAttributeMapper.Map(Models.Polymorphism.One.SourceWithDependencyWithSourceBaseClass)"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    private void TestPolymorphicMethodMapMapperIdentifiedViaMappaTypeMappingDefaultAttributeMapper()
+    {
+        // Arrange
+        var source = new Models.Polymorphism.One.SourceWithDependencyWithSourceBaseClass
+        {
+            NumericProperty = 125,
+            NestedProperty = new Models.Polymorphism.One.SourceBaseClass
+            {
+                NumericProperty = 456,
+            },
+        };
+
+        // Act
+        var target = PolymorphicMethodMapMapperIdentifiedViaMappaTypeMappingDefaultAttributeMapper.Map(source);
+
+        // Assert
+        target.NumericProperty.Should().Be(125L);
+        target.NestedProperty.Should().NotBeNull();
+        target.NestedProperty.Should().BeOfType<Models.Polymorphism.One.TargetUnmappedBaseClass>();
+        target.NestedProperty.NumericProperty.Should().Be(456);
     }
 }

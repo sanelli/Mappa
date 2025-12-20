@@ -6,15 +6,16 @@ using Mappa.Attributes;
 
 namespace Mappa.Samples;
 
+#pragma warning disable SA1402
+
 /// <summary>
 /// Mapper to showcase the ability of Mappa to pick up
-/// polymorphic methods.
+/// polymorphic methods when source and target are defined via
+/// <see cref="MappaTypeMappingAttribute"/>.
 /// </summary>
-// TODO [#49] Add sample to check we can pick up polymorphic method when mapping when types are defined in the MappaTypeMappingDefault attribute explicitly.
-// TODO [#49] Add sample to check we can pick up polymorphic method when mapping when types are defined in the MappaTypeMappingDefault attribute implicitly.
 [Mappa]
 [MappaSettings(CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
-public sealed partial class PolymorphicMethodMapMapper
+public sealed partial class PolymorphicMethodMapMapperIdentifiedViaMappaTypeMappingAttributeMapper
 {
     /// <summary>
     /// Map from <see cref="Models.Polymorphism.One.SourceBaseClass"/>
@@ -34,11 +35,50 @@ public sealed partial class PolymorphicMethodMapMapper
     /// Maps from <see cref="Models.Polymorphism.One.SourceWithDependency"/> to
     /// <see cref="Models.Polymorphism.One.TargetWithDependency"/>
     /// using <see cref="Map(Models.Polymorphism.One.SourceBaseClass)"/> because it
-    /// support the derived type defined by <see cref="MappaTypeMappingAttribute"/>
+    /// support the nested property type mapping using the mapping
+    /// defined via <see cref="MappaTypeMappingAttribute"/>
     /// from <see cref="Models.Polymorphism.One.SourceThirdClass"/>
     /// to <see cref="Models.Polymorphism.One.TargetThirdClass"/>.
     /// </summary>
     /// <param name="source">The source model.</param>
     /// <returns>The target model.</returns>
     public partial Models.Polymorphism.One.TargetWithDependency Map(Models.Polymorphism.One.SourceWithDependency source);
+}
+
+/// <summary>
+/// Mapper to showcase the ability of Mappa to pick up
+/// polymorphic methods when source and target are defined via
+/// <see cref="MappaTypeMappingDefaultAttribute"/>.
+/// </summary>
+[Mappa]
+[MappaSettings(CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
+public sealed partial class PolymorphicMethodMapMapperIdentifiedViaMappaTypeMappingDefaultAttributeMapper
+{
+    /// <summary>
+    /// Map from <see cref="Models.Polymorphism.One.SourceBaseClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetBaseClass"/> by supporting
+    /// polymorphism.
+    /// This have custom <see cref="MappaTypeMappingDefaultAttribute"/> that will map from
+    /// <see cref="Models.Polymorphism.One.SourceBaseClass"/> to <see cref="Models.Polymorphism.One.TargetUnmappedBaseClass"/>.
+    /// </summary>
+    /// <param name="source">The source model.</param>
+    /// <returns>The target model.</returns>
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetFirstClass), typeof(Models.Polymorphism.One.SourceFirstClass))]
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetThirdClass), typeof(Models.Polymorphism.One.SourceThirdClass))]
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetSecondClass), typeof(Models.Polymorphism.One.SourceSecondClass))]
+    [MappaTypeMappingDefault(MappaTypeMappingDefaultBehavior.MapSourceType, typeof(Models.Polymorphism.One.TargetUnmappedBaseClass))]
+    public partial Models.Polymorphism.One.TargetBaseClass Map(Models.Polymorphism.One.SourceBaseClass source);
+
+    /// <summary>
+    /// Maps from <see cref="Models.Polymorphism.One.SourceWithDependencyWithSourceBaseClass"/> to
+    /// <see cref="Models.Polymorphism.One.TargetWithDependencyWithUnmappedBaseClass"/>
+    /// using <see cref="Map(Models.Polymorphism.One.SourceBaseClass)"/> because it
+    /// support the nested property type mapping using the mapping
+    /// defined via <see cref="MappaTypeMappingDefaultAttribute"/>
+    /// from <see cref="Models.Polymorphism.One.SourceBaseClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetUnmappedBaseClass"/>.
+    /// </summary>
+    /// <param name="source">The source model.</param>
+    /// <returns>The target model.</returns>
+    public partial Models.Polymorphism.One.TargetWithDependencyWithUnmappedBaseClass Map(Models.Polymorphism.One.SourceWithDependencyWithSourceBaseClass source);
 }

@@ -177,6 +177,24 @@ internal sealed class MappaClassGeneratorContext
                    return true;
                }
            }
+
+           // Pick up the MappaTypeMappingDefault only if defined and it specify the behavior MapSourceType.
+           // Not that this will only pick up the setup where the target type is defined.
+           // If the attribute target type is the same as the target type we would not even be here because
+           // the method would be picked up earlier by the non polymorphic version of this.
+           var mappaTypeMappingDefaultAttribute = method.GetAttribute<MappaTypeMappingDefaultAttribute>();
+           if (mappaTypeMappingDefaultAttribute is not null &&
+               mappaTypeMappingDefaultAttribute.Behavior is MappaTypeMappingDefaultBehavior.MapSourceType &&
+               mappaTypeMappingDefaultAttribute.Type is not null)
+           {
+               var attributeTargetType = this.Compilation.GetTypeByMetadataName(mappaTypeMappingDefaultAttribute.Type.FullName!);
+               if (attributeTargetType is not null &&
+                   attributeTargetType.IsEqualTo(targetType, false))
+               {
+                   mapMethod = method;
+                   return true;
+               }
+           }
         }
 
         mapMethod = null!;
