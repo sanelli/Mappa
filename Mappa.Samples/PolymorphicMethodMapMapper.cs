@@ -50,6 +50,7 @@ public sealed partial class PolymorphicMethodMapMapperIdentifiedViaMappaTypeMapp
 /// polymorphic methods when source and target are defined via
 /// <see cref="MappaTypeMappingDefaultAttribute"/>.
 /// </summary>
+// TODO [#49] This should only work when a specific MappaSetting is enabled to support mapping using MappaTypeMappingDefault.
 [Mappa]
 [MappaSettings(CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
 public sealed partial class PolymorphicMethodMapMapperIdentifiedViaMappaTypeMappingDefaultAttributeMapper

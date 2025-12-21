@@ -110,6 +110,7 @@ public sealed class PolymorphicMethodMapStrategyIntegrationTests
     /// using explicit target mapping.
     /// </summary>
     /// <returns>The async task.</returns>
+    // TODO [#49] This should only work when a specific MappaSetting is enabled to support mapping using MappaTypeMappingDefault.
     [Fact]
     [IntegrationTest]
     public async Task CanMapUsingCustomPolymorphicPartialMethodWhereMappingIsDefinedInTheMappingDefaultAttributeExplicitly()
