@@ -152,5 +152,8 @@ RemoveEmptyEntries
 ### Mappa dependency
 ⚠️ TODO
 
+### Polymorphism support
+⚠️ TODO
+
 #### Protobuf and Bson dependency
 ⚠️ TODO

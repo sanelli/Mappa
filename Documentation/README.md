@@ -1,9 +1,9 @@
 # 🗺️ Mappa
-Mappa (italian for _map_) is a source generator for `C#` that can generate code to allow the mapping between types, similarly to what [AutoMapper](https://www.nuget.org/packages/AutoMapper) (and other similar tools) does.
+Mappa (Italian for _map_) is a source generator for `C#` that can generate code to allow the mapping between types, similarly to what [AutoMapper](https://www.nuget.org/packages/AutoMapper) (and other similar tools) does.
 
 The main different between Mappa and AutoMapper is that Mappa generates code at compile time while AutoMapper only at runtime;
 this has multiple benefits:
-- the code generated is optimised by the compiler;
+- the code generated is optimized by the compiler;
 - the code generated is pure C# code that does not require any introspections;
 - the code generated can be inspected and debugged by developers;
 - the code generated works when [Native AOT](https://learn.microsoft.com/dotnet/core/deploying/native-aot) is required;
