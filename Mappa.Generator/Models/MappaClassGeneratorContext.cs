@@ -178,7 +178,8 @@ internal sealed class MappaClassGeneratorContext
                }
            }
 
-           /* TODO [#49] IMPORTANT! This should be enabled only when a specific MappaSettings is enabled.
+           /*
+            * TODO [#49] IMPORTANT! This should be enabled only when a specific [MappaSetting(PolymorphicMapMethodWithMatchingDefaultAttribute)] is enabled.
             * Having this enabled by default is very dangerous because there is no guarantee that the
             * the input will generate the value fro the default. So the developer needs to be exta careful
             * on this.

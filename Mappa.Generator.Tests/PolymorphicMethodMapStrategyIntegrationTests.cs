@@ -12,9 +12,8 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Integration tests for <see cref="PolymorphicMethodMapStrategy"/>.
 /// </summary>
+// TODO [#49] Add test poly method cannot be picked up because defined target type do not match the explicit behavior so a specific mapping is created in the mapper method itself.
 // TODO [#49] Add tests to check we can pick up polymorphic when nullability is disabled.
-// TODO [#49] Add test poly cannot be picked up because defined target type do not match the explicit behavior so a specific mapping is defined.
-// TODO [#49] Add test poly method is picked up but with the usual map method strategy (i.e. without cast) because the target & source type are the same as the required type.
 // TODO [#49] Add tests to check we can pick up polymorphic when nullability is enabled and match but is not the same.
 // TODO [#49] Add tests to check method is not picked up when nullability do not match.
 // TODO [#49] Add tests to check we can pick up polymorphic method in a dependency class mapped with Mappa.
@@ -110,7 +109,10 @@ public sealed class PolymorphicMethodMapStrategyIntegrationTests
     /// using explicit target mapping.
     /// </summary>
     /// <returns>The async task.</returns>
-    // TODO [#49] This should only work when a specific MappaSetting is enabled to support mapping using MappaTypeMappingDefault.
+    // TODO [#49] This should only work when a specific [MappaSetting(PolymorphicMapMethodWithMatchingDefaultAttribute)] is enabled to support mapping using MappaTypeMappingDefault.
+    // TODO [#49] Same tests with the setting enabled on the class.
+    // TODO [#49] Same tests with the setting disable on the class and enabled on method.
+    // TODO [#49] Same tests with the setting disabled on method -> the assertions will need t be different as a new mapping is being defined.
     [Fact]
     [IntegrationTest]
     public async Task CanMapUsingCustomPolymorphicPartialMethodWhereMappingIsDefinedInTheMappingDefaultAttributeExplicitly()
