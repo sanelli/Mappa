@@ -109,7 +109,6 @@ public sealed class PolymorphicMethodMapStrategyIntegrationTests
     /// using explicit target mapping.
     /// </summary>
     /// <returns>The async task.</returns>
-    // TODO [#49] This should only work when a specific [MappaSetting(PolymorphicMapMethodWithMatchingDefaultAttribute)] is enabled to support mapping using MappaTypeMappingDefault.
     // TODO [#49] Same tests with the setting enabled on the class.
     // TODO [#49] Same tests with the setting disable on the class and enabled on method.
     // TODO [#49] Same tests with the setting disabled on method -> the assertions will need t be different as a new mapping is being defined.
@@ -141,6 +140,7 @@ public sealed class PolymorphicMethodMapStrategyIntegrationTests
                                       [MappaTypeMappingDefault(MappaTypeMappingDefaultBehavior.MapSourceType, typeof(TargetDefault))]
                                       public partial TargetBase MapDependency(SourceBase input);
                                       
+                                      [MappaSettings(PolymorphicMapMethodWithMatchingDefaultAttribute = BooleanSetting.Enable)]
                                       public partial Target Map(Source input);
                                   }
                                   #nullable restore

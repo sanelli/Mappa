@@ -267,6 +267,10 @@ internal static class AttributeDataExtensions
                 case nameof(MappaSettingsAttribute.ContainerCapacityConstructors) when namedArgument.Value.Value is int value:
                     attribute.ContainerCapacityConstructors = (BooleanSetting)value;
                     break;
+
+                case nameof(MappaSettingsAttribute.PolymorphicMapMethodWithMatchingDefaultAttribute) when namedArgument.Value.Value is int value:
+                    attribute.PolymorphicMapMethodWithMatchingDefaultAttribute = (BooleanSetting)value;
+                    break;
             }
         }
 

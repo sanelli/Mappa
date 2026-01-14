@@ -139,6 +139,7 @@ internal sealed class MappaClassGeneratorContext
     /// <param name="targetType">The target type.</param>
     /// <param name="sourceType">The source type.</param>
     /// <param name="nullableEnabled">Nullable enabled.</param>
+    /// <param name="mappaUserSettings">The user settings applied to the method being mapped.</param>
     /// <param name="mapMethod">The map method, if it exists.</param>
     /// <returns><c>true</c> if the method to map from <paramref name="sourceType"/> to
     /// <paramref name="targetType"/>, <c>false</c> otherwise.</returns>
@@ -146,62 +147,62 @@ internal sealed class MappaClassGeneratorContext
         ITypeSymbol targetType,
         ITypeSymbol sourceType,
         bool nullableEnabled,
+        IMappaUserSettings mappaUserSettings,
         out MapMethod mapMethod)
     {
         foreach (var method in this.mapMethods)
         {
-           var typeMappingAttributes = method.GetAttributes<MappaTypeMappingAttribute>();
-           if (typeMappingAttributes.Length <= 0)
-           {
-               // Only look for methods that have any MappaTypeMappingAttribute.
-               break;
-           }
+            var typeMappingAttributes = method.GetAttributes<MappaTypeMappingAttribute>();
+            if (typeMappingAttributes.Length <= 0)
+            {
+                // Only look for methods that have any MappaTypeMappingAttribute.
+                break;
+            }
 
-           if (nullableEnabled)
-           {
+            if (nullableEnabled)
+            {
                 // TODO [#49] Add checks to validate nullability can be satisfied.
-           }
+            }
 
-           // Search in the attributes to see if there is a mapping that can be used.
-           foreach (var typeMappingAttribute in typeMappingAttributes)
-           {
-               var attributeSourceType = this.Compilation.GetTypeByMetadataName(typeMappingAttribute.SourceType.FullName!);
-               var attributeTargetType = this.Compilation.GetTypeByMetadataName(typeMappingAttribute.TargetType.FullName!);
+            // Search in the attributes to see if there is a mapping that can be used.
+            foreach (var typeMappingAttribute in typeMappingAttributes)
+            {
+                var attributeSourceType =
+                    this.Compilation.GetTypeByMetadataName(typeMappingAttribute.SourceType.FullName!);
+                var attributeTargetType =
+                    this.Compilation.GetTypeByMetadataName(typeMappingAttribute.TargetType.FullName!);
 
-               if (attributeSourceType is not null &&
-                   attributeTargetType is not null &&
-                   attributeSourceType.IsEqualTo(sourceType, false) &&
-                   attributeTargetType.IsEqualTo(targetType, false))
-               {
-                   mapMethod = method;
-                   return true;
-               }
-           }
+                if (attributeSourceType is not null &&
+                    attributeTargetType is not null &&
+                    attributeSourceType.IsEqualTo(sourceType, false) &&
+                    attributeTargetType.IsEqualTo(targetType, false))
+                {
+                    mapMethod = method;
+                    return true;
+                }
+            }
 
-           /*
-            * TODO [#49] IMPORTANT! This should be enabled only when a specific [MappaSetting(PolymorphicMapMethodWithMatchingDefaultAttribute)] is enabled.
-            * Having this enabled by default is very dangerous because there is no guarantee that the
-            * the input will generate the value fro the default. So the developer needs to be exta careful
-            * on this.
-            */
-
-           // Pick up the MappaTypeMappingDefault only if defined and it specify the behavior MapSourceType.
-           // Not that this will only pick up the setup where the target type is defined.
-           // If the attribute target type is the same as the target type we would not even be here because
-           // the method would be picked up earlier by the non polymorphic version of this.
-           var mappaTypeMappingDefaultAttribute = method.GetAttribute<MappaTypeMappingDefaultAttribute>();
-           if (mappaTypeMappingDefaultAttribute is not null &&
-               mappaTypeMappingDefaultAttribute.Behavior is MappaTypeMappingDefaultBehavior.MapSourceType &&
-               mappaTypeMappingDefaultAttribute.Type is not null)
-           {
-               var attributeTargetType = this.Compilation.GetTypeByMetadataName(mappaTypeMappingDefaultAttribute.Type.FullName!);
-               if (attributeTargetType is not null &&
-                   attributeTargetType.IsEqualTo(targetType, false))
-               {
-                   mapMethod = method;
-                   return true;
-               }
-           }
+            // Pick up the MappaTypeMappingDefault only if defined and it specify the behavior MapSourceType.
+            // Not that this will only pick up the setup where the target type is defined.
+            // If the attribute target type is the same as the target type we would not even be here because
+            // the method would be picked up earlier by the non polymorphic version of this.
+            if (mappaUserSettings.PolymorphicMapMethodWithMatchingDefaultAttribute is BooleanSetting.Enable)
+            {
+                var mappaTypeMappingDefaultAttribute = method.GetAttribute<MappaTypeMappingDefaultAttribute>();
+                if (mappaTypeMappingDefaultAttribute is not null &&
+                    mappaTypeMappingDefaultAttribute.Behavior is MappaTypeMappingDefaultBehavior.MapSourceType &&
+                    mappaTypeMappingDefaultAttribute.Type is not null)
+                {
+                    var attributeTargetType =
+                        this.Compilation.GetTypeByMetadataName(mappaTypeMappingDefaultAttribute.Type.FullName!);
+                    if (attributeTargetType is not null &&
+                        attributeTargetType.IsEqualTo(targetType, false))
+                    {
+                        mapMethod = method;
+                        return true;
+                    }
+                }
+            }
         }
 
         mapMethod = null!;

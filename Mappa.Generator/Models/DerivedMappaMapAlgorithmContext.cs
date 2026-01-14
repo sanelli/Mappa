@@ -55,8 +55,8 @@ internal sealed class DerivedMappaMapAlgorithmContext(
         => this.ParentContext.TryGetMethod(targetType, sourceType, out mapMethod);
 
     /// <inheritdoc/>
-    internal override bool TryGetPolymorphicMethod(ITypeSymbol targetType, ITypeSymbol sourceType, out MapMethod mapMethod)
-        => this.ParentContext.TryGetPolymorphicMethod(targetType, sourceType, out mapMethod);
+    internal override bool TryGetPolymorphicMethod(ITypeSymbol targetType, ITypeSymbol sourceType, IMappaUserSettings mappaUserSettings, out MapMethod mapMethod)
+        => this.ParentContext.TryGetPolymorphicMethod(targetType, sourceType, mappaUserSettings, out mapMethod);
 
     /// <inheritdoc/>
     internal override void ReportDiagnostic(Diagnostic diagnostic)

@@ -25,6 +25,7 @@ internal sealed class MappaUserSettings
     private readonly StackSetting<PragmaWarningSetting> pragmaWarning;
     private readonly StackSetting<BooleanSetting> fastCollections;
     private readonly StackSetting<BooleanSetting> containerCapacityConstructors;
+    private readonly StackSetting<BooleanSetting> polymorphicMapMethodWithMatchingDefaultAttribute;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaUserSettings"/> class.
@@ -43,7 +44,8 @@ internal sealed class MappaUserSettings
             otherSettings.ProtobufOptional,
             otherSettings.PragmaWarning,
             otherSettings.FastCollections,
-            otherSettings.ContainerCapacityConstructors)
+            otherSettings.ContainerCapacityConstructors,
+            otherSettings.PolymorphicMapMethodWithMatchingDefaultAttribute)
     {
     }
 
@@ -62,6 +64,7 @@ internal sealed class MappaUserSettings
     /// <param name="pragmaWarningSetting">Allow to surround the code generated with a <c>#pragma warning disable</c> block.</param>
     /// <param name="fastCollections">Enable or disable fast collection iterations for arrays and <see cref="List{T}"/> via <c>Span{T}</c>.</param>
     /// <param name="containerCapacityConstructors">Enable or disable the ability to support custom collection with capacity constructor.</param>
+    /// <param name="polymorphicMapMethodWithMatchingDefaultAttribute">Enable or disable the support for <see cref="MappaTypeMappingDefaultBehavior.MapSourceType"/> when picking up a polymorphic method.</param>
     private MappaUserSettings(
         string? dateTimeFormat,
         string? dateTimeOffsetFormat,
@@ -74,7 +77,8 @@ internal sealed class MappaUserSettings
         BooleanSetting protobufOptional,
         PragmaWarningSetting pragmaWarningSetting,
         BooleanSetting fastCollections,
-        BooleanSetting containerCapacityConstructors)
+        BooleanSetting containerCapacityConstructors,
+        BooleanSetting polymorphicMapMethodWithMatchingDefaultAttribute)
     {
         this.dateTimeFormat = new(dateTimeFormat);
         this.dateTimeOffsetFormat = new(dateTimeOffsetFormat);
@@ -88,6 +92,7 @@ internal sealed class MappaUserSettings
         this.pragmaWarning = new(pragmaWarningSetting);
         this.fastCollections = new(fastCollections);
         this.containerCapacityConstructors = new(containerCapacityConstructors);
+        this.polymorphicMapMethodWithMatchingDefaultAttribute = new(polymorphicMapMethodWithMatchingDefaultAttribute);
     }
 
     /// <inheritdoc />
@@ -126,6 +131,9 @@ internal sealed class MappaUserSettings
     /// <inheritdoc/>
     public BooleanSetting ContainerCapacityConstructors => this.containerCapacityConstructors;
 
+    /// <inheritdoc/>
+    public BooleanSetting PolymorphicMapMethodWithMatchingDefaultAttribute => this.polymorphicMapMethodWithMatchingDefaultAttribute;
+
     /// <summary>
     /// Push the changes required by the <paramref name="mappaSettingsAttribute"/> on the stack.
     /// If <paramref name="mappaSettingsAttribute"/> is <c>null</c>
@@ -155,6 +163,7 @@ internal sealed class MappaUserSettings
             this.pragmaWarning.Apply(mappaSettingsAttribute.PragmaWarning is not PragmaWarningSetting.Undefined ? mappaSettingsAttribute.PragmaWarning : this.pragmaWarning),
             this.fastCollections.Apply(mappaSettingsAttribute.FastCollections is not BooleanSetting.Undefined ? mappaSettingsAttribute.FastCollections : this.fastCollections),
             this.containerCapacityConstructors.Apply(mappaSettingsAttribute.ContainerCapacityConstructors is not BooleanSetting.Undefined ? mappaSettingsAttribute.ContainerCapacityConstructors : this.containerCapacityConstructors),
+            this.polymorphicMapMethodWithMatchingDefaultAttribute.Apply(mappaSettingsAttribute.PolymorphicMapMethodWithMatchingDefaultAttribute is not BooleanSetting.Undefined ? mappaSettingsAttribute.PolymorphicMapMethodWithMatchingDefaultAttribute : this.polymorphicMapMethodWithMatchingDefaultAttribute),
  #pragma warning restore CA2000
         ]);
     }

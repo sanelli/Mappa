@@ -4,6 +4,8 @@
 
 using System.Globalization;
 
+using Mappa.Attributes;
+
 namespace Mappa.Generator.Models;
 
 /// <summary>
@@ -75,4 +77,17 @@ internal interface IMappaUserSettings
     /// similar to <see cref="List{T}(int)"/>.
     /// </summary>
     BooleanSetting ContainerCapacityConstructors { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether to allow the source generator to
+    /// use the <see cref="MappaTypeMappingDefaultAttribute"/> when looking for a
+    /// polymorphic method to support a mapping between two types and the behavior
+    /// of the attribute is <see cref="MappaTypeMappingDefaultBehavior.MapSourceType"/>
+    /// and the target type is explicitly defined.By default, this behavior is disabled
+    /// because it can be dangerous due to the nature of the polymorphic method
+    /// where the method can accept any type derived from the input parameter and
+    /// there is no guarantee that the method will return the exact type specified by
+    /// the <see cref="MappaTypeMappingDefaultAttribute"/>.
+    /// </summary>
+    BooleanSetting PolymorphicMapMethodWithMatchingDefaultAttribute { get; }
 }

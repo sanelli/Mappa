@@ -70,9 +70,14 @@ internal abstract class MappaMapAlgorithmContext
     /// </summary>
     /// <param name="targetType">The target type.</param>
     /// <param name="sourceType">The source type.</param>
+    /// <param name="mappaUserSettings">The user settings applied to the method being mapped.</param>
     /// <param name="mapMethod">The map method (if it exists).</param>
     /// <returns><c>true</c> if map method exists, <c>false</c> otherwise.</returns>
-    internal abstract bool TryGetPolymorphicMethod(ITypeSymbol targetType, ITypeSymbol sourceType, out MapMethod mapMethod);
+    internal abstract bool TryGetPolymorphicMethod(
+        ITypeSymbol targetType,
+        ITypeSymbol sourceType,
+        IMappaUserSettings mappaUserSettings,
+        out MapMethod mapMethod);
 
     /// <summary>
     /// Report a diagnostic.

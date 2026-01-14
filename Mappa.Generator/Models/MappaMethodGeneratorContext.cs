@@ -63,8 +63,8 @@ internal sealed class MappaMethodGeneratorContext
         => this.ClassContext.TryGetMethod(targetType, sourceType, this.IsNullableEnabled(), out mapMethod);
 
     /// <inheritdoc/>
-    internal override bool TryGetPolymorphicMethod(ITypeSymbol targetType, ITypeSymbol sourceType, out MapMethod mapMethod)
-        => this.ClassContext.TryGetPolymorphicMethod(targetType, sourceType, this.IsNullableEnabled(), out mapMethod);
+    internal override bool TryGetPolymorphicMethod(ITypeSymbol targetType, ITypeSymbol sourceType, IMappaUserSettings mappaUserSettings, out MapMethod mapMethod)
+        => this.ClassContext.TryGetPolymorphicMethod(targetType, sourceType, this.IsNullableEnabled(), mappaUserSettings, out mapMethod);
 
     /// <inheritdoc/>
     internal override void ReportDiagnostic(Diagnostic diagnostic)

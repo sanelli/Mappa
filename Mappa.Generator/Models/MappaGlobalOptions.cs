@@ -67,6 +67,10 @@ namespace Mappa.Generator.Models;
 ///         <term><c>mappa.containercapacityconstructors</c></term>
 ///         <description>Set the default value to enable or disable the support for mapping custom containers using (if available) a constructor accepting an integer value representing the initial capacity of the container.</description>
 ///     </item>
+///     <item>
+///         <term><c>mappa.polymorphicmapmethodwithmatchingdefaultattribute</c></term>
+///         <description>Set the default value to enable or disable the support for <see cref="MappaTypeMappingDefaultBehavior.MapSourceType"/> when picking up a polymorphic method.</description>
+///     </item>
 /// </list>
 /// </summary>
 internal sealed class MappaGlobalOptions
@@ -87,6 +91,7 @@ internal sealed class MappaGlobalOptions
     private const string MappaSettingsPragmaWarning = "pragmawarning";
     private const string MappaSettingsFastCollections = "fastcollections";
     private const string MappaSettingsContainerCapacityConstructors = "containercapacityconstructors";
+    private const string MappaSettingsPolymorphicMapMethodWithMatchingDefaultAttribute = "polymorphicmapmethodwithmatchingdefaultattribute";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaGlobalOptions"/> class.
@@ -160,6 +165,10 @@ internal sealed class MappaGlobalOptions
 
         this.ContainerCapacityConstructors = options.TryGetValue(GetOptionName(MappaSettingsContainerCapacityConstructors), out var containerCapacityConstructors)
             ? GetBooleanSettingFromString(containerCapacityConstructors)
+            : BooleanSetting.Undefined;
+
+        this.PolymorphicMapMethodWithMatchingDefaultAttribute = options.TryGetValue(GetOptionName(MappaSettingsPolymorphicMapMethodWithMatchingDefaultAttribute), out var polymorphicMapMethodWithMatchingDefaultAttribute)
+            ? GetBooleanSettingFromString(polymorphicMapMethodWithMatchingDefaultAttribute)
             : BooleanSetting.Undefined;
 
         static CultureInfoSetting GetCultureInfoSettingsFromString(string cultureInfoSettings)
@@ -263,6 +272,9 @@ internal sealed class MappaGlobalOptions
 
     /// <inheritdoc/>
     public BooleanSetting ContainerCapacityConstructors { get; }
+
+    /// <inheritdoc/>
+    public BooleanSetting PolymorphicMapMethodWithMatchingDefaultAttribute { get; }
 
     /// <summary>
     /// Gets a value indicating whether to report debug INFO diagnostics.
