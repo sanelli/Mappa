@@ -13,7 +13,6 @@ namespace Mappa.Generator.Tests;
 /// Integration tests for <see cref="PolymorphicMethodMapStrategy"/>.
 /// </summary>
 // TODO [#49] Add tests to check we can pick up polymorphic when nullability is disabled.
-// TODO [#49] Add tests to check we can pick up polymorphic when nullability is enabled and match but is not the same.
 // TODO [#49] Add tests to check method is not picked up when nullability do not match.
 // TODO [#49] Add tests to check we can pick up polymorphic method in a dependency class mapped with Mappa.
 // TODO [#49] Add tests to check we can pick up polymorphic method in a dependency class NOT mapped with Mappa.

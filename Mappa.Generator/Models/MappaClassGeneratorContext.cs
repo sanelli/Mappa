@@ -159,11 +159,6 @@ internal sealed class MappaClassGeneratorContext
                 break;
             }
 
-            if (nullableEnabled)
-            {
-                // TODO [#49] Add checks to validate nullability can be satisfied.
-            }
-
             // Search in the attributes to see if there is a mapping that can be used.
             foreach (var typeMappingAttribute in typeMappingAttributes)
             {
@@ -174,8 +169,8 @@ internal sealed class MappaClassGeneratorContext
 
                 if (attributeSourceType is not null &&
                     attributeTargetType is not null &&
-                    attributeSourceType.IsEqualTo(sourceType, false) &&
-                    attributeTargetType.IsEqualTo(targetType, false))
+                    attributeSourceType.IsEqualTo(sourceType, nullableEnabled) &&
+                    attributeTargetType.IsEqualTo(targetType, nullableEnabled))
                 {
                     mapMethod = method;
                     return true;
