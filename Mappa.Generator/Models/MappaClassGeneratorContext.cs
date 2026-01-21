@@ -167,10 +167,13 @@ internal sealed class MappaClassGeneratorContext
                 var attributeTargetType =
                     this.Compilation.GetTypeByMetadataName(typeMappingAttribute.TargetType.FullName!);
 
-                if (attributeSourceType is not null &&
-                    attributeTargetType is not null &&
-                    attributeSourceType.IsEqualTo(sourceType, nullableEnabled) &&
-                    attributeTargetType.IsEqualTo(targetType, nullableEnabled))
+                var attributeSourceTypeWithNullability = attributeSourceType?.WithNullableAnnotation(method.TargetType.NullableAnnotation);
+                var attributeTargetTypeWithNullability = attributeTargetType?.WithNullableAnnotation(method.TargetType.NullableAnnotation);
+
+                if (attributeSourceTypeWithNullability is not null &&
+                    attributeTargetTypeWithNullability is not null &&
+                    attributeSourceTypeWithNullability.IsEqualTo(sourceType, nullableEnabled) &&
+                    attributeTargetTypeWithNullability.IsEqualTo(targetType, nullableEnabled))
                 {
                     mapMethod = method;
                     return true;
@@ -190,8 +193,11 @@ internal sealed class MappaClassGeneratorContext
                 {
                     var attributeTargetType =
                         this.Compilation.GetTypeByMetadataName(mappaTypeMappingDefaultAttribute.Type.FullName!);
-                    if (attributeTargetType is not null &&
-                        attributeTargetType.IsEqualTo(targetType, false))
+
+                    var attributeTargetTypeWithNullability = attributeTargetType?.WithNullableAnnotation(method.TargetType.NullableAnnotation);
+
+                    if (attributeTargetTypeWithNullability is not null &&
+                        attributeTargetTypeWithNullability.IsEqualTo(targetType, nullableEnabled))
                     {
                         mapMethod = method;
                         return true;
