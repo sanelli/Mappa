@@ -17,21 +17,31 @@ public partial class Mapper
 ```
 
 the source generator attempt to identify a mapping from `TSource` to `TTarget` by checking if any of the following strategies can be applied:
-1. <u>Existing method strategy</u>
+1. <u>Polymorphic mapping</u>
+    - _When_:
+        - The method has one or multiple `[MappaTypeMapping]` attributes
+    - _What_:
+        - The input type will determine how the mapping from `TSource` to `TTArget` will happen,
+        - For every `[MappaTypeMapping]` attributes a mapping is created,
+        - The default mapping in case the actual parameter type does not match any of the source type from the `[MappaTypeMapping]` attributes is determined by the `[MappaTypeMappingDefault]` attribute - if the attribute is not present the default behaviour will throw an exception.
+2. <u>Existing method strategy</u>
     - _When_:
         - A method in the same class from `TSource` to `TTarget` exists OR,
-        - A method from a property or field marked with the `[MappaDependency]` from `TSource` to `TTarget` exists;
+        - A method from a property or field marked with the `[MappaDependency]` from `TSource` to `TTarget` exists OR,
+        - A method from a type defined via the `[MappaStaticDependency]` attribute exists OR,
+        - A polymorphic method where one ot the `[MappaTypeMapping]` attribute matches `TSource` and `TTarget` attribute OR,
+        - Settings `PolymorphicMapMethodWithMatchingDefaultAttribute` is `Enable` and a polymorphic method with attribute `[MappaTypeMappingDefault]` and behaviour `MappaTypeMappingDefaultBehavior.MapSourceType` and `TTarget` is matching the target type defined by the attribute and `TSource` the source type of the method exists;
     - _What_:
         - the method is invoked;
     - _Notes_:
-        - This strategy is usually used when mapping element of an array, keys or values of dictionaries, elements of tuples, properties of class/struct/record;
-2. <u>Identity strategy</u>:
+        - This strategy is usually used when mapping element of an array, keys or values of dictionaries, elements of tuples, properties of class/struct/record.
+3. <u>Identity strategy</u>:
     - _When_:
         - `TSource` and `TTarget` are the same type (e.g. `TSource => int` and `TTarget => int`) OR,
         - `TSource` can be implicitly converted into `TTarget` (e.g. `TSource => int` and `TTarget => long`);
     - _What_:
         - the input value is simply assigned to the target;
-3. <u>Nullable strategy</u>:
+4. <u>Nullable strategy</u>:
     - _When_:
         - `TSource` is the `Nullable<T>` value type (e.g. `int?`) OR,
         - `TSource` is a `nullable` reference type when `#nullable enable` (e.g. `string?`) OR,
@@ -40,13 +50,13 @@ the source generator attempt to identify a mapping from `TSource` to `TTarget` b
     - _What_:
         - if `TTarget` can be `null` the mapper will return null OR,
         - if `TTarget` cannot be `null` the mapper will throw a `NullReferenceException`;
-4. <u>`enum` strategy</u>:
+5. <u>`enum` strategy</u>:
     - _When_:
         - `TSource` is an `enum` and `TTarget` is a different `enum`, an integral numeric type compatible with the `enum` or a string OR,
         - `TSource` is a different `enum`, an integral numeric type compatible with the `enum` and `TTarget` is an `enum`;
     - _What_:
         - a `switch` statement is introduced to quickly map `TSource` to `TTarget` using all the possible values of the `enum`,
-5. <u>`string` strategy</u>:
+6. <u>`string` strategy</u>:
     - _When_:
         - `TSource` is a `string` and `TTarget` is any of the numeric types OR,
         - `TSource` is a `string` and `TTarget` is any of the following types `DateTime`, `DateTimeOffset`, `DateOnly`, `TimeOnly`, `Guid`, `Uri` OR,
@@ -59,7 +69,7 @@ the source generator attempt to identify a mapping from `TSource` to `TTarget` b
         - `TTarget` is a `string` and `TSource` is any of the following types `DateTime`, `DateTimeOffset`, `DateOnly`, `TimeOnly`, `Guid` then their `TSource.ToString()` method will be used, possibly with the format and culture identified by the `MappaSettings` attribute, if any is provided on the class or on the method;
         - `TTarget` is a `string` then the `TSource.ToString` method will be used;
         - `TSource` is a `string` and `TTarget` is any type with an accessible static `Parse` method then the `Parse` method is invoked (note: an existing constructor accepting only a single string parameter will take priority over this);
-6. <u>Date & Time strategy</u>:
+7. <u>Date & Time strategy</u>:
     - _When_:
         - `TSource` is a `DateTime` and `TTarget` is `long` or,`DateTime` or, `TimeOnly` OR,
         - `TSource` is a `DateTimeOffset` and `TTarget` is `long` or, `DateTime` or, `DateTime` or, `TimeOnly` OR,
@@ -74,7 +84,7 @@ the source generator attempt to identify a mapping from `TSource` to `TTarget` b
         - When a timezone is required UTC is implied;
     - _Notes_:
         - The mapping from `DateTime` to `DateTimeOffset` is handled by the identify strategy;
-7. <u>Container strategy</u>:
+8. <u>Container strategy</u>:
     - _When_:
         - `TSource` and `TTarget` are both either dictionaries or collections,
         - For dictionaries, mappings exist from source key type to the target key type and from the source value type to the target value type,
@@ -100,7 +110,7 @@ the source generator attempt to identify a mapping from `TSource` to `TTarget` b
         - When possible for some types (e.g. `List<T>`) the usage of the constructor accepting capacity is preferred to reduce the number of allocations;
         - Explicit interface implementation is supported;
         - Type with an empty constructor are supported if they are derived from any of the supported interfaces or classes;
-8. <u>Tuples strategy</u>:
+9. <u>Tuples strategy</u>:
     - _When_:
         - `TSource` and `TTarget` are both tuple types,
         - The number of the elements in the tuple is the same,
@@ -111,13 +121,13 @@ the source generator attempt to identify a mapping from `TSource` to `TTarget` b
     - _Notes_:
         - Both named and un-named tuples are supported
         - The type `Tuple<T>` (and its variations with more elements) are supported;
-9. <u>Guid strategy</u>:
+10. <u>Guid strategy</u>:
     - _When_:
         - `TSource` is `Guid` and `TTarget` is `byte[]` or `Span<byte>` or `ReadOnlySpan<byte>` or `Memory<byte>` or `ReadOnlyMemory<byte>`, OR
         - `TSource` is `byte[]` or `Span<byte>` or `ReadOnlySpan<byte>` or `Memory<byte>` or `ReadOnlyMemory<byte>` and `TTarget` is `Guid`;
     - _What_:
         - A mapping from `Guid` to `byte[]`/`Span<byte>` is defined using the relevant `Guid` constructors or the `Guid.ToByteArray()` method
-10. <u>Constructor strategy</u>:
+11. <u>Constructor strategy</u>:
     - _When_:
         - `TTarget` type has one constructor with no parameters and each property with a setter can be assigned from a `TSource` property with the same name (case-sensitive) OR,
         - `TTarget` type has one constructor with parameters and each constructor argument can be assigned from a `TSource` property with the same name (case-insensitive);
