@@ -61,6 +61,7 @@ internal sealed class MapMethod
     /// <remarks>
     /// The method is already considered mapped.
     /// </remarks>
+    // TODO [#185] At this stage we need to also keep track if the accessing method (property, field, type) is static so static context cannot use non-static stuff.
     public MapMethod(
         IMethodSymbol methodSymbol,
         string accessFiledName,

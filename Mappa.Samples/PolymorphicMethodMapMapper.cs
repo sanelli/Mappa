@@ -4,6 +4,9 @@
 
 using Mappa.Attributes;
 
+// TODO [#185] Method is not picked up if the invoker is static and the invoked is non-static (same class).
+// TODO [#185] Method is not picked up if the invoker is static and the invoked method is on a non-static property.
+// TODO [#185] Method is not picked up if the invoker is static and the invoked method is on a non-static field.
 namespace Mappa.Samples;
 
 #pragma warning disable SA1402

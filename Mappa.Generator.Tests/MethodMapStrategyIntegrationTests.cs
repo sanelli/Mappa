@@ -13,6 +13,9 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Integration tests for <see cref="MethodMapStrategy"/>.
 /// </summary>
+// TODO [#185] Method is not picked up if the invoker is static and the invoked is non-static (same class).
+// TODO [#185] Method is not picked up if the invoker is static and the invoked method is on a non-static property.
+// TODO [#185] Method is not picked up if the invoker is static and the invoked method is on a non-static field.
 public sealed class MethodMapStrategyIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {

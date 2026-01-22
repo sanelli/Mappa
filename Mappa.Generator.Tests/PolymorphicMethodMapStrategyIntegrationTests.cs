@@ -15,7 +15,10 @@ namespace Mappa.Generator.Tests;
 // TODO [#49] Add tests to check we can pick up polymorphic method in a dependency class mapped with Mappa.
 // TODO [#49] Add tests to check we can pick up polymorphic method in a dependency class NOT mapped with Mappa.
 // TODO [#49] Add tests that we can pick up a user defined non-partial method tagged with the MappaTypeMapping attribute.
-// TODO [#49] Add tests that we cna pick up a user defined non-partial method tagged with the MappaTypeMapping attribute in a dependency.
+// TODO [#49] Add tests that we can pick up a user defined non-partial method tagged with the MappaTypeMapping attribute in a dependency.
+// TODO [#185] Method is not picked up if the invoker is static and the invoked is non-static (same class).
+// TODO [#185] Method is not picked up if the invoker is static and the invoked method is on a non-static property.
+// TODO [#185] Method is not picked up if the invoker is static and the invoked method is on a non-static field.
 public sealed class PolymorphicMethodMapStrategyIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {

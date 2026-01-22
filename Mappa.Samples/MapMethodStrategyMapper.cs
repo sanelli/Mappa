@@ -10,6 +10,7 @@ namespace Mappa.Samples;
 /// <summary>
 /// Mapper using the map method strategy.
 /// </summary>
+// TODO [#185] Method is not picked up if the invoker is static and the invoked is non-static (same class).
 [Mappa]
 public sealed partial class MapMethodStrategyMapper
 {
