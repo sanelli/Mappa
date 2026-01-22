@@ -221,8 +221,6 @@ public sealed class PolymorphicMethodMapStrategyIntegrationTests
     /// The invoked method require a context parameter which is provided.
     /// </summary>
     /// <returns>The async task.</returns>
-    // TODO [#49] Test with Context only in MapMethod and not in MapDependency (context is not passed down).
-    // TODO [#49] Test with Context only in MapDependency and not in Map (The method is not used but mapping succedes).
     [Fact]
     [IntegrationTest]
     public async Task CanMapUsingCustomPolymorphicPartialMethodWhereMappingIsDefinedInTheMappingAttributeAndBothMethodsHaveAContextParameter()
@@ -287,6 +285,180 @@ public sealed class PolymorphicMethodMapStrategyIntegrationTests
                                     "this.MapDependency",
                                     parameterAssertions => parameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_7"),
                                     parameterAssertions => parameterAssertions.BeIdentifierNameSyntax("context")))))
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                            "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                            "__mappa_tmp_9",
+                            initializerAssertions => initializerAssertions.BeObjectCreationExpressionSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                ("DependencyProperty", expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_8")))))
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement(
+                            expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_9")));
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping will not use a polymorphic mappa-generated
+    /// method where the types are defined by <see cref="MappaTypeMappingAttribute"/>
+    /// because require a context parameter but the invoker does not
+    /// have one.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapWithoutUsingCustomPolymorphicPartialMethodWhereMappingIsDefinedInTheMappingAttributeAndMapDependencyRequireAContextParameter()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using System;
+                                  using Mappa.Attributes;
+                                  using Mappa;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class SourceBase { public int BaseProperty { get; set; }  }
+                                  public class SourceFirst : SourceBase { public Guid FirstProperty { get; set; }  }
+                                  
+                                  public class TargetBase { public long BaseProperty { get; set; }  }
+                                  public class TargetFirst : TargetBase { public string FirstProperty { get; set; }  }
+
+                                  public class Source { public SourceFirst DependencyProperty { get; set; } }
+                                  public class Target { public TargetFirst DependencyProperty { get; set; } }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaTypeMapping(typeof(TargetFirst), typeof(SourceFirst))]
+                                      public partial TargetBase MapDependency(SourceBase input, MappaContext context);
+                                      
+                                      public partial Target Map(Source input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                NullableAnnotation.NotAnnotated,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
+                NullableAnnotation.NotAnnotated,
+                2,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(7)
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                            "Mappa.Generator.Tests.UnitTests.SourceCode.SourceFirst",
+                            "__mappa_tmp_7",
+                            initializerAssertions => initializerAssertions.BeMemberAccessExpressionSyntax("input.DependencyProperty")))
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                            typeof(Guid).ToString(),
+                            "__mappa_tmp_8",
+                            initializerAssertions => initializerAssertions.BeMemberAccessExpressionSyntax("__mappa_tmp_7.FirstProperty")))
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                            typeof(string).ToString(),
+                            "__mappa_tmp_9",
+                            initializerAssertions => initializerAssertions.BeInvocationExpressionSyntax("__mappa_tmp_8.ToString")))
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                            typeof(int).ToString(),
+                            "__mappa_tmp_10",
+                            initializerAssertions => initializerAssertions.BeMemberAccessExpressionSyntax("__mappa_tmp_7.BaseProperty")))
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                            "Mappa.Generator.Tests.UnitTests.SourceCode.TargetFirst",
+                            "__mappa_tmp_11",
+                            initializerAssertions => initializerAssertions.BeObjectCreationExpressionSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.TargetFirst",
+                                ("FirstProperty", propertyInitializerAssertions => propertyInitializerAssertions.BeIdentifierNameSyntax("__mappa_tmp_9")),
+                                ("BaseProperty", propertyInitializerAssertions => propertyInitializerAssertions.BeIdentifierNameSyntax("__mappa_tmp_10")))))
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                            "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                            "__mappa_tmp_12",
+                            initializerAssertions => initializerAssertions.BeObjectCreationExpressionSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                ("DependencyProperty", propertyInitializerAssertions => propertyInitializerAssertions.BeIdentifierNameSyntax("__mappa_tmp_11")))))
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement(
+                            expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_12")));
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping can use a polymorphic mappa-generated
+    /// method where the types are defined by <see cref="MappaTypeMappingAttribute"/>.
+    /// The invoked method does not require a context parameter but the invoker
+    /// has a context parameter which is not being used.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapUsingCustomPolymorphicPartialMethodWhereMappingIsDefinedInTheMappingAttributeAndOnlyMapMethodHaveAContextParameter()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+                                  using Mappa;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class SourceBase { public int BaseProperty { get; set; }  }
+                                  public class SourceFirst : SourceBase { public Guid FirstProperty { get; set; }  }
+                                  
+                                  public class TargetBase { public long BaseProperty { get; set; }  }
+                                  public class TargetFirst : TargetBase { public string FirstProperty { get; set; }  }
+
+                                  public class Source { public SourceFirst DependencyProperty { get; set; } }
+                                  public class Target { public TargetFirst DependencyProperty { get; set; } }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaTypeMapping(typeof(TargetFirst), typeof(SourceFirst))]
+                                      public partial TargetBase MapDependency(SourceBase input);
+                                      
+                                      public partial Target Map(Source input, MappaContext context);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethodWithContext(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                NullableAnnotation.NotAnnotated,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
+                NullableAnnotation.NotAnnotated,
+                2,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(4)
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                            "Mappa.Generator.Tests.UnitTests.SourceCode.SourceFirst",
+                            "__mappa_tmp_7",
+                            initializerAssertions => initializerAssertions.BeMemberAccessExpressionSyntax("input.DependencyProperty")))
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                            "Mappa.Generator.Tests.UnitTests.SourceCode.TargetFirst",
+                            "__mappa_tmp_8",
+                            initializerAssertions => initializerAssertions.BeCastExpressionSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.TargetFirst",
+                                expressionAssertions => expressionAssertions.BeInvocationExpressionSyntax(
+                                    "this.MapDependency",
+                                    parameterAssertions => parameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_7")))))
                         .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
                             "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
                             "__mappa_tmp_9",
