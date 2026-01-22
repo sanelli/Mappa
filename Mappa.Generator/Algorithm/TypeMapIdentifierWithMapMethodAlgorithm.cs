@@ -50,7 +50,6 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
             }
         }
 
-        // TODO [#49] This should be picking method in dependencies tagged with [MappaTypeMapping] attribute.
         if (this.Context.TryGetPolymorphicMethod(this.Context.TargetType, this.Context.SourceType, this.Context.MappaUserSettings, out mapMethod)
             && !ReferenceEquals(mapMethod.MethodSymbol, this.Context.GetRootMapMethod().MethodSymbol))
         {

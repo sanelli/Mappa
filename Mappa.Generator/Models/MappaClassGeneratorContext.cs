@@ -156,7 +156,7 @@ internal sealed class MappaClassGeneratorContext
             if (typeMappingAttributes.Length <= 0)
             {
                 // Only look for methods that have any MappaTypeMappingAttribute.
-                break;
+                continue;
             }
 
             // Search in the attributes to see if there is a mapping that can be used.

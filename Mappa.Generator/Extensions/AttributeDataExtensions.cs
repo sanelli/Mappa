@@ -3,6 +3,7 @@
 // </copyright>
 
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
 
@@ -327,6 +328,7 @@ internal static class AttributeDataExtensions
         return [..results];
     }
 
+    [DebuggerDisplay("FullName = {FullName}")]
     private sealed class FakeType(string fullName) : Type
     {
         public override Module Module => throw new NotImplementedException();
