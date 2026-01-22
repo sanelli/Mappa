@@ -389,7 +389,8 @@ internal sealed class MappaGeneratorClassAlgorithm
         bool methodIsStatic,
         MappaClassGeneratorContext classContext)
     {
-        if (method.GetAttributes().GetMappaIgnoreAttribute(this.Compilation) is not null)
+        var methodAttributes = method.GetAttributes();
+        if (methodAttributes.GetMappaIgnoreAttribute(this.Compilation) is not null)
         {
             return false;
         }
@@ -431,10 +432,14 @@ internal sealed class MappaGeneratorClassAlgorithm
             return false;
         }
 
+        // Load all type Mappa related attributes.
+        var mappaAttributes = method.GetMethodMappaAttributes(this.Compilation);
+
         var mapMethod = new MapMethod(
             method,
             accessFieldName,
-            classContext.IsNullableEnabled(referenceSyntaxNode));
+            classContext.IsNullableEnabled(referenceSyntaxNode),
+            mappaAttributes);
 
         // If the method cannot be added, it is OK:
         // method defined in the class takes precedence if they

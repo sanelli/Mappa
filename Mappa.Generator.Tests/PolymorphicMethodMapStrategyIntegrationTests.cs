@@ -12,6 +12,7 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Integration tests for <see cref="PolymorphicMethodMapStrategy"/>.
 /// </summary>
+// TODO [#49] Add tests to check we can pick up polymorphic method is same class NOT generated with Mappa (but still have the attributes).
 // TODO [#49] Add tests to check we can pick up polymorphic method in a dependency class mapped with Mappa.
 // TODO [#49] Add tests to check we can pick up polymorphic method in a dependency class NOT mapped with Mappa.
 // TODO [#49] Add tests that we can pick up a user defined non-partial method tagged with the MappaTypeMapping attribute.

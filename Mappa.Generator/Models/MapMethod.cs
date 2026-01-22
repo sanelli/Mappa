@@ -58,6 +58,7 @@ internal sealed class MapMethod
     /// <param name="methodSymbol">The method symbol.</param>
     /// <param name="accessFiledName">The name of the field or property that can be used to access the method.</param>
     /// <param name="nullableEnabled"><c>true</c> if reference nullable is enabled.</param>
+    /// <param name="attributes">The attribute relevant to the mapping (might be less than the ones actually applied).</param>
     /// <remarks>
     /// The method is already considered mapped.
     /// </remarks>
@@ -65,7 +66,8 @@ internal sealed class MapMethod
     public MapMethod(
         IMethodSymbol methodSymbol,
         string accessFiledName,
-        bool nullableEnabled)
+        bool nullableEnabled,
+        Attribute[] attributes)
     {
         this.MethodDeclarationSyntax = null;
         this.AccessFieldName = accessFiledName;
@@ -76,7 +78,7 @@ internal sealed class MapMethod
         this.SourceParameterName = this.MethodSymbol.Parameters[0].Name;
         this.Mapped = true;
         this.NullableEnabled = nullableEnabled;
-        this.attributes = [];
+        this.attributes = attributes;
         this.PragmaWarning = PragmaWarningSetting.Undefined;
     }
 
