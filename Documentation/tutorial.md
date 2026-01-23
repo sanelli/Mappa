@@ -23,7 +23,6 @@ Let's add a couple of new classes to the project.
 
 First lets create the source class in `Source.cs`
 ```csharp
-using Mappa;
 using System.Collections.Generic;
 
 namespace MappaTutorial;
@@ -38,7 +37,6 @@ public sealed class Source
 
 Then let's create the target class.
 ```csharp
-using Mappa;
 using System.Collections.Generic;
 
 namespace MappaTutorial;
@@ -55,6 +53,7 @@ public sealed class Target
 Now that we have a source and a target class we can define the mapper in `Mapper.cs`:
 ```csharp
 using Mappa;
+using Mappa.Attributes;
 
 namespace MappaTutorial;
 
@@ -68,6 +67,7 @@ public sealed partial class Mapper
 We defined a mapper using a standard class but we could have as well define a static class with extension methods like the following in `SourceExtensions.cs`:
 ```csharp
 using Mappa;
+using Mappa.Attributes;
 
 namespace MappaTutorial;
 
@@ -77,6 +77,8 @@ public static partial class SourceExtensions
     public static partial Target ToTarget(this Source input);
 }
 ```
+
+Please note that neither of the original `Source` and `Target` contains any `Mappa` reference or attribute, making `Mappa` suitable for existing classes and classes where the source is not available.
 
 ## Compile and run the project
 Let's update the main to use the mapper:
@@ -128,10 +130,10 @@ RemoveEmptyEntries
 ```
 
 ## Advanced topics
-### MappaSettings format
+### Ignoring methods via MappaIgnore
 ⚠️ TODO
 
-### OptionalProtobuf
+### MappaSettings attribute
 ⚠️ TODO
 
 ### MappaInvokeMethod attribute
@@ -143,13 +145,16 @@ RemoveEmptyEntries
 ### MappaAssignFromContext attribute
 ⚠️ TODO
 
+### Mappa dependency
+⚠️ TODO
+
+### Polymorphism support
+⚠️ TODO
+
 ### Get-only collection properties
 ⚠️ TODO
 
 ### MappaSettings ProtobufOptional
-⚠️ TODO
-
-### Mappa dependency
 ⚠️ TODO
 
 #### Protobuf and Bson dependency

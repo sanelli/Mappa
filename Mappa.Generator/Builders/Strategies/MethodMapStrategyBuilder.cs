@@ -10,19 +10,10 @@ namespace Mappa.Generator.Builders.Strategies;
 /// <summary>
 /// Builder for <see cref="MethodMapStrategy"/>.
 /// </summary>
-internal sealed class MethodMapStrategyBuilder
+internal sealed class MethodMapStrategyBuilder(MethodMapStrategy strategy)
     : IMappaStrategyBuilder
 {
-    private readonly MethodMapStrategy strategy;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MethodMapStrategyBuilder"/> class.
-    /// </summary>
-    /// <param name="strategy">The strategy.</param>
-    public MethodMapStrategyBuilder(MethodMapStrategy strategy)
-    {
-        this.strategy = strategy;
-    }
+    private readonly MethodMapStrategy strategy = strategy;
 
     /// <inheritdoc/>
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)

@@ -31,6 +31,18 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? tooManyUsePropertyAttributesForTheSameTargetProperty;
     private static DiagnosticDescriptor? dependencyDoesNotProvideAnyViableMethod;
     private static DiagnosticDescriptor? cannotMapNonRequiredProperty;
+    private static DiagnosticDescriptor? explicitTargetTypeDoesNotDeriveMapMethodTargetType;
+    private static DiagnosticDescriptor? methodToInvokeUndefined;
+    private static DiagnosticDescriptor? cannotIdentifySuitableMethodToInvoke;
+    private static DiagnosticDescriptor? typeMustBeAnException;
+    private static DiagnosticDescriptor? typeMustBeConcrete;
+    private static DiagnosticDescriptor? typeMustHaveAConstructorWithNoParametersOrAConstructorWithOneStringParameter;
+    private static DiagnosticDescriptor? mappaTypeDefaultBehaviorUndefined;
+    private static DiagnosticDescriptor? mappaTypeMappingDefaultAttributeUnused;
+    private static DiagnosticDescriptor? mappaTypeMappingAttributeHaveTheSameSourceType;
+    private static DiagnosticDescriptor? mappaTypeMappingAttributeMapsSourceType;
+    private static DiagnosticDescriptor? mappaTypeMappingAttributeSourceTypeNotDeriveOrImplementMapMethodSourceType;
+    private static DiagnosticDescriptor? mappaTypeMappingAttributeTargetTypeNotDeriveOrImplementMapMethodTargetType;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -89,12 +101,12 @@ internal static class MappaDiagnosticDescriptors
             DiagnosticsResources.MultipleAttributesTargetTheSamePropertyOrParameter);
 
     /// <summary>
-    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.CannotDetectSuitableMethodToInvoke"/>.
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.CannotDetectSuitableMethodToInvokeForParameter"/>.
     /// </summary>
-    internal static DiagnosticDescriptor CannotDetectSuitableMethodToInvoke
+    internal static DiagnosticDescriptor CannotDetectSuitableMethodToInvokeForParameter
         => cannotDetectSuitableMethodToInvoke ??= BuildError(
-            MappaDiagnosticsKind.CannotDetectSuitableMethodToInvoke,
-            DiagnosticsResources.CannotDetectSuitableMethodToInvoke);
+            MappaDiagnosticsKind.CannotDetectSuitableMethodToInvokeForParameter,
+            DiagnosticsResources.CannotDetectSuitableMethodToInvokeForParameter);
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.CannotDetectType"/>.
@@ -167,6 +179,102 @@ internal static class MappaDiagnosticDescriptors
         => cannotMapNonRequiredProperty ??= BuildWarning(
             MappaDiagnosticsKind.CannotMapNonRequiredProperty,
             DiagnosticsResources.CannotMapNonRequiredProperty);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.ExplicitTargetTypeDoesNotDeriveMapMethodTargetType"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor ExplicitTargetTypeDoesNotDeriveMapMethodTargetType
+        => explicitTargetTypeDoesNotDeriveMapMethodTargetType ??= BuildError(
+            MappaDiagnosticsKind.ExplicitTargetTypeDoesNotDeriveMapMethodTargetType,
+            DiagnosticsResources.ExplicitTargetTypeDoesNotDeriveMapMethodTargetType);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodToInvokeUndefined"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MethodToInvokeUndefined
+        => methodToInvokeUndefined ??= BuildError(
+            MappaDiagnosticsKind.MethodToInvokeUndefined,
+            DiagnosticsResources.MethodToInvokeUndefined);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.CannotIdentifySuitableMethodToInvoke"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor CannotIdentifySuitableMethodToInvoke
+        => cannotIdentifySuitableMethodToInvoke ??= BuildError(
+            MappaDiagnosticsKind.CannotIdentifySuitableMethodToInvoke,
+            DiagnosticsResources.CannotIdentifySuitableMethodToInvoke);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.TypeMustBeAnException"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor TypeMustBeAnException
+        => typeMustBeAnException ??= BuildError(
+            MappaDiagnosticsKind.TypeMustBeAnException,
+            DiagnosticsResources.TypeMustBeAnException);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.TypeMustBeConcrete"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor TypeMustBeConcrete
+        => typeMustBeConcrete ??= BuildError(
+            MappaDiagnosticsKind.TypeMustBeConcrete,
+            DiagnosticsResources.TypeMustBeConcrete);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.TypeMustHaveAConstructorWithNoParametersOrAConstructorWithOneStringParameter"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor TypeMustHaveAConstructorWithNoParametersOrAConstructorWithOneStringParameter
+        => typeMustHaveAConstructorWithNoParametersOrAConstructorWithOneStringParameter ??= BuildError(
+            MappaDiagnosticsKind.TypeMustHaveAConstructorWithNoParametersOrAConstructorWithOneStringParameter,
+            DiagnosticsResources.TypeMustHaveAConstructorWithNoParametersOrAConstructorWithOneStringParameter);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MappaTypeDefaultBehaviorUndefined"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MappaTypeDefaultBehaviorUndefined
+        => mappaTypeDefaultBehaviorUndefined ??= BuildError(
+            MappaDiagnosticsKind.MappaTypeDefaultBehaviorUndefined,
+            DiagnosticsResources.MappaTypeDefaultBehaviorUndefined);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MappaTypeMappingDefaultAttributeUnusedType"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MappaTypeMappingDefaultAttributeUnusedType
+        => mappaTypeMappingDefaultAttributeUnused ??= BuildWarning(
+            MappaDiagnosticsKind.MappaTypeMappingDefaultAttributeUnusedType,
+            DiagnosticsResources.MappaTypeMappingDefaultAttributeUnusedType);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MappaTypeMappingAttributeHaveTheSameSourceType"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MappaTypeMappingAttributeHaveTheSameSourceType
+        => mappaTypeMappingAttributeHaveTheSameSourceType ??= BuildError(
+            MappaDiagnosticsKind.MappaTypeMappingAttributeHaveTheSameSourceType,
+            DiagnosticsResources.MappaTypeMappingAttributeHaveTheSameSourceType);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MappaTypeMappingAttributeMapsSourceType"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MappaTypeMappingAttributeMapsSourceType
+        => mappaTypeMappingAttributeMapsSourceType ??= BuildError(
+            MappaDiagnosticsKind.MappaTypeMappingAttributeMapsSourceType,
+            DiagnosticsResources.MappaTypeMappingAttributeMapsSourceType);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MappaTypeMappingAttributeSourceTypeNotDeriveOrImplementMapMethodSourceType"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MappaTypeMappingAttributeSourceTypeNotDeriveOrImplementMapMethodSourceType
+        => mappaTypeMappingAttributeSourceTypeNotDeriveOrImplementMapMethodSourceType ??= BuildError(
+            MappaDiagnosticsKind.MappaTypeMappingAttributeSourceTypeNotDeriveOrImplementMapMethodSourceType,
+            DiagnosticsResources.MappaTypeMappingAttributeSourceTypeNotDeriveOrImplementMapMethodSourceType);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MappaTypeMappingAttributeTargetTypeNotDeriveOrImplementMapMethodTargetType"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MappaTypeMappingAttributeTargetTypeNotDeriveOrImplementMapMethodTargetType
+        => mappaTypeMappingAttributeTargetTypeNotDeriveOrImplementMapMethodTargetType ??= BuildError(
+            MappaDiagnosticsKind.MappaTypeMappingAttributeTargetTypeNotDeriveOrImplementMapMethodTargetType,
+            DiagnosticsResources.MappaTypeMappingAttributeTargetTypeNotDeriveOrImplementMapMethodTargetType);
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(

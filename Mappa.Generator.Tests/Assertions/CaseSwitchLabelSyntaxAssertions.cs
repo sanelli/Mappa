@@ -33,26 +33,6 @@ internal sealed class CaseSwitchLabelSyntaxAssertions
     }
 
     /// <summary>
-    /// Assert that the syntax is a case.
-    /// </summary>
-    /// <returns>The current assertion.</returns>
-    public ISwitchLabelSyntaxAssertions IsCase()
-    {
-        this.Subject.Should().BeOfType<CaseSwitchLabelSyntax>();
-        return this;
-    }
-
-    /// <summary>
-    /// Assert that the syntax is a default.
-    /// </summary>
-    /// <returns>The current assertion.</returns>
-    public ISwitchLabelSyntaxAssertions IsDefault()
-    {
-        this.Subject.Should().BeOfType<DefaultSwitchLabelSyntax>();
-        return this;
-    }
-
-    /// <summary>
     /// Assert on the value of the case.
     /// </summary>
     /// <param name="assert">The assertion on the value of the case.</param>
@@ -63,4 +43,7 @@ internal sealed class CaseSwitchLabelSyntaxAssertions
         assert(new ExpressionSyntaxAssertions(this.Subject.Value, this.semanticModel, this.compilation));
         return this;
     }
+
+    /// <inheritdoc/>
+    public SwitchLabelSyntax GetSubject() => this.Subject;
 }

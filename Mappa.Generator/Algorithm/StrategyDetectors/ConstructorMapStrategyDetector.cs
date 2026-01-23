@@ -16,7 +16,6 @@ namespace Mappa.Generator.Algorithm.StrategyDetectors;
 /// <summary>
 /// Detector for the constructor strategies.
 /// </summary>
-// TODO [#22] Add support for polymorphism.
 internal sealed class ConstructorMapStrategyDetector
     : IMapStrategyDetector
 {
@@ -776,7 +775,7 @@ internal sealed class ConstructorMapStrategyDetector
 
         if (method is null)
         {
-            this.context.ReportDiagnostic(MappaDiagnostics.CannotDetectSuitableMethodToInvoke(
+            this.context.ReportDiagnostic(MappaDiagnostics.CannotDetectSuitableMethodToInvokeForParameter(
                 mapMethodMethodDeclarationSyntax,
                 targetName,
                 mappaInvokeMethodAttribute.MethodName,

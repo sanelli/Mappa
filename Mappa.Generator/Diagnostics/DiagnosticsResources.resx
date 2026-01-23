@@ -39,7 +39,7 @@
     <data name="MultipleAttributesTargetTheSamePropertyOrParameter" xml:space="preserve">
         <value>Multiple mapping attributes on method '{0}' target property or constructor parameter '{1}'.</value>
     </data>
-    <data name="CannotDetectSuitableMethodToInvoke" xml:space="preserve">
+    <data name="CannotDetectSuitableMethodToInvokeForParameter" xml:space="preserve">
         <value>Cannot identify a method with name '{0}' in class '{1}' for target property or constructor parameter '{2}'.</value>
     </data>
     <data name="CannotDetectType" xml:space="preserve">
@@ -68,5 +68,41 @@
     </data>
     <data name="CannotMapNonRequiredProperty" xml:space="preserve">
         <value>Cannot find a suitable mapping for property '{0}.{1}'.</value>
+    </data>
+    <data name="ExplicitTargetTypeDoesNotDeriveMapMethodTargetType" xml:space="preserve">
+        <value>Type '{0}' does not derive or implement '{1}'.</value>
+    </data>
+    <data name="MethodToInvokeUndefined" xml:space="preserve">
+        <value>The method to invoke is undefined.</value>
+    </data>
+    <data name="CannotIdentifySuitableMethodToInvoke" xml:space="preserve">
+        <value>Cannot identify a method with name '{0}' in class '{1}': the method does not exist or does not have the correct number of parameters or the types of the parameters do not match the expected types or the method must be static.</value>
+    </data>
+    <data name="TypeMustBeAnException" xml:space="preserve">
+        <value>Type '{0}' must be an exception.</value>
+    </data>
+    <data name="TypeMustBeConcrete" xml:space="preserve">
+        <value>Type '{0}' must be concrete.</value>
+    </data>
+    <data name="TypeMustHaveAConstructorWithNoParametersOrAConstructorWithOneStringParameter" xml:space="preserve">
+        <value>Type '{0}' must have a construtcor with no parameters or a constructor with one string parameter.</value>
+    </data>
+    <data name="MappaTypeDefaultBehaviorUndefined" xml:space="preserve">
+        <value>The MappaTypeDefaultBehaviorUndefined is undefined.</value>
+    </data>
+    <data name="MappaTypeMappingDefaultAttributeUnusedType" xml:space="preserve">
+        <value>The type specified in the MappaTypeMappingDefault attribute will not be used.</value>
+    </data>
+    <data name="MappaTypeMappingAttributeHaveTheSameSourceType" xml:space="preserve">
+        <value>Two or more MappaTypeMappingAttribute have the same sorce type '{0}'.</value>
+    </data>
+    <data name="MappaTypeMappingAttributeMapsSourceType" xml:space="preserve">
+        <value>The MappaTypeMapping attribute has the same source type of the source type '{0}' of the method being mapped.</value>
+    </data>
+    <data name="MappaTypeMappingAttributeSourceTypeNotDeriveOrImplementMapMethodSourceType" xml:space="preserve">
+        <value>The MappaTypeMapping attribute source type '{0}' does not derive nor implement map method source type '{1}'.</value>
+    </data>
+    <data name="MappaTypeMappingAttributeTargetTypeNotDeriveOrImplementMapMethodTargetType" xml:space="preserve">
+        <value>The MappaTypeMapping attribute target type '{0}' does not derive nor implement map method target type '{1}'.</value>
     </data>
 </root>

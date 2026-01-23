@@ -2,8 +2,10 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Attributes;
 using Mappa.Generator.Algorithm.StrategyDetectors;
 using Mappa.Generator.Diagnostics;
+using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -63,30 +65,34 @@ internal class TypeMapIdentifierAlgorithm
             // 02. Nullable related strategies.
             new NullableMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
 
-            // 03. Enum related strategies.
+            // 03. Type mapping.
+            new PolymorphismMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
+
+            // 04. Enum related strategies.
             new EnumMapStrategyDetector(this.Context, this.Compilation),
 
-            // 04. String related strategies.
+            // 05. String related strategies.
             new StringMapStrategyDetector(this.Context, this.Compilation),
 
-            // 05. Date and time related strategies.
+            // 06. Date and time related strategies.
             new DateAndTimeMapStrategyDetector(this.Context, this.Compilation),
 
-            // 06. Container related strategies.
+            // 07. Container related strategies.
             new ContainerMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
 
-            // 07. Tuple related strategies.
+            // 08. Tuple related strategies.
             new TupleMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
 
-            // 08. Guid related strategies.
+            // 09. Guid related strategies.
             new GuidStrategyDetector(this.Context, this.Compilation),
 
-            // 09. Constructor related strategies.
+            // 10. Constructor related strategies.
             new ConstructorMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
         ];
 
         foreach (var detector in detectors)
         {
+            // If the operation has been cancelled: stop!
             this.CancellationToken.ThrowIfCancellationRequested();
 
             switch (detector)
@@ -101,22 +107,74 @@ internal class TypeMapIdentifierAlgorithm
                 // detector itself.
                 case NullableMapStrategyDetector when !this.Context.AlgorithmSettings.UseNullableMapStrategyDetector:
                     continue;
+
+                // Polymorphism detector can only run at the root or if following a
+                // nullable detector.
+                case PolymorphismMapStrategyDetector:
+                    if (!CanExecutePolymorphismMapStrategyDetector(this.Context.AlgorithmSettings.Detectors, this.Context.GetRootMapMethod()))
+                    {
+                        continue;
+                    }
+
+                    break;
+
+                // Do not run the identity mapper if we could instead run the mappa polymorphism strategy
+                // where there is at least one TypeMapping attribute.
+                case IdentityMapStrategyDetector:
+                    if (CanExecutePolymorphismMapStrategyDetector(this.Context.AlgorithmSettings.Detectors, this.Context.GetRootMapMethod()))
+                    {
+                        continue;
+                    }
+
+                    break;
             }
 
             using (this.Context.AlgorithmSettings.ApplyAlgorithmContextDefaults())
             {
-                if (detector.TryDetect(out var detectedStrategy))
+                using (this.Context.AlgorithmSettings.Detectors.Apply(detector.GetType()))
                 {
-                    return detectedStrategy;
+                    if (detector.TryDetect(out var detectedStrategy))
+                    {
+                        return detectedStrategy;
+                    }
                 }
+            }
+
+            // If any error diagnostic has been reported there is no point in going ahead.
+            if (this.Context.HasErrorDiagnostics)
+            {
+                break;
             }
         }
 
-        // Report error
-        this.Context.ReportDiagnostic(MappaDiagnostics.CannotIdentifyStrategy(
-            this.Context.TargetType,
-            this.Context.SourceType,
-            this.Context.GetLocation()));
+        // Report error because a mapping cannot be identified but only if no other error
+        // diagnostic has been reported before that.
+        if (!this.Context.HasErrorDiagnostics)
+        {
+            this.Context.ReportDiagnostic(MappaDiagnostics.CannotIdentifyStrategy(
+                this.Context.TargetType,
+                this.Context.SourceType,
+                this.Context.GetLocation()));
+        }
+
         return new NoMapStrategy(this.Context.TargetType, this.Context.SourceType);
+
+        // Identify if the polymorphism detector can actually be executed.
+        static bool CanExecutePolymorphismMapStrategyDetector(StackSetting<Type> detectorsStack, MapMethod mapMethod)
+            => mapMethod.HasAnyAttribute<MappaTypeMappingAttribute>() && detectorsStack.Count switch
+            {
+                // If only one item is present on the stack then
+                // there is actually nothing on the stack beside
+                // the default value null.
+                1 => true,
+
+                // If one detector is on the stack you can apply the polymorphism
+                // detector only if that detector is the nullability detector.
+                2 => detectorsStack.CurrentValue == typeof(NullableMapStrategyDetector),
+
+                // In any other scenario the polymorphism detector
+                // cannot be used.
+                _ => false,
+            };
     }
 }

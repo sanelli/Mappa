@@ -52,12 +52,19 @@ internal sealed class MappaMethodGeneratorContext
     internal override MappaUserSettings MappaUserSettings { get; }
 
     /// <inheritdoc/>
+    internal override bool HasErrorDiagnostics => this.ClassContext.HasErrorDiagnostics;
+
+    /// <inheritdoc/>
     internal override bool IsNullableEnabled()
         => this.GetMapMethod().NullableEnabled;
 
     /// <inheritdoc/>
     internal override bool TryGetMethod(ITypeSymbol targetType, ITypeSymbol sourceType, out MapMethod mapMethod)
         => this.ClassContext.TryGetMethod(targetType, sourceType, this.IsNullableEnabled(), out mapMethod);
+
+    /// <inheritdoc/>
+    internal override bool TryGetPolymorphicMethod(ITypeSymbol targetType, ITypeSymbol sourceType, IMappaUserSettings mappaUserSettings, out MapMethod mapMethod)
+        => this.ClassContext.TryGetPolymorphicMethod(targetType, sourceType, this.IsNullableEnabled(), mappaUserSettings, out mapMethod);
 
     /// <inheritdoc/>
     internal override void ReportDiagnostic(Diagnostic diagnostic)

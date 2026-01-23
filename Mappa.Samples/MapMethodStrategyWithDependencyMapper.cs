@@ -7,6 +7,8 @@ using System.Globalization;
 using Mappa.Attributes;
 using Mappa.Samples.Models;
 
+// TODO [#185] Method is not picked up if the invoker is static and the invoked method is on a non-static property.
+// TODO [#185] Method is not picked up if the invoker is static and the invoked method is on a non-static field.
 #pragma warning disable SA1402 // Multiple classes in the same file
 #pragma warning disable SA1403 // File contains multiple namespaces
 #pragma warning disable SA1649 // File name should match first type name

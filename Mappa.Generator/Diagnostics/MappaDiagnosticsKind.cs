@@ -54,7 +54,7 @@ internal enum MappaDiagnosticsKind
     /// <summary>
     /// Cannot identify a suitable method to invoke.
     /// </summary>
-    CannotDetectSuitableMethodToInvoke,
+    CannotDetectSuitableMethodToInvokeForParameter,
 
     /// <summary>
     /// The type cannot be identified.
@@ -103,4 +103,65 @@ internal enum MappaDiagnosticsKind
     /// A property that is not marked as required cannot be mapped.
     /// </summary>
     CannotMapNonRequiredProperty,
+
+    /// <summary>
+    /// An explicit target type does not implement or derive from the map method target type.
+    /// </summary>
+    ExplicitTargetTypeDoesNotDeriveMapMethodTargetType,
+
+    /// <summary>
+    /// The method to invoke is undefined.
+    /// </summary>
+    MethodToInvokeUndefined,
+
+    /// <summary>
+    /// The method to invoke cannot be identified: it does not exist or does not have the correct
+    /// number of parameters.
+    /// </summary>
+    CannotIdentifySuitableMethodToInvoke,
+
+    /// <summary>
+    /// The type must be an exception.
+    /// </summary>
+    TypeMustBeAnException,
+
+    /// <summary>
+    /// The type must be a concrete type (i.e. non-abstract).
+    /// </summary>
+    TypeMustBeConcrete,
+
+    /// <summary>
+    /// The type must have a constructor with no parameters or a constructor with one string parameter.
+    /// </summary>
+    TypeMustHaveAConstructorWithNoParametersOrAConstructorWithOneStringParameter,
+
+    /// <summary>
+    /// The <see cref="MappaTypeMappingDefaultAttribute"/> is undefined.
+    /// </summary>
+    MappaTypeDefaultBehaviorUndefined,
+
+    /// <summary>
+    /// The type specified in <see cref="MappaTypeMappingDefaultAttribute"/> will not be used.
+    /// </summary>
+    MappaTypeMappingDefaultAttributeUnusedType,
+
+    /// <summary>
+    /// Two or more <see cref="MappaTypeMappingAttribute"/> target the same type.
+    /// </summary>
+    MappaTypeMappingAttributeHaveTheSameSourceType,
+
+    /// <summary>
+    /// The <see cref="MappaTypeMappingAttribute"/> has the same source type as the method being mapped.
+    /// </summary>
+    MappaTypeMappingAttributeMapsSourceType,
+
+    /// <summary>
+    /// The <see cref="MappaTypeMappingAttribute"/> source type does not derive nor implement the source type of the method being mapped.
+    /// </summary>
+    MappaTypeMappingAttributeSourceTypeNotDeriveOrImplementMapMethodSourceType,
+
+    /// <summary>
+    /// The <see cref="MappaTypeMappingAttribute"/> target type does not derive nor implement the target type of the method being mapped.
+    /// </summary>
+    MappaTypeMappingAttributeTargetTypeNotDeriveOrImplementMapMethodTargetType,
 }

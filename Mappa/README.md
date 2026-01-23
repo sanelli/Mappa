@@ -8,12 +8,14 @@ This is the list of attributes provided:
 - `MappaSettings`: Allows specifying the behavior while mapping sometimes (e.g., it allows specifying culture when mapping `string`s into `System.DateTime` and to specify the format when mapping `string`s into `System.Guid`);
 - `MappaUseProperty`: When mapping structured types (`class`, `struct` and `records`) allows specifying which property uses from the source property for a target property or constructor parameter;
 - `MappaAssignFromContext`: When mapping structured types (`class`, `struct` and `records`) allows specifying which value from the context of type `MappaContext` use for a target property or constructor parameter;
-- `MappaInvokeMethodAttribute`: When mapping structured types (`class`, `struct` and `records`) allows specifying that a property or attribute should be mapped by invoking a method.
+- `MappaInvokeMethodAttribute`: When mapping structured types (`class`, `struct` and `records`) allows specifying that a property or attribute should be mapped by invoking a method;
 - `MappaAssignFromConstant`: When mapping structured types (`class`, `struct` and `records`) allows specifying a constant value for a target property or constructor parameter;
+- `MappaTypeMapping`: When mapping structured types (`class`, `struct` and `records`) or interfaces it allows to define the target type depending on the source type;
+- `MappaTypeMappingDefault`: Describe the default behavior for polymorphic methods defined via `MappaTypeMappingDefault`.
 
 This package also provides the `MappaContext` class that can be used to pass contextual values to mappers via the `MappaAssignFromContext` attribute.
 
-Via `MappaSettings` the following settings can be identified:
+Via `MappaSettings` the following settings can be tweaked:
 - `DateTimeFormat`: the format to use to map `string`s into `System.DateTime` and vice versa;
 - `DateTimeOffsetFormat`: the format to use to map `string`s into `System.DateTimeOffset` and vice versa;
 - `DateOnlyFormat`: the format to use to map `string`s into `System.DateOnly` and vice versa;
@@ -25,7 +27,16 @@ Via `MappaSettings` the following settings can be identified:
 - `ProtobufOptional`: enable or disable the ability of [Mappa source generator](https://www.nuget.org/packages/Mappa.Generator/) to handle `optional` fields in protobuf models;
 - `PragmaWarning`: allows surrounding the generated methods with a `#pragma warning disable` block;
 - `FastCollections`: uses `Span<T>` to make mappings involving arrays and `System.Collections.Generic.List<T>` faster;
-- `ContainerCapacityConstructors`: support mapping custom containers using (if available) a constructor accepting an integer value representing the initial capacity of the container.
+- `ContainerCapacityConstructors`: support mapping custom containers using (if available) a constructor accepting an integer value representing the initial capacity of the container;
+- `PolymorphicMapMethodWithMatchingDefaultAttribute`: if this is enabled `MappaTypeMappingDefault` can be used to locate an appropriate polymorphic method when looking for the mapping between two types.
+
+Via `MappaTypeMappingDefault` the following settings can be tweaked:
+- `Undefined`: this setting should never be used;
+- `Throw`: if the source type is not defined by any of the `MappaTypeMapping` attribute it will throw the `ArgumentOutOfRangeException` or the exception defined in the `MappaTypeMappingDefault` attribute;
+- `Default`: will return `default`;
+- `Null`: will return `null`;
+- `MapSourceType`: will map the source type to the target type of the method or the type specified in the `MappaTypeMappingDefault` attribute;
+- `InvokeMethod`: will invoke a method in the mapper with the name specified in the `MappaTypeMappingDefault` to perform the mapping; `MappaTypeMappingDefault` can also be used to specify the type on which the method is defined: in this case the method must be `static`. The method can optionally accept a second `MappaContext` parameter.
 
 Relevant packages:
 - [Mappa source generator](https://www.nuget.org/packages/Mappa.Generator/): source generator that allows to automatically generate mapping between classes and value types;

@@ -32,8 +32,8 @@
     <data name="MultipleAttributesTargetTheSamePropertyOrParameter" xml:space="preserve">
         <value>Molteplici attributi sul metodo '{0}' sono relativi alla medesima proprietà o parametro del costruttore '{1}'.</value>
     </data>
-    <data name="CannotDetectSuitableMethodToInvoke" xml:space="preserve">
-        <value>Non è possibile identificare un metodo con nome '{0}' nella classe '{1}' per la priperitè o il parametro '{2}'.</value>
+    <data name="CannotDetectSuitableMethodToInvokeForParameter" xml:space="preserve">
+        <value>Non è possibile identificare un metodo con nome '{0}' nella classe '{1}' per la properietà o il parametro '{2}'.</value>
     </data>
     <data name="CannotDetectType" xml:space="preserve">
         <value>Impossibile identificare il tipo '{0}'.</value>
@@ -61,5 +61,41 @@
     </data>
     <data name="CannotMapNonRequiredProperty" xml:space="preserve">
         <value>Non è possibile identifier un mapping per la propertietà '{0}.{1}'.</value>
+    </data>
+    <data name="ExplicitTargetTypeDoesNotDeriveMapMethodTargetType" xml:space="preserve">
+        <value>Il tipo '{0}' non implementa o deriva dal tipo '{1}'.</value>
+    </data>
+    <data name="MethodToInvokeUndefined" xml:space="preserve">
+        <value>Il metodo da invocare non è correttamente definito.</value>
+    </data>
+    <data name="CannotIdentifySuitableMethodToInvoke" xml:space="preserve">
+        <value>Non è possibile identificare un metodo con nome '{0}' nella classe '{1}': il metodo non esiste o il metodo non ha il numero corretto di parametri o il tipo dei parametri non è corretto or il metodo deve essere dichiarato 'static'.</value>
+    </data>
+    <data name="TypeMustBeAnException" xml:space="preserve">
+        <value>Il tipo '{0}' deve essere una eccezione.</value>
+    </data>
+    <data name="TypeMustBeConcrete" xml:space="preserve">
+        <value>Il tipo '{0}' deve essere un tipo concreto.</value>
+    </data>
+    <data name="TypeMustHaveAConstructorWithNoParametersOrAConstructorWithOneStringParameter" xml:space="preserve">
+        <value>Il tipo '{0}' deve avere un costruttore senza nessun parametro oppure un costruttore con un solo parametro di tipo string.</value>
+    </data>
+    <data name="MappaTypeDefaultBehaviorUndefined" xml:space="preserve">
+        <value>L'attribute MappaTypeDefaultBehaviorUndefined è Undefined.</value>
+    </data>
+    <data name="MappaTypeMappingDefaultAttributeUnusedType" xml:space="preserve">
+        <value>Il tipo specification dall'attributo MappaTypeMappingDefault non verrà utilizzato.</value>
+    </data>
+    <data name="MappaTypeMappingAttributeHaveTheSameSourceType" xml:space="preserve">
+        <value>Due o più attributi MappaTypeMappingAttributehanno il medesimo tipo sorgente '{0}'.</value>
+    </data>
+    <data name="MappaTypeMappingAttributeMapsSourceType" xml:space="preserve">
+        <value>L'attribute MappaTypeMapping ha lo stesso tipo sorgente '{0}' del metodo che sta venendo mappato.</value>
+    </data>
+    <data name="MappaTypeMappingAttributeSourceTypeNotDeriveOrImplementMapMethodSourceType" xml:space="preserve">
+        <value>Il tipo sorgente '{0}' dell'attributo MappaTypeMapping non deriva ne implementa il tipo sorgente '{1}' del metodo che sta venendo mappato.</value>
+    </data>
+    <data name="MappaTypeMappingAttributeTargetTypeNotDeriveOrImplementMapMethodTargetType" xml:space="preserve">
+        <value>Il tipo obiettivo '{0}' dell'attributo MappaTypeMapping non deriva ne implementa il tipo obiettivo '{1}' del metodo che sta venendo mappato.</value>
     </data>
 </root>

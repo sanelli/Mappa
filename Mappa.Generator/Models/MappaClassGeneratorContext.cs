@@ -2,8 +2,10 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Attributes;
 using Mappa.Generator.Diagnostics.Debug;
 using Mappa.Generator.Exceptions;
+using Mappa.Generator.Extensions;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -15,8 +17,8 @@ namespace Mappa.Generator.Models;
 /// </summary>
 internal sealed class MappaClassGeneratorContext
 {
-    private readonly List<MapMethod> mapMethods = new();
-    private readonly List<Diagnostic> diagnostics = new();
+    private readonly List<MapMethod> mapMethods = [];
+    private readonly List<Diagnostic> diagnostics = [];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaClassGeneratorContext"/> class.
@@ -83,6 +85,12 @@ internal sealed class MappaClassGeneratorContext
     internal IReadOnlyCollection<Diagnostic> Diagnostics => this.diagnostics;
 
     /// <summary>
+    /// Gets a value indicating whether a diagnostic with severity error has been reported.
+    /// </summary>
+    internal bool HasErrorDiagnostics =>
+        this.diagnostics.Any(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error);
+
+    /// <summary>
     /// Gets a value indicating whether <c>nullable</c> is enabled for a syntax node.
     /// </summary>
     /// <param name="syntaxNode">The syntax node to investigate.</param>
@@ -125,6 +133,84 @@ internal sealed class MappaClassGeneratorContext
     }
 
     /// <summary>
+    /// Try getting the method for mapping from <paramref name="sourceType"/> to
+    /// <paramref name="targetType"/> by checking the polymorphic methods.
+    /// </summary>
+    /// <param name="targetType">The target type.</param>
+    /// <param name="sourceType">The source type.</param>
+    /// <param name="nullableEnabled">Nullable enabled.</param>
+    /// <param name="mappaUserSettings">The user settings applied to the method being mapped.</param>
+    /// <param name="mapMethod">The map method, if it exists.</param>
+    /// <returns><c>true</c> if the method to map from <paramref name="sourceType"/> to
+    /// <paramref name="targetType"/>, <c>false</c> otherwise.</returns>
+    internal bool TryGetPolymorphicMethod(
+        ITypeSymbol targetType,
+        ITypeSymbol sourceType,
+        bool nullableEnabled,
+        IMappaUserSettings mappaUserSettings,
+        out MapMethod mapMethod)
+    {
+        foreach (var method in this.mapMethods)
+        {
+            var typeMappingAttributes = method.GetAttributes<MappaTypeMappingAttribute>();
+            if (typeMappingAttributes.Length <= 0)
+            {
+                // Only look for methods that have any MappaTypeMappingAttribute.
+                continue;
+            }
+
+            // Search in the attributes to see if there is a mapping that can be used.
+            foreach (var typeMappingAttribute in typeMappingAttributes)
+            {
+                var attributeSourceType =
+                    this.Compilation.GetTypeByMetadataName(typeMappingAttribute.SourceType.FullName!);
+                var attributeTargetType =
+                    this.Compilation.GetTypeByMetadataName(typeMappingAttribute.TargetType.FullName!);
+
+                var attributeSourceTypeWithNullability = attributeSourceType?.WithNullableAnnotation(method.TargetType.NullableAnnotation);
+                var attributeTargetTypeWithNullability = attributeTargetType?.WithNullableAnnotation(method.TargetType.NullableAnnotation);
+
+                if (attributeSourceTypeWithNullability is not null &&
+                    attributeTargetTypeWithNullability is not null &&
+                    attributeSourceTypeWithNullability.IsEqualTo(sourceType, nullableEnabled) &&
+                    attributeTargetTypeWithNullability.IsEqualTo(targetType, nullableEnabled))
+                {
+                    mapMethod = method;
+                    return true;
+                }
+            }
+
+            // Pick up the MappaTypeMappingDefault only if defined and it specify the behavior MapSourceType.
+            // Not that this will only pick up the setup where the target type is defined.
+            // If the attribute target type is the same as the target type we would not even be here because
+            // the method would be picked up earlier by the non polymorphic version of this.
+            if (mappaUserSettings.PolymorphicMapMethodWithMatchingDefaultAttribute is BooleanSetting.Enable)
+            {
+                var mappaTypeMappingDefaultAttribute = method.GetAttribute<MappaTypeMappingDefaultAttribute>();
+                if (mappaTypeMappingDefaultAttribute is not null &&
+                    mappaTypeMappingDefaultAttribute.Behavior is MappaTypeMappingDefaultBehavior.MapSourceType &&
+                    mappaTypeMappingDefaultAttribute.Type is not null)
+                {
+                    var attributeTargetType =
+                        this.Compilation.GetTypeByMetadataName(mappaTypeMappingDefaultAttribute.Type.FullName!);
+
+                    var attributeTargetTypeWithNullability = attributeTargetType?.WithNullableAnnotation(method.TargetType.NullableAnnotation);
+
+                    if (attributeTargetTypeWithNullability is not null &&
+                        attributeTargetTypeWithNullability.IsEqualTo(targetType, nullableEnabled))
+                    {
+                        mapMethod = method;
+                        return true;
+                    }
+                }
+            }
+        }
+
+        mapMethod = null!;
+        return false;
+    }
+
+    /// <summary>
     /// Adds the map method to the list of methods.
     /// Method is added only if no other method with the same mapping exists.
     /// </summary>
@@ -157,14 +243,14 @@ internal sealed class MappaClassGeneratorContext
     /// <summary>
     /// Records a new set of diagnostics.
     /// </summary>
-    /// <param name="diagnostics">The diagnostics to be added.</param>
-    internal void ReportDiagnostics(IEnumerable<Diagnostic> diagnostics)
-        => this.diagnostics.AddRange(diagnostics);
+    /// <param name="generatedDiagnostics">The diagnostics to be added.</param>
+    internal void ReportDiagnostics(IEnumerable<Diagnostic> generatedDiagnostics)
+        => this.diagnostics.AddRange(generatedDiagnostics);
 
     /// <summary>
     /// Record a new diagnostic.
     /// </summary>
     /// <param name="diagnostic">The diagnostic to be added.</param>
     internal void ReportDiagnostic(Diagnostic diagnostic)
-        => this.ReportDiagnostics(new[] { diagnostic });
+        => this.ReportDiagnostics([diagnostic]);
 }

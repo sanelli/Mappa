@@ -67,6 +67,7 @@ internal static class TypeSymbolExtensions
     private const string ConcurrentStackFullName = "System.Collections.Concurrent.ConcurrentStack`1";
     private const string ConcurrentQueueFullName = "System.Collections.Concurrent.ConcurrentQueue`1";
     private const string ProducerConsumerCollectionInterfaceFullName = "System.Collections.Concurrent.IProducerConsumerCollection`1";
+    private const string ExceptionFullName = "System.Exception";
 
     /// <summary>
     /// Check if the type is <see cref="Void"/>.
@@ -1461,6 +1462,29 @@ internal static class TypeSymbolExtensions
     }
 
     /// <summary>
+    /// Check if <paramref name="namedTypeSymbol"/> has a constructor with one parameter of type string.
+    /// </summary>
+    /// <param name="namedTypeSymbol">The symbol to check has a constructor with a single string parameter.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <param name="accessibleFromMethod">Optional method, if provided (and not <c>null</c>) we will check that the constructor can be invoked from <paramref name="accessibleFromMethod"/>.</param>
+    /// <returns><c>true</c> if <paramref name="namedTypeSymbol"/> has a constructor with one string parameter, <c>false</c> otherwise.</returns>
+    internal static bool HasNamedTypeSymbolAccessibleSingleStringParametersConstructor(
+        this INamedTypeSymbol namedTypeSymbol,
+        Compilation compilation,
+        IMethodSymbol? accessibleFromMethod = null)
+    {
+        var constructor = namedTypeSymbol.Constructors.FirstOrDefault(constructor =>
+            constructor.Parameters.Length == 1 &&
+            constructor.Parameters[0].Type.IsString());
+        if (constructor is null)
+        {
+            return false;
+        }
+
+        return accessibleFromMethod == null || compilation.IsSymbolAccessibleWithin(constructor, accessibleFromMethod.ContainingSymbol);
+    }
+
+    /// <summary>
     /// Check if <paramref name="typeSymbol"/> has a constructor with empty parameters.
     /// </summary>
     /// <param name="typeSymbol">The symbol to check has a constructor without parameters.</param>
@@ -1496,7 +1520,7 @@ internal static class TypeSymbolExtensions
     /// </summary>
     /// <param name="type">The type name to be normalised.</param>
     /// <returns>The normalised name of the type.</returns>
-    internal static string NormalizeType(string type)
+    internal static string NormalizeType(this string type)
         => type switch
         {
             "sbyte" => typeof(sbyte).ToString(),
@@ -1550,5 +1574,146 @@ internal static class TypeSymbolExtensions
         }
 
         return typeSymbol;
+    }
+
+    /// <summary>
+    /// Check if <paramref name="typeSymbol"/> implements <paramref name="interfaceSymbol"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to check.</param>
+    /// <param name="interfaceSymbol">The interface symbol.</param>
+    /// <returns><c>true</c> if <paramref name="typeSymbol"/> implements <paramref name="interfaceSymbol"/>, <c>false</c> otherwise.</returns>
+    internal static bool IsImplementingInterface(this ITypeSymbol typeSymbol, ITypeSymbol interfaceSymbol)
+        => typeSymbol.AllInterfaces.Any(@interface =>
+                SymbolEqualityComparer.Default.Equals(@interface, interfaceSymbol));
+
+    /// <summary>
+    /// Check if <paramref name="typeSymbol"/> implements <paramref name="baseClassSymbol"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to check.</param>
+    /// <param name="baseClassSymbol">The base class symbol.</param>
+    /// <returns><c>true</c> if <paramref name="typeSymbol"/> is derived from <paramref name="baseClassSymbol"/> or they are the same type, <c>false</c> otherwise.</returns>
+    internal static bool IsDerivedFromClass(this ITypeSymbol typeSymbol, ITypeSymbol baseClassSymbol)
+    {
+        if (SymbolEqualityComparer.Default.Equals(typeSymbol, baseClassSymbol))
+        {
+            return true;
+        }
+
+        var baseType = typeSymbol.BaseType;
+        while (baseType is not null)
+        {
+            if (SymbolEqualityComparer.Default.Equals(baseType, baseClassSymbol))
+            {
+                return true;
+            }
+
+            baseType = baseType.BaseType;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Check if <paramref name="typeSymbol"/> is implementing interface <paramref name="baseSymbol"/>
+    /// or derived from class <paramref name="baseSymbol"/> or <paramref name="typeSymbol"/> or if <paramref name="baseSymbol"/>
+    /// are the same type.
+    /// </summary>
+    /// <param name="typeSymbol">The symbol to check.</param>
+    /// <param name="baseSymbol">The parent class or interface.</param>
+    /// <returns><c>true</c> if <paramref name="typeSymbol"/> is implementing interface <paramref name="baseSymbol"/>
+    /// or derived from class <paramref name="baseSymbol"/> or <paramref name="typeSymbol"/> or if <paramref name="baseSymbol"/>
+    /// are the same type, <c>false</c> otherwise.</returns>
+    internal static bool IsImplementingOrIsDerivedFromClass(this ITypeSymbol typeSymbol, ITypeSymbol baseSymbol)
+        => baseSymbol.TypeKind switch
+        {
+            TypeKind.Interface => typeSymbol.IsImplementingInterface(baseSymbol),
+            _ => typeSymbol.IsDerivedFromClass(baseSymbol),
+        };
+
+    /// <summary>
+    /// Check if the symbol is an exception.
+    /// </summary>
+    /// <param name="typeSymbol">The symbol to validate.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type is a valid type that can thrown, <c>false</c> otherwise.</returns>
+    internal static bool CanBeThrown(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var exceptionSymbol = compilation.GetTypeByMetadataName(ExceptionFullName);
+        if (SymbolEqualityComparer.Default.Equals(exceptionSymbol, typeSymbol.OriginalDefinition))
+        {
+            return true;
+        }
+
+        INamedTypeSymbol? baseType = typeSymbol.BaseType;
+        while (baseType is not null)
+        {
+            if (SymbolEqualityComparer.Default.Equals(exceptionSymbol, baseType.OriginalDefinition))
+            {
+                return true;
+            }
+
+            baseType = baseType.BaseType;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Locate all the methods in the type hierarchy with the given name.
+    /// Methods are sorted by most derived class first.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to investigate.</param>
+    /// <param name="methodName">The method name.</param>
+    /// <returns>The methods with name <paramref name="methodName"/> in the hierarchy.</returns>
+    internal static IMethodSymbol[] LocateMethods(this ITypeSymbol typeSymbol, string methodName)
+    {
+        var methods = new List<IMethodSymbol>();
+        ITypeSymbol? currentType = typeSymbol;
+        while (currentType is not null)
+        {
+            var currentTypeMethods = currentType
+                .GetMembers()
+                .OfType<IMethodSymbol>()
+                .Where(m => m.Name.Equals(methodName, StringComparison.Ordinal));
+
+            methods.AddRange(currentTypeMethods);
+            currentType = currentType.BaseType;
+        }
+
+        return [.. methods];
+    }
+
+    /// <summary>
+    /// Check if method <paramref name="methodSymbol"/> is a method with the
+    /// given characteristic to be used for mapping.
+    /// </summary>
+    /// <param name="methodSymbol">The method to validate.</param>
+    /// <param name="expectedSourceType">The expected source type.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <param name="mustBeStatic"><c>true</c> when the method must be static, <c>false</c> otherwise.</param>
+    /// <param name="nullableEnabled"><c>true</c> when nullable is enabled, <c>false</c> otherwise.</param>
+    /// <param name="acceptTwoParameters"><c>true</c> when mapping method can provide a context parameter, <c>false</c> otherwise.</param>
+    /// <returns><c>true</c> when the <paramref name="methodSymbol"/> is a method with the expected constraints, <c>false</c> otherwise.</returns>
+    internal static bool IsMethodValidToMapToTargetSymbolForPolymorphism(
+        this IMethodSymbol methodSymbol,
+        ITypeSymbol expectedSourceType,
+        Compilation compilation,
+        bool mustBeStatic,
+        bool nullableEnabled,
+        bool acceptTwoParameters)
+    {
+        return (!mustBeStatic || methodSymbol.IsStatic) && methodSymbol.Parameters.Length switch
+        {
+            0 => true,
+            1 => methodSymbol.AreParametersRefModifiersValid()
+                 && methodSymbol.Parameters[0].Type.IsEqualTo(expectedSourceType, nullableEnabled),
+            2 when acceptTwoParameters => methodSymbol.AreParametersRefModifiersValid()
+                                          && IsFirstParameterOk()
+                                          && IsSecondParameterOk(),
+            _ => false,
+        };
+
+        bool IsFirstParameterOk() => methodSymbol.Parameters[0].Type.IsEqualTo(expectedSourceType, nullableEnabled);
+        bool IsSecondParameterOk() => methodSymbol.SecondParameterIsMappaContext(compilation);
     }
 }

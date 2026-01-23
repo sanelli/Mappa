@@ -1,4 +1,4 @@
-// <copyright file="NamespaceSupportTests.cs" company="Stefano Anelli">
+// <copyright file="NamespaceSupportIntegrationTests.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -11,7 +11,7 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Tests related to the identity strategy.
 /// </summary>
-public sealed class NamespaceSupportTests
+public sealed class NamespaceSupportIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {
     /// <summary>

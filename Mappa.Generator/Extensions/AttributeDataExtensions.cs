@@ -3,6 +3,7 @@
 // </copyright>
 
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
 
@@ -25,6 +26,65 @@ internal static class AttributeDataExtensions
     private static readonly string MappaUsePropertyAttributeFullName = typeof(MappaUsePropertyAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaUsePropertyAttribute)}");
     private static readonly string MappaStaticDependencyAttributeFullName = typeof(MappaStaticDependencyAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaStaticDependencyAttribute)}");
     private static readonly string MappaAssignFromConstantAttributeFullName = typeof(MappaAssignFromConstantAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaAssignFromConstantAttribute)}");
+    private static readonly string MappaTypeMappingAttributeFullName = typeof(MappaTypeMappingAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaTypeMappingAttribute)}");
+    private static readonly string MappaTypeMappingDefaultAttributeFullName = typeof(MappaTypeMappingDefaultAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaTypeMappingDefaultAttribute)}");
+
+    /// <summary>
+    /// Gets the <see cref="MappaTypeMappingDefaultAttribute"/> applied to the method (if any).
+    /// </summary>
+    /// <param name="attributes">The attributes.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The <see cref="MappaTypeMappingDefaultAttribute"/> (if any).</returns>
+    internal static MappaTypeMappingDefaultAttribute? GetMappaTypeMappingDefaultAttribute(this ImmutableArray<AttributeData> attributes, Compilation compilation)
+    {
+        var mappaTypeMappingAttributeSymbol = compilation.GetTypeByMetadataName(MappaTypeMappingDefaultAttributeFullName);
+        MappaTypeMappingDefaultAttribute? attribute = null;
+
+        foreach (var constructorArguments in attributes
+                     .Where(attributeData => SymbolEqualityComparer.Default.Equals(attributeData.AttributeClass, mappaTypeMappingAttributeSymbol))
+                     .Select(attributeData => attributeData.ConstructorArguments))
+        {
+            attribute = constructorArguments.Length switch
+            {
+                1 when constructorArguments[0].Value is string methodName
+                    => new MappaTypeMappingDefaultAttribute(methodName),
+                1 when constructorArguments[0].Value is int behavior
+                    => new MappaTypeMappingDefaultAttribute((MappaTypeMappingDefaultBehavior)behavior),
+                2 when constructorArguments[0].Value is INamedTypeSymbol invokeType && constructorArguments[1].Value is string methodName
+                    => new MappaTypeMappingDefaultAttribute(new FakeType(invokeType.ToDisplayString()), methodName),
+                2 when constructorArguments[0].Value is int behavior && constructorArguments[1].Value is INamedTypeSymbol type
+                    => new MappaTypeMappingDefaultAttribute((MappaTypeMappingDefaultBehavior)behavior, new FakeType(type.ToDisplayString())),
+                _ => null,
+            };
+        }
+
+        return attribute;
+    }
+
+    /// <summary>
+    /// Gets the <see cref="MappaTypeMappingAttribute"/>s applied to the method.
+    /// </summary>
+    /// <param name="attributes">The attributes.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The <see cref="MappaTypeMappingAttribute"/>s.</returns>
+    internal static MappaTypeMappingAttribute[] GetTypeMappingAttributes(this ImmutableArray<AttributeData> attributes, Compilation compilation)
+    {
+        var mappaTypeMappingAttributeSymbol = compilation.GetTypeByMetadataName(MappaTypeMappingAttributeFullName);
+        List<MappaTypeMappingAttribute> results = new();
+
+        foreach (var constructorArguments in attributes
+                     .Where(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, mappaTypeMappingAttributeSymbol))
+                     .Select(attributeData => attributeData.ConstructorArguments))
+        {
+            if (constructorArguments[0].Value is INamedTypeSymbol targetType &&
+                constructorArguments[1].Value is INamedTypeSymbol sourceType)
+            {
+                results.Add(new MappaTypeMappingAttribute(new FakeType(targetType.ToDisplayString()), new FakeType(sourceType.ToDisplayString())));
+            }
+        }
+
+        return [.. results];
+    }
 
     /// <summary>
     /// Gets the <see cref="MappaInvokeMethodAttribute"/>s applied to the method.
@@ -208,6 +268,10 @@ internal static class AttributeDataExtensions
                 case nameof(MappaSettingsAttribute.ContainerCapacityConstructors) when namedArgument.Value.Value is int value:
                     attribute.ContainerCapacityConstructors = (BooleanSetting)value;
                     break;
+
+                case nameof(MappaSettingsAttribute.PolymorphicMapMethodWithMatchingDefaultAttribute) when namedArgument.Value.Value is int value:
+                    attribute.PolymorphicMapMethodWithMatchingDefaultAttribute = (BooleanSetting)value;
+                    break;
             }
         }
 
@@ -264,6 +328,7 @@ internal static class AttributeDataExtensions
         return [..results];
     }
 
+    [DebuggerDisplay("FullName = {FullName}")]
     private sealed class FakeType(string fullName) : Type
     {
         public override Module Module => throw new NotImplementedException();

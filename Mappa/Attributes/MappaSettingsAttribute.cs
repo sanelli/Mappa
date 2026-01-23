@@ -62,22 +62,35 @@ public sealed class MappaSettingsAttribute
     public BooleanSetting ProtobufOptional { get; set; } = BooleanSetting.Undefined;
 
     /// <summary>
-    /// Gets or sets a value indicating weather the mapping method should be surrounded
+    /// Gets or sets a value indicating whether the mapping method should be surrounded
     /// by <c>#pragma warning disable</c>.
     /// </summary>
     public PragmaWarningSetting PragmaWarning { get; set; } = PragmaWarningSetting.Undefined;
 
     /// <summary>
-    /// Gets or sets a value indicating weather to use <c>Span{T}</c> for fast iterations
+    /// Gets or sets a value indicating whether to use <c>Span{T}</c> for fast iterations
     /// over arrays and <see cref="List{T}"/>.
     /// </summary>
     public BooleanSetting FastCollections { get; set; } = BooleanSetting.Undefined;
 
     /// <summary>
-    /// Gets or sets a value indicating weather the source generator is allowed to use
+    /// Gets or sets a value indicating whether the source generator is allowed to use
     /// a constructor with a single integer parameters when mapping collections. The
     /// single integer parameter represents the initial collection capacity,
     /// similar to <see cref="List{T}(int)"/>.
     /// </summary>
     public BooleanSetting ContainerCapacityConstructors { get; set; } = BooleanSetting.Undefined;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to allow the source generator to
+    /// use the <see cref="MappaTypeMappingDefaultAttribute"/> when looking for a
+    /// polymorphic method to support a mapping between two types and the behavior
+    /// of the attribute is <see cref="MappaTypeMappingDefaultBehavior.MapSourceType"/>
+    /// and the target type is explicitly defined.By default, this behavior is disabled
+    /// because it can be dangerous due to the nature of the polymorphic method
+    /// where the method can accept any type derived from the input parameter and
+    /// there is no guarantee that the method will return the exact type specified by
+    /// the <see cref="MappaTypeMappingDefaultAttribute"/>.
+    /// </summary>
+    public BooleanSetting PolymorphicMapMethodWithMatchingDefaultAttribute { get; set; } = BooleanSetting.Undefined;
 }

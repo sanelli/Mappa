@@ -45,6 +45,11 @@ internal abstract class MappaMapAlgorithmContext
     internal abstract MappaUserSettings MappaUserSettings { get; }
 
     /// <summary>
+    /// Gets a value indicating whether a diagnostic with severity error has been reported.
+    /// </summary>
+    internal abstract bool HasErrorDiagnostics { get; }
+
+    /// <summary>
     /// Gets a value indicating whether the nullable flag
     /// is enabled in the current context.
     /// </summary>
@@ -59,6 +64,20 @@ internal abstract class MappaMapAlgorithmContext
     /// <param name="mapMethod">The map method (if it exists).</param>
     /// <returns><c>true</c> if map method exists, <c>false</c> otherwise.</returns>
     internal abstract bool TryGetMethod(ITypeSymbol targetType, ITypeSymbol sourceType, out MapMethod mapMethod);
+
+    /// <summary>
+    /// Try to obtain a polymorphic method with the given <paramref name="targetType"/> and <paramref name="sourceType"/>.
+    /// </summary>
+    /// <param name="targetType">The target type.</param>
+    /// <param name="sourceType">The source type.</param>
+    /// <param name="mappaUserSettings">The user settings applied to the method being mapped.</param>
+    /// <param name="mapMethod">The map method (if it exists).</param>
+    /// <returns><c>true</c> if map method exists, <c>false</c> otherwise.</returns>
+    internal abstract bool TryGetPolymorphicMethod(
+        ITypeSymbol targetType,
+        ITypeSymbol sourceType,
+        IMappaUserSettings mappaUserSettings,
+        out MapMethod mapMethod);
 
     /// <summary>
     /// Report a diagnostic.
@@ -88,7 +107,7 @@ internal abstract class MappaMapAlgorithmContext
     }
 
     /// <summary>
-    /// Gets the root map method which is acrtually being mapped.
+    /// Gets the root map method which is actually being mapped.
     /// </summary>
     /// <returns>The map method from the root chain of calls.</returns>
     /// <exception cref="MappaGeneratorException">When the map method cannot be obtained.</exception>
