@@ -44,7 +44,10 @@ public class SpotifyBenchmark
 
         this.mappaMapper = new();
 
-        this.spotifyAlbumDto = new AutoBogus.AutoFaker<SpotifyAlbumDto>().Generate();
+        this.spotifyAlbumDto = new AutoBogus
+            .AutoFaker<SpotifyAlbumDto>()
+            .Configure(builder => builder.WithRepeatCount(300))
+            .Generate();
     }
 
     /// <summary>
