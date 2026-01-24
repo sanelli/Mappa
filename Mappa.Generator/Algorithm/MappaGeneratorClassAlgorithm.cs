@@ -190,7 +190,9 @@ internal sealed class MappaGeneratorClassAlgorithm
         // Get all accessible properties that:
         // - have a getter method
         // - have MappaDependency attribute
+        #pragma warning disable S3267 // Loops should be simplified using the "Where" LINQ method
         foreach (var propertyDeclarationSyntax in classDeclarationSyntax.ChildNodes().OfType<PropertyDeclarationSyntax>())
+        #pragma warning restore S3267 // Loops should be simplified using the "Where" LINQ method
         {
             if (propertyDeclarationSyntax.AccessorList is not null && propertyDeclarationSyntax.AccessorList.Accessors.Any(accessor => accessor.Kind() == SyntaxKind.GetAccessorDeclaration))
             {

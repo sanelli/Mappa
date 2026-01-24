@@ -68,7 +68,9 @@ internal sealed class MappaAssignFromConstantAttributeStrategyBuilder
 
         static string GetCodeForEnum(ITypeSymbol typeSymbol, object integerEnumValue)
         {
+            #pragma warning disable S3267 // Loops should be simplified using the "Where" method
             foreach (var enumValue in typeSymbol.GetEnumValues())
+            #pragma warning restore S3267 // Loops should be simplified using the "Where" method
             {
                 if (enumValue.Value is not null && integerEnumValue.Equals(enumValue.Value))
                 {

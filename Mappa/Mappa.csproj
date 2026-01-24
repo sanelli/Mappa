@@ -13,7 +13,7 @@
         <PackageTags>Mappa;Mapper;Mapping;SourceGenerator</PackageTags>
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="Comment.Todo.Analyzer" Version="1.0.2">
+		<PackageReference Include="Comment.Todo.Analyzer" Version="1.2.0">
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		  <PrivateAssets>all</PrivateAssets>
 		</PackageReference>
@@ -21,7 +21,7 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="SonarAnalyzer.CSharp" Version="10.6.0.109712">
+		<PackageReference Include="SonarAnalyzer.CSharp" Version="10.18.0.131500">
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
