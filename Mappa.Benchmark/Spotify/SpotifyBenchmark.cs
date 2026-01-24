@@ -9,6 +9,8 @@ using Mappa.Benchmark.Spotify.Models;
 
 using Mapster;
 
+using Microsoft.Extensions.Logging.Abstractions;
+
 namespace Mappa.Benchmark.Spotify;
 
 /// <summary>
@@ -29,16 +31,23 @@ public class SpotifyBenchmark
     /// </summary>
     public SpotifyBenchmark()
     {
-        this.automapperMapper = new AutoMapper.MapperConfiguration(cfg =>
-        {
-            cfg.AddMaps(typeof(AutomapperMapperProfile));
-        }).CreateMapper();
+        this.automapperMapper = new AutoMapper.MapperConfiguration(
+            cfg =>
+                {
+                    cfg.AddMaps(typeof(AutomapperMapperProfile));
+                },
+#pragma warning disable CA2000
+            new NullLoggerFactory()).CreateMapper();
+#pragma warning restore CA2000
 
         this.mapperlyMapper = new();
 
         this.mappaMapper = new();
 
-        this.spotifyAlbumDto = new AutoBogus.AutoFaker<SpotifyAlbumDto>().Generate();
+        this.spotifyAlbumDto = new AutoBogus
+            .AutoFaker<SpotifyAlbumDto>()
+            .Configure(builder => builder.WithRepeatCount(300))
+            .Generate();
     }
 
     /// <summary>
