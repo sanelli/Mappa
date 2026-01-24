@@ -7,7 +7,6 @@ namespace Mappa;
 /// <summary>
 /// Enable or disable a specific setting.
 /// </summary>
-// TODO [#182] Test.
 public enum BooleanSetting
 {
     /// <summary>
