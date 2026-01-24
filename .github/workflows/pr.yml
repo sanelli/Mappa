@@ -24,6 +24,11 @@ jobs:
         shell: pwsh
         run:
           ./Scripts/CreateNuGetConfig.ps1
+      - name: Force check that TODOs have been addressed
+        env:
+          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+        shell: pwsh
+        run: ./Scripts/ForceTodoErrorForBranch.ps1
       - name: Build
         shell: pwsh
         run: ./Scripts/RebuildUponVersionChange.ps1
