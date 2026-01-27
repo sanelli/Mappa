@@ -13,7 +13,6 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Integration tests for <see cref="MethodMapStrategy"/>.
 /// </summary>
-// TODO [#185] Method is not picked up if the invoker is static and the invoked is non-static (same class).
 // TODO [#185] Method is not picked up if the invoker is static and the invoked method is on a non-static property.
 // TODO [#185] Method is not picked up if the invoker is static and the invoked method is on a non-static field.
 public sealed class MethodMapStrategyIntegrationTests
@@ -1637,6 +1636,64 @@ public sealed class MethodMapStrategyIntegrationTests
                         {
                             syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_4"));
                         });
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping does not use a non-static method if the
+    /// method being mapped is static.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [Bug("#185")]
+    [IntegrationTest]
+    public async Task CanMapWithoutPickingUpANonStaticMethodWhenTheMethodBeingMappedIsStatic()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class InnerSource { public int A { get; set; } }
+                                  public class InnerTarget { public int B { get; set; } }
+
+                                  public class Source { public InnerSource Property { get; set; } }
+                                  public class Target { public InnerTarget Property { get; set; } }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public InnerTarget Map(InnerSource input)
+                                      {
+                                          return new InnerTarget() { B = input.A };
+                                      }
+                                      public static partial Target Map(Source input);
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultStaticMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                NullableAnnotation.NotAnnotated,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
+                NullableAnnotation.NotAnnotated,
+                1,
+                false,
+                NullableSetup.Enable,
+                PragmaWarning.NoBlock,
+                blockSyntaxAssertions =>
+                {
+                    // TODO [#185] Add assertions making sure that this.Map is not being invoked in this context.
                 });
     }
 }
