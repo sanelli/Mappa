@@ -1657,7 +1657,7 @@ public sealed class MethodMapStrategyIntegrationTests
                                   namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
                                   public class InnerSource { public int A { get; set; } }
-                                  public class InnerTarget { public int B { get; set; } }
+                                  public class InnerTarget { public int A { get; set; } }
 
                                   public class Source { public InnerSource Property { get; set; } }
                                   public class Target { public InnerTarget Property { get; set; } }
@@ -1667,7 +1667,7 @@ public sealed class MethodMapStrategyIntegrationTests
                                   {
                                       public InnerTarget Map(InnerSource input)
                                       {
-                                          return new InnerTarget() { B = input.A };
+                                          return new InnerTarget() { A = input.A };
                                       }
                                       public static partial Target Map(Source input);
                                   }
@@ -1693,7 +1693,7 @@ public sealed class MethodMapStrategyIntegrationTests
                 PragmaWarning.NoBlock,
                 blockSyntaxAssertions =>
                 {
-                    // TODO [#185] Add assertions making sure that this.Map is not being invoked in this context.
+                    // TODO [#185] Add assertions.
                 });
     }
 }

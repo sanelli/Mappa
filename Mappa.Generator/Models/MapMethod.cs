@@ -50,6 +50,7 @@ internal sealed class MapMethod
         this.NullableEnabled = nullableEnabled;
         this.PragmaWarning = PragmaWarningSetting.Undefined;
         this.attributes = this.MethodSymbol.GetMethodMappaAttributes(semanticModel.Compilation);
+        this.CanBeUsedByStaticMethod = this.MethodSymbol.IsStatic;
     }
 
     /// <summary>
@@ -58,6 +59,7 @@ internal sealed class MapMethod
     /// <param name="methodSymbol">The method symbol.</param>
     /// <param name="accessFiledName">The name of the field or property that can be used to access the method.</param>
     /// <param name="nullableEnabled"><c>true</c> if reference nullable is enabled.</param>
+    /// <param name="canBeUsedByStaticMethod"><c>true</c> if the method can be invoked by a static method, <c>false</c> otherwise.</param>
     /// <param name="attributes">The attribute relevant to the mapping (might be less than the ones actually applied).</param>
     /// <remarks>
     /// The method is already considered mapped.
@@ -67,6 +69,7 @@ internal sealed class MapMethod
         IMethodSymbol methodSymbol,
         string accessFiledName,
         bool nullableEnabled,
+        bool canBeUsedByStaticMethod,
         Attribute[] attributes)
     {
         this.MethodDeclarationSyntax = null;
@@ -80,6 +83,7 @@ internal sealed class MapMethod
         this.NullableEnabled = nullableEnabled;
         this.attributes = attributes;
         this.PragmaWarning = PragmaWarningSetting.Undefined;
+        this.CanBeUsedByStaticMethod = canBeUsedByStaticMethod;
     }
 
     /// <summary>
@@ -136,6 +140,11 @@ internal sealed class MapMethod
     /// Gets the method declaration syntax.
     /// </summary>
     internal MethodDeclarationSyntax? MethodDeclarationSyntax { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether the method can be used in a static context.
+    /// </summary>
+    internal bool CanBeUsedByStaticMethod { get; }
 
     /// <summary>
     /// Gets the method strategy.

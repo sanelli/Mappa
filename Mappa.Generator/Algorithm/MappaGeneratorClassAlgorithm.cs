@@ -176,7 +176,8 @@ internal sealed class MappaGeneratorClassAlgorithm
                     classContext.ClassDeclarationSyntax,
                     method,
                     accessFieldName,
-                    methodIsStatic: true,
+                    methodMustBeStatic: true,
+                    canBeInvokedByStaticMethod: true,
                     classContext);
                 anyMethodCanBeUsed |= added;
             }
@@ -221,6 +222,7 @@ internal sealed class MappaGeneratorClassAlgorithm
                             method,
                             method.IsStatic ? staticFieldAccessor : accessFieldName,
                             method.IsStatic,
+                            canBeInvokedByStaticMethod: method.IsStatic || propertySymbol.IsStatic,
                             classContext);
                         anyMethodCanBeUsed |= added;
                     }
@@ -251,7 +253,8 @@ internal sealed class MappaGeneratorClassAlgorithm
                     var staticFieldAccessor = $"global::{fieldSymbol.Type.ToDisplayString()}";
                     var fieldIdentifier = variableDeclarationSyntax.Identifier.ToString();
                     var accessFieldName = fieldIdentifier;
-                    if (!fieldDeclarationSyntax.Modifiers.Any(SyntaxKind.StaticKeyword))
+                    var isFieldStatic = fieldDeclarationSyntax.Modifiers.Any(SyntaxKind.StaticKeyword);
+                    if (!isFieldStatic)
                     {
                         accessFieldName = $"this.{accessFieldName}";
                     }
@@ -265,6 +268,7 @@ internal sealed class MappaGeneratorClassAlgorithm
                             method,
                             method.IsStatic ? staticFieldAccessor : accessFieldName,
                             method.IsStatic,
+                            canBeInvokedByStaticMethod: method.IsStatic || isFieldStatic,
                             classContext);
                         anyMethodCanBeUsed |= added;
                     }
@@ -388,7 +392,8 @@ internal sealed class MappaGeneratorClassAlgorithm
         SyntaxNode referenceSyntaxNode,
         IMethodSymbol method,
         string accessFieldName,
-        bool methodIsStatic,
+        bool methodMustBeStatic,
+        bool canBeInvokedByStaticMethod,
         MappaClassGeneratorContext classContext)
     {
         var methodAttributes = method.GetAttributes();
@@ -402,7 +407,7 @@ internal sealed class MappaGeneratorClassAlgorithm
             return false;
         }
 
-        if (method.IsStatic != methodIsStatic)
+        if (method.IsStatic != methodMustBeStatic)
         {
             return false;
         }
@@ -441,6 +446,7 @@ internal sealed class MappaGeneratorClassAlgorithm
             method,
             accessFieldName,
             classContext.IsNullableEnabled(referenceSyntaxNode),
+            canBeInvokedByStaticMethod,
             mappaAttributes);
 
         // If the method cannot be added, it is OK:

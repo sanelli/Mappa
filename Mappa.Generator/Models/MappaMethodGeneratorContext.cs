@@ -60,11 +60,11 @@ internal sealed class MappaMethodGeneratorContext
 
     /// <inheritdoc/>
     internal override bool TryGetMethod(ITypeSymbol targetType, ITypeSymbol sourceType, out MapMethod mapMethod)
-        => this.ClassContext.TryGetMethod(targetType, sourceType, this.IsNullableEnabled(), out mapMethod);
+        => this.ClassContext.TryGetMethod(targetType, sourceType, this.IsNullableEnabled(), this.GetRootMapMethod().MethodSymbol.IsStatic, out mapMethod);
 
     /// <inheritdoc/>
     internal override bool TryGetPolymorphicMethod(ITypeSymbol targetType, ITypeSymbol sourceType, IMappaUserSettings mappaUserSettings, out MapMethod mapMethod)
-        => this.ClassContext.TryGetPolymorphicMethod(targetType, sourceType, this.IsNullableEnabled(), mappaUserSettings, out mapMethod);
+        => this.ClassContext.TryGetPolymorphicMethod(targetType, sourceType, this.IsNullableEnabled(), this.GetRootMapMethod().MethodSymbol.IsStatic, mappaUserSettings, out mapMethod);
 
     /// <inheritdoc/>
     internal override void ReportDiagnostic(Diagnostic diagnostic)
