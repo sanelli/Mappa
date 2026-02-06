@@ -13,8 +13,6 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Integration tests for <see cref="MethodMapStrategy"/>.
 /// </summary>
-// TODO [#185] Method is not picked up if the invoker is static and the invoked method is on a non-static property.
-// TODO [#185] Method is not picked up if the invoker is static and the invoked method is on a non-static field.
 public sealed class MethodMapStrategyIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {
@@ -1669,6 +1667,180 @@ public sealed class MethodMapStrategyIntegrationTests
                                       {
                                           return new InnerTarget() { A = input.A };
                                       }
+                                      public static partial Target Map(Source input);
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultStaticMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                NullableAnnotation.NotAnnotated,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
+                NullableAnnotation.NotAnnotated,
+                1,
+                false,
+                NullableSetup.Enable,
+                PragmaWarning.NoBlock,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(5)
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                            "Mappa.Generator.Tests.UnitTests.SourceCode.InnerSource",
+                            "__mappa_tmp_1",
+                            initializerAssertions => initializerAssertions.BeMemberAccessExpressionSyntax("input.Property")))
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                            typeof(int).ToString(),
+                            "__mappa_tmp_2",
+                            initializerAssertions => initializerAssertions.BeMemberAccessExpressionSyntax("__mappa_tmp_1.A")))
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                            "Mappa.Generator.Tests.UnitTests.SourceCode.InnerTarget",
+                            "__mappa_tmp_3",
+                            initializerAssertions => initializerAssertions.BeObjectCreationExpressionSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.InnerTarget",
+                                ("A", assertions => assertions.BeIdentifierNameSyntax("__mappa_tmp_2")))))
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                            "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                            "__mappa_tmp_4",
+                            initializerAssertions => initializerAssertions.BeObjectCreationExpressionSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                ("Property", assertions => assertions.BeIdentifierNameSyntax("__mappa_tmp_3")))))
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement("__mappa_tmp_4"));
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping does not use a non-static method from a non-static dependency property if the
+    /// method being mapped is static.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [Bug("#185")]
+    [IntegrationTest]
+    public async Task CanMapWithoutPickingUpANonStaticMethodFromNonStaticDependencyPropertyWhenTheMethodBeingMappedIsStatic()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class InnerSource { public int A { get; set; } }
+                                  public class InnerTarget { public int A { get; set; } }
+
+                                  public class Source { public InnerSource Property { get; set; } }
+                                  public class Target { public InnerTarget Property { get; set; } }
+                                  
+                                  public sealed class Dependency
+                                  {
+                                     public InnerTarget Map(InnerSource input)
+                                     {
+                                         return new InnerTarget() { A = input.A };
+                                     }
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaDependency]
+                                      private Dependency DependencyProperty { get; } = new Dependency();
+                                     
+                                      public static partial Target Map(Source input);
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultStaticMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                NullableAnnotation.NotAnnotated,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
+                NullableAnnotation.NotAnnotated,
+                1,
+                false,
+                NullableSetup.Enable,
+                PragmaWarning.NoBlock,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(5)
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                            "Mappa.Generator.Tests.UnitTests.SourceCode.InnerSource",
+                            "__mappa_tmp_1",
+                            initializerAssertions => initializerAssertions.BeMemberAccessExpressionSyntax("input.Property")))
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                            typeof(int).ToString(),
+                            "__mappa_tmp_2",
+                            initializerAssertions => initializerAssertions.BeMemberAccessExpressionSyntax("__mappa_tmp_1.A")))
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                            "Mappa.Generator.Tests.UnitTests.SourceCode.InnerTarget",
+                            "__mappa_tmp_3",
+                            initializerAssertions => initializerAssertions.BeObjectCreationExpressionSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.InnerTarget",
+                                ("A", assertions => assertions.BeIdentifierNameSyntax("__mappa_tmp_2")))))
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                            "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                            "__mappa_tmp_4",
+                            initializerAssertions => initializerAssertions.BeObjectCreationExpressionSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                ("Property", assertions => assertions.BeIdentifierNameSyntax("__mappa_tmp_3")))))
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement("__mappa_tmp_4"));
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping does not use a non-static method from a non-static dependency field if the
+    /// method being mapped is static.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [Bug("#185")]
+    [IntegrationTest]
+    public async Task CanMapWithoutPickingUpANonStaticMethodFromNonStaticDependencyFieldWhenTheMethodBeingMappedIsStatic()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class InnerSource { public int A { get; set; } }
+                                  public class InnerTarget { public int A { get; set; } }
+
+                                  public class Source { public InnerSource Property { get; set; } }
+                                  public class Target { public InnerTarget Property { get; set; } }
+                                  
+                                  public sealed class Dependency
+                                  {
+                                     public InnerTarget Map(InnerSource input)
+                                     {
+                                         return new InnerTarget() { A = input.A };
+                                     }
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaDependency]
+                                      private Dependency dependencyField = new Dependency();
+                                     
                                       public static partial Target Map(Source input);
                                   }
                                   """;
