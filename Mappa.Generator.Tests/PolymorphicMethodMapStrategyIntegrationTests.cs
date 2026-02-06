@@ -238,7 +238,7 @@ public sealed class PolymorphicMethodMapStrategyIntegrationTests
                         .HasSyntaxNodesCount(3)
                         .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
                             "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
-                            "__mappa_tmp_11"))
+                            "__mappa_tmp_9"))
                         .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeIfStatementSyntax(
                             conditionAssertions => conditionAssertions.BeIsPatternExpressionSyntax(
                                 expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("input"),
@@ -253,29 +253,29 @@ public sealed class PolymorphicMethodMapStrategyIntegrationTests
                                     .HasSyntaxNodesCount(5)
                                     .HasNextSyntaxNode(thenStatementAssertions => thenStatementAssertions.BeLocalDeclarationStatementSyntax(
                                         "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
-                                        "__mappa_tmp_12",
+                                        "__mappa_tmp_10",
                                         initializerAssertions => initializerAssertions.BeIdentifierNameSyntax("input")))
                                     .HasNextSyntaxNode(thenStatementAssertions => thenStatementAssertions.BeLocalDeclarationStatementSyntax(
                                         "Mappa.Generator.Tests.UnitTests.SourceCode.SourceFirst",
-                                        "__mappa_tmp_13",
-                                        initializerAssertions => initializerAssertions.BeMemberAccessExpressionSyntax("__mappa_tmp_12.DependencyProperty")))
+                                        "__mappa_tmp_11",
+                                        initializerAssertions => initializerAssertions.BeMemberAccessExpressionSyntax("__mappa_tmp_10.DependencyProperty")))
                                     .HasNextSyntaxNode(thenStatementAssertions => thenStatementAssertions.BeLocalDeclarationStatementSyntax(
                                         "Mappa.Generator.Tests.UnitTests.SourceCode.TargetFirst",
-                                        "__mappa_tmp_14",
+                                        "__mappa_tmp_12",
                                         initializerAssertions => initializerAssertions.BeCastExpressionSyntax(
                                             "Mappa.Generator.Tests.UnitTests.SourceCode.TargetFirst",
                                             castExpression => castExpression.BeInvocationExpressionSyntax(
                                                 "this.MapDependency",
-                                                parameterAssertions => parameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_13")))))
+                                                parameterAssertions => parameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_11")))))
                                     .HasNextSyntaxNode(thenStatementAssertions => thenStatementAssertions.BeLocalDeclarationStatementSyntax(
                                         "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
-                                        "__mappa_tmp_15",
+                                        "__mappa_tmp_13",
                                         initializerAssertions => initializerAssertions.BeObjectCreationExpressionSyntax(
                                             "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
-                                            ("DependencyProperty", propertyInitializerAssertions => propertyInitializerAssertions.BeIdentifierNameSyntax("__mappa_tmp_14")))))
+                                            ("DependencyProperty", propertyInitializerAssertions => propertyInitializerAssertions.BeIdentifierNameSyntax("__mappa_tmp_12")))))
                                     .HasNextSyntaxNode(thenStatementAssertions => thenStatementAssertions.BeAssignmentExpressionStatement(
-                                        "__mappa_tmp_11",
-                                        initializerAssertions => initializerAssertions.BeIdentifierNameSyntax("__mappa_tmp_15")));
+                                        "__mappa_tmp_9",
+                                        initializerAssertions => initializerAssertions.BeIdentifierNameSyntax("__mappa_tmp_13")));
                             },
                             elseBlockStatementAssertions =>
                             {
@@ -284,12 +284,12 @@ public sealed class PolymorphicMethodMapStrategyIntegrationTests
                                     .AsBlock()
                                     .HasSyntaxNodesCount(1)
                                     .HasNextSyntaxNode(elseStatementAssertions => elseStatementAssertions.BeAssignmentExpressionStatement(
-                                        "__mappa_tmp_11",
+                                        "__mappa_tmp_9",
                                         initializerAssertions => initializerAssertions.BeCastExpressionSyntax(
                                             "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
                                             castExpressionAssertions => castExpressionAssertions.BeLiteralExpressionSyntax(null))));
                             }))
-                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement("__mappa_tmp_11"));
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement("__mappa_tmp_9"));
                 });
     }
 
