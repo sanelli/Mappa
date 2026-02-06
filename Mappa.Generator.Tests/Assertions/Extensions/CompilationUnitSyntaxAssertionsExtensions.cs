@@ -165,7 +165,7 @@ internal static class CompilationUnitSyntaxAssertionsExtensions
         NullableAnnotation parameterNullableAnnotation,
         NullableSetup nullableSetup,
         Action<BlockSyntaxAssertions> bodyAssertion)
-        => HaveDefaultMapMethod(@this, returnType, returnTypeNullableAnnotation, parameterType, parameterNullableAnnotation, 1, nullableSetup, PragmaWarning.NoBlock, bodyAssertion);
+        => @this.HaveDefaultMapMethod(returnType, returnTypeNullableAnnotation, parameterType, parameterNullableAnnotation, 1, nullableSetup, PragmaWarning.NoBlock, bodyAssertion);
 
     /// <summary>
     /// Assert that the compilation unit has a mapper method using default values.
@@ -419,6 +419,51 @@ internal static class CompilationUnitSyntaxAssertionsExtensions
             parameterNullableAnnotation,
             expectedGeneratedMethodsCount,
             false,
+            bodyAssertion);
+
+    /// <summary>
+    /// Assert that the compilation unit has a static mapper method using default values.
+    /// </summary>
+    /// <param name="this">The compilation unit assertions.</param>
+    /// <param name="returnType">The return type of the method.</param>
+    /// <param name="returnTypeNullableAnnotation">The return type nullable annotation.</param>
+    /// <param name="parameterType">The parameter type of the method.</param>
+    /// <param name="parameterNullableAnnotation">The parameter nullable annotation.</param>
+    /// <param name="expectedGeneratedMethodsCount">The expected number of generated methods.</param>
+    /// <param name="isExtensionMethod">The method is an extension method.</param>
+    /// <param name="nullableSetup">The nullable setup.</param>
+    /// <param name="pragmaWarningSetting">The pragma warning settings.</param>
+    /// <param name="bodyAssertion">The assertions on the body of the method.</param>
+    /// <returns>The input compilation unit syntax assertions.</returns>
+    public static CompilationUnitSyntaxAssertions HaveDefaultStaticMapMethod(
+        this CompilationUnitSyntaxAssertions @this,
+        string returnType,
+        NullableAnnotation returnTypeNullableAnnotation,
+        string parameterType,
+        NullableAnnotation parameterNullableAnnotation,
+        int expectedGeneratedMethodsCount,
+        bool isExtensionMethod,
+        NullableSetup nullableSetup,
+        PragmaWarning pragmaWarningSetting,
+        Action<BlockSyntaxAssertions> bodyAssertion)
+        => @this.HaveMapMethod(
+            "Mapper",
+            [SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword],
+            "Map",
+            [SyntaxKind.PublicKeyword, SyntaxKind.StaticKeyword, SyntaxKind.PartialKeyword],
+            isExtensionMethod,
+            returnType,
+            returnTypeNullableAnnotation,
+            "input",
+            parameterType,
+            null,
+            parameterNullableAnnotation,
+            RefKind.None,
+            false,
+            RefKind.None,
+            expectedGeneratedMethodsCount,
+            nullableSetup,
+            pragmaWarningSetting,
             bodyAssertion);
 
     /// <summary>

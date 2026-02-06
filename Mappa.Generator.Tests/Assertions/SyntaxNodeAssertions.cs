@@ -54,6 +54,15 @@ internal sealed class SyntaxNodeAssertions
     }
 
     /// <summary>
+    /// Assert that the syntax node is a return statement returning the identifier
+    /// <paramref name="identifierName"/>.
+    /// </summary>
+    /// <param name="identifierName">The name of the identifier returned.</param>
+    /// <returns>The assertions.</returns>
+    internal SyntaxNodeAssertions BeReturnStatement(string identifierName)
+        => this.BeReturnStatement(expressionSyntaxAssertions => expressionSyntaxAssertions.BeIdentifierNameSyntax(identifierName));
+
+    /// <summary>
     /// Validate that the syntax node is a variable declaration syntax without initialization.
     /// </summary>
     /// <param name="type">The type of the variable.</param>

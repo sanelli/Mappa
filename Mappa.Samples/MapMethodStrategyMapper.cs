@@ -7,10 +7,11 @@ using Mappa.Samples.Models;
 
 namespace Mappa.Samples;
 
+#pragma warning disable SA1402
+
 /// <summary>
 /// Mapper using the map method strategy.
 /// </summary>
-// TODO [#185] Method is not picked up if the invoker is static and the invoked is non-static (same class).
 [Mappa]
 public sealed partial class MapMethodStrategyMapper
 {
@@ -27,4 +28,25 @@ public sealed partial class MapMethodStrategyMapper
     /// <param name="sourceClassModel">The source model.</param>
     /// <returns>The target model.</returns>
     public partial TargetClassWithInnerClassModel Map(SourceClassWithInnerClassModel sourceClassModel);
+}
+
+/// <summary>
+/// Same as <see cref="MapMethodStrategyMapper"/> but provide a static method.
+/// </summary>
+[Mappa]
+public sealed partial class StaticMapMethodStrategyMapper
+{
+    /// <summary>
+    /// Map from <see cref="SourceClassModel"/> to <see cref="TargetClassModel"/>.
+    /// </summary>
+    /// <param name="sourceClassModel">The source model.</param>
+    /// <returns>The target model.</returns>
+    public static partial TargetClassWithInnerClassModel Map(SourceClassWithInnerClassModel sourceClassModel);
+
+    /// <summary>
+    /// Map from <see cref="SourceClassModel"/> to <see cref="TargetClassModel"/>.
+    /// </summary>
+    /// <param name="sourceClassModel">The source model.</param>
+    /// <returns>The target model.</returns>
+    public partial TargetClassModel Map(SourceClassModel sourceClassModel);
 }

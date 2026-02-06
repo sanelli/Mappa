@@ -116,7 +116,8 @@ internal sealed class MappaClassGeneratorContext
     /// </summary>
     /// <param name="targetType">The target type.</param>
     /// <param name="sourceType">The source type.</param>
-    /// <param name="nullableEnabled">Nullable enabled.</param>
+    /// <param name="nullableEnabled"><c>true</c> if nullable is enabled,<c>false</c> otherwise.</param>
+    /// <param name="requireStaticContext"><c>true</c> if the invocation require only method that can invoked in a static context,<c>false</c> otherwise.</param>
     /// <param name="mapMethod">The map method, if it exists.</param>
     /// <returns><c>true</c> if the method to map from <paramref name="sourceType"/> to
     /// <paramref name="targetType"/>, <c>false</c> otherwise.</returns>
@@ -124,10 +125,20 @@ internal sealed class MappaClassGeneratorContext
         ITypeSymbol targetType,
         ITypeSymbol sourceType,
         bool nullableEnabled,
+        bool requireStaticContext,
         out MapMethod mapMethod)
     {
         var foundMethod =
-            this.mapMethods.Find(method => method.IsMapFor(targetType, sourceType, nullableEnabled));
+            this.mapMethods.Find(method =>
+            {
+                // This is to avoid invoking a non-static method in a static context.
+                if (requireStaticContext && !method.CanBeUsedByStaticMethod)
+                {
+                    return false;
+                }
+
+                return method.IsMapFor(targetType, sourceType, nullableEnabled);
+            });
         mapMethod = foundMethod!;
         return foundMethod is not null;
     }
@@ -138,7 +149,8 @@ internal sealed class MappaClassGeneratorContext
     /// </summary>
     /// <param name="targetType">The target type.</param>
     /// <param name="sourceType">The source type.</param>
-    /// <param name="nullableEnabled">Nullable enabled.</param>
+    /// <param name="nullableEnabled"><c>true</c> if nullable is enabled,<c>false</c> otherwise.</param>
+    /// <param name="requireStaticContext"><c>true</c> if the invocation require only method that can invoked in a static context,<c>false</c> otherwise.</param>
     /// <param name="mappaUserSettings">The user settings applied to the method being mapped.</param>
     /// <param name="mapMethod">The map method, if it exists.</param>
     /// <returns><c>true</c> if the method to map from <paramref name="sourceType"/> to
@@ -147,15 +159,22 @@ internal sealed class MappaClassGeneratorContext
         ITypeSymbol targetType,
         ITypeSymbol sourceType,
         bool nullableEnabled,
+        bool requireStaticContext,
         IMappaUserSettings mappaUserSettings,
         out MapMethod mapMethod)
     {
         foreach (var method in this.mapMethods)
         {
+            // This is to avoid invoking a non-static method in a static context.
+            if (requireStaticContext && !method.CanBeUsedByStaticMethod)
+            {
+                continue;
+            }
+
+            // Only look for methods that have any MappaTypeMappingAttribute.
             var typeMappingAttributes = method.GetAttributes<MappaTypeMappingAttribute>();
             if (typeMappingAttributes.Length <= 0)
             {
-                // Only look for methods that have any MappaTypeMappingAttribute.
                 continue;
             }
 
@@ -222,6 +241,7 @@ internal sealed class MappaClassGeneratorContext
                 mapMethod.TargetType,
                 mapMethod.SourceType,
                 mapMethod.NullableEnabled,
+                false, // Bypass the require static requirements here since I just want to add it.
                 out _))
         {
             this.mapMethods.Add(mapMethod);
