@@ -43,6 +43,7 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? mappaTypeMappingAttributeMapsSourceType;
     private static DiagnosticDescriptor? mappaTypeMappingAttributeSourceTypeNotDeriveOrImplementMapMethodSourceType;
     private static DiagnosticDescriptor? mappaTypeMappingAttributeTargetTypeNotDeriveOrImplementMapMethodTargetType;
+    private static DiagnosticDescriptor? fieldOrPropertyMustBeStatic;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -275,6 +276,14 @@ internal static class MappaDiagnosticDescriptors
         => mappaTypeMappingAttributeTargetTypeNotDeriveOrImplementMapMethodTargetType ??= BuildError(
             MappaDiagnosticsKind.MappaTypeMappingAttributeTargetTypeNotDeriveOrImplementMapMethodTargetType,
             DiagnosticsResources.MappaTypeMappingAttributeTargetTypeNotDeriveOrImplementMapMethodTargetType);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.FieldOrPropertyMustBeStatic"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor FieldOrPropertyMustBeStatic
+        => fieldOrPropertyMustBeStatic ??= BuildError(
+            MappaDiagnosticsKind.FieldOrPropertyMustBeStatic,
+            DiagnosticsResources.FieldOrPropertyMustBeStatic);
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(

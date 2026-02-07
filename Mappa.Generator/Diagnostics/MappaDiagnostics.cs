@@ -451,4 +451,18 @@ internal static class MappaDiagnostics
             location,
             attributeTypeName,
             mapMethodTypeName);
+
+    /// <summary>
+    /// Diagnostic to report the fact that a field or a property needs to be static to be using in the expected context.
+    /// </summary>
+    /// <param name="fieldOrPropertyName">The name of the field or property.</param>
+    /// <param name="location">The location of the diagnostic.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic FieldOrPropertyMustBeStatic(
+        string fieldOrPropertyName,
+        Location? location)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.FieldOrPropertyMustBeStatic,
+            location,
+            fieldOrPropertyName);
 }

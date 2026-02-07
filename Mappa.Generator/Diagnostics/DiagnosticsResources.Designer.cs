@@ -218,5 +218,11 @@ namespace Mappa.Generator.Diagnostics {
                 return ResourceManager.GetString("MappaTypeMappingAttributeTargetTypeNotDeriveOrImplementMapMethodTargetType", resourceCulture);
             }
         }
+        
+        internal static string FieldOrPropertyMustBeStatic {
+            get {
+                return ResourceManager.GetString("FieldOrPropertyMustBeStatic", resourceCulture);
+            }
+        }
     }
 }
