@@ -705,14 +705,22 @@ internal sealed class ConstructorMapStrategyDetector
         if (mappaInvokeMethodAttribute.FieldName is not null)
         {
             var classMembers = mapMethodClass.GetMembers();
-            var targets = classMembers
+
+            var matchingProperties = classMembers
                 .OfType<IPropertySymbol>()
-                .Where(property => property.Name.Equals(mappaInvokeMethodAttribute.FieldName, StringComparison.Ordinal))
+                .Where(property =>
+                    property.Name.Equals(mappaInvokeMethodAttribute.FieldName, StringComparison.Ordinal))
+                .ToArray();
+
+            var matchingFields = classMembers
+                .OfType<IFieldSymbol>()
+                .Where(property =>
+                    property.Name.Equals(mappaInvokeMethodAttribute.FieldName, StringComparison.Ordinal))
+                .ToArray();
+
+            var targets = matchingProperties
                 .Select(property => property.Type)
-                .Concat(classMembers
-                    .OfType<IFieldSymbol>()
-                    .Where(field => field.Name.Equals(mappaInvokeMethodAttribute.FieldName, StringComparison.Ordinal))
-                    .Select(field => field.Type))
+                .Concat(matchingFields.Select(field => field.Type))
                 .OfType<INamedTypeSymbol>()
                 .ToArray();
 
@@ -724,10 +732,21 @@ internal sealed class ConstructorMapStrategyDetector
                 return;
             }
 
+            var isStatic = matchingProperties
+                .Cast<ISymbol>()
+                .Concat(matchingFields)
+                .All(symbol => symbol.IsStatic);
+
+            if (this.context.GetRootMapMethod().MethodSymbol.IsStatic && !isStatic)
+            {
+                // TODO [#190] Return diagnostic and return that the field/property must be static.
+                return;
+            }
+
             method = GetBestMethodSymbol(
                 this.compilation,
                 mapMethodClass,
-                targets.Single().GetMembers().OfType<IMethodSymbol>().ToArray(),
+                methods: [..targets.Single().GetMembers().OfType<IMethodSymbol>()],
                 mappaInvokeMethodAttribute.MethodName,
                 targetType,
                 sourceClassType,
@@ -750,27 +769,32 @@ internal sealed class ConstructorMapStrategyDetector
             method = GetBestMethodSymbol(
                 this.compilation,
                 mapMethodClass,
-                className.GetMembers().OfType<IMethodSymbol>().ToArray(),
+                methods: [..className.GetMembers().OfType<IMethodSymbol>()],
                 mappaInvokeMethodAttribute.MethodName,
                 targetType,
                 sourceClassType,
                 sourceProperty,
                 this.context.IsNullableEnabled(),
-                MethodDetectorMethodStaticRequirement.StaticOrNotStatic);
+                MethodDetectorMethodStaticRequirement.Static);
         }
         else
         {
+            var rootMapMethod = this.context.GetRootMapMethod();
+            var staticRequirement = rootMapMethod.MethodSymbol.IsStatic
+                ? MethodDetectorMethodStaticRequirement.Static
+                : MethodDetectorMethodStaticRequirement.StaticOrNotStatic;
+
             // At this point we look for a method (static or not static in the same class the method is defined)
             method = GetBestMethodSymbol(
                 this.compilation,
                 mapMethodClass,
-                mapMethodClass.GetMembers().OfType<IMethodSymbol>().ToArray(),
+                methods: [..mapMethodClass.GetMembers().OfType<IMethodSymbol>()],
                 mappaInvokeMethodAttribute.MethodName,
                 targetType,
                 sourceClassType,
                 sourceProperty,
                 this.context.IsNullableEnabled(),
-                MethodDetectorMethodStaticRequirement.StaticOrNotStatic);
+                staticRequirement);
         }
 
         if (method is null)

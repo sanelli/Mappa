@@ -12,6 +12,16 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Unit tests for <see cref="MappaInvokeMethodAttribute"/> usage.
 /// </summary>
+// TODO [#190] MappaInvokeMethod referencing a non-static property from static mapping method return diagnostic.
+// TODO [#190] MappaInvokeMethod referencing a non-static field from static mapping method return diagnostic.
+// TODO [#190] MappaInvokeMethod referencing a static property from static mapping method works.
+// TODO [#190] MappaInvokeMethod referencing a static field from static mapping method works.
+// TODO [#190] MappaInvokeMethod on static map-method return diagnostics when targeting non-static method in the same mapper class.
+// TODO [#190] MappaInvokeMethod on static map-method can invoke a static method.
+// TODO [#190] MappaInvokeMethod on non-static map-method can invoke a static method.
+// TODO [#190] MappaInvokeMethod on non-static map-method can invoke a non-static method (prob it is already there).
+// TODO [#190] MappaInvokeMethod with type targeting non-static method fail locating the method (when map-method is static).
+// TODO [#190] MappaInvokeMethod with type targeting non-static method fail locating the method (when map-method is not-static).
 public sealed class MappaInvokeMethodAttributeTests
     : MappaGeneratorAbstractUnitTests
 {

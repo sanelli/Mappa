@@ -10,6 +10,12 @@ using Mappa.Samples.Models;
 
 namespace Mappa.Samples;
 
+// TODO [#190] MappaInvokeMethod referencing a static property from static mapping method works.
+// TODO [#190] MappaInvokeMethod referencing a static field from static mapping method works.
+// TODO [#190] MappaInvokeMethod on static map-method can invoke a static method.
+// TODO [#190] MappaInvokeMethod on non-static map-method can invoke a static method.
+// TODO [#190] MappaInvokeMethod on non-static map-method can invoke a non-static method (prob it is already there).
+
 /// <summary>
 /// Map from <see cref="SourceClassModel"/> to <see cref="TargetClassModel"/>
 /// using:
