@@ -112,7 +112,7 @@ public sealed class MappaInvokeMethodAttributeTests
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
-                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_4"));
+                            syntaxNodeAssertions.BeReturnStatement("__mappa_tmp_4");
                         });
                 });
     }
@@ -217,7 +217,7 @@ public sealed class MappaInvokeMethodAttributeTests
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
-                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_4"));
+                            syntaxNodeAssertions.BeReturnStatement("__mappa_tmp_4");
                         });
                 });
     }
@@ -328,7 +328,7 @@ public sealed class MappaInvokeMethodAttributeTests
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
-                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_4"));
+                            syntaxNodeAssertions.BeReturnStatement("__mappa_tmp_4");
                         });
                 });
     }
@@ -433,7 +433,7 @@ public sealed class MappaInvokeMethodAttributeTests
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
-                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_4"));
+                            syntaxNodeAssertions.BeReturnStatement("__mappa_tmp_4");
                         });
                 });
     }
@@ -535,7 +535,7 @@ public sealed class MappaInvokeMethodAttributeTests
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
-                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_4"));
+                            syntaxNodeAssertions.BeReturnStatement("__mappa_tmp_4");
                         });
                 });
     }
@@ -640,7 +640,7 @@ public sealed class MappaInvokeMethodAttributeTests
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
-                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_4"));
+                            syntaxNodeAssertions.BeReturnStatement("__mappa_tmp_4");
                         });
                 });
     }
@@ -745,7 +745,7 @@ public sealed class MappaInvokeMethodAttributeTests
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
-                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_4"));
+                            syntaxNodeAssertions.BeReturnStatement("__mappa_tmp_4");
                         });
                 });
     }
@@ -850,7 +850,7 @@ public sealed class MappaInvokeMethodAttributeTests
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
-                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_4"));
+                            syntaxNodeAssertions.BeReturnStatement("__mappa_tmp_4");
                         });
                 });
     }
@@ -960,7 +960,7 @@ public sealed class MappaInvokeMethodAttributeTests
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
-                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_4"));
+                            syntaxNodeAssertions.BeReturnStatement("__mappa_tmp_4");
                         });
                 });
     }
@@ -1082,7 +1082,7 @@ public sealed class MappaInvokeMethodAttributeTests
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
-                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_4"));
+                            syntaxNodeAssertions.BeReturnStatement("__mappa_tmp_4");
                         });
                 });
     }
@@ -1189,7 +1189,7 @@ public sealed class MappaInvokeMethodAttributeTests
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
-                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_4"));
+                            syntaxNodeAssertions.BeReturnStatement("__mappa_tmp_4");
                         });
                 });
     }
@@ -1297,7 +1297,7 @@ public sealed class MappaInvokeMethodAttributeTests
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
-                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_4"));
+                            syntaxNodeAssertions.BeReturnStatement("__mappa_tmp_4");
                         });
                 });
     }
@@ -1406,7 +1406,7 @@ public sealed class MappaInvokeMethodAttributeTests
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
-                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_4"));
+                            syntaxNodeAssertions.BeReturnStatement("__mappa_tmp_4");
                         });
                 });
     }
@@ -1515,7 +1515,7 @@ public sealed class MappaInvokeMethodAttributeTests
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
-                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_4"));
+                            syntaxNodeAssertions.BeReturnStatement("__mappa_tmp_4");
                         });
                 });
     }
@@ -1671,7 +1671,7 @@ public sealed class MappaInvokeMethodAttributeTests
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
-                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_8"));
+                            syntaxNodeAssertions.BeReturnStatement("__mappa_tmp_8");
                         });
                 });
     }
@@ -1765,7 +1765,7 @@ public sealed class MappaInvokeMethodAttributeTests
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
-                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_3"));
+                            syntaxNodeAssertions.BeReturnStatement("__mappa_tmp_3");
                         });
                 });
     }
@@ -1869,7 +1869,7 @@ public sealed class MappaInvokeMethodAttributeTests
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
-                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_3"));
+                            syntaxNodeAssertions.BeReturnStatement("__mappa_tmp_3");
                         });
                 });
     }
@@ -2096,7 +2096,7 @@ public sealed class MappaInvokeMethodAttributeTests
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
-                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_4"));
+                            syntaxNodeAssertions.BeReturnStatement("__mappa_tmp_4");
                         });
                 });
     }
@@ -2209,7 +2209,7 @@ public sealed class MappaInvokeMethodAttributeTests
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
-                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_4"));
+                            syntaxNodeAssertions.BeReturnStatement("__mappa_tmp_4");
                         });
                 });
     }
@@ -2362,7 +2362,7 @@ public sealed class MappaInvokeMethodAttributeTests
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
-                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_4"));
+                            syntaxNodeAssertions.BeReturnStatement("__mappa_tmp_4");
                         });
                 });
     }
@@ -2461,7 +2461,7 @@ public sealed class MappaInvokeMethodAttributeTests
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
-                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_4"));
+                            syntaxNodeAssertions.BeReturnStatement("__mappa_tmp_4");
                         });
                 });
     }
