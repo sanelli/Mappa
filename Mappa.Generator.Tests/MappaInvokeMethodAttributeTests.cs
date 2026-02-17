@@ -1305,6 +1305,7 @@ public sealed class MappaInvokeMethodAttributeTests
     /// </summary>
     /// <returns>The async task.</returns>
     [Fact]
+    [Bug("#193")]
     [IntegrationTest]
     public async Task CanMapUsingStaticMethodOnSpecifiedPropertyWithOneParameterOfTypeSource()
     {
@@ -1377,7 +1378,7 @@ public sealed class MappaInvokeMethodAttributeTests
                                 typeof(string).ToString(),
                                 "__mappa_tmp_2",
                                 initializationAssertions => initializationAssertions.BeInvocationExpressionSyntax(
-                                    "Dependency.CustomMapPropertyA",
+                                    "this.Dependency.CustomMapPropertyA",
                                     firstParameterAssertions => firstParameterAssertions.BeIdentifierNameSyntax("input")));
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
@@ -1414,6 +1415,7 @@ public sealed class MappaInvokeMethodAttributeTests
     /// </summary>
     /// <returns>The async task.</returns>
     [Fact]
+    [Bug("#193")]
     [IntegrationTest]
     public async Task CanMapUsingNonStaticMethodOnNonStaticFieldWithOneParameterOfTypeSource()
     {
@@ -1486,7 +1488,7 @@ public sealed class MappaInvokeMethodAttributeTests
                                 typeof(string).ToString(),
                                 "__mappa_tmp_2",
                                 initializationAssertions => initializationAssertions.BeInvocationExpressionSyntax(
-                                    "dependency.CustomMapPropertyA",
+                                    "this.dependency.CustomMapPropertyA",
                                     firstParameterAssertions => firstParameterAssertions.BeIdentifierNameSyntax("input")));
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>

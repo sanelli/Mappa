@@ -703,6 +703,7 @@ internal sealed class ConstructorMapStrategyDetector
         var mapMethodClass = (INamedTypeSymbol)mapMethod.MethodSymbol.ContainingSymbol;
 
         var rootMethod = this.context.GetRootMapMethod();
+        ISymbol? fieldOrProperty = null;
         if (mappaInvokeMethodAttribute.FieldName is not null)
         {
             var classMembers = mapMethodClass.GetMembers();
@@ -746,6 +747,7 @@ internal sealed class ConstructorMapStrategyDetector
                 return;
             }
 
+            fieldOrProperty = matchingSymbol;
             method = GetBestMethodSymbol(
                 this.compilation,
                 mapMethodClass,
@@ -817,6 +819,7 @@ internal sealed class ConstructorMapStrategyDetector
             targetType,
             sourceClassType,
             mappaInvokeMethodAttribute,
+            fieldOrProperty,
             method,
             sourceProperty,
             this.context.MapMethod.NullableEnabled);
