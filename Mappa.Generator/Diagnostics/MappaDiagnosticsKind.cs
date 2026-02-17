@@ -164,4 +164,9 @@ internal enum MappaDiagnosticsKind
     /// The <see cref="MappaTypeMappingAttribute"/> target type does not derive nor implement the target type of the method being mapped.
     /// </summary>
     MappaTypeMappingAttributeTargetTypeNotDeriveOrImplementMapMethodTargetType,
+
+    /// <summary>
+    /// The field of property must be static in order to be corretly used.
+    /// </summary>
+    FieldOrPropertyMustBeStatic,
 }

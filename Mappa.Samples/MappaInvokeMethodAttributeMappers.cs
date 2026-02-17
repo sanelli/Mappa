@@ -466,6 +466,68 @@ public sealed partial class MapEmptyConstructorWithPropertyLocatedMethodWithSour
 }
 
 /// <summary>
+/// Map from <see cref="SourceClassModel"/> to <see cref="TargetClassModel"/>
+/// using:
+/// <list type="table">
+/// <item><term>Mapping mode</term><description>Empty constructor.</description></item>
+/// <item><term>Custom method location</term><description>Static property of type <see cref="MapperDependencyHelper"/>.</description></item>
+/// <item><term>Custom method is static</term><description><c>false</c>.</description></item>
+/// <item><term>Custom method input(s)</term><description><see cref="SourceClassModel"/> and <see cref="int"/>.</description></item>
+/// </list>
+/// </summary>
+[Mappa]
+public sealed partial class MapEmptyConstructorWithStaticPropertyAndStaticMapMethodMapper
+{
+    private static MapperDependencyHelper Helper { get; } = new();
+
+    /// <summary>
+    /// Map from <see cref="SourceClassModel"/> to <see cref="TargetClassModel"/>
+    /// using:
+    /// <list type="table">
+    /// <item><term>Mapping mode</term><description>Empty constructor.</description></item>
+    /// <item><term>Custom method location</term><description><see cref="MapperDependencyHelper"/>.</description></item>
+    /// <item><term>Custom method is static</term><description><c>false</c>.</description></item>
+    /// <item><term>Custom method input(s)</term><description><see cref="SourceClassModel"/> and <see cref="int"/>.</description></item>
+    /// </list>
+    /// </summary>
+    /// <param name="source">The source model to map.</param>
+    /// <returns>The mapped object.</returns>
+    [MappaInvokeMethod(nameof(TargetClassModel.ParamA), nameof(this.Helper), nameof(MapperDependencyHelper.Map))]
+    public static partial TargetClassModel Map(SourceClassModel source);
+}
+
+/// <summary>
+/// Map from <see cref="SourceClassModel"/> to <see cref="TargetClassModel"/>
+/// using:
+/// <list type="table">
+/// <item><term>Mapping mode</term><description>Empty constructor.</description></item>
+/// <item><term>Custom method location</term><description>Static field of type <see cref="MapperDependencyHelper"/>.</description></item>
+/// <item><term>Custom method is static</term><description><c>false</c>.</description></item>
+/// <item><term>Custom method input(s)</term><description><see cref="SourceClassModel"/> and <see cref="int"/>.</description></item>
+/// </list>
+/// </summary>
+[Mappa]
+public sealed partial class MapEmptyConstructorWithStaticFieldAndStaticMapMethodMapper
+{
+    private static MapperDependencyHelper helper = new();
+
+    /// <summary>
+    /// Map from <see cref="SourceClassModel"/> to <see cref="TargetClassModel"/>
+    /// using:
+    /// <list type="table">
+    /// <item><term>Mapping mode</term><description>Empty constructor.</description></item>
+    /// <item><term>Custom method location</term><description><see cref="MapperDependencyHelper"/>.</description></item>
+    /// <item><term>Custom method is static</term><description><c>false</c>.</description></item>
+    /// <item><term>Custom method input(s)</term><description><see cref="SourceClassModel"/> and <see cref="int"/>.</description></item>
+    /// </list>
+    /// </summary>
+    /// <param name="source">The source model to map.</param>
+    /// <returns>The mapped object.</returns>
+    [MappaInvokeMethod(nameof(TargetClassModel.ParamA), nameof(this.helper), nameof(MapperDependencyHelper.Map))]
+    public static partial TargetClassModel Map(SourceClassModel source);
+}
+
+/// <summary>
 /// Mapper helper method that can be invoked by other classes.
 /// </summary>
 public sealed class MapperDependencyHelper

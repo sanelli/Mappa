@@ -98,4 +98,7 @@
     <data name="MappaTypeMappingAttributeTargetTypeNotDeriveOrImplementMapMethodTargetType" xml:space="preserve">
         <value>Il tipo obiettivo '{0}' dell'attributo MappaTypeMapping non deriva ne implementa il tipo obiettivo '{1}' del metodo che sta venendo mappato.</value>
     </data>
+    <data name="FieldOrPropertyMustBeStatic" xml:space="preserve">
+        <value>Il campo o la proprietà '{0}' deve essere marcata come static per essere utilizzata in questo contesto.</value>
+    </data>
 </root>

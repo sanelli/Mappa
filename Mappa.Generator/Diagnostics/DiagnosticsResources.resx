@@ -105,4 +105,7 @@
     <data name="MappaTypeMappingAttributeTargetTypeNotDeriveOrImplementMapMethodTargetType" xml:space="preserve">
         <value>The MappaTypeMapping attribute target type '{0}' does not derive nor implement map method target type '{1}'.</value>
     </data>
+    <data name="FieldOrPropertyMustBeStatic" xml:space="preserve">
+        <value>Field or Property '{0}' must be static to be used in this context.</value>
+    </data>
 </root>
