@@ -12,8 +12,6 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Unit tests for <see cref="MappaInvokeMethodAttribute"/> usage.
 /// </summary>
-// TODO [#190] MappaInvokeMethod with type targeting non-static method fail locating the method (when map-method is static).
-// TODO [#190] MappaInvokeMethod with type targeting non-static method fail locating the method (when map-method is not-static).
 public sealed class MappaInvokeMethodAttributeTests
     : MappaGeneratorAbstractUnitTests
 {
@@ -2682,5 +2680,117 @@ public sealed class MappaInvokeMethodAttributeTests
                             syntaxNodeAssertions.BeReturnStatement("__mappa_tmp_4");
                         });
                 });
+    }
+
+    /// <summary>
+    /// Test <see cref="MappaInvokeMethodAttribute"/> targeting
+    /// a non-<c>static</c> method on the type specified in the attribute
+    /// will not find such method. The Method being mapped is not <c>static</c>.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CannotMapUsingTheNonStaticMethodOnATypeAndTheMapMethodIsNotStatic()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                                  
+                                  public class Source
+                                  {
+                                      public int PropertyA { get; set; }
+                                      public int PropertyB { get; set; }
+                                  }
+
+                                  public class Target
+                                  {
+                                      public string PropertyA { get; set; }
+                                      public long PropertyB { get; set; }
+                                  }
+                                  
+                                  public sealed class Helper
+                                  {
+                                      public string CustomMapPropertyA(Source source)
+                                      {
+                                         return $"{source.PropertyA} - {source.PropertyB}";
+                                      }
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaInvokeMethodAttribute(nameof(Target.PropertyA), typeof(Helper), nameof(Helper.CustomMapPropertyA))]
+                                      public partial Target Map(Source input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(2)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.CannotDetectSuitableMethodToInvokeForParameter, "CustomMapPropertyA", "Mappa.Generator.Tests.UnitTests.SourceCode.Helper", "PropertyA")
+            .HaveDiagnostic(MappaDiagnosticDescriptors.CannotMapNonRequiredProperty, "Mappa.Generator.Tests.UnitTests.SourceCode.Target", "PropertyA");
+    }
+
+    /// <summary>
+    /// Test <see cref="MappaInvokeMethodAttribute"/> targeting
+    /// a non-<c>static</c> method on the type specified in the attribute
+    /// will not find such method. The Method being mapped is <c>static</c>.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CannotMapUsingTheNonStaticMethodOnATypeAndTheMapMethodIsStatic()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                                  
+                                  public class Source
+                                  {
+                                      public int PropertyA { get; set; }
+                                      public int PropertyB { get; set; }
+                                  }
+
+                                  public class Target
+                                  {
+                                      public string PropertyA { get; set; }
+                                      public long PropertyB { get; set; }
+                                  }
+                                  
+                                  public sealed class Helper
+                                  {
+                                      public string CustomMapPropertyA(Source source)
+                                      {
+                                         return $"{source.PropertyA} - {source.PropertyB}";
+                                      }
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaInvokeMethodAttribute(nameof(Target.PropertyA), typeof(Helper), nameof(Helper.CustomMapPropertyA))]
+                                      public static partial Target Map(Source input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(2)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.CannotDetectSuitableMethodToInvokeForParameter, "CustomMapPropertyA", "Mappa.Generator.Tests.UnitTests.SourceCode.Helper", "PropertyA")
+            .HaveDiagnostic(MappaDiagnosticDescriptors.CannotMapNonRequiredProperty, "Mappa.Generator.Tests.UnitTests.SourceCode.Target", "PropertyA");
     }
 }

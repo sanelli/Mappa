@@ -802,11 +802,14 @@ internal sealed class ConstructorMapStrategyDetector
 
         if (method is null)
         {
+            var displayClassName = mappaInvokeMethodAttribute.ClassType is not null
+                ? mappaInvokeMethodAttribute.ClassType.FullName ?? "unknown"
+                : mapMethodClass.ToDisplayString();
             this.context.ReportDiagnostic(MappaDiagnostics.CannotDetectSuitableMethodToInvokeForParameter(
                 mapMethodMethodDeclarationSyntax,
                 targetName,
                 mappaInvokeMethodAttribute.MethodName,
-                mapMethodClass.ToDisplayString()));
+                displayClassName));
             return;
         }
 

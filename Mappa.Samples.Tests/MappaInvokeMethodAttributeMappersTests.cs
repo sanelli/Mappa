@@ -282,4 +282,40 @@ public sealed class MappaInvokeMethodAttributeMappersTests
         actual.ParamA.Should().Be($"{nameof(MapperDependencyHelper.Map)}/{source.ParamA}/{source.ParamB}/{source.ParamA}");
         actual.ParamB.Should().Be((int)source.ParamB);
     }
+
+    /// <summary>
+    /// Test for <see cref="MapEmptyConstructorWithStaticPropertyAndStaticMapMethodMapper"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void TestMapEmptyConstructorWithStaticPropertyAndStaticMapMethodMapper()
+    {
+        // Arrange
+        var source = new SourceClassModel { ParamA = 10, ParamB = CountingValues.Three };
+
+        // Act
+        var actual = MapEmptyConstructorWithStaticPropertyAndStaticMapMethodMapper.Map(source);
+
+        // Assert
+        actual.ParamA.Should().Be($"{nameof(MapperDependencyHelper.Map)}/{source.ParamA}/{source.ParamB}/{source.ParamA}");
+        actual.ParamB.Should().Be((int)source.ParamB);
+    }
+
+    /// <summary>
+    /// Test for <see cref="MapEmptyConstructorWithStaticFieldAndStaticMapMethodMapper"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void TestMapEmptyConstructorWithStaticFieldAndStaticMapMethodMapper()
+    {
+        // Arrange
+        var source = new SourceClassModel { ParamA = 10, ParamB = CountingValues.Three };
+
+        // Act
+        var actual = MapEmptyConstructorWithStaticFieldAndStaticMapMethodMapper.Map(source);
+
+        // Assert
+        actual.ParamA.Should().Be($"{nameof(MapperDependencyHelper.Map)}/{source.ParamA}/{source.ParamB}/{source.ParamA}");
+        actual.ParamB.Should().Be((int)source.ParamB);
+    }
 }
