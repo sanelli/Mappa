@@ -13,6 +13,9 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Integration tests for <see cref="PolymorphismMapStrategy"/>.
 /// </summary>
+// TODO [#186] Map property invoking a polymorphic method automatically identified in the base class of the mapper.
+// TODO [#186] Map property invoking a polymorphic method automatically identifier in the base class of the type of a dependency property.
+// TODO [#186] Map property invoking a polymorphic method automatically identifier in the base class of the type of a dependency field.
 public sealed partial class PolymorphismMapStrategyIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {

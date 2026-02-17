@@ -139,6 +139,7 @@ internal sealed class MappaGeneratorClassAlgorithm
             new MappaClassGeneratorContext(options, mappaDebug, this.Compilation, classDeclarationSyntax);
 
         // Gather all the methods that require a mapping.
+        // TODO [#186] List methods also from base classes.
         foreach (var methodDeclarationSyntax in classDeclarationSyntax.ChildNodes().OfType<MethodDeclarationSyntax>())
         {
             mappaDebug.Debug(
@@ -191,6 +192,7 @@ internal sealed class MappaGeneratorClassAlgorithm
         // Get all accessible properties that:
         // - have a getter method
         // - have MappaDependency attribute
+        // TODO [#186] List methods also from base classes of the property type.
         #pragma warning disable S3267 // Loops should be simplified using the "Where" LINQ method
         foreach (var propertyDeclarationSyntax in classDeclarationSyntax.ChildNodes().OfType<PropertyDeclarationSyntax>())
         #pragma warning restore S3267 // Loops should be simplified using the "Where" LINQ method
@@ -236,6 +238,7 @@ internal sealed class MappaGeneratorClassAlgorithm
         }
 
         // Get all accessible fields that have MappaDependency attribute
+        // TODO [#186] List methods also from base classes of the field type.
         foreach (var fieldDeclarationSyntax in classDeclarationSyntax.ChildNodes().OfType<FieldDeclarationSyntax>())
         {
             if (fieldDeclarationSyntax.AttributeLists.GetMappaDependencyAttributeSyntax(classContext.SemanticModel, cancellationToken) is null)
