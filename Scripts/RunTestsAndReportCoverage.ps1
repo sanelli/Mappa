@@ -39,6 +39,18 @@ if (-not $?)
     Exit 1
 }
 
+$publishRoot = Join-Path (Resolve-Path "./Mappa.Samples.Aot/bin/Release/net10.0").Path "*/publish"
+$publishDir = Get-Item $publishRoot | Select-Object -First 1
+$exe = Get-ChildItem $publishDir.FullName -File |
+    Where-Object { $_.Name -like "Mappa.Samples.Aot*" -and $_.Extension -ne ".pdb" } |
+    Select-Object -First 1
+& $exe.FullName
+if (-not $?)
+{
+    Write-Host "AOT executable failed" -ForegroundColor Red
+    Exit 1
+}
+
 New-Item -ItemType Directory -Name $MappaTestsAndCoveragePath > $null
 dotnet test -c Release --collect:"XPlat Code Coverage" --logger "html" --logger "xunit;LogFileName=mappa.{assembly}.test-results.xml" --results-directory "$MappaTestsAndCoveragePath"
 if (-not $?)

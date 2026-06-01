@@ -44,4 +44,8 @@
         <AdditionalFiles Include="../stylecop.json" />
     </ItemGroup>
 
+    <ItemGroup>
+        <InternalsVisibleTo Include="Mappa.Samples.Aot" />
+    </ItemGroup>
+
 </Project>

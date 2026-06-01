@@ -2,7 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using Mappa.Samples.Models;
+using Mappa.Samples.Aot.Runners;
 
 namespace Mappa.Samples.Aot;
 
@@ -16,56 +16,50 @@ internal static class Program
     /// </summary>
     public static void Main()
     {
-        // -- DictionaryToDictionaryMapper --
-        DictionaryToDictionaryMapper dictionaryToDictionaryMapper = new();
-        Title(nameof(DictionaryToDictionaryMapper));
-        Printout(dictionaryToDictionaryMapper.MapDictionaryToDictionary(new()
-        {
-            { 10, CountingValues.One },
-            { 20, CountingValues.Two },
-            { 30, CountingValues.Three },
-        }));
-        Printout(dictionaryToDictionaryMapper.MapDictionaryToIDictionary(new()
-        {
-            { 10, CountingValues.One },
-            { 20, CountingValues.Two },
-            { 30, CountingValues.Three },
-        }));
-        Printout(dictionaryToDictionaryMapper.MapIDictionaryToDictionary(new Dictionary<int, CountingValues>
-        {
-            { 10, CountingValues.One },
-            { 20, CountingValues.Two },
-            { 30, CountingValues.Three },
-        }));
-        Printout(dictionaryToDictionaryMapper.MapIDictionaryToIDictionary(new Dictionary<int, CountingValues>
-        {
-            { 10, CountingValues.One },
-            { 20, CountingValues.Two },
-            { 30, CountingValues.Three },
-        }));
-
-        // TODO [#41] Add all remaining classes from Mappa.Samples (next is EnumerableOrCollectionToCollectionMapper).
+        var report = new AotReport();
+        CollectionToCollectionMapperRunner.Run(report);
+        ContainersWithCapacityConstructorMapperRunner.Run(report);
+        DateAndTimeMapperRunner.Run(report);
+        DictionaryToDictionaryMapperRunner.Run(report);
+        EnumToEnumMapperRunner.Run(report);
+        EnumToIntegralMapperRunner.Run(report);
+        EnumToStringMapperRunner.Run(report);
+        ExtensionMethodMapperRunner.Run(report);
+        FastCollectionToCollectionMapperRunner.Run(report);
+        GuidStrategyMapperRunner.Run(report);
+        IdentityStrategyMapperDupRunner.Run(report);
+        IdentityStrategyMapperRunner.Run(report);
+        IntegralToEnumMapperRunner.Run(report);
+        InvokeConstructorStrategyMapperRunner.Run(report);
+        InvokeEmptyConstructorOnPropertyMapperRunner.Run(report);
+        InvokeEmptyConstructorStrategyMapperRunner.Run(report);
+        InvokeMappingConstructorStrategyMapperRunner.Run(report);
+        InvokeParseMapperRunner.Run(report);
+        InvokeToStringMapperRunner.Run(report);
+        MapMethodStrategyMapperRunner.Run(report);
+        MapMethodStrategyWithDependencyMapperRunner.Run(report);
+        MapMethodStrategyWithInheritedMapMethodMapperRunner.Run(report);
+        MapMethodStrategyWithUserCustomInstanceMethodMapperRunner.Run(report);
+        MapMethodStrategyWithUserCustomStaticMethodMapperRunner.Run(report);
+        MapWithPropertiesOnBaseClassesMapperRunner.Run(report);
+        MappaAssignFromConstantAttributeMapperRunner.Run(report);
+        MappaAssignFromContextAttributeMapperRunner.Run(report);
+        MappaDependencyProtobufMapperRunner.Run(report);
+        MappaIgnoreMappersRunner.Run(report);
+        MappaInvokeMethodAttributeMappersRunner.Run(report);
+        MappaUsePropertyAttributeMapperRunner.Run(report);
+        NullableToNullableMapperRunner.Run(report);
+        ParamsAndInMapperRunner.Run(report);
+        PolymorphicMethodMapMapperRunner.Run(report);
+        PolymorphismMappersRunner.Run(report);
+        PragmaWarningSettingMapperRunner.Run(report);
+        ProtobufOptionalMapperRunner.Run(report);
+        ReadOnlyTargetCollectionMapperRunner.Run(report);
+        ReferenceNullableToReferenceNullableMapperRunner.Run(report);
+        ReferenceToReferenceWithNullableDisabledMapperRunner.Run(report);
+        StringToEnumMapperRunner.Run(report);
+        StringToSystemEntitiesMapperRunner.Run(report);
+        TupleToTupleMapperRunner.Run(report);
+        report.WriteTo(Console.Out);
     }
-
-    private static void Title(string s, bool first = false)
-    {
-        var lines = new string('-', s.Length + 6);
-        if (!first)
-        {
-            Console.WriteLine();
-        }
-
-        Console.WriteLine(lines);
-        Console.WriteLine($"-- {s} --");
-        Console.WriteLine(lines);
-    }
-
-    private static void Printout<TKey, TValue>(IDictionary<TKey, TValue> dictionary)
-        => Console.WriteLine(JoinToString(dictionary));
-
-    private static string JoinToString<TItem>(IEnumerable<TItem> enumerable)
-        => $"[ {string.Join(", ", enumerable.Select(item => item is null ? (object)"<null>" : item))} ]";
-
-    private static string JoinToString<TKey, TValue>(IDictionary<TKey, TValue> dictionary)
-        => JoinToString(dictionary.Select(kvp => $"{{ {kvp.Key}: {kvp.Value} }}"));
 }
