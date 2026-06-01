@@ -207,6 +207,7 @@ internal sealed class MappaGeneratorClassAlgorithm
         // Get all accessible properties that:
         // - have a getter method
         // - have MappaDependency attribute
+        var processedDependencyMemberNames = new HashSet<string>(StringComparer.Ordinal);
         #pragma warning disable S3267 // Loops should be simplified using the "Where" LINQ method
         foreach (var propertyDeclarationSyntax in classDeclarationSyntax.ChildNodes().OfType<PropertyDeclarationSyntax>())
         #pragma warning restore S3267 // Loops should be simplified using the "Where" LINQ method
@@ -221,34 +222,31 @@ internal sealed class MappaGeneratorClassAlgorithm
                 var propertySymbol = classContext.SemanticModel.GetDeclaredSymbol(propertyDeclarationSyntax, cancellationToken);
                 if (propertySymbol is not null)
                 {
-                    var staticFieldAccessor = $"global::{propertySymbol.Type.ToDisplayString()}";
                     var propertyIdentifier = propertyDeclarationSyntax.Identifier.ToString();
-                    var accessFieldName = propertyIdentifier;
-                    if (!propertySymbol.IsStatic)
-                    {
-                        accessFieldName = $"this.{accessFieldName}";
-                    }
-
-                    var anyMethodCanBeUsed = false;
-                    var methods = propertySymbol.Type.GetMethodsInTypeHierarchy().ToArray();
-                    foreach (var method in methods)
-                    {
-                        var added = this.AcceptMapMethodFromDependency(
-                            propertyDeclarationSyntax,
-                            method,
-                            method.IsStatic ? staticFieldAccessor : accessFieldName,
-                            method.IsStatic,
-                            canBeInvokedByStaticMethod: method.IsStatic || propertySymbol.IsStatic,
-                            classContext);
-                        anyMethodCanBeUsed |= added;
-                    }
-
-                    if (!anyMethodCanBeUsed)
-                    {
-                        this.Context.ReportDiagnostic(MappaDiagnostics.DependencyDoesNotProvideAnyViableMethod(propertyDeclarationSyntax, propertyIdentifier));
-                    }
+                    processedDependencyMemberNames.Add(propertyIdentifier);
+                    this.ProcessMappaDependencyProperty(
+                        propertyDeclarationSyntax,
+                        propertySymbol,
+                        propertyIdentifier,
+                        classContext);
                 }
             }
+        }
+
+        foreach (var propertySymbol in this.Compilation.GetMappaDependencyPropertiesInMapperBaseTypeHierarchy(classContext.ClassSymbol))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (!processedDependencyMemberNames.Add(propertySymbol.Name))
+            {
+                continue;
+            }
+
+            this.ProcessMappaDependencyProperty(
+                classDeclarationSyntax,
+                propertySymbol,
+                propertySymbol.Name,
+                classContext);
         }
 
         // Get all accessible fields that have MappaDependency attribute
@@ -266,35 +264,31 @@ internal sealed class MappaGeneratorClassAlgorithm
             {
                 if (classContext.SemanticModel.GetDeclaredSymbol(variableDeclarationSyntax, cancellationToken) is IFieldSymbol fieldSymbol)
                 {
-                    var staticFieldAccessor = $"global::{fieldSymbol.Type.ToDisplayString()}";
                     var fieldIdentifier = variableDeclarationSyntax.Identifier.ToString();
-                    var accessFieldName = fieldIdentifier;
-                    var isFieldStatic = fieldDeclarationSyntax.Modifiers.Any(SyntaxKind.StaticKeyword);
-                    if (!isFieldStatic)
-                    {
-                        accessFieldName = $"this.{accessFieldName}";
-                    }
-
-                    var anyMethodCanBeUsed = false;
-                    var methods = fieldSymbol.Type.GetMethodsInTypeHierarchy().ToArray();
-                    foreach (var method in methods)
-                    {
-                        var added = this.AcceptMapMethodFromDependency(
-                            fieldDeclarationSyntax,
-                            method,
-                            method.IsStatic ? staticFieldAccessor : accessFieldName,
-                            method.IsStatic,
-                            canBeInvokedByStaticMethod: method.IsStatic || isFieldStatic,
-                            classContext);
-                        anyMethodCanBeUsed |= added;
-                    }
-
-                    if (!anyMethodCanBeUsed)
-                    {
-                        this.Context.ReportDiagnostic(MappaDiagnostics.DependencyDoesNotProvideAnyViableMethod(fieldDeclarationSyntax, fieldIdentifier));
-                    }
+                    processedDependencyMemberNames.Add(fieldIdentifier);
+                    this.ProcessMappaDependencyField(
+                        fieldDeclarationSyntax,
+                        fieldSymbol,
+                        fieldIdentifier,
+                        classContext);
                 }
             }
+        }
+
+        foreach (var fieldSymbol in this.Compilation.GetMappaDependencyFieldsInMapperBaseTypeHierarchy(classContext.ClassSymbol))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (!processedDependencyMemberNames.Add(fieldSymbol.Name))
+            {
+                continue;
+            }
+
+            this.ProcessMappaDependencyField(
+                classDeclarationSyntax,
+                fieldSymbol,
+                fieldSymbol.Name,
+                classContext);
         }
 
         var mappaUserSettings = new MappaUserSettings(options);
@@ -402,6 +396,72 @@ internal sealed class MappaGeneratorClassAlgorithm
         }
 
         return true;
+    }
+
+    private void ProcessMappaDependencyProperty(
+        SyntaxNode referenceSyntaxNode,
+        IPropertySymbol propertySymbol,
+        string propertyIdentifier,
+        MappaClassGeneratorContext classContext)
+    {
+        var staticFieldAccessor = $"global::{propertySymbol.Type.ToDisplayString()}";
+        var accessFieldName = propertyIdentifier;
+        if (!propertySymbol.IsStatic)
+        {
+            accessFieldName = $"this.{accessFieldName}";
+        }
+
+        var anyMethodCanBeUsed = false;
+        var methods = propertySymbol.Type.GetMethodsInTypeHierarchy().ToArray();
+        foreach (var method in methods)
+        {
+            var added = this.AcceptMapMethodFromDependency(
+                referenceSyntaxNode,
+                method,
+                method.IsStatic ? staticFieldAccessor : accessFieldName,
+                method.IsStatic,
+                canBeInvokedByStaticMethod: method.IsStatic || propertySymbol.IsStatic,
+                classContext);
+            anyMethodCanBeUsed |= added;
+        }
+
+        if (!anyMethodCanBeUsed)
+        {
+            this.Context.ReportDiagnostic(MappaDiagnostics.DependencyDoesNotProvideAnyViableMethod(referenceSyntaxNode, propertyIdentifier));
+        }
+    }
+
+    private void ProcessMappaDependencyField(
+        SyntaxNode referenceSyntaxNode,
+        IFieldSymbol fieldSymbol,
+        string fieldIdentifier,
+        MappaClassGeneratorContext classContext)
+    {
+        var staticFieldAccessor = $"global::{fieldSymbol.Type.ToDisplayString()}";
+        var accessFieldName = fieldIdentifier;
+        if (!fieldSymbol.IsStatic)
+        {
+            accessFieldName = $"this.{accessFieldName}";
+        }
+
+        var anyMethodCanBeUsed = false;
+        var methods = fieldSymbol.Type.GetMethodsInTypeHierarchy().ToArray();
+        foreach (var method in methods)
+        {
+            var added = this.AcceptMapMethodFromDependency(
+                referenceSyntaxNode,
+                method,
+                method.IsStatic ? staticFieldAccessor : accessFieldName,
+                method.IsStatic,
+                canBeInvokedByStaticMethod: method.IsStatic || fieldSymbol.IsStatic,
+                classContext);
+            anyMethodCanBeUsed |= added;
+        }
+
+        if (!anyMethodCanBeUsed)
+        {
+            this.Context.ReportDiagnostic(MappaDiagnostics.DependencyDoesNotProvideAnyViableMethod(referenceSyntaxNode, fieldIdentifier));
+        }
     }
 
     private bool AcceptMapMethodFromDependency(

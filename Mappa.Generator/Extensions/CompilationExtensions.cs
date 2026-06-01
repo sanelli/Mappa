@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Attributes;
 using Mappa.Generator.Exceptions;
 
 using Microsoft.CodeAnalysis;
@@ -57,6 +58,83 @@ internal static class CompilationExtensions
             foreach (var method in resolvedType.GetMembers().OfType<IMethodSymbol>())
             {
                 yield return method;
+            }
+
+            currentType = currentType.BaseType;
+        }
+    }
+
+    /// <summary>
+    /// Obtain all accessible <see cref="MappaDependencyAttribute"/> properties declared in the base types of <paramref name="mapperClassSymbol"/>.
+    /// Each base type is resolved via metadata name before its members are enumerated.
+    /// </summary>
+    /// <param name="compilation">The current compilation.</param>
+    /// <param name="mapperClassSymbol">The mapper class symbol whose base types will be investigated.</param>
+    /// <returns>The properties in the mapper base type hierarchy.</returns>
+    internal static IEnumerable<IPropertySymbol> GetMappaDependencyPropertiesInMapperBaseTypeHierarchy(
+        this Compilation compilation,
+        INamedTypeSymbol mapperClassSymbol)
+    {
+        INamedTypeSymbol? currentType = mapperClassSymbol.BaseType;
+        while (currentType is not null)
+        {
+            var metadataName = currentType.GetMetadataName();
+            var resolvedType = compilation.GetTypeByMetadataName(metadataName) ?? currentType;
+
+            foreach (var property in resolvedType.GetMembers().OfType<IPropertySymbol>())
+            {
+                if (property.GetMethod is null)
+                {
+                    continue;
+                }
+
+                if (!property.GetAttributes().HasMappaDependencyAttribute(compilation))
+                {
+                    continue;
+                }
+
+                if (!compilation.IsSymbolAccessibleWithin(property, mapperClassSymbol))
+                {
+                    continue;
+                }
+
+                yield return property;
+            }
+
+            currentType = currentType.BaseType;
+        }
+    }
+
+    /// <summary>
+    /// Obtain all accessible <see cref="MappaDependencyAttribute"/> fields declared in the base types of <paramref name="mapperClassSymbol"/>.
+    /// Each base type is resolved via metadata name before its members are enumerated.
+    /// </summary>
+    /// <param name="compilation">The current compilation.</param>
+    /// <param name="mapperClassSymbol">The mapper class symbol whose base types will be investigated.</param>
+    /// <returns>The fields in the mapper base type hierarchy.</returns>
+    internal static IEnumerable<IFieldSymbol> GetMappaDependencyFieldsInMapperBaseTypeHierarchy(
+        this Compilation compilation,
+        INamedTypeSymbol mapperClassSymbol)
+    {
+        INamedTypeSymbol? currentType = mapperClassSymbol.BaseType;
+        while (currentType is not null)
+        {
+            var metadataName = currentType.GetMetadataName();
+            var resolvedType = compilation.GetTypeByMetadataName(metadataName) ?? currentType;
+
+            foreach (var field in resolvedType.GetMembers().OfType<IFieldSymbol>())
+            {
+                if (!field.GetAttributes().HasMappaDependencyAttribute(compilation))
+                {
+                    continue;
+                }
+
+                if (!compilation.IsSymbolAccessibleWithin(field, mapperClassSymbol))
+                {
+                    continue;
+                }
+
+                yield return field;
             }
 
             currentType = currentType.BaseType;
