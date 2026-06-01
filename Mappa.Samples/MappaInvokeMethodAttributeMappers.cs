@@ -430,7 +430,7 @@ public sealed partial class MapEmptyConstructorWithFieldLocatedMethodWithSourceC
     /// </summary>
     /// <param name="source">The source model to map.</param>
     /// <returns>The mapped object.</returns>
-    [MappaInvokeMethod(nameof(TargetClassModel.ParamA), nameof(this.helper), nameof(MapperDependencyHelper.Map))]
+    [MappaInvokeMethod(nameof(TargetClassModel.ParamA), nameof(helper), nameof(MapperDependencyHelper.Map))]
     public partial TargetClassModel Map(SourceClassModel source);
 }
 
@@ -461,7 +461,7 @@ public sealed partial class MapEmptyConstructorWithPropertyLocatedMethodWithSour
     /// </summary>
     /// <param name="source">The source model to map.</param>
     /// <returns>The mapped object.</returns>
-    [MappaInvokeMethod(nameof(TargetClassModel.ParamA), nameof(this.Helper), nameof(MapperDependencyHelper.Map))]
+    [MappaInvokeMethod(nameof(TargetClassModel.ParamA), nameof(Helper), nameof(MapperDependencyHelper.Map))]
     public partial TargetClassModel Map(SourceClassModel source);
 }
 
@@ -492,7 +492,7 @@ public sealed partial class MapEmptyConstructorWithStaticPropertyAndStaticMapMet
     /// </summary>
     /// <param name="source">The source model to map.</param>
     /// <returns>The mapped object.</returns>
-    [MappaInvokeMethod(nameof(TargetClassModel.ParamA), nameof(this.Helper), nameof(MapperDependencyHelper.Map))]
+    [MappaInvokeMethod(nameof(TargetClassModel.ParamA), nameof(Helper), nameof(MapperDependencyHelper.Map))]
     public static partial TargetClassModel Map(SourceClassModel source);
 }
 
@@ -523,7 +523,7 @@ public sealed partial class MapEmptyConstructorWithStaticFieldAndStaticMapMethod
     /// </summary>
     /// <param name="source">The source model to map.</param>
     /// <returns>The mapped object.</returns>
-    [MappaInvokeMethod(nameof(TargetClassModel.ParamA), nameof(this.helper), nameof(MapperDependencyHelper.Map))]
+    [MappaInvokeMethod(nameof(TargetClassModel.ParamA), nameof(helper), nameof(MapperDependencyHelper.Map))]
     public static partial TargetClassModel Map(SourceClassModel source);
 }
 
