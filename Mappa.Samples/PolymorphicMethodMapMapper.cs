@@ -2,14 +2,13 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-// TODO [#186] Map property invoking a polymorphic method automatically identified in the base class of the mapper.
-// TODO [#186] Map property invoking a polymorphic method automatically identifier in the base class of the type of a dependency property.
-// TODO [#186] Map property invoking a polymorphic method automatically identifier in the base class of the type of a dependency field.
 using Mappa.Attributes;
 
 namespace Mappa.Samples;
 
 #pragma warning disable SA1402
+
+#pragma warning disable S2094 // Remove this empty class, write its code or make it an "interface".
 
 /// <summary>
 /// Mapper to showcase the ability of Mappa to pick up
@@ -169,4 +168,106 @@ public sealed partial class NonStaticPolymorphicMethodNotInvokedByStaticContextM
     [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetThirdClass), typeof(Models.Polymorphism.One.SourceThirdClass))]
     [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetSecondClass), typeof(Models.Polymorphism.One.SourceSecondClass))]
     public partial Models.Polymorphism.One.TargetBaseClass Map(Models.Polymorphism.One.SourceBaseClass source);
+}
+
+/// <summary>
+/// Base class providing a polymorphic map method for inherited mapper samples.
+/// </summary>
+[Mappa]
+[MappaSettings(CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
+public partial class PolymorphicMethodMapMapperBase
+{
+    /// <summary>
+    /// Map from <see cref="Models.Polymorphism.One.SourceBaseClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetBaseClass"/> by supporting polymorphism.
+    /// </summary>
+    /// <param name="source">The source model.</param>
+    /// <returns>The target model.</returns>
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetFirstClass), typeof(Models.Polymorphism.One.SourceFirstClass))]
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetThirdClass), typeof(Models.Polymorphism.One.SourceThirdClass))]
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetSecondClass), typeof(Models.Polymorphism.One.SourceSecondClass))]
+    public partial Models.Polymorphism.One.TargetBaseClass Map(Models.Polymorphism.One.SourceBaseClass source);
+}
+
+/// <summary>
+/// Mapper that inherits a polymorphic map method from a base class.
+/// </summary>
+[Mappa]
+[MappaSettings(CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
+public sealed partial class PolymorphicMethodMapMapperWithMapperBaseClass : PolymorphicMethodMapMapperBase
+{
+    /// <summary>
+    /// Maps from <see cref="Models.Polymorphism.One.SourceWithDependency"/> to
+    /// <see cref="Models.Polymorphism.One.TargetWithDependency"/>
+    /// using the inherited polymorphic <see cref="PolymorphicMethodMapMapperBase.Map"/>.
+    /// </summary>
+    /// <param name="source">The source model.</param>
+    /// <returns>The target model.</returns>
+    public partial Models.Polymorphism.One.TargetWithDependency Map(Models.Polymorphism.One.SourceWithDependency source);
+}
+
+/// <summary>
+/// Mapper that uses a polymorphic map method from a base class of a dependency property type.
+/// </summary>
+[Mappa]
+[MappaSettings(CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
+public sealed partial class PolymorphicMethodMapMapperWithDependencyPropertyBaseClass
+{
+    [MappaDependency]
+    private PolymorphicMethodMapDerivedDependency DependencyProperty { get; } = new();
+
+    /// <summary>
+    /// Maps from <see cref="Models.Polymorphism.One.SourceWithDependency"/> to
+    /// <see cref="Models.Polymorphism.One.TargetWithDependency"/>
+    /// using the polymorphic method on the dependency property base class.
+    /// </summary>
+    /// <param name="source">The source model.</param>
+    /// <returns>The target model.</returns>
+    public partial Models.Polymorphism.One.TargetWithDependency Map(Models.Polymorphism.One.SourceWithDependency source);
+}
+
+/// <summary>
+/// Mapper that uses a polymorphic map method from a base class of a dependency field type.
+/// </summary>
+[Mappa]
+[MappaSettings(CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
+public sealed partial class PolymorphicMethodMapMapperWithDependencyFieldBaseClass
+{
+    [MappaDependency]
+    private readonly PolymorphicMethodMapDerivedDependency dependencyField = new();
+
+    /// <summary>
+    /// Maps from <see cref="Models.Polymorphism.One.SourceWithDependency"/> to
+    /// <see cref="Models.Polymorphism.One.TargetWithDependency"/>
+    /// using the polymorphic method on the dependency field base class.
+    /// </summary>
+    /// <param name="source">The source model.</param>
+    /// <returns>The target model.</returns>
+    public partial Models.Polymorphism.One.TargetWithDependency Map(Models.Polymorphism.One.SourceWithDependency source);
+}
+
+/// <summary>
+/// Base class providing a polymorphic map method for inherited dependency samples.
+/// </summary>
+[Mappa]
+[MappaSettings(CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
+internal partial class PolymorphicMethodMapDependencyBase
+{
+    /// <summary>
+    /// Map from <see cref="Models.Polymorphism.One.SourceBaseClass"/>
+    /// to <see cref="Models.Polymorphism.One.TargetBaseClass"/> by supporting polymorphism.
+    /// </summary>
+    /// <param name="source">The source model.</param>
+    /// <returns>The target model.</returns>
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetFirstClass), typeof(Models.Polymorphism.One.SourceFirstClass))]
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetThirdClass), typeof(Models.Polymorphism.One.SourceThirdClass))]
+    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetSecondClass), typeof(Models.Polymorphism.One.SourceSecondClass))]
+    public partial Models.Polymorphism.One.TargetBaseClass Map(Models.Polymorphism.One.SourceBaseClass source);
+}
+
+/// <summary>
+/// Derived dependency type used by inherited polymorphic dependency samples.
+/// </summary>
+internal sealed class PolymorphicMethodMapDerivedDependency : PolymorphicMethodMapDependencyBase
+{
 }

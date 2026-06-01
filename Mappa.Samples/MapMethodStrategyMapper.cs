@@ -2,9 +2,6 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-// TODO [#186] Map property invoking a method automatically identified in the base class of the mapper.
-// TODO [#186] Map property invoking a method automatically identifier in the base class of the type of a dependency property.
-// TODO [#186] Map property invoking a method automatically identifier in the base class of the type of a dependency field.
 using Mappa.Attributes;
 using Mappa.Samples.Models;
 
