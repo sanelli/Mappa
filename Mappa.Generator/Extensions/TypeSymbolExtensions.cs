@@ -1,4 +1,4 @@
-﻿// <copyright file="TypeSymbolExtensions.cs" company="Stefano Anelli">
+// <copyright file="TypeSymbolExtensions.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -1656,6 +1656,44 @@ internal static class TypeSymbolExtensions
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// Obtain the metadata name of <paramref name="typeSymbol"/> for use with
+    /// <see cref="Compilation.GetTypeByMetadataName(string)"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <returns>The metadata name of <paramref name="typeSymbol"/>.</returns>
+    internal static string GetMetadataName(this INamedTypeSymbol typeSymbol)
+    {
+        if (typeSymbol.ContainingType is { } containingType)
+        {
+            return containingType.GetMetadataName() + "+" + typeSymbol.MetadataName;
+        }
+
+        return typeSymbol.ContainingNamespace.IsGlobalNamespace
+            ? typeSymbol.MetadataName
+            : typeSymbol.ContainingNamespace.ToDisplayString() + "." + typeSymbol.MetadataName;
+    }
+
+    /// <summary>
+    /// Obtain all methods declared in <paramref name="typeSymbol"/> and its base types.
+    /// Methods are sorted by most derived class first.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to investigate.</param>
+    /// <returns>The methods in the type hierarchy.</returns>
+    internal static IEnumerable<IMethodSymbol> GetMethodsInTypeHierarchy(this ITypeSymbol typeSymbol)
+    {
+        ITypeSymbol? currentType = typeSymbol;
+        while (currentType is not null)
+        {
+            foreach (var method in currentType.GetMembers().OfType<IMethodSymbol>())
+            {
+                yield return method;
+            }
+
+            currentType = currentType.BaseType;
+        }
     }
 
     /// <summary>

@@ -1,4 +1,4 @@
-﻿// <copyright file="MappaGeneratorClassAlgorithm.cs" company="Stefano Anelli">
+// <copyright file="MappaGeneratorClassAlgorithm.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -139,7 +139,6 @@ internal sealed class MappaGeneratorClassAlgorithm
             new MappaClassGeneratorContext(options, mappaDebug, this.Compilation, classDeclarationSyntax);
 
         // Gather all the methods that require a mapping.
-        // TODO [#186] List methods also from base classes.
         foreach (var methodDeclarationSyntax in classDeclarationSyntax.ChildNodes().OfType<MethodDeclarationSyntax>())
         {
             mappaDebug.Debug(
@@ -154,6 +153,22 @@ internal sealed class MappaGeneratorClassAlgorithm
             {
                 this.AcceptMapMethodAlreadyMapped(methodDeclarationSyntax, classContext, cancellationToken);
             }
+        }
+
+        // List methods also from base classes of the mapper.
+        foreach (var method in this.Compilation.GetMethodsInTypeHierarchyFromMetadata(classContext.ClassSymbol))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var accessFieldName = method.IsStatic
+                ? $"global::{method.ContainingType.ToDisplayString()}"
+                : "this";
+            this.AcceptMapMethodFromDependency(
+                classDeclarationSyntax,
+                method,
+                accessFieldName,
+                methodMustBeStatic: method.IsStatic,
+                canBeInvokedByStaticMethod: method.IsStatic,
+                classContext);
         }
 
         // Get all the static types on the class listed as static dependencies
@@ -192,7 +207,6 @@ internal sealed class MappaGeneratorClassAlgorithm
         // Get all accessible properties that:
         // - have a getter method
         // - have MappaDependency attribute
-        // TODO [#186] List methods also from base classes of the property type.
         #pragma warning disable S3267 // Loops should be simplified using the "Where" LINQ method
         foreach (var propertyDeclarationSyntax in classDeclarationSyntax.ChildNodes().OfType<PropertyDeclarationSyntax>())
         #pragma warning restore S3267 // Loops should be simplified using the "Where" LINQ method
@@ -216,7 +230,7 @@ internal sealed class MappaGeneratorClassAlgorithm
                     }
 
                     var anyMethodCanBeUsed = false;
-                    var methods = propertySymbol.Type.GetMembers().OfType<IMethodSymbol>().ToArray();
+                    var methods = propertySymbol.Type.GetMethodsInTypeHierarchy().ToArray();
                     foreach (var method in methods)
                     {
                         var added = this.AcceptMapMethodFromDependency(
@@ -238,7 +252,6 @@ internal sealed class MappaGeneratorClassAlgorithm
         }
 
         // Get all accessible fields that have MappaDependency attribute
-        // TODO [#186] List methods also from base classes of the field type.
         foreach (var fieldDeclarationSyntax in classDeclarationSyntax.ChildNodes().OfType<FieldDeclarationSyntax>())
         {
             if (fieldDeclarationSyntax.AttributeLists.GetMappaDependencyAttributeSyntax(classContext.SemanticModel, cancellationToken) is null)
@@ -263,7 +276,7 @@ internal sealed class MappaGeneratorClassAlgorithm
                     }
 
                     var anyMethodCanBeUsed = false;
-                    var methods = fieldSymbol.Type.GetMembers().OfType<IMethodSymbol>().ToArray();
+                    var methods = fieldSymbol.Type.GetMethodsInTypeHierarchy().ToArray();
                     foreach (var method in methods)
                     {
                         var added = this.AcceptMapMethodFromDependency(

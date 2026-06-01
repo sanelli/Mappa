@@ -1,4 +1,4 @@
-﻿// <copyright file="CompilationExtensions.cs" company="Stefano Anelli">
+// <copyright file="CompilationExtensions.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -35,4 +35,31 @@ internal static class CompilationExtensions
     /// <exception cref="MappaGeneratorException">When <typeparamref name="TType"/> cannot be loaded.</exception>
     internal static INamedTypeSymbol GetTypeSymbol<TType>(this Compilation compilation)
         => compilation.GetTypeSymbol(typeof(TType));
+
+    /// <summary>
+    /// Obtain all methods declared in the base types of <paramref name="typeSymbol"/>.
+    /// Each base type is resolved via metadata name before its members are enumerated.
+    /// Methods are sorted by most derived base class first.
+    /// </summary>
+    /// <param name="compilation">The current compilation.</param>
+    /// <param name="typeSymbol">The type symbol whose base types will be investigated.</param>
+    /// <returns>The methods in the base type hierarchy.</returns>
+    internal static IEnumerable<IMethodSymbol> GetMethodsInTypeHierarchyFromMetadata(
+        this Compilation compilation,
+        INamedTypeSymbol typeSymbol)
+    {
+        INamedTypeSymbol? currentType = typeSymbol.BaseType;
+        while (currentType is not null)
+        {
+            var metadataName = currentType.GetMetadataName();
+            var resolvedType = compilation.GetTypeByMetadataName(metadataName) ?? currentType;
+
+            foreach (var method in resolvedType.GetMembers().OfType<IMethodSymbol>())
+            {
+                yield return method;
+            }
+
+            currentType = currentType.BaseType;
+        }
+    }
 }
