@@ -1,4 +1,4 @@
-﻿// <copyright file="MappaGeneratorClassAlgorithm.cs" company="Stefano Anelli">
+// <copyright file="MappaGeneratorClassAlgorithm.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -155,6 +155,22 @@ internal sealed class MappaGeneratorClassAlgorithm
             }
         }
 
+        // List methods also from base classes of the mapper.
+        foreach (var method in this.Compilation.GetMethodsInTypeHierarchyFromMetadata(classContext.ClassSymbol))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var accessFieldName = method.IsStatic
+                ? $"global::{method.ContainingType.ToDisplayString()}"
+                : "this";
+            this.AcceptMapMethodFromDependency(
+                classDeclarationSyntax,
+                method,
+                accessFieldName,
+                methodMustBeStatic: method.IsStatic,
+                canBeInvokedByStaticMethod: method.IsStatic,
+                classContext);
+        }
+
         // Get all the static types on the class listed as static dependencies
         foreach (var dependencyType in classContext
                      .ClassSymbol
@@ -214,7 +230,7 @@ internal sealed class MappaGeneratorClassAlgorithm
                     }
 
                     var anyMethodCanBeUsed = false;
-                    var methods = propertySymbol.Type.GetMembers().OfType<IMethodSymbol>().ToArray();
+                    var methods = propertySymbol.Type.GetMethodsInTypeHierarchy().ToArray();
                     foreach (var method in methods)
                     {
                         var added = this.AcceptMapMethodFromDependency(
@@ -260,7 +276,7 @@ internal sealed class MappaGeneratorClassAlgorithm
                     }
 
                     var anyMethodCanBeUsed = false;
-                    var methods = fieldSymbol.Type.GetMembers().OfType<IMethodSymbol>().ToArray();
+                    var methods = fieldSymbol.Type.GetMethodsInTypeHierarchy().ToArray();
                     foreach (var method in methods)
                     {
                         var added = this.AcceptMapMethodFromDependency(

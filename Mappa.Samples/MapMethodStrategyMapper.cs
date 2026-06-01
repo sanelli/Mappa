@@ -12,6 +12,7 @@ namespace Mappa.Samples;
 /// <summary>
 /// Mapper using the map method strategy.
 /// </summary>
+///
 [Mappa]
 public sealed partial class MapMethodStrategyMapper
 {
