@@ -24,6 +24,7 @@ internal static class AttributeDataExtensions
     private static readonly string MappaAssignFromContextAttributeFullName = typeof(MappaAssignFromContextAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaAssignFromContextAttribute)}");
     private static readonly string MappaSettingsAttributeFullName = typeof(MappaSettingsAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaSettingsAttribute)}");
     private static readonly string MappaUsePropertyAttributeFullName = typeof(MappaUsePropertyAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaUsePropertyAttribute)}");
+    private static readonly string MappaDependencyAttributeFullName = typeof(MappaDependencyAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaDependencyAttribute)}");
     private static readonly string MappaStaticDependencyAttributeFullName = typeof(MappaStaticDependencyAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaStaticDependencyAttribute)}");
     private static readonly string MappaAssignFromConstantAttributeFullName = typeof(MappaAssignFromConstantAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaAssignFromConstantAttribute)}");
     private static readonly string MappaTypeMappingAttributeFullName = typeof(MappaTypeMappingAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaTypeMappingAttribute)}");
@@ -184,6 +185,18 @@ internal static class AttributeDataExtensions
         }
 
         return [..results];
+    }
+
+    /// <summary>
+    /// Determines whether the <see cref="MappaDependencyAttribute"/> is applied.
+    /// </summary>
+    /// <param name="attributes">The attributes.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the attribute is applied; otherwise, <c>false</c>.</returns>
+    internal static bool HasMappaDependencyAttribute(this ImmutableArray<AttributeData> attributes, Compilation compilation)
+    {
+        var mappaDependencyAttributeSymbol = compilation.GetTypeByMetadataName(MappaDependencyAttributeFullName);
+        return attributes.Any(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, mappaDependencyAttributeSymbol));
     }
 
     /// <summary>

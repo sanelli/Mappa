@@ -15,6 +15,8 @@ using Mappa.Samples.Models;
 #pragma warning disable CA1822 // Member 'Map' does not access instance data and can be marked as static
 #pragma warning disable CA1812
 #pragma warning disable CA1852
+#pragma warning disable CA1051 // Do not declare visible instance fields
+#pragma warning disable SA1401 // Field should be private
 #pragma warning disable SA1518 // File may not end with a newline character
 
 namespace Mappa.Samples;
@@ -92,7 +94,7 @@ public sealed partial class MapMethodStrategyWithDependencyFieldBaseClass
 /// <summary>
 /// Base class providing a map method for inherited dependency samples.
 /// </summary>
-internal class MapMethodStrategyInheritedDependencyBase
+public class MapMethodStrategyInheritedDependencyBase
 {
     /// <summary>
     /// Map from <see cref="SourceClassModel"/> to <see cref="TargetClassModel"/>.
@@ -112,6 +114,58 @@ internal class MapMethodStrategyInheritedDependencyBase
 /// <summary>
 /// Derived dependency type used by inherited dependency samples.
 /// </summary>
-internal sealed class MapMethodStrategyInheritedDerivedDependency : MapMethodStrategyInheritedDependencyBase
+public sealed class MapMethodStrategyInheritedDerivedDependency : MapMethodStrategyInheritedDependencyBase
 {
+}
+
+/// <summary>
+/// Base class providing a [MappaDependency] property for inherited mapper samples.
+/// </summary>
+public class MapMethodStrategyInheritedDependencyPropertyMapperBase
+{
+    /// <summary>
+    /// Gets the dependency used for mapping inner models.
+    /// </summary>
+    [MappaDependency]
+    protected MapMethodStrategyInheritedDerivedDependency DependencyProperty { get; } = new();
+}
+
+/// <summary>
+/// Mapper that inherits a [MappaDependency] property from a base class.
+/// </summary>
+[Mappa]
+public sealed partial class MapMethodStrategyWithInheritedDependencyPropertyMapper : MapMethodStrategyInheritedDependencyPropertyMapperBase
+{
+    /// <summary>
+    /// Map from <see cref="SourceClassWithInnerClassModel"/> to <see cref="TargetClassWithInnerClassModel"/>.
+    /// </summary>
+    /// <param name="sourceClassModel">The source model.</param>
+    /// <returns>The target model.</returns>
+    public partial TargetClassWithInnerClassModel Map(SourceClassWithInnerClassModel sourceClassModel);
+}
+
+/// <summary>
+/// Base class providing a [MappaDependency] field for inherited mapper samples.
+/// </summary>
+public class MapMethodStrategyInheritedDependencyFieldMapperBase
+{
+    /// <summary>
+    /// The dependency used for mapping inner models.
+    /// </summary>
+    [MappaDependency]
+    protected MapMethodStrategyInheritedDerivedDependency dependencyField = new();
+}
+
+/// <summary>
+/// Mapper that inherits a [MappaDependency] field from a base class.
+/// </summary>
+[Mappa]
+public sealed partial class MapMethodStrategyWithInheritedDependencyFieldMapper : MapMethodStrategyInheritedDependencyFieldMapperBase
+{
+    /// <summary>
+    /// Map from <see cref="SourceClassWithInnerClassModel"/> to <see cref="TargetClassWithInnerClassModel"/>.
+    /// </summary>
+    /// <param name="sourceClassModel">The source model.</param>
+    /// <returns>The target model.</returns>
+    public partial TargetClassWithInnerClassModel Map(SourceClassWithInnerClassModel sourceClassModel);
 }

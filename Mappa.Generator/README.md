@@ -21,8 +21,8 @@ where `TSource` is the source type of the mapping and `TTarget` is the target ty
         - The default mapping in case the actual parameter type does not match any of the source type from the `[MappaTypeMapping]` attributes is determined by the `[MappaTypeMappingDefault]` attribute - if the attribute is not present the default behaviour will throw an exception.
 2. <u>Existing method strategy</u>
    - _When_:
-       - A method in the same class from `TSource` to `TTarget` exists OR,
-       - A method from a property or field marked with the `[MappaDependency]` from `TSource` to `TTarget` exists OR,
+       - A method in the same class **or a base class of the mapper** from `TSource` to `TTarget` exists OR,
+       - A method from a property or field marked with the `[MappaDependency]` **on the mapper or an accessible base class of the mapper**, or from a base class of the dependency type from `TSource` to `TTarget` exists OR,
        - A method from a type defined via the `[MappaStaticDependency]` attribute exists OR,
        - A polymorphic method where one ot the `[MappaTypeMapping]` attribute matches `TSource` and `TTarget` attribute OR,
        - Settings `PolymorphicMapMethodWithMatchingDefaultAttribute` is `Enable` and a polymorphic method with attribute `[MappaTypeMappingDefault]` and behaviour `MappaTypeMappingDefaultBehavior.MapSourceType` and `TTarget` is matching the target type defined by the attribute and `TSource` the source type of the method exists;
