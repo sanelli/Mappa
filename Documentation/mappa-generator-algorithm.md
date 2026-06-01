@@ -27,7 +27,7 @@ the source generator attempt to identify a mapping from `TSource` to `TTarget` b
 2. <u>Existing method strategy</u>
     - _When_:
         - A method in the same class **or a base class of the mapper** from `TSource` to `TTarget` exists OR,
-        - A method from a property or field marked with the `[MappaDependency]` **or from a base class of the dependency type** from `TSource` to `TTarget` exists OR,
+        - A method from a property or field marked with the `[MappaDependency]` **on the mapper or an accessible base class of the mapper**, or from a base class of the dependency type from `TSource` to `TTarget` exists OR,
         - A method from a type defined via the `[MappaStaticDependency]` attribute exists OR,
         - A polymorphic method where one ot the `[MappaTypeMapping]` attribute matches `TSource` and `TTarget` attribute OR,
         - Settings `PolymorphicMapMethodWithMatchingDefaultAttribute` is `Enable` and a polymorphic method with attribute `[MappaTypeMappingDefault]` and behaviour `MappaTypeMappingDefaultBehavior.MapSourceType` and `TTarget` is matching the target type defined by the attribute and `TSource` the source type of the method exists;
