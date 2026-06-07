@@ -11,10 +11,12 @@ namespace Mappa.Attributes;
 /// The method <see cref="MethodName"/> can be a
 /// <c>static</c> or non-<c>static</c> method in
 /// the same class the method this attribute is applied
-/// is contained, or can be a <c>static</c> method on type
-/// <see cref="ClassType"/>, or can be a non-<c>static</c>
-/// method available on a field in the same class the
-/// method this attribute is applied is contained.<br/>
+/// is contained or in an accessible base class, or can be a
+/// <c>static</c> method on type <see cref="ClassType"/> or one
+/// of its base classes, or can be a non-<c>static</c>
+/// method available on a field or property in the same class
+/// the method this attribute is applied is contained or in an
+/// accessible base class.<br/>
 /// The method can have the following set of parameters:
 /// <list type="bullet">
 /// <item><description>Two parameters: the first one of the same type of the source <c>class</c>/<c>struct</c>/<c>record</c>, and the second one of the same type of the source property.</description></item>
@@ -47,7 +49,7 @@ public sealed class MappaInvokeMethodAttribute
     /// Initializes a new instance of the <see cref="MappaInvokeMethodAttribute"/> class.
     /// </summary>
     /// <param name="targetPropertyName">The name of the target property.</param>
-    /// <param name="classType">The name of the class defining the <c>static</c> method <paramref name="methodName"/>.</param>
+    /// <param name="classType">The type defining the <c>static</c> method <paramref name="methodName"/> or one of its base classes.</param>
     /// <param name="methodName">The name of the <c>static</c> method to execute.</param>
     public MappaInvokeMethodAttribute(string targetPropertyName, Type classType, string methodName)
         : this(targetPropertyName, methodName)
@@ -59,7 +61,7 @@ public sealed class MappaInvokeMethodAttribute
     /// Initializes a new instance of the <see cref="MappaInvokeMethodAttribute"/> class.
     /// </summary>
     /// <param name="targetPropertyName">The name of the target property.</param>
-    /// <param name="fieldName">The name of the field exposing the non-<c>static</c> method <paramref name="methodName"/>.</param>
+    /// <param name="fieldName">The name of the field or property on the mapper class or an accessible base class exposing the non-<c>static</c> method <paramref name="methodName"/>.</param>
     /// <param name="methodName">The name of the non-<c>static</c> method to execute.</param>
     public MappaInvokeMethodAttribute(string targetPropertyName, string fieldName, string methodName)
         : this(targetPropertyName, methodName)
@@ -76,14 +78,14 @@ public sealed class MappaInvokeMethodAttribute
     public string MethodName { get; }
 
     /// <summary>
-    /// Gets the name of the class for which the static method
-    /// <see cref="MethodName"/> should be invoked. If this
-    /// property is set then <see cref="MethodName"/> must be <c>static</c>.
+    /// Gets the type for which the static method
+    /// <see cref="MethodName"/> should be invoked, including methods declared on its base classes.
+    /// If this property is set then <see cref="MethodName"/> must be <c>static</c>.
     /// </summary>
     public Type? ClassType { get; }
 
     /// <summary>
-    /// Gets the name of the field inside the class this attribute is used
+    /// Gets the name of the field or property on the mapper class or an accessible base class
     /// on which the non-<c>static</c> method <see cref="MethodName"/> should be invoked.
     /// </summary>
     public string? FieldName { get; }

@@ -706,27 +706,12 @@ internal sealed class ConstructorMapStrategyDetector
         ISymbol? fieldOrProperty = null;
         if (mappaInvokeMethodAttribute.FieldName is not null)
         {
-            var classMembers = mapMethodClass.GetMembers();
+            fieldOrProperty = this.compilation.LocateAccessibleFieldOrPropertyInTypeHierarchy(
+                mapMethodClass,
+                mappaInvokeMethodAttribute.FieldName,
+                mapMethodClass);
 
-            var matchingProperties = classMembers
-                .OfType<IPropertySymbol>()
-                .Where(property =>
-                    property.Name.Equals(mappaInvokeMethodAttribute.FieldName, StringComparison.Ordinal))
-                .ToArray();
-
-            var matchingFields = classMembers
-                .OfType<IFieldSymbol>()
-                .Where(property =>
-                    property.Name.Equals(mappaInvokeMethodAttribute.FieldName, StringComparison.Ordinal))
-                .ToArray();
-
-            var targetTypes = matchingProperties
-                .Select(property => property.Type)
-                .Concat(matchingFields.Select(field => field.Type))
-                .OfType<INamedTypeSymbol>()
-                .ToArray();
-
-            if (targetTypes.Length != 1)
+            if (fieldOrProperty is null)
             {
                 this.context.ReportDiagnostic(MappaDiagnostics.CannotFindFieldOrProperty(
                     mapMethodMethodDeclarationSyntax,
@@ -734,24 +719,25 @@ internal sealed class ConstructorMapStrategyDetector
                 return;
             }
 
-            var matchingSymbol = matchingProperties
-                .Cast<ISymbol>()
-                .Concat(matchingFields)
-                .Single();
-
-            if (rootMethod.MethodSymbol.IsStatic && !matchingSymbol.IsStatic)
+            if (rootMethod.MethodSymbol.IsStatic && !fieldOrProperty.IsStatic)
             {
                 this.context.ReportDiagnostic(MappaDiagnostics.FieldOrPropertyMustBeStatic(
-                      matchingSymbol.Name,
+                      fieldOrProperty.Name,
                       rootMethod.Location));
                 return;
             }
 
-            fieldOrProperty = matchingSymbol;
+            var fieldOrPropertyType = fieldOrProperty switch
+            {
+                IFieldSymbol field => field.Type,
+                IPropertySymbol property => property.Type,
+                _ => throw new MappaGeneratorException($"Unexpected symbol kind '{fieldOrProperty.Kind}' for field or property '{fieldOrProperty.Name}'."),
+            };
+
             method = GetBestMethodSymbol(
                 this.compilation,
                 mapMethodClass,
-                methods: [..targetTypes.Single().GetMembers().OfType<IMethodSymbol>()],
+                methods: fieldOrPropertyType.LocateMethods(mappaInvokeMethodAttribute.MethodName),
                 mappaInvokeMethodAttribute.MethodName,
                 targetType,
                 sourceClassType,
@@ -774,7 +760,7 @@ internal sealed class ConstructorMapStrategyDetector
             method = GetBestMethodSymbol(
                 this.compilation,
                 mapMethodClass,
-                methods: [..className.GetMembers().OfType<IMethodSymbol>()],
+                methods: className.LocateMethods(mappaInvokeMethodAttribute.MethodName),
                 mappaInvokeMethodAttribute.MethodName,
                 targetType,
                 sourceClassType,
@@ -789,11 +775,11 @@ internal sealed class ConstructorMapStrategyDetector
                 ? MethodDetectorMethodStaticRequirement.Static
                 : MethodDetectorMethodStaticRequirement.StaticOrNotStatic;
 
-            // At this point we look for a method (static or not static in the same class the method is defined)
+            // At this point we look for a method (static or not static in the mapper class or an accessible base class)
             method = GetBestMethodSymbol(
                 this.compilation,
                 mapMethodClass,
-                methods: [..mapMethodClass.GetMembers().OfType<IMethodSymbol>()],
+                methods: mapMethodClass.LocateMethods(mappaInvokeMethodAttribute.MethodName),
                 mappaInvokeMethodAttribute.MethodName,
                 targetType,
                 sourceClassType,

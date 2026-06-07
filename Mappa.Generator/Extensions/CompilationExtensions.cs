@@ -140,4 +140,64 @@ internal static class CompilationExtensions
             currentType = currentType.BaseType;
         }
     }
+
+    /// <summary>
+    /// Locate an accessible field or property declared on <paramref name="typeSymbol"/> or one of its base types.
+    /// Each type in the hierarchy is resolved via metadata name before its members are enumerated.
+    /// Types are evaluated from most derived to least derived; the first level with a unique accessible match is returned.
+    /// </summary>
+    /// <param name="compilation">The current compilation.</param>
+    /// <param name="typeSymbol">The type symbol whose hierarchy will be investigated.</param>
+    /// <param name="name">The name of the field or property.</param>
+    /// <param name="accessingType">The type from which the field or property must be accessible.</param>
+    /// <returns>The field or property symbol, or <see langword="null"/> when none is found.</returns>
+    internal static ISymbol? LocateAccessibleFieldOrPropertyInTypeHierarchy(
+        this Compilation compilation,
+        INamedTypeSymbol typeSymbol,
+        string name,
+        INamedTypeSymbol accessingType)
+    {
+        INamedTypeSymbol? currentType = typeSymbol;
+        while (currentType is not null)
+        {
+            var metadataName = currentType.GetMetadataName();
+            var resolvedType = compilation.GetTypeByMetadataName(metadataName) ?? currentType;
+
+            var matchingProperties = resolvedType
+                .GetMembers()
+                .OfType<IPropertySymbol>()
+                .Where(property =>
+                    property.Name.Equals(name, StringComparison.Ordinal) &&
+                    compilation.IsSymbolAccessibleWithin(property, accessingType))
+                .ToArray();
+
+            var matchingFields = resolvedType
+                .GetMembers()
+                .OfType<IFieldSymbol>()
+                .Where(field =>
+                    field.Name.Equals(name, StringComparison.Ordinal) &&
+                    compilation.IsSymbolAccessibleWithin(field, accessingType))
+                .ToArray();
+
+            if (matchingProperties.Length == 0 && matchingFields.Length == 0)
+            {
+                currentType = currentType.BaseType;
+                continue;
+            }
+
+            var matchingSymbols = matchingProperties
+                .Cast<ISymbol>()
+                .Concat(matchingFields)
+                .ToArray();
+
+            if (matchingSymbols.Length != 1)
+            {
+                return null;
+            }
+
+            return matchingSymbols[0];
+        }
+
+        return null;
+    }
 }
