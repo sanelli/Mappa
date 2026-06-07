@@ -1,0 +1,70 @@
+---
+description: Mappa development workflow — planning, code, git, versioning, tests, and samples
+alwaysApply: true
+---
+
+# Mappa Development Workflow
+
+## Planning
+
+- Maintain a **1:1 mapping** between TODOs and plan steps.
+- Generated code **must compile** and **all tests must pass** before finishing.
+- Add numbers to TODOs and steps.
+
+## Code
+- Always apply the code changes in the following order:
+   1. Mappa
+   2. Mappa.Tests
+   3. Mappa.Generator
+   4. Mappa.Generator.Tests
+   5. Mappa.Samples
+   6. Mappa.Samples.Tests
+   7. Mappa.Samples.Aot
+   8. Mappa.Benchmark
+   9. Mappa.Dependency.Bson
+   10. Mappa.Dependency.Bson.DependencyInjection
+   11. Mappa.Dependency.Bson.Tests
+   12. Mappa.Dependency.Bson.DependencyInjection.Tests
+   13. Mappa.Dependency.Protobuf
+   14. Mappa.Dependency.Protobuf.DependencyInjection
+   15. Mappa.Dependency.Protobuf.Tests
+   16. Mappa.Dependency.Protobuf.DependencyInjection.Tests
+   17. Documentation
+
+## Git
+
+- **Never** create a branch unless instructed. When asked to create one, branch from `main`.
+- **Never** commit unless instructed.
+- **Never** push unless instructed.
+- When asked to commit, the message **must start with the GitHub issue** (e.g. `#123 ...`). If no issue is provided, ask the user for one.
+- Do not query GitHub to read the issue provided, unless instructed.
+
+## Versioning
+
+After modifying **Mappa** or **Mappa.Generator**:
+
+1. Increase the alpha version in `MappaVersion.targets` (at least one change is required).
+2. Run `./Scripts/RebuildUponVersionChange.ps1`.
+
+- Run tests **before** generating a new Mappa version; no version bump is needed just to run tests.
+
+## Tests
+
+- Update tests after changing a project.
+- Cover **happy path and negative paths** where possible.
+- For **Mappa.Generator**, test error/warning messages and corner cases.
+- When adding samples in **Mappa.Samples**, also update **Mappa.Samples.Aot**.
+
+## Samples
+
+- Add samples in **Mappa.Samples** after **Mappa.Generator** changes that add features or enhance existing behavior.
+- **Do not** add new samples for bug fixes alone.
+- Before adding samples increase version and rebuild as described.
+
+## Final Step
+
+Always end with:
+
+```bash
+./Scripts/RunTestsAndReportCoverage.ps1
+```
