@@ -242,5 +242,11 @@ namespace Mappa.Generator.Diagnostics {
                 return ResourceManager.GetString("MappingAttributeTargetPropertyOrParameterDoesNotExist", resourceCulture);
             }
         }
+        
+        internal static string TooManyMappaIgnoreTargetPropertyAttributesForTheSameTargetProperty {
+            get {
+                return ResourceManager.GetString("TooManyMappaIgnoreTargetPropertyAttributesForTheSameTargetProperty", resourceCulture);
+            }
+        }
     }
 }

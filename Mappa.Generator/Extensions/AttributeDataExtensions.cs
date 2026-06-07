@@ -27,6 +27,7 @@ internal static class AttributeDataExtensions
     private static readonly string MappaDependencyAttributeFullName = typeof(MappaDependencyAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaDependencyAttribute)}");
     private static readonly string MappaStaticDependencyAttributeFullName = typeof(MappaStaticDependencyAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaStaticDependencyAttribute)}");
     private static readonly string MappaAssignFromConstantAttributeFullName = typeof(MappaAssignFromConstantAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaAssignFromConstantAttribute)}");
+    private static readonly string MappaIgnoreTargetPropertyAttributeFullName = typeof(MappaIgnoreTargetPropertyAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaIgnoreTargetPropertyAttribute)}");
     private static readonly string MappaTypeMappingAttributeFullName = typeof(MappaTypeMappingAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaTypeMappingAttribute)}");
     private static readonly string MappaTypeMappingDefaultAttributeFullName = typeof(MappaTypeMappingDefaultAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaTypeMappingDefaultAttribute)}");
 
@@ -314,6 +315,30 @@ internal static class AttributeDataExtensions
         }
 
         return [..results];
+    }
+
+    /// <summary>
+    /// Gets the <see cref="MappaIgnoreTargetPropertyAttribute"/>s applied.
+    /// </summary>
+    /// <param name="attributes">The attributes.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The <see cref="MappaIgnoreTargetPropertyAttribute"/> applied.</returns>
+    internal static MappaIgnoreTargetPropertyAttribute[] GetMappaIgnoreTargetPropertyAttributes(this ImmutableArray<AttributeData> attributes, Compilation compilation)
+    {
+        var mappaIgnoreTargetPropertyAttributeSymbol = compilation.GetTypeByMetadataName(MappaIgnoreTargetPropertyAttributeFullName);
+        List<MappaIgnoreTargetPropertyAttribute> results = new();
+        foreach (var constructorArguments in attributes
+                     .Where(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, mappaIgnoreTargetPropertyAttributeSymbol))
+                     .Select(attributeData => attributeData.ConstructorArguments))
+        {
+            if (constructorArguments.Length == 1 &&
+                constructorArguments[0].Value is string targetPropertyName)
+            {
+                results.Add(new MappaIgnoreTargetPropertyAttribute(targetPropertyName));
+            }
+        }
+
+        return [.. results];
     }
 
     /// <summary>

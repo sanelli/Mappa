@@ -537,4 +537,23 @@ internal static class MappaDiagnostics
             attributeName,
             targetName,
             targetTypeName);
+
+    /// <summary>
+    /// Diagnostic to report the fact that <paramref name="methodDeclarationSyntax"/>
+    /// has multiple attributes of type <see cref="MappaIgnoreTargetPropertyAttribute"/>
+    /// targeting the same <paramref name="property"/>.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="methodName">The name of the method.</param>
+    /// <param name="property">The property that is targeted by multiple ignore attributes.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic TooManyMappaIgnoreTargetPropertyAttributesForTheSameTargetProperty(
+        MethodDeclarationSyntax methodDeclarationSyntax,
+        string methodName,
+        string property)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.TooManyMappaIgnoreTargetPropertyAttributesForTheSameTargetProperty,
+            methodDeclarationSyntax.GetLocation(),
+            methodName,
+            property);
 }

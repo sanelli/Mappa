@@ -30,7 +30,7 @@
         <value>Cannot identify a mapping strategy from type '{0}' to type '{1}'.</value>
     </data>
     <data name="MultipleAttributesTargetTheSamePropertyOrParameter" xml:space="preserve">
-        <value>Multiple mapping attributes on method '{0}' target property or constructor parameter '{1}'.</value>
+        <value>Method '{0}' has multiple attributes targeting property or constructor parameter '{1}'.</value>
     </data>
     <data name="CannotDetectSuitableMethodToInvokeForParameter" xml:space="preserve">
         <value>Cannot identify a method with name '{0}' in class '{1}' for target property or constructor parameter '{2}'.</value>
@@ -109,5 +109,8 @@
     </data>
     <data name="MappingAttributeTargetPropertyOrParameterDoesNotExist" xml:space="preserve">
         <value>Method '{0}' defines '{1}' targeting '{2}', but no matching property or constructor parameter exists on type '{3}'.</value>
+    </data>
+    <data name="TooManyMappaIgnoreTargetPropertyAttributesForTheSameTargetProperty" xml:space="preserve">
+        <value>Method '{0}' has multiple MappaIgnoreTargetProperty attributes targeting the same property '{1}'.</value>
     </data>
 </root>

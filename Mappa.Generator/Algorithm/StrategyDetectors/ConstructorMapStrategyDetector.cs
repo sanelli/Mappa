@@ -52,6 +52,7 @@ internal sealed class ConstructorMapStrategyDetector
         mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
 
         this.context.ValidateTargetNamesExist(this.compilation);
+        this.context.ValidateMappaIgnoreTargetPropertyAttributes();
 
         // 01. Constructor TargetType(SourceType input) exists -> InvokeMappingConstructorStrategy ( IMapStrategy(T.InputParameterType, S) )
         if (this.CanInvokeMappingConstructor(out var invokeConstructor, out var argumentStrategy))
@@ -359,11 +360,15 @@ internal sealed class ConstructorMapStrategyDetector
             var allTargetProperties = this.context.TargetType.GetTypeProperties().ToArray();
 
             // Gets the target properties
-            // TODO [#3] Allow to ignore some target properties when looking for for one empty constructor mapping.
+            var ignoredTargetPropertyNames = this.GetIgnoredTargetPropertyNames();
+
             var targetProperties = allTargetProperties
 
                 // Ignore indexer properties.
                 .Where(property => !property.IsIndexer)
+
+                // Ignore properties marked via MappaIgnoreTargetPropertyAttribute.
+                .Where(property => !ignoredTargetPropertyNames.Contains(property.Name))
                 .ToArray();
 
             // If no target properties exist, then there is no point in applying this strategy
@@ -608,6 +613,21 @@ internal sealed class ConstructorMapStrategyDetector
         }
 
         return strategy is not NoMapStrategy;
+    }
+
+    private HashSet<string> GetIgnoredTargetPropertyNames()
+    {
+        if (this.context.AlgorithmSettings.UseAttributesForConstructorDetectorSettings
+                .Equals(MappaMapAlgorithmContextSettings.MappaAttributesForConstructorDetectorSettings.Disable)
+            || this.context.MapMethod is null)
+        {
+            return new HashSet<string>(StringComparer.Ordinal);
+        }
+
+        return new HashSet<string>(
+            this.context.MapMethod.GetAttributes<MappaIgnoreTargetPropertyAttribute>()
+                .Select(attribute => attribute.TargetPropertyName),
+            StringComparer.Ordinal);
     }
 
     private bool TryGetStrategyBetweenTypes(

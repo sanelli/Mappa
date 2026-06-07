@@ -47,6 +47,7 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? mappaUsePropertySourcePropertyWillNotBeUsed;
     private static DiagnosticDescriptor? mappaUsePropertyNotUsedByInvokeMethod;
     private static DiagnosticDescriptor? mappingAttributeTargetPropertyOrParameterDoesNotExist;
+    private static DiagnosticDescriptor? tooManyMappaIgnoreTargetPropertyAttributesForTheSameTargetProperty;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -311,6 +312,14 @@ internal static class MappaDiagnosticDescriptors
         => mappingAttributeTargetPropertyOrParameterDoesNotExist ??= BuildWarning(
             MappaDiagnosticsKind.MappingAttributeTargetPropertyOrParameterDoesNotExist,
             DiagnosticsResources.MappingAttributeTargetPropertyOrParameterDoesNotExist);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.TooManyMappaIgnoreTargetPropertyAttributesForTheSameTargetProperty"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor TooManyMappaIgnoreTargetPropertyAttributesForTheSameTargetProperty
+        => tooManyMappaIgnoreTargetPropertyAttributesForTheSameTargetProperty ??= BuildError(
+            MappaDiagnosticsKind.TooManyMappaIgnoreTargetPropertyAttributesForTheSameTargetProperty,
+            DiagnosticsResources.TooManyMappaIgnoreTargetPropertyAttributesForTheSameTargetProperty);
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(

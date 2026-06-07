@@ -149,6 +149,14 @@ internal static class AotSampleData
     };
 
     /// <summary>
+    /// Gets a <see cref="MappaIgnoreTargetPropertySourceModel"/> with MappedProperty 17.
+    /// </summary>
+    public static MappaIgnoreTargetPropertySourceModel MappaIgnoreTargetPropertySourceModel17 { get; } = new()
+    {
+        MappedProperty = 17,
+    };
+
+    /// <summary>
     /// Gets a <see cref="SourceClassModel"/> with ParamA 13 and ParamB One.
     /// </summary>
     public static SourceClassModel SourceClassModel13One { get; } = new()

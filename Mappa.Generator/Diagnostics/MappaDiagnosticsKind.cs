@@ -186,4 +186,9 @@ internal enum MappaDiagnosticsKind
     /// A mapping attribute targets a property or constructor parameter that does not exist on the target type.
     /// </summary>
     MappingAttributeTargetPropertyOrParameterDoesNotExist,
+
+    /// <summary>
+    /// A method has multiple <see cref="MappaIgnoreTargetPropertyAttribute"/>s for the same property.
+    /// </summary>
+    TooManyMappaIgnoreTargetPropertyAttributesForTheSameTargetProperty,
 }
