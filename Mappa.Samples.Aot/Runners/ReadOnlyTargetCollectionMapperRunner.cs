@@ -42,5 +42,14 @@ internal static class ReadOnlyTargetCollectionMapperRunner
             "TargetProtobufClassWithCollections",
             source,
             mapper.MapToProtobuf(source));
+
+        var specializedSource = AotSampleData.SourceClassWithSpecializedCollections;
+
+        report.RecordInvocation(
+            nameof(ReadOnlyTargetCollectionMapper.MapSpecializedCollections),
+            "SourceClassWithSpecializedCollections",
+            "TargetClassWithSpecializedCollections",
+            specializedSource,
+            mapper.MapSpecializedCollections(specializedSource));
     }
 }

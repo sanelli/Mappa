@@ -214,4 +214,32 @@ public sealed class ReadOnlyTargetCollectionMapperUnitTests
         actual.PropertyG["20"].Should().Be(120);
         actual.PropertyG["21"].Should().Be(121);
     }
+
+    /// <summary>
+    /// Test <see cref="ReadOnlyTargetCollectionMapper.MapSpecializedCollections"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapSpecializedCollections()
+    {
+        // Arrange
+        var source = new SourceClassWithSpecializedCollections(
+            [1, 2, 3],
+            [4, 5, 6],
+            [7, 8, 9],
+            [10, 11, 12],
+            [13, 14, 15],
+            [16, 17, 18]);
+
+        // Act
+        var actual = this.mapper.MapSpecializedCollections(source);
+
+        // Assert
+        actual.PropertyA.Should().BeEquivalentTo("1", "2", "3");
+        actual.PropertyB.Should().BeEquivalentTo("4", "5", "6");
+        actual.PropertyC.Should().BeEquivalentTo("7", "8", "9");
+        actual.PropertyD.Should().BeEquivalentTo("10", "11", "12");
+        actual.PropertyE.Should().BeEquivalentTo("13", "14", "15");
+        actual.PropertyF.Should().BeEquivalentTo("16", "17", "18");
+    }
 }
