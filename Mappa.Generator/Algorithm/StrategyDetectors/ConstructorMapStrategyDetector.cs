@@ -51,6 +51,8 @@ internal sealed class ConstructorMapStrategyDetector
     {
         mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
 
+        this.context.ValidateTargetNamesExist(this.compilation);
+
         // 01. Constructor TargetType(SourceType input) exists -> InvokeMappingConstructorStrategy ( IMapStrategy(T.InputParameterType, S) )
         if (this.CanInvokeMappingConstructor(out var invokeConstructor, out var argumentStrategy))
         {
@@ -683,6 +685,7 @@ internal sealed class ConstructorMapStrategyDetector
                     sourceClassType,
                     sourceProperty,
                     mappaInvokeMethodAttribute,
+                    stringComparison,
                     out strategy);
                 break;
             case MappaAssignFromContextAttribute mappaAssignFromContextAttribute:
@@ -692,16 +695,66 @@ internal sealed class ConstructorMapStrategyDetector
                     mappaAssignFromContextAttribute,
                     ref sourceProperty,
                     out strategy);
+                if (strategy is not NoMapStrategy)
+                {
+                    this.ReportMappaUsePropertySourcePropertyWillNotBeUsedIfPresent(
+                        targetName,
+                        stringComparison,
+                        nameof(MappaAssignFromContextAttribute));
+                }
+
                 break;
             case MappaAssignFromConstantAttribute mappaAssignFromConstantAttribute:
                 TryGetStrategyUsingMappaAssignFromConstantAttribute(
                     targetType,
                     mappaAssignFromConstantAttribute,
                     out strategy);
+                if (strategy is not NoMapStrategy)
+                {
+                    this.ReportMappaUsePropertySourcePropertyWillNotBeUsedIfPresent(
+                        targetName,
+                        stringComparison,
+                        nameof(MappaAssignFromConstantAttribute));
+                }
+
                 break;
         }
 
         return strategy is not NoMapStrategy;
+    }
+
+    private void ReportMappaUsePropertySourcePropertyWillNotBeUsedIfPresent(
+        string targetName,
+        StringComparison stringComparison,
+        string conflictingAttributeName)
+    {
+        if (this.context.MapMethod is null)
+        {
+            return;
+        }
+
+        var methodDeclarationSyntax = this.context.MapMethod.MethodDeclarationSyntax;
+        if (methodDeclarationSyntax is null)
+        {
+            return;
+        }
+
+        var usePropertyAttributes = this.context.MapMethod
+            .GetAttributes<MappaUsePropertyAttribute>()
+            .Where(attribute => attribute.TargetPropertyName.Equals(targetName, stringComparison))
+            .ToArray();
+
+        if (usePropertyAttributes.Length != 1)
+        {
+            return;
+        }
+
+        this.context.ReportDiagnostic(MappaDiagnostics.MappaUsePropertySourcePropertyWillNotBeUsed(
+            methodDeclarationSyntax,
+            this.context.GetRootMapMethod().MethodName,
+            targetName,
+            usePropertyAttributes[0].SourcePropertyName,
+            conflictingAttributeName));
     }
 
     private void TryGetStrategyUsingMappaAssignFromContextAttribute(
@@ -736,6 +789,7 @@ internal sealed class ConstructorMapStrategyDetector
         ITypeSymbol sourceClassType,
         IPropertySymbol? sourceProperty,
         MappaInvokeMethodAttribute mappaInvokeMethodAttribute,
+        StringComparison stringComparison,
         out MapStrategy strategy)
     {
         strategy = new NoMapStrategy(targetType, null!);
@@ -852,6 +906,26 @@ internal sealed class ConstructorMapStrategyDetector
             method,
             sourceProperty,
             this.context.MapMethod.NullableEnabled);
+
+        var usePropertyAttributes = mapMethod
+            .GetAttributes<MappaUsePropertyAttribute>()
+            .Where(attribute => attribute.TargetPropertyName.Equals(targetName, stringComparison))
+            .ToArray();
+
+        if (usePropertyAttributes.Length == 1 &&
+            !method.UsesSourceProperty(
+                this.compilation,
+                sourceProperty,
+                sourceClassType,
+                this.context.IsNullableEnabled()))
+        {
+            this.context.ReportDiagnostic(MappaDiagnostics.MappaUsePropertyNotUsedByInvokeMethod(
+                mapMethodMethodDeclarationSyntax,
+                this.context.GetRootMapMethod().MethodName,
+                targetName,
+                usePropertyAttributes[0].SourcePropertyName,
+                mappaInvokeMethodAttribute.MethodName));
+        }
 
         static IMethodSymbol? GetBestMethodSymbol(
             Compilation compilation,

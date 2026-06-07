@@ -169,4 +169,21 @@ internal enum MappaDiagnosticsKind
     /// The field of property must be static in order to be corretly used.
     /// </summary>
     FieldOrPropertyMustBeStatic,
+
+    /// <summary>
+    /// A <see cref="MappaUsePropertyAttribute"/> source property will not be used because
+    /// another mapping attribute targets the same property or constructor parameter.
+    /// </summary>
+    MappaUsePropertySourcePropertyWillNotBeUsed,
+
+    /// <summary>
+    /// A <see cref="MappaUsePropertyAttribute"/> source property will not be used because
+    /// the method invoked via <see cref="MappaInvokeMethodAttribute"/> does not require it.
+    /// </summary>
+    MappaUsePropertyNotUsedByInvokeMethod,
+
+    /// <summary>
+    /// A mapping attribute targets a property or constructor parameter that does not exist on the target type.
+    /// </summary>
+    MappingAttributeTargetPropertyOrParameterDoesNotExist,
 }
