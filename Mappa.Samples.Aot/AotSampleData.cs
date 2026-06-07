@@ -302,6 +302,17 @@ internal static class AotSampleData
         });
 
     /// <summary>
+    /// Gets a source class with specialized readonly collection targets.
+    /// </summary>
+    public static SourceClassWithSpecializedCollections SourceClassWithSpecializedCollections { get; } = new(
+        [1, 2, 3],
+        [4, 5, 6],
+        [7, 8, 9],
+        [10, 11, 12],
+        [13, 14, 15],
+        [16, 17, 18]);
+
+    /// <summary>
     /// Gets a protobuf optional source model with values set.
     /// </summary>
     public static SourceProtobufOptionalModel SourceProtobufOptionalModelWithValues { get; } = new()

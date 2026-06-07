@@ -470,6 +470,23 @@ internal static class TypeSymbolExtensions
         => typeSymbol.IsICollection() || typeSymbol.ImplementICollection();
 
     /// <summary>
+    /// Check if the type is a collection that can be filled after constructor invocation
+    /// on a get-only or inaccessible-setter property.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol can be filled post-construction.</returns>
+    internal static bool IsPostInitializationCollectionType(this ITypeSymbol typeSymbol, Compilation compilation)
+        => typeSymbol.IsOrImplementIDictionary(compilation)
+           || typeSymbol.IsOrImplementICollection()
+           || typeSymbol.IsOrDerivedFromStack(compilation)
+           || typeSymbol.IsOrDerivedFromConcurrentStack(compilation)
+           || typeSymbol.IsOrDerivedFromQueue(compilation)
+           || typeSymbol.IsOrImplementConcurrentQueue(compilation)
+           || typeSymbol.IsOrDerivedFromConcurrentBag(compilation)
+           || typeSymbol.IsOrDerivedFromBlockingCollection(compilation);
+
+    /// <summary>
     /// Check if the type is <see cref="ICollection{T}"/> or implements <see cref="ICollection{T}"/>.
     /// </summary>
     /// <param name="typeSymbol">The type symbol.</param>

@@ -136,4 +136,5 @@ the source generator attempt to identify a mapping from `TSource` to `TTarget` b
         - Get-only dictionary or collection properties for which a mapper exists are filled with mapped values from the corresponding source;
     - _Notes_:
         - Explicit interface implementation is supported for get-only dictionary and collection properties;
+        - Get-only `Stack<T>`, `Queue<T>`, `ConcurrentStack<T>`, `ConcurrentQueue<T>`, `ConcurrentBag<T>`, and `BlockingCollection<T>` properties are filled post-construction using `Push`, `Enqueue`, or `Add` respectively;
         - Multiple [Mappa](https://www.nuget.org/packages/Mappa/) attributes can change the behaviour of the mapping;

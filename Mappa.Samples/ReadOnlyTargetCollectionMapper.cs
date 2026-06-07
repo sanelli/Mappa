@@ -34,4 +34,11 @@ public sealed partial class ReadOnlyTargetCollectionMapper
     /// <param name="source">The source.</param>
     /// <returns>The target mapped from source.</returns>
     public partial TargetProtobufClassWithCollections MapToProtobuf(SourceClassWithCollections source);
+
+    /// <summary>
+    /// Map from <see cref="SourceClassWithSpecializedCollections"/> to <see cref="TargetClassWithSpecializedCollections"/>.
+    /// </summary>
+    /// <param name="source">The source.</param>
+    /// <returns>The target mapped from source.</returns>
+    public partial TargetClassWithSpecializedCollections MapSpecializedCollections(SourceClassWithSpecializedCollections source);
 }

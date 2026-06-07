@@ -5,14 +5,25 @@ alwaysApply: true
 
 # Mappa Development Workflow
 
+## Terminal
+
+The development environment uses **PowerShell**. All commands run in the terminal must be PowerShell-compliant:
+
+- Invoke scripts with `.\Scripts\ScriptName.ps1` (e.g. `.\Scripts\RunTestsAndReportCoverage.ps1`).
+- Use PowerShell path separators (`\`) and quoting rules.
+- Prefer PowerShell cmdlets and syntax over bash/sh equivalents.
+
 ## Planning
 
-- Maintain a **1:1 mapping** between TODOs and plan steps.
+- **Always** create a plan with numbered steps before starting implementation.
+- **Always** create numbered TODOs that mirror the plan.
+- Maintain a **1:1 mapping** between TODOs and plan steps: each TODO must correspond to exactly one plan step, and vice versa.
+- **Step numbers must match TODO numbers** (e.g. plan step `3.` ↔ TODO `3`).
 - Generated code **must compile** and **all tests must pass** before finishing.
-- Add numbers to TODOs and steps.
 
 ## Code
-- Always apply the code changes in the following order:
+
+- Apply code changes in the following order:
    1. Mappa
    2. Mappa.Tests
    3. Mappa.Generator
@@ -31,6 +42,12 @@ alwaysApply: true
    16. Mappa.Dependency.Protobuf.DependencyInjection.Tests
    17. Documentation
 
+## Coding Standards
+
+- Coding standards are **strict**. Diagnostic IDs prefixed with `SA` come from **StyleCop**; IDs prefixed with `S` come from **Sonar Analyzer**.
+- Fix all StyleCop and Sonar Analyzer violations before finishing.
+- If a violation persists after **two** fix attempts, stop and ask the user for help.
+
 ## Git
 
 - **Never** create a branch unless instructed. When asked to create one, branch from `main`.
@@ -38,13 +55,14 @@ alwaysApply: true
 - **Never** push unless instructed.
 - When asked to commit, the message **must start with the GitHub issue** (e.g. `#123 ...`). If no issue is provided, ask the user for one.
 - Do not query GitHub to read the issue provided, unless instructed.
+- Before finishing work for a GitHub issue, remove any TODOs related to that issue. If no GitHub issue was provided, ask the user for one.
 
 ## Versioning
 
 After modifying **Mappa** or **Mappa.Generator**:
 
 1. Increase the alpha version in `MappaVersion.targets` (at least one change is required).
-2. Run `./Scripts/RebuildUponVersionChange.ps1`.
+2. Run `.\Scripts\RebuildUponVersionChange.ps1`.
 
 - Run tests **before** generating a new Mappa version; no version bump is needed just to run tests.
 
@@ -59,12 +77,12 @@ After modifying **Mappa** or **Mappa.Generator**:
 
 - Add samples in **Mappa.Samples** after **Mappa.Generator** changes that add features or enhance existing behavior.
 - **Do not** add new samples for bug fixes alone.
-- Before adding samples increase version and rebuild as described.
+- Before adding samples, increase the version and rebuild as described in **Versioning**.
 
 ## Final Step
 
 Always end with:
 
-```bash
-./Scripts/RunTestsAndReportCoverage.ps1
+```powershell
+.\Scripts\RunTestsAndReportCoverage.ps1
 ```
