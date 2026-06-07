@@ -7,9 +7,11 @@ alwaysApply: true
 
 ## Planning
 
-- Maintain a **1:1 mapping** between TODOs and plan steps.
+- **Always** create a plan with numbered steps before starting implementation.
+- **Always** create numbered TODOs that mirror the plan.
+- Maintain a **1:1 mapping** between TODOs and plan steps: each TODO must correspond to exactly one plan step, and vice versa.
+- **Step numbers must match TODO numbers** (e.g. plan step `3.` ↔ TODO `3`).
 - Generated code **must compile** and **all tests must pass** before finishing.
-- Number TODOs and plan steps.
 
 ## Code
 
