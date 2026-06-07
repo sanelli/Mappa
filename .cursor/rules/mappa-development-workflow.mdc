@@ -5,6 +5,14 @@ alwaysApply: true
 
 # Mappa Development Workflow
 
+## Terminal
+
+The development environment uses **PowerShell**. All commands run in the terminal must be PowerShell-compliant:
+
+- Invoke scripts with `.\Scripts\ScriptName.ps1` (e.g. `.\Scripts\RunTestsAndReportCoverage.ps1`).
+- Use PowerShell path separators (`\`) and quoting rules.
+- Prefer PowerShell cmdlets and syntax over bash/sh equivalents.
+
 ## Planning
 
 - **Always** create a plan with numbered steps before starting implementation.
@@ -54,7 +62,7 @@ alwaysApply: true
 After modifying **Mappa** or **Mappa.Generator**:
 
 1. Increase the alpha version in `MappaVersion.targets` (at least one change is required).
-2. Run `./Scripts/RebuildUponVersionChange.ps1`.
+2. Run `.\Scripts\RebuildUponVersionChange.ps1`.
 
 - Run tests **before** generating a new Mappa version; no version bump is needed just to run tests.
 
@@ -75,6 +83,6 @@ After modifying **Mappa** or **Mappa.Generator**:
 
 Always end with:
 
-```bash
-./Scripts/RunTestsAndReportCoverage.ps1
+```powershell
+.\Scripts\RunTestsAndReportCoverage.ps1
 ```
