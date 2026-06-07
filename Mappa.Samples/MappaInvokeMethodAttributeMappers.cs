@@ -528,6 +528,85 @@ public sealed partial class MapEmptyConstructorWithStaticFieldAndStaticMapMethod
 }
 
 /// <summary>
+/// Map from <see cref="SourceClassModel"/> to <see cref="TargetClassModel"/>
+/// using:
+/// <list type="table">
+/// <item><term>Mapping mode</term><description>Empty constructor.</description></item>
+/// <item><term>Custom method location</term><description>Mapper base class.</description></item>
+/// <item><term>Custom method is static</term><description><c>true</c>.</description></item>
+/// <item><term>Custom method input(s)</term><description><see cref="SourceClassModel"/> and <see cref="int"/>.</description></item>
+/// </list>
+/// </summary>
+public class MapEmptyConstructorWithMethodFromMapperBaseClassBase
+{
+    /// <summary>
+    /// Custom map to a <see cref="string"/>.
+    /// </summary>
+    /// <param name="source">The source.</param>
+    /// <param name="property">The property.</param>
+    /// <returns>The mapped string.</returns>
+    protected static string CustomMap(SourceClassModel source, int property)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        return $"{nameof(MapEmptyConstructorWithMethodFromMapperBaseClass)}/mapper-base/static/({nameof(SourceClassModel)},int)/{source.ParamA}/{source.ParamB}/{property}";
+    }
+}
+
+/// <summary>
+/// Map from <see cref="SourceClassModel"/> to <see cref="TargetClassModel"/>
+/// using a method declared on a mapper base class.
+/// </summary>
+[Mappa]
+public sealed partial class MapEmptyConstructorWithMethodFromMapperBaseClass
+    : MapEmptyConstructorWithMethodFromMapperBaseClassBase
+{
+    /// <summary>
+    /// Map from <see cref="SourceClassModel"/> to <see cref="TargetClassModel"/>
+    /// using a method declared on a mapper base class.
+    /// </summary>
+    /// <param name="source">The source model to map.</param>
+    /// <returns>The mapped object.</returns>
+    [MappaInvokeMethod(nameof(TargetClassModel.ParamA), nameof(CustomMap))]
+    public partial TargetClassModel Map(SourceClassModel source);
+}
+
+/// <summary>
+/// Map from <see cref="SourceClassModel"/> to <see cref="TargetClassModel"/>
+/// using:
+/// <list type="table">
+/// <item><term>Mapping mode</term><description>Empty constructor.</description></item>
+/// <item><term>Custom method location</term><description>Field declared on a mapper base class.</description></item>
+/// <item><term>Custom method is static</term><description><c>false</c>.</description></item>
+/// <item><term>Custom method input(s)</term><description><see cref="SourceClassModel"/> and <see cref="int"/>.</description></item>
+/// </list>
+/// </summary>
+public class MapEmptyConstructorWithFieldFromMapperBaseClassBase
+{
+    /// <summary>
+    /// Gets the dependency declared on the mapper base class.
+    /// </summary>
+    protected MapperDependencyHelper Dependency { get; } = new();
+}
+
+/// <summary>
+/// Map from <see cref="SourceClassModel"/> to <see cref="TargetClassModel"/>
+/// using a field declared on a mapper base class.
+/// </summary>
+[Mappa]
+public sealed partial class MapEmptyConstructorWithFieldFromMapperBaseClass
+    : MapEmptyConstructorWithFieldFromMapperBaseClassBase
+{
+    /// <summary>
+    /// Map from <see cref="SourceClassModel"/> to <see cref="TargetClassModel"/>
+    /// using a field declared on a mapper base class.
+    /// </summary>
+    /// <param name="source">The source model to map.</param>
+    /// <returns>The mapped object.</returns>
+    [MappaInvokeMethod(nameof(TargetClassModel.ParamA), nameof(Dependency), nameof(MapperDependencyHelper.Map))]
+    public partial TargetClassModel Map(SourceClassModel source);
+}
+
+/// <summary>
 /// Mapper helper method that can be invoked by other classes.
 /// </summary>
 public sealed class MapperDependencyHelper
