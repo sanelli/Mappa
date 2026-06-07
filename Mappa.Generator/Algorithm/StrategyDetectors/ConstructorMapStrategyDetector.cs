@@ -52,6 +52,7 @@ internal sealed class ConstructorMapStrategyDetector
         mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
 
         this.context.ValidateTargetNamesExist(this.compilation);
+        this.context.ValidateMappaIgnoreTargetPropertyAttributes();
 
         // 01. Constructor TargetType(SourceType input) exists -> InvokeMappingConstructorStrategy ( IMapStrategy(T.InputParameterType, S) )
         if (this.CanInvokeMappingConstructor(out var invokeConstructor, out var argumentStrategy))

@@ -67,6 +67,10 @@ internal static class MethodSymbolExtensions
         var assignFromConstantAttributes = attributes.GetMappaAssignFromConstantAttributes(compilation);
         result.AddRange(assignFromConstantAttributes);
 
+        // Mappa Ignore Target Property Attributes
+        var ignoreTargetPropertyAttributes = attributes.GetMappaIgnoreTargetPropertyAttributes(compilation);
+        result.AddRange(ignoreTargetPropertyAttributes);
+
         // Mappa type mapping attributes
         var typeMappingAttributes = attributes.GetTypeMappingAttributes(compilation);
         result.AddRange(typeMappingAttributes);

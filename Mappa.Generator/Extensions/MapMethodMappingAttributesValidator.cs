@@ -78,6 +78,84 @@ internal static class MapMethodMappingAttributesValidator
                 targetName,
                 targetTypeName));
         }
+
+        foreach (var ignoreAttribute in mapMethod.GetAttributes<MappaIgnoreTargetPropertyAttribute>()
+                     .Where(attribute => !propertyNames.Contains(attribute.TargetPropertyName)))
+        {
+            context.ReportDiagnostic(MappaDiagnostics.MappingAttributeTargetPropertyOrParameterDoesNotExist(
+                methodDeclarationSyntax,
+                methodName,
+                nameof(MappaIgnoreTargetPropertyAttribute),
+                ignoreAttribute.TargetPropertyName,
+                targetTypeName));
+        }
+    }
+
+    /// <summary>
+    /// Reports errors when <see cref="MappaIgnoreTargetPropertyAttribute"/> declarations
+    /// are duplicated or conflict with other target-name mapping attributes.
+    /// </summary>
+    /// <param name="context">The mapping algorithm context.</param>
+    internal static void ValidateMappaIgnoreTargetPropertyAttributes(this MappaMapAlgorithmContext context)
+    {
+        if (context.MapMethod is null)
+        {
+            return;
+        }
+
+        if (context.AlgorithmSettings.UseAttributesForConstructorDetectorSettings
+            .Equals(MappaMapAlgorithmContextSettings.MappaAttributesForConstructorDetectorSettings.Disable))
+        {
+            return;
+        }
+
+        var mapMethod = context.MapMethod;
+        var methodDeclarationSyntax = mapMethod.MethodDeclarationSyntax;
+        if (methodDeclarationSyntax is null)
+        {
+            return;
+        }
+
+        var ignoreAttributes = mapMethod.GetAttributes<MappaIgnoreTargetPropertyAttribute>();
+        if (ignoreAttributes.Length == 0)
+        {
+            return;
+        }
+
+        var methodName = context.GetRootMapMethod().MethodName;
+
+        foreach (var duplicateTarget in ignoreAttributes
+                     .GroupBy(attribute => attribute.TargetPropertyName, StringComparer.Ordinal)
+                     .Where(group => group.Count() > 1)
+                     .Select(group => group.Key))
+        {
+            context.ReportDiagnostic(MappaDiagnostics.TooManyMappaIgnoreTargetPropertyAttributesForTheSameTargetProperty(
+                methodDeclarationSyntax,
+                methodName,
+                duplicateTarget));
+        }
+
+        var otherTargetPropertyNames = mapMethod.GetAttributes<MappaUsePropertyAttribute>()
+            .Select(attribute => attribute.TargetPropertyName)
+            .Concat(mapMethod.GetAttributes<MappaInvokeMethodAttribute>()
+                .Select(attribute => attribute.TargetPropertyName))
+            .Concat(mapMethod.GetAttributes<MappaAssignFromContextAttribute>()
+                .Select(attribute => attribute.TargetPropertyName))
+            .Concat(mapMethod.GetAttributes<MappaAssignFromConstantAttribute>()
+                .Select(attribute => attribute.TargetPropertyName))
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+
+        foreach (var ignoredPropertyName in ignoreAttributes
+                     .Select(attribute => attribute.TargetPropertyName)
+                     .Distinct(StringComparer.Ordinal)
+                     .Where(ignoredPropertyName => otherTargetPropertyNames.Any(
+                         targetName => targetName.Equals(ignoredPropertyName, StringComparison.Ordinal))))
+        {
+            context.ReportDiagnostic(MappaDiagnostics.MultipleAttributesTargetTheSamePropertyOrParameter(
+                methodDeclarationSyntax,
+                ignoredPropertyName));
+        }
     }
 
     private static bool IsValidTargetName(

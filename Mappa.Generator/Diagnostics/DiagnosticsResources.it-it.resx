@@ -30,7 +30,7 @@
         <value>Non è possibile identificare una strategia per mappare dal tipo '{0}' al tipo '{1}'.</value>
     </data>
     <data name="MultipleAttributesTargetTheSamePropertyOrParameter" xml:space="preserve">
-        <value>Molteplici attributi sul metodo '{0}' sono relativi alla medesima proprietà o parametro del costruttore '{1}'.</value>
+        <value>Il metodo '{0}' ha molteplici attributi che puntano alla medesima proprietà o parametro del costruttore '{1}'.</value>
     </data>
     <data name="CannotDetectSuitableMethodToInvokeForParameter" xml:space="preserve">
         <value>Non è possibile identificare un metodo con nome '{0}' nella classe '{1}' per la properietà o il parametro '{2}'.</value>
@@ -109,5 +109,8 @@
     </data>
     <data name="MappingAttributeTargetPropertyOrParameterDoesNotExist" xml:space="preserve">
         <value>Il metodo '{0}' definisce '{1}' con target '{2}', ma nessuna proprietà o parametro del costruttore corrispondente esiste sul tipo '{3}'.</value>
+    </data>
+    <data name="TooManyMappaIgnoreTargetPropertyAttributesForTheSameTargetProperty" xml:space="preserve">
+        <value>Il metodo '{0}' ha molteplici attributi MappaIgnoreTargetProperty per la medesima proprietà '{1}'.</value>
     </data>
 </root>
