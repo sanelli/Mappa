@@ -224,5 +224,23 @@ namespace Mappa.Generator.Diagnostics {
                 return ResourceManager.GetString("FieldOrPropertyMustBeStatic", resourceCulture);
             }
         }
+        
+        internal static string MappaUsePropertySourcePropertyWillNotBeUsed {
+            get {
+                return ResourceManager.GetString("MappaUsePropertySourcePropertyWillNotBeUsed", resourceCulture);
+            }
+        }
+        
+        internal static string MappaUsePropertyNotUsedByInvokeMethod {
+            get {
+                return ResourceManager.GetString("MappaUsePropertyNotUsedByInvokeMethod", resourceCulture);
+            }
+        }
+        
+        internal static string MappingAttributeTargetPropertyOrParameterDoesNotExist {
+            get {
+                return ResourceManager.GetString("MappingAttributeTargetPropertyOrParameterDoesNotExist", resourceCulture);
+            }
+        }
     }
 }

@@ -44,6 +44,9 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? mappaTypeMappingAttributeSourceTypeNotDeriveOrImplementMapMethodSourceType;
     private static DiagnosticDescriptor? mappaTypeMappingAttributeTargetTypeNotDeriveOrImplementMapMethodTargetType;
     private static DiagnosticDescriptor? fieldOrPropertyMustBeStatic;
+    private static DiagnosticDescriptor? mappaUsePropertySourcePropertyWillNotBeUsed;
+    private static DiagnosticDescriptor? mappaUsePropertyNotUsedByInvokeMethod;
+    private static DiagnosticDescriptor? mappingAttributeTargetPropertyOrParameterDoesNotExist;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -284,6 +287,30 @@ internal static class MappaDiagnosticDescriptors
         => fieldOrPropertyMustBeStatic ??= BuildError(
             MappaDiagnosticsKind.FieldOrPropertyMustBeStatic,
             DiagnosticsResources.FieldOrPropertyMustBeStatic);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MappaUsePropertySourcePropertyWillNotBeUsed"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MappaUsePropertySourcePropertyWillNotBeUsed
+        => mappaUsePropertySourcePropertyWillNotBeUsed ??= BuildWarning(
+            MappaDiagnosticsKind.MappaUsePropertySourcePropertyWillNotBeUsed,
+            DiagnosticsResources.MappaUsePropertySourcePropertyWillNotBeUsed);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MappaUsePropertyNotUsedByInvokeMethod"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MappaUsePropertyNotUsedByInvokeMethod
+        => mappaUsePropertyNotUsedByInvokeMethod ??= BuildWarning(
+            MappaDiagnosticsKind.MappaUsePropertyNotUsedByInvokeMethod,
+            DiagnosticsResources.MappaUsePropertyNotUsedByInvokeMethod);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MappingAttributeTargetPropertyOrParameterDoesNotExist"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MappingAttributeTargetPropertyOrParameterDoesNotExist
+        => mappingAttributeTargetPropertyOrParameterDoesNotExist ??= BuildWarning(
+            MappaDiagnosticsKind.MappingAttributeTargetPropertyOrParameterDoesNotExist,
+            DiagnosticsResources.MappingAttributeTargetPropertyOrParameterDoesNotExist);
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(

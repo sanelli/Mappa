@@ -465,4 +465,76 @@ internal static class MappaDiagnostics
             MappaDiagnosticDescriptors.FieldOrPropertyMustBeStatic,
             location,
             fieldOrPropertyName);
+
+    /// <summary>
+    /// Diagnostic to report that a <see cref="MappaUsePropertyAttribute"/> source property
+    /// will not be used because another mapping attribute targets the same member.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="methodName">The name of the method.</param>
+    /// <param name="targetName">The target property or constructor parameter name.</param>
+    /// <param name="sourcePropertyName">The source property name from MappaUseProperty.</param>
+    /// <param name="conflictingAttributeName">The name of the conflicting attribute.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappaUsePropertySourcePropertyWillNotBeUsed(
+        MethodDeclarationSyntax methodDeclarationSyntax,
+        string methodName,
+        string targetName,
+        string sourcePropertyName,
+        string conflictingAttributeName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappaUsePropertySourcePropertyWillNotBeUsed,
+            methodDeclarationSyntax.GetLocation(),
+            methodName,
+            targetName,
+            sourcePropertyName,
+            conflictingAttributeName);
+
+    /// <summary>
+    /// Diagnostic to report that a <see cref="MappaUsePropertyAttribute"/> source property
+    /// will not be used because the invoked method does not require it.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="methodName">The name of the method.</param>
+    /// <param name="targetName">The target property or constructor parameter name.</param>
+    /// <param name="sourcePropertyName">The source property name from MappaUseProperty.</param>
+    /// <param name="invokeMethodName">The name of the invoked method.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappaUsePropertyNotUsedByInvokeMethod(
+        MethodDeclarationSyntax methodDeclarationSyntax,
+        string methodName,
+        string targetName,
+        string sourcePropertyName,
+        string invokeMethodName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappaUsePropertyNotUsedByInvokeMethod,
+            methodDeclarationSyntax.GetLocation(),
+            methodName,
+            targetName,
+            sourcePropertyName,
+            invokeMethodName);
+
+    /// <summary>
+    /// Diagnostic to report that a mapping attribute targets a property or constructor
+    /// parameter that does not exist on the target type.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="methodName">The name of the method.</param>
+    /// <param name="attributeName">The name of the mapping attribute.</param>
+    /// <param name="targetName">The target property or constructor parameter name.</param>
+    /// <param name="targetTypeName">The display name of the target type.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappingAttributeTargetPropertyOrParameterDoesNotExist(
+        MethodDeclarationSyntax methodDeclarationSyntax,
+        string methodName,
+        string attributeName,
+        string targetName,
+        string targetTypeName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappingAttributeTargetPropertyOrParameterDoesNotExist,
+            methodDeclarationSyntax.GetLocation(),
+            methodName,
+            attributeName,
+            targetName,
+            targetTypeName);
 }

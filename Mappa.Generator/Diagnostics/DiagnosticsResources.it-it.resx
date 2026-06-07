@@ -101,4 +101,13 @@
     <data name="FieldOrPropertyMustBeStatic" xml:space="preserve">
         <value>Il campo o la proprietà '{0}' deve essere marcata come static per essere utilizzata in questo contesto.</value>
     </data>
+    <data name="MappaUsePropertySourcePropertyWillNotBeUsed" xml:space="preserve">
+        <value>Il metodo '{0}' definisce MappaUseProperty per il target '{1}' (proprietà sorgente '{2}'), ma '{3}' punta allo stesso membro e la proprietà sorgente non verrà utilizzata.</value>
+    </data>
+    <data name="MappaUsePropertyNotUsedByInvokeMethod" xml:space="preserve">
+        <value>Il metodo '{0}' definisce MappaUseProperty per il target '{1}' (proprietà sorgente '{2}'), ma il metodo invocato '{3}' non richiede la proprietà sorgente.</value>
+    </data>
+    <data name="MappingAttributeTargetPropertyOrParameterDoesNotExist" xml:space="preserve">
+        <value>Il metodo '{0}' definisce '{1}' con target '{2}', ma nessuna proprietà o parametro del costruttore corrispondente esiste sul tipo '{3}'.</value>
+    </data>
 </root>
