@@ -2,109 +2,26 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using Mappa.Generator.Exceptions;
-using Mappa.Generator.Extensions;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
-
-using Microsoft.CodeAnalysis;
 
 namespace Mappa.Generator.Builders.Strategies;
 
 /// <summary>
 /// Builder for <see cref="ReadonlyCollectionPropertyMapStrategy"/>.
 /// </summary>
-internal sealed class ReadonlyCollectionPropertyMapStrategyBuilder
+internal sealed class ReadonlyCollectionPropertyMapStrategyBuilder(ReadonlyCollectionPropertyMapStrategy strategy)
     : IMappaStrategyBuilder
 {
-    private readonly ReadonlyCollectionPropertyMapStrategy strategy;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ReadonlyCollectionPropertyMapStrategyBuilder"/> class.
-    /// </summary>
-    /// <param name="strategy">The strategy.</param>
-    public ReadonlyCollectionPropertyMapStrategyBuilder(ReadonlyCollectionPropertyMapStrategy strategy)
-    {
-        this.strategy = strategy;
-    }
-
     /// <inheritdoc/>
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
-    {
-        var stringBuilder = new PrettyCode.StringBuilder();
-        var counterTemporary = context.NextTemporary();
-
-        // For array or lists use a for loop
-        if (this.strategy.SourceType.IsArray() || this.strategy.SourceType.IsOrImplementIList())
-        {
-            stringBuilder.AppendLine($"for (int {counterTemporary} = 0; {counterTemporary} < {source}.{GetLengthPropertyName(this.strategy.SourceType)}; ++{counterTemporary})");
-            using (stringBuilder.CurlyBracesBlock())
-            {
-                var elementTemporary = context.NextTemporary();
-                stringBuilder.AppendLine($"{this.strategy.SourceType.GetElementType().ToDisplayString()} {elementTemporary} = {source}[{counterTemporary}];");
-                var (targetElementTemporary, targetElementCode) = this.strategy.ElementStrategy.GetBuilder().BuildSource(elementTemporary, context, mappaGlobalOptions);
-                if (!string.IsNullOrWhiteSpace(targetElementCode))
-                {
-                    stringBuilder.AppendLine(targetElementCode);
-                }
-
-                AppendIndexer(stringBuilder, context, this.strategy, targetElementTemporary);
-            }
-        }
-
-        // For generic IEnumerable use foreach
-        else
-        {
-            stringBuilder.AppendLine($"foreach ({this.strategy.SourceType.GetElementType().ToDisplayString()} {counterTemporary} in {source})");
-            using (stringBuilder.CurlyBracesBlock())
-            {
-                var (targetElementTemporary, targetElementCode) = this.strategy.ElementStrategy.GetBuilder().BuildSource(counterTemporary, context, mappaGlobalOptions);
-                if (!string.IsNullOrWhiteSpace(targetElementCode))
-                {
-                    stringBuilder.AppendLine(targetElementCode);
-                }
-
-                AppendIndexer(stringBuilder, context, this.strategy, targetElementTemporary);
-            }
-        }
-
-        return (string.Empty, stringBuilder.ToString());
-    }
-
-    private static void AppendIndexer(PrettyCode.StringBuilder stringBuilder, MappaBuilderContext context, ReadonlyCollectionPropertyMapStrategy strategy, string targetElementTemporary)
-    {
-        var elementType = strategy.TargetType.GetElementType();
-        var methodAccessMode = strategy.TargetType.GetInterfaceMethodAccessMode(
-            "Add",
-            "System.Collections.Generic.ICollection",
-            TypeSymbolExtensions.NormalizeType(elementType.ToDisplayString()),
-            returnType => returnType.IsVoid(),
-            [elementType]);
-
-        if (methodAccessMode == InterfaceMethodAccessMode.InterfaceExplicit)
-        {
-            var interfaceTemporary = context.NextTemporary();
-            stringBuilder.AppendLine($"System.Collections.Generic.ICollection<{elementType}> {interfaceTemporary} = {context.GetCompositeTypeTargetName()}.{strategy.TargetProperty.Name};");
-            stringBuilder.AppendLine($"{interfaceTemporary}.Add({targetElementTemporary});");
-        }
-        else
-        {
-            stringBuilder.AppendLine($"{context.GetCompositeTypeTargetName()}.{strategy.TargetProperty.Name}.Add({targetElementTemporary});");
-        }
-    }
-
-    private static string GetLengthPropertyName(ITypeSymbol typeSymbol)
-    {
-        if (typeSymbol.IsArray())
-        {
-            return nameof(Array.Length);
-        }
-
-        if (typeSymbol.IsOrImplementICollection())
-        {
-            return nameof(ICollection<int>.Count);
-        }
-
-        throw new MappaGeneratorException($"Unable to get length property name for {typeSymbol}");
-    }
-}
+        => ReadonlyCollectionPropertyLoopBuilder.BuildSource(
+            strategy.SourceType,
+            strategy.TargetType,
+            strategy.TargetProperty,
+            strategy.ElementStrategy,
+            ReadonlyCollectionPropertyLoopBuilder.InsertionMethod.Add,
+            source,
+            context,
+            mappaGlobalOptions);
+}

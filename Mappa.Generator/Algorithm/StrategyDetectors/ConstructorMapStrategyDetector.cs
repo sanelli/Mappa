@@ -462,6 +462,51 @@ internal sealed class ConstructorMapStrategyDetector
                                     return new PropertyMapStrategy(targetProperty, sourceProperty, dictionaryPropertyStrategy, true);
                                 }
 
+                                // Check if it is or derives from Stack<T> or ConcurrentStack<T>
+                                else if ((targetProperty.Type.IsOrDerivedFromStack(this.compilation)
+                                          || targetProperty.Type.IsOrDerivedFromConcurrentStack(this.compilation))
+                                         && (sourceProperty.Type.IsArray() || sourceProperty.Type.IsOrImplementIEnumerable())
+                                         && this.context.TryGetElementStrategy(
+                                             targetProperty.Type,
+                                             sourceProperty.Type,
+                                             this.compilation,
+                                             out var stackElementStrategy,
+                                             this.cancellationToken))
+                                {
+                                    var stackPropertyStrategy = new ReadonlyStackPropertyMapStrategy(targetProperty, sourceProperty, stackElementStrategy);
+                                    return new PropertyMapStrategy(targetProperty, sourceProperty, stackPropertyStrategy, true);
+                                }
+
+                                // Check if it is or derives from Queue<T> or ConcurrentQueue<T>
+                                else if ((targetProperty.Type.IsOrDerivedFromQueue(this.compilation)
+                                          || targetProperty.Type.IsOrImplementConcurrentQueue(this.compilation))
+                                         && (sourceProperty.Type.IsArray() || sourceProperty.Type.IsOrImplementIEnumerable())
+                                         && this.context.TryGetElementStrategy(
+                                             targetProperty.Type,
+                                             sourceProperty.Type,
+                                             this.compilation,
+                                             out var queueElementStrategy,
+                                             this.cancellationToken))
+                                {
+                                    var queuePropertyStrategy = new ReadonlyQueuePropertyMapStrategy(targetProperty, sourceProperty, queueElementStrategy);
+                                    return new PropertyMapStrategy(targetProperty, sourceProperty, queuePropertyStrategy, true);
+                                }
+
+                                // Check if it is or derives from ConcurrentBag<T> or BlockingCollection<T>
+                                else if ((targetProperty.Type.IsOrDerivedFromConcurrentBag(this.compilation)
+                                          || targetProperty.Type.IsOrDerivedFromBlockingCollection(this.compilation))
+                                         && (sourceProperty.Type.IsArray() || sourceProperty.Type.IsOrImplementIEnumerable())
+                                         && this.context.TryGetElementStrategy(
+                                             targetProperty.Type,
+                                             sourceProperty.Type,
+                                             this.compilation,
+                                             out var addCollectionElementStrategy,
+                                             this.cancellationToken))
+                                {
+                                    var addCollectionPropertyStrategy = new ReadonlyAddCollectionPropertyMapStrategy(targetProperty, sourceProperty, addCollectionElementStrategy);
+                                    return new PropertyMapStrategy(targetProperty, sourceProperty, addCollectionPropertyStrategy, true);
+                                }
+
                                 // Check if it implements ICollection<T>
                                 else if (targetProperty.Type.IsOrImplementICollection()
                                          && (sourceProperty.Type.IsArray() || sourceProperty.Type.IsOrImplementIEnumerable())
@@ -528,9 +573,7 @@ internal sealed class ConstructorMapStrategyDetector
                         foreach (var propertyWithoutStrategy in propertiesWithoutStrategy.Select(propertyStrategy => propertyStrategy.TargetProperty))
                         {
                             // Check if targets a collections that could be filled even without a getter
-                            // TODO [#110] Support more types.
-                            var targetCollections = propertyWithoutStrategy.Type.IsOrImplementIDictionary(this.compilation)
-                                                     || propertyWithoutStrategy.Type.IsOrImplementICollection();
+                            var targetCollections = propertyWithoutStrategy.Type.IsPostInitializationCollectionType(this.compilation);
                             var hasSetter = propertyWithoutStrategy.SetMethod is not null && propertyWithoutStrategy.IsSetterAccessible(this.compilation, this.context.GetRootMapMethod());
 
                             if (hasSetter || targetCollections)
