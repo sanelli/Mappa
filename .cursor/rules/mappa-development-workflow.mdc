@@ -59,12 +59,27 @@ The development environment uses **PowerShell**. All commands run in the termina
 
 ## Versioning
 
-After modifying **Mappa** or **Mappa.Generator**:
+A version bump updates `MappaVersion.targets` and rebuilds all downstream projects via `.\Scripts\RebuildUponVersionChange.ps1`. Each bump requires at least one alpha increment in `MappaVersion.targets`.
 
-1. Increase the alpha version in `MappaVersion.targets` (at least one change is required).
+- Run tests **before** bumping; no version bump is needed just to run tests.
+- Bump whenever **Mappa** or **Mappa.Generator** changes must be consumed by the next project in the workflow — not once at the end of the issue.
+
+### When to bump
+
+| Milestone | Bump? | Why |
+|-----------|-------|-----|
+| **Mappa** changed (new attribute, API, etc.) | Yes, before **Mappa.Generator** work | Generator must compile against the updated Mappa package (`typeof(...)`, `GetTypeByMetadataName`, etc.). |
+| **Mappa.Generator** changed (feature complete, tests pass) | Yes, before **Mappa.Samples** | Samples reference the generator analyzer package; they need the published generator behavior before sample code is added. |
+| **Mappa.Samples** / **Mappa.Samples.Tests** / **Mappa.Samples.Aot** only | No | Sample projects do not modify **Mappa** or **Mappa.Generator**; the prior generator bump is sufficient. |
+| **Documentation** only | No | Docs do not affect package references. |
+| Bug fix in **Mappa.Generator** with no new **Mappa** surface | Yes, once after generator changes (before samples if samples are updated) | Same as any generator change. |
+
+### How to bump
+
+1. Increase the alpha version in `MappaVersion.targets`.
 2. Run `.\Scripts\RebuildUponVersionChange.ps1`.
 
-- Run tests **before** generating a new Mappa version; no version bump is needed just to run tests.
+A single feature may require **two** bumps (e.g. one after **Mappa**, one after **Mappa.Generator**). Do not add a third bump after samples alone.
 
 ## Tests
 
@@ -77,7 +92,7 @@ After modifying **Mappa** or **Mappa.Generator**:
 
 - Add samples in **Mappa.Samples** after **Mappa.Generator** changes that add features or enhance existing behavior.
 - **Do not** add new samples for bug fixes alone.
-- Before adding samples, increase the version and rebuild as described in **Versioning**.
+- Before adding samples, ensure the **Mappa.Generator** version bump and rebuild described in **Versioning** has already been done.
 
 ## Final Step
 
