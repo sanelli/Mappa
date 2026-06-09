@@ -651,7 +651,6 @@ internal sealed class ConstructorMapStrategyDetector
         }
     }
 
-    // TODO [#70] Add support for MappaAssignFromContext.
     private bool TryGetStrategyForPropertyOrArgumentUsingAttributesOnMethod(
         string targetName,
         ITypeSymbol targetType,
@@ -860,7 +859,8 @@ internal sealed class ConstructorMapStrategyDetector
                 sourceClassType,
                 sourceProperty,
                 this.context.IsNullableEnabled(),
-                MethodDetectorMethodStaticRequirement.NotStatic);
+                MethodDetectorMethodStaticRequirement.NotStatic,
+                rootMethod);
         }
         else if (mappaInvokeMethodAttribute.ClassType is not null)
         {
@@ -883,7 +883,8 @@ internal sealed class ConstructorMapStrategyDetector
                 sourceClassType,
                 sourceProperty,
                 this.context.IsNullableEnabled(),
-                MethodDetectorMethodStaticRequirement.Static);
+                MethodDetectorMethodStaticRequirement.Static,
+                rootMethod);
         }
         else
         {
@@ -902,7 +903,8 @@ internal sealed class ConstructorMapStrategyDetector
                 sourceClassType,
                 sourceProperty,
                 this.context.IsNullableEnabled(),
-                staticRequirement);
+                staticRequirement,
+                rootMethod);
         }
 
         if (method is null)
@@ -918,6 +920,10 @@ internal sealed class ConstructorMapStrategyDetector
             return;
         }
 
+        var contextParameterName = method.MethodHasMappaContextParameter(this.compilation)
+            ? rootMethod.MaybeGetMappaContextParameterName()
+            : null;
+
         strategy = new MappaInvokeMethodAttributeStrategy(
             targetType,
             sourceClassType,
@@ -925,7 +931,8 @@ internal sealed class ConstructorMapStrategyDetector
             fieldOrProperty,
             method,
             sourceProperty,
-            this.context.MapMethod.NullableEnabled);
+            this.context.MapMethod.NullableEnabled,
+            contextParameterName);
 
         var usePropertyAttributes = mapMethod
             .GetAttributes<MappaUsePropertyAttribute>()
@@ -956,7 +963,8 @@ internal sealed class ConstructorMapStrategyDetector
             ITypeSymbol sourceClassType,
             IPropertySymbol? sourceProperty,
             bool nullableEnabled,
-            MethodDetectorMethodStaticRequirement isStatic)
+            MethodDetectorMethodStaticRequirement isStatic,
+            MapMethod rootMapMethod)
         {
             var methodsWithTheRightNameAndReturnType = methods
                 .Where(method =>
@@ -972,104 +980,211 @@ internal sealed class ConstructorMapStrategyDetector
                     })
                 .ToArray();
 
-            // No method found :( .
             if (methodsWithTheRightNameAndReturnType.Length == 0)
             {
                 return null;
             }
 
-            // If multiple methods are available first look for one having
-            // two parameters, first one being type source class
-            // and the second being the source property
-            if (sourceProperty is not null)
+            var rootProvidesMappaContext = rootMapMethod.ProvideMappaContextWhenInvoked();
+
+            bool IsExactSourceType(ITypeSymbol parameterType)
+                => parameterType.IsEqualTo(sourceClassType, nullableEnabled);
+
+            bool IsImplicitSourceType(ITypeSymbol parameterType)
+                => IsExactSourceType(parameterType) ||
+                   compilation.HasImplicitConversion(sourceClassType, parameterType);
+
+            bool IsExactSourcePropertyType(ITypeSymbol parameterType)
+                => sourceProperty is not null &&
+                   parameterType.IsEqualTo(sourceProperty.Type, nullableEnabled);
+
+            bool IsImplicitSourcePropertyType(ITypeSymbol parameterType)
+                => sourceProperty is not null &&
+                   (IsExactSourcePropertyType(parameterType) ||
+                    compilation.HasImplicitConversion(sourceProperty.Type, parameterType));
+
+            // Tier 1: source (exact), sourceProperty (exact), MappaContext.
+            if (rootProvidesMappaContext && sourceProperty is not null)
             {
-                var methodWithTwoParameters = Array.Find(
+                var match = Array.Find(
                     methodsWithTheRightNameAndReturnType,
-                    method => method.Parameters.Length == 2 &&
-                                method.Parameters[0].Type.IsEqualTo(sourceClassType, nullableEnabled) &&
-                                method.Parameters[1].Type.IsEqualTo(sourceProperty.Type, nullableEnabled));
-                if (methodWithTwoParameters is not null)
+                    method => method.Parameters.Length == 3 &&
+                              IsExactSourceType(method.Parameters[0].Type) &&
+                              IsExactSourcePropertyType(method.Parameters[1].Type) &&
+                              method.ParameterIsMappaContext(compilation, 2));
+                if (match is not null)
                 {
-                    return methodWithTwoParameters;
+                    return match;
                 }
             }
 
-            // Then look for one having
-            // two parameters, first one being implicitly convertible from source class
-            // and the second being implicitly convertible from source property
+            // Tier 2: source (exact), sourceProperty (exact).
             if (sourceProperty is not null)
             {
-                var methodWithTwoParameters = Array.Find(
+                var match = Array.Find(
                     methodsWithTheRightNameAndReturnType,
                     method => method.Parameters.Length == 2 &&
-                              (method.Parameters[0].Type.IsEqualTo(sourceClassType, nullableEnabled) || compilation.HasImplicitConversion(sourceClassType, method.Parameters[0].Type)) &&
-                              (method.Parameters[1].Type.IsEqualTo(sourceProperty.Type, nullableEnabled) || compilation.HasImplicitConversion(sourceProperty.Type, method.Parameters[1].Type)));
-                if (methodWithTwoParameters is not null)
+                              IsExactSourceType(method.Parameters[0].Type) &&
+                              IsExactSourcePropertyType(method.Parameters[1].Type));
+                if (match is not null)
                 {
-                    return methodWithTwoParameters;
+                    return match;
                 }
             }
 
-            // Then look for one having
-            // one parameter being equal to the type of source class.
-            var methodWithOneParamOfTypeClassType = Array.Find(
-                    methodsWithTheRightNameAndReturnType,
-                    method => method.Parameters.Length == 1 && method.Parameters[0].Type.IsEqualTo(sourceClassType, nullableEnabled));
-            if (methodWithOneParamOfTypeClassType is not null)
+            // Tier 3: source (implicit), sourceProperty (implicit), MappaContext.
+            if (rootProvidesMappaContext && sourceProperty is not null)
             {
-                return methodWithOneParamOfTypeClassType;
+                var match = Array.Find(
+                    methodsWithTheRightNameAndReturnType,
+                    method => method.Parameters.Length == 3 &&
+                              IsImplicitSourceType(method.Parameters[0].Type) &&
+                              IsImplicitSourcePropertyType(method.Parameters[1].Type) &&
+                              method.ParameterIsMappaContext(compilation, 2));
+                if (match is not null)
+                {
+                    return match;
+                }
             }
 
-            // Then look for one having
-            // one parameter being implicitly convertible to the type of source class.
-            var methodWithOneParamOfTypeImplicitConvertibleClassType = Array.Find(
+            // Tier 4: source (implicit), sourceProperty (implicit).
+            if (sourceProperty is not null)
+            {
+                var match = Array.Find(
+                    methodsWithTheRightNameAndReturnType,
+                    method => method.Parameters.Length == 2 &&
+                              IsImplicitSourceType(method.Parameters[0].Type) &&
+                              IsImplicitSourcePropertyType(method.Parameters[1].Type));
+                if (match is not null)
+                {
+                    return match;
+                }
+            }
+
+            // Tier 5: source (exact), MappaContext.
+            if (rootProvidesMappaContext)
+            {
+                var match = Array.Find(
+                    methodsWithTheRightNameAndReturnType,
+                    method => method.Parameters.Length == 2 &&
+                              IsExactSourceType(method.Parameters[0].Type) &&
+                              method.ParameterIsMappaContext(compilation, 1));
+                if (match is not null)
+                {
+                    return match;
+                }
+            }
+
+            // Tier 6: source (exact).
+            var tier6Match = Array.Find(
+                methodsWithTheRightNameAndReturnType,
+                method => method.Parameters.Length == 1 &&
+                          IsExactSourceType(method.Parameters[0].Type));
+            if (tier6Match is not null)
+            {
+                return tier6Match;
+            }
+
+            // Tier 7: source (implicit), MappaContext.
+            if (rootProvidesMappaContext)
+            {
+                var match = Array.Find(
+                    methodsWithTheRightNameAndReturnType,
+                    method => method.Parameters.Length == 2 &&
+                              IsImplicitSourceType(method.Parameters[0].Type) &&
+                              method.ParameterIsMappaContext(compilation, 1));
+                if (match is not null)
+                {
+                    return match;
+                }
+            }
+
+            // Tier 8: source (implicit).
+            var tier8Match = Array.Find(
                 methodsWithTheRightNameAndReturnType,
                 method => method.Parameters.Length == 1 &&
                           compilation.HasImplicitConversion(sourceClassType, method.Parameters[0].Type));
-            if (methodWithOneParamOfTypeImplicitConvertibleClassType is not null)
+            if (tier8Match is not null)
             {
-                return methodWithOneParamOfTypeImplicitConvertibleClassType;
+                return tier8Match;
             }
 
-            // Then look for one having
-            // one parameter being equal to the type of the source property.
-            if (sourceProperty is not null)
+            // Tier 9: sourceProperty (exact), MappaContext.
+            if (rootProvidesMappaContext && sourceProperty is not null)
             {
-                var methodWithOneParamOfTypeSourceType = Array.Find(
+                var match = Array.Find(
                     methodsWithTheRightNameAndReturnType,
-                    method => method.Parameters.Length == 1 &&
-                              method.Parameters[0].Type.IsEqualTo(sourceProperty.Type, nullableEnabled));
-                if (methodWithOneParamOfTypeSourceType is not null)
+                    method => method.Parameters.Length == 2 &&
+                              IsExactSourcePropertyType(method.Parameters[0].Type) &&
+                              method.ParameterIsMappaContext(compilation, 1));
+                if (match is not null)
                 {
-                    return methodWithOneParamOfTypeSourceType;
+                    return match;
                 }
             }
 
-            // Then look for one having
-            // one parameter being implicitly convertible from the type of the source property.
+            // Tier 10: sourceProperty (exact).
             if (sourceProperty is not null)
             {
-                var methodWithOneParamOfTypeConvertibleFromSourceType = Array.Find(
+                var match = Array.Find(
+                    methodsWithTheRightNameAndReturnType,
+                    method => method.Parameters.Length == 1 &&
+                              IsExactSourcePropertyType(method.Parameters[0].Type));
+                if (match is not null)
+                {
+                    return match;
+                }
+            }
+
+            // Tier 11: sourceProperty (implicit), MappaContext.
+            if (rootProvidesMappaContext && sourceProperty is not null)
+            {
+                var match = Array.Find(
+                    methodsWithTheRightNameAndReturnType,
+                    method => method.Parameters.Length == 2 &&
+                              IsImplicitSourcePropertyType(method.Parameters[0].Type) &&
+                              method.ParameterIsMappaContext(compilation, 1));
+                if (match is not null)
+                {
+                    return match;
+                }
+            }
+
+            // Tier 12: sourceProperty (implicit).
+            if (sourceProperty is not null)
+            {
+                var match = Array.Find(
                     methodsWithTheRightNameAndReturnType,
                     method => method.Parameters.Length == 1 &&
                               compilation.HasImplicitConversion(sourceProperty.Type, method.Parameters[0].Type));
-                if (methodWithOneParamOfTypeConvertibleFromSourceType is not null)
+                if (match is not null)
                 {
-                    return methodWithOneParamOfTypeConvertibleFromSourceType;
+                    return match;
                 }
             }
 
-            // Then look for one having
-            // no parameters.
-            var methodWithNoParameters = Array.Find(
-                 methodsWithTheRightNameAndReturnType,
-                 method => method.Parameters.Length == 0);
-            if (methodWithNoParameters is not null)
+            // Tier 13: MappaContext.
+            if (rootProvidesMappaContext)
             {
-                return methodWithNoParameters;
+                var match = Array.Find(
+                    methodsWithTheRightNameAndReturnType,
+                    method => method.Parameters.Length == 1 &&
+                              method.ParameterIsMappaContext(compilation, 0));
+                if (match is not null)
+                {
+                    return match;
+                }
             }
 
-            // No method has been identified.
+            // Tier 14: no parameters.
+            var tier14Match = Array.Find(
+                methodsWithTheRightNameAndReturnType,
+                method => method.Parameters.Length == 0);
+            if (tier14Match is not null)
+            {
+                return tier14Match;
+            }
+
             return null;
         }
     }

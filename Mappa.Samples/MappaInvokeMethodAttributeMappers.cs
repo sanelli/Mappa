@@ -5,6 +5,7 @@
 #pragma warning disable SA1402 // File may only contain a single type
 #pragma warning disable S1118 // Utility classes should not have public constructors
 
+using Mappa;
 using Mappa.Attributes;
 using Mappa.Samples.Models;
 
@@ -604,6 +605,39 @@ public sealed partial class MapEmptyConstructorWithFieldFromMapperBaseClass
     /// <returns>The mapped object.</returns>
     [MappaInvokeMethod(nameof(TargetClassModel.ParamA), nameof(Dependency), nameof(MapperDependencyHelper.Map))]
     public partial TargetClassModel Map(SourceClassModel source);
+}
+
+/// <summary>
+/// Map from <see cref="SourceClassModel"/> to <see cref="TargetClassModel"/>
+/// using:
+/// <list type="table">
+/// <item><term>Mapping mode</term><description>Empty constructor.</description></item>
+/// <item><term>Custom method location</term><description><see cref="MapEmptyConstructorWithLocalStaticMethodWithSourceClassPropertyAndMappaContextInput"/>.</description></item>
+/// <item><term>Custom method is static</term><description><c>true</c>.</description></item>
+/// <item><term>Custom method input(s)</term><description><see cref="SourceClassModel"/>, <see cref="int"/>, and <see cref="MappaContext"/>.</description></item>
+/// </list>
+/// </summary>
+[Mappa]
+public sealed partial class MapEmptyConstructorWithLocalStaticMethodWithSourceClassPropertyAndMappaContextInput
+{
+    /// <summary>
+    /// Map from <see cref="SourceClassModel"/> to <see cref="TargetClassModel"/>
+    /// using a local static method that accepts source, property, and <see cref="MappaContext"/>.
+    /// </summary>
+    /// <param name="source">The source model to map.</param>
+    /// <param name="context">The mapping context.</param>
+    /// <returns>The mapped object.</returns>
+    [MappaInvokeMethod(nameof(TargetClassModel.ParamA), nameof(CustomMap))]
+    public partial TargetClassModel Map(SourceClassModel source, MappaContext context);
+
+    private static string CustomMap(SourceClassModel source, int property, MappaContext mappaContext)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(mappaContext);
+        mappaContext.TryGetValue<string>("CustomValue", out var customValue);
+        customValue ??= string.Empty;
+        return $"{nameof(MapEmptyConstructorWithLocalStaticMethodWithSourceClassPropertyAndMappaContextInput)}/static/({nameof(SourceClassModel)},int,{nameof(MappaContext)})/{source.ParamA}/{source.ParamB}/{property}/{customValue}";
+    }
 }
 
 /// <summary>

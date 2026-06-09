@@ -86,6 +86,65 @@ internal static class MethodSymbolExtensions
     }
 
     /// <summary>
+    /// Gets the <see cref="MappaContext"/> type from the compilation.
+    /// </summary>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The <see cref="MappaContext"/> type, or <c>null</c> if not found.</returns>
+    internal static INamedTypeSymbol? GetMappaContextType(this Compilation compilation)
+        => compilation.GetTypeByMetadataName(MappaContextTypeFullName);
+
+    /// <summary>
+    /// Returns <c>true</c> if <paramref name="type"/> is <see cref="MappaContext"/>.
+    /// </summary>
+    /// <param name="type">The type to validate.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type is <see cref="MappaContext"/>.</returns>
+    internal static bool IsMappaContextType(this ITypeSymbol type, Compilation compilation)
+    {
+        var mappaContextType = compilation.GetMappaContextType();
+        return mappaContextType is not null && SymbolEqualityComparer.Default.Equals(mappaContextType, type);
+    }
+
+    /// <summary>
+    /// Returns <c>true</c> if the parameter at <paramref name="index"/> is of type <see cref="MappaContext"/>.
+    /// </summary>
+    /// <param name="methodSymbol">The method to validate.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <param name="index">The parameter index.</param>
+    /// <returns><c>true</c> if the parameter is of type <see cref="MappaContext"/>.</returns>
+    internal static bool ParameterIsMappaContext(
+        this IMethodSymbol methodSymbol,
+        Compilation compilation,
+        int index)
+    {
+        if (index < 0 || index >= methodSymbol.Parameters.Length)
+        {
+            return false;
+        }
+
+        return methodSymbol.Parameters[index].Type.IsMappaContextType(compilation);
+    }
+
+    /// <summary>
+    /// Returns <c>true</c> if the method has at least one parameter of type <see cref="MappaContext"/>.
+    /// </summary>
+    /// <param name="methodSymbol">The method to validate.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the method has a <see cref="MappaContext"/> parameter.</returns>
+    internal static bool MethodHasMappaContextParameter(this IMethodSymbol methodSymbol, Compilation compilation)
+    {
+        for (var index = 0; index < methodSymbol.Parameters.Length; index++)
+        {
+            if (methodSymbol.ParameterIsMappaContext(compilation, index))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
     /// Returns <c>true</c> if the second parameter of the method is
     /// of type <see cref="MappaContext"/>.
     /// </summary>
@@ -102,9 +161,7 @@ internal static class MethodSymbolExtensions
             return true;
         }
 
-        var secondParameterType = methodSymbol.Parameters[1].Type;
-        var mappaContextType = compilation.GetTypeByMetadataName(MappaContextTypeFullName);
-        return SymbolEqualityComparer.Default.Equals(mappaContextType, secondParameterType);
+        return methodSymbol.ParameterIsMappaContext(compilation, 1);
     }
 
     /// <summary>
