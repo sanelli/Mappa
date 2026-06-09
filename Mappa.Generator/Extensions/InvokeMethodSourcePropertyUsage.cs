@@ -34,6 +34,11 @@ internal static class InvokeMethodSourcePropertyUsage
                 return false;
 
             case 1:
+                if (method.ParameterIsMappaContext(compilation, 0))
+                {
+                    return false;
+                }
+
                 if (method.Parameters[0].Type.IsEqualTo(sourceClassType, nullableEnabled) ||
                     compilation.HasImplicitConversion(sourceClassType, method.Parameters[0].Type))
                 {
@@ -45,6 +50,22 @@ internal static class InvokeMethodSourcePropertyUsage
                         compilation.HasImplicitConversion(sourceProperty.Type, method.Parameters[0].Type));
 
             case 2:
+                if (method.ParameterIsMappaContext(compilation, 1))
+                {
+                    if (method.Parameters[0].Type.IsEqualTo(sourceClassType, nullableEnabled) ||
+                        compilation.HasImplicitConversion(sourceClassType, method.Parameters[0].Type))
+                    {
+                        return false;
+                    }
+
+                    return sourceProperty is not null &&
+                           (method.Parameters[0].Type.IsEqualTo(sourceProperty.Type, nullableEnabled) ||
+                            compilation.HasImplicitConversion(sourceProperty.Type, method.Parameters[0].Type));
+                }
+
+                return sourceProperty is not null;
+
+            case 3:
                 return sourceProperty is not null;
 
             default:

@@ -57,40 +57,60 @@ internal sealed class MappaInvokeMethodAttributeStrategyBuilder
         return accessor;
     }
 
-    // TODO [#70] Support method with MappaContext.
     private string GetParameters(string source, MappaBuilderContext context)
     {
-        switch (this.strategy.Method.Parameters.Length)
+        var compilation = context.Compilation;
+        var method = this.strategy.Method;
+        var compositeSource = context.GetCompositeTypeSourceName();
+
+        switch (method.Parameters.Length)
         {
             case 0:
                 return string.Empty;
 
-            case 1:
+            case 3:
+                return $"{compositeSource}, {source}, {this.GetContextArgument()}";
 
-                if (this.strategy.Method.Parameters[0].Type.IsEqualTo(this.strategy.SourceType, this.strategy.IsNullableEnabled) ||
-                    context.Compilation.HasImplicitConversion(this.strategy.SourceType, this.strategy.Method.Parameters[0].Type))
+            case 2:
+                if (method.ParameterIsMappaContext(compilation, 1))
                 {
-                    return context.GetCompositeTypeSourceName();
+                    if (method.Parameters[0].Type.IsEqualTo(this.strategy.SourceType, this.strategy.IsNullableEnabled) ||
+                        compilation.HasImplicitConversion(this.strategy.SourceType, method.Parameters[0].Type))
+                    {
+                        return $"{compositeSource}, {this.GetContextArgument()}";
+                    }
+
+                    return $"{source}, {this.GetContextArgument()}";
+                }
+
+                return $"{compositeSource}, {source}";
+
+            case 1:
+                if (method.ParameterIsMappaContext(compilation, 0))
+                {
+                    return this.GetContextArgument();
+                }
+
+                if (method.Parameters[0].Type.IsEqualTo(this.strategy.SourceType, this.strategy.IsNullableEnabled) ||
+                    compilation.HasImplicitConversion(this.strategy.SourceType, method.Parameters[0].Type))
+                {
+                    return compositeSource;
                 }
 
                 if (this.strategy.SourceProperty is not null &&
-                    (this.strategy.Method.Parameters[0].Type.IsEqualTo(this.strategy.SourceProperty.Type, this.strategy.IsNullableEnabled) ||
-                    context.Compilation.HasImplicitConversion(this.strategy.SourceProperty.Type, this.strategy.Method.Parameters[0].Type)))
+                    (method.Parameters[0].Type.IsEqualTo(this.strategy.SourceProperty.Type, this.strategy.IsNullableEnabled) ||
+                    compilation.HasImplicitConversion(this.strategy.SourceProperty.Type, method.Parameters[0].Type)))
                 {
-                    return $"{source}";
-                }
-
-                throw new MappaGeneratorException("Unexpected parameter type");
-
-            case 2:
-                if (this.strategy.SourceProperty is not null)
-                {
-                    return $"{context.GetCompositeTypeSourceName()}, {source}";
+                    return source;
                 }
 
                 break;
         }
 
-        throw new MappaGeneratorException("Unsupported number of parameters.");
+        throw new MappaGeneratorException("Unexpected parameter type");
     }
+
+    private string GetContextArgument()
+        => this.strategy.ContextParameterName
+           ?? throw new MappaGeneratorException("Invoked method requires MappaContext but the root map method does not provide one.");
 }

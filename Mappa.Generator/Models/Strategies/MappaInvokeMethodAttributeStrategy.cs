@@ -20,6 +20,7 @@ namespace Mappa.Generator.Models.Strategies;
 /// <param name="method">The method to be invoked.</param>
 /// <param name="sourceProperty">The optional source property to be used by the method.</param>
 /// <param name="isNullableEnabled"><c>true</c> if nullable is enabled at this invocation point.</param>
+/// <param name="contextParameterName">The name of the root map method <see cref="MappaContext"/> parameter, if required.</param>
 internal sealed class MappaInvokeMethodAttributeStrategy(
     ITypeSymbol targetType,
     ITypeSymbol sourceClassType,
@@ -27,7 +28,8 @@ internal sealed class MappaInvokeMethodAttributeStrategy(
     ISymbol? fieldOrProperty,
     IMethodSymbol method,
     IPropertySymbol? sourceProperty,
-    bool isNullableEnabled)
+    bool isNullableEnabled,
+    string? contextParameterName)
           : MapStrategy(targetType, sourceClassType)
 {
     /// <summary>
@@ -54,6 +56,11 @@ internal sealed class MappaInvokeMethodAttributeStrategy(
     /// Gets a value indicating whether <c>nullable</c> is enabled for reference types.
     /// </summary>
     internal bool IsNullableEnabled { get; } = isNullableEnabled;
+
+    /// <summary>
+    /// Gets the name of the root map method <see cref="MappaContext"/> parameter when the invoked method requires it.
+    /// </summary>
+    internal string? ContextParameterName { get; } = contextParameterName;
 
     /// <inheritdoc/>
     internal override IMappaStrategyBuilder GetBuilder() => new MappaInvokeMethodAttributeStrategyBuilder(this);
