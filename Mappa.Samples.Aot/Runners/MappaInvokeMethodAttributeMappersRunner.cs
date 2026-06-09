@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa;
 using Mappa.Samples;
 using Mappa.Samples.Models;
 
@@ -180,5 +181,15 @@ internal static class MappaInvokeMethodAttributeMappersRunner
             nameof(TargetClassModel),
             sourceClass,
             fieldFromMapperBase.Map(sourceClass));
+
+        report.BeginMapper(nameof(MapEmptyConstructorWithLocalStaticMethodWithSourceClassPropertyAndMappaContextInput));
+        var withMappaContext = new MapEmptyConstructorWithLocalStaticMethodWithSourceClassPropertyAndMappaContextInput();
+        var context = AotSampleData.CustomValueContext;
+        report.RecordInvocation(
+            nameof(MapEmptyConstructorWithLocalStaticMethodWithSourceClassPropertyAndMappaContextInput.Map),
+            "SourceClassModel, MappaContext",
+            nameof(TargetClassModel),
+            sourceClass,
+            withMappaContext.Map(sourceClass, context));
     }
 }
