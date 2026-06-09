@@ -12,7 +12,7 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Unit tests for <see cref="MappaInvokeMethodAttribute"/> usage.
 /// </summary>
-public sealed class MappaInvokeMethodAttributeTests
+public sealed partial class MappaInvokeMethodAttributeTests
     : MappaGeneratorAbstractUnitTests
 {
     /// <summary>
