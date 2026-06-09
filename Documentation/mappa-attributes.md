@@ -9,12 +9,13 @@ This is the list of attributes provided:
 - `MappaUseProperty`: When mapping structured types (`class`, `struct` and `records`) allows specifying which property uses from the source property for a target property or constructor parameter;
 - `MappaIgnoreTargetProperty`: When mapping structured types (`class`, `struct` and `records`) via an empty constructor allows excluding a target property from property-initializer mapping; has no effect when mapping uses a constructor with parameters;
 - `MappaAssignFromContext`:  When mapping structured types (`class`, `struct` and `records`) allows specifying which value from the context of type `MappaContext` use for a target property or constructor parameter;
+- `MappaAssignToContext`: When mapping structured types (`class`, `struct` and `records`) via the constructor-map strategy allows storing the value of a target property or field in the `MappaContext` after the target object has been fully constructed;
 - `MappaInvokeMethodAttribute`: When mapping structured types (`class`, `struct` and `records`) allows specifying that a property or attribute should be mapped by invoking a method; methods may be declared on the mapper **or an accessible base class**, on a type specified in the attribute **or its base classes**, or on a field or property declared on the mapper **or an accessible base class** (methods on the field or property type **and its base classes** are also considered); invoked methods can optionally accept a `MappaContext` parameter (as the last parameter when combined with source and/or source-property arguments) when the map method provides one;
 - `MappaAssignFromConstant`: When mapping structured types (`class`, `struct` and `records`) allows specifying a constant value for a target property or constructor parameter;
 - `MappaTypeMapping`: When mapping structured types (`class`, `struct` and `records`) or interfaces it allows to define the target type depending on the source type.
 - `MappaTypeMappingDefault`: Describe the default behavior for polymorphic methods defined via `MappaTypeMappingDefault`.
 
-The [Mappa](https://www.nuget.org/packages/Mappa/) package also provides the `MappaContext` class that can be used to pass contextual values to mappers via the `MappaAssignFromContext` attribute or to methods invoked via the `MappaInvokeMethodAttribute` attribute.
+The [Mappa](https://www.nuget.org/packages/Mappa/) package also provides the `MappaContext` class that can be used to pass contextual values to mappers via the `MappaAssignFromContext` attribute, store mapped values via the `MappaAssignToContext` attribute, or supply context to methods invoked via the `MappaInvokeMethodAttribute` attribute.
 
 Via `MappaSettings` the following settings can be identified:
 - `DateTimeFormat`: the format to use to map `string`s into `System.DateTime` and vice versa;

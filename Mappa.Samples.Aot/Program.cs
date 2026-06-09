@@ -44,6 +44,7 @@ internal static class Program
         MapWithPropertiesOnBaseClassesMapperRunner.Run(report);
         MappaAssignFromConstantAttributeMapperRunner.Run(report);
         MappaAssignFromContextAttributeMapperRunner.Run(report);
+        MappaAssignToContextAttributeMapperRunner.Run(report);
         MappaDependencyProtobufMapperRunner.Run(report);
         MappaIgnoreMappersRunner.Run(report);
         MappaIgnoreTargetPropertyAttributeMapperRunner.Run(report);
