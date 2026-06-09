@@ -83,6 +83,14 @@ internal sealed class InvokeConstructorMapStrategyBuilder
                     builder.AppendLine(initializerPropertyCode);
                 }
             }
+
+            if (this.strategy.AssignToContextEntries.Length > 0 && this.strategy.ContextParameterName is not null)
+            {
+                foreach (var assignToContextEntry in this.strategy.AssignToContextEntries)
+                {
+                    builder.AppendLine($"{this.strategy.ContextParameterName}[\"{assignToContextEntry.ContextKey}\"] = {resultTemporary}.{assignToContextEntry.MemberName};");
+                }
+            }
         }
 
         return (resultTemporary, builder.ToString());

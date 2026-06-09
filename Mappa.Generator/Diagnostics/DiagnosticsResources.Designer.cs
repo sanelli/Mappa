@@ -248,5 +248,23 @@ namespace Mappa.Generator.Diagnostics {
                 return ResourceManager.GetString("TooManyMappaIgnoreTargetPropertyAttributesForTheSameTargetProperty", resourceCulture);
             }
         }
+        
+        internal static string MappaAssignToContextTargetMemberDoesNotExistOrIsNotAccessible {
+            get {
+                return ResourceManager.GetString("MappaAssignToContextTargetMemberDoesNotExistOrIsNotAccessible", resourceCulture);
+            }
+        }
+        
+        internal static string CannotUseMappaAssignToContextAttributeWithoutContextParameter {
+            get {
+                return ResourceManager.GetString("CannotUseMappaAssignToContextAttributeWithoutContextParameter", resourceCulture);
+            }
+        }
+        
+        internal static string MultipleMappaAssignToContextAttributesUseTheSameContextKey {
+            get {
+                return ResourceManager.GetString("MultipleMappaAssignToContextAttributesUseTheSameContextKey", resourceCulture);
+            }
+        }
     }
 }
