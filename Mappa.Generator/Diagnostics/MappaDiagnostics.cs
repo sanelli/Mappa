@@ -556,4 +556,64 @@ internal static class MappaDiagnostics
             methodDeclarationSyntax.GetLocation(),
             methodName,
             property);
+
+    /// <summary>
+    /// Diagnostic to report the fact that the target member for <see cref="MappaAssignToContextAttribute"/>
+    /// does not exist or is not accessible.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="methodName">The name of the method.</param>
+    /// <param name="contextKey">The context key.</param>
+    /// <param name="targetMemberName">The target member name.</param>
+    /// <param name="targetTypeName">The display name of the target type.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappaAssignToContextTargetMemberDoesNotExistOrIsNotAccessible(
+        MethodDeclarationSyntax methodDeclarationSyntax,
+        string methodName,
+        string contextKey,
+        string targetMemberName,
+        string targetTypeName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappaAssignToContextTargetMemberDoesNotExistOrIsNotAccessible,
+            methodDeclarationSyntax.GetLocation(),
+            methodName,
+            contextKey,
+            targetMemberName,
+            targetTypeName);
+
+    /// <summary>
+    /// Diagnostic to report the fact that <see cref="MappaAssignToContextAttribute"/>
+    /// is ignored because the method does not have a <see cref="MappaContext"/> parameter.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="methodName">The name of the method.</param>
+    /// <param name="contextKey">The context key.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic CannotUseMappaAssignToContextAttributeWithoutContextParameter(
+        MethodDeclarationSyntax methodDeclarationSyntax,
+        string methodName,
+        string contextKey)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.CannotUseMappaAssignToContextAttributeWithoutContextParameter,
+            methodDeclarationSyntax.GetLocation(),
+            methodName,
+            contextKey);
+
+    /// <summary>
+    /// Diagnostic to report the fact that multiple <see cref="MappaAssignToContextAttribute"/>
+    /// attributes on the same method use the same context key.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="methodName">The name of the method.</param>
+    /// <param name="contextKey">The duplicated context key.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MultipleMappaAssignToContextAttributesUseTheSameContextKey(
+        MethodDeclarationSyntax methodDeclarationSyntax,
+        string methodName,
+        string contextKey)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MultipleMappaAssignToContextAttributesUseTheSameContextKey,
+            methodDeclarationSyntax.GetLocation(),
+            methodName,
+            contextKey);
 }

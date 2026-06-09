@@ -191,4 +191,20 @@ internal enum MappaDiagnosticsKind
     /// A method has multiple <see cref="MappaIgnoreTargetPropertyAttribute"/>s for the same property.
     /// </summary>
     TooManyMappaIgnoreTargetPropertyAttributesForTheSameTargetProperty,
+
+    /// <summary>
+    /// The target property or field for <see cref="MappaAssignToContextAttribute"/> does not exist or is not accessible.
+    /// </summary>
+    MappaAssignToContextTargetMemberDoesNotExistOrIsNotAccessible,
+
+    /// <summary>
+    /// The <see cref="MappaAssignToContextAttribute"/> cannot be used
+    /// because the <see cref="MappaContext"/> parameter is missing.
+    /// </summary>
+    CannotUseMappaAssignToContextAttributeWithoutContextParameter,
+
+    /// <summary>
+    /// Multiple <see cref="MappaAssignToContextAttribute"/> attributes on the same method use the same context key.
+    /// </summary>
+    MultipleMappaAssignToContextAttributesUseTheSameContextKey,
 }

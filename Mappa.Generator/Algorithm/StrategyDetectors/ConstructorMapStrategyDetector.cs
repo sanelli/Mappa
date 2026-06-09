@@ -76,6 +76,11 @@ internal sealed class ConstructorMapStrategyDetector
             mapStrategy = nonEmptyConstructorStrategy;
         }
 
+        if (mapStrategy is InvokeConstructorMapStrategy invokeConstructorMapStrategy)
+        {
+            mapStrategy = this.EnrichInvokeConstructorMapStrategyWithAssignToContext(invokeConstructorMapStrategy);
+        }
+
         return mapStrategy is not NoMapStrategy;
     }
 
@@ -209,7 +214,9 @@ internal sealed class ConstructorMapStrategyDetector
                     constructorsWithMappings[0].strategiesForEachParameter
                         .Select(parameterAndStrategy => (ParameterMapStrategy)parameterAndStrategy.Strategy)
                         .ToArray(),
-                    []);
+                    [],
+                    [],
+                    null);
             }
         }
 
@@ -598,7 +605,9 @@ internal sealed class ConstructorMapStrategyDetector
                             this.context.SourceType,
                             constructors.Single(),
                             [],
-                            propertiesWithStrategies);
+                            propertiesWithStrategies,
+                            [],
+                            null);
                     }
                     else
                     {
@@ -613,6 +622,132 @@ internal sealed class ConstructorMapStrategyDetector
         }
 
         return strategy is not NoMapStrategy;
+    }
+
+    private InvokeConstructorMapStrategy EnrichInvokeConstructorMapStrategyWithAssignToContext(
+        InvokeConstructorMapStrategy strategy)
+    {
+        if (this.context.AlgorithmSettings.UseAttributesForConstructorDetectorSettings
+                .Equals(MappaMapAlgorithmContextSettings.MappaAttributesForConstructorDetectorSettings.Disable)
+            || this.context.MapMethod is null)
+        {
+            return strategy;
+        }
+
+        var attributes = this.context.MapMethod.GetAttributes<MappaAssignToContextAttribute>();
+        if (attributes.Length == 0)
+        {
+            return strategy;
+        }
+
+        var methodDeclarationSyntax = this.context.MapMethod.MethodDeclarationSyntax
+            ?? throw new MappaGeneratorException("Method declaration syntax has not been defined.");
+        var rootMapMethod = this.context.GetRootMapMethod();
+        var methodName = rootMapMethod.MethodName;
+        var targetTypeName = this.context.TargetType.ToDisplayString();
+        var providesContext = rootMapMethod.ProvideMappaContextWhenInvoked();
+
+        var duplicateContextKeys = new HashSet<string>(
+            attributes
+                .GroupBy(attribute => attribute.ContextKey, StringComparer.Ordinal)
+                .Where(group => group.Count() > 1)
+                .Select(group => group.Key),
+            StringComparer.Ordinal);
+
+        foreach (var duplicateContextKey in duplicateContextKeys)
+        {
+            this.context.ReportDiagnostic(MappaDiagnostics.MultipleMappaAssignToContextAttributesUseTheSameContextKey(
+                methodDeclarationSyntax,
+                methodName,
+                duplicateContextKey));
+        }
+
+        List<MappaAssignToContextEntry> assignToContextEntries = new();
+        string? contextParameterName = null;
+
+        foreach (var attribute in attributes)
+        {
+            if (duplicateContextKeys.Contains(attribute.ContextKey))
+            {
+                continue;
+            }
+
+            if (!providesContext)
+            {
+                this.context.ReportDiagnostic(MappaDiagnostics.CannotUseMappaAssignToContextAttributeWithoutContextParameter(
+                    methodDeclarationSyntax,
+                    methodName,
+                    attribute.ContextKey));
+                continue;
+            }
+
+            if (!this.TryResolveAssignToContextTargetMember(attribute.TargetPropertyName))
+            {
+                this.context.ReportDiagnostic(MappaDiagnostics.MappaAssignToContextTargetMemberDoesNotExistOrIsNotAccessible(
+                    methodDeclarationSyntax,
+                    methodName,
+                    attribute.ContextKey,
+                    attribute.TargetPropertyName,
+                    targetTypeName));
+                continue;
+            }
+
+            assignToContextEntries.Add(new MappaAssignToContextEntry(attribute.ContextKey, attribute.TargetPropertyName));
+            contextParameterName ??= rootMapMethod.GetMappaContextParameterName();
+        }
+
+        if (assignToContextEntries.Count == 0)
+        {
+            return strategy;
+        }
+
+        return new InvokeConstructorMapStrategy(
+            strategy.TargetType,
+            strategy.SourceType,
+            strategy.Constructor,
+            strategy.ParametersMapStrategies,
+            strategy.InitializerStrategies,
+            [.. assignToContextEntries],
+            contextParameterName);
+    }
+
+    private bool TryResolveAssignToContextTargetMember(string memberName)
+    {
+        var rootMapMethod = this.context.GetRootMapMethod();
+        var targetType = this.context.TargetType;
+
+        var property = targetType
+            .GetTypeProperties()
+            .FirstOrDefault(candidate => candidate.Name.Equals(memberName, StringComparison.Ordinal));
+
+        if (property is not null)
+        {
+            return property.IsGetterAccessible(this.compilation, rootMapMethod);
+        }
+
+        return this.TryFindAccessibleTargetField(memberName, rootMapMethod) is not null;
+    }
+
+    private IFieldSymbol? TryFindAccessibleTargetField(string fieldName, MapMethod rootMapMethod)
+    {
+        ITypeSymbol? currentType = this.context.TargetType;
+        while (currentType is not null)
+        {
+            var field = currentType.GetMembers()
+                .OfType<IFieldSymbol>()
+                .FirstOrDefault(candidate =>
+                    candidate.Name.Equals(fieldName, StringComparison.Ordinal)
+                    && this.compilation.IsSymbolAccessibleWithin(candidate, rootMapMethod.MethodSymbol.ContainingSymbol));
+
+            if (field is not null)
+            {
+                return field;
+            }
+
+            currentType = currentType.BaseType;
+        }
+
+        return null;
     }
 
     private HashSet<string> GetIgnoredTargetPropertyNames()

@@ -22,6 +22,7 @@ internal static class AttributeDataExtensions
     private static readonly string MappaInvokeMethodAttributeFullName = typeof(MappaInvokeMethodAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaInvokeMethodAttribute)}");
     private static readonly string MappaIgnoreAttributeFullName = typeof(MappaIgnoreAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaIgnoreAttribute)}");
     private static readonly string MappaAssignFromContextAttributeFullName = typeof(MappaAssignFromContextAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaAssignFromContextAttribute)}");
+    private static readonly string MappaAssignToContextAttributeFullName = typeof(MappaAssignToContextAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaAssignToContextAttribute)}");
     private static readonly string MappaSettingsAttributeFullName = typeof(MappaSettingsAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaSettingsAttribute)}");
     private static readonly string MappaUsePropertyAttributeFullName = typeof(MappaUsePropertyAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaUsePropertyAttribute)}");
     private static readonly string MappaDependencyAttributeFullName = typeof(MappaDependencyAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaDependencyAttribute)}");
@@ -162,6 +163,31 @@ internal static class AttributeDataExtensions
         }
 
         return [..results];
+    }
+
+    /// <summary>
+    /// Gets the <see cref="MappaAssignToContextAttribute"/>s applied.
+    /// </summary>
+    /// <param name="attributes">The attributes.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The <see cref="MappaAssignToContextAttribute"/> applied.</returns>
+    internal static MappaAssignToContextAttribute[] GetMappaAssignToContextAttributes(this ImmutableArray<AttributeData> attributes, Compilation compilation)
+    {
+        var mappaAssignToContextAttributeSymbol = compilation.GetTypeByMetadataName(MappaAssignToContextAttributeFullName);
+        List<MappaAssignToContextAttribute> results = new();
+        foreach (var constructorArguments in attributes
+                     .Where(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, mappaAssignToContextAttributeSymbol))
+                     .Select(attributeData => attributeData.ConstructorArguments))
+        {
+            if (constructorArguments.Length == 2 &&
+                constructorArguments[0].Value is string contextKey &&
+                constructorArguments[1].Value is string targetPropertyName)
+            {
+                results.Add(new MappaAssignToContextAttribute(contextKey, targetPropertyName));
+            }
+        }
+
+        return [.. results];
     }
 
     /// <summary>

@@ -53,6 +53,9 @@ internal static class MethodSymbolExtensions
         var assignFromContextAttributes = attributes.GetMappaAssignFromContextAttributes(compilation);
         result.AddRange(assignFromContextAttributes);
 
+        var assignToContextAttributes = attributes.GetMappaAssignToContextAttributes(compilation);
+        result.AddRange(assignToContextAttributes);
+
         // Mappa Setting Attribute
         if (attributes.GetMappaSettingsAttribute(compilation) is { } mappaSettingAttribute)
         {

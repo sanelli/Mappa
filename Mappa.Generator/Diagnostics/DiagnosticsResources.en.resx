@@ -113,4 +113,13 @@
     <data name="TooManyMappaIgnoreTargetPropertyAttributesForTheSameTargetProperty" xml:space="preserve">
         <value>Method '{0}' has multiple MappaIgnoreTargetProperty attributes targeting the same property '{1}'.</value>
     </data>
+    <data name="MappaAssignToContextTargetMemberDoesNotExistOrIsNotAccessible" xml:space="preserve">
+        <value>Method '{0}' defines MappaAssignToContext with context key '{1}' and target member '{2}', but no accessible property or field named '{2}' exists on type '{3}'.</value>
+    </data>
+    <data name="CannotUseMappaAssignToContextAttributeWithoutContextParameter" xml:space="preserve">
+        <value>Method '{0}' defines MappaAssignToContext with context key '{1}', but the attribute will be ignored because the method does not have a MappaContext parameter.</value>
+    </data>
+    <data name="MultipleMappaAssignToContextAttributesUseTheSameContextKey" xml:space="preserve">
+        <value>Method '{0}' defines multiple MappaAssignToContext attributes with the same context key '{1}'.</value>
+    </data>
 </root>

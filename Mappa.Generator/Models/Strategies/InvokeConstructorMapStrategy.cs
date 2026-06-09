@@ -16,12 +16,16 @@ namespace Mappa.Generator.Models.Strategies;
 /// <param name="constructor">Gets the constructor.</param>
 /// <param name="parametersMapStrategies">The strategies to be applied via constructor parameters.</param>
 /// <param name="initializerStrategies">The strategies to be applied via initializers.</param>
+/// <param name="assignToContextEntries">The context entries to assign after target construction.</param>
+/// <param name="contextParameterName">The name of the context parameter, if any.</param>
 internal sealed class InvokeConstructorMapStrategy(
     ITypeSymbol targetType,
     ITypeSymbol sourceType,
     IMethodSymbol constructor,
     ParameterMapStrategy[] parametersMapStrategies,
-    PropertyMapStrategy[] initializerStrategies)
+    PropertyMapStrategy[] initializerStrategies,
+    MappaAssignToContextEntry[] assignToContextEntries,
+    string? contextParameterName)
         : MapStrategy(targetType, sourceType)
 {
     /// <summary>
@@ -38,6 +42,16 @@ internal sealed class InvokeConstructorMapStrategy(
     /// Gets the strategies that can be applied via initializers.
     /// </summary>
     public PropertyMapStrategy[] InitializerStrategies { get; } = initializerStrategies;
+
+    /// <summary>
+    /// Gets the context entries to assign after target construction.
+    /// </summary>
+    public MappaAssignToContextEntry[] AssignToContextEntries { get; } = assignToContextEntries;
+
+    /// <summary>
+    /// Gets the name of the context parameter, if any.
+    /// </summary>
+    public string? ContextParameterName { get; } = contextParameterName;
 
     /// <inheritdoc/>
     internal override IMappaStrategyBuilder GetBuilder() => new InvokeConstructorMapStrategyBuilder(this);

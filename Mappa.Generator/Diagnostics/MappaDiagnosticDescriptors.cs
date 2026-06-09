@@ -48,6 +48,9 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? mappaUsePropertyNotUsedByInvokeMethod;
     private static DiagnosticDescriptor? mappingAttributeTargetPropertyOrParameterDoesNotExist;
     private static DiagnosticDescriptor? tooManyMappaIgnoreTargetPropertyAttributesForTheSameTargetProperty;
+    private static DiagnosticDescriptor? mappaAssignToContextTargetMemberDoesNotExistOrIsNotAccessible;
+    private static DiagnosticDescriptor? cannotUseMappaAssignToContextAttributeWithoutContextParameter;
+    private static DiagnosticDescriptor? multipleMappaAssignToContextAttributesUseTheSameContextKey;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -320,6 +323,30 @@ internal static class MappaDiagnosticDescriptors
         => tooManyMappaIgnoreTargetPropertyAttributesForTheSameTargetProperty ??= BuildError(
             MappaDiagnosticsKind.TooManyMappaIgnoreTargetPropertyAttributesForTheSameTargetProperty,
             DiagnosticsResources.TooManyMappaIgnoreTargetPropertyAttributesForTheSameTargetProperty);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MappaAssignToContextTargetMemberDoesNotExistOrIsNotAccessible"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MappaAssignToContextTargetMemberDoesNotExistOrIsNotAccessible
+        => mappaAssignToContextTargetMemberDoesNotExistOrIsNotAccessible ??= BuildError(
+            MappaDiagnosticsKind.MappaAssignToContextTargetMemberDoesNotExistOrIsNotAccessible,
+            DiagnosticsResources.MappaAssignToContextTargetMemberDoesNotExistOrIsNotAccessible);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.CannotUseMappaAssignToContextAttributeWithoutContextParameter"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor CannotUseMappaAssignToContextAttributeWithoutContextParameter
+        => cannotUseMappaAssignToContextAttributeWithoutContextParameter ??= BuildWarning(
+            MappaDiagnosticsKind.CannotUseMappaAssignToContextAttributeWithoutContextParameter,
+            DiagnosticsResources.CannotUseMappaAssignToContextAttributeWithoutContextParameter);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MultipleMappaAssignToContextAttributesUseTheSameContextKey"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MultipleMappaAssignToContextAttributesUseTheSameContextKey
+        => multipleMappaAssignToContextAttributesUseTheSameContextKey ??= BuildError(
+            MappaDiagnosticsKind.MultipleMappaAssignToContextAttributesUseTheSameContextKey,
+            DiagnosticsResources.MultipleMappaAssignToContextAttributesUseTheSameContextKey);
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(
