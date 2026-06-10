@@ -56,6 +56,7 @@ The development environment uses **PowerShell**. All commands run in the termina
 - **Never** commit unless instructed.
 - **Never** push unless instructed.
 - When asked to commit, the message **must start with the GitHub issue** (e.g. `#123 ...`). If no issue is provided, ask the user for one.
+- When committing, do **not** use `cat` or heredoc syntax (PowerShell does not support bash heredocs). Use `git commit -m` for the subject and body, and `--trailer` for any trailers (e.g. `git commit -m "#123 Subject." -m "Body paragraph." --trailer "Co-authored-by: Name <email@example.com>"`).
 - Do not query GitHub to read the issue provided, unless instructed.
 - Before finishing work for a GitHub issue, remove any TODOs related to that issue. If no GitHub issue was provided, ask the user for one.
 
@@ -88,6 +89,7 @@ A single feature may require **two** bumps (e.g. one after **Mappa**, one after 
 - Update tests after changing a project.
 - Cover **happy path and negative paths** where possible.
 - For **Mappa.Generator**, test error/warning messages and corner cases.
+- For **Mappa.Generator.Tests** integration tests that assert generated syntax: when `blockSyntaxAssertions` (or nested block assertions) include `HasSyntaxNodesCount(X)`, there must be exactly **X** subsequent `HasNextSyntaxNode` entries chained after it. Tests that only assert diagnostic errors and do not inspect generated syntax are exempt.
 - When adding samples in **Mappa.Samples**, also update **Mappa.Samples.Aot**.
 
 ## Samples
