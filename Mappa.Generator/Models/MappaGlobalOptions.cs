@@ -71,6 +71,14 @@ namespace Mappa.Generator.Models;
 ///         <term><c>mappa.polymorphicmapmethodwithmatchingdefaultattribute</c></term>
 ///         <description>Set the default value to enable or disable the support for <see cref="MappaTypeMappingDefaultBehavior.MapSourceType"/> when picking up a polymorphic method.</description>
 ///     </item>
+///     <item>
+///         <term><c>mappa.forcecaseinsensitivepropertymap</c></term>
+///         <description>Set the default value to enable or disable case-insensitive matching when pairing a target property or constructor parameter with a source property by name.</description>
+///     </item>
+///     <item>
+///         <term><c>mappa.ignoreunderscoreforpropertymap</c></term>
+///         <description>Set the default value to enable or disable ignoring underscore characters when pairing a target property or constructor parameter with a source property by name.</description>
+///     </item>
 /// </list>
 /// </summary>
 internal sealed class MappaGlobalOptions
@@ -92,6 +100,8 @@ internal sealed class MappaGlobalOptions
     private const string MappaSettingsFastCollections = "fastcollections";
     private const string MappaSettingsContainerCapacityConstructors = "containercapacityconstructors";
     private const string MappaSettingsPolymorphicMapMethodWithMatchingDefaultAttribute = "polymorphicmapmethodwithmatchingdefaultattribute";
+    private const string MappaSettingsForceCaseInsensitivePropertyMap = "forcecaseinsensitivepropertymap";
+    private const string MappaSettingsIgnoreUnderscoreForPropertyMap = "ignoreunderscoreforpropertymap";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaGlobalOptions"/> class.
@@ -169,6 +179,14 @@ internal sealed class MappaGlobalOptions
 
         this.PolymorphicMapMethodWithMatchingDefaultAttribute = options.TryGetValue(GetOptionName(MappaSettingsPolymorphicMapMethodWithMatchingDefaultAttribute), out var polymorphicMapMethodWithMatchingDefaultAttribute)
             ? GetBooleanSettingFromString(polymorphicMapMethodWithMatchingDefaultAttribute)
+            : BooleanSetting.Undefined;
+
+        this.ForceCaseInsensitivePropertyMap = options.TryGetValue(GetOptionName(MappaSettingsForceCaseInsensitivePropertyMap), out var forceCaseInsensitivePropertyMap)
+            ? GetBooleanSettingFromString(forceCaseInsensitivePropertyMap)
+            : BooleanSetting.Undefined;
+
+        this.IgnoreUnderscoreForPropertyMap = options.TryGetValue(GetOptionName(MappaSettingsIgnoreUnderscoreForPropertyMap), out var ignoreUnderscoreForPropertyMap)
+            ? GetBooleanSettingFromString(ignoreUnderscoreForPropertyMap)
             : BooleanSetting.Undefined;
 
         static CultureInfoSetting GetCultureInfoSettingsFromString(string cultureInfoSettings)
@@ -275,6 +293,12 @@ internal sealed class MappaGlobalOptions
 
     /// <inheritdoc/>
     public BooleanSetting PolymorphicMapMethodWithMatchingDefaultAttribute { get; }
+
+    /// <inheritdoc/>
+    public BooleanSetting ForceCaseInsensitivePropertyMap { get; }
+
+    /// <inheritdoc/>
+    public BooleanSetting IgnoreUnderscoreForPropertyMap { get; }
 
     /// <summary>
     /// Gets a value indicating whether to report debug INFO diagnostics.

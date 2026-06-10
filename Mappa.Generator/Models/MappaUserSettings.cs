@@ -26,6 +26,8 @@ internal sealed class MappaUserSettings
     private readonly StackSetting<BooleanSetting> fastCollections;
     private readonly StackSetting<BooleanSetting> containerCapacityConstructors;
     private readonly StackSetting<BooleanSetting> polymorphicMapMethodWithMatchingDefaultAttribute;
+    private readonly StackSetting<BooleanSetting> forceCaseInsensitivePropertyMap;
+    private readonly StackSetting<BooleanSetting> ignoreUnderscoreForPropertyMap;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaUserSettings"/> class.
@@ -45,7 +47,9 @@ internal sealed class MappaUserSettings
             otherSettings.PragmaWarning,
             otherSettings.FastCollections,
             otherSettings.ContainerCapacityConstructors,
-            otherSettings.PolymorphicMapMethodWithMatchingDefaultAttribute)
+            otherSettings.PolymorphicMapMethodWithMatchingDefaultAttribute,
+            otherSettings.ForceCaseInsensitivePropertyMap,
+            otherSettings.IgnoreUnderscoreForPropertyMap)
     {
     }
 
@@ -65,6 +69,8 @@ internal sealed class MappaUserSettings
     /// <param name="fastCollections">Enable or disable fast collection iterations for arrays and <see cref="List{T}"/> via <c>Span{T}</c>.</param>
     /// <param name="containerCapacityConstructors">Enable or disable the ability to support custom collection with capacity constructor.</param>
     /// <param name="polymorphicMapMethodWithMatchingDefaultAttribute">Enable or disable the support for <see cref="MappaTypeMappingDefaultBehavior.MapSourceType"/> when picking up a polymorphic method.</param>
+    /// <param name="forceCaseInsensitivePropertyMap">Enable or disable case-insensitive matching when pairing a target member with a source property by name.</param>
+    /// <param name="ignoreUnderscoreForPropertyMap">Enable or disable ignoring underscore characters when pairing a target member with a source property by name.</param>
     private MappaUserSettings(
         string? dateTimeFormat,
         string? dateTimeOffsetFormat,
@@ -78,7 +84,9 @@ internal sealed class MappaUserSettings
         PragmaWarningSetting pragmaWarningSetting,
         BooleanSetting fastCollections,
         BooleanSetting containerCapacityConstructors,
-        BooleanSetting polymorphicMapMethodWithMatchingDefaultAttribute)
+        BooleanSetting polymorphicMapMethodWithMatchingDefaultAttribute,
+        BooleanSetting forceCaseInsensitivePropertyMap,
+        BooleanSetting ignoreUnderscoreForPropertyMap)
     {
         this.dateTimeFormat = new(dateTimeFormat);
         this.dateTimeOffsetFormat = new(dateTimeOffsetFormat);
@@ -93,6 +101,8 @@ internal sealed class MappaUserSettings
         this.fastCollections = new(fastCollections);
         this.containerCapacityConstructors = new(containerCapacityConstructors);
         this.polymorphicMapMethodWithMatchingDefaultAttribute = new(polymorphicMapMethodWithMatchingDefaultAttribute);
+        this.forceCaseInsensitivePropertyMap = new(forceCaseInsensitivePropertyMap);
+        this.ignoreUnderscoreForPropertyMap = new(ignoreUnderscoreForPropertyMap);
     }
 
     /// <inheritdoc />
@@ -134,6 +144,12 @@ internal sealed class MappaUserSettings
     /// <inheritdoc/>
     public BooleanSetting PolymorphicMapMethodWithMatchingDefaultAttribute => this.polymorphicMapMethodWithMatchingDefaultAttribute;
 
+    /// <inheritdoc/>
+    public BooleanSetting ForceCaseInsensitivePropertyMap => this.forceCaseInsensitivePropertyMap;
+
+    /// <inheritdoc/>
+    public BooleanSetting IgnoreUnderscoreForPropertyMap => this.ignoreUnderscoreForPropertyMap;
+
     /// <summary>
     /// Push the changes required by the <paramref name="mappaSettingsAttribute"/> on the stack.
     /// If <paramref name="mappaSettingsAttribute"/> is <c>null</c>
@@ -164,6 +180,8 @@ internal sealed class MappaUserSettings
             this.fastCollections.Apply(mappaSettingsAttribute.FastCollections is not BooleanSetting.Undefined ? mappaSettingsAttribute.FastCollections : this.fastCollections),
             this.containerCapacityConstructors.Apply(mappaSettingsAttribute.ContainerCapacityConstructors is not BooleanSetting.Undefined ? mappaSettingsAttribute.ContainerCapacityConstructors : this.containerCapacityConstructors),
             this.polymorphicMapMethodWithMatchingDefaultAttribute.Apply(mappaSettingsAttribute.PolymorphicMapMethodWithMatchingDefaultAttribute is not BooleanSetting.Undefined ? mappaSettingsAttribute.PolymorphicMapMethodWithMatchingDefaultAttribute : this.polymorphicMapMethodWithMatchingDefaultAttribute),
+            this.forceCaseInsensitivePropertyMap.Apply(mappaSettingsAttribute.ForceCaseInsensitivePropertyMap is not BooleanSetting.Undefined ? mappaSettingsAttribute.ForceCaseInsensitivePropertyMap : this.forceCaseInsensitivePropertyMap),
+            this.ignoreUnderscoreForPropertyMap.Apply(mappaSettingsAttribute.IgnoreUnderscoreForPropertyMap is not BooleanSetting.Undefined ? mappaSettingsAttribute.IgnoreUnderscoreForPropertyMap : this.ignoreUnderscoreForPropertyMap),
  #pragma warning restore CA2000
         ]);
     }

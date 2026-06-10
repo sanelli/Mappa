@@ -6,6 +6,7 @@ using Mappa.Attributes;
 using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Exceptions;
 using Mappa.Generator.Extensions;
+using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -132,25 +133,29 @@ internal sealed class ConstructorMapStrategyDetector
                                     : [];
 
                                 string expectedSourcePropertyName;
-                                StringComparison expectedSourcePropertyComparison;
+                                var useExactNameFromAttribute = false;
                                 switch (usePropertyAttributes.Length)
                                 {
                                     case 0:
                                         expectedSourcePropertyName = targetParameter.Name;
-                                        expectedSourcePropertyComparison = StringComparison.OrdinalIgnoreCase;
                                         break;
                                     case 1:
                                         expectedSourcePropertyName = usePropertyAttributes[0].SourcePropertyName;
-                                        expectedSourcePropertyComparison = StringComparison.Ordinal;
+                                        useExactNameFromAttribute = true;
                                         break;
                                     default:
                                         this.context.ReportDiagnostic(MappaDiagnostics.TooManyUsePropertyAttributesForTheSameTargetProperty(this.context.GetRootMapMethod().MethodDeclarationSyntax, this.context.GetRootMapMethod().MethodName, targetParameter.Name));
                                         return (targetParameter, null!, noMapStrategy);
                                 }
 
-                                IPropertySymbol? sourceProperty = Array.Find(
+                                PropertyMapNameMatcher.TryFindSourceProperty(
                                     sourceProperties,
-                                    property => property.Name.Equals(expectedSourcePropertyName, expectedSourcePropertyComparison));
+                                    expectedSourcePropertyName,
+                                    this.context.MappaUserSettings.ForceCaseInsensitivePropertyMap,
+                                    this.context.MappaUserSettings.IgnoreUnderscoreForPropertyMap,
+                                    isConstructorParameterPath: true,
+                                    useExactNameFromAttribute,
+                                    out IPropertySymbol? sourceProperty);
 
                                 // Look for any attribute action that can be applied
                                 if (this.context.MapMethod is not null &&
@@ -389,9 +394,7 @@ internal sealed class ConstructorMapStrategyDetector
                     // Ignore indexer properties.
                     // Ignore properties without a setter.
                     .Where(property => !property.IsIndexer && property.IsGetterAccessible(this.compilation, this.context.GetRootMapMethod()))
-
-                    // Map them to a dictionary
-                    .ToDictionary(property => property.Name);
+                    .ToArray();
 
                 // Match target property with a source property.
                 var initializerStrategies = targetProperties
@@ -405,13 +408,13 @@ internal sealed class ConstructorMapStrategyDetector
                     .Select(
                         targetProperty =>
                         {
-                            // TODO [#9] Allow property mapping regardless of casing using an attribute.
                             // Try to get a matching property
                             var usePropertyAttributes = this.context.MapMethod is not null
                                 ? this.context.MapMethod.GetAttributes<MappaUsePropertyAttribute>().Where(attribute => attribute.TargetPropertyName.Equals(targetProperty.Name, StringComparison.Ordinal)).ToArray()
                                 : [];
 
                             string expectedSourcePropertyName;
+                            var useExactNameFromAttribute = false;
                             switch (usePropertyAttributes.Length)
                             {
                                 case 0:
@@ -419,20 +422,21 @@ internal sealed class ConstructorMapStrategyDetector
                                     break;
                                 case 1:
                                     expectedSourcePropertyName = usePropertyAttributes[0].SourcePropertyName;
+                                    useExactNameFromAttribute = true;
                                     break;
                                 default:
                                     this.context.ReportDiagnostic(MappaDiagnostics.TooManyUsePropertyAttributesForTheSameTargetProperty(this.context.GetRootMapMethod().MethodDeclarationSyntax, this.context.GetRootMapMethod().MethodName, targetProperty.Name));
                                     return new PropertyMapStrategy(targetProperty, null, noMapStrategy, false);
                             }
 
-                            var hasSourceProperty = sourceProperties.TryGetValue(expectedSourcePropertyName, out var sourceProperty);
-
-                            // Just to be sure force source property to null
-                            // since there seems to be no guarantee on the valuer returned.
-                            if (!hasSourceProperty)
-                            {
-                                sourceProperty = null;
-                            }
+                            PropertyMapNameMatcher.TryFindSourceProperty(
+                                sourceProperties,
+                                expectedSourcePropertyName,
+                                this.context.MappaUserSettings.ForceCaseInsensitivePropertyMap,
+                                this.context.MappaUserSettings.IgnoreUnderscoreForPropertyMap,
+                                isConstructorParameterPath: false,
+                                useExactNameFromAttribute,
+                                out IPropertySymbol? sourceProperty);
 
                             // Look for any attribute action that can be applied
                             if (this.context.MapMethod is not null
@@ -450,7 +454,7 @@ internal sealed class ConstructorMapStrategyDetector
                                     return new PropertyMapStrategy(targetProperty, null, noMapStrategy, false);
                                 }
 
-                                propertyStrategyFromAttribute = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, [.. sourceProperties.Values], propertyStrategyFromAttribute);
+                                propertyStrategyFromAttribute = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, sourceProperties, propertyStrategyFromAttribute);
                                 propertyStrategyFromAttribute = this.EncapsulateMapStrategyForTargetOptional(targetProperty, allTargetProperties, propertyStrategyFromAttribute, out var postConstructorInitializer);
                                 return new PropertyMapStrategy(targetProperty, sourceProperty, propertyStrategyFromAttribute, postConstructorInitializer);
                             }
@@ -539,7 +543,7 @@ internal sealed class ConstructorMapStrategyDetector
                             }
 
                             // Look for a matching source property
-                            if (!hasSourceProperty || sourceProperty is null)
+                            if (sourceProperty is null)
                             {
                                 return new PropertyMapStrategy(targetProperty, sourceProperty, noMapStrategy, false);
                             }
@@ -554,7 +558,7 @@ internal sealed class ConstructorMapStrategyDetector
 
                             if (this.TryGetStrategyBetweenTypes(targetPropertyType, sourcePropertyType, true, out var propertyStrategy))
                             {
-                                propertyStrategy = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, [.. sourceProperties.Values], propertyStrategy);
+                                propertyStrategy = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, sourceProperties, propertyStrategy);
                                 propertyStrategy = this.EncapsulateMapStrategyForTargetOptional(targetProperty, allTargetProperties, propertyStrategy, out var postConstructorInitializer);
                                 return new PropertyMapStrategy(targetProperty, sourceProperty, propertyStrategy, postConstructorInitializer);
                             }

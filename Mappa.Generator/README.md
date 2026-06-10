@@ -124,8 +124,8 @@ where `TSource` is the source type of the mapping and `TTarget` is the target ty
      - A mapping from `Guid` to `byte[]`/`Span<byte>` is defined using the relevant `Guid` constructors or the `Guid.ToByteArray()` method
 11. <u>Constructor strategy</u>:
     - _When_:
-       - `TTarget` type has one constructor with no parameters and each property with a setter can be assigned from a `TSource` property with the same name (case-sensitive) OR,
-       - `TTarget` type has one constructor with parameters and each constructor argument can be assigned from a `TSource` property with the same name (case-insensitive);
+       - `TTarget` type has one constructor with no parameters and each property with a setter can be assigned from a `TSource` property with the same name (case-sensitive by default, configurable via `ForceCaseInsensitivePropertyMap` and `IgnoreUnderscoreForPropertyMap` in `MappaSettings`) OR,
+       - `TTarget` type has one constructor with parameters and each constructor argument can be assigned from a `TSource` property with the same name (case-insensitive by default, with optional underscore-insensitive matching via `IgnoreUnderscoreForPropertyMap` in `MappaSettings`);
     - _What_:
        - Each property or constructor argument is mapped and a new instance of `TTarget` is generated;
        - Get-only dictionary or collection properties for which a mapper exists are filled with mapped values from the corresponding source;

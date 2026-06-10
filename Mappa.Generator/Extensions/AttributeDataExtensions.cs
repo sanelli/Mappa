@@ -312,6 +312,14 @@ internal static class AttributeDataExtensions
                 case nameof(MappaSettingsAttribute.PolymorphicMapMethodWithMatchingDefaultAttribute) when namedArgument.Value.Value is int value:
                     attribute.PolymorphicMapMethodWithMatchingDefaultAttribute = (BooleanSetting)value;
                     break;
+
+                case nameof(MappaSettingsAttribute.ForceCaseInsensitivePropertyMap) when namedArgument.Value.Value is int value:
+                    attribute.ForceCaseInsensitivePropertyMap = (BooleanSetting)value;
+                    break;
+
+                case nameof(MappaSettingsAttribute.IgnoreUnderscoreForPropertyMap) when namedArgument.Value.Value is int value:
+                    attribute.IgnoreUnderscoreForPropertyMap = (BooleanSetting)value;
+                    break;
             }
         }
 

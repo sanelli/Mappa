@@ -54,6 +54,7 @@ internal static class Program
         ParamsAndInMapperRunner.Run(report);
         PolymorphicMethodMapMapperRunner.Run(report);
         PolymorphismMappersRunner.Run(report);
+        PropertyMapNameSettingsMapperRunner.Run(report);
         PragmaWarningSettingMapperRunner.Run(report);
         ProtobufOptionalMapperRunner.Run(report);
         ReadOnlyTargetCollectionMapperRunner.Run(report);
