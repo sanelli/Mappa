@@ -90,4 +90,18 @@ internal interface IMappaUserSettings
     /// the <see cref="MappaTypeMappingDefaultAttribute"/>.
     /// </summary>
     BooleanSetting PolymorphicMapMethodWithMatchingDefaultAttribute { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether source property names are matched
+    /// case-insensitively when pairing a target property or constructor parameter
+    /// with a source property by name.
+    /// </summary>
+    BooleanSetting ForceCaseInsensitivePropertyMap { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether underscore characters are ignored
+    /// when pairing a target property or constructor parameter with a source property
+    /// by name.
+    /// </summary>
+    BooleanSetting IgnoreUnderscoreForPropertyMap { get; }
 }
