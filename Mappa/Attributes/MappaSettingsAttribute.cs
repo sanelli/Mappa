@@ -93,4 +93,18 @@ public sealed class MappaSettingsAttribute
     /// the <see cref="MappaTypeMappingDefaultAttribute"/>.
     /// </summary>
     public BooleanSetting PolymorphicMapMethodWithMatchingDefaultAttribute { get; set; } = BooleanSetting.Undefined;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether source property names are matched
+    /// case-insensitively when pairing a target property or constructor parameter
+    /// with a source property by name.
+    /// </summary>
+    public BooleanSetting ForceCaseInsensitivePropertyMap { get; set; } = BooleanSetting.Undefined;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether underscore characters are ignored
+    /// when pairing a target property or constructor parameter with a source property
+    /// by name.
+    /// </summary>
+    public BooleanSetting IgnoreUnderscoreForPropertyMap { get; set; } = BooleanSetting.Undefined;
 }
