@@ -157,6 +157,15 @@ internal static class AotSampleData
     };
 
     /// <summary>
+    /// Gets a <see cref="PropertyMapNameSettingsSourceModel"/> with user_name 42 and PropertyB 7.
+    /// </summary>
+    public static PropertyMapNameSettingsSourceModel PropertyMapNameSettingsSourceModel42Seven { get; } = new()
+    {
+        user_name = 42,
+        PropertyB = 7,
+    };
+
+    /// <summary>
     /// Gets a <see cref="SourceClassModel"/> with ParamA 13 and ParamB One.
     /// </summary>
     public static SourceClassModel SourceClassModel13One { get; } = new()
