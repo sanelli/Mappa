@@ -5,6 +5,7 @@
 using Google.Protobuf.WellKnownTypes;
 
 using Mappa.Dependency.Protobuf;
+using Mappa.Generator.Tests.Helpers;
 using Mappa.Generator.Tests.Models;
 
 namespace Mappa.Generator.Tests.Abstractions;
@@ -17,6 +18,8 @@ namespace Mappa.Generator.Tests.Abstractions;
 public abstract class MappaGeneratorAbstractUnitTests
  #pragma warning restore CA1515
 {
+    private const string SourceFilePath = "/Source.cs";
+
     /// <summary>
     /// Run the generator on the input source.
     /// </summary>
@@ -24,21 +27,27 @@ public abstract class MappaGeneratorAbstractUnitTests
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The driver, the cancellation output and the diagnostics.</returns>
     protected static Task<GeneratedResults> RunMappaGeneratorAsync(string source, CancellationToken cancellationToken)
-        => RunMappaGeneratorAsync([source], cancellationToken);
+        => RunMappaGeneratorAsync(source, null, cancellationToken);
 
     /// <summary>
-    /// Run the generator on the input sources.
+    /// Run the generator on the input source with an optional <c>.editorconfig</c>.
     /// </summary>
-    /// <param name="sources">The input sources.</param>
+    /// <param name="source">The input source code.</param>
+    /// <param name="editorConfig">The optional <c>.editorconfig</c> content.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The driver, the cancellation output and the diagnostics.</returns>
-    private static Task<GeneratedResults> RunMappaGeneratorAsync(
-        IEnumerable<string> sources,
-        CancellationToken cancellationToken)
+    protected static Task<GeneratedResults> RunMappaGeneratorAsync(string source, string? editorConfig, CancellationToken cancellationToken)
     {
         var generator = new MappaGenerator();
-        var compilation = BuildCompilation(sources);
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
+        var compilation = BuildCompilation(source);
+        GeneratorDriver driver = editorConfig is null
+            ? CSharpGeneratorDriver.Create(generator)
+            : CSharpGeneratorDriver.Create(
+                [generator.AsSourceGenerator()],
+                additionalTexts: null,
+                parseOptions: null,
+                optionsProvider: TestAnalyzerConfigOptionsProvider.FromEditorConfig(editorConfig));
+
         driver = driver.RunGeneratorsAndUpdateCompilation(
             compilation,
             out var outputCompilation,
@@ -50,9 +59,9 @@ public abstract class MappaGeneratorAbstractUnitTests
     /// <summary>
     /// Create a new compilation for the source generator.
     /// </summary>
-    /// <param name="sources">The source generator.</param>
+    /// <param name="source">The input source code.</param>
     /// <returns>The compilation.</returns>
-    private static CSharpCompilation BuildCompilation(IEnumerable<string> sources)
+    protected static CSharpCompilation BuildCompilation(string source)
     {
         var frameworkPath = Path.GetDirectoryName(typeof(Attribute).GetTypeInfo().Assembly.Location)!;
         var metadataReferences = new List<PortableExecutableReference>
@@ -70,12 +79,13 @@ public abstract class MappaGeneratorAbstractUnitTests
             MetadataReference.CreateFromFile(Path.Combine(frameworkPath, "System.Collections.Concurrent.dll")),
         };
 
-        var compilation = CSharpCompilation.Create(
-            typeof(MappaGeneratorAbstractUnitTests).Assembly.FullName,
-            sources.Select(source => CSharpSyntaxTree.ParseText(source)),
-            metadataReferences,
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var parseOptions = CSharpParseOptions.Default;
+        var compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
 
-        return compilation;
+        return CSharpCompilation.Create(
+            typeof(MappaGeneratorAbstractUnitTests).Assembly.FullName,
+            [CSharpSyntaxTree.ParseText(source, parseOptions, SourceFilePath)],
+            metadataReferences,
+            compilationOptions);
     }
 }
