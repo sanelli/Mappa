@@ -44,6 +44,61 @@ internal interface IMappaUserSettings
     string? GuidFormat { get; }
 
     /// <summary>
+    /// Gets the format when using <see cref="byte.ToString(string,System.IFormatProvider)"/> when converting to <see cref="string"/>.
+    /// </summary>
+    string? ByteFormat { get; }
+
+    /// <summary>
+    /// Gets the format when using <see cref="sbyte.ToString(string,System.IFormatProvider)"/> when converting to <see cref="string"/>.
+    /// </summary>
+    string? SByteFormat { get; }
+
+    /// <summary>
+    /// Gets the format when using <see cref="short.ToString(string,System.IFormatProvider)"/> when converting to <see cref="string"/>.
+    /// </summary>
+    string? ShortFormat { get; }
+
+    /// <summary>
+    /// Gets the format when using <see cref="ushort.ToString(string,System.IFormatProvider)"/> when converting to <see cref="string"/>.
+    /// </summary>
+    string? UShortFormat { get; }
+
+    /// <summary>
+    /// Gets the format when using <see cref="int.ToString(string,System.IFormatProvider)"/> when converting to <see cref="string"/>.
+    /// </summary>
+    string? IntFormat { get; }
+
+    /// <summary>
+    /// Gets the format when using <see cref="uint.ToString(string,System.IFormatProvider)"/> when converting to <see cref="string"/>.
+    /// </summary>
+    string? UIntFormat { get; }
+
+    /// <summary>
+    /// Gets the format when using <see cref="long.ToString(string,System.IFormatProvider)"/> when converting to <see cref="string"/>.
+    /// </summary>
+    string? LongFormat { get; }
+
+    /// <summary>
+    /// Gets the format when using <see cref="ulong.ToString(string,System.IFormatProvider)"/> when converting to <see cref="string"/>.
+    /// </summary>
+    string? ULongFormat { get; }
+
+    /// <summary>
+    /// Gets the format when using <see cref="decimal.ToString(string,System.IFormatProvider)"/> when converting to <see cref="string"/>.
+    /// </summary>
+    string? DecimalFormat { get; }
+
+    /// <summary>
+    /// Gets the format when using <see cref="float.ToString(string,System.IFormatProvider)"/> when converting to <see cref="string"/>.
+    /// </summary>
+    string? FloatFormat { get; }
+
+    /// <summary>
+    /// Gets the format when using <see cref="double.ToString(string,System.IFormatProvider)"/> when converting to <see cref="string"/>.
+    /// </summary>
+    string? DoubleFormat { get; }
+
+    /// <summary>
     /// Gets the <see cref="CultureInfo"/> to use when converting to string or parsing form string.
     /// </summary>
     CultureInfoSetting CultureInfoSetting { get; }

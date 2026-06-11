@@ -285,6 +285,50 @@ internal static class AttributeDataExtensions
                     attribute.GuidFormat = value;
                     break;
 
+                case nameof(MappaSettingsAttribute.ByteFormat) when namedArgument.Value.Value is string value:
+                    attribute.ByteFormat = value;
+                    break;
+
+                case nameof(MappaSettingsAttribute.SByteFormat) when namedArgument.Value.Value is string value:
+                    attribute.SByteFormat = value;
+                    break;
+
+                case nameof(MappaSettingsAttribute.ShortFormat) when namedArgument.Value.Value is string value:
+                    attribute.ShortFormat = value;
+                    break;
+
+                case nameof(MappaSettingsAttribute.UShortFormat) when namedArgument.Value.Value is string value:
+                    attribute.UShortFormat = value;
+                    break;
+
+                case nameof(MappaSettingsAttribute.IntFormat) when namedArgument.Value.Value is string value:
+                    attribute.IntFormat = value;
+                    break;
+
+                case nameof(MappaSettingsAttribute.UIntFormat) when namedArgument.Value.Value is string value:
+                    attribute.UIntFormat = value;
+                    break;
+
+                case nameof(MappaSettingsAttribute.LongFormat) when namedArgument.Value.Value is string value:
+                    attribute.LongFormat = value;
+                    break;
+
+                case nameof(MappaSettingsAttribute.ULongFormat) when namedArgument.Value.Value is string value:
+                    attribute.ULongFormat = value;
+                    break;
+
+                case nameof(MappaSettingsAttribute.DecimalFormat) when namedArgument.Value.Value is string value:
+                    attribute.DecimalFormat = value;
+                    break;
+
+                case nameof(MappaSettingsAttribute.FloatFormat) when namedArgument.Value.Value is string value:
+                    attribute.FloatFormat = value;
+                    break;
+
+                case nameof(MappaSettingsAttribute.DoubleFormat) when namedArgument.Value.Value is string value:
+                    attribute.DoubleFormat = value;
+                    break;
+
                 case nameof(MappaSettingsAttribute.CultureName) when namedArgument.Value.Value is string value:
                     attribute.CultureName = value;
                     break;
