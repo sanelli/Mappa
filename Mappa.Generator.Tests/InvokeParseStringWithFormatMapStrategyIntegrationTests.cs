@@ -939,4 +939,325 @@ public sealed class InvokeParseStringWithFormatMapStrategyIntegrationTests
                         });
                 });
     }
+
+    /// <summary>
+    /// Test a mapping can be created when mapping a <see cref="string"/>
+    /// to a <paramref name="targetType"/> with only format defined in <c>.editorconfig</c>.
+    /// </summary>
+    /// <param name="targetType">The target of the mapping.</param>
+    /// <param name="format">The format.</param>
+    /// <param name="editorConfigFormatKey">The <c>.editorconfig</c> key suffix for the format setting.</param>
+    /// <param name="parseExact"><c>true</c> if the <paramref name="targetType"/> support <c>ParseExact(string,string)</c>.</param>
+    /// <returns>The async task.</returns>
+    [Theory]
+    [InlineData(typeof(DateTime), "d", "datetimeformat", false)]
+    [InlineData(typeof(DateTimeOffset), "d", "datetimeoffsetformat", false)]
+    [InlineData(typeof(DateOnly), "d", "dateonlyformat", true)]
+    [InlineData(typeof(TimeOnly), "t", "timeonlyformat", true)]
+    [InlineData(typeof(TimeSpan), "c", "timespanformat", false)]
+    [IntegrationTest]
+    public async Task CanMapStringToTargetUsingStandardParseWhenOnlyFormatIsProvidedInEditorConfig(
+        Type targetType,
+        string format,
+        string editorConfigFormatKey,
+        bool parseExact)
+    {
+        ArgumentNullException.ThrowIfNull(targetType);
+        ArgumentException.ThrowIfNullOrWhiteSpace(format);
+        ArgumentException.ThrowIfNullOrWhiteSpace(editorConfigFormatKey);
+
+        const string identifierName = "__mappa_tmp_1";
+
+        var editorConfig = $$"""
+                             root = true
+
+                             [*.cs]
+                             mappa.{{editorConfigFormatKey}} = {{format}}
+                             """;
+
+        var sourceCode = $$"""
+                          #nullable enable
+                          using System;
+                          using Mappa.Attributes;
+
+                          namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                          [Mappa]
+                          public sealed partial class Mapper
+                          {
+                              public partial {{targetType}} Map(string input);
+                          }
+                          """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, editorConfig, CancellationToken.None).ConfigureAwait(true);
+
+        var warnings = parseExact ? Array.Empty<string>() : new[] { "MP00013" };
+
+        // Assert
+        generatedResults.Should()
+            .HaveOnlyWarnings(warnings)
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                targetType.ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(string).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(2)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                targetType.ToString(),
+                                identifierName,
+                                expressionSyntaxAssertions =>
+                                {
+                                    if (parseExact)
+                                    {
+                                        expressionSyntaxAssertions.BeInvocationExpressionSyntax(
+                                            $"{targetType.FullName}.ParseExact",
+                                            firstParameter => firstParameter.BeIdentifierNameSyntax("input"),
+                                            secondParameter => secondParameter.BeLiteralExpressionSyntax(format));
+                                    }
+                                    else
+                                    {
+                                        expressionSyntaxAssertions.BeInvocationExpressionSyntax(
+                                            $"{targetType.FullName}.Parse",
+                                            firstParameter => firstParameter.BeIdentifierNameSyntax("input"));
+                                    }
+                                });
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax(identifierName));
+                        });
+                });
+    }
+
+    /// <summary>
+    /// Test class-level format settings override format settings defined in <c>.editorconfig</c>.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapStringToDateOnlyAndFormatInEditorConfigIsOverriddenByClassAttribute()
+    {
+        const string identifierName = "__mappa_tmp_1";
+
+        const string editorConfig = """
+                                    root = true
+
+                                    [*.cs]
+                                    mappa.dateonlyformat = bad
+                                    """;
+
+        const string sourceCode = """
+                                  #nullable enable
+                                  using System;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  [Mappa]
+                                  [MappaSettings(DateOnlyFormat = "d")]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial DateOnly Map(string input);
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, editorConfig, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                typeof(DateOnly).ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(string).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(2)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(DateOnly).ToString(),
+                                identifierName,
+                                expressionSyntaxAssertions => expressionSyntaxAssertions.BeInvocationExpressionSyntax(
+                                    $"{typeof(DateOnly).FullName}.ParseExact",
+                                    firstParameter => firstParameter.BeIdentifierNameSyntax("input"),
+                                    secondParameter => secondParameter.BeLiteralExpressionSyntax("d")));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax(identifierName));
+                        });
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping can be created when mapping a <see cref="string"/>
+    /// to a <paramref name="targetType"/> with format and invariant culture defined in <c>.editorconfig</c>.
+    /// </summary>
+    /// <param name="targetType">The target of the mapping.</param>
+    /// <param name="format">The format.</param>
+    /// <param name="editorConfigFormatKey">The <c>.editorconfig</c> key suffix for the format setting.</param>
+    /// <returns>The async task.</returns>
+    [Theory]
+    [InlineData(typeof(DateTime), "d", "datetimeformat")]
+    [InlineData(typeof(DateTimeOffset), "d", "datetimeoffsetformat")]
+    [InlineData(typeof(DateOnly), "d", "dateonlyformat")]
+    [InlineData(typeof(TimeOnly), "t", "timeonlyformat")]
+    [InlineData(typeof(TimeSpan), "c", "timespanformat")]
+    [IntegrationTest]
+    public async Task CanMapStringToTargetUsingParseExactAndInvariantCultureDefinedInEditorConfig(
+        Type targetType,
+        string format,
+        string editorConfigFormatKey)
+    {
+        ArgumentNullException.ThrowIfNull(targetType);
+        ArgumentException.ThrowIfNullOrWhiteSpace(format);
+        ArgumentException.ThrowIfNullOrWhiteSpace(editorConfigFormatKey);
+
+        const string identifierName = "__mappa_tmp_1";
+
+        var editorConfig = $$"""
+                             root = true
+
+                             [*.cs]
+                             mappa.{{editorConfigFormatKey}} = {{format}}
+                             mappa.cultureinfosettings = InvariantCulture
+                             """;
+
+        var sourceCode = $$"""
+                          #nullable enable
+                          using System;
+                          using Mappa.Attributes;
+
+                          namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                          [Mappa]
+                          public sealed partial class Mapper
+                          {
+                              public partial {{targetType}} Map(string input);
+                          }
+                          """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, editorConfig, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                targetType.ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(string).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(2)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                targetType.ToString(),
+                                identifierName,
+                                expressionSyntaxAssertions => expressionSyntaxAssertions.BeInvocationExpressionSyntax(
+                                    $"{targetType.FullName}.ParseExact",
+                                    firstParameter => firstParameter.BeIdentifierNameSyntax("input"),
+                                    secondParameter => secondParameter.BeLiteralExpressionSyntax(format),
+                                    thirdParameter => thirdParameter.BeMemberAccessExpressionSyntax("System.Globalization.CultureInfo.InvariantCulture")));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax(identifierName));
+                        });
+                });
+    }
+
+    /// <summary>
+    /// Test class-level culture settings override culture settings defined in <c>.editorconfig</c>.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapStringToDateTimeAndCultureInEditorConfigIsOverriddenByClassAttribute()
+    {
+        const string identifierName = "__mappa_tmp_1";
+
+        const string editorConfig = """
+                                    root = true
+
+                                    [*.cs]
+                                    mappa.datetimeformat = d
+                                    mappa.cultureinfosettings = InvariantCulture
+                                    """;
+
+        const string sourceCode = """
+                                  #nullable enable
+                                  using System;
+                                  using Mappa;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  [Mappa]
+                                  [MappaSettings(CultureInfoSetting = CultureInfoSetting.UserDefined, CultureName = "it-IT")]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial DateTime Map(string input);
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, editorConfig, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                typeof(DateTime).ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(string).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(2)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(DateTime).ToString(),
+                                identifierName,
+                                expressionSyntaxAssertions => expressionSyntaxAssertions.BeInvocationExpressionSyntax(
+                                    $"{typeof(DateTime).FullName}.ParseExact",
+                                    firstParameter => firstParameter.BeIdentifierNameSyntax("input"),
+                                    secondParameter => secondParameter.BeLiteralExpressionSyntax("d"),
+                                    thirdParameter => thirdParameter.BeInvocationExpressionSyntax(
+                                        "System.Globalization.CultureInfo.GetCultureInfo",
+                                        getCultureInfoParameter => getCultureInfoParameter.BeLiteralExpressionSyntax("it-IT"))));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax(identifierName));
+                        });
+                });
+    }
 }

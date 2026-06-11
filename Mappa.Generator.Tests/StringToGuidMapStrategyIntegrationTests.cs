@@ -581,4 +581,139 @@ public sealed class StringToGuidMapStrategyIntegrationTests
                         });
                 });
     }
+
+    /// <summary>
+    /// Test a mapping can be created when mapping a string
+    /// to a <see cref="Guid"/> object using the format specified in <c>.editorconfig</c>.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapStringToGuidUsingGuidFormatDefinedInEditorConfig()
+    {
+        const string identifierName = "__mappa_tmp_1";
+
+        const string editorConfig = """
+                                    root = true
+
+                                    [*.cs]
+                                    mappa.guidformat = N
+                                    """;
+
+        const string sourceCode = """
+                                  #nullable enable
+                                  using System;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial Guid Map(string input);
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, editorConfig, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                typeof(Guid).ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(string).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(2)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(Guid).ToString(),
+                                identifierName,
+                                expressionSyntaxAssertions => expressionSyntaxAssertions.BeInvocationExpressionSyntax(
+                                    "System.Guid.ParseExact",
+                                    firstParameterAssertions => firstParameterAssertions.BeIdentifierNameSyntax("input"),
+                                    secondParameterAssertions => secondParameterAssertions.BeLiteralExpressionSyntax("N")));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax(identifierName));
+                        });
+                });
+    }
+
+    /// <summary>
+    /// Test class-level <see cref="MappaSettingsAttribute.GuidFormat"/> overrides
+    /// the format defined in <c>.editorconfig</c>.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapStringToGuidAndGuidFormatInEditorConfigIsOverriddenByClassAttribute()
+    {
+        const string identifierName = "__mappa_tmp_1";
+
+        const string editorConfig = """
+                                    root = true
+
+                                    [*.cs]
+                                    mappa.guidformat = N
+                                    """;
+
+        const string sourceCode = """
+                                  #nullable enable
+                                  using System;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  [Mappa]
+                                  [MappaSettings(GuidFormat = "D")]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial Guid Map(string input);
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, editorConfig, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                typeof(Guid).ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(string).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(2)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(Guid).ToString(),
+                                identifierName,
+                                expressionSyntaxAssertions => expressionSyntaxAssertions.BeInvocationExpressionSyntax(
+                                    "System.Guid.ParseExact",
+                                    firstParameterAssertions => firstParameterAssertions.BeIdentifierNameSyntax("input"),
+                                    secondParameterAssertions => secondParameterAssertions.BeLiteralExpressionSyntax("D")));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax(identifierName));
+                        });
+                });
+    }
 }

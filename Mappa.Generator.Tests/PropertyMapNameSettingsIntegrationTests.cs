@@ -905,4 +905,217 @@ public sealed class PropertyMapNameSettingsIntegrationTests
                 "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
                 "Mappa.Generator.Tests.UnitTests.SourceCode.Target");
     }
+
+    /// <summary>
+    /// Test underscore-insensitive property mapping configured via <c>.editorconfig</c>.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapUsingEmptyConstructorWhenIgnoreUnderscoreForPropertyMapIsEnabledInEditorConfig()
+    {
+        const string editorConfig = """
+                                    root = true
+
+                                    [*.cs]
+                                    mappa.ignoreunderscoreforpropertymap = enable
+                                    """;
+
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class Source
+                                  {
+                                      public int User_Name { get; set; }
+                                  }
+
+                                  public class Target
+                                  {
+                                      public string UserName { get; set; }
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial Target Map(Source input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, editorConfig, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                NullableAnnotation.NotAnnotated,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(4)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(int).ToString(),
+                                "__mappa_tmp_1",
+                                initializationAssertions => initializationAssertions.BeMemberAccessExpressionSyntax("input.User_Name")))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(string).ToString(),
+                                "__mappa_tmp_2",
+                                initializationAssertions => initializationAssertions.BeInvocationExpressionSyntax($"__mappa_tmp_1.{nameof(this.ToString)}")))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                "__mappa_tmp_3",
+                                initializationAssertions =>
+                                    initializationAssertions.BeObjectCreationExpressionSyntax(
+                                        "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                        ("UserName", initAssertions => initAssertions.BeIdentifierNameSyntax("__mappa_tmp_2")))))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_3")));
+                });
+    }
+
+    /// <summary>
+    /// Test class-level <see cref="MappaSettingsAttribute.ForceCaseInsensitivePropertyMap"/> disable overrides
+    /// enable defined in <c>.editorconfig</c>.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CannotMapUsingEmptyConstructorWhenForceCaseInsensitivePropertyMapIsEnabledInEditorConfigButDisabledOnClass()
+    {
+        const string editorConfig = """
+                                    root = true
+
+                                    [*.cs]
+                                    mappa.forcecaseinsensitivepropertymap = enable
+                                    """;
+
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class Source
+                                  {
+                                      public int propertya { get; set; }
+                                      public int PropertyB { get; set; }
+                                  }
+
+                                  public class Target
+                                  {
+                                      public string PropertyA { get; set; }
+                                      public long PropertyB { get; set; }
+                                  }
+
+                                  [Mappa]
+                                  [MappaSettings(ForceCaseInsensitivePropertyMap = BooleanSetting.Disable)]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial Target Map(Source input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, editorConfig, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.CannotMapNonRequiredProperty, "Mappa.Generator.Tests.UnitTests.SourceCode.Target", "PropertyA")
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                NullableAnnotation.NotAnnotated,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(3)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(int).ToString(),
+                                "__mappa_tmp_1",
+                                initializationAssertions => initializationAssertions.BeMemberAccessExpressionSyntax("input.PropertyB")))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                "__mappa_tmp_2",
+                                initializationAssertions =>
+                                    initializationAssertions.BeObjectCreationExpressionSyntax(
+                                        "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                        ("PropertyB", initAssertions => initAssertions.BeIdentifierNameSyntax("__mappa_tmp_1")))))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_2")));
+                });
+    }
+
+    /// <summary>
+    /// Test class-level <see cref="MappaSettingsAttribute.IgnoreUnderscoreForPropertyMap"/> disable overrides
+    /// enable defined in <c>.editorconfig</c>.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CannotMapUsingEmptyConstructorWhenIgnoreUnderscoreForPropertyMapIsEnabledInEditorConfigButDisabledOnClass()
+    {
+        const string editorConfig = """
+                                    root = true
+
+                                    [*.cs]
+                                    mappa.ignoreunderscoreforpropertymap = enable
+                                    """;
+
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class Source
+                                  {
+                                      public int User_Name { get; set; }
+                                  }
+
+                                  public class Target
+                                  {
+                                      public string UserName { get; set; }
+                                  }
+
+                                  [Mappa]
+                                  [MappaSettings(IgnoreUnderscoreForPropertyMap = BooleanSetting.Disable)]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial Target Map(Source input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, editorConfig, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(
+                MappaDiagnosticDescriptors.CannotIdentifyStrategy,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Target");
+    }
 }

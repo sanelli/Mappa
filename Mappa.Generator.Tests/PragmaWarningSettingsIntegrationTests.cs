@@ -332,4 +332,120 @@ public sealed class PragmaWarningSettingsIntegrationTests
                         }));
                 });
     }
+
+    /// <summary>
+    /// Tests that <see cref="PragmaWarningSetting.Disable"/> defined in <c>.editorconfig</c>
+    /// surrounds the generated method with a <c>#pragma warning disable</c> block.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task PragmaWarningIsSetAsDisableWhenDefinedInEditorConfig()
+    {
+        const string editorConfig = """
+                                    root = true
+
+                                    [*.cs]
+                                    mappa.pragmawarning = disable
+                                    """;
+
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial int Map(int input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, editorConfig, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                typeof(int).ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(int).ToString(),
+                NullableAnnotation.NotAnnotated,
+                NullableSetup.Enable,
+                PragmaWarning.Disable,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(1)
+                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
+                        {
+                            expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
+                        }));
+                });
+    }
+
+    /// <summary>
+    /// Tests class-level <see cref="PragmaWarningSetting.NoBlock"/> overrides
+    /// <see cref="PragmaWarningSetting.Disable"/> defined in <c>.editorconfig</c>.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task PragmaWarningInEditorConfigIsOverriddenByClassAttributeAsNoBlock()
+    {
+        const string editorConfig = """
+                                    root = true
+
+                                    [*.cs]
+                                    mappa.pragmawarning = disable
+                                    """;
+
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  [Mappa]
+                                  [MappaSettings(PragmaWarning = PragmaWarningSetting.NoBlock)]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial int Map(int input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, editorConfig, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                typeof(int).ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(int).ToString(),
+                NullableAnnotation.NotAnnotated,
+                NullableSetup.Enable,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(1)
+                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
+                        {
+                            expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
+                        }));
+                });
+    }
 }
