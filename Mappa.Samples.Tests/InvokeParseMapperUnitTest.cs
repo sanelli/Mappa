@@ -34,6 +34,8 @@ public sealed class InvokeParseMapperUnitTest
     private readonly ParseMapperWithCurrentCultureSettingsOnClass mapperWithCurrentCultureSettingsOnClass = new();
     private readonly ParseMapperWithCustomCultureSettingsOnClass mapperWithCustomCultureSettingsOnClass = new();
     private readonly ParseMapperWithSettingsOnClassSupersededBySettingsOnMethod mapperWithSettingsOnClassSupersededBySettingsOnMethod = new();
+    private readonly ParseNumericMapperWithInvariantCultureSettingsOnMethod numericMapperWithInvariantCultureSettingsOnMethod = new();
+    private readonly ParseNumericMapperWithCustomCultureSettingsOnMethod numericMapperWithCustomCultureSettingsOnMethod = new();
 
     /// <summary>
     /// Unit test for <see cref="ParseNumericMapper.MapToSignedByte"/>.
@@ -1461,6 +1463,48 @@ public sealed class InvokeParseMapperUnitTest
 
         // Assert
         actual.Should().Be(Guid.ParseExact(input, InvokeParseStrategySettings.GuidFormat));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseNumericMapperWithInvariantCultureSettingsOnMethod.MapToInteger"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapStringToIntegerWithInvariantCultureSettingsOnMethod()
+    {
+        const string input = "100";
+
+        var actual = this.numericMapperWithInvariantCultureSettingsOnMethod.MapToInteger(input);
+
+        actual.Should().Be(int.Parse(input, CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseNumericMapperWithInvariantCultureSettingsOnMethod.MapToDecimal"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapStringToDecimalWithInvariantCultureSettingsOnMethod()
+    {
+        const string input = "100.50";
+
+        var actual = this.numericMapperWithInvariantCultureSettingsOnMethod.MapToDecimal(input);
+
+        actual.Should().Be(decimal.Parse(input, CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseNumericMapperWithCustomCultureSettingsOnMethod.MapToDecimal"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapStringToDecimalWithCustomCultureSettingsOnMethod()
+    {
+        const string input = "100,50";
+
+        var actual = this.numericMapperWithCustomCultureSettingsOnMethod.MapToDecimal(input);
+
+        actual.Should().Be(decimal.Parse(input, CultureInfo.GetCultureInfo(InvokeParseStrategySettings.CultureName)));
     }
 
     /// <summary>

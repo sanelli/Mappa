@@ -27,6 +27,9 @@ public sealed class InvokeToStringMapperUnitTest
     private readonly InvokeToStringMapperWithCurrentCultureSettingsOnClass mapperWithCurrentCultureSettingsOnClass = new();
     private readonly InvokeToStringMapperWithCustomCultureSettingsOnClass mapperWithCustomCultureSettingsOnClass = new();
     private readonly InvokeToStringMapperWithFormatAndInvariantCultureSettingsOnMethodSupersedingTheOnesOnClass mapperWithMethodSettingsSupersedingTheClassSettings = new();
+    private readonly InvokeToStringNumericMapperWithFormatSettingsOnMethod numericMapperWithFormatSettingsOnMethod = new();
+    private readonly InvokeToStringNumericMapperWithFormatAndInvariantCultureSettingsOnMethod numericMapperWithFormatAndInvariantCultureSettingsOnMethod = new();
+    private readonly InvokeToStringNumericMapperWithInvariantCultureSettingsOnMethod numericMapperWithInvariantCultureSettingsOnMethod = new();
 
     /// <summary>
     /// Unit test for <see cref="InvokeToStringMapper.MapInt"/>.
@@ -1122,5 +1125,65 @@ public sealed class InvokeToStringMapperUnitTest
 
         // Assert
         actual.Should().Be(input.ToString(InvokeToStringStrategySettings.GuidFormat, CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="InvokeToStringNumericMapperWithFormatSettingsOnMethod.MapInt"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapIntToStringWithNumericFormatSettingsOnMethod()
+    {
+        const int input = 100;
+
+        var actual = this.numericMapperWithFormatSettingsOnMethod.MapInt(input);
+
+#pragma warning disable CA1305
+        actual.Should().Be(input.ToString(InvokeToStringStrategySettings.IntFormat));
+#pragma warning restore CA1305
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="InvokeToStringNumericMapperWithFormatSettingsOnMethod.MapDecimal"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDecimalToStringWithNumericFormatSettingsOnMethod()
+    {
+        const decimal input = 100.5m;
+
+        var actual = this.numericMapperWithFormatSettingsOnMethod.MapDecimal(input);
+
+#pragma warning disable CA1305
+        actual.Should().Be(input.ToString(InvokeToStringStrategySettings.DecimalFormat));
+#pragma warning restore CA1305
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="InvokeToStringNumericMapperWithFormatAndInvariantCultureSettingsOnMethod.MapDecimal"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDecimalToStringWithNumericFormatAndInvariantCultureSettingsOnMethod()
+    {
+        const decimal input = 100.5m;
+
+        var actual = this.numericMapperWithFormatAndInvariantCultureSettingsOnMethod.MapDecimal(input);
+
+        actual.Should().Be(input.ToString(InvokeToStringStrategySettings.DecimalFormat, CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="InvokeToStringNumericMapperWithInvariantCultureSettingsOnMethod.MapInt"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapIntToStringWithInvariantCultureSettingsOnMethodForNumericTypes()
+    {
+        const int input = 100;
+
+        var actual = this.numericMapperWithInvariantCultureSettingsOnMethod.MapInt(input);
+
+        actual.Should().Be(input.ToString(CultureInfo.InvariantCulture));
     }
 }

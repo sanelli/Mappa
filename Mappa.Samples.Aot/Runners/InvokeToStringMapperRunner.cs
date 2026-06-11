@@ -14,6 +14,7 @@ namespace Mappa.Samples.Aot.Runners;
 internal static class InvokeToStringMapperRunner
 {
     private const int SampleInt = 100;
+    private const decimal SampleDecimal = 100.5m;
     private static readonly DateTime SampleDateTime = new(2025, 2, 1, 22, 17, 34, DateTimeKind.Utc);
     private static readonly DateTimeOffset SampleDateTimeOffset = new(SampleDateTime);
     private static readonly DateOnly SampleDateOnly = new(2025, 2, 1);
@@ -39,6 +40,9 @@ internal static class InvokeToStringMapperRunner
         RunInvokeToStringMapperWithCurrentCultureSettingsOnClass(report);
         RunInvokeToStringMapperWithCustomCultureSettingsOnClass(report);
         RunInvokeToStringMapperWithFormatAndInvariantCultureSettingsOnMethodSupersedingTheOnesOnClass(report);
+        RunInvokeToStringNumericMapperWithFormatSettingsOnMethod(report);
+        RunWithInvariantCulture(() => RunInvokeToStringNumericMapperWithFormatAndInvariantCultureSettingsOnMethod(report));
+        RunWithInvariantCulture(() => RunInvokeToStringNumericMapperWithInvariantCultureSettingsOnMethod(report));
     }
 
     private static void RunWithInvariantCulture(Action action)
@@ -228,5 +232,32 @@ internal static class InvokeToStringMapperRunner
             report.RecordInvocation(nameof(InvokeToStringMapperWithFormatAndInvariantCultureSettingsOnMethodSupersedingTheOnesOnClass.MapTimeSpan), "TimeSpan", "string", SampleTimeSpan, mapper.MapTimeSpan(SampleTimeSpan));
             report.RecordInvocation(nameof(InvokeToStringMapperWithFormatAndInvariantCultureSettingsOnMethodSupersedingTheOnesOnClass.MapGuid), "Guid", "string", SampleGuid, mapper.MapGuid(SampleGuid));
         });
+    }
+
+    private static void RunInvokeToStringNumericMapperWithFormatSettingsOnMethod(AotReport report)
+    {
+        report.BeginMapper(nameof(InvokeToStringNumericMapperWithFormatSettingsOnMethod));
+        var mapper = new InvokeToStringNumericMapperWithFormatSettingsOnMethod();
+
+        report.RecordInvocation(nameof(InvokeToStringNumericMapperWithFormatSettingsOnMethod.MapInt), "int", "string", SampleInt, mapper.MapInt(SampleInt));
+        report.RecordInvocation(nameof(InvokeToStringNumericMapperWithFormatSettingsOnMethod.MapDecimal), "decimal", "string", SampleDecimal, mapper.MapDecimal(SampleDecimal));
+    }
+
+    private static void RunInvokeToStringNumericMapperWithFormatAndInvariantCultureSettingsOnMethod(AotReport report)
+    {
+        report.BeginMapper(nameof(InvokeToStringNumericMapperWithFormatAndInvariantCultureSettingsOnMethod));
+        var mapper = new InvokeToStringNumericMapperWithFormatAndInvariantCultureSettingsOnMethod();
+
+        report.RecordInvocation(nameof(InvokeToStringNumericMapperWithFormatAndInvariantCultureSettingsOnMethod.MapInt), "int", "string", SampleInt, mapper.MapInt(SampleInt));
+        report.RecordInvocation(nameof(InvokeToStringNumericMapperWithFormatAndInvariantCultureSettingsOnMethod.MapDecimal), "decimal", "string", SampleDecimal, mapper.MapDecimal(SampleDecimal));
+    }
+
+    private static void RunInvokeToStringNumericMapperWithInvariantCultureSettingsOnMethod(AotReport report)
+    {
+        report.BeginMapper(nameof(InvokeToStringNumericMapperWithInvariantCultureSettingsOnMethod));
+        var mapper = new InvokeToStringNumericMapperWithInvariantCultureSettingsOnMethod();
+
+        report.RecordInvocation(nameof(InvokeToStringNumericMapperWithInvariantCultureSettingsOnMethod.MapInt), "int", "string", SampleInt, mapper.MapInt(SampleInt));
+        report.RecordInvocation(nameof(InvokeToStringNumericMapperWithInvariantCultureSettingsOnMethod.MapDecimal), "decimal", "string", SampleDecimal, mapper.MapDecimal(SampleDecimal));
     }
 }
