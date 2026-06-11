@@ -14,7 +14,7 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Integration tests for the <see cref="InvokeToStringMapStrategy"/>.
 /// </summary>
-public sealed class InvokeToStringMapStrategyIntegrationTests
+public sealed partial class InvokeToStringMapStrategyIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {
     /// <summary>
@@ -90,70 +90,6 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
 
     /// <summary>
     /// Test a mapping can be created to <see cref="string"/>
-    /// by using the <c>T.ToString()</c> a type that is not one of the
-    /// types properly handles (e.g. <see cref="DateTime"/>,
-    /// <see cref="DateTimeOffset"/>, etc...) therefore the culture
-    /// settings are ignored.
-    /// </summary>
-    /// <returns>The async task.</returns>
-    [Fact]
-    [IntegrationTest]
-    public async Task CanMapToStringAndCultureSettingIsIgnoredForNonSpecificTypes()
-    {
-        const string identifierName = "__mappa_tmp_1";
-
-        // Arrange
-        var sourceCode = """
-                          #nullable enable
-                          using Mappa.Attributes;
-
-                          namespace Mappa.Generator.Tests.UnitTests.SourceCode;
-
-                          [Mappa]
-                          public sealed partial class Mapper
-                          {
-                              [MappaSetting(CultureInfoSetting = CultureInfo.InvariantCulture)]
-                              public partial string Map(int input);
-                          }
-                          """;
-
-        // Act
-        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
-
-        // Assert
-        generatedResults.Should()
-            .NotHaveDiagnostics()
-            .HaveGeneratedSourceCode()
-            .WithCompilationUnit()
-            .NotBeNull().And
-            .HaveDefaultMapMethod(
-                typeof(string).ToString(),
-                NullableAnnotation.NotAnnotated,
-                typeof(int).ToString(),
-                NullableAnnotation.NotAnnotated,
-                blockSyntaxAssertions =>
-                {
-                    blockSyntaxAssertions
-                        .HasSyntaxNodesCount(2)
-                        .HasNextSyntaxNode(syntaxNodeAssertions =>
-                        {
-                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
-                                typeof(string).ToString(),
-                                identifierName,
-                                expressionSyntaxAssertions =>
-                                {
-                                    expressionSyntaxAssertions.BeInvocationExpressionSyntax("input.ToString");
-                                });
-                        })
-                        .HasNextSyntaxNode(syntaxNodeAssertions =>
-                        {
-                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax(identifierName));
-                        });
-                });
-    }
-
-    /// <summary>
-    /// Test a mapping can be created to <see cref="string"/>
     /// by using the <c>T.ToString(string)</c> and format defined on method.
     /// </summary>
     /// <param name="sourceType">The type of the source.</param>
@@ -184,7 +120,7 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
                           [Mappa]
                           public sealed partial class Mapper
                           {
-                              [MappaSettings({{sourceType.ToString().Split(".")[^1]}}Format = "{{format}}"]
+                              [MappaSettings({{sourceType.ToString().Split(".")[^1]}}Format = "{{format}}")]
                               public partial string Map({{sourceType}} input);
                           }
                           """;
@@ -614,6 +550,8 @@ public sealed class InvokeToStringMapStrategyIntegrationTests
     [InlineData(typeof(DateTimeOffset))]
     [InlineData(typeof(DateOnly))]
     [InlineData(typeof(TimeOnly))]
+    [InlineData(typeof(int))]
+    [InlineData(typeof(decimal))]
     [IntegrationTest]
     public async Task CanMapToStringWithOnlyFormatProviderInvokesToStringWithFormatProviderOnly(Type sourceType)
     {
