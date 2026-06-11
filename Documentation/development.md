@@ -15,10 +15,10 @@ In order to be able to compile you need to setup a `nuget.config` like the follo
 
 The `nuget.config` can be generated automatically by running: `./Scripts/CreateNuGetConfig.ps1`
 
-The solution automatically store all NuGet packages in `.packages\` folder;
-in order to have all the project compiled it is easy just to invoke the script `./Scripts/RebuildUponVersionChange.ps1`.
+The solution automatically stores all NuGet packages in the `.packages\` folder;
+in order to have all the projects compiled, invoke the script `./Scripts/RebuildUponVersionChange.ps1`.
 
-Every time a change in the Mappa or Mappa.Generator project is provided a new version should be generated locally by:
+Every time a change in the Mappa or Mappa.Generator project is made, a new version should be generated locally by:
 - Updating the `MappaVersion.targets` by increasing the alpha version
 - Run the `./Scripts/RebuildUponVersionChange.ps1` script
 

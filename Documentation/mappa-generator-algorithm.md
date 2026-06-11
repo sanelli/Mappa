@@ -21,7 +21,7 @@ the source generator attempt to identify a mapping from `TSource` to `TTarget` b
     - _When_:
         - The method has one or multiple `[MappaTypeMapping]` attributes
     - _What_:
-        - The input type will determine how the mapping from `TSource` to `TTArget` will happen,
+        - The input type will determine how the mapping from `TSource` to `TTarget` will happen,
         - For every `[MappaTypeMapping]` attributes a mapping is created,
         - The default mapping in case the actual parameter type does not match any of the source type from the `[MappaTypeMapping]` attributes is determined by the `[MappaTypeMappingDefault]` attribute - if the attribute is not present the default behaviour will throw an exception.
 2. <u>Existing method strategy</u>
@@ -29,7 +29,7 @@ the source generator attempt to identify a mapping from `TSource` to `TTarget` b
         - A method in the same class **or a base class of the mapper** from `TSource` to `TTarget` exists OR,
         - A method from a property or field marked with the `[MappaDependency]` **on the mapper or an accessible base class of the mapper**, or from a base class of the dependency type from `TSource` to `TTarget` exists OR,
         - A method from a type defined via the `[MappaStaticDependency]` attribute exists OR,
-        - A polymorphic method where one ot the `[MappaTypeMapping]` attribute matches `TSource` and `TTarget` attribute OR,
+        - A polymorphic method where one of the `[MappaTypeMapping]` attributes matches `TSource` and `TTarget` OR,
         - Settings `PolymorphicMapMethodWithMatchingDefaultAttribute` is `Enable` and a polymorphic method with attribute `[MappaTypeMappingDefault]` and behaviour `MappaTypeMappingDefaultBehavior.MapSourceType` and `TTarget` is matching the target type defined by the attribute and `TSource` the source type of the method exists;
     - _What_:
         - the method is invoked;
@@ -63,10 +63,11 @@ the source generator attempt to identify a mapping from `TSource` to `TTarget` b
         - `TTarget` is a `string` OR
         - `TSource` is a `string` and `TTarget` is any type with an accessible static `Parse` method;
     - _What_:
-        - `TSource` is a `string` and `TTarget` is any of the numeric types then the relevant `Parse` method will be invoked;
+        - `TSource` is a `string` and `TTarget` is any of the numeric types then the relevant `Parse` method will be invoked, possibly with the culture identified by the `MappaSettings` attribute, if any is provided on the class or on the method;
         - `TSource` is a `string` and `TTarget` is any of the following types `DateTime`, `DateTimeOffset`, `DateOnly`, `TimeOnly`, `Guid` then their `TTarget.Parse` method will be used, possibly with the format and culture identified by the `MappaSettings` attribute, if any is provided on the class or on the method;
-        - `TSource` is a `string` and `TTarget` is `Uri` then the `System.UriBuilder` will be used for the mapping
+        - `TSource` is a `string` and `TTarget` is `Uri` then the `System.UriBuilder` will be used for the mapping;
         - `TTarget` is a `string` and `TSource` is any of the following types `DateTime`, `DateTimeOffset`, `DateOnly`, `TimeOnly`, `Guid` then their `TSource.ToString()` method will be used, possibly with the format and culture identified by the `MappaSettings` attribute, if any is provided on the class or on the method;
+        - `TTarget` is a `string` and `TSource` is any of the numeric types then the relevant `ToString` overload will be used, possibly with the format and culture identified by the `MappaSettings` attribute, if any is provided on the class or on the method;
         - `TTarget` is a `string` then the `TSource.ToString` method will be used;
         - `TSource` is a `string` and `TTarget` is any type with an accessible static `Parse` method then the `Parse` method is invoked (note: an existing constructor accepting only a single string parameter will take priority over this);
 7. <u>Date & Time strategy</u>:
@@ -102,7 +103,7 @@ the source generator attempt to identify a mapping from `TSource` to `TTarget` b
             - any type implementing `ICollection<T>` or `ISet<T>` that has a constructor with zero arguments (or one constructor with one integer argument of type `int` and `MappaSettings.ContainerCapacityConstructors` is enabled);
             - any type derived from `Stack<T>` or `Queue<T>` or `BlockingCollection<T>` that has a constructor with zero arguments (or one constructor with one integer argument of type `int` and `MappaSettings.ContainerCapacityConstructors` is enabled);
             - the following interfaces: `IEnumerable<T>`, `ICollection<T>`, `IReadOnlyCollection<T>`, `ISet<T>`, `IList<T>`, `IReadOnlyList<T>`, `IReadOnlySet<T>`, `IImmutableSet<T>`, `IImmutableList<T>`, `IImmutableQueue<T>`, `IImmutableStack<T>`, `IProducerConsumerCollection<T>`;
-            - the following classes: arrays, `List<T>`, `ReadOnlyCollection<T>`, `Span<T>`, `ReadOnlySpan<T>`, `Memory<T>`, `ReadOnlyMemory<T>`, `Stack<T>`, `Queue<T>`, `ReadOnlySet<T>`, `HashSet<T>`, `SortedSet<T>`, `ReadOnlyColletion<T>`, `FrozenSet<T>`, `ImmutableHashSet<T>`, `ImmutableSortedSet<T>`, `ImmutableArray<T>`, `ImmutableList<T>`, `ImmutableQueue<T>`, `ImmutableStack<T>`, `ConcurrentBag<T>`, `ConcurrentQueue<T>`, `ConcurrentStack<T>`;
+            - the following classes: arrays, `List<T>`, `ReadOnlyCollection<T>`, `Span<T>`, `ReadOnlySpan<T>`, `Memory<T>`, `ReadOnlyMemory<T>`, `Stack<T>`, `Queue<T>`, `ReadOnlySet<T>`, `HashSet<T>`, `SortedSet<T>`, `FrozenSet<T>`, `ImmutableHashSet<T>`, `ImmutableSortedSet<T>`, `ImmutableArray<T>`, `ImmutableList<T>`, `ImmutableQueue<T>`, `ImmutableStack<T>`, `ConcurrentBag<T>`, `ConcurrentQueue<T>`, `ConcurrentStack<T>`;
     - _What_:
         - A `for` loop or `foreach` loop is added to the code;
         - In the loop, each element from the source collection is mapped in an element of the target collection and then added to the target collection;
@@ -129,8 +130,8 @@ the source generator attempt to identify a mapping from `TSource` to `TTarget` b
         - A mapping from `Guid` to `byte[]`/`Span<byte>` is defined using the relevant `Guid` constructors or the `Guid.ToByteArray()` method
 11. <u>Constructor strategy</u>:
     - _When_:
-        - `TTarget` type has one constructor with no parameters and each property with a setter can be assigned from a `TSource` property with the same name (case-sensitive) OR,
-        - `TTarget` type has one constructor with parameters and each constructor argument can be assigned from a `TSource` property with the same name (case-insensitive);
+        - `TTarget` type has one constructor with no parameters and each property with a setter can be assigned from a `TSource` property with the same name (case-sensitive by default, configurable via `ForceCaseInsensitivePropertyMap` and `IgnoreUnderscoreForPropertyMap` in `MappaSettings`) OR,
+        - `TTarget` type has one constructor with parameters and each constructor argument can be assigned from a `TSource` property with the same name (case-insensitive by default, with optional underscore-insensitive matching via `IgnoreUnderscoreForPropertyMap` in `MappaSettings`);
     - _What_:
         - Each property or constructor argument is mapped and a new instance of `TTarget` is generated;
         - Get-only dictionary or collection properties for which a mapper exists are filled with mapped values from the corresponding source;
