@@ -10,12 +10,58 @@ This is the list of attributes provided:
 - `MappaIgnoreTargetProperty`: When mapping structured types (`class`, `struct` and `records`) via an empty constructor allows excluding a target property from property-initializer mapping; has no effect when mapping uses a constructor with parameters;
 - `MappaAssignFromContext`:  When mapping structured types (`class`, `struct` and `records`) allows specifying which value from the context of type `MappaContext` use for a target property or constructor parameter;
 - `MappaAssignToContext`: When mapping structured types (`class`, `struct` and `records`) via the constructor-map strategy allows storing the value of a target property or field in the `MappaContext` after the target object has been fully constructed;
-- `MappaInvokeMethodAttribute`: When mapping structured types (`class`, `struct` and `records`) allows specifying that a property or attribute should be mapped by invoking a method; methods may be declared on the mapper **or an accessible base class**, on a type specified in the attribute **or its base classes**, or on a field or property declared on the mapper **or an accessible base class** (methods on the field or property type **and its base classes** are also considered); invoked methods can optionally accept a `MappaContext` parameter (as the last parameter when combined with source and/or source-property arguments) when the map method provides one;
+- `MappaInvokeMethodAttribute`: When mapping structured types (`class`, `struct` and `records`) via the constructor-map strategy, forces a target property or constructor parameter to be mapped by invoking a named method (see [MappaInvokeMethodAttribute](#mappainvokemethodattribute) below);
 - `MappaAssignFromConstant`: When mapping structured types (`class`, `struct` and `records`) allows specifying a constant value for a target property or constructor parameter;
 - `MappaTypeMapping`: When mapping structured types (`class`, `struct` and `records`) or interfaces it allows to define the target type depending on the source type.
 - `MappaTypeMappingDefault`: Describe the default behavior for polymorphic methods defined via `MappaTypeMappingDefault`.
 
 The [Mappa](https://www.nuget.org/packages/Mappa/) package also provides the `MappaContext` class that can be used to pass contextual values to mappers via the `MappaAssignFromContext` attribute, store mapped values via the `MappaAssignToContext` attribute, or supply context to methods invoked via the `MappaInvokeMethodAttribute` attribute.
+
+## MappaInvokeMethodAttribute
+
+When the constructor-map strategy is used, this attribute forces the source generator to map a target property or constructor parameter by invoking a named method. It does not apply when mapping nested inner types.
+
+### Method location
+
+Depending on which constructor overload is used, the invoked method is resolved as follows:
+
+- `(targetPropertyName, methodName)`: a `static` or instance method declared on the mapper class or an accessible base class. When the root map method is `static`, only `static` methods are considered; otherwise both `static` and instance methods are considered.
+- `(targetPropertyName, classType, methodName)`: a `static` method declared on the specified type or one of its base classes.
+- `(targetPropertyName, fieldName, methodName)`: an instance method declared on the type of the field or property (including its base classes). The field or property must be declared on the mapper class or an accessible base class. When the root map method is `static`, the field or property must also be `static`.
+
+When multiple methods with the same name exist in a type hierarchy, methods declared on the most derived type are preferred.
+
+### Candidate requirements
+
+Every candidate method must satisfy all of the following:
+
+- Its name matches the method name specified in the attribute exactly.
+- Its return type is equal to the target property or constructor parameter type, or is implicitly convertible to it.
+- It is accessible from the mapper class.
+- It satisfies the `static` or instance requirement described above for the attribute overload in use.
+
+### MappaContext
+
+When the root map method accepts a `MappaContext` as its second parameter, invoked methods may also accept a `MappaContext` parameter. The `MappaContext` parameter is always the last parameter when combined with source and/or source-property arguments, and its type must be `Mappa.MappaContext`. Overloads that require `MappaContext` are ignored when the map method does not provide one. If only `MappaContext`-requiring overloads exist and the map method has no `MappaContext` parameter, mapping fails.
+
+### Overload selection priority
+
+If multiple candidate methods match, the first matching overload in the following list is selected. Tiers that reference a source property apply only when a source property is available for the target member (via name matching or `[MappaUseProperty]`):
+
+1. Three parameters: source type (exact), source property (exact), `MappaContext` — requires the map method to provide `MappaContext`.
+2. Two parameters: source type (exact), source property (exact).
+3. Three parameters: source type (exact or implicitly convertible), source property (exact or implicitly convertible), `MappaContext` — requires the map method to provide `MappaContext`.
+4. Two parameters: source type (exact or implicitly convertible), source property (exact or implicitly convertible).
+5. Two parameters: source type (exact), `MappaContext` — requires the map method to provide `MappaContext`.
+6. One parameter of the same type as the source type.
+7. Two parameters: source type (exact or implicitly convertible), `MappaContext` — requires the map method to provide `MappaContext`.
+8. One parameter with a type implicitly convertible from the source type.
+9. Two parameters: source property (exact), `MappaContext` — requires the map method to provide `MappaContext`.
+10. One parameter of the same type as the source property.
+11. Two parameters: source property (exact or implicitly convertible), `MappaContext` — requires the map method to provide `MappaContext`.
+12. One parameter with a type implicitly convertible from the source property type.
+13. One parameter of type `MappaContext` — requires the map method to provide `MappaContext`.
+14. No parameters.
 
 Via `MappaSettings` the following settings can be identified:
 - `DateTimeFormat`: the format to use to map `string`s into `System.DateTime` and vice versa;
