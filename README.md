@@ -8,7 +8,7 @@
 Mappa (italian for _map_) is a source generator for `C#` that can generate code to allow the mapping between types, similarly to what [AutoMapper](https://www.nuget.org/packages/AutoMapper) (and other similar tools) does.
 See [Documentation](./Documentation/README.md) for more details.
 
-The main different between Mappa and AutoMapper is that Mappa generates code at compile time while AutoMapper only at runtime;
+The main difference between Mappa and AutoMapper is that Mappa generates code at compile time while AutoMapper only at runtime;
 this has multiple benefits:
 - the code generated is optimised by the compiler;
 - the code generated is pure C# code that does not require any introspections;
@@ -20,7 +20,7 @@ this has multiple benefits:
 
 
 ## 🧑‍🔬 A simple example
-Consider the following code snipped:
+Consider the following code snippet:
 ```csharp
 using Mappa;
 using System.Collections.Generic;
@@ -101,15 +101,15 @@ public partial class Mapper
 ```
 
 ## 🧑🏻‍💻 How to use Mappa
-The easiest way to is import the NuGet packages and apply the `[Mappa]` attribute on the partial classes that contains the partial methods that needs to be generated.
+The easiest way is to import the NuGet packages and apply the `[Mappa]` attribute on the partial classes that contain the partial methods that need to be generated.
 
 Please see the [tutorial](./Documentation/tutorial.md) in the [documentation](./Documentation/README.md) provided.
 
 You can also find many examples in the [Mappa.Samples](Mappa.Samples) project.
 
 ## 📦 NuGet packages
-- [Mappa](https://www.nuget.org/packages/Mappa/): source generator that allows to automatically generate mapping between classes and value types;
-- [Mappa source generator](https://www.nuget.org/packages/Mappa.Generator/): source generator that allows to automatically generate mapping between classes and value types;
+- [Mappa](https://www.nuget.org/packages/Mappa/): attributes and `MappaContext` used to drive the source generator;
+- [Mappa source generator](https://www.nuget.org/packages/Mappa.Generator/): source generator that automatically generates mappings between classes and value types;
 - [Mappa Protobuf](https://www.nuget.org/packages/Mappa.Dependency.Protobuf/): methods to map `Google.Protobuf.WellKnownTypes` objects from [Google.Protobuf](https://www.nuget.org/packages/Google.Protobuf) package into common objects.
 - [Mappa Protobuf dependency](https://www.nuget.org/packages/Mappa.Dependency.Protobuf.DependencyInjection/): utility methods to register the Protobuf mapper.
 - [Mappa Bson](https://www.nuget.org/packages/Mappa.Dependency.Bson/): methods to map `MongoDB.Bson` objects from [MongoDB.Bson](https://www.nuget.org/packages/MongoDB.Bson) package into common objects.

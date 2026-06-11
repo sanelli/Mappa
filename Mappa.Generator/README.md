@@ -16,7 +16,7 @@ where `TSource` is the source type of the mapping and `TTarget` is the target ty
     - _When_:
         - The method has one or multiple `[MappaTypeMapping]` attributes
     - _What_:
-        - The input type will determine how the mapping from `TSource` to `TTArget` will happen,
+        - The input type will determine how the mapping from `TSource` to `TTarget` will happen,
         - For every `[MappaTypeMapping]` attributes a mapping is created,
         - The default mapping in case the actual parameter type does not match any of the source type from the `[MappaTypeMapping]` attributes is determined by the `[MappaTypeMappingDefault]` attribute - if the attribute is not present the default behaviour will throw an exception.
 2. <u>Existing method strategy</u>
@@ -24,7 +24,7 @@ where `TSource` is the source type of the mapping and `TTarget` is the target ty
        - A method in the same class **or a base class of the mapper** from `TSource` to `TTarget` exists OR,
        - A method from a property or field marked with the `[MappaDependency]` **on the mapper or an accessible base class of the mapper**, or from a base class of the dependency type from `TSource` to `TTarget` exists OR,
        - A method from a type defined via the `[MappaStaticDependency]` attribute exists OR,
-       - A polymorphic method where one ot the `[MappaTypeMapping]` attribute matches `TSource` and `TTarget` attribute OR,
+       - A polymorphic method where one of the `[MappaTypeMapping]` attributes matches `TSource` and `TTarget` OR,
        - Settings `PolymorphicMapMethodWithMatchingDefaultAttribute` is `Enable` and a polymorphic method with attribute `[MappaTypeMappingDefault]` and behaviour `MappaTypeMappingDefaultBehavior.MapSourceType` and `TTarget` is matching the target type defined by the attribute and `TSource` the source type of the method exists;
    - _What_:
        - the method is invoked;
@@ -58,10 +58,11 @@ where `TSource` is the source type of the mapping and `TTarget` is the target ty
         - `TTarget` is a `string` OR
         - `TSource` is a `string` and `TTarget` is any type with an accessible static `Parse` method;
     - _What_:
-      - `TSource` is a `string` and `TTarget` is any of the numeric types then the relevant `Parse` method will be invoked;
+      - `TSource` is a `string` and `TTarget` is any of the numeric types then the relevant `Parse` method will be invoked, possibly with the culture identified by the `MappaSettings` attribute, if any is provided on the class or on the method;
        - `TSource` is a `string` and `TTarget` is any of the following types `DateTime`, `DateTimeOffset`, `DateOnly`, `TimeOnly`, `Guid` then their `TTarget.Parse` method will be used, possibly with the format and culture identified by the `MappaSettings` attribute, if any is provided on the class or on the method;
-       - `TSource` is a `string` and `TTarget` is `Uri` then the `System.UriBuilder` will be used for the mapping
+       - `TSource` is a `string` and `TTarget` is `Uri` then the `System.UriBuilder` will be used for the mapping;
        - `TTarget` is a `string` and `TSource` is any of the following types `DateTime`, `DateTimeOffset`, `DateOnly`, `TimeOnly`, `Guid` then their `TSource.ToString()` method will be used, possibly with the format and culture identified by the `MappaSettings` attribute, if any is provided on the class or on the method;
+       - `TTarget` is a `string` and `TSource` is any of the numeric types then the relevant `ToString` overload will be used, possibly with the format and culture identified by the `MappaSettings` attribute, if any is provided on the class or on the method;
        - `TTarget` is a `string` then the `TSource.ToString` method will be used;
        - `TSource` is a `string` and `TTarget` is any type with an accessible static `Parse` method then the `Parse` method is invoked (note: an existing constructor accepting only a single string parameter will take priority over this);
 7. <u>Date & Time strategy</u>:
@@ -97,7 +98,7 @@ where `TSource` is the source type of the mapping and `TTarget` is the target ty
          - any type implementing `ICollection<T>` or `ISet<T>` that has a constructor with zero arguments (or one constructor with one integer argument of type `int` and `MappaSettings.ContainerCapacityConstructors` is enabled);
          - any type derived from `Stack<T>` or `Queue<T>` or `BlockingCollection<T>` that has a constructor with zero arguments (or one constructor with one integer argument of type `int` and `MappaSettings.ContainerCapacityConstructors` is enabled);
          - the following interfaces: `IEnumerable<T>`, `ICollection<T>`, `IReadOnlyCollection<T>`, `ISet<T>`, `IList<T>`, `IReadOnlyList<T>`, `IReadOnlySet<T>`, `IImmutableSet<T>`, `IImmutableList<T>`, `IImmutableQueue<T>`, `IImmutableStack<T>`, `IProducerConsumerCollection<T>`;
-         - the following classes: arrays, `List<T>`, `ReadOnlyCollection<T>`, `Span<T>`, `ReadOnlySpan<T>`, `Memory<T>`, `ReadOnlyMemory<T>`, `Stack<T>`, `Queue<T>`, `ReadOnlySet<T>`, `HashSet<T>`, `SortedSet<T>`, `ReadOnlyColletion<T>`, `FrozenSet<T>`, `ImmutableHashSet<T>`, `ImmutableSortedSet<T>`, `ImmutableArray<T>`, `ImmutableList<T>`, `ImmutableQueue<T>`, `ImmutableStack<T>`, `ConcurrentBag<T>`, `ConcurrentQueue<T>`, `ConcurrentStack<T>`;
+         - the following classes: arrays, `List<T>`, `ReadOnlyCollection<T>`, `Span<T>`, `ReadOnlySpan<T>`, `Memory<T>`, `ReadOnlyMemory<T>`, `Stack<T>`, `Queue<T>`, `ReadOnlySet<T>`, `HashSet<T>`, `SortedSet<T>`, `FrozenSet<T>`, `ImmutableHashSet<T>`, `ImmutableSortedSet<T>`, `ImmutableArray<T>`, `ImmutableList<T>`, `ImmutableQueue<T>`, `ImmutableStack<T>`, `ConcurrentBag<T>`, `ConcurrentQueue<T>`, `ConcurrentStack<T>`;
    - _What_:
        - A `for` loop or `foreach` loop is added to the code;
        - In the loop, each element from the source collection is mapped in an element of the target collection and then added to the target collection;
@@ -131,15 +132,14 @@ where `TSource` is the source type of the mapping and `TTarget` is the target ty
        - Get-only dictionary or collection properties for which a mapper exists are filled with mapped values from the corresponding source;
     - _Notes_:
        - Explicit interface implementation is supported for get-only dictionary and collection properties;
+       - Get-only `Stack<T>`, `Queue<T>`, `ConcurrentStack<T>`, `ConcurrentQueue<T>`, `ConcurrentBag<T>`, and `BlockingCollection<T>` properties are filled post-construction using `Push`, `Enqueue`, or `Add` respectively;
        - Multiple [Mappa](https://www.nuget.org/packages/Mappa/) attributes can change the behaviour of the mapping;
 
 Currently unsupported features are:
-- Polymorphism;
-- Generics;
-- Format and culture when mapping numeric types to/from strings;
+- Generic type parameters on map methods (for example, `TTarget Map<TSource, TTarget>(TSource input)`).
 
 Other relevant packages:
-- [Mappa](https://www.nuget.org/packages/Mappa/): source generator that allows to automatically generate mapping between classes and value types;
+- [Mappa](https://www.nuget.org/packages/Mappa/): attributes and `MappaContext` used to drive the source generator;
 - [Mappa Protobuf](https://www.nuget.org/packages/Mappa.Dependency.Protobuf/): methods to map `Google.Protobuf.WellKnownTypes` objects from [Google.Protobuf](https://www.nuget.org/packages/Google.Protobuf) package into common objects.
 - [Mappa Protobuf dependency](https://www.nuget.org/packages/Mappa.Dependency.Protobuf.DependencyInjection/): utility methods to register the Protobuf mapper.
 - [Mappa Bson](https://www.nuget.org/packages/Mappa.Dependency.Bson/): methods to map `MongoDB.Bson` objects from [MongoDB.Bson](https://www.nuget.org/packages/MongoDB.Bson) package into common objects.
