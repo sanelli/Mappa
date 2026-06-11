@@ -46,6 +46,61 @@ public sealed class MappaSettingsAttribute
     public string? GuidFormat { get; set; }
 
     /// <summary>
+    /// Gets or sets the format when using <see cref="byte.ToString(string,System.IFormatProvider)"/> when converting to <see cref="string"/>.
+    /// </summary>
+    public string? ByteFormat { get; set; }
+
+    /// <summary>
+    /// Gets or sets the format when using <see cref="sbyte.ToString(string,System.IFormatProvider)"/> when converting to <see cref="string"/>.
+    /// </summary>
+    public string? SByteFormat { get; set; }
+
+    /// <summary>
+    /// Gets or sets the format when using <see cref="short.ToString(string,System.IFormatProvider)"/> when converting to <see cref="string"/>.
+    /// </summary>
+    public string? ShortFormat { get; set; }
+
+    /// <summary>
+    /// Gets or sets the format when using <see cref="ushort.ToString(string,System.IFormatProvider)"/> when converting to <see cref="string"/>.
+    /// </summary>
+    public string? UShortFormat { get; set; }
+
+    /// <summary>
+    /// Gets or sets the format when using <see cref="int.ToString(string,System.IFormatProvider)"/> when converting to <see cref="string"/>.
+    /// </summary>
+    public string? IntFormat { get; set; }
+
+    /// <summary>
+    /// Gets or sets the format when using <see cref="uint.ToString(string,System.IFormatProvider)"/> when converting to <see cref="string"/>.
+    /// </summary>
+    public string? UIntFormat { get; set; }
+
+    /// <summary>
+    /// Gets or sets the format when using <see cref="long.ToString(string,System.IFormatProvider)"/> when converting to <see cref="string"/>.
+    /// </summary>
+    public string? LongFormat { get; set; }
+
+    /// <summary>
+    /// Gets or sets the format when using <see cref="ulong.ToString(string,System.IFormatProvider)"/> when converting to <see cref="string"/>.
+    /// </summary>
+    public string? ULongFormat { get; set; }
+
+    /// <summary>
+    /// Gets or sets the format when using <see cref="decimal.ToString(string,System.IFormatProvider)"/> when converting to <see cref="string"/>.
+    /// </summary>
+    public string? DecimalFormat { get; set; }
+
+    /// <summary>
+    /// Gets or sets the format when using <see cref="float.ToString(string,System.IFormatProvider)"/> when converting to <see cref="string"/>.
+    /// </summary>
+    public string? FloatFormat { get; set; }
+
+    /// <summary>
+    /// Gets or sets the format when using <see cref="double.ToString(string,System.IFormatProvider)"/> when converting to <see cref="string"/>.
+    /// </summary>
+    public string? DoubleFormat { get; set; }
+
+    /// <summary>
     /// Gets or sets the <see cref="CultureInfo"/> to use when converting to string or parsing form string.
     /// </summary>
     public CultureInfoSetting CultureInfoSetting { get; set; } = CultureInfoSetting.Undefined;

@@ -12,7 +12,7 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Integration tests for the <see cref="StringToNumberMapStrategy"/>.
 /// </summary>
-public sealed class StringToNumberMapStrategyIntegrationTests
+public sealed partial class StringToNumberMapStrategyIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {
     /// <summary>

@@ -106,6 +106,16 @@ public static class InvokeToStringStrategySettings
     /// The culture name to be applied.
     /// </summary>
     public const string CultureName = "it-IT";
+
+    /// <summary>
+    /// The <see cref="int"/> format applied.
+    /// </summary>
+    public const string IntFormat = "N0";
+
+    /// <summary>
+    /// The <see cref="decimal"/> format applied.
+    /// </summary>
+    public const string DecimalFormat = "N2";
 }
 
 /// <summary>
@@ -719,4 +729,73 @@ public sealed partial class InvokeToStringMapperWithFormatAndInvariantCultureSet
     /// <returns>The string mapped from the input.</returns>
     [MappaSettings(GuidFormat = InvokeToStringStrategySettings.GuidFormat, CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
     public partial string MapGuid(Guid input);
+}
+
+/// <summary>
+/// Mapper using numeric format settings on the method.
+/// </summary>
+[Mappa]
+public sealed partial class InvokeToStringNumericMapperWithFormatSettingsOnMethod
+{
+    /// <summary>
+    /// Map <see cref="int"/> to <see cref="string"/>.
+    /// </summary>
+    /// <param name="input">The value to convert to string.</param>
+    /// <returns>The string mapped from the input.</returns>
+    [MappaSettings(IntFormat = InvokeToStringStrategySettings.IntFormat)]
+    public partial string MapInt(int input);
+
+    /// <summary>
+    /// Map <see cref="decimal"/> to <see cref="string"/>.
+    /// </summary>
+    /// <param name="input">The value to convert to string.</param>
+    /// <returns>The string mapped from the input.</returns>
+    [MappaSettings(DecimalFormat = InvokeToStringStrategySettings.DecimalFormat)]
+    public partial string MapDecimal(decimal input);
+}
+
+/// <summary>
+/// Mapper using numeric format and invariant culture settings on the method.
+/// </summary>
+[Mappa]
+public sealed partial class InvokeToStringNumericMapperWithFormatAndInvariantCultureSettingsOnMethod
+{
+    /// <summary>
+    /// Map <see cref="int"/> to <see cref="string"/>.
+    /// </summary>
+    /// <param name="input">The value to convert to string.</param>
+    /// <returns>The string mapped from the input.</returns>
+    [MappaSettings(IntFormat = InvokeToStringStrategySettings.IntFormat, CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
+    public partial string MapInt(int input);
+
+    /// <summary>
+    /// Map <see cref="decimal"/> to <see cref="string"/>.
+    /// </summary>
+    /// <param name="input">The value to convert to string.</param>
+    /// <returns>The string mapped from the input.</returns>
+    [MappaSettings(DecimalFormat = InvokeToStringStrategySettings.DecimalFormat, CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
+    public partial string MapDecimal(decimal input);
+}
+
+/// <summary>
+/// Mapper using invariant culture settings for numeric types on the method.
+/// </summary>
+[Mappa]
+public sealed partial class InvokeToStringNumericMapperWithInvariantCultureSettingsOnMethod
+{
+    /// <summary>
+    /// Map <see cref="int"/> to <see cref="string"/>.
+    /// </summary>
+    /// <param name="input">The value to convert to string.</param>
+    /// <returns>The string mapped from the input.</returns>
+    [MappaSettings(CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
+    public partial string MapInt(int input);
+
+    /// <summary>
+    /// Map <see cref="decimal"/> to <see cref="string"/>.
+    /// </summary>
+    /// <param name="input">The value to convert to string.</param>
+    /// <returns>The string mapped from the input.</returns>
+    [MappaSettings(CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
+    public partial string MapDecimal(decimal input);
 }

@@ -205,6 +205,16 @@ public static class InvokeParseStrategySettings
     /// The culture name to be applied.
     /// </summary>
     public const string CultureName = "it-IT";
+
+    /// <summary>
+    /// The <see cref="int"/> format applied when converting to <see cref="string"/>.
+    /// </summary>
+    public const string IntFormat = "N0";
+
+    /// <summary>
+    /// The <see cref="decimal"/> format applied when converting to <see cref="string"/>.
+    /// </summary>
+    public const string DecimalFormat = "N2";
 }
 
 /// <summary>
@@ -819,4 +829,50 @@ public sealed partial class ParseMapperWithSettingsOnClassSupersededBySettingsOn
     /// <returns>The input mapped to the target type.</returns>
     [MappaSettings(GuidFormat = InvokeParseStrategySettings.GuidFormat, CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
     public partial Guid MapGuid(string input);
+}
+
+/// <summary>
+/// Mapper mapping string to numeric types with invariant culture on method.
+/// </summary>
+[Mappa]
+public sealed partial class ParseNumericMapperWithInvariantCultureSettingsOnMethod
+{
+    /// <summary>
+    /// Map a <see cref="string"/> to <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input string value.</param>
+    /// <returns>The mapped numeric value.</returns>
+    [MappaSettings(CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
+    public partial int MapToInteger(string input);
+
+    /// <summary>
+    /// Map a <see cref="string"/> to <see cref="decimal"/>.
+    /// </summary>
+    /// <param name="input">The input string value.</param>
+    /// <returns>The mapped numeric value.</returns>
+    [MappaSettings(CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
+    public partial decimal MapToDecimal(string input);
+}
+
+/// <summary>
+/// Mapper mapping string to numeric types with user defined culture on method.
+/// </summary>
+[Mappa]
+public sealed partial class ParseNumericMapperWithCustomCultureSettingsOnMethod
+{
+    /// <summary>
+    /// Map a <see cref="string"/> to <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input string value.</param>
+    /// <returns>The mapped numeric value.</returns>
+    [MappaSettings(CultureInfoSetting = CultureInfoSetting.UserDefined, CultureName = InvokeParseStrategySettings.CultureName)]
+    public partial int MapToInteger(string input);
+
+    /// <summary>
+    /// Map a <see cref="string"/> to <see cref="decimal"/>.
+    /// </summary>
+    /// <param name="input">The input string value.</param>
+    /// <returns>The mapped numeric value.</returns>
+    [MappaSettings(CultureInfoSetting = CultureInfoSetting.UserDefined, CultureName = InvokeParseStrategySettings.CultureName)]
+    public partial decimal MapToDecimal(string input);
 }

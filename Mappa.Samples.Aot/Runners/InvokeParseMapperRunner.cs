@@ -45,6 +45,8 @@ internal static class InvokeParseMapperRunner
         RunParseMapperWithCurrentCultureSettingsOnClass(report);
         RunParseMapperWithCustomCultureSettingsOnClass(report);
         RunWithInvariantCulture(() => RunParseMapperWithSettingsOnClassSupersededBySettingsOnMethod(report));
+        RunWithInvariantCulture(() => RunParseNumericMapperWithInvariantCultureSettingsOnMethod(report));
+        RunParseNumericMapperWithCustomCultureSettingsOnMethod(report);
     }
 
     private static void RunWithInvariantCulture(Action action)
@@ -264,5 +266,23 @@ internal static class InvokeParseMapperRunner
         report.RecordInvocation(nameof(ParseMapperWithSettingsOnClassSupersededBySettingsOnMethod.MapTimeOnly), "string", "TimeOnly", TimeOnlyFormattedInput, mapper.MapTimeOnly(TimeOnlyFormattedInput));
         report.RecordInvocation(nameof(ParseMapperWithSettingsOnClassSupersededBySettingsOnMethod.MapTimeSpan), "string", "TimeSpan", TimeSpanGeneralInput, mapper.MapTimeSpan(TimeSpanGeneralInput));
         report.RecordInvocation(nameof(ParseMapperWithSettingsOnClassSupersededBySettingsOnMethod.MapGuid), "string", "Guid", guidInput, mapper.MapGuid(guidInput));
+    }
+
+    private static void RunParseNumericMapperWithInvariantCultureSettingsOnMethod(AotReport report)
+    {
+        report.BeginMapper(nameof(ParseNumericMapperWithInvariantCultureSettingsOnMethod));
+        var mapper = new ParseNumericMapperWithInvariantCultureSettingsOnMethod();
+
+        report.RecordInvocation(nameof(ParseNumericMapperWithInvariantCultureSettingsOnMethod.MapToInteger), "string", "int", NumericInput, mapper.MapToInteger(NumericInput));
+        report.RecordInvocation(nameof(ParseNumericMapperWithInvariantCultureSettingsOnMethod.MapToDecimal), "string", "decimal", "100.50", mapper.MapToDecimal("100.50"));
+    }
+
+    private static void RunParseNumericMapperWithCustomCultureSettingsOnMethod(AotReport report)
+    {
+        report.BeginMapper(nameof(ParseNumericMapperWithCustomCultureSettingsOnMethod));
+        var mapper = new ParseNumericMapperWithCustomCultureSettingsOnMethod();
+
+        report.RecordInvocation(nameof(ParseNumericMapperWithCustomCultureSettingsOnMethod.MapToInteger), "string", "int", NumericInput, mapper.MapToInteger(NumericInput));
+        report.RecordInvocation(nameof(ParseNumericMapperWithCustomCultureSettingsOnMethod.MapToDecimal), "string", "decimal", "100,50", mapper.MapToDecimal("100,50"));
     }
 }

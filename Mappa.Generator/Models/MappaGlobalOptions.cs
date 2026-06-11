@@ -39,12 +39,56 @@ namespace Mappa.Generator.Models;
 ///         <term><c>mappa.timespanformat</c></term>
 ///         <description>Default format to be used for parsing strings and converting to string <see cref="TimeSpan"/> <c>struct</c>s.</description>
 ///     </item>
-///     <item>
-///         <term><c>mappa.guidformat</c></term>
-///         <description>Default format to be used for parsing strings and converting to string <see cref="Guid"/>  <c>struct</c>s.</description>
-///     </item>
-///     <item>
-///         <term><c>mappa.cultureinfosettings</c></term>
+    ///     <item>
+    ///         <term><c>mappa.guidformat</c></term>
+    ///         <description>Default format to be used for parsing strings and converting to string <see cref="Guid"/>  <c>struct</c>s.</description>
+    ///     </item>
+    ///     <item>
+    ///         <term><c>mappa.byteformat</c></term>
+    ///         <description>Default format to be used when converting <see cref="byte"/> values to <see cref="string"/>.</description>
+    ///     </item>
+    ///     <item>
+    ///         <term><c>mappa.sbyteformat</c></term>
+    ///         <description>Default format to be used when converting <see cref="sbyte"/> values to <see cref="string"/>.</description>
+    ///     </item>
+    ///     <item>
+    ///         <term><c>mappa.shortformat</c></term>
+    ///         <description>Default format to be used when converting <see cref="short"/> values to <see cref="string"/>.</description>
+    ///     </item>
+    ///     <item>
+    ///         <term><c>mappa.ushortformat</c></term>
+    ///         <description>Default format to be used when converting <see cref="ushort"/> values to <see cref="string"/>.</description>
+    ///     </item>
+    ///     <item>
+    ///         <term><c>mappa.intformat</c></term>
+    ///         <description>Default format to be used when converting <see cref="int"/> values to <see cref="string"/>.</description>
+    ///     </item>
+    ///     <item>
+    ///         <term><c>mappa.uintformat</c></term>
+    ///         <description>Default format to be used when converting <see cref="uint"/> values to <see cref="string"/>.</description>
+    ///     </item>
+    ///     <item>
+    ///         <term><c>mappa.longformat</c></term>
+    ///         <description>Default format to be used when converting <see cref="long"/> values to <see cref="string"/>.</description>
+    ///     </item>
+    ///     <item>
+    ///         <term><c>mappa.ulongformat</c></term>
+    ///         <description>Default format to be used when converting <see cref="ulong"/> values to <see cref="string"/>.</description>
+    ///     </item>
+    ///     <item>
+    ///         <term><c>mappa.decimalformat</c></term>
+    ///         <description>Default format to be used when converting <see cref="decimal"/> values to <see cref="string"/>.</description>
+    ///     </item>
+    ///     <item>
+    ///         <term><c>mappa.floatformat</c></term>
+    ///         <description>Default format to be used when converting <see cref="float"/> values to <see cref="string"/>.</description>
+    ///     </item>
+    ///     <item>
+    ///         <term><c>mappa.doubleformat</c></term>
+    ///         <description>Default format to be used when converting <see cref="double"/> values to <see cref="string"/>.</description>
+    ///     </item>
+    ///     <item>
+    ///         <term><c>mappa.cultureinfosettings</c></term>
 ///         <description>Set the default culture info settings. Valid values are the values of the <see cref="CultureInfoSetting"/> <c>enum</c>.</description>
 ///     </item>
 ///     <item>
@@ -93,6 +137,17 @@ internal sealed class MappaGlobalOptions
     private const string MappaSettingsTimeOnlyFormat = "timeonlyformat";
     private const string MappaSettingsTimeSpanFormat = "timespanformat";
     private const string MappaSettingsGuidFormat = "guidformat";
+    private const string MappaSettingsByteFormat = "byteformat";
+    private const string MappaSettingsSByteFormat = "sbyteformat";
+    private const string MappaSettingsShortFormat = "shortformat";
+    private const string MappaSettingsUShortFormat = "ushortformat";
+    private const string MappaSettingsIntFormat = "intformat";
+    private const string MappaSettingsUIntFormat = "uintformat";
+    private const string MappaSettingsLongFormat = "longformat";
+    private const string MappaSettingsULongFormat = "ulongformat";
+    private const string MappaSettingsDecimalFormat = "decimalformat";
+    private const string MappaSettingsFloatFormat = "floatformat";
+    private const string MappaSettingsDoubleFormat = "doubleformat";
     private const string MappaSettingsCultureInfoSettings = "cultureinfosettings";
     private const string MappaSettingsCultureName = "culturename";
     private const string MappaSettingsProtobufOptional = "protobufoptional";
@@ -146,10 +201,29 @@ internal sealed class MappaGlobalOptions
             ? timeSpanFormat
             : null;
 
-        this.GuidFormat = options.TryGetValue(GetOptionName(MappaSettingsGuidFormat), out var guidFormat)
-                          && !string.IsNullOrWhiteSpace(guidFormat)
-            ? guidFormat
-            : null;
+        this.GuidFormat = ReadFormatOption(options, MappaSettingsGuidFormat);
+
+        this.ByteFormat = ReadFormatOption(options, MappaSettingsByteFormat);
+
+        this.SByteFormat = ReadFormatOption(options, MappaSettingsSByteFormat);
+
+        this.ShortFormat = ReadFormatOption(options, MappaSettingsShortFormat);
+
+        this.UShortFormat = ReadFormatOption(options, MappaSettingsUShortFormat);
+
+        this.IntFormat = ReadFormatOption(options, MappaSettingsIntFormat);
+
+        this.UIntFormat = ReadFormatOption(options, MappaSettingsUIntFormat);
+
+        this.LongFormat = ReadFormatOption(options, MappaSettingsLongFormat);
+
+        this.ULongFormat = ReadFormatOption(options, MappaSettingsULongFormat);
+
+        this.DecimalFormat = ReadFormatOption(options, MappaSettingsDecimalFormat);
+
+        this.FloatFormat = ReadFormatOption(options, MappaSettingsFloatFormat);
+
+        this.DoubleFormat = ReadFormatOption(options, MappaSettingsDoubleFormat);
 
         this.CultureName = options.TryGetValue(GetOptionName(MappaSettingsCultureName), out var cultureName)
                            && !string.IsNullOrWhiteSpace(cultureName)
@@ -253,6 +327,12 @@ internal sealed class MappaGlobalOptions
 
             return PragmaWarningSetting.Undefined;
         }
+
+        static string? ReadFormatOption(AnalyzerConfigOptions options, string optionName)
+            => options.TryGetValue(GetOptionName(optionName), out var format)
+               && !string.IsNullOrWhiteSpace(format)
+                ? format
+                : null;
     }
 
     /// <inheritdoc />
@@ -272,6 +352,39 @@ internal sealed class MappaGlobalOptions
 
     /// <inheritdoc />
     public string? GuidFormat { get; }
+
+    /// <inheritdoc />
+    public string? ByteFormat { get; }
+
+    /// <inheritdoc />
+    public string? SByteFormat { get; }
+
+    /// <inheritdoc />
+    public string? ShortFormat { get; }
+
+    /// <inheritdoc />
+    public string? UShortFormat { get; }
+
+    /// <inheritdoc />
+    public string? IntFormat { get; }
+
+    /// <inheritdoc />
+    public string? UIntFormat { get; }
+
+    /// <inheritdoc />
+    public string? LongFormat { get; }
+
+    /// <inheritdoc />
+    public string? ULongFormat { get; }
+
+    /// <inheritdoc />
+    public string? DecimalFormat { get; }
+
+    /// <inheritdoc />
+    public string? FloatFormat { get; }
+
+    /// <inheritdoc />
+    public string? DoubleFormat { get; }
 
     /// <inheritdoc />
     public CultureInfoSetting CultureInfoSetting { get; }

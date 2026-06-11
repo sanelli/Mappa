@@ -44,7 +44,9 @@ internal sealed class StringMapStrategyDetector
         {
             mapStrategy = new StringToNumberMapStrategy(
                 this.context.TargetType,
-                this.context.SourceType);
+                this.context.SourceType,
+                this.GetActualCultureSettingsInfo(),
+                this.context.MappaUserSettings.CultureName);
         }
 
         // 02. string -> DateTime : InvokeParseStringWithFormatMapStrategy
@@ -220,8 +222,30 @@ internal sealed class StringMapStrategyDetector
             format = settings.TimeSpanFormat;
             UpdateCultureSettingsAndName(false);
         }
+        else if (this.context.SourceType.IsNumeric())
+        {
+            format = GetNumericFormat(this.context.SourceType);
+            UpdateCultureSettingsAndName();
+        }
 
         return (format, cultureInfoSettings, cultureName);
+
+        string? GetNumericFormat(ITypeSymbol typeSymbol)
+            => typeSymbol.SpecialType switch
+            {
+                SpecialType.System_Byte => settings.ByteFormat,
+                SpecialType.System_SByte => settings.SByteFormat,
+                SpecialType.System_Int16 => settings.ShortFormat,
+                SpecialType.System_UInt16 => settings.UShortFormat,
+                SpecialType.System_Int32 => settings.IntFormat,
+                SpecialType.System_UInt32 => settings.UIntFormat,
+                SpecialType.System_Int64 => settings.LongFormat,
+                SpecialType.System_UInt64 => settings.ULongFormat,
+                SpecialType.System_Decimal => settings.DecimalFormat,
+                SpecialType.System_Single => settings.FloatFormat,
+                SpecialType.System_Double => settings.DoubleFormat,
+                _ => null,
+            };
 
         void UpdateCultureSettingsAndName(bool acceptFormatProviderOnly = true)
         {

@@ -19,6 +19,17 @@ internal sealed class MappaUserSettings
     private readonly StackSetting<string?> timeOnlyFormat;
     private readonly StackSetting<string?> timeSpanFormat;
     private readonly StackSetting<string?> guidFormat;
+    private readonly StackSetting<string?> byteFormat;
+    private readonly StackSetting<string?> sByteFormat;
+    private readonly StackSetting<string?> shortFormat;
+    private readonly StackSetting<string?> uShortFormat;
+    private readonly StackSetting<string?> intFormat;
+    private readonly StackSetting<string?> uIntFormat;
+    private readonly StackSetting<string?> longFormat;
+    private readonly StackSetting<string?> uLongFormat;
+    private readonly StackSetting<string?> decimalFormat;
+    private readonly StackSetting<string?> floatFormat;
+    private readonly StackSetting<string?> doubleFormat;
     private readonly StackSetting<CultureInfoSetting> cultureInfoSetting;
     private readonly StackSetting<string?> cultureName;
     private readonly StackSetting<BooleanSetting> protobufOptional;
@@ -41,6 +52,17 @@ internal sealed class MappaUserSettings
             otherSettings.TimeOnlyFormat,
             otherSettings.TimeSpanFormat,
             otherSettings.GuidFormat,
+            otherSettings.ByteFormat,
+            otherSettings.SByteFormat,
+            otherSettings.ShortFormat,
+            otherSettings.UShortFormat,
+            otherSettings.IntFormat,
+            otherSettings.UIntFormat,
+            otherSettings.LongFormat,
+            otherSettings.ULongFormat,
+            otherSettings.DecimalFormat,
+            otherSettings.FloatFormat,
+            otherSettings.DoubleFormat,
             otherSettings.CultureInfoSetting,
             otherSettings.CultureName,
             otherSettings.ProtobufOptional,
@@ -62,6 +84,17 @@ internal sealed class MappaUserSettings
     /// <param name="timeOnlyFormat">The default format for TimeOnly.</param>
     /// <param name="timeSpanFormat">The default format for <see cref="TimeSpan"/>.</param>
     /// <param name="guidFormat">The default format for <see cref="Guid"/>.</param>
+    /// <param name="byteFormat">The default format for <see cref="byte"/>.</param>
+    /// <param name="sByteFormat">The default format for <see cref="sbyte"/>.</param>
+    /// <param name="shortFormat">The default format for <see cref="short"/>.</param>
+    /// <param name="uShortFormat">The default format for <see cref="ushort"/>.</param>
+    /// <param name="intFormat">The default format for <see cref="int"/>.</param>
+    /// <param name="uIntFormat">The default format for <see cref="uint"/>.</param>
+    /// <param name="longFormat">The default format for <see cref="long"/>.</param>
+    /// <param name="uLongFormat">The default format for <see cref="ulong"/>.</param>
+    /// <param name="decimalFormat">The default format for <see cref="decimal"/>.</param>
+    /// <param name="floatFormat">The default format for <see cref="float"/>.</param>
+    /// <param name="doubleFormat">The default format for <see cref="double"/>.</param>
     /// <param name="cultureInfoSetting">The type of culture info settings to be provided.</param>
     /// <param name="cultureName">The default culture info to use to generate a format provider.</param>
     /// <param name="protobufOptional">Enable or disable (protobuf) optional feature.</param>
@@ -78,6 +111,17 @@ internal sealed class MappaUserSettings
         string? timeOnlyFormat,
         string? timeSpanFormat,
         string? guidFormat,
+        string? byteFormat,
+        string? sByteFormat,
+        string? shortFormat,
+        string? uShortFormat,
+        string? intFormat,
+        string? uIntFormat,
+        string? longFormat,
+        string? uLongFormat,
+        string? decimalFormat,
+        string? floatFormat,
+        string? doubleFormat,
         CultureInfoSetting cultureInfoSetting,
         string? cultureName,
         BooleanSetting protobufOptional,
@@ -94,6 +138,17 @@ internal sealed class MappaUserSettings
         this.timeOnlyFormat = new(timeOnlyFormat);
         this.timeSpanFormat = new(timeSpanFormat);
         this.guidFormat = new(guidFormat);
+        this.byteFormat = new(byteFormat);
+        this.sByteFormat = new(sByteFormat);
+        this.shortFormat = new(shortFormat);
+        this.uShortFormat = new(uShortFormat);
+        this.intFormat = new(intFormat);
+        this.uIntFormat = new(uIntFormat);
+        this.longFormat = new(longFormat);
+        this.uLongFormat = new(uLongFormat);
+        this.decimalFormat = new(decimalFormat);
+        this.floatFormat = new(floatFormat);
+        this.doubleFormat = new(doubleFormat);
         this.cultureInfoSetting = new(cultureInfoSetting);
         this.cultureName = new(cultureName);
         this.protobufOptional = new(protobufOptional);
@@ -122,6 +177,39 @@ internal sealed class MappaUserSettings
 
     /// <inheritdoc />
     public string? GuidFormat => this.guidFormat;
+
+    /// <inheritdoc />
+    public string? ByteFormat => this.byteFormat;
+
+    /// <inheritdoc />
+    public string? SByteFormat => this.sByteFormat;
+
+    /// <inheritdoc />
+    public string? ShortFormat => this.shortFormat;
+
+    /// <inheritdoc />
+    public string? UShortFormat => this.uShortFormat;
+
+    /// <inheritdoc />
+    public string? IntFormat => this.intFormat;
+
+    /// <inheritdoc />
+    public string? UIntFormat => this.uIntFormat;
+
+    /// <inheritdoc />
+    public string? LongFormat => this.longFormat;
+
+    /// <inheritdoc />
+    public string? ULongFormat => this.uLongFormat;
+
+    /// <inheritdoc />
+    public string? DecimalFormat => this.decimalFormat;
+
+    /// <inheritdoc />
+    public string? FloatFormat => this.floatFormat;
+
+    /// <inheritdoc />
+    public string? DoubleFormat => this.doubleFormat;
 
     /// <inheritdoc />
     public CultureInfoSetting CultureInfoSetting => this.cultureInfoSetting;
@@ -173,6 +261,17 @@ internal sealed class MappaUserSettings
             this.timeOnlyFormat.Apply(mappaSettingsAttribute.TimeOnlyFormat ?? this.timeOnlyFormat),
             this.timeSpanFormat.Apply(mappaSettingsAttribute.TimeSpanFormat ?? this.timeSpanFormat),
             this.guidFormat.Apply(mappaSettingsAttribute.GuidFormat ?? this.guidFormat),
+            this.byteFormat.Apply(mappaSettingsAttribute.ByteFormat ?? this.byteFormat),
+            this.sByteFormat.Apply(mappaSettingsAttribute.SByteFormat ?? this.sByteFormat),
+            this.shortFormat.Apply(mappaSettingsAttribute.ShortFormat ?? this.shortFormat),
+            this.uShortFormat.Apply(mappaSettingsAttribute.UShortFormat ?? this.uShortFormat),
+            this.intFormat.Apply(mappaSettingsAttribute.IntFormat ?? this.intFormat),
+            this.uIntFormat.Apply(mappaSettingsAttribute.UIntFormat ?? this.uIntFormat),
+            this.longFormat.Apply(mappaSettingsAttribute.LongFormat ?? this.longFormat),
+            this.uLongFormat.Apply(mappaSettingsAttribute.ULongFormat ?? this.uLongFormat),
+            this.decimalFormat.Apply(mappaSettingsAttribute.DecimalFormat ?? this.decimalFormat),
+            this.floatFormat.Apply(mappaSettingsAttribute.FloatFormat ?? this.floatFormat),
+            this.doubleFormat.Apply(mappaSettingsAttribute.DoubleFormat ?? this.doubleFormat),
             this.cultureInfoSetting.Apply(mappaSettingsAttribute.CultureInfoSetting is not CultureInfoSetting.Undefined ? mappaSettingsAttribute.CultureInfoSetting : this.cultureInfoSetting),
             this.cultureName.Apply(mappaSettingsAttribute.CultureName ?? this.cultureName),
             this.protobufOptional.Apply(mappaSettingsAttribute.ProtobufOptional is not BooleanSetting.Undefined ? mappaSettingsAttribute.ProtobufOptional : this.protobufOptional),

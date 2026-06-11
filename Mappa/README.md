@@ -5,7 +5,7 @@ This is the list of attributes provided:
 - `MappaIgnore`: Identify methods that should not be used for the mapping;
 - `MappaDependency`: Identify a property or a field inside a mapper class that can be used when identifying suitable mapping between two types;
 - `MappaStaticDependency`: Define a static class which methods can be used as dependencies while perform mappings;
-- `MappaSettings`: Allows specifying the behavior while mapping sometimes (e.g., it allows specifying culture when mapping `string`s into `System.DateTime` and to specify the format when mapping `string`s into `System.Guid`);
+- `MappaSettings`: Allows specifying the behavior while mapping sometimes (e.g., it allows specifying culture when mapping `string`s into `System.DateTime` or numeric types, and to specify the format when mapping `string`s into `System.Guid` or when converting numeric types to `string`);
 - `MappaUseProperty`: When mapping structured types (`class`, `struct` and `records`) allows specifying which property uses from the source property for a target property or constructor parameter;
 - `MappaAssignFromContext`: When mapping structured types (`class`, `struct` and `records`) allows specifying which value from the context of type `MappaContext` use for a target property or constructor parameter;
 - `MappaInvokeMethodAttribute`: When mapping structured types (`class`, `struct` and `records`) allows specifying that a property or attribute should be mapped by invoking a method;
@@ -22,7 +22,8 @@ Via `MappaSettings` the following settings can be tweaked:
 - `TimeOnlyFormat`: the format to use to map `string`s into `System.TimeOnly` and vice versa;
 - `TimeSpanFormat`: the format to use to map `string`s into `System.TimeSpan` and vice versa;
 - `GuidFormat`: the format to use to map `string`s into `System.Guid` and vice versa;
-- `CultureInfoSetting`: define which culture use when mapping any of the above types (can be current culture, invariant culture or user defined culture);
+- `ByteFormat`, `SByteFormat`, `ShortFormat`, `UShortFormat`, `IntFormat`, `UIntFormat`, `LongFormat`, `ULongFormat`, `DecimalFormat`, `FloatFormat`, `DoubleFormat`: the format to use when converting the corresponding numeric type to `string` (culture applies to both parsing and converting to string);
+- `CultureInfoSetting`: define which culture use when mapping any of the above types and numeric types (can be current culture, invariant culture or user defined culture);
 - `CultureName`: define the culture to use then user defined culture is selected by `CultureInfoSetting`;
 - `ProtobufOptional`: enable or disable the ability of [Mappa source generator](https://www.nuget.org/packages/Mappa.Generator/) to handle `optional` fields in protobuf models;
 - `PragmaWarning`: allows surrounding the generated methods with a `#pragma warning disable` block;
