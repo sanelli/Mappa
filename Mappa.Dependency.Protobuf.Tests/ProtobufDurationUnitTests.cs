@@ -8,7 +8,7 @@ using FluentAssertions;
 
 using Google.Protobuf.WellKnownTypes;
 
-using Xunit.Categories;
+using Xunit.OpenCategories.V3;
 
 namespace Mappa.Dependency.Protobuf.Tests;
 
