@@ -15,4 +15,4 @@ global using Microsoft.CodeAnalysis;
 global using Microsoft.CodeAnalysis.CSharp;
 
 global using Xunit;
-global using Xunit.Categories;
+global using Xunit.OpenCategories.V3;

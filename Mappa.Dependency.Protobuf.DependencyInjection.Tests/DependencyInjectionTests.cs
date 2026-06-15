@@ -6,7 +6,7 @@ using FluentAssertions;
 
 using Microsoft.Extensions.DependencyInjection;
 
-using Xunit.Categories;
+using Xunit.OpenCategories.V3;
 
 namespace Mappa.Dependency.Protobuf.DependencyInjection.Tests;
 

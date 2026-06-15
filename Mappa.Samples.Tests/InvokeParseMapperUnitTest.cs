@@ -3,13 +3,6 @@
 // </copyright>
 using System.Globalization;
 
-using FluentAssertions;
-
-using Mappa.Samples.Models;
-
-using Xunit;
-using Xunit.Categories;
-
 namespace Mappa.Samples.Tests;
 
 #pragma warning disable CA1305 // Specify IFormatProvider

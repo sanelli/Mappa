@@ -5,7 +5,7 @@
 using FluentAssertions;
 
 using Xunit;
-using Xunit.Categories;
+using Xunit.OpenCategories.V3;
 
 namespace Mappa.Tests;
 

@@ -4,13 +4,6 @@
 
 using System.Collections.Concurrent;
 
-using FluentAssertions;
-
-using Mappa.Samples.Models;
-
-using Xunit;
-using Xunit.Categories;
-
 namespace Mappa.Samples.Tests;
 
 /// <summary>
