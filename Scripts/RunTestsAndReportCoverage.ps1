@@ -52,7 +52,7 @@ if (-not $?)
 }
 
 New-Item -ItemType Directory -Name $MappaTestsAndCoveragePath > $null
-dotnet test -c Release --collect:"XPlat Code Coverage" --logger "html" --logger "xunit;LogFileName=mappa.{assembly}.test-results.xml" --results-directory "$MappaTestsAndCoveragePath"
+dotnet test -c Release --coverlet --coverlet-output-format cobertura --report-xunit-html --report-xunit --report-xunit-filename mappa.test-results.xml --results-directory "$MappaTestsAndCoveragePath"
 if (-not $?)
 {
     Write-Host "Test failed" -ForegroundColor Red

@@ -2,13 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using FluentAssertions;
-
 using Mappa.Attributes;
-using Mappa.Samples.Models;
-
-using Xunit;
-using Xunit.Categories;
 
 namespace Mappa.Samples.Tests;
 

@@ -1,12 +1,6 @@
 // <copyright file="StringToEnumMapperUnitTest.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
-using FluentAssertions;
-
-using Mappa.Samples.Models;
-
-using Xunit;
-using Xunit.Categories;
 
 namespace Mappa.Samples.Tests;
 

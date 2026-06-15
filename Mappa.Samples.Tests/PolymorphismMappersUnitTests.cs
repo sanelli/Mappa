@@ -4,11 +4,6 @@
 
 using System.Globalization;
 
-using FluentAssertions;
-
-using Xunit;
-using Xunit.Categories;
-
 namespace Mappa.Samples.Tests;
 
 /// <summary>

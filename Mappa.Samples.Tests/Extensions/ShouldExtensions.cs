@@ -2,8 +2,6 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using FluentAssertions;
-
 namespace Mappa.Samples.Tests.Extensions;
 
 /// <summary>
