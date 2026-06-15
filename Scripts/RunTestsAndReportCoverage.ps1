@@ -52,7 +52,7 @@ if (-not $?)
 }
 
 New-Item -ItemType Directory -Name $MappaTestsAndCoveragePath > $null
-dotnet test -c Release --coverlet --coverlet-output-format cobertura --report-xunit-html --report-xunit --report-xunit-filename mappa.test-results.xml --results-directory "$MappaTestsAndCoveragePath"
+dotnet test -c Release --coverlet --coverlet-output-format cobertura --coverlet-exclude "[Moq]*" --report-xunit-html --report-xunit --report-xunit-filename mappa.test-results.xml --results-directory "$MappaTestsAndCoveragePath"
 if (-not $?)
 {
     Write-Host "Test failed" -ForegroundColor Red
@@ -60,7 +60,7 @@ if (-not $?)
 }
 
 dotnet tool restore
-dotnet reportgenerator -reports:"$MappaTestsAndCoveragePath/**/*.xml" -targetdir:"$MappaTestsAndCoveragePath" -title:"Mappa" -reporttypes:"Html;MarkdownSummary;XmlSummary" -filefilters:"-*.g.cs" -assemblyfilters:"-Mappa.Samples" -classfilters:"-Mappa.Generator.Exceptions.MappaGeneratorException;-Mappa.Generator.Diagnostics.Debug.MappaDebug;-Mappa.Generator.Diagnostics.DiagnosticsResources;-Mappa.Generator.Diagnostics.MappaDiagnosticDescriptors"
+dotnet reportgenerator -reports:"$MappaTestsAndCoveragePath/coverage.cobertura*.xml" -targetdir:"$MappaTestsAndCoveragePath" -title:"Mappa" -reporttypes:"Html;MarkdownSummary;XmlSummary" -filefilters:"-*.g.cs" -assemblyfilters:"-Mappa.Samples;-Moq" -classfilters:"-Mappa.Generator.Exceptions.MappaGeneratorException;-Mappa.Generator.Diagnostics.Debug.MappaDebug;-Mappa.Generator.Diagnostics.DiagnosticsResources;-Mappa.Generator.Diagnostics.MappaDiagnosticDescriptors"
 if (-not $?)
 {
     Write-Host "Report failed" -ForegroundColor Red
