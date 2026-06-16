@@ -4,7 +4,7 @@
 
 using System.Security.Cryptography;
 
-using FluentAssertions;
+using AwesomeAssertions;
 
 using Google.Protobuf.WellKnownTypes;
 
