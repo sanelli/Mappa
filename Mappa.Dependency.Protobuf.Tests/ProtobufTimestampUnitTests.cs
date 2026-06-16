@@ -2,7 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using FluentAssertions;
+using AwesomeAssertions;
 
 using Google.Protobuf.WellKnownTypes;
 

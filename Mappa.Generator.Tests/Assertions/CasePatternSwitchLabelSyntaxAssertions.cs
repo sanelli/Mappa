@@ -24,7 +24,7 @@ internal sealed class CasePatternSwitchLabelSyntaxAssertions
     /// <param name="compilation">The compilation.</param>
     public CasePatternSwitchLabelSyntaxAssertions(
         CasePatternSwitchLabelSyntax value, SemanticModel semanticModel, Compilation compilation)
-        : base(value, FluentAssertions.Execution.AssertionChain.GetOrCreate())
+        : base(value, AwesomeAssertions.Execution.AssertionChain.GetOrCreate())
     {
         this.semanticModel = semanticModel;
         this.compilation = compilation;

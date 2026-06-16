@@ -5,8 +5,8 @@
 global using System.Reflection;
 global using System.Threading;
 
-global using FluentAssertions;
-global using FluentAssertions.Primitives;
+global using AwesomeAssertions;
+global using AwesomeAssertions.Primitives;
 
 global using Mappa.Attributes;
 global using Mappa.Generator.Algorithm;

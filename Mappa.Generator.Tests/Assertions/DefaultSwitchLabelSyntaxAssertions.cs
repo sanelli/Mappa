@@ -19,7 +19,7 @@ internal sealed class DefaultSwitchLabelSyntaxAssertions
     /// <param name="value">The target of the assertions.</param>
     internal DefaultSwitchLabelSyntaxAssertions(
         DefaultSwitchLabelSyntax value)
-        : base(value, FluentAssertions.Execution.AssertionChain.GetOrCreate())
+        : base(value, AwesomeAssertions.Execution.AssertionChain.GetOrCreate())
     {
     }
 

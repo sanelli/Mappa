@@ -19,7 +19,7 @@ internal sealed class GeneratorRunResultAssertions
     /// </summary>
     /// <param name="value">The target of the assertions.</param>
     internal GeneratorRunResultAssertions(GeneratorRunResult value)
-        : base(value, FluentAssertions.Execution.AssertionChain.GetOrCreate())
+        : base(value, AwesomeAssertions.Execution.AssertionChain.GetOrCreate())
     {
     }
 

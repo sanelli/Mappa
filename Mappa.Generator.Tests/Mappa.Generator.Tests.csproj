@@ -29,7 +29,7 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
-		<PackageReference Include="FluentAssertions" Version="8.8.0" />
+		<PackageReference Include="AwesomeAssertions" Version="9.4.0" />
 		<PackageReference Include="Xunit.OpenCategories.V3" Version="2.4.1.19" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0" />
 		<PackageReference Include="PrettyCode.StringBuilder" Version="1.0.0" />

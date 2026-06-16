@@ -18,7 +18,7 @@ internal sealed class StatementSyntaxAssertions
     /// </summary>
     /// <param name="value">The target of assertions.</param>
     public StatementSyntaxAssertions(StatementSyntax value)
-        : base(value, FluentAssertions.Execution.AssertionChain.GetOrCreate())
+        : base(value, AwesomeAssertions.Execution.AssertionChain.GetOrCreate())
     {
     }
 

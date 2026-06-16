@@ -2,7 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-global using FluentAssertions;
+global using AwesomeAssertions;
 global using Mappa.Samples.Models;
 global using Xunit;
 global using Xunit.OpenCategories.V3;
