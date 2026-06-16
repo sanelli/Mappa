@@ -24,7 +24,7 @@ internal sealed class GeneratedResultsAssertions
     /// </summary>
     /// <param name="value">The target of the assertions.</param>
     internal GeneratedResultsAssertions(GeneratedResults value)
-        : base(value, FluentAssertions.Execution.AssertionChain.GetOrCreate())
+        : base(value, AwesomeAssertions.Execution.AssertionChain.GetOrCreate())
     {
     }
 

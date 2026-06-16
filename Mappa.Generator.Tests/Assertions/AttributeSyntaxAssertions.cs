@@ -21,7 +21,7 @@ internal sealed class AttributeSyntaxAssertions
     /// </summary>
     /// <param name="value">The target of the assertions.</param>
     internal AttributeSyntaxAssertions(AttributeSyntax value)
-        : base(value, FluentAssertions.Execution.AssertionChain.GetOrCreate())
+        : base(value, AwesomeAssertions.Execution.AssertionChain.GetOrCreate())
     {
     }
 

@@ -29,7 +29,7 @@ internal sealed class SyntaxNodeAssertions
         SyntaxNode value,
         SemanticModel semanticModel,
         Compilation compilation)
-        : base(value, FluentAssertions.Execution.AssertionChain.GetOrCreate())
+        : base(value, AwesomeAssertions.Execution.AssertionChain.GetOrCreate())
     {
         this.semanticModel = semanticModel;
         this.compilation = compilation;
