@@ -60,7 +60,8 @@ internal sealed class StringMapStrategyDetector
                 this.context.SourceType,
                 this.context.MappaUserSettings.DateTimeFormat,
                 actualCultureSettingsInfo,
-                this.context.MappaUserSettings.CultureName);
+                this.context.MappaUserSettings.CultureName,
+                this.context.MappaUserSettings.DateTimeStyle);
         }
 
         // 03. string -> DateTimeOffset : InvokeParseStringWithFormatMapStrategy
@@ -74,7 +75,8 @@ internal sealed class StringMapStrategyDetector
                 this.context.SourceType,
                 this.context.MappaUserSettings.DateTimeOffsetFormat,
                 actualCultureSettingsInfo,
-                this.context.MappaUserSettings.CultureName);
+                this.context.MappaUserSettings.CultureName,
+                this.context.MappaUserSettings.DateTimeOffsetStyle);
         }
 
         // 04. string -> TimeSpan : InvokeParseStringWithFormatMapStrategy
@@ -88,7 +90,8 @@ internal sealed class StringMapStrategyDetector
                 this.context.SourceType,
                 this.context.MappaUserSettings.TimeSpanFormat,
                 actualCultureSettingsInfo,
-                this.context.MappaUserSettings.CultureName);
+                this.context.MappaUserSettings.CultureName,
+                null);
         }
 
         // 05. string -> TimeOnly : InvokeParseStringWithFormatMapStrategy
@@ -99,7 +102,8 @@ internal sealed class StringMapStrategyDetector
                 this.context.SourceType,
                 this.context.MappaUserSettings.TimeOnlyFormat,
                 this.GetActualCultureSettingsInfo(),
-                this.context.MappaUserSettings.CultureName);
+                this.context.MappaUserSettings.CultureName,
+                this.context.MappaUserSettings.TimeOnlyStyle);
         }
 
         // 06. string -> DateOnly : InvokeParseStringWithFormatMapStrategy
@@ -110,7 +114,8 @@ internal sealed class StringMapStrategyDetector
                 this.context.SourceType,
                 this.context.MappaUserSettings.DateOnlyFormat,
                 this.GetActualCultureSettingsInfo(),
-                this.context.MappaUserSettings.CultureName);
+                this.context.MappaUserSettings.CultureName,
+                this.context.MappaUserSettings.DateOnlyStyle);
         }
 
         // 07. string -> Guid : ParseGuidStrategy

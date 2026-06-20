@@ -2,6 +2,10 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using System.Globalization;
+
+using Mappa.Generator.Helpers;
+
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 
@@ -31,12 +35,28 @@ namespace Mappa.Generator.Models;
 ///         <term><c>mappa.dateonlyformat</c></term>
 ///         <description>Default format to be used for parsing strings and converting to string <c>DateOnly</c> <c>struct</c>s.</description>
 ///     </item>
-///     <item>
-///         <term><c>mappa.timeonlyformat</c></term>
-///         <description>Default format to be used for parsing strings and converting to string <c>TimeOnly</c> <c>struct</c>s.</description>
-///     </item>
-///     <item>
-///         <term><c>mappa.timespanformat</c></term>
+    ///     <item>
+    ///         <term><c>mappa.timeonlyformat</c></term>
+    ///         <description>Default format to be used for parsing strings and converting to string <c>TimeOnly</c> <c>struct</c>s.</description>
+    ///     </item>
+    ///     <item>
+    ///         <term><c>mappa.datetimestyle</c></term>
+    ///         <description>Default <see cref="DateTimeStyles"/> to be used when parsing strings to <see cref="DateTime"/>.</description>
+    ///     </item>
+    ///     <item>
+    ///         <term><c>mappa.datetimeoffsetstyle</c></term>
+    ///         <description>Default <see cref="DateTimeStyles"/> to be used when parsing strings to <see cref="DateTimeOffset"/>.</description>
+    ///     </item>
+    ///     <item>
+    ///         <term><c>mappa.dateonlystyle</c></term>
+    ///         <description>Default <see cref="DateTimeStyles"/> to be used when parsing strings to <c>DateOnly</c>.</description>
+    ///     </item>
+    ///     <item>
+    ///         <term><c>mappa.timeonlystyle</c></term>
+    ///         <description>Default <see cref="DateTimeStyles"/> to be used when parsing strings to <c>TimeOnly</c>.</description>
+    ///     </item>
+    ///     <item>
+    ///         <term><c>mappa.timespanformat</c></term>
 ///         <description>Default format to be used for parsing strings and converting to string <see cref="TimeSpan"/> <c>struct</c>s.</description>
 ///     </item>
     ///     <item>
@@ -135,6 +155,10 @@ internal sealed class MappaGlobalOptions
     private const string MappaSettingsDateTimeOffsetFormat = "datetimeoffsetformat";
     private const string MappaSettingsDateOnlyFormat = "dateonlyformat";
     private const string MappaSettingsTimeOnlyFormat = "timeonlyformat";
+    private const string MappaSettingsDateTimeStyle = "datetimestyle";
+    private const string MappaSettingsDateTimeOffsetStyle = "datetimeoffsetstyle";
+    private const string MappaSettingsDateOnlyStyle = "dateonlystyle";
+    private const string MappaSettingsTimeOnlyStyle = "timeonlystyle";
     private const string MappaSettingsTimeSpanFormat = "timespanformat";
     private const string MappaSettingsGuidFormat = "guidformat";
     private const string MappaSettingsByteFormat = "byteformat";
@@ -195,6 +219,14 @@ internal sealed class MappaGlobalOptions
                               && !string.IsNullOrWhiteSpace(timeOnlyFormat)
             ? timeOnlyFormat
             : null;
+
+        this.DateTimeStyle = ReadDateTimeStylesOption(options, MappaSettingsDateTimeStyle);
+
+        this.DateTimeOffsetStyle = ReadDateTimeStylesOption(options, MappaSettingsDateTimeOffsetStyle);
+
+        this.DateOnlyStyle = ReadDateTimeStylesOption(options, MappaSettingsDateOnlyStyle);
+
+        this.TimeOnlyStyle = ReadDateTimeStylesOption(options, MappaSettingsTimeOnlyStyle);
 
         this.TimeSpanFormat = options.TryGetValue(GetOptionName(MappaSettingsTimeSpanFormat), out var timeSpanFormat)
                               && !string.IsNullOrWhiteSpace(timeSpanFormat)
@@ -333,6 +365,11 @@ internal sealed class MappaGlobalOptions
                && !string.IsNullOrWhiteSpace(format)
                 ? format
                 : null;
+
+        static DateTimeStyles? ReadDateTimeStylesOption(AnalyzerConfigOptions options, string optionName)
+            => options.TryGetValue(GetOptionName(optionName), out var dateTimeStyles)
+                ? ParseDateTimeStylesCodeHelper.TryParseFromString(dateTimeStyles)
+                : null;
     }
 
     /// <inheritdoc />
@@ -346,6 +383,18 @@ internal sealed class MappaGlobalOptions
 
     /// <inheritdoc />
     public string? TimeOnlyFormat { get; }
+
+    /// <inheritdoc />
+    public DateTimeStyles? DateTimeStyle { get; }
+
+    /// <inheritdoc />
+    public DateTimeStyles? DateTimeOffsetStyle { get; }
+
+    /// <inheritdoc />
+    public DateTimeStyles? DateOnlyStyle { get; }
+
+    /// <inheritdoc />
+    public DateTimeStyles? TimeOnlyStyle { get; }
 
     /// <inheritdoc />
     public string? TimeSpanFormat { get; }

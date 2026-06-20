@@ -34,6 +34,26 @@ internal interface IMappaUserSettings
     string? TimeOnlyFormat { get; }
 
     /// <summary>
+    /// Gets the <see cref="DateTimeStyles"/> when parsing a <see cref="DateTime"/>.
+    /// </summary>
+    DateTimeStyles? DateTimeStyle { get; }
+
+    /// <summary>
+    /// Gets the <see cref="DateTimeStyles"/> when parsing a <see cref="DateTimeOffset"/>.
+    /// </summary>
+    DateTimeStyles? DateTimeOffsetStyle { get; }
+
+    /// <summary>
+    /// Gets the <see cref="DateTimeStyles"/> when parsing a <c>DateOnly</c>.
+    /// </summary>
+    DateTimeStyles? DateOnlyStyle { get; }
+
+    /// <summary>
+    /// Gets the <see cref="DateTimeStyles"/> when parsing a <c>TimeOnly</c>.
+    /// </summary>
+    DateTimeStyles? TimeOnlyStyle { get; }
+
+    /// <summary>
     /// Gets the format when using <see cref="TimeSpan.ToString(string,System.IFormatProvider)"/> or <see cref="TimeSpan.ParseExact(string,string,System.IFormatProvider)"/>.
     /// </summary>
     string? TimeSpanFormat { get; }

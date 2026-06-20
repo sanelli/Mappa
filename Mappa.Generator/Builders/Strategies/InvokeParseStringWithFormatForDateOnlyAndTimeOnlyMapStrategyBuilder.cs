@@ -2,7 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using Mappa.Generator.Exceptions;
+using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -28,39 +28,16 @@ internal sealed class InvokeParseStringWithFormatForDateOnlyAndTimeOnlyMapStrate
     /// <inheritdoc/>
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
-        var hasFormat = !string.IsNullOrWhiteSpace(this.strategy.Format);
-        var parameters = hasFormat ? $"{source}, \"{this.strategy.Format}\"" : source;
-        var parseMethod = hasFormat ? "ParseExact" : "Parse";
-
-        if (this.strategy.CultureInfoSetting is not CultureInfoSetting.Undefined &&
-            this.strategy.CultureInfoSetting is not CultureInfoSetting.None)
-        {
-            parameters = $"{parameters}, {GetCultureParameter(this.strategy)}";
-        }
+        var (parseMethod, parameters) = ParseDateTimeStylesCodeHelper.BuildParseInvocation(
+            source,
+            this.strategy.Format,
+            this.strategy.CultureInfoSetting,
+            this.strategy.CultureName,
+            this.strategy.DateTimeStyle);
 
         var temporary = context.NextTemporary();
         var code = $"{this.strategy.TargetType.ToDisplayString()} {temporary} = {this.strategy.TargetType.ToDisplayString()}.{parseMethod}({parameters});";
 
         return (temporary, code);
-
-        static string GetCultureParameter(InvokeParseStringWithFormatForDateOnlyAndTimeOnlyMapStrategy strategy)
-        {
-            switch (strategy.CultureInfoSetting)
-            {
-                case CultureInfoSetting.CurrentCulture:
-                    return "System.Globalization.CultureInfo.CurrentCulture";
-                case CultureInfoSetting.InvariantCulture:
-                    return "System.Globalization.CultureInfo.InvariantCulture";
-                case CultureInfoSetting.UserDefined:
-                    if (!string.IsNullOrWhiteSpace(strategy.CultureName))
-                    {
-                        return $"System.Globalization.CultureInfo.GetCultureInfo(\"{strategy.CultureName}\")";
-                    }
-
-                    throw new MappaGeneratorException("Unexpected scenario when building GeyCultureInfo without culture name");
-            }
-
-            throw new MappaGeneratorException($"Unexpected culture info setting '{strategy.CultureInfoSetting}'.");
-        }
     }
 }

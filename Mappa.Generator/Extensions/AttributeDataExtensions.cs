@@ -277,6 +277,22 @@ internal static class AttributeDataExtensions
                     attribute.TimeOnlyFormat = value;
                     break;
 
+                case nameof(MappaSettingsAttribute.DateTimeStyle) when namedArgument.Value.Value is int value:
+                    attribute.DateTimeStyle = (DateTimeStyles)value;
+                    break;
+
+                case nameof(MappaSettingsAttribute.DateTimeOffsetStyle) when namedArgument.Value.Value is int value:
+                    attribute.DateTimeOffsetStyle = (DateTimeStyles)value;
+                    break;
+
+                case nameof(MappaSettingsAttribute.DateOnlyStyle) when namedArgument.Value.Value is int value:
+                    attribute.DateOnlyStyle = (DateTimeStyles)value;
+                    break;
+
+                case nameof(MappaSettingsAttribute.TimeOnlyStyle) when namedArgument.Value.Value is int value:
+                    attribute.TimeOnlyStyle = (DateTimeStyles)value;
+                    break;
+
                 case nameof(MappaSettingsAttribute.TimeSpanFormat) when namedArgument.Value.Value is string value:
                     attribute.TimeSpanFormat = value;
                     break;
