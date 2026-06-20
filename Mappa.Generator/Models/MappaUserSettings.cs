@@ -2,6 +2,8 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using System.Globalization;
+
 using Mappa.Attributes;
 using Mappa.Generator.Helpers;
 
@@ -17,6 +19,10 @@ internal sealed class MappaUserSettings
     private readonly StackSetting<string?> dateTimeOffsetFormat;
     private readonly StackSetting<string?> dateOnlyFormat;
     private readonly StackSetting<string?> timeOnlyFormat;
+    private readonly StackSetting<DateTimeStyles?> dateTimeStyle;
+    private readonly StackSetting<DateTimeStyles?> dateTimeOffsetStyle;
+    private readonly StackSetting<DateTimeStyles?> dateOnlyStyle;
+    private readonly StackSetting<DateTimeStyles?> timeOnlyStyle;
     private readonly StackSetting<string?> timeSpanFormat;
     private readonly StackSetting<string?> guidFormat;
     private readonly StackSetting<string?> byteFormat;
@@ -50,6 +56,10 @@ internal sealed class MappaUserSettings
             otherSettings.DateTimeOffsetFormat,
             otherSettings.DateOnlyFormat,
             otherSettings.TimeOnlyFormat,
+            otherSettings.DateTimeStyle,
+            otherSettings.DateTimeOffsetStyle,
+            otherSettings.DateOnlyStyle,
+            otherSettings.TimeOnlyStyle,
             otherSettings.TimeSpanFormat,
             otherSettings.GuidFormat,
             otherSettings.ByteFormat,
@@ -82,6 +92,10 @@ internal sealed class MappaUserSettings
     /// <param name="dateTimeOffsetFormat">The default format for <see cref="DateTimeOffset"/>.</param>
     /// <param name="dateOnlyFormat">The default format for DateOnly.</param>
     /// <param name="timeOnlyFormat">The default format for TimeOnly.</param>
+    /// <param name="dateTimeStyle">The default <see cref="DateTimeStyles"/> for <see cref="DateTime"/>.</param>
+    /// <param name="dateTimeOffsetStyle">The default <see cref="DateTimeStyles"/> for <see cref="DateTimeOffset"/>.</param>
+    /// <param name="dateOnlyStyle">The default <see cref="DateTimeStyles"/> for DateOnly.</param>
+    /// <param name="timeOnlyStyle">The default <see cref="DateTimeStyles"/> for TimeOnly.</param>
     /// <param name="timeSpanFormat">The default format for <see cref="TimeSpan"/>.</param>
     /// <param name="guidFormat">The default format for <see cref="Guid"/>.</param>
     /// <param name="byteFormat">The default format for <see cref="byte"/>.</param>
@@ -109,6 +123,10 @@ internal sealed class MappaUserSettings
         string? dateTimeOffsetFormat,
         string? dateOnlyFormat,
         string? timeOnlyFormat,
+        DateTimeStyles? dateTimeStyle,
+        DateTimeStyles? dateTimeOffsetStyle,
+        DateTimeStyles? dateOnlyStyle,
+        DateTimeStyles? timeOnlyStyle,
         string? timeSpanFormat,
         string? guidFormat,
         string? byteFormat,
@@ -136,6 +154,10 @@ internal sealed class MappaUserSettings
         this.dateTimeOffsetFormat = new(dateTimeOffsetFormat);
         this.dateOnlyFormat = new(dateOnlyFormat);
         this.timeOnlyFormat = new(timeOnlyFormat);
+        this.dateTimeStyle = new(dateTimeStyle);
+        this.dateTimeOffsetStyle = new(dateTimeOffsetStyle);
+        this.dateOnlyStyle = new(dateOnlyStyle);
+        this.timeOnlyStyle = new(timeOnlyStyle);
         this.timeSpanFormat = new(timeSpanFormat);
         this.guidFormat = new(guidFormat);
         this.byteFormat = new(byteFormat);
@@ -171,6 +193,18 @@ internal sealed class MappaUserSettings
 
     /// <inheritdoc />
     public string? TimeOnlyFormat => this.timeOnlyFormat;
+
+    /// <inheritdoc />
+    public DateTimeStyles? DateTimeStyle => this.dateTimeStyle;
+
+    /// <inheritdoc />
+    public DateTimeStyles? DateTimeOffsetStyle => this.dateTimeOffsetStyle;
+
+    /// <inheritdoc />
+    public DateTimeStyles? DateOnlyStyle => this.dateOnlyStyle;
+
+    /// <inheritdoc />
+    public DateTimeStyles? TimeOnlyStyle => this.timeOnlyStyle;
 
     /// <inheritdoc />
     public string? TimeSpanFormat => this.timeSpanFormat;
@@ -259,6 +293,10 @@ internal sealed class MappaUserSettings
             this.dateTimeOffsetFormat.Apply(mappaSettingsAttribute.DateTimeOffsetFormat ?? this.dateTimeOffsetFormat),
             this.dateOnlyFormat.Apply(mappaSettingsAttribute.DateOnlyFormat ?? this.dateOnlyFormat),
             this.timeOnlyFormat.Apply(mappaSettingsAttribute.TimeOnlyFormat ?? this.timeOnlyFormat),
+            this.dateTimeStyle.Apply(GetDateTimeStyle(mappaSettingsAttribute.DateTimeStyle, this.dateTimeStyle)),
+            this.dateTimeOffsetStyle.Apply(GetDateTimeStyle(mappaSettingsAttribute.DateTimeOffsetStyle, this.dateTimeOffsetStyle)),
+            this.dateOnlyStyle.Apply(GetDateTimeStyle(mappaSettingsAttribute.DateOnlyStyle, this.dateOnlyStyle)),
+            this.timeOnlyStyle.Apply(GetDateTimeStyle(mappaSettingsAttribute.TimeOnlyStyle, this.timeOnlyStyle)),
             this.timeSpanFormat.Apply(mappaSettingsAttribute.TimeSpanFormat ?? this.timeSpanFormat),
             this.guidFormat.Apply(mappaSettingsAttribute.GuidFormat ?? this.guidFormat),
             this.byteFormat.Apply(mappaSettingsAttribute.ByteFormat ?? this.byteFormat),
@@ -284,6 +322,9 @@ internal sealed class MappaUserSettings
  #pragma warning restore CA2000
         ]);
     }
+
+    private static DateTimeStyles? GetDateTimeStyle(DateTimeStyles style, StackSetting<DateTimeStyles?> currentStyle)
+        => style != MappaSettingsAttribute.UndefinedDateTimeStyle ? style : currentStyle;
 
     private sealed class PopActionDisposable
         : IDisposable

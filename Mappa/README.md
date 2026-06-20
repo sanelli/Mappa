@@ -22,6 +22,10 @@ Via `MappaSettings` the following settings can be tweaked:
 - `DateTimeOffsetFormat`: the format to use when mapping `string`s to and from `System.DateTimeOffset`;
 - `DateOnlyFormat`: the format to use when mapping `string`s to and from `System.DateOnly`;
 - `TimeOnlyFormat`: the format to use when mapping `string`s to and from `System.TimeOnly`;
+- `DateTimeStyle`: the [DateTimeStyles](https://learn.microsoft.com/en-us/dotnet/api/system.globalization.datetimestyles) to use when parsing `string`s to `System.DateTime` (unset values inherit; does not affect `ToString`);
+- `DateTimeOffsetStyle`: the [DateTimeStyles](https://learn.microsoft.com/en-us/dotnet/api/system.globalization.datetimestyles) to use when parsing `string`s to `System.DateTimeOffset` (unset values inherit; does not affect `ToString`);
+- `DateOnlyStyle`: the [DateTimeStyles](https://learn.microsoft.com/en-us/dotnet/api/system.globalization.datetimestyles) to use when parsing `string`s to `System.DateOnly` (unset values inherit; does not affect `ToString`);
+- `TimeOnlyStyle`: the [DateTimeStyles](https://learn.microsoft.com/en-us/dotnet/api/system.globalization.datetimestyles) to use when parsing `string`s to `System.TimeOnly` (unset values inherit; does not affect `ToString`);
 - `TimeSpanFormat`: the format to use when mapping `string`s to and from `System.TimeSpan`;
 - `GuidFormat`: the format to use when mapping `string`s to and from `System.Guid`;
 - `ByteFormat`, `SByteFormat`, `ShortFormat`, `UShortFormat`, `IntFormat`, `UIntFormat`, `LongFormat`, `ULongFormat`, `DecimalFormat`, `FloatFormat`, `DoubleFormat`: the format to use when converting the corresponding numeric type to `string` (numeric formats apply to `ToString` only; culture applies to both parsing and converting to `string`);

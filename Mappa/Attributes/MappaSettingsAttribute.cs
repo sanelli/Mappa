@@ -16,6 +16,11 @@ public sealed class MappaSettingsAttribute
     : Attribute
 {
     /// <summary>
+    /// Gets the sentinel value for unset date/time style settings. When used, the style is ignored and previous values (if any) are used.
+    /// </summary>
+    public static DateTimeStyles UndefinedDateTimeStyle => (DateTimeStyles)(-1);
+
+    /// <summary>
     /// Gets or sets the format when using <see cref="DateTime.ToString(string,System.IFormatProvider)"/> or <see cref="DateTime.ParseExact(string,string,System.IFormatProvider)"/>.
     /// </summary>
     public string? DateTimeFormat { get; set; }
@@ -34,6 +39,30 @@ public sealed class MappaSettingsAttribute
     /// Gets or sets the format when using <c>TimeOnly.ToString(string,System.IFormatProvider)</c> or <c>TimeOnly.ParseExact(string,string,System.IFormatProvider)</c>.
     /// </summary>
     public string? TimeOnlyFormat { get; set; }
+
+    /// <summary>
+    /// Gets or sets the <see cref="DateTimeStyles"/> when using <see cref="DateTime.Parse(string,System.IFormatProvider,System.Globalization.DateTimeStyles)"/> or <see cref="DateTime.ParseExact(string,string,System.IFormatProvider,System.Globalization.DateTimeStyles)"/>.
+    /// Use <see cref="UndefinedDateTimeStyle"/> to ignore this setting and use previous values (if any).
+    /// </summary>
+    public DateTimeStyles DateTimeStyle { get; set; } = UndefinedDateTimeStyle;
+
+    /// <summary>
+    /// Gets or sets the <see cref="DateTimeStyles"/> when using <see cref="DateTimeOffset.Parse(string,System.IFormatProvider,System.Globalization.DateTimeStyles)"/> or <see cref="DateTimeOffset.ParseExact(string,string,System.IFormatProvider,System.Globalization.DateTimeStyles)"/>.
+    /// Use <see cref="UndefinedDateTimeStyle"/> to ignore this setting and use previous values (if any).
+    /// </summary>
+    public DateTimeStyles DateTimeOffsetStyle { get; set; } = UndefinedDateTimeStyle;
+
+    /// <summary>
+    /// Gets or sets the <see cref="DateTimeStyles"/> when using <c>DateOnly.Parse(string,System.IFormatProvider,System.Globalization.DateTimeStyles)</c> or <c>DateOnly.ParseExact(string,string,System.IFormatProvider,System.Globalization.DateTimeStyles)</c>.
+    /// Use <see cref="UndefinedDateTimeStyle"/> to ignore this setting and use previous values (if any).
+    /// </summary>
+    public DateTimeStyles DateOnlyStyle { get; set; } = UndefinedDateTimeStyle;
+
+    /// <summary>
+    /// Gets or sets the <see cref="DateTimeStyles"/> when using <c>TimeOnly.Parse(string,System.IFormatProvider,System.Globalization.DateTimeStyles)</c> or <c>TimeOnly.ParseExact(string,string,System.IFormatProvider,System.Globalization.DateTimeStyles)</c>.
+    /// Use <see cref="UndefinedDateTimeStyle"/> to ignore this setting and use previous values (if any).
+    /// </summary>
+    public DateTimeStyles TimeOnlyStyle { get; set; } = UndefinedDateTimeStyle;
 
     /// <summary>
     /// Gets or sets the format when using <see cref="TimeSpan.ToString(string,System.IFormatProvider)"/> or <see cref="TimeSpan.ParseExact(string,string,System.IFormatProvider)"/>.

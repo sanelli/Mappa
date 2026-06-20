@@ -1,6 +1,8 @@
 // <copyright file="InvokeParseMapper.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
+using System.Globalization;
+
 using Mappa.Attributes;
 using Mappa.Samples.Models;
 
@@ -215,6 +217,46 @@ public static class InvokeParseStrategySettings
     /// The <see cref="decimal"/> format applied when converting to <see cref="string"/>.
     /// </summary>
     public const string DecimalFormat = "N2";
+
+    /// <summary>
+    /// The <see cref="DateTimeStyles"/> applied when parsing <see cref="DateTime"/> values.
+    /// </summary>
+    public const DateTimeStyles DateTimeStyle = DateTimeStyles.AllowWhiteSpaces;
+
+    /// <summary>
+    /// The <see cref="DateTimeStyles"/> applied when parsing <see cref="DateTimeOffset"/> values.
+    /// </summary>
+    public const DateTimeStyles DateTimeOffsetStyle = DateTimeStyles.AllowWhiteSpaces;
+
+    /// <summary>
+    /// The <see cref="DateTimeStyles"/> applied when parsing <see cref="DateOnly"/> values.
+    /// </summary>
+    public const DateTimeStyles DateOnlyStyle = DateTimeStyles.AllowWhiteSpaces;
+
+    /// <summary>
+    /// The <see cref="DateTimeStyles"/> applied when parsing <see cref="TimeOnly"/> values.
+    /// </summary>
+    public const DateTimeStyles TimeOnlyStyle = DateTimeStyles.AllowWhiteSpaces;
+
+    /// <summary>
+    /// Sample <see cref="DateTime"/> input with leading and trailing whitespace.
+    /// </summary>
+    public const string DateTimeInputWithWhiteSpaces = " 2025-02-01 22:17:34 ";
+
+    /// <summary>
+    /// Sample <see cref="DateTimeOffset"/> input with leading and trailing whitespace.
+    /// </summary>
+    public const string DateTimeOffsetInputWithWhiteSpaces = " 2025-02-01 22:17:34 +01:00 ";
+
+    /// <summary>
+    /// Sample <see cref="DateOnly"/> input with leading and trailing whitespace.
+    /// </summary>
+    public const string DateOnlyInputWithWhiteSpaces = " 2025-02-01 ";
+
+    /// <summary>
+    /// Sample <see cref="TimeOnly"/> input with leading and trailing whitespace.
+    /// </summary>
+    public const string TimeOnlyInputWithWhiteSpaces = " 22:17:34 ";
 }
 
 /// <summary>
@@ -496,6 +538,96 @@ public sealed partial class ParseMapperWithCustomCultureSettingsOnMethod
     /// <returns>The input mapped to the target type.</returns>
     [MappaSettings(CultureInfoSetting = CultureInfoSetting.UserDefined, CultureName = InvokeParseStrategySettings.CultureName)]
     public partial Guid MapGuid(string input);
+}
+
+/// <summary>
+/// Mapper mapping string for date/time types with style on method.
+/// </summary>
+[Mappa]
+public sealed partial class ParseMapperWithDateTimeStyleSettingsOnMethod
+{
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="DateTime"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    [MappaSettings(DateTimeStyle = InvokeParseStrategySettings.DateTimeStyle)]
+    public partial DateTime MapDateTime(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="DateTimeOffset"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    [MappaSettings(DateTimeOffsetStyle = InvokeParseStrategySettings.DateTimeOffsetStyle)]
+    public partial DateTimeOffset MapDateTimeOffset(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="DateOnly"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    [MappaSettings(DateOnlyStyle = InvokeParseStrategySettings.DateOnlyStyle)]
+    public partial DateOnly MapDateOnly(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="TimeOnly"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    [MappaSettings(TimeOnlyStyle = InvokeParseStrategySettings.TimeOnlyStyle)]
+    public partial TimeOnly MapTimeOnly(string input);
+}
+
+/// <summary>
+/// Mapper mapping string for date/time types with format, invariant culture, and style on method.
+/// </summary>
+[Mappa]
+public sealed partial class ParseMapperWithFormatInvariantCultureAndDateTimeStyleSettingsOnMethod
+{
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="DateTime"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    [MappaSettings(
+        DateTimeFormat = InvokeParseStrategySettings.DateTimeFormat,
+        CultureInfoSetting = CultureInfoSetting.InvariantCulture,
+        DateTimeStyle = InvokeParseStrategySettings.DateTimeStyle)]
+    public partial DateTime MapDateTime(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="DateTimeOffset"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    [MappaSettings(
+        DateTimeOffsetFormat = InvokeParseStrategySettings.DateTimeOffsetFormat,
+        CultureInfoSetting = CultureInfoSetting.InvariantCulture,
+        DateTimeOffsetStyle = InvokeParseStrategySettings.DateTimeOffsetStyle)]
+    public partial DateTimeOffset MapDateTimeOffset(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="DateOnly"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    [MappaSettings(
+        DateOnlyFormat = InvokeParseStrategySettings.DateOnlyFormat,
+        CultureInfoSetting = CultureInfoSetting.InvariantCulture,
+        DateOnlyStyle = InvokeParseStrategySettings.DateOnlyStyle)]
+    public partial DateOnly MapDateOnly(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="TimeOnly"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    [MappaSettings(
+        TimeOnlyFormat = InvokeParseStrategySettings.TimeOnlyFormat,
+        CultureInfoSetting = CultureInfoSetting.InvariantCulture,
+        TimeOnlyStyle = InvokeParseStrategySettings.TimeOnlyStyle)]
+    public partial TimeOnly MapTimeOnly(string input);
 }
 
 /// <summary>
@@ -829,6 +961,46 @@ public sealed partial class ParseMapperWithSettingsOnClassSupersededBySettingsOn
     /// <returns>The input mapped to the target type.</returns>
     [MappaSettings(GuidFormat = InvokeParseStrategySettings.GuidFormat, CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
     public partial Guid MapGuid(string input);
+}
+
+/// <summary>
+/// Mapper mapping string for date/time types with style on class.
+/// </summary>
+[Mappa]
+[MappaSettings(
+    DateTimeStyle = InvokeParseStrategySettings.DateTimeStyle,
+    DateTimeOffsetStyle = InvokeParseStrategySettings.DateTimeOffsetStyle,
+    DateOnlyStyle = InvokeParseStrategySettings.DateOnlyStyle,
+    TimeOnlyStyle = InvokeParseStrategySettings.TimeOnlyStyle)]
+public sealed partial class ParseMapperWithDateTimeStyleSettingsOnClass
+{
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="DateTime"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial DateTime MapDateTime(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="DateTimeOffset"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial DateTimeOffset MapDateTimeOffset(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="DateOnly"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial DateOnly MapDateOnly(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="TimeOnly"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial TimeOnly MapTimeOnly(string input);
 }
 
 /// <summary>

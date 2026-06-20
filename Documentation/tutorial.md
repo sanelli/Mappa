@@ -170,6 +170,24 @@ public sealed partial class Mapper
 }
 ```
 
+Parse date/time values with `DateTimeStyles` (for example to allow leading and trailing whitespace):
+```csharp
+[Mappa]
+public sealed partial class Mapper
+{
+    [MappaSettings(DateTimeStyle = DateTimeStyles.AllowWhiteSpaces)]
+    public partial DateTime MapDateTime(string input);
+
+    [MappaSettings(
+        DateTimeOffsetFormat = "dd-MM-yyyy HH:mm:ss",
+        CultureInfoSetting = CultureInfoSetting.InvariantCulture,
+        DateTimeOffsetStyle = DateTimeStyles.AllowWhiteSpaces)]
+    public partial DateTimeOffset MapDateTimeOffset(string input);
+}
+```
+
+Style settings apply when parsing `string` to `DateTime`, `DateTimeOffset`, `DateOnly`, or `TimeOnly` only. They do not affect `ToString` generation. As with culture and format, method-level settings override class-level settings, which override `.editorconfig` values.
+
 Numeric format properties (for example `IntFormat`, `DecimalFormat`) apply to `ToString` only. Culture applies to both parsing and converting to `string`.
 
 See also: [InvokeParseMapper.cs](../Mappa.Samples/InvokeParseMapper.cs), [InvokeToStringMapper.cs](../Mappa.Samples/InvokeToStringMapper.cs), and [Mappa attributes](./mappa-attributes.md#mappasettings).
