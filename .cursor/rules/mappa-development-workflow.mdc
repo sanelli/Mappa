@@ -18,9 +18,8 @@ The development environment uses **PowerShell**. All commands run in the termina
 - **Always** create a plan with numbered steps before starting implementation.
 - **Always** save the plan file under `.cursor/plans/` in the repository.
 - **Always** name the plan file `issue_<number>_<short-description>.plan.md` when the work is tied to a GitHub issue (e.g. `.cursor/plans/issue_214_datetimestyle_mappasettings.plan.md`). If no issue number is provided, ask the user for one before creating the plan.
-- **Always** create numbered TODOs that mirror the plan.
-- Maintain a **1:1 mapping** between TODOs and plan steps: each TODO must correspond to exactly one plan step, and vice versa.
-- **Step numbers must match TODO numbers** (e.g. plan step `3.` ↔ TODO `3`).
+- **TODOs MUST ALWAYS match plan steps 1:1.** Create exactly one numbered TODO for each numbered plan step, and exactly one numbered plan step for each TODO — no extras, no omissions, no combined or split items.
+- **Step numbers must match TODO numbers** (e.g. plan step `3.` ↔ TODO `3`); TODO content must describe the same work as its corresponding step.
 - Plan steps must follow the **Code** project order below, but only include projects that require changes — do **not** add empty steps for unchanged projects.
 - Step numbers are **sequential** (1, 2, 3, …) across the included projects; they do **not** need to match the fixed project position numbers in the Code list (e.g. if **Mappa** and **Mappa.Tests** need no changes, the first step may be **Mappa.Generator** numbered as step `1`).
 - Generated code **must compile** and **all tests must pass** before finishing.

@@ -36,6 +36,30 @@ public sealed class MappaSettingsAttribute
     public string? TimeOnlyFormat { get; set; }
 
     /// <summary>
+    /// Gets or sets the <see cref="DateTimeStyles"/> when using <see cref="DateTime.Parse(string,System.IFormatProvider,System.Globalization.DateTimeStyles)"/> or <see cref="DateTime.ParseExact(string,string,System.IFormatProvider,System.Globalization.DateTimeStyles)"/>.
+    /// A <c>null</c> value means that the setting is ignored and to use previous values (if any).
+    /// </summary>
+    public DateTimeStyles? DateTimeStyle { get; set; }
+
+    /// <summary>
+    /// Gets or sets the <see cref="DateTimeStyles"/> when using <see cref="DateTimeOffset.Parse(string,System.IFormatProvider,System.Globalization.DateTimeStyles)"/> or <see cref="DateTimeOffset.ParseExact(string,string,System.IFormatProvider,System.Globalization.DateTimeStyles)"/>.
+    /// A <c>null</c> value means that the setting is ignored and to use previous values (if any).
+    /// </summary>
+    public DateTimeStyles? DateTimeOffsetStyle { get; set; }
+
+    /// <summary>
+    /// Gets or sets the <see cref="DateTimeStyles"/> when using <c>DateOnly.Parse(string,System.IFormatProvider,System.Globalization.DateTimeStyles)</c> or <c>DateOnly.ParseExact(string,string,System.IFormatProvider,System.Globalization.DateTimeStyles)</c>.
+    /// A <c>null</c> value means that the setting is ignored and to use previous values (if any).
+    /// </summary>
+    public DateTimeStyles? DateOnlyStyle { get; set; }
+
+    /// <summary>
+    /// Gets or sets the <see cref="DateTimeStyles"/> when using <c>TimeOnly.Parse(string,System.IFormatProvider,System.Globalization.DateTimeStyles)</c> or <c>TimeOnly.ParseExact(string,string,System.IFormatProvider,System.Globalization.DateTimeStyles)</c>.
+    /// A <c>null</c> value means that the setting is ignored and to use previous values (if any).
+    /// </summary>
+    public DateTimeStyles? TimeOnlyStyle { get; set; }
+
+    /// <summary>
     /// Gets or sets the format when using <see cref="TimeSpan.ToString(string,System.IFormatProvider)"/> or <see cref="TimeSpan.ParseExact(string,string,System.IFormatProvider)"/>.
     /// </summary>
     public string? TimeSpanFormat { get; set; }
