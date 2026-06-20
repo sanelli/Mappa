@@ -293,10 +293,10 @@ internal sealed class MappaUserSettings
             this.dateTimeOffsetFormat.Apply(mappaSettingsAttribute.DateTimeOffsetFormat ?? this.dateTimeOffsetFormat),
             this.dateOnlyFormat.Apply(mappaSettingsAttribute.DateOnlyFormat ?? this.dateOnlyFormat),
             this.timeOnlyFormat.Apply(mappaSettingsAttribute.TimeOnlyFormat ?? this.timeOnlyFormat),
-            this.dateTimeStyle.Apply(mappaSettingsAttribute.DateTimeStyle ?? this.dateTimeStyle),
-            this.dateTimeOffsetStyle.Apply(mappaSettingsAttribute.DateTimeOffsetStyle ?? this.dateTimeOffsetStyle),
-            this.dateOnlyStyle.Apply(mappaSettingsAttribute.DateOnlyStyle ?? this.dateOnlyStyle),
-            this.timeOnlyStyle.Apply(mappaSettingsAttribute.TimeOnlyStyle ?? this.timeOnlyStyle),
+            this.dateTimeStyle.Apply(GetDateTimeStyle(mappaSettingsAttribute.DateTimeStyle, this.dateTimeStyle)),
+            this.dateTimeOffsetStyle.Apply(GetDateTimeStyle(mappaSettingsAttribute.DateTimeOffsetStyle, this.dateTimeOffsetStyle)),
+            this.dateOnlyStyle.Apply(GetDateTimeStyle(mappaSettingsAttribute.DateOnlyStyle, this.dateOnlyStyle)),
+            this.timeOnlyStyle.Apply(GetDateTimeStyle(mappaSettingsAttribute.TimeOnlyStyle, this.timeOnlyStyle)),
             this.timeSpanFormat.Apply(mappaSettingsAttribute.TimeSpanFormat ?? this.timeSpanFormat),
             this.guidFormat.Apply(mappaSettingsAttribute.GuidFormat ?? this.guidFormat),
             this.byteFormat.Apply(mappaSettingsAttribute.ByteFormat ?? this.byteFormat),
@@ -322,6 +322,9 @@ internal sealed class MappaUserSettings
  #pragma warning restore CA2000
         ]);
     }
+
+    private static DateTimeStyles? GetDateTimeStyle(DateTimeStyles style, StackSetting<DateTimeStyles?> currentStyle)
+        => style != MappaSettingsAttribute.UndefinedDateTimeStyle ? style : currentStyle;
 
     private sealed class PopActionDisposable
         : IDisposable

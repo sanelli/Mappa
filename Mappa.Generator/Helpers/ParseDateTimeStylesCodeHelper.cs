@@ -174,17 +174,23 @@ internal static class ParseDateTimeStylesCodeHelper
             return "System.Globalization.DateTimeStyles.None";
         }
 
-        var parts = new List<string>();
-        foreach (DateTimeStyles flag in Enum.GetValues(typeof(DateTimeStyles)))
+        var flags = (DateTimeStyles[])Enum.GetValues(typeof(DateTimeStyles));
+        Array.Sort(flags, (left, right) => ((int)right).CompareTo((int)left));
+
+        var parts = new List<DateTimeStyles>();
+        var remaining = styles;
+
+        foreach (DateTimeStyles flag in flags)
         {
             if (flag == DateTimeStyles.None)
             {
                 continue;
             }
 
-            if (styles.HasFlag(flag))
+            if ((remaining & flag) == flag)
             {
-                parts.Add($"System.Globalization.DateTimeStyles.{flag}");
+                parts.Add(flag);
+                remaining &= ~flag;
             }
         }
 
@@ -193,6 +199,13 @@ internal static class ParseDateTimeStylesCodeHelper
             return "System.Globalization.DateTimeStyles.None";
         }
 
-        return parts.Count == 1 ? parts[0] : string.Join(" | ", parts);
+        parts.Sort((left, right) => ((int)left).CompareTo((int)right));
+
+        if (parts.Count == 1)
+        {
+            return $"System.Globalization.DateTimeStyles.{parts[0]}";
+        }
+
+        return string.Join(" | ", parts.ConvertAll(static part => $"System.Globalization.DateTimeStyles.{part}"));
     }
 }

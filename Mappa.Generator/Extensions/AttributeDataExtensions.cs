@@ -277,20 +277,20 @@ internal static class AttributeDataExtensions
                     attribute.TimeOnlyFormat = value;
                     break;
 
-                case nameof(MappaSettingsAttribute.DateTimeStyle) when namedArgument.Value.Value is int value:
-                    attribute.DateTimeStyle = (DateTimeStyles)value;
+                case nameof(MappaSettingsAttribute.DateTimeStyle):
+                    attribute.DateTimeStyle = ReadDateTimeStyles(namedArgument.Value);
                     break;
 
-                case nameof(MappaSettingsAttribute.DateTimeOffsetStyle) when namedArgument.Value.Value is int value:
-                    attribute.DateTimeOffsetStyle = (DateTimeStyles)value;
+                case nameof(MappaSettingsAttribute.DateTimeOffsetStyle):
+                    attribute.DateTimeOffsetStyle = ReadDateTimeStyles(namedArgument.Value);
                     break;
 
-                case nameof(MappaSettingsAttribute.DateOnlyStyle) when namedArgument.Value.Value is int value:
-                    attribute.DateOnlyStyle = (DateTimeStyles)value;
+                case nameof(MappaSettingsAttribute.DateOnlyStyle):
+                    attribute.DateOnlyStyle = ReadDateTimeStyles(namedArgument.Value);
                     break;
 
-                case nameof(MappaSettingsAttribute.TimeOnlyStyle) when namedArgument.Value.Value is int value:
-                    attribute.TimeOnlyStyle = (DateTimeStyles)value;
+                case nameof(MappaSettingsAttribute.TimeOnlyStyle):
+                    attribute.TimeOnlyStyle = ReadDateTimeStyles(namedArgument.Value);
                     break;
 
                 case nameof(MappaSettingsAttribute.TimeSpanFormat) when namedArgument.Value.Value is string value:
@@ -384,6 +384,17 @@ internal static class AttributeDataExtensions
         }
 
         return attribute;
+
+        static DateTimeStyles ReadDateTimeStyles(TypedConstant typedConstant)
+        {
+            return typedConstant.Value switch
+            {
+                null => MappaSettingsAttribute.UndefinedDateTimeStyle,
+                int intValue => (DateTimeStyles)intValue,
+                DateTimeStyles dateTimeStyles => dateTimeStyles,
+                _ => MappaSettingsAttribute.UndefinedDateTimeStyle,
+            };
+        }
     }
 
     /// <summary>

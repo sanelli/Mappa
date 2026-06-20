@@ -12,7 +12,7 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Integration tests for the <see cref="InvokeParseStringWithFormatMapStrategy"/>.
 /// </summary>
-public sealed class InvokeParseStringWithFormatMapStrategyIntegrationTests
+public sealed partial class InvokeParseStringWithFormatMapStrategyIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {
     /// <summary>
