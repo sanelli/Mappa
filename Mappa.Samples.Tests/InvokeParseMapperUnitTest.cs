@@ -27,6 +27,9 @@ public sealed class InvokeParseMapperUnitTest
     private readonly ParseMapperWithCurrentCultureSettingsOnClass mapperWithCurrentCultureSettingsOnClass = new();
     private readonly ParseMapperWithCustomCultureSettingsOnClass mapperWithCustomCultureSettingsOnClass = new();
     private readonly ParseMapperWithSettingsOnClassSupersededBySettingsOnMethod mapperWithSettingsOnClassSupersededBySettingsOnMethod = new();
+    private readonly ParseMapperWithDateTimeStyleSettingsOnMethod mapperWithDateTimeStyleSettingsOnMethod = new();
+    private readonly ParseMapperWithFormatInvariantCultureAndDateTimeStyleSettingsOnMethod mapperWithFormatInvariantCultureAndDateTimeStyleSettingsOnMethod = new();
+    private readonly ParseMapperWithDateTimeStyleSettingsOnClass mapperWithDateTimeStyleSettingsOnClass = new();
     private readonly ParseNumericMapperWithInvariantCultureSettingsOnMethod numericMapperWithInvariantCultureSettingsOnMethod = new();
     private readonly ParseNumericMapperWithCustomCultureSettingsOnMethod numericMapperWithCustomCultureSettingsOnMethod = new();
 
@@ -1456,6 +1459,190 @@ public sealed class InvokeParseMapperUnitTest
 
         // Assert
         actual.Should().Be(Guid.ParseExact(input, InvokeParseStrategySettings.GuidFormat));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithDateTimeStyleSettingsOnMethod.MapDateTime"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDateTimeWithDateTimeStyleSettingsOnMethod()
+    {
+        const string input = InvokeParseStrategySettings.DateTimeInputWithWhiteSpaces;
+
+        var actual = this.mapperWithDateTimeStyleSettingsOnMethod.MapDateTime(input);
+
+        actual.Should().Be(DateTime.Parse(input, null, InvokeParseStrategySettings.DateTimeStyle));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithDateTimeStyleSettingsOnMethod.MapDateTimeOffset"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDateTimeOffsetWithDateTimeStyleSettingsOnMethod()
+    {
+        const string input = InvokeParseStrategySettings.DateTimeOffsetInputWithWhiteSpaces;
+
+        var actual = this.mapperWithDateTimeStyleSettingsOnMethod.MapDateTimeOffset(input);
+
+        actual.Should().Be(DateTimeOffset.Parse(input, null, InvokeParseStrategySettings.DateTimeOffsetStyle));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithDateTimeStyleSettingsOnMethod.MapDateOnly"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDateOnlyWithDateTimeStyleSettingsOnMethod()
+    {
+        const string input = InvokeParseStrategySettings.DateOnlyInputWithWhiteSpaces;
+
+        var actual = this.mapperWithDateTimeStyleSettingsOnMethod.MapDateOnly(input);
+
+        actual.Should().Be(DateOnly.Parse(input, null, InvokeParseStrategySettings.DateOnlyStyle));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithDateTimeStyleSettingsOnMethod.MapTimeOnly"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapTimeOnlyWithDateTimeStyleSettingsOnMethod()
+    {
+        const string input = InvokeParseStrategySettings.TimeOnlyInputWithWhiteSpaces;
+
+        var actual = this.mapperWithDateTimeStyleSettingsOnMethod.MapTimeOnly(input);
+
+        actual.Should().Be(TimeOnly.Parse(input, null, InvokeParseStrategySettings.TimeOnlyStyle));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithFormatInvariantCultureAndDateTimeStyleSettingsOnMethod.MapDateTime"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDateTimeWithFormatInvariantCultureAndDateTimeStyleSettingsOnMethod()
+    {
+        const string input = InvokeParseStrategySettings.DateTimeInputWithWhiteSpaces;
+
+        var actual = this.mapperWithFormatInvariantCultureAndDateTimeStyleSettingsOnMethod.MapDateTime(input);
+
+        actual.Should().Be(DateTime.ParseExact(
+            input,
+            InvokeParseStrategySettings.DateTimeFormat,
+            CultureInfo.InvariantCulture,
+            InvokeParseStrategySettings.DateTimeStyle));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithFormatInvariantCultureAndDateTimeStyleSettingsOnMethod.MapDateTimeOffset"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDateTimeOffsetWithFormatInvariantCultureAndDateTimeStyleSettingsOnMethod()
+    {
+        const string input = " 01-02-2025 34:17:22 ";
+
+        var actual = this.mapperWithFormatInvariantCultureAndDateTimeStyleSettingsOnMethod.MapDateTimeOffset(input);
+
+        actual.Should().Be(DateTimeOffset.ParseExact(
+            input,
+            InvokeParseStrategySettings.DateTimeOffsetFormat,
+            CultureInfo.InvariantCulture,
+            InvokeParseStrategySettings.DateTimeOffsetStyle));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithFormatInvariantCultureAndDateTimeStyleSettingsOnMethod.MapDateOnly"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDateOnlyWithFormatInvariantCultureAndDateTimeStyleSettingsOnMethod()
+    {
+        const string input = " 2025+02+01 ";
+
+        var actual = this.mapperWithFormatInvariantCultureAndDateTimeStyleSettingsOnMethod.MapDateOnly(input);
+
+        actual.Should().Be(DateOnly.ParseExact(
+            input,
+            InvokeParseStrategySettings.DateOnlyFormat,
+            CultureInfo.InvariantCulture,
+            InvokeParseStrategySettings.DateOnlyStyle));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithFormatInvariantCultureAndDateTimeStyleSettingsOnMethod.MapTimeOnly"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapTimeOnlyWithFormatInvariantCultureAndDateTimeStyleSettingsOnMethod()
+    {
+        const string input = " 22+20+05 ";
+
+        var actual = this.mapperWithFormatInvariantCultureAndDateTimeStyleSettingsOnMethod.MapTimeOnly(input);
+
+        actual.Should().Be(TimeOnly.ParseExact(
+            input,
+            InvokeParseStrategySettings.TimeOnlyFormat,
+            CultureInfo.InvariantCulture,
+            InvokeParseStrategySettings.TimeOnlyStyle));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithDateTimeStyleSettingsOnClass.MapDateTime"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDateTimeWithDateTimeStyleSettingsOnClass()
+    {
+        const string input = InvokeParseStrategySettings.DateTimeInputWithWhiteSpaces;
+
+        var actual = this.mapperWithDateTimeStyleSettingsOnClass.MapDateTime(input);
+
+        actual.Should().Be(DateTime.Parse(input, null, InvokeParseStrategySettings.DateTimeStyle));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithDateTimeStyleSettingsOnClass.MapDateTimeOffset"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDateTimeOffsetWithDateTimeStyleSettingsOnClass()
+    {
+        const string input = InvokeParseStrategySettings.DateTimeOffsetInputWithWhiteSpaces;
+
+        var actual = this.mapperWithDateTimeStyleSettingsOnClass.MapDateTimeOffset(input);
+
+        actual.Should().Be(DateTimeOffset.Parse(input, null, InvokeParseStrategySettings.DateTimeOffsetStyle));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithDateTimeStyleSettingsOnClass.MapDateOnly"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDateOnlyWithDateTimeStyleSettingsOnClass()
+    {
+        const string input = InvokeParseStrategySettings.DateOnlyInputWithWhiteSpaces;
+
+        var actual = this.mapperWithDateTimeStyleSettingsOnClass.MapDateOnly(input);
+
+        actual.Should().Be(DateOnly.Parse(input, null, InvokeParseStrategySettings.DateOnlyStyle));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithDateTimeStyleSettingsOnClass.MapTimeOnly"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapTimeOnlyWithDateTimeStyleSettingsOnClass()
+    {
+        const string input = InvokeParseStrategySettings.TimeOnlyInputWithWhiteSpaces;
+
+        var actual = this.mapperWithDateTimeStyleSettingsOnClass.MapTimeOnly(input);
+
+        actual.Should().Be(TimeOnly.Parse(input, null, InvokeParseStrategySettings.TimeOnlyStyle));
     }
 
     /// <summary>
