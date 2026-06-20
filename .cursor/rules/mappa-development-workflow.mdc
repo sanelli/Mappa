@@ -16,6 +16,8 @@ The development environment uses **PowerShell**. All commands run in the termina
 ## Planning
 
 - **Always** create a plan with numbered steps before starting implementation.
+- **Always** save the plan file under `.cursor/plans/` in the repository.
+- **Always** name the plan file `issue_<number>_<short-description>.plan.md` when the work is tied to a GitHub issue (e.g. `.cursor/plans/issue_214_datetimestyle_mappasettings.plan.md`). If no issue number is provided, ask the user for one before creating the plan.
 - **Always** create numbered TODOs that mirror the plan.
 - Maintain a **1:1 mapping** between TODOs and plan steps: each TODO must correspond to exactly one plan step, and vice versa.
 - **Step numbers must match TODO numbers** (e.g. plan step `3.` ↔ TODO `3`).
@@ -97,6 +99,12 @@ A single feature may require **two** bumps (e.g. one after **Mappa**, one after 
 - Add samples in **Mappa.Samples** after **Mappa.Generator** changes that add features or enhance existing behavior.
 - **Do not** add new samples for bug fixes alone.
 - Before adding samples, ensure the **Mappa.Generator** version bump and rebuild described in **Versioning** has already been done.
+
+## Documentation
+
+- When a new feature is added or a new setting is added, update the relevant sections of [`Documentation/tutorial.md`](Documentation/tutorial.md).
+- When adding a new `MappaSettings` property, update [`Documentation/mappa-attributes.md`](Documentation/mappa-attributes.md) and [`Mappa/README.md`](Mappa/README.md) as needed, but do **not** update the root [`.editorconfig`](.editorconfig).
+- When the source generator algorithm is updated, update [`Documentation/mappa-generator-algorithm.md`](Documentation/mappa-generator-algorithm.md) and [`Mappa.Generator/README.md`](Mappa.Generator/README.md).
 
 ## Final Step
 
