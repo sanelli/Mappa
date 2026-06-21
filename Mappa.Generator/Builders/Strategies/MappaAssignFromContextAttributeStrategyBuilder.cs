@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -29,7 +30,7 @@ internal sealed class MappaAssignFromContextAttributeStrategyBuilder
     {
         var temporary = context.NextTemporary();
         var targetType = this.strategy.TargetType.ToDisplayString();
-        var code = $"{targetType} {temporary} = ({targetType}) {this.strategy.ContextParameterName}[\"{this.strategy.Attribute.ItemName}\"];";
+        var code = $"{targetType} {temporary} = ({targetType}) {this.strategy.ContextParameterName}[{CSharpLiteralHelper.ToStringLiteral(this.strategy.Attribute.ItemName)}];";
         return (temporary, code);
     }
 }

@@ -3,6 +3,7 @@
 // </copyright>
 
 using Mappa.Generator.Extensions;
+using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -88,7 +89,7 @@ internal sealed class InvokeConstructorMapStrategyBuilder
             {
                 foreach (var assignToContextEntry in this.strategy.AssignToContextEntries)
                 {
-                    builder.AppendLine($"{this.strategy.ContextParameterName}[\"{assignToContextEntry.ContextKey}\"] = {resultTemporary}.{assignToContextEntry.MemberName};");
+                    builder.AppendLine($"{this.strategy.ContextParameterName}[{CSharpLiteralHelper.ToStringLiteral(assignToContextEntry.ContextKey)}] = {resultTemporary}.{assignToContextEntry.MemberName};");
                 }
             }
         }
