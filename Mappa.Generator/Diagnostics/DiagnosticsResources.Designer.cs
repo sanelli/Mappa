@@ -266,5 +266,11 @@ namespace Mappa.Generator.Diagnostics {
                 return ResourceManager.GetString("MultipleMappaAssignToContextAttributesUseTheSameContextKey", resourceCulture);
             }
         }
+
+        internal static string InvalidMappaSettingsStyleValue {
+            get {
+                return ResourceManager.GetString("InvalidMappaSettingsStyleValue", resourceCulture);
+            }
+        }
     }
 }

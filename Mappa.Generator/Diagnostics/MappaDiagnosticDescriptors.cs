@@ -51,6 +51,7 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? mappaAssignToContextTargetMemberDoesNotExistOrIsNotAccessible;
     private static DiagnosticDescriptor? cannotUseMappaAssignToContextAttributeWithoutContextParameter;
     private static DiagnosticDescriptor? multipleMappaAssignToContextAttributesUseTheSameContextKey;
+    private static DiagnosticDescriptor? invalidMappaSettingsStyleValue;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -347,6 +348,14 @@ internal static class MappaDiagnosticDescriptors
         => multipleMappaAssignToContextAttributesUseTheSameContextKey ??= BuildError(
             MappaDiagnosticsKind.MultipleMappaAssignToContextAttributesUseTheSameContextKey,
             DiagnosticsResources.MultipleMappaAssignToContextAttributesUseTheSameContextKey);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.InvalidMappaSettingsStyleValue"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor InvalidMappaSettingsStyleValue
+        => invalidMappaSettingsStyleValue ??= BuildWarning(
+            MappaDiagnosticsKind.InvalidMappaSettingsStyleValue,
+            DiagnosticsResources.InvalidMappaSettingsStyleValue);
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(

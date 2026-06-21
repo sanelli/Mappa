@@ -87,7 +87,7 @@ internal static class ParseDateTimeStylesCodeHelper
         }
 
         var cultureExpression = hasCulture ? GetCultureParameter(cultureInfoSetting, cultureName) : "null";
-        var styleExpression = GetStyleExpression(dateTimeStyle!.Value);
+        var styleExpression = StyleEnumCodeHelper.GetDateTimeStyleExpression(dateTimeStyle!.Value);
 
         if (hasFormat)
         {
@@ -134,7 +134,7 @@ internal static class ParseDateTimeStylesCodeHelper
         }
 
         var cultureExpression = hasCulture ? GetCultureParameter(cultureInfoSetting, cultureName) : "null";
-        var styleExpression = GetStyleExpression(dateTimeStyle!.Value);
+        var styleExpression = StyleEnumCodeHelper.GetDateTimeStyleExpression(dateTimeStyle!.Value);
 
         if (hasFormat)
         {
@@ -165,47 +165,5 @@ internal static class ParseDateTimeStylesCodeHelper
         }
 
         throw new MappaGeneratorException($"Unexpected culture info setting '{cultureInfoSetting}'.");
-    }
-
-    private static string GetStyleExpression(DateTimeStyles styles)
-    {
-        if (styles == DateTimeStyles.None)
-        {
-            return "System.Globalization.DateTimeStyles.None";
-        }
-
-        var flags = (DateTimeStyles[])Enum.GetValues(typeof(DateTimeStyles));
-        Array.Sort(flags, (left, right) => ((int)right).CompareTo((int)left));
-
-        var parts = new List<DateTimeStyles>();
-        var remaining = styles;
-
-        foreach (DateTimeStyles flag in flags)
-        {
-            if (flag == DateTimeStyles.None)
-            {
-                continue;
-            }
-
-            if ((remaining & flag) == flag)
-            {
-                parts.Add(flag);
-                remaining &= ~flag;
-            }
-        }
-
-        if (parts.Count == 0)
-        {
-            return "System.Globalization.DateTimeStyles.None";
-        }
-
-        parts.Sort((left, right) => ((int)left).CompareTo((int)right));
-
-        if (parts.Count == 1)
-        {
-            return $"System.Globalization.DateTimeStyles.{parts[0]}";
-        }
-
-        return string.Join(" | ", parts.ConvertAll(static part => $"System.Globalization.DateTimeStyles.{part}"));
     }
 }
