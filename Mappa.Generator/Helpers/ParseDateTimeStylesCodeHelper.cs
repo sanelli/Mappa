@@ -72,7 +72,7 @@ internal static class ParseDateTimeStylesCodeHelper
                 var cultureParameter = GetCultureParameter(cultureInfoSetting, cultureName);
                 if (hasFormat)
                 {
-                    return ("ParseExact", $"{source}, \"{format}\", {cultureParameter}");
+                    return ("ParseExact", $"{source}, {CSharpLiteralHelper.ToRequiredStringLiteral(format)}, {cultureParameter}");
                 }
 
                 return ("Parse", $"{source}, {cultureParameter}");
@@ -80,7 +80,7 @@ internal static class ParseDateTimeStylesCodeHelper
 
             if (hasFormat)
             {
-                return ("ParseExact", $"{source}, \"{format}\"");
+                return ("ParseExact", $"{source}, {CSharpLiteralHelper.ToRequiredStringLiteral(format)}");
             }
 
             return ("Parse", source);
@@ -91,7 +91,7 @@ internal static class ParseDateTimeStylesCodeHelper
 
         if (hasFormat)
         {
-            return ("ParseExact", $"{source}, \"{format}\", {cultureExpression}, {styleExpression}");
+            return ("ParseExact", $"{source}, {CSharpLiteralHelper.ToRequiredStringLiteral(format)}, {cultureExpression}, {styleExpression}");
         }
 
         return ("Parse", $"{source}, {cultureExpression}, {styleExpression}");
@@ -124,7 +124,7 @@ internal static class ParseDateTimeStylesCodeHelper
                 var cultureParameter = GetCultureParameter(cultureInfoSetting, cultureName);
                 if (hasFormat)
                 {
-                    return ("ParseExact", $"{source}, \"{format}\", {cultureParameter}");
+                    return ("ParseExact", $"{source}, {CSharpLiteralHelper.ToRequiredStringLiteral(format)}, {cultureParameter}");
                 }
 
                 return ("Parse", $"{source}, {cultureParameter}");
@@ -138,7 +138,7 @@ internal static class ParseDateTimeStylesCodeHelper
 
         if (hasFormat)
         {
-            return ("ParseExact", $"{source}, \"{format}\", {cultureExpression}, {styleExpression}");
+            return ("ParseExact", $"{source}, {CSharpLiteralHelper.ToRequiredStringLiteral(format)}, {cultureExpression}, {styleExpression}");
         }
 
         return ("Parse", $"{source}, {cultureExpression}, {styleExpression}");
@@ -158,7 +158,7 @@ internal static class ParseDateTimeStylesCodeHelper
             case CultureInfoSetting.UserDefined:
                 if (!string.IsNullOrWhiteSpace(cultureName))
                 {
-                    return $"System.Globalization.CultureInfo.GetCultureInfo(\"{cultureName}\")";
+                    return $"System.Globalization.CultureInfo.GetCultureInfo({CSharpLiteralHelper.ToRequiredStringLiteral(cultureName)})";
                 }
 
                 throw new MappaGeneratorException("Unexpected scenario when building GeyCultureInfo without culture name");

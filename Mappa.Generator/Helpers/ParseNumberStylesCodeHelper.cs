@@ -96,7 +96,7 @@ internal static class ParseNumberStylesCodeHelper
             case CultureInfoSetting.UserDefined:
                 if (!string.IsNullOrWhiteSpace(cultureName))
                 {
-                    return $"System.Globalization.CultureInfo.GetCultureInfo(\"{cultureName}\")";
+                    return $"System.Globalization.CultureInfo.GetCultureInfo({CSharpLiteralHelper.ToRequiredStringLiteral(cultureName)})";
                 }
 
                 throw new MappaGeneratorException("Unexpected scenario when building GeyCultureInfo without culture name");

@@ -50,6 +50,8 @@ The development environment uses **PowerShell**. All commands run in the termina
 - Coding standards are **strict**. Diagnostic IDs prefixed with `SA` come from **StyleCop**; IDs prefixed with `S` come from **Sonar Analyzer**.
 - Fix all StyleCop and Sonar Analyzer violations before finishing.
 - If a violation persists after **two** fix attempts, stop and ask the user for help.
+- **File endings:** the root [`.editorconfig`](.editorconfig) sets `insert_final_newline = false` and `end_of_line = crlf`. Source files must **not** end with a trailing newline after the last line of content. A trailing newline triggers StyleCop **SA1518** (*File may not end with a newline character*). When creating or editing files, ensure the final character is the last character of the closing line (e.g. `}`), not an extra blank line or newline after it.
+- **Nullability:** do **not** use the null-forgiving operator (`!`) to silence nullable reference warnings. Prefer APIs that accept nullable parameters when null is valid, explicit null or whitespace checks with a thrown exception when null is unexpected (e.g. `MappaGeneratorException`, `ArgumentNullException`), or assign to a local variable after validation so the compiler can narrow the type.
 
 ## Git
 
