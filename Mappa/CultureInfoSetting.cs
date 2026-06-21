@@ -33,7 +33,7 @@ public enum CultureInfoSetting
     CurrentCulture,
 
     /// <summary>
-    /// Use the <see cref="CultureInfo.CurrentCulture"/>.
+    /// Use the <see cref="CultureInfo.InvariantCulture"/>.
     /// </summary>
     InvariantCulture,
 
