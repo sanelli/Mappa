@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -33,7 +34,7 @@ internal sealed class InvokeToStringMapStrategyBuilder
             this.strategy.CultureInfoSetting is not CultureInfoSetting.None &&
             !string.IsNullOrWhiteSpace(this.strategy.Format))
         {
-            parameters = $"\"{this.strategy.Format}\", {GetCulture(this.strategy.CultureInfoSetting, this.strategy.CultureName)}";
+            parameters = $"{CSharpLiteralHelper.ToRequiredStringLiteral(this.strategy.Format)}, {GetCulture(this.strategy.CultureInfoSetting, this.strategy.CultureName)}";
         }
         else if (this.strategy.CultureInfoSetting is not CultureInfoSetting.Undefined &&
                  this.strategy.CultureInfoSetting is not CultureInfoSetting.None)
@@ -42,7 +43,7 @@ internal sealed class InvokeToStringMapStrategyBuilder
         }
         else if (!string.IsNullOrWhiteSpace(this.strategy.Format))
         {
-            parameters = $"\"{this.strategy.Format}\"";
+            parameters = CSharpLiteralHelper.ToRequiredStringLiteral(this.strategy.Format);
         }
         else
         {
@@ -59,7 +60,7 @@ internal sealed class InvokeToStringMapStrategyBuilder
         {
             CultureInfoSetting.CurrentCulture => "System.Globalization.CultureInfo.CurrentCulture",
             CultureInfoSetting.InvariantCulture => "System.Globalization.CultureInfo.InvariantCulture",
-            CultureInfoSetting.UserDefined => $"System.Globalization.CultureInfo.GetCultureInfo(\"{cultureName ?? string.Empty}\")",
+            CultureInfoSetting.UserDefined => $"System.Globalization.CultureInfo.GetCultureInfo({CSharpLiteralHelper.ToStringLiteral(cultureName ?? string.Empty)})",
             _ => throw new ArgumentOutOfRangeException(nameof(cultureInfoSettings), cultureInfoSettings, null),
         };
 }

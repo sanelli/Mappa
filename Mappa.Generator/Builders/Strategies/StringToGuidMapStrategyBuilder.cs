@@ -3,6 +3,7 @@
 // </copyright>
 
 using Mappa.Generator.Exceptions;
+using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -33,7 +34,7 @@ internal sealed class StringToGuidMapStrategyBuilder
         if (!string.IsNullOrWhiteSpace(this.strategy.Format))
         {
             parseMethod = nameof(Guid.ParseExact);
-            parameters = $"{parameters}, \"{this.strategy.Format}\"";
+            parameters = $"{parameters}, {CSharpLiteralHelper.ToRequiredStringLiteral(this.strategy.Format)}";
         }
         else if (this.strategy.CultureInfoSetting is not CultureInfoSetting.Undefined &&
                    this.strategy.CultureInfoSetting is not CultureInfoSetting.None)
@@ -52,7 +53,7 @@ internal sealed class StringToGuidMapStrategyBuilder
                 case CultureInfoSetting.UserDefined:
                     if (!string.IsNullOrWhiteSpace(this.strategy.CultureName))
                     {
-                        parameters = $"{parameters}, System.Globalization.CultureInfo.GetCultureInfo(\"{this.strategy.CultureName}\")";
+                        parameters = $"{parameters}, System.Globalization.CultureInfo.GetCultureInfo({CSharpLiteralHelper.ToRequiredStringLiteral(this.strategy.CultureName)})";
                     }
                     else
                     {
