@@ -1301,4 +1301,83 @@ public class NullableStrategyIntegrationTests
                             syntaxNodeAssertions.BeReturnStatement(expression => expression.BeIdentifierNameSyntax("__mappa_tmp_6")));
                 });
     }
+
+    /// <summary>
+    /// Test a mapping can be created from nullable value type to nullable reference type.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapNullableValueTypeToNullableReferenceType()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial string? Map(int? input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                typeof(string).ToString(),
+                NullableAnnotation.Annotated,
+                typeof(int?).ToString(),
+                NullableAnnotation.Annotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(3)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax("string?", "__mappa_tmp_1"))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeIfStatementSyntax(
+                                conditionAssertions => conditionAssertions.BeMemberAccessExpressionSyntax("input.HasValue"),
+                                thenStatementAssertions =>
+                                {
+                                    thenStatementAssertions
+                                        .BeBlockStatement()
+                                        .AsBlock()
+                                        .HasSyntaxNodesCount(3)
+                                        .HasNextSyntaxNode(syntaxNode => syntaxNode.BeLocalDeclarationStatementSyntax(
+                                            typeof(int).ToString(),
+                                            "__mappa_tmp_2",
+                                            assertInitialization => assertInitialization.BeMemberAccessExpressionSyntax("input.Value")))
+                                        .HasNextSyntaxNode(syntaxNode => syntaxNode.BeLocalDeclarationStatementSyntax(
+                                            typeof(string).ToString(),
+                                            "__mappa_tmp_3",
+                                            assertInitialization => assertInitialization.BeInvocationExpressionSyntax(
+                                                "__mappa_tmp_2.ToString")))
+                                        .HasNextSyntaxNode(syntaxNode => syntaxNode.BeAssignmentExpressionStatement(
+                                            left => left.BeIdentifierNameSyntax("__mappa_tmp_1"),
+                                            right => right.BeIdentifierNameSyntax("__mappa_tmp_3")));
+                                },
+                                elseStatementAssertions =>
+                                {
+                                    elseStatementAssertions
+                                        .BeBlockStatement()
+                                        .AsBlock()
+                                        .HasSyntaxNodesCount(1)
+                                        .HasNextSyntaxNode(defaultSyntaxNode => defaultSyntaxNode.BeAssignmentExpressionStatement(
+                                            left => left.BeIdentifierNameSyntax("__mappa_tmp_1"),
+                                            right => right.BeCastExpressionSyntax(
+                                                "string?",
+                                                expression => expression.BeLiteralExpressionSyntax(null))));
+                                }))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeReturnStatement(expression => expression.BeIdentifierNameSyntax("__mappa_tmp_1")));
+                });
+    }
 }
