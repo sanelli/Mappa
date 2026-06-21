@@ -21,6 +21,11 @@ public sealed class MappaSettingsAttribute
     public static DateTimeStyles UndefinedDateTimeStyle => (DateTimeStyles)(-1);
 
     /// <summary>
+    /// Gets the sentinel value for unset numeric style settings. When used, the style is ignored and previous values (if any) are used.
+    /// </summary>
+    public static NumberStyles UndefinedNumberStyle => (NumberStyles)(-1);
+
+    /// <summary>
     /// Gets or sets the format when using <see cref="DateTime.ToString(string,System.IFormatProvider)"/> or <see cref="DateTime.ParseExact(string,string,System.IFormatProvider)"/>.
     /// </summary>
     public string? DateTimeFormat { get; set; }
@@ -128,6 +133,72 @@ public sealed class MappaSettingsAttribute
     /// Gets or sets the format when using <see cref="double.ToString(string,System.IFormatProvider)"/> when converting to <see cref="string"/>.
     /// </summary>
     public string? DoubleFormat { get; set; }
+
+    /// <summary>
+    /// Gets or sets the <see cref="NumberStyles"/> when using <see cref="byte.Parse(string,System.Globalization.NumberStyles)"/> or <see cref="byte.Parse(string,System.Globalization.NumberStyles,System.IFormatProvider)"/>.
+    /// Use <see cref="UndefinedNumberStyle"/> to ignore this setting and use previous values (if any).
+    /// </summary>
+    public NumberStyles ByteStyle { get; set; } = UndefinedNumberStyle;
+
+    /// <summary>
+    /// Gets or sets the <see cref="NumberStyles"/> when using <see cref="sbyte.Parse(string,System.Globalization.NumberStyles)"/> or <see cref="sbyte.Parse(string,System.Globalization.NumberStyles,System.IFormatProvider)"/>.
+    /// Use <see cref="UndefinedNumberStyle"/> to ignore this setting and use previous values (if any).
+    /// </summary>
+    public NumberStyles SByteStyle { get; set; } = UndefinedNumberStyle;
+
+    /// <summary>
+    /// Gets or sets the <see cref="NumberStyles"/> when using <see cref="short.Parse(string,System.Globalization.NumberStyles)"/> or <see cref="short.Parse(string,System.Globalization.NumberStyles,System.IFormatProvider)"/>.
+    /// Use <see cref="UndefinedNumberStyle"/> to ignore this setting and use previous values (if any).
+    /// </summary>
+    public NumberStyles ShortStyle { get; set; } = UndefinedNumberStyle;
+
+    /// <summary>
+    /// Gets or sets the <see cref="NumberStyles"/> when using <see cref="ushort.Parse(string,System.Globalization.NumberStyles)"/> or <see cref="ushort.Parse(string,System.Globalization.NumberStyles,System.IFormatProvider)"/>.
+    /// Use <see cref="UndefinedNumberStyle"/> to ignore this setting and use previous values (if any).
+    /// </summary>
+    public NumberStyles UShortStyle { get; set; } = UndefinedNumberStyle;
+
+    /// <summary>
+    /// Gets or sets the <see cref="NumberStyles"/> when using <see cref="int.Parse(string,System.Globalization.NumberStyles)"/> or <see cref="int.Parse(string,System.Globalization.NumberStyles,System.IFormatProvider)"/>.
+    /// Use <see cref="UndefinedNumberStyle"/> to ignore this setting and use previous values (if any).
+    /// </summary>
+    public NumberStyles IntStyle { get; set; } = UndefinedNumberStyle;
+
+    /// <summary>
+    /// Gets or sets the <see cref="NumberStyles"/> when using <see cref="uint.Parse(string,System.Globalization.NumberStyles)"/> or <see cref="uint.Parse(string,System.Globalization.NumberStyles,System.IFormatProvider)"/>.
+    /// Use <see cref="UndefinedNumberStyle"/> to ignore this setting and use previous values (if any).
+    /// </summary>
+    public NumberStyles UIntStyle { get; set; } = UndefinedNumberStyle;
+
+    /// <summary>
+    /// Gets or sets the <see cref="NumberStyles"/> when using <see cref="long.Parse(string,System.Globalization.NumberStyles)"/> or <see cref="long.Parse(string,System.Globalization.NumberStyles,System.IFormatProvider)"/>.
+    /// Use <see cref="UndefinedNumberStyle"/> to ignore this setting and use previous values (if any).
+    /// </summary>
+    public NumberStyles LongStyle { get; set; } = UndefinedNumberStyle;
+
+    /// <summary>
+    /// Gets or sets the <see cref="NumberStyles"/> when using <see cref="ulong.Parse(string,System.Globalization.NumberStyles)"/> or <see cref="ulong.Parse(string,System.Globalization.NumberStyles,System.IFormatProvider)"/>.
+    /// Use <see cref="UndefinedNumberStyle"/> to ignore this setting and use previous values (if any).
+    /// </summary>
+    public NumberStyles ULongStyle { get; set; } = UndefinedNumberStyle;
+
+    /// <summary>
+    /// Gets or sets the <see cref="NumberStyles"/> when using <see cref="decimal.Parse(string,System.Globalization.NumberStyles)"/> or <see cref="decimal.Parse(string,System.Globalization.NumberStyles,System.IFormatProvider)"/>.
+    /// Use <see cref="UndefinedNumberStyle"/> to ignore this setting and use previous values (if any).
+    /// </summary>
+    public NumberStyles DecimalStyle { get; set; } = UndefinedNumberStyle;
+
+    /// <summary>
+    /// Gets or sets the <see cref="NumberStyles"/> when using <see cref="float.Parse(string,System.Globalization.NumberStyles)"/> or <see cref="float.Parse(string,System.Globalization.NumberStyles,System.IFormatProvider)"/>.
+    /// Use <see cref="UndefinedNumberStyle"/> to ignore this setting and use previous values (if any).
+    /// </summary>
+    public NumberStyles FloatStyle { get; set; } = UndefinedNumberStyle;
+
+    /// <summary>
+    /// Gets or sets the <see cref="NumberStyles"/> when using <see cref="double.Parse(string,System.Globalization.NumberStyles)"/> or <see cref="double.Parse(string,System.Globalization.NumberStyles,System.IFormatProvider)"/>.
+    /// Use <see cref="UndefinedNumberStyle"/> to ignore this setting and use previous values (if any).
+    /// </summary>
+    public NumberStyles DoubleStyle { get; set; } = UndefinedNumberStyle;
 
     /// <summary>
     /// Gets or sets the <see cref="CultureInfo"/> to use when converting to string or parsing form string.
