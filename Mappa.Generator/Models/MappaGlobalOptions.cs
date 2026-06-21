@@ -390,11 +390,6 @@ internal sealed class MappaGlobalOptions
         {
             if (cultureInfoSettings.Equals(nameof(CultureInfoSetting.CurrentCulture), StringComparison.OrdinalIgnoreCase))
             {
-                return CultureInfoSetting.None;
-            }
-
-            if (cultureInfoSettings.Equals(nameof(CultureInfoSetting.CurrentCulture), StringComparison.OrdinalIgnoreCase))
-            {
                 return CultureInfoSetting.CurrentCulture;
             }
 
