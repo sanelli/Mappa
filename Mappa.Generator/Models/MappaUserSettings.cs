@@ -36,6 +36,17 @@ internal sealed class MappaUserSettings
     private readonly StackSetting<string?> decimalFormat;
     private readonly StackSetting<string?> floatFormat;
     private readonly StackSetting<string?> doubleFormat;
+    private readonly StackSetting<NumberStyles?> byteStyle;
+    private readonly StackSetting<NumberStyles?> sByteStyle;
+    private readonly StackSetting<NumberStyles?> shortStyle;
+    private readonly StackSetting<NumberStyles?> uShortStyle;
+    private readonly StackSetting<NumberStyles?> intStyle;
+    private readonly StackSetting<NumberStyles?> uIntStyle;
+    private readonly StackSetting<NumberStyles?> longStyle;
+    private readonly StackSetting<NumberStyles?> uLongStyle;
+    private readonly StackSetting<NumberStyles?> decimalStyle;
+    private readonly StackSetting<NumberStyles?> floatStyle;
+    private readonly StackSetting<NumberStyles?> doubleStyle;
     private readonly StackSetting<CultureInfoSetting> cultureInfoSetting;
     private readonly StackSetting<string?> cultureName;
     private readonly StackSetting<BooleanSetting> protobufOptional;
@@ -73,6 +84,17 @@ internal sealed class MappaUserSettings
             otherSettings.DecimalFormat,
             otherSettings.FloatFormat,
             otherSettings.DoubleFormat,
+            otherSettings.ByteStyle,
+            otherSettings.SByteStyle,
+            otherSettings.ShortStyle,
+            otherSettings.UShortStyle,
+            otherSettings.IntStyle,
+            otherSettings.UIntStyle,
+            otherSettings.LongStyle,
+            otherSettings.ULongStyle,
+            otherSettings.DecimalStyle,
+            otherSettings.FloatStyle,
+            otherSettings.DoubleStyle,
             otherSettings.CultureInfoSetting,
             otherSettings.CultureName,
             otherSettings.ProtobufOptional,
@@ -109,6 +131,17 @@ internal sealed class MappaUserSettings
     /// <param name="decimalFormat">The default format for <see cref="decimal"/>.</param>
     /// <param name="floatFormat">The default format for <see cref="float"/>.</param>
     /// <param name="doubleFormat">The default format for <see cref="double"/>.</param>
+    /// <param name="byteStyle">The default <see cref="NumberStyles"/> for <see cref="byte"/>.</param>
+    /// <param name="sByteStyle">The default <see cref="NumberStyles"/> for <see cref="sbyte"/>.</param>
+    /// <param name="shortStyle">The default <see cref="NumberStyles"/> for <see cref="short"/>.</param>
+    /// <param name="uShortStyle">The default <see cref="NumberStyles"/> for <see cref="ushort"/>.</param>
+    /// <param name="intStyle">The default <see cref="NumberStyles"/> for <see cref="int"/>.</param>
+    /// <param name="uIntStyle">The default <see cref="NumberStyles"/> for <see cref="uint"/>.</param>
+    /// <param name="longStyle">The default <see cref="NumberStyles"/> for <see cref="long"/>.</param>
+    /// <param name="uLongStyle">The default <see cref="NumberStyles"/> for <see cref="ulong"/>.</param>
+    /// <param name="decimalStyle">The default <see cref="NumberStyles"/> for <see cref="decimal"/>.</param>
+    /// <param name="floatStyle">The default <see cref="NumberStyles"/> for <see cref="float"/>.</param>
+    /// <param name="doubleStyle">The default <see cref="NumberStyles"/> for <see cref="double"/>.</param>
     /// <param name="cultureInfoSetting">The type of culture info settings to be provided.</param>
     /// <param name="cultureName">The default culture info to use to generate a format provider.</param>
     /// <param name="protobufOptional">Enable or disable (protobuf) optional feature.</param>
@@ -140,6 +173,17 @@ internal sealed class MappaUserSettings
         string? decimalFormat,
         string? floatFormat,
         string? doubleFormat,
+        NumberStyles? byteStyle,
+        NumberStyles? sByteStyle,
+        NumberStyles? shortStyle,
+        NumberStyles? uShortStyle,
+        NumberStyles? intStyle,
+        NumberStyles? uIntStyle,
+        NumberStyles? longStyle,
+        NumberStyles? uLongStyle,
+        NumberStyles? decimalStyle,
+        NumberStyles? floatStyle,
+        NumberStyles? doubleStyle,
         CultureInfoSetting cultureInfoSetting,
         string? cultureName,
         BooleanSetting protobufOptional,
@@ -171,6 +215,17 @@ internal sealed class MappaUserSettings
         this.decimalFormat = new(decimalFormat);
         this.floatFormat = new(floatFormat);
         this.doubleFormat = new(doubleFormat);
+        this.byteStyle = new(byteStyle);
+        this.sByteStyle = new(sByteStyle);
+        this.shortStyle = new(shortStyle);
+        this.uShortStyle = new(uShortStyle);
+        this.intStyle = new(intStyle);
+        this.uIntStyle = new(uIntStyle);
+        this.longStyle = new(longStyle);
+        this.uLongStyle = new(uLongStyle);
+        this.decimalStyle = new(decimalStyle);
+        this.floatStyle = new(floatStyle);
+        this.doubleStyle = new(doubleStyle);
         this.cultureInfoSetting = new(cultureInfoSetting);
         this.cultureName = new(cultureName);
         this.protobufOptional = new(protobufOptional);
@@ -246,6 +301,39 @@ internal sealed class MappaUserSettings
     public string? DoubleFormat => this.doubleFormat;
 
     /// <inheritdoc />
+    public NumberStyles? ByteStyle => this.byteStyle;
+
+    /// <inheritdoc />
+    public NumberStyles? SByteStyle => this.sByteStyle;
+
+    /// <inheritdoc />
+    public NumberStyles? ShortStyle => this.shortStyle;
+
+    /// <inheritdoc />
+    public NumberStyles? UShortStyle => this.uShortStyle;
+
+    /// <inheritdoc />
+    public NumberStyles? IntStyle => this.intStyle;
+
+    /// <inheritdoc />
+    public NumberStyles? UIntStyle => this.uIntStyle;
+
+    /// <inheritdoc />
+    public NumberStyles? LongStyle => this.longStyle;
+
+    /// <inheritdoc />
+    public NumberStyles? ULongStyle => this.uLongStyle;
+
+    /// <inheritdoc />
+    public NumberStyles? DecimalStyle => this.decimalStyle;
+
+    /// <inheritdoc />
+    public NumberStyles? FloatStyle => this.floatStyle;
+
+    /// <inheritdoc />
+    public NumberStyles? DoubleStyle => this.doubleStyle;
+
+    /// <inheritdoc />
     public CultureInfoSetting CultureInfoSetting => this.cultureInfoSetting;
 
     /// <inheritdoc />
@@ -310,6 +398,17 @@ internal sealed class MappaUserSettings
             this.decimalFormat.Apply(mappaSettingsAttribute.DecimalFormat ?? this.decimalFormat),
             this.floatFormat.Apply(mappaSettingsAttribute.FloatFormat ?? this.floatFormat),
             this.doubleFormat.Apply(mappaSettingsAttribute.DoubleFormat ?? this.doubleFormat),
+            this.byteStyle.Apply(GetNumberStyle(mappaSettingsAttribute.ByteStyle, this.byteStyle)),
+            this.sByteStyle.Apply(GetNumberStyle(mappaSettingsAttribute.SByteStyle, this.sByteStyle)),
+            this.shortStyle.Apply(GetNumberStyle(mappaSettingsAttribute.ShortStyle, this.shortStyle)),
+            this.uShortStyle.Apply(GetNumberStyle(mappaSettingsAttribute.UShortStyle, this.uShortStyle)),
+            this.intStyle.Apply(GetNumberStyle(mappaSettingsAttribute.IntStyle, this.intStyle)),
+            this.uIntStyle.Apply(GetNumberStyle(mappaSettingsAttribute.UIntStyle, this.uIntStyle)),
+            this.longStyle.Apply(GetNumberStyle(mappaSettingsAttribute.LongStyle, this.longStyle)),
+            this.uLongStyle.Apply(GetNumberStyle(mappaSettingsAttribute.ULongStyle, this.uLongStyle)),
+            this.decimalStyle.Apply(GetNumberStyle(mappaSettingsAttribute.DecimalStyle, this.decimalStyle)),
+            this.floatStyle.Apply(GetNumberStyle(mappaSettingsAttribute.FloatStyle, this.floatStyle)),
+            this.doubleStyle.Apply(GetNumberStyle(mappaSettingsAttribute.DoubleStyle, this.doubleStyle)),
             this.cultureInfoSetting.Apply(mappaSettingsAttribute.CultureInfoSetting is not CultureInfoSetting.Undefined ? mappaSettingsAttribute.CultureInfoSetting : this.cultureInfoSetting),
             this.cultureName.Apply(mappaSettingsAttribute.CultureName ?? this.cultureName),
             this.protobufOptional.Apply(mappaSettingsAttribute.ProtobufOptional is not BooleanSetting.Undefined ? mappaSettingsAttribute.ProtobufOptional : this.protobufOptional),
@@ -325,6 +424,9 @@ internal sealed class MappaUserSettings
 
     private static DateTimeStyles? GetDateTimeStyle(DateTimeStyles style, StackSetting<DateTimeStyles?> currentStyle)
         => style != MappaSettingsAttribute.UndefinedDateTimeStyle ? style : currentStyle;
+
+    private static NumberStyles? GetNumberStyle(NumberStyles style, StackSetting<NumberStyles?> currentStyle)
+        => style != MappaSettingsAttribute.UndefinedNumberStyle ? style : currentStyle;
 
     private sealed class PopActionDisposable
         : IDisposable

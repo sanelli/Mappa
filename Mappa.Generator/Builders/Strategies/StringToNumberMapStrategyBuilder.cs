@@ -2,7 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using Mappa.Generator.Exceptions;
+using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -29,37 +29,11 @@ internal sealed class StringToNumberMapStrategyBuilder
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
         var targetType = this.strategy.TargetType.ToDisplayString();
-        var parameters = source;
-
-        if (this.strategy.CultureInfoSetting is not CultureInfoSetting.Undefined &&
-            this.strategy.CultureInfoSetting is not CultureInfoSetting.None)
-        {
-            switch (this.strategy.CultureInfoSetting)
-            {
-                case CultureInfoSetting.Undefined:
-                case CultureInfoSetting.None:
-                    break;
-                case CultureInfoSetting.CurrentCulture:
-                    parameters = $"{parameters}, System.Globalization.CultureInfo.CurrentCulture";
-                    break;
-                case CultureInfoSetting.InvariantCulture:
-                    parameters = $"{parameters}, System.Globalization.CultureInfo.InvariantCulture";
-                    break;
-                case CultureInfoSetting.UserDefined:
-                    if (!string.IsNullOrWhiteSpace(this.strategy.CultureName))
-                    {
-                        parameters = $"{parameters}, System.Globalization.CultureInfo.GetCultureInfo(\"{this.strategy.CultureName}\")";
-                    }
-                    else
-                    {
-                        throw new MappaGeneratorException("Reached the scenario where we are trying to build using user defined custom culture without culture name.");
-                    }
-
-                    break;
-                default:
-                    throw new MappaGeneratorException($"Unexpected culture info setting '{this.strategy.CultureInfoSetting}'.");
-            }
-        }
+        var parameters = ParseNumberStylesCodeHelper.BuildParseInvocation(
+            source,
+            this.strategy.CultureInfoSetting,
+            this.strategy.CultureName,
+            this.strategy.NumberStyle);
 
         var temporary = context.NextTemporary();
         var code = $"{targetType} {temporary} = {targetType}.Parse({parameters});";

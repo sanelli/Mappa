@@ -188,6 +188,23 @@ public sealed partial class Mapper
 
 Style settings apply when parsing `string` to `DateTime`, `DateTimeOffset`, `DateOnly`, or `TimeOnly` only. They do not affect `ToString` generation. As with culture and format, method-level settings override class-level settings, which override `.editorconfig` values.
 
+Parse numeric values with `NumberStyles` (for example to allow grouping separators and parentheses):
+```csharp
+[Mappa]
+public sealed partial class Mapper
+{
+    [MappaSettings(IntStyle = NumberStyles.AllowThousands | NumberStyles.AllowParentheses)]
+    public partial int MapInteger(string input);
+
+    [MappaSettings(
+        DecimalStyle = NumberStyles.AllowThousands | NumberStyles.AllowParentheses | NumberStyles.AllowDecimalPoint,
+        CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
+    public partial decimal MapDecimal(string input);
+}
+```
+
+Numeric style settings apply when parsing `string` to the corresponding numeric type only. They do not affect `ToString` generation. Override hierarchy is the same as for culture, format, and date/time styles.
+
 Numeric format properties (for example `IntFormat`, `DecimalFormat`) apply to `ToString` only. Culture applies to both parsing and converting to `string`.
 
 See also: [InvokeParseMapper.cs](../Mappa.Samples/InvokeParseMapper.cs), [InvokeToStringMapper.cs](../Mappa.Samples/InvokeToStringMapper.cs), and [Mappa attributes](./mappa-attributes.md#mappasettings).

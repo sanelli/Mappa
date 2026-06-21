@@ -28,7 +28,8 @@ Via `MappaSettings` the following settings can be tweaked:
 - `TimeOnlyStyle`: the [DateTimeStyles](https://learn.microsoft.com/en-us/dotnet/api/system.globalization.datetimestyles) to use when parsing `string`s to `System.TimeOnly` (unset values inherit; does not affect `ToString`);
 - `TimeSpanFormat`: the format to use when mapping `string`s to and from `System.TimeSpan`;
 - `GuidFormat`: the format to use when mapping `string`s to and from `System.Guid`;
-- `ByteFormat`, `SByteFormat`, `ShortFormat`, `UShortFormat`, `IntFormat`, `UIntFormat`, `LongFormat`, `ULongFormat`, `DecimalFormat`, `FloatFormat`, `DoubleFormat`: the format to use when converting the corresponding numeric type to `string` (numeric formats apply to `ToString` only; culture applies to both parsing and converting to `string`);
+- `ByteFormat`, `SByteFormat`, `ShortFormat`, `UShortFormat`, `IntFormat`, `UIntFormat`, `LongFormat`, `ULongFormat`, `DecimalFormat`, `FloatFormat`, `DoubleFormat`: the format to use when converting the corresponding numeric type to `string` (numeric formats apply to `ToString` only);
+- `ByteStyle`, `SByteStyle`, `ShortStyle`, `UShortStyle`, `IntStyle`, `UIntStyle`, `LongStyle`, `ULongStyle`, `DecimalStyle`, `FloatStyle`, `DoubleStyle`: the [NumberStyles](https://learn.microsoft.com/en-us/dotnet/api/system.globalization.numberstyles) to use when parsing `string`s to the corresponding numeric type (unset values inherit; does not affect `ToString`);
 - `CultureInfoSetting`: defines which culture to use when mapping any of the above types and numeric types (current culture, invariant culture, or user-defined culture);
 - `CultureName`: defines the culture to use when user-defined culture is selected by `CultureInfoSetting`;
 - `ProtobufOptional`: enables or disables the ability of the [Mappa source generator](https://www.nuget.org/packages/Mappa.Generator/) to handle `optional` fields in protobuf models;

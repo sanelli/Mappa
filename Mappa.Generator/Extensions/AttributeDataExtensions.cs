@@ -345,6 +345,50 @@ internal static class AttributeDataExtensions
                     attribute.DoubleFormat = value;
                     break;
 
+                case nameof(MappaSettingsAttribute.ByteStyle):
+                    attribute.ByteStyle = ReadNumberStyles(namedArgument.Value);
+                    break;
+
+                case nameof(MappaSettingsAttribute.SByteStyle):
+                    attribute.SByteStyle = ReadNumberStyles(namedArgument.Value);
+                    break;
+
+                case nameof(MappaSettingsAttribute.ShortStyle):
+                    attribute.ShortStyle = ReadNumberStyles(namedArgument.Value);
+                    break;
+
+                case nameof(MappaSettingsAttribute.UShortStyle):
+                    attribute.UShortStyle = ReadNumberStyles(namedArgument.Value);
+                    break;
+
+                case nameof(MappaSettingsAttribute.IntStyle):
+                    attribute.IntStyle = ReadNumberStyles(namedArgument.Value);
+                    break;
+
+                case nameof(MappaSettingsAttribute.UIntStyle):
+                    attribute.UIntStyle = ReadNumberStyles(namedArgument.Value);
+                    break;
+
+                case nameof(MappaSettingsAttribute.LongStyle):
+                    attribute.LongStyle = ReadNumberStyles(namedArgument.Value);
+                    break;
+
+                case nameof(MappaSettingsAttribute.ULongStyle):
+                    attribute.ULongStyle = ReadNumberStyles(namedArgument.Value);
+                    break;
+
+                case nameof(MappaSettingsAttribute.DecimalStyle):
+                    attribute.DecimalStyle = ReadNumberStyles(namedArgument.Value);
+                    break;
+
+                case nameof(MappaSettingsAttribute.FloatStyle):
+                    attribute.FloatStyle = ReadNumberStyles(namedArgument.Value);
+                    break;
+
+                case nameof(MappaSettingsAttribute.DoubleStyle):
+                    attribute.DoubleStyle = ReadNumberStyles(namedArgument.Value);
+                    break;
+
                 case nameof(MappaSettingsAttribute.CultureName) when namedArgument.Value.Value is string value:
                     attribute.CultureName = value;
                     break;
@@ -393,6 +437,17 @@ internal static class AttributeDataExtensions
                 int intValue => (DateTimeStyles)intValue,
                 DateTimeStyles dateTimeStyles => dateTimeStyles,
                 _ => MappaSettingsAttribute.UndefinedDateTimeStyle,
+            };
+        }
+
+        static NumberStyles ReadNumberStyles(TypedConstant typedConstant)
+        {
+            return typedConstant.Value switch
+            {
+                null => MappaSettingsAttribute.UndefinedNumberStyle,
+                int intValue => (NumberStyles)intValue,
+                NumberStyles numberStyles => numberStyles,
+                _ => MappaSettingsAttribute.UndefinedNumberStyle,
             };
         }
     }
