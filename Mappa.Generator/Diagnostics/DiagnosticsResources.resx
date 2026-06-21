@@ -129,4 +129,7 @@
     <data name="MultipleMappaAssignToContextAttributesUseTheSameContextKey" xml:space="preserve">
         <value>Method '{0}' defines multiple MappaAssignToContext attributes with the same context key '{1}'.</value>
     </data>
+    <data name="InvalidMappaSettingsStyleValue" xml:space="preserve">
+        <value>MappaSettings.{0} has value '{1}' which is not a valid {2} combination; unrecognized bits will be ignored in generated parse code.</value>
+    </data>
 </root>

@@ -72,7 +72,7 @@ internal static class ParseNumberStylesCodeHelper
             return source;
         }
 
-        var styleExpression = GetStyleExpression(numberStyle!.Value);
+        var styleExpression = StyleEnumCodeHelper.GetNumberStyleExpression(numberStyle!.Value);
 
         if (hasCulture)
         {
@@ -103,47 +103,5 @@ internal static class ParseNumberStylesCodeHelper
         }
 
         throw new MappaGeneratorException($"Unexpected culture info setting '{cultureInfoSetting}'.");
-    }
-
-    private static string GetStyleExpression(NumberStyles styles)
-    {
-        if (styles == NumberStyles.None)
-        {
-            return "System.Globalization.NumberStyles.None";
-        }
-
-        var flags = (NumberStyles[])Enum.GetValues(typeof(NumberStyles));
-        Array.Sort(flags, (left, right) => ((int)right).CompareTo((int)left));
-
-        var parts = new List<NumberStyles>();
-        var remaining = styles;
-
-        foreach (NumberStyles flag in flags)
-        {
-            if (flag == NumberStyles.None)
-            {
-                continue;
-            }
-
-            if ((remaining & flag) == flag)
-            {
-                parts.Add(flag);
-                remaining &= ~flag;
-            }
-        }
-
-        if (parts.Count == 0)
-        {
-            return "System.Globalization.NumberStyles.None";
-        }
-
-        parts.Sort((left, right) => ((int)left).CompareTo((int)right));
-
-        if (parts.Count == 1)
-        {
-            return $"System.Globalization.NumberStyles.{parts[0]}";
-        }
-
-        return string.Join(" | ", parts.ConvertAll(static part => $"System.Globalization.NumberStyles.{part}"));
     }
 }

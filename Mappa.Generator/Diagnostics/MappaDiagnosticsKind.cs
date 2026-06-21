@@ -207,4 +207,9 @@ internal enum MappaDiagnosticsKind
     /// Multiple <see cref="MappaAssignToContextAttribute"/> attributes on the same method use the same context key.
     /// </summary>
     MultipleMappaAssignToContextAttributesUseTheSameContextKey,
+
+    /// <summary>
+    /// A <see cref="MappaSettingsAttribute"/> style property has an integer value that is not a valid enum combination.
+    /// </summary>
+    InvalidMappaSettingsStyleValue,
 }

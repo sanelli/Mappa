@@ -616,4 +616,25 @@ internal static class MappaDiagnostics
             methodDeclarationSyntax.GetLocation(),
             methodName,
             contextKey);
+
+    /// <summary>
+    /// Diagnostic to report that a <see cref="MappaSettingsAttribute"/> style property
+    /// has an integer value that is not a valid enum combination.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="propertyName">The name of the style property.</param>
+    /// <param name="value">The invalid style value.</param>
+    /// <param name="enumTypeName">The display name of the enum type.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic InvalidMappaSettingsStyleValue(
+        MethodDeclarationSyntax? methodDeclarationSyntax,
+        string propertyName,
+        int value,
+        string enumTypeName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.InvalidMappaSettingsStyleValue,
+            methodDeclarationSyntax?.GetLocation(),
+            propertyName,
+            value,
+            enumTypeName);
 }

@@ -171,4 +171,44 @@ public sealed class AttributeDataExtensionsGetMappaSettingsAttributeTests
         settings.Should().NotBeNull();
         settings!.IntStyle.Should().Be(NumberStyles.AllowThousands | NumberStyles.AllowParentheses);
     }
+
+    /// <summary>
+    /// Test <see cref="AttributeDataExtensions.GetMappaSettingsAttribute"/> reads invalid integer style casts.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetMappaSettingsAttributeReadsInvalidIntegerStyleCasts()
+    {
+        const string source = """
+                              using System.Globalization;
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { }
+
+                              public class Target { }
+
+                              [Mappa]
+                              public sealed partial class TestMapper
+                              {
+                                  [MappaSettings(
+                                      DateTimeStyle = (DateTimeStyles)999,
+                                      IntStyle = (NumberStyles)1048576)]
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetMethodAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.MapperMetadataName,
+            "Map");
+
+        var settings = attributes.GetMappaSettingsAttribute(compilation);
+
+        settings.Should().NotBeNull();
+        settings!.DateTimeStyle.Should().Be((DateTimeStyles)999);
+        settings.IntStyle.Should().Be((NumberStyles)1048576);
+    }
 }
