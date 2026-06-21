@@ -293,6 +293,10 @@ internal static class AttributeDataExtensions
                     attribute.TimeOnlyStyle = ReadDateTimeStyles(namedArgument.Value);
                     break;
 
+                case nameof(MappaSettingsAttribute.GlobalDateTimeStyle):
+                    attribute.GlobalDateTimeStyle = ReadDateTimeStyles(namedArgument.Value);
+                    break;
+
                 case nameof(MappaSettingsAttribute.TimeSpanFormat) when namedArgument.Value.Value is string value:
                     attribute.TimeSpanFormat = value;
                     break;
@@ -387,6 +391,10 @@ internal static class AttributeDataExtensions
 
                 case nameof(MappaSettingsAttribute.DoubleStyle):
                     attribute.DoubleStyle = ReadNumberStyles(namedArgument.Value);
+                    break;
+
+                case nameof(MappaSettingsAttribute.GlobalNumberStyle):
+                    attribute.GlobalNumberStyle = ReadNumberStyles(namedArgument.Value);
                     break;
 
                 case nameof(MappaSettingsAttribute.CultureName) when namedArgument.Value.Value is string value:

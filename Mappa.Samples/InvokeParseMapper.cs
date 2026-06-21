@@ -239,6 +239,16 @@ public static class InvokeParseStrategySettings
     public const DateTimeStyles TimeOnlyStyle = DateTimeStyles.AllowWhiteSpaces;
 
     /// <summary>
+    /// The default <see cref="DateTimeStyles"/> applied when parsing date/time types via <see cref="GlobalDateTimeStyle"/>.
+    /// </summary>
+    public const DateTimeStyles GlobalDateTimeStyle = DateTimeStyles.AllowWhiteSpaces;
+
+    /// <summary>
+    /// The type-specific <see cref="DateTimeStyles"/> that overrides <see cref="GlobalDateTimeStyle"/> for <see cref="DateTime"/> parsing.
+    /// </summary>
+    public const DateTimeStyles DateTimeStyleOverride = DateTimeStyles.AssumeUniversal;
+
+    /// <summary>
     /// Sample <see cref="DateTime"/> input with leading and trailing whitespace.
     /// </summary>
     public const string DateTimeInputWithWhiteSpaces = " 2025-02-01 22:17:34 ";
@@ -269,9 +279,24 @@ public static class InvokeParseStrategySettings
     public const NumberStyles DecimalStyle = NumberStyles.AllowThousands | NumberStyles.AllowParentheses | NumberStyles.AllowDecimalPoint;
 
     /// <summary>
+    /// The default <see cref="NumberStyles"/> applied when parsing numeric types via <see cref="GlobalNumberStyle"/>.
+    /// </summary>
+    public const NumberStyles GlobalNumberStyle = NumberStyles.AllowThousands | NumberStyles.AllowParentheses | NumberStyles.AllowDecimalPoint;
+
+    /// <summary>
+    /// The type-specific <see cref="NumberStyles"/> that overrides <see cref="GlobalNumberStyle"/> for <see cref="int"/> parsing.
+    /// </summary>
+    public const NumberStyles IntStyleOverride = NumberStyles.AllowParentheses;
+
+    /// <summary>
     /// Sample <see cref="int"/> input with grouping separators and parentheses.
     /// </summary>
     public const string IntInputWithThousandsAndParentheses = "(1,234)";
+
+    /// <summary>
+    /// Sample <see cref="int"/> input with parentheses only (no grouping separators).
+    /// </summary>
+    public const string IntInputWithParenthesesOnly = "(1234)";
 
     /// <summary>
     /// Sample <see cref="decimal"/> input with grouping separators, parentheses, and a decimal point.
@@ -1136,5 +1161,106 @@ public sealed partial class ParseMapperWithNumberStyleSettingsOnClass
     /// </summary>
     /// <param name="input">The input string value.</param>
     /// <returns>The mapped numeric value.</returns>
+    public partial decimal MapToDecimal(string input);
+}
+
+/// <summary>
+/// Mapper mapping string for date/time types with global style on class.
+/// </summary>
+[Mappa]
+[MappaSettings(GlobalDateTimeStyle = InvokeParseStrategySettings.GlobalDateTimeStyle)]
+public sealed partial class ParseMapperWithGlobalDateTimeStyleSettingsOnClass
+{
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="DateTime"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial DateTime MapDateTime(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="DateTimeOffset"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial DateTimeOffset MapDateTimeOffset(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="DateOnly"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial DateOnly MapDateOnly(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="TimeOnly"/>.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    public partial TimeOnly MapTimeOnly(string input);
+}
+
+/// <summary>
+/// Mapper mapping string to numeric types with global style on class.
+/// </summary>
+[Mappa]
+[MappaSettings(GlobalNumberStyle = InvokeParseStrategySettings.GlobalNumberStyle)]
+public sealed partial class ParseMapperWithGlobalNumberStyleSettingsOnClass
+{
+    /// <summary>
+    /// Map a <see cref="string"/> to <see cref="int"/>.
+    /// </summary>
+    /// <param name="input">The input string value.</param>
+    /// <returns>The mapped numeric value.</returns>
+    public partial int MapToInteger(string input);
+
+    /// <summary>
+    /// Map a <see cref="string"/> to <see cref="decimal"/>.
+    /// </summary>
+    /// <param name="input">The input string value.</param>
+    /// <returns>The mapped numeric value.</returns>
+    public partial decimal MapToDecimal(string input);
+}
+
+/// <summary>
+/// Mapper showing type-specific parse styles overriding global defaults on method.
+/// </summary>
+[Mappa]
+public sealed partial class ParseMapperWithGlobalParseStyleAndTypeSpecificOverrideOnMethod
+{
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="DateTime"/> using a type-specific style that overrides the global default.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    [MappaSettings(
+        GlobalDateTimeStyle = InvokeParseStrategySettings.GlobalDateTimeStyle,
+        DateTimeStyle = InvokeParseStrategySettings.DateTimeStyleOverride)]
+    public partial DateTime MapDateTime(string input);
+
+    /// <summary>
+    /// Map <see cref="string"/> to <see cref="DateTimeOffset"/> using the global date/time style.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <returns>The input mapped to the target type.</returns>
+    [MappaSettings(GlobalDateTimeStyle = InvokeParseStrategySettings.GlobalDateTimeStyle)]
+    public partial DateTimeOffset MapDateTimeOffset(string input);
+
+    /// <summary>
+    /// Map a <see cref="string"/> to <see cref="int"/> using a type-specific style that overrides the global default.
+    /// </summary>
+    /// <param name="input">The input string value.</param>
+    /// <returns>The mapped numeric value.</returns>
+    [MappaSettings(
+        GlobalNumberStyle = InvokeParseStrategySettings.GlobalNumberStyle,
+        IntStyle = InvokeParseStrategySettings.IntStyleOverride)]
+    public partial int MapToInteger(string input);
+
+    /// <summary>
+    /// Map a <see cref="string"/> to <see cref="decimal"/> using the global numeric style.
+    /// </summary>
+    /// <param name="input">The input string value.</param>
+    /// <returns>The mapped numeric value.</returns>
+    [MappaSettings(GlobalNumberStyle = InvokeParseStrategySettings.GlobalNumberStyle)]
     public partial decimal MapToDecimal(string input);
 }

@@ -50,6 +50,9 @@ internal static class InvokeParseMapperRunner
         RunParseMapperWithNumberStyleSettingsOnMethod(report);
         RunWithInvariantCulture(() => RunParseMapperWithInvariantCultureAndNumberStyleSettingsOnMethod(report));
         RunParseMapperWithNumberStyleSettingsOnClass(report);
+        RunParseMapperWithGlobalDateTimeStyleSettingsOnClass(report);
+        RunParseMapperWithGlobalNumberStyleSettingsOnClass(report);
+        RunParseMapperWithGlobalParseStyleAndTypeSpecificOverrideOnMethod(report);
         RunWithInvariantCulture(() => RunParseMapperWithSettingsOnClassSupersededBySettingsOnMethod(report));
         RunWithInvariantCulture(() => RunParseNumericMapperWithInvariantCultureSettingsOnMethod(report));
         RunParseNumericMapperWithCustomCultureSettingsOnMethod(report);
@@ -321,6 +324,37 @@ internal static class InvokeParseMapperRunner
 
         report.RecordInvocation(nameof(ParseMapperWithNumberStyleSettingsOnClass.MapToInteger), "string", "int", InvokeParseStrategySettings.IntInputWithThousandsAndParentheses, mapper.MapToInteger(InvokeParseStrategySettings.IntInputWithThousandsAndParentheses));
         report.RecordInvocation(nameof(ParseMapperWithNumberStyleSettingsOnClass.MapToDecimal), "string", "decimal", InvokeParseStrategySettings.DecimalInputWithThousandsAndParentheses, mapper.MapToDecimal(InvokeParseStrategySettings.DecimalInputWithThousandsAndParentheses));
+    }
+
+    private static void RunParseMapperWithGlobalDateTimeStyleSettingsOnClass(AotReport report)
+    {
+        report.BeginMapper(nameof(ParseMapperWithGlobalDateTimeStyleSettingsOnClass));
+        var mapper = new ParseMapperWithGlobalDateTimeStyleSettingsOnClass();
+
+        report.RecordInvocation(nameof(ParseMapperWithGlobalDateTimeStyleSettingsOnClass.MapDateTime), "string", "DateTime", InvokeParseStrategySettings.DateTimeInputWithWhiteSpaces, mapper.MapDateTime(InvokeParseStrategySettings.DateTimeInputWithWhiteSpaces));
+        report.RecordInvocation(nameof(ParseMapperWithGlobalDateTimeStyleSettingsOnClass.MapDateTimeOffset), "string", "DateTimeOffset", InvokeParseStrategySettings.DateTimeOffsetInputWithWhiteSpaces, mapper.MapDateTimeOffset(InvokeParseStrategySettings.DateTimeOffsetInputWithWhiteSpaces));
+        report.RecordInvocation(nameof(ParseMapperWithGlobalDateTimeStyleSettingsOnClass.MapDateOnly), "string", "DateOnly", InvokeParseStrategySettings.DateOnlyInputWithWhiteSpaces, mapper.MapDateOnly(InvokeParseStrategySettings.DateOnlyInputWithWhiteSpaces));
+        report.RecordInvocation(nameof(ParseMapperWithGlobalDateTimeStyleSettingsOnClass.MapTimeOnly), "string", "TimeOnly", InvokeParseStrategySettings.TimeOnlyInputWithWhiteSpaces, mapper.MapTimeOnly(InvokeParseStrategySettings.TimeOnlyInputWithWhiteSpaces));
+    }
+
+    private static void RunParseMapperWithGlobalNumberStyleSettingsOnClass(AotReport report)
+    {
+        report.BeginMapper(nameof(ParseMapperWithGlobalNumberStyleSettingsOnClass));
+        var mapper = new ParseMapperWithGlobalNumberStyleSettingsOnClass();
+
+        report.RecordInvocation(nameof(ParseMapperWithGlobalNumberStyleSettingsOnClass.MapToInteger), "string", "int", InvokeParseStrategySettings.IntInputWithThousandsAndParentheses, mapper.MapToInteger(InvokeParseStrategySettings.IntInputWithThousandsAndParentheses));
+        report.RecordInvocation(nameof(ParseMapperWithGlobalNumberStyleSettingsOnClass.MapToDecimal), "string", "decimal", InvokeParseStrategySettings.DecimalInputWithThousandsAndParentheses, mapper.MapToDecimal(InvokeParseStrategySettings.DecimalInputWithThousandsAndParentheses));
+    }
+
+    private static void RunParseMapperWithGlobalParseStyleAndTypeSpecificOverrideOnMethod(AotReport report)
+    {
+        report.BeginMapper(nameof(ParseMapperWithGlobalParseStyleAndTypeSpecificOverrideOnMethod));
+        var mapper = new ParseMapperWithGlobalParseStyleAndTypeSpecificOverrideOnMethod();
+
+        report.RecordInvocation(nameof(ParseMapperWithGlobalParseStyleAndTypeSpecificOverrideOnMethod.MapDateTime), "string", "DateTime", InvokeParseStrategySettings.DateTimeInputWithWhiteSpaces, mapper.MapDateTime(InvokeParseStrategySettings.DateTimeInputWithWhiteSpaces));
+        report.RecordInvocation(nameof(ParseMapperWithGlobalParseStyleAndTypeSpecificOverrideOnMethod.MapDateTimeOffset), "string", "DateTimeOffset", InvokeParseStrategySettings.DateTimeOffsetInputWithWhiteSpaces, mapper.MapDateTimeOffset(InvokeParseStrategySettings.DateTimeOffsetInputWithWhiteSpaces));
+        report.RecordInvocation(nameof(ParseMapperWithGlobalParseStyleAndTypeSpecificOverrideOnMethod.MapToInteger), "string", "int", InvokeParseStrategySettings.IntInputWithParenthesesOnly, mapper.MapToInteger(InvokeParseStrategySettings.IntInputWithParenthesesOnly));
+        report.RecordInvocation(nameof(ParseMapperWithGlobalParseStyleAndTypeSpecificOverrideOnMethod.MapToDecimal), "string", "decimal", InvokeParseStrategySettings.DecimalInputWithThousandsAndParentheses, mapper.MapToDecimal(InvokeParseStrategySettings.DecimalInputWithThousandsAndParentheses));
     }
 
     private static void RunParseMapperWithSettingsOnClassSupersededBySettingsOnMethod(AotReport report)

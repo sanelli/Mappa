@@ -23,6 +23,7 @@ internal sealed class MappaUserSettings
     private readonly StackSetting<DateTimeStyles?> dateTimeOffsetStyle;
     private readonly StackSetting<DateTimeStyles?> dateOnlyStyle;
     private readonly StackSetting<DateTimeStyles?> timeOnlyStyle;
+    private readonly StackSetting<DateTimeStyles?> globalDateTimeStyle;
     private readonly StackSetting<string?> timeSpanFormat;
     private readonly StackSetting<string?> guidFormat;
     private readonly StackSetting<string?> byteFormat;
@@ -47,6 +48,7 @@ internal sealed class MappaUserSettings
     private readonly StackSetting<NumberStyles?> decimalStyle;
     private readonly StackSetting<NumberStyles?> floatStyle;
     private readonly StackSetting<NumberStyles?> doubleStyle;
+    private readonly StackSetting<NumberStyles?> globalNumberStyle;
     private readonly StackSetting<CultureInfoSetting> cultureInfoSetting;
     private readonly StackSetting<string?> cultureName;
     private readonly StackSetting<BooleanSetting> protobufOptional;
@@ -71,6 +73,7 @@ internal sealed class MappaUserSettings
             otherSettings.DateTimeOffsetStyle,
             otherSettings.DateOnlyStyle,
             otherSettings.TimeOnlyStyle,
+            otherSettings.GlobalDateTimeStyle,
             otherSettings.TimeSpanFormat,
             otherSettings.GuidFormat,
             otherSettings.ByteFormat,
@@ -95,6 +98,7 @@ internal sealed class MappaUserSettings
             otherSettings.DecimalStyle,
             otherSettings.FloatStyle,
             otherSettings.DoubleStyle,
+            otherSettings.GlobalNumberStyle,
             otherSettings.CultureInfoSetting,
             otherSettings.CultureName,
             otherSettings.ProtobufOptional,
@@ -118,6 +122,7 @@ internal sealed class MappaUserSettings
     /// <param name="dateTimeOffsetStyle">The default <see cref="DateTimeStyles"/> for <see cref="DateTimeOffset"/>.</param>
     /// <param name="dateOnlyStyle">The default <see cref="DateTimeStyles"/> for DateOnly.</param>
     /// <param name="timeOnlyStyle">The default <see cref="DateTimeStyles"/> for TimeOnly.</param>
+    /// <param name="globalDateTimeStyle">The default <see cref="DateTimeStyles"/> for all date/time types when type-specific style is unset.</param>
     /// <param name="timeSpanFormat">The default format for <see cref="TimeSpan"/>.</param>
     /// <param name="guidFormat">The default format for <see cref="Guid"/>.</param>
     /// <param name="byteFormat">The default format for <see cref="byte"/>.</param>
@@ -142,6 +147,7 @@ internal sealed class MappaUserSettings
     /// <param name="decimalStyle">The default <see cref="NumberStyles"/> for <see cref="decimal"/>.</param>
     /// <param name="floatStyle">The default <see cref="NumberStyles"/> for <see cref="float"/>.</param>
     /// <param name="doubleStyle">The default <see cref="NumberStyles"/> for <see cref="double"/>.</param>
+    /// <param name="globalNumberStyle">The default <see cref="NumberStyles"/> for all numeric types when type-specific style is unset.</param>
     /// <param name="cultureInfoSetting">The type of culture info settings to be provided.</param>
     /// <param name="cultureName">The default culture info to use to generate a format provider.</param>
     /// <param name="protobufOptional">Enable or disable (protobuf) optional feature.</param>
@@ -160,6 +166,7 @@ internal sealed class MappaUserSettings
         DateTimeStyles? dateTimeOffsetStyle,
         DateTimeStyles? dateOnlyStyle,
         DateTimeStyles? timeOnlyStyle,
+        DateTimeStyles? globalDateTimeStyle,
         string? timeSpanFormat,
         string? guidFormat,
         string? byteFormat,
@@ -184,6 +191,7 @@ internal sealed class MappaUserSettings
         NumberStyles? decimalStyle,
         NumberStyles? floatStyle,
         NumberStyles? doubleStyle,
+        NumberStyles? globalNumberStyle,
         CultureInfoSetting cultureInfoSetting,
         string? cultureName,
         BooleanSetting protobufOptional,
@@ -202,6 +210,7 @@ internal sealed class MappaUserSettings
         this.dateTimeOffsetStyle = new(dateTimeOffsetStyle);
         this.dateOnlyStyle = new(dateOnlyStyle);
         this.timeOnlyStyle = new(timeOnlyStyle);
+        this.globalDateTimeStyle = new(globalDateTimeStyle);
         this.timeSpanFormat = new(timeSpanFormat);
         this.guidFormat = new(guidFormat);
         this.byteFormat = new(byteFormat);
@@ -226,6 +235,7 @@ internal sealed class MappaUserSettings
         this.decimalStyle = new(decimalStyle);
         this.floatStyle = new(floatStyle);
         this.doubleStyle = new(doubleStyle);
+        this.globalNumberStyle = new(globalNumberStyle);
         this.cultureInfoSetting = new(cultureInfoSetting);
         this.cultureName = new(cultureName);
         this.protobufOptional = new(protobufOptional);
@@ -260,6 +270,9 @@ internal sealed class MappaUserSettings
 
     /// <inheritdoc />
     public DateTimeStyles? TimeOnlyStyle => this.timeOnlyStyle;
+
+    /// <inheritdoc />
+    public DateTimeStyles? GlobalDateTimeStyle => this.globalDateTimeStyle;
 
     /// <inheritdoc />
     public string? TimeSpanFormat => this.timeSpanFormat;
@@ -334,6 +347,9 @@ internal sealed class MappaUserSettings
     public NumberStyles? DoubleStyle => this.doubleStyle;
 
     /// <inheritdoc />
+    public NumberStyles? GlobalNumberStyle => this.globalNumberStyle;
+
+    /// <inheritdoc />
     public CultureInfoSetting CultureInfoSetting => this.cultureInfoSetting;
 
     /// <inheritdoc />
@@ -385,6 +401,7 @@ internal sealed class MappaUserSettings
             this.dateTimeOffsetStyle.Apply(GetDateTimeStyle(mappaSettingsAttribute.DateTimeOffsetStyle, this.dateTimeOffsetStyle)),
             this.dateOnlyStyle.Apply(GetDateTimeStyle(mappaSettingsAttribute.DateOnlyStyle, this.dateOnlyStyle)),
             this.timeOnlyStyle.Apply(GetDateTimeStyle(mappaSettingsAttribute.TimeOnlyStyle, this.timeOnlyStyle)),
+            this.globalDateTimeStyle.Apply(GetDateTimeStyle(mappaSettingsAttribute.GlobalDateTimeStyle, this.globalDateTimeStyle)),
             this.timeSpanFormat.Apply(mappaSettingsAttribute.TimeSpanFormat ?? this.timeSpanFormat),
             this.guidFormat.Apply(mappaSettingsAttribute.GuidFormat ?? this.guidFormat),
             this.byteFormat.Apply(mappaSettingsAttribute.ByteFormat ?? this.byteFormat),
@@ -409,6 +426,7 @@ internal sealed class MappaUserSettings
             this.decimalStyle.Apply(GetNumberStyle(mappaSettingsAttribute.DecimalStyle, this.decimalStyle)),
             this.floatStyle.Apply(GetNumberStyle(mappaSettingsAttribute.FloatStyle, this.floatStyle)),
             this.doubleStyle.Apply(GetNumberStyle(mappaSettingsAttribute.DoubleStyle, this.doubleStyle)),
+            this.globalNumberStyle.Apply(GetNumberStyle(mappaSettingsAttribute.GlobalNumberStyle, this.globalNumberStyle)),
             this.cultureInfoSetting.Apply(mappaSettingsAttribute.CultureInfoSetting is not CultureInfoSetting.Undefined ? mappaSettingsAttribute.CultureInfoSetting : this.cultureInfoSetting),
             this.cultureName.Apply(mappaSettingsAttribute.CultureName ?? this.cultureName),
             this.protobufOptional.Apply(mappaSettingsAttribute.ProtobufOptional is not BooleanSetting.Undefined ? mappaSettingsAttribute.ProtobufOptional : this.protobufOptional),
