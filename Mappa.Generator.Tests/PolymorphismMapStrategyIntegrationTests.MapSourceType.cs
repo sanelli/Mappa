@@ -502,6 +502,104 @@ public sealed partial class PolymorphismMapStrategyIntegrationTests
     }
 
     /// <summary>
+    /// Test mapping works between classes using multiple
+    /// <see cref="MappaTypeMappingAttribute"/> and
+    /// <see cref="MappaTypeMappingDefaultAttribute"/> with
+    /// <see cref="MappaTypeMappingDefaultBehavior.MapSourceType"/> when the default branch
+    /// uses identity mapping and emits no intermediate mapping statements.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapBetweenClassesUsingPolymorphismAndMapToSourceTypeWithIdentityDefaultBranch()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class SharedBase
+                                  {
+                                      public int Id { get; set; }
+                                  }
+
+                                  public class SourceDerived : SharedBase
+                                  {
+                                      public string Extra { get; set; }
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaTypeMapping(typeof(SourceDerived), typeof(SourceDerived))]
+                                      [MappaTypeMappingDefault(MappaTypeMappingDefaultBehavior.MapSourceType)]
+                                      public partial SharedBase Map(SharedBase input);
+                                  }
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.SharedBase",
+                NullableAnnotation.NotAnnotated,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.SharedBase",
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(3)
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                            "Mappa.Generator.Tests.UnitTests.SourceCode.SharedBase",
+                            "__mappa_tmp_1"))
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeSwitchStatementSyntax(
+                            switchExpression => switchExpression.BeIdentifierNameSyntax("input"),
+                            (labelAssertions, caseBodyAssertions) =>
+                            {
+                                labelAssertions.Should().HaveCount(1);
+                                labelAssertions[0].IsCasePattern();
+                                labelAssertions[0]
+                                    .AsCasePattern()
+                                    .HasPattern(pattern => pattern.BeDeclarationPatternSyntax(
+                                        "Mappa.Generator.Tests.UnitTests.SourceCode.SourceDerived",
+                                        "__mappa_tmp_2"));
+
+                                caseBodyAssertions.Should().HaveCount(1);
+                                caseBodyAssertions[0].BeBlockStatement();
+                                caseBodyAssertions[0]
+                                    .AsBlock()
+                                    .HasSyntaxNodesCount(2)
+                                    .HasNextSyntaxNode(statementAssertions => statementAssertions.BeAssignmentExpressionStatement(
+                                        leftExpression => leftExpression.BeIdentifierNameSyntax("__mappa_tmp_1"),
+                                        rightExpression => rightExpression.BeIdentifierNameSyntax("__mappa_tmp_2")))
+                                    .HasNextSyntaxNode(statementAssertions => statementAssertions.BeBreakStatement());
+                            },
+                            (labelAssertions, caseBodyAssertions) =>
+                            {
+                                labelAssertions.Should().HaveCount(1);
+                                labelAssertions[0].IsDefault();
+
+                                caseBodyAssertions.Should().HaveCount(1);
+                                caseBodyAssertions[0].BeBlockStatement();
+                                caseBodyAssertions[0]
+                                    .AsBlock()
+                                    .HasSyntaxNodesCount(2)
+                                    .HasNextSyntaxNode(statementAssertions => statementAssertions.BeAssignmentExpressionStatement(
+                                        leftExpression => leftExpression.BeIdentifierNameSyntax("__mappa_tmp_1"),
+                                        rightExpression => rightExpression.BeIdentifierNameSyntax("input")))
+                                    .HasNextSyntaxNode(statementAssertions => statementAssertions.BeBreakStatement());
+                            }))
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement(
+                            expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_1")));
+                });
+    }
+
+    /// <summary>
     /// Test diagnostic is returned when the MapSourceType target type is the map method
     /// return type and that type is an interface.
     /// </summary>
