@@ -2,6 +2,8 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using System.Globalization;
+
 using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Exceptions;
 using Mappa.Generator.Extensions;
@@ -46,7 +48,8 @@ internal sealed class StringMapStrategyDetector
                 this.context.TargetType,
                 this.context.SourceType,
                 this.GetActualCultureSettingsInfo(),
-                this.context.MappaUserSettings.CultureName);
+                this.context.MappaUserSettings.CultureName,
+                this.GetNumericNumberStyle(this.context.TargetType));
         }
 
         // 02. string -> DateTime : InvokeParseStringWithFormatMapStrategy
@@ -276,6 +279,26 @@ internal sealed class StringMapStrategyDetector
         var isTargetDateTime = this.context.TargetType.IsNumeric();
         var isSourceString = this.context.SourceType.IsString();
         return isTargetDateTime && isSourceString;
+    }
+
+    private NumberStyles? GetNumericNumberStyle(ITypeSymbol typeSymbol)
+    {
+        var settings = this.context.MappaUserSettings;
+        return typeSymbol.SpecialType switch
+        {
+            SpecialType.System_Byte => settings.ByteStyle,
+            SpecialType.System_SByte => settings.SByteStyle,
+            SpecialType.System_Int16 => settings.ShortStyle,
+            SpecialType.System_UInt16 => settings.UShortStyle,
+            SpecialType.System_Int32 => settings.IntStyle,
+            SpecialType.System_UInt32 => settings.UIntStyle,
+            SpecialType.System_Int64 => settings.LongStyle,
+            SpecialType.System_UInt64 => settings.ULongStyle,
+            SpecialType.System_Decimal => settings.DecimalStyle,
+            SpecialType.System_Single => settings.FloatStyle,
+            SpecialType.System_Double => settings.DoubleStyle,
+            _ => null,
+        };
     }
 
     private bool CanMapStringToDateTime()

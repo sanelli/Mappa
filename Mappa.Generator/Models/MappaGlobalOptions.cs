@@ -108,6 +108,50 @@ namespace Mappa.Generator.Models;
     ///         <description>Default format to be used when converting <see cref="double"/> values to <see cref="string"/>.</description>
     ///     </item>
     ///     <item>
+    ///         <term><c>mappa.bytestyle</c></term>
+    ///         <description>Default <see cref="NumberStyles"/> to be used when parsing strings to <see cref="byte"/>.</description>
+    ///     </item>
+    ///     <item>
+    ///         <term><c>mappa.sbytestyle</c></term>
+    ///         <description>Default <see cref="NumberStyles"/> to be used when parsing strings to <see cref="sbyte"/>.</description>
+    ///     </item>
+    ///     <item>
+    ///         <term><c>mappa.shortstyle</c></term>
+    ///         <description>Default <see cref="NumberStyles"/> to be used when parsing strings to <see cref="short"/>.</description>
+    ///     </item>
+    ///     <item>
+    ///         <term><c>mappa.ushortstyle</c></term>
+    ///         <description>Default <see cref="NumberStyles"/> to be used when parsing strings to <see cref="ushort"/>.</description>
+    ///     </item>
+    ///     <item>
+    ///         <term><c>mappa.intstyle</c></term>
+    ///         <description>Default <see cref="NumberStyles"/> to be used when parsing strings to <see cref="int"/>.</description>
+    ///     </item>
+    ///     <item>
+    ///         <term><c>mappa.uintstyle</c></term>
+    ///         <description>Default <see cref="NumberStyles"/> to be used when parsing strings to <see cref="uint"/>.</description>
+    ///     </item>
+    ///     <item>
+    ///         <term><c>mappa.longstyle</c></term>
+    ///         <description>Default <see cref="NumberStyles"/> to be used when parsing strings to <see cref="long"/>.</description>
+    ///     </item>
+    ///     <item>
+    ///         <term><c>mappa.ulongstyle</c></term>
+    ///         <description>Default <see cref="NumberStyles"/> to be used when parsing strings to <see cref="ulong"/>.</description>
+    ///     </item>
+    ///     <item>
+    ///         <term><c>mappa.decimalstyle</c></term>
+    ///         <description>Default <see cref="NumberStyles"/> to be used when parsing strings to <see cref="decimal"/>.</description>
+    ///     </item>
+    ///     <item>
+    ///         <term><c>mappa.floatstyle</c></term>
+    ///         <description>Default <see cref="NumberStyles"/> to be used when parsing strings to <see cref="float"/>.</description>
+    ///     </item>
+    ///     <item>
+    ///         <term><c>mappa.doublestyle</c></term>
+    ///         <description>Default <see cref="NumberStyles"/> to be used when parsing strings to <see cref="double"/>.</description>
+    ///     </item>
+    ///     <item>
     ///         <term><c>mappa.cultureinfosettings</c></term>
 ///         <description>Set the default culture info settings. Valid values are the values of the <see cref="CultureInfoSetting"/> <c>enum</c>.</description>
 ///     </item>
@@ -172,6 +216,17 @@ internal sealed class MappaGlobalOptions
     private const string MappaSettingsDecimalFormat = "decimalformat";
     private const string MappaSettingsFloatFormat = "floatformat";
     private const string MappaSettingsDoubleFormat = "doubleformat";
+    private const string MappaSettingsByteStyle = "bytestyle";
+    private const string MappaSettingsSByteStyle = "sbytestyle";
+    private const string MappaSettingsShortStyle = "shortstyle";
+    private const string MappaSettingsUShortStyle = "ushortstyle";
+    private const string MappaSettingsIntStyle = "intstyle";
+    private const string MappaSettingsUIntStyle = "uintstyle";
+    private const string MappaSettingsLongStyle = "longstyle";
+    private const string MappaSettingsULongStyle = "ulongstyle";
+    private const string MappaSettingsDecimalStyle = "decimalstyle";
+    private const string MappaSettingsFloatStyle = "floatstyle";
+    private const string MappaSettingsDoubleStyle = "doublestyle";
     private const string MappaSettingsCultureInfoSettings = "cultureinfosettings";
     private const string MappaSettingsCultureName = "culturename";
     private const string MappaSettingsProtobufOptional = "protobufoptional";
@@ -256,6 +311,28 @@ internal sealed class MappaGlobalOptions
         this.FloatFormat = ReadFormatOption(options, MappaSettingsFloatFormat);
 
         this.DoubleFormat = ReadFormatOption(options, MappaSettingsDoubleFormat);
+
+        this.ByteStyle = ReadNumberStylesOption(options, MappaSettingsByteStyle);
+
+        this.SByteStyle = ReadNumberStylesOption(options, MappaSettingsSByteStyle);
+
+        this.ShortStyle = ReadNumberStylesOption(options, MappaSettingsShortStyle);
+
+        this.UShortStyle = ReadNumberStylesOption(options, MappaSettingsUShortStyle);
+
+        this.IntStyle = ReadNumberStylesOption(options, MappaSettingsIntStyle);
+
+        this.UIntStyle = ReadNumberStylesOption(options, MappaSettingsUIntStyle);
+
+        this.LongStyle = ReadNumberStylesOption(options, MappaSettingsLongStyle);
+
+        this.ULongStyle = ReadNumberStylesOption(options, MappaSettingsULongStyle);
+
+        this.DecimalStyle = ReadNumberStylesOption(options, MappaSettingsDecimalStyle);
+
+        this.FloatStyle = ReadNumberStylesOption(options, MappaSettingsFloatStyle);
+
+        this.DoubleStyle = ReadNumberStylesOption(options, MappaSettingsDoubleStyle);
 
         this.CultureName = options.TryGetValue(GetOptionName(MappaSettingsCultureName), out var cultureName)
                            && !string.IsNullOrWhiteSpace(cultureName)
@@ -370,6 +447,11 @@ internal sealed class MappaGlobalOptions
             => options.TryGetValue(GetOptionName(optionName), out var dateTimeStyles)
                 ? ParseDateTimeStylesCodeHelper.TryParseFromString(dateTimeStyles)
                 : null;
+
+        static NumberStyles? ReadNumberStylesOption(AnalyzerConfigOptions options, string optionName)
+            => options.TryGetValue(GetOptionName(optionName), out var numberStyles)
+                ? ParseNumberStylesCodeHelper.TryParseFromString(numberStyles)
+                : null;
     }
 
     /// <inheritdoc />
@@ -434,6 +516,39 @@ internal sealed class MappaGlobalOptions
 
     /// <inheritdoc />
     public string? DoubleFormat { get; }
+
+    /// <inheritdoc />
+    public NumberStyles? ByteStyle { get; }
+
+    /// <inheritdoc />
+    public NumberStyles? SByteStyle { get; }
+
+    /// <inheritdoc />
+    public NumberStyles? ShortStyle { get; }
+
+    /// <inheritdoc />
+    public NumberStyles? UShortStyle { get; }
+
+    /// <inheritdoc />
+    public NumberStyles? IntStyle { get; }
+
+    /// <inheritdoc />
+    public NumberStyles? UIntStyle { get; }
+
+    /// <inheritdoc />
+    public NumberStyles? LongStyle { get; }
+
+    /// <inheritdoc />
+    public NumberStyles? ULongStyle { get; }
+
+    /// <inheritdoc />
+    public NumberStyles? DecimalStyle { get; }
+
+    /// <inheritdoc />
+    public NumberStyles? FloatStyle { get; }
+
+    /// <inheritdoc />
+    public NumberStyles? DoubleStyle { get; }
 
     /// <inheritdoc />
     public CultureInfoSetting CultureInfoSetting { get; }

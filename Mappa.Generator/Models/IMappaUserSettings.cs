@@ -119,6 +119,61 @@ internal interface IMappaUserSettings
     string? DoubleFormat { get; }
 
     /// <summary>
+    /// Gets the <see cref="NumberStyles"/> when parsing a <see cref="byte"/>.
+    /// </summary>
+    NumberStyles? ByteStyle { get; }
+
+    /// <summary>
+    /// Gets the <see cref="NumberStyles"/> when parsing a <see cref="sbyte"/>.
+    /// </summary>
+    NumberStyles? SByteStyle { get; }
+
+    /// <summary>
+    /// Gets the <see cref="NumberStyles"/> when parsing a <see cref="short"/>.
+    /// </summary>
+    NumberStyles? ShortStyle { get; }
+
+    /// <summary>
+    /// Gets the <see cref="NumberStyles"/> when parsing a <see cref="ushort"/>.
+    /// </summary>
+    NumberStyles? UShortStyle { get; }
+
+    /// <summary>
+    /// Gets the <see cref="NumberStyles"/> when parsing an <see cref="int"/>.
+    /// </summary>
+    NumberStyles? IntStyle { get; }
+
+    /// <summary>
+    /// Gets the <see cref="NumberStyles"/> when parsing a <see cref="uint"/>.
+    /// </summary>
+    NumberStyles? UIntStyle { get; }
+
+    /// <summary>
+    /// Gets the <see cref="NumberStyles"/> when parsing a <see cref="long"/>.
+    /// </summary>
+    NumberStyles? LongStyle { get; }
+
+    /// <summary>
+    /// Gets the <see cref="NumberStyles"/> when parsing a <see cref="ulong"/>.
+    /// </summary>
+    NumberStyles? ULongStyle { get; }
+
+    /// <summary>
+    /// Gets the <see cref="NumberStyles"/> when parsing a <see cref="decimal"/>.
+    /// </summary>
+    NumberStyles? DecimalStyle { get; }
+
+    /// <summary>
+    /// Gets the <see cref="NumberStyles"/> when parsing a <see cref="float"/>.
+    /// </summary>
+    NumberStyles? FloatStyle { get; }
+
+    /// <summary>
+    /// Gets the <see cref="NumberStyles"/> when parsing a <see cref="double"/>.
+    /// </summary>
+    NumberStyles? DoubleStyle { get; }
+
+    /// <summary>
     /// Gets the <see cref="CultureInfo"/> to use when converting to string or parsing form string.
     /// </summary>
     CultureInfoSetting CultureInfoSetting { get; }
