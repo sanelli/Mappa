@@ -123,4 +123,106 @@ public sealed class IntegralToEnumMapStrategyIntegrationTests
                         });
                 });
     }
+
+    /// <summary>
+    /// Test a mapping from an integral type with non-contiguous enum values
+    /// emits a switch default branch that throws <see cref="ArgumentOutOfRangeException"/>.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapIntegralToEnumWithExplicitValuesAndThrowOnUnsupportedIntegralValue()
+    {
+        const string sourceCode = """
+            #nullable enable
+            using Mappa.Attributes;
+
+            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+            public enum Status : byte
+            {
+                None = 0,
+                Active = 10,
+                Disabled = 20,
+            }
+
+            [Mappa]
+            public sealed partial class Mapper
+            {
+                public partial Status Map(byte input);
+            }
+            """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Status",
+                typeof(byte).ToString(),
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(3)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.Status", "__mappa_tmp_1");
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeSwitchStatementSyntax(
+                                switchExpressionAssertions => switchExpressionAssertions.BeCastExpressionSyntax("byte", expressionSyntaxAssertions => expressionSyntaxAssertions.BeIdentifierNameSyntax("input")),
+                                (labelsAssertions, statementAssertions) =>
+                                {
+                                    labelsAssertions.Should().HaveCount(1);
+                                    labelsAssertions[0].IsCase();
+                                    labelsAssertions[0].AsCase().HasValue(expressionSyntaxAssertions => expressionSyntaxAssertions.BeLiteralExpressionSyntax(0));
+                                    statementAssertions.Should().HaveCount(1);
+                                    statementAssertions[0].BeBlockStatement().AsBlock()
+                                        .HasSyntaxNodesCount(2)
+                                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeAssignmentExpressionStatement("__mappa_tmp_1", assert => assert.BeMemberAccessExpressionSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.Status.None")))
+                                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeBreakStatement());
+                                },
+                                (labelsAssertions, statementAssertions) =>
+                                {
+                                    labelsAssertions.Should().HaveCount(1);
+                                    labelsAssertions[0].IsCase();
+                                    labelsAssertions[0].AsCase().HasValue(expressionSyntaxAssertions => expressionSyntaxAssertions.BeLiteralExpressionSyntax(10));
+                                    statementAssertions.Should().HaveCount(1);
+                                    statementAssertions[0].BeBlockStatement().AsBlock()
+                                        .HasSyntaxNodesCount(2)
+                                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeAssignmentExpressionStatement("__mappa_tmp_1", assert => assert.BeMemberAccessExpressionSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.Status.Active")))
+                                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeBreakStatement());
+                                },
+                                (labelsAssertions, statementAssertions) =>
+                                {
+                                    labelsAssertions.Should().HaveCount(1);
+                                    labelsAssertions[0].IsCase();
+                                    labelsAssertions[0].AsCase().HasValue(expressionSyntaxAssertions => expressionSyntaxAssertions.BeLiteralExpressionSyntax(20));
+                                    statementAssertions.Should().HaveCount(1);
+                                    statementAssertions[0].BeBlockStatement().AsBlock()
+                                        .HasSyntaxNodesCount(2)
+                                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeAssignmentExpressionStatement("__mappa_tmp_1", assert => assert.BeMemberAccessExpressionSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.Status.Disabled")))
+                                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeBreakStatement());
+                                },
+                                (labelsAssertions, statementAssertions) =>
+                                {
+                                    labelsAssertions.Should().HaveCount(1);
+                                    labelsAssertions[0].IsDefault();
+                                    statementAssertions.Should().HaveCount(1);
+                                    statementAssertions[0].BeBlockStatement().AsBlock()
+                                        .HasSyntaxNodesCount(1)
+                                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeThrowStatementSyntax<ArgumentOutOfRangeException>(
+                                            assertion => assertion.BeLiteralExpressionSyntax("input")));
+                                });
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_1"));
+                        });
+                });
+    }
 }
