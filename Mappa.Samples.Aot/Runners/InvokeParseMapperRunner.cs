@@ -47,6 +47,9 @@ internal static class InvokeParseMapperRunner
         RunParseMapperWithCurrentCultureSettingsOnClass(report);
         RunParseMapperWithCustomCultureSettingsOnClass(report);
         RunParseMapperWithDateTimeStyleSettingsOnClass(report);
+        RunParseMapperWithNumberStyleSettingsOnMethod(report);
+        RunWithInvariantCulture(() => RunParseMapperWithInvariantCultureAndNumberStyleSettingsOnMethod(report));
+        RunParseMapperWithNumberStyleSettingsOnClass(report);
         RunWithInvariantCulture(() => RunParseMapperWithSettingsOnClassSupersededBySettingsOnMethod(report));
         RunWithInvariantCulture(() => RunParseNumericMapperWithInvariantCultureSettingsOnMethod(report));
         RunParseNumericMapperWithCustomCultureSettingsOnMethod(report);
@@ -291,6 +294,33 @@ internal static class InvokeParseMapperRunner
         report.RecordInvocation(nameof(ParseMapperWithDateTimeStyleSettingsOnClass.MapDateTimeOffset), "string", "DateTimeOffset", InvokeParseStrategySettings.DateTimeOffsetInputWithWhiteSpaces, mapper.MapDateTimeOffset(InvokeParseStrategySettings.DateTimeOffsetInputWithWhiteSpaces));
         report.RecordInvocation(nameof(ParseMapperWithDateTimeStyleSettingsOnClass.MapDateOnly), "string", "DateOnly", InvokeParseStrategySettings.DateOnlyInputWithWhiteSpaces, mapper.MapDateOnly(InvokeParseStrategySettings.DateOnlyInputWithWhiteSpaces));
         report.RecordInvocation(nameof(ParseMapperWithDateTimeStyleSettingsOnClass.MapTimeOnly), "string", "TimeOnly", InvokeParseStrategySettings.TimeOnlyInputWithWhiteSpaces, mapper.MapTimeOnly(InvokeParseStrategySettings.TimeOnlyInputWithWhiteSpaces));
+    }
+
+    private static void RunParseMapperWithNumberStyleSettingsOnMethod(AotReport report)
+    {
+        report.BeginMapper(nameof(ParseMapperWithNumberStyleSettingsOnMethod));
+        var mapper = new ParseMapperWithNumberStyleSettingsOnMethod();
+
+        report.RecordInvocation(nameof(ParseMapperWithNumberStyleSettingsOnMethod.MapToInteger), "string", "int", InvokeParseStrategySettings.IntInputWithThousandsAndParentheses, mapper.MapToInteger(InvokeParseStrategySettings.IntInputWithThousandsAndParentheses));
+        report.RecordInvocation(nameof(ParseMapperWithNumberStyleSettingsOnMethod.MapToDecimal), "string", "decimal", InvokeParseStrategySettings.DecimalInputWithThousandsAndParentheses, mapper.MapToDecimal(InvokeParseStrategySettings.DecimalInputWithThousandsAndParentheses));
+    }
+
+    private static void RunParseMapperWithInvariantCultureAndNumberStyleSettingsOnMethod(AotReport report)
+    {
+        report.BeginMapper(nameof(ParseMapperWithInvariantCultureAndNumberStyleSettingsOnMethod));
+        var mapper = new ParseMapperWithInvariantCultureAndNumberStyleSettingsOnMethod();
+
+        report.RecordInvocation(nameof(ParseMapperWithInvariantCultureAndNumberStyleSettingsOnMethod.MapToInteger), "string", "int", InvokeParseStrategySettings.IntInputWithThousandsAndParentheses, mapper.MapToInteger(InvokeParseStrategySettings.IntInputWithThousandsAndParentheses));
+        report.RecordInvocation(nameof(ParseMapperWithInvariantCultureAndNumberStyleSettingsOnMethod.MapToDecimal), "string", "decimal", InvokeParseStrategySettings.DecimalInputWithThousandsAndParentheses, mapper.MapToDecimal(InvokeParseStrategySettings.DecimalInputWithThousandsAndParentheses));
+    }
+
+    private static void RunParseMapperWithNumberStyleSettingsOnClass(AotReport report)
+    {
+        report.BeginMapper(nameof(ParseMapperWithNumberStyleSettingsOnClass));
+        var mapper = new ParseMapperWithNumberStyleSettingsOnClass();
+
+        report.RecordInvocation(nameof(ParseMapperWithNumberStyleSettingsOnClass.MapToInteger), "string", "int", InvokeParseStrategySettings.IntInputWithThousandsAndParentheses, mapper.MapToInteger(InvokeParseStrategySettings.IntInputWithThousandsAndParentheses));
+        report.RecordInvocation(nameof(ParseMapperWithNumberStyleSettingsOnClass.MapToDecimal), "string", "decimal", InvokeParseStrategySettings.DecimalInputWithThousandsAndParentheses, mapper.MapToDecimal(InvokeParseStrategySettings.DecimalInputWithThousandsAndParentheses));
     }
 
     private static void RunParseMapperWithSettingsOnClassSupersededBySettingsOnMethod(AotReport report)

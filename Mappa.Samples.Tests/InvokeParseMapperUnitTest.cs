@@ -30,6 +30,9 @@ public sealed class InvokeParseMapperUnitTest
     private readonly ParseMapperWithDateTimeStyleSettingsOnMethod mapperWithDateTimeStyleSettingsOnMethod = new();
     private readonly ParseMapperWithFormatInvariantCultureAndDateTimeStyleSettingsOnMethod mapperWithFormatInvariantCultureAndDateTimeStyleSettingsOnMethod = new();
     private readonly ParseMapperWithDateTimeStyleSettingsOnClass mapperWithDateTimeStyleSettingsOnClass = new();
+    private readonly ParseMapperWithNumberStyleSettingsOnMethod mapperWithNumberStyleSettingsOnMethod = new();
+    private readonly ParseMapperWithInvariantCultureAndNumberStyleSettingsOnMethod mapperWithInvariantCultureAndNumberStyleSettingsOnMethod = new();
+    private readonly ParseMapperWithNumberStyleSettingsOnClass mapperWithNumberStyleSettingsOnClass = new();
     private readonly ParseNumericMapperWithInvariantCultureSettingsOnMethod numericMapperWithInvariantCultureSettingsOnMethod = new();
     private readonly ParseNumericMapperWithCustomCultureSettingsOnMethod numericMapperWithCustomCultureSettingsOnMethod = new();
 
@@ -1643,6 +1646,90 @@ public sealed class InvokeParseMapperUnitTest
         var actual = this.mapperWithDateTimeStyleSettingsOnClass.MapTimeOnly(input);
 
         actual.Should().Be(TimeOnly.Parse(input, null, InvokeParseStrategySettings.TimeOnlyStyle));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithNumberStyleSettingsOnMethod.MapToInteger"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapStringToIntegerWithNumberStyleSettingsOnMethod()
+    {
+        const string input = InvokeParseStrategySettings.IntInputWithThousandsAndParentheses;
+
+        var actual = this.mapperWithNumberStyleSettingsOnMethod.MapToInteger(input);
+
+        actual.Should().Be(int.Parse(input, InvokeParseStrategySettings.IntStyle));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithNumberStyleSettingsOnMethod.MapToDecimal"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapStringToDecimalWithNumberStyleSettingsOnMethod()
+    {
+        const string input = InvokeParseStrategySettings.DecimalInputWithThousandsAndParentheses;
+
+        var actual = this.mapperWithNumberStyleSettingsOnMethod.MapToDecimal(input);
+
+        actual.Should().Be(decimal.Parse(input, InvokeParseStrategySettings.DecimalStyle));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithInvariantCultureAndNumberStyleSettingsOnMethod.MapToInteger"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapStringToIntegerWithInvariantCultureAndNumberStyleSettingsOnMethod()
+    {
+        const string input = InvokeParseStrategySettings.IntInputWithThousandsAndParentheses;
+
+        var actual = this.mapperWithInvariantCultureAndNumberStyleSettingsOnMethod.MapToInteger(input);
+
+        actual.Should().Be(int.Parse(input, InvokeParseStrategySettings.IntStyle, CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithInvariantCultureAndNumberStyleSettingsOnMethod.MapToDecimal"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapStringToDecimalWithInvariantCultureAndNumberStyleSettingsOnMethod()
+    {
+        const string input = InvokeParseStrategySettings.DecimalInputWithThousandsAndParentheses;
+
+        var actual = this.mapperWithInvariantCultureAndNumberStyleSettingsOnMethod.MapToDecimal(input);
+
+        actual.Should().Be(decimal.Parse(input, InvokeParseStrategySettings.DecimalStyle, CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithNumberStyleSettingsOnClass.MapToInteger"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapStringToIntegerWithNumberStyleSettingsOnClass()
+    {
+        const string input = InvokeParseStrategySettings.IntInputWithThousandsAndParentheses;
+
+        var actual = this.mapperWithNumberStyleSettingsOnClass.MapToInteger(input);
+
+        actual.Should().Be(int.Parse(input, InvokeParseStrategySettings.IntStyle));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithNumberStyleSettingsOnClass.MapToDecimal"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapStringToDecimalWithNumberStyleSettingsOnClass()
+    {
+        const string input = InvokeParseStrategySettings.DecimalInputWithThousandsAndParentheses;
+
+        var actual = this.mapperWithNumberStyleSettingsOnClass.MapToDecimal(input);
+
+        actual.Should().Be(decimal.Parse(input, InvokeParseStrategySettings.DecimalStyle));
     }
 
     /// <summary>
