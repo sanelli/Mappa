@@ -56,6 +56,10 @@ namespace Mappa.Generator.Models;
     ///         <description>Default <see cref="DateTimeStyles"/> to be used when parsing strings to <c>TimeOnly</c>.</description>
     ///     </item>
     ///     <item>
+    ///         <term><c>mappa.globaldatetimestyle</c></term>
+    ///         <description>Default <see cref="DateTimeStyles"/> for all date/time types when the type-specific style is unset.</description>
+    ///     </item>
+    ///     <item>
     ///         <term><c>mappa.timespanformat</c></term>
 ///         <description>Default format to be used for parsing strings and converting to string <see cref="TimeSpan"/> <c>struct</c>s.</description>
 ///     </item>
@@ -152,6 +156,10 @@ namespace Mappa.Generator.Models;
     ///         <description>Default <see cref="NumberStyles"/> to be used when parsing strings to <see cref="double"/>.</description>
     ///     </item>
     ///     <item>
+    ///         <term><c>mappa.globalnumberstyle</c></term>
+    ///         <description>Default <see cref="NumberStyles"/> for all numeric types when the type-specific style is unset.</description>
+    ///     </item>
+    ///     <item>
     ///         <term><c>mappa.cultureinfosettings</c></term>
 ///         <description>Set the default culture info settings. Valid values are the values of the <see cref="CultureInfoSetting"/> <c>enum</c>.</description>
 ///     </item>
@@ -203,6 +211,7 @@ internal sealed class MappaGlobalOptions
     private const string MappaSettingsDateTimeOffsetStyle = "datetimeoffsetstyle";
     private const string MappaSettingsDateOnlyStyle = "dateonlystyle";
     private const string MappaSettingsTimeOnlyStyle = "timeonlystyle";
+    private const string MappaSettingsGlobalDateTimeStyle = "globaldatetimestyle";
     private const string MappaSettingsTimeSpanFormat = "timespanformat";
     private const string MappaSettingsGuidFormat = "guidformat";
     private const string MappaSettingsByteFormat = "byteformat";
@@ -227,6 +236,7 @@ internal sealed class MappaGlobalOptions
     private const string MappaSettingsDecimalStyle = "decimalstyle";
     private const string MappaSettingsFloatStyle = "floatstyle";
     private const string MappaSettingsDoubleStyle = "doublestyle";
+    private const string MappaSettingsGlobalNumberStyle = "globalnumberstyle";
     private const string MappaSettingsCultureInfoSettings = "cultureinfosettings";
     private const string MappaSettingsCultureName = "culturename";
     private const string MappaSettingsProtobufOptional = "protobufoptional";
@@ -283,6 +293,8 @@ internal sealed class MappaGlobalOptions
 
         this.TimeOnlyStyle = ReadDateTimeStylesOption(options, MappaSettingsTimeOnlyStyle);
 
+        this.GlobalDateTimeStyle = ReadDateTimeStylesOption(options, MappaSettingsGlobalDateTimeStyle);
+
         this.TimeSpanFormat = options.TryGetValue(GetOptionName(MappaSettingsTimeSpanFormat), out var timeSpanFormat)
                               && !string.IsNullOrWhiteSpace(timeSpanFormat)
             ? timeSpanFormat
@@ -333,6 +345,8 @@ internal sealed class MappaGlobalOptions
         this.FloatStyle = ReadNumberStylesOption(options, MappaSettingsFloatStyle);
 
         this.DoubleStyle = ReadNumberStylesOption(options, MappaSettingsDoubleStyle);
+
+        this.GlobalNumberStyle = ReadNumberStylesOption(options, MappaSettingsGlobalNumberStyle);
 
         this.CultureName = options.TryGetValue(GetOptionName(MappaSettingsCultureName), out var cultureName)
                            && !string.IsNullOrWhiteSpace(cultureName)
@@ -479,6 +493,9 @@ internal sealed class MappaGlobalOptions
     public DateTimeStyles? TimeOnlyStyle { get; }
 
     /// <inheritdoc />
+    public DateTimeStyles? GlobalDateTimeStyle { get; }
+
+    /// <inheritdoc />
     public string? TimeSpanFormat { get; }
 
     /// <inheritdoc />
@@ -549,6 +566,9 @@ internal sealed class MappaGlobalOptions
 
     /// <inheritdoc />
     public NumberStyles? DoubleStyle { get; }
+
+    /// <inheritdoc />
+    public NumberStyles? GlobalNumberStyle { get; }
 
     /// <inheritdoc />
     public CultureInfoSetting CultureInfoSetting { get; }

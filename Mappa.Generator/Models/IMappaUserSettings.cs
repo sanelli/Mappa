@@ -54,6 +54,11 @@ internal interface IMappaUserSettings
     DateTimeStyles? TimeOnlyStyle { get; }
 
     /// <summary>
+    /// Gets the default <see cref="DateTimeStyles"/> for parsing date/time types when the type-specific style is unset.
+    /// </summary>
+    DateTimeStyles? GlobalDateTimeStyle { get; }
+
+    /// <summary>
     /// Gets the format when using <see cref="TimeSpan.ToString(string,System.IFormatProvider)"/> or <see cref="TimeSpan.ParseExact(string,string,System.IFormatProvider)"/>.
     /// </summary>
     string? TimeSpanFormat { get; }
@@ -172,6 +177,11 @@ internal interface IMappaUserSettings
     /// Gets the <see cref="NumberStyles"/> when parsing a <see cref="double"/>.
     /// </summary>
     NumberStyles? DoubleStyle { get; }
+
+    /// <summary>
+    /// Gets the default <see cref="NumberStyles"/> for parsing numeric types when the type-specific style is unset.
+    /// </summary>
+    NumberStyles? GlobalNumberStyle { get; }
 
     /// <summary>
     /// Gets the <see cref="CultureInfo"/> to use when converting to string or parsing form string.

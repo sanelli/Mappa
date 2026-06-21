@@ -64,7 +64,7 @@ internal sealed class StringMapStrategyDetector
                 this.context.MappaUserSettings.DateTimeFormat,
                 actualCultureSettingsInfo,
                 this.context.MappaUserSettings.CultureName,
-                this.context.MappaUserSettings.DateTimeStyle);
+                this.ResolveDateTimeStyle(this.context.MappaUserSettings.DateTimeStyle));
         }
 
         // 03. string -> DateTimeOffset : InvokeParseStringWithFormatMapStrategy
@@ -79,7 +79,7 @@ internal sealed class StringMapStrategyDetector
                 this.context.MappaUserSettings.DateTimeOffsetFormat,
                 actualCultureSettingsInfo,
                 this.context.MappaUserSettings.CultureName,
-                this.context.MappaUserSettings.DateTimeOffsetStyle);
+                this.ResolveDateTimeStyle(this.context.MappaUserSettings.DateTimeOffsetStyle));
         }
 
         // 04. string -> TimeSpan : InvokeParseStringWithFormatMapStrategy
@@ -106,7 +106,7 @@ internal sealed class StringMapStrategyDetector
                 this.context.MappaUserSettings.TimeOnlyFormat,
                 this.GetActualCultureSettingsInfo(),
                 this.context.MappaUserSettings.CultureName,
-                this.context.MappaUserSettings.TimeOnlyStyle);
+                this.ResolveDateTimeStyle(this.context.MappaUserSettings.TimeOnlyStyle));
         }
 
         // 06. string -> DateOnly : InvokeParseStringWithFormatMapStrategy
@@ -118,7 +118,7 @@ internal sealed class StringMapStrategyDetector
                 this.context.MappaUserSettings.DateOnlyFormat,
                 this.GetActualCultureSettingsInfo(),
                 this.context.MappaUserSettings.CultureName,
-                this.context.MappaUserSettings.DateOnlyStyle);
+                this.ResolveDateTimeStyle(this.context.MappaUserSettings.DateOnlyStyle));
         }
 
         // 07. string -> Guid : ParseGuidStrategy
@@ -284,7 +284,7 @@ internal sealed class StringMapStrategyDetector
     private NumberStyles? GetNumericNumberStyle(ITypeSymbol typeSymbol)
     {
         var settings = this.context.MappaUserSettings;
-        return typeSymbol.SpecialType switch
+        var typeStyle = typeSymbol.SpecialType switch
         {
             SpecialType.System_Byte => settings.ByteStyle,
             SpecialType.System_SByte => settings.SByteStyle,
@@ -299,7 +299,12 @@ internal sealed class StringMapStrategyDetector
             SpecialType.System_Double => settings.DoubleStyle,
             _ => null,
         };
+
+        return typeStyle ?? settings.GlobalNumberStyle;
     }
+
+    private DateTimeStyles? ResolveDateTimeStyle(DateTimeStyles? typeStyle)
+        => typeStyle ?? this.context.MappaUserSettings.GlobalDateTimeStyle;
 
     private bool CanMapStringToDateTime()
     {
