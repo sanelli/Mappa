@@ -70,6 +70,15 @@ public sealed class MappaSettingsAttribute
     public DateTimeStyles TimeOnlyStyle { get; set; } = UndefinedDateTimeStyle;
 
     /// <summary>
+    /// Gets or sets the default <see cref="DateTimeStyles"/> for parsing <see cref="string"/>s to
+    /// <see cref="DateTime"/>, <see cref="DateTimeOffset"/>, <c>DateOnly</c>, and <c>TimeOnly</c>
+    /// when the corresponding type-specific style is unset.
+    /// Use <see cref="UndefinedDateTimeStyle"/> to ignore this setting and use previous values (if any).
+    /// Type-specific style properties override this global default when both are set. Does not affect <c>ToString</c>.
+    /// </summary>
+    public DateTimeStyles GlobalDateTimeStyle { get; set; } = UndefinedDateTimeStyle;
+
+    /// <summary>
     /// Gets or sets the format when using <see cref="TimeSpan.ToString(string,System.IFormatProvider)"/> or <see cref="TimeSpan.ParseExact(string,string,System.IFormatProvider)"/>.
     /// </summary>
     public string? TimeSpanFormat { get; set; }
@@ -199,6 +208,14 @@ public sealed class MappaSettingsAttribute
     /// Use <see cref="UndefinedNumberStyle"/> to ignore this setting and use previous values (if any).
     /// </summary>
     public NumberStyles DoubleStyle { get; set; } = UndefinedNumberStyle;
+
+    /// <summary>
+    /// Gets or sets the default <see cref="NumberStyles"/> for parsing <see cref="string"/>s to numeric types
+    /// when the corresponding type-specific style is unset.
+    /// Use <see cref="UndefinedNumberStyle"/> to ignore this setting and use previous values (if any).
+    /// Type-specific style properties override this global default when both are set. Does not affect <c>ToString</c>.
+    /// </summary>
+    public NumberStyles GlobalNumberStyle { get; set; } = UndefinedNumberStyle;
 
     /// <summary>
     /// Gets or sets the <see cref="CultureInfo"/> to use when converting to string or parsing form string.
