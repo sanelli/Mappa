@@ -188,6 +188,22 @@ public sealed partial class Mapper
 
 Style settings apply when parsing `string` to `DateTime`, `DateTimeOffset`, `DateOnly`, or `TimeOnly` only. They do not affect `ToString` generation. As with culture and format, method-level settings override class-level settings, which override `.editorconfig` values.
 
+Use `GlobalDateTimeStyle` to apply one default [DateTimeStyles](https://learn.microsoft.com/en-us/dotnet/api/system.globalization.datetimestyles) to all date/time parse targets. Type-specific properties such as `DateTimeStyle` override the global default when both are set:
+
+```csharp
+[Mappa]
+[MappaSettings(GlobalDateTimeStyle = DateTimeStyles.AllowWhiteSpaces)]
+public sealed partial class Mapper
+{
+    public partial DateTime MapDateTime(string input);
+
+    public partial DateTimeOffset MapDateTimeOffset(string input);
+
+    [MappaSettings(DateTimeStyle = DateTimeStyles.AssumeUniversal)]
+    public partial DateTime MapDateTimeWithOverride(string input);
+}
+```
+
 Parse numeric values with `NumberStyles` (for example to allow grouping separators and parentheses):
 ```csharp
 [Mappa]
@@ -204,6 +220,20 @@ public sealed partial class Mapper
 ```
 
 Numeric style settings apply when parsing `string` to the corresponding numeric type only. They do not affect `ToString` generation. Override hierarchy is the same as for culture, format, and date/time styles.
+
+Use `GlobalNumberStyle` to apply one default [NumberStyles](https://learn.microsoft.com/en-us/dotnet/api/system.globalization.numberstyles) to all numeric parse targets. Type-specific properties such as `IntStyle` override the global default when both are set:
+
+```csharp
+[Mappa]
+[MappaSettings(GlobalNumberStyle = NumberStyles.AllowThousands | NumberStyles.AllowParentheses)]
+public sealed partial class Mapper
+{
+    public partial int MapInteger(string input);
+
+    [MappaSettings(IntStyle = NumberStyles.AllowParentheses)]
+    public partial int MapIntegerWithOverride(string input);
+}
+```
 
 Numeric format properties (for example `IntFormat`, `DecimalFormat`) apply to `ToString` only. Culture applies to both parsing and converting to `string`.
 

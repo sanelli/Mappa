@@ -33,6 +33,9 @@ public sealed class InvokeParseMapperUnitTest
     private readonly ParseMapperWithNumberStyleSettingsOnMethod mapperWithNumberStyleSettingsOnMethod = new();
     private readonly ParseMapperWithInvariantCultureAndNumberStyleSettingsOnMethod mapperWithInvariantCultureAndNumberStyleSettingsOnMethod = new();
     private readonly ParseMapperWithNumberStyleSettingsOnClass mapperWithNumberStyleSettingsOnClass = new();
+    private readonly ParseMapperWithGlobalDateTimeStyleSettingsOnClass mapperWithGlobalDateTimeStyleSettingsOnClass = new();
+    private readonly ParseMapperWithGlobalNumberStyleSettingsOnClass mapperWithGlobalNumberStyleSettingsOnClass = new();
+    private readonly ParseMapperWithGlobalParseStyleAndTypeSpecificOverrideOnMethod mapperWithGlobalParseStyleAndTypeSpecificOverrideOnMethod = new();
     private readonly ParseNumericMapperWithInvariantCultureSettingsOnMethod numericMapperWithInvariantCultureSettingsOnMethod = new();
     private readonly ParseNumericMapperWithCustomCultureSettingsOnMethod numericMapperWithCustomCultureSettingsOnMethod = new();
 
@@ -1730,6 +1733,146 @@ public sealed class InvokeParseMapperUnitTest
         var actual = this.mapperWithNumberStyleSettingsOnClass.MapToDecimal(input);
 
         actual.Should().Be(decimal.Parse(input, InvokeParseStrategySettings.DecimalStyle));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithGlobalDateTimeStyleSettingsOnClass.MapDateTime"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDateTimeWithGlobalDateTimeStyleSettingsOnClass()
+    {
+        const string input = InvokeParseStrategySettings.DateTimeInputWithWhiteSpaces;
+
+        var actual = this.mapperWithGlobalDateTimeStyleSettingsOnClass.MapDateTime(input);
+
+        actual.Should().Be(DateTime.Parse(input, null, InvokeParseStrategySettings.GlobalDateTimeStyle));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithGlobalDateTimeStyleSettingsOnClass.MapDateTimeOffset"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDateTimeOffsetWithGlobalDateTimeStyleSettingsOnClass()
+    {
+        const string input = InvokeParseStrategySettings.DateTimeOffsetInputWithWhiteSpaces;
+
+        var actual = this.mapperWithGlobalDateTimeStyleSettingsOnClass.MapDateTimeOffset(input);
+
+        actual.Should().Be(DateTimeOffset.Parse(input, null, InvokeParseStrategySettings.GlobalDateTimeStyle));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithGlobalDateTimeStyleSettingsOnClass.MapDateOnly"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDateOnlyWithGlobalDateTimeStyleSettingsOnClass()
+    {
+        const string input = InvokeParseStrategySettings.DateOnlyInputWithWhiteSpaces;
+
+        var actual = this.mapperWithGlobalDateTimeStyleSettingsOnClass.MapDateOnly(input);
+
+        actual.Should().Be(DateOnly.Parse(input, null, InvokeParseStrategySettings.GlobalDateTimeStyle));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithGlobalDateTimeStyleSettingsOnClass.MapTimeOnly"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapTimeOnlyWithGlobalDateTimeStyleSettingsOnClass()
+    {
+        const string input = InvokeParseStrategySettings.TimeOnlyInputWithWhiteSpaces;
+
+        var actual = this.mapperWithGlobalDateTimeStyleSettingsOnClass.MapTimeOnly(input);
+
+        actual.Should().Be(TimeOnly.Parse(input, null, InvokeParseStrategySettings.GlobalDateTimeStyle));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithGlobalNumberStyleSettingsOnClass.MapToInteger"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapStringToIntegerWithGlobalNumberStyleSettingsOnClass()
+    {
+        const string input = InvokeParseStrategySettings.IntInputWithThousandsAndParentheses;
+
+        var actual = this.mapperWithGlobalNumberStyleSettingsOnClass.MapToInteger(input);
+
+        actual.Should().Be(int.Parse(input, InvokeParseStrategySettings.GlobalNumberStyle));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithGlobalNumberStyleSettingsOnClass.MapToDecimal"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapStringToDecimalWithGlobalNumberStyleSettingsOnClass()
+    {
+        const string input = InvokeParseStrategySettings.DecimalInputWithThousandsAndParentheses;
+
+        var actual = this.mapperWithGlobalNumberStyleSettingsOnClass.MapToDecimal(input);
+
+        actual.Should().Be(decimal.Parse(input, InvokeParseStrategySettings.GlobalNumberStyle));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithGlobalParseStyleAndTypeSpecificOverrideOnMethod.MapDateTime"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDateTimeWithTypeSpecificStyleOverridingGlobalDateTimeStyleOnMethod()
+    {
+        const string input = InvokeParseStrategySettings.DateTimeInputWithWhiteSpaces;
+
+        var actual = this.mapperWithGlobalParseStyleAndTypeSpecificOverrideOnMethod.MapDateTime(input);
+
+        actual.Should().Be(DateTime.Parse(input, null, InvokeParseStrategySettings.DateTimeStyleOverride));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithGlobalParseStyleAndTypeSpecificOverrideOnMethod.MapDateTimeOffset"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapDateTimeOffsetWithGlobalDateTimeStyleOnMethod()
+    {
+        const string input = InvokeParseStrategySettings.DateTimeOffsetInputWithWhiteSpaces;
+
+        var actual = this.mapperWithGlobalParseStyleAndTypeSpecificOverrideOnMethod.MapDateTimeOffset(input);
+
+        actual.Should().Be(DateTimeOffset.Parse(input, null, InvokeParseStrategySettings.GlobalDateTimeStyle));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithGlobalParseStyleAndTypeSpecificOverrideOnMethod.MapToInteger"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapStringToIntegerWithTypeSpecificStyleOverridingGlobalNumberStyleOnMethod()
+    {
+        const string input = InvokeParseStrategySettings.IntInputWithParenthesesOnly;
+
+        var actual = this.mapperWithGlobalParseStyleAndTypeSpecificOverrideOnMethod.MapToInteger(input);
+
+        actual.Should().Be(int.Parse(input, InvokeParseStrategySettings.IntStyleOverride));
+    }
+
+    /// <summary>
+    /// Unit test for <see cref="ParseMapperWithGlobalParseStyleAndTypeSpecificOverrideOnMethod.MapToDecimal"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapStringToDecimalWithGlobalNumberStyleOnMethod()
+    {
+        const string input = InvokeParseStrategySettings.DecimalInputWithThousandsAndParentheses;
+
+        var actual = this.mapperWithGlobalParseStyleAndTypeSpecificOverrideOnMethod.MapToDecimal(input);
+
+        actual.Should().Be(decimal.Parse(input, InvokeParseStrategySettings.GlobalNumberStyle));
     }
 
     /// <summary>
