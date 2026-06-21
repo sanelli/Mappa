@@ -4,6 +4,7 @@
 
 using Mappa.Generator.Exceptions;
 using Mappa.Generator.Extensions;
+using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -47,10 +48,10 @@ internal sealed class MappaAssignFromConstantAttributeStrategyBuilder
 
         return value switch
         {
-            string s => $"\"{s}\"",
+            string s => CSharpLiteralHelper.ToStringLiteral(s),
             sbyte or byte or short or ushort or int or uint or long or ulong or float or double => $"{value}",
             bool b => b ? "true" : "false",
-            char c => $"'{c}'",
+            char c => CSharpLiteralHelper.ToCharLiteral(c),
             TypedConstant typedConstant when
                 typedConstant.Kind is TypedConstantKind.Enum &&
                 typedConstant.Value is not null &&

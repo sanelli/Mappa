@@ -21,6 +21,17 @@ internal static class CSharpLiteralHelper
         => ToStringLiteralCore(value);
 
     /// <summary>
+    /// Returns a fully escaped C# char literal including surrounding single quotes.
+    /// </summary>
+    /// <param name="value">The char value.</param>
+    /// <returns>The escaped char literal.</returns>
+    internal static string ToCharLiteral(char value)
+        => SyntaxFactory.LiteralExpression(
+                SyntaxKind.CharacterLiteralExpression,
+                SyntaxFactory.Literal(value))
+            .ToFullString();
+
+    /// <summary>
     /// Returns a fully escaped C# string literal when <paramref name="value"/> is not null or whitespace.
     /// </summary>
     /// <param name="value">The string value.</param>
