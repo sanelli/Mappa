@@ -559,4 +559,81 @@ public sealed partial class StringToNumberMapStrategyIntegrationTests
                         });
                 });
     }
+
+    /// <summary>
+    /// Test combined global number style flags defined on the method are emitted as a bitwise OR expression.
+    /// </summary>
+    /// <param name="aliasNumericType">The type alias.</param>
+    /// <param name="numericType">The type full name.</param>
+    /// <param name="stylePropertyName">The type-specific style property name.</param>
+    /// <param name="editorConfigStyleKey">The type-specific editorconfig style key.</param>
+    /// <returns>The async task.</returns>
+    [Theory]
+    [MemberData(nameof(NumberStylesMappaSettingsTestHelper.NumericTypeTestData), MemberType = typeof(NumberStylesMappaSettingsTestHelper))]
+    [IntegrationTest]
+    public async Task CanMapStringToNumberWithCombinedGlobalNumberStyleFlagsDefinedOnMethod(
+        string aliasNumericType,
+        string numericType,
+        string stylePropertyName,
+        string editorConfigStyleKey)
+    {
+        _ = stylePropertyName;
+        _ = editorConfigStyleKey;
+
+        ArgumentException.ThrowIfNullOrWhiteSpace(aliasNumericType);
+        ArgumentException.ThrowIfNullOrWhiteSpace(numericType);
+
+        const string identifierName = "__mappa_tmp_1";
+
+        var sourceCode = $$"""
+                          #nullable enable
+                          using System.Globalization;
+                          using Mappa;
+                          using Mappa.Attributes;
+
+                          namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                          [Mappa]
+                          public sealed partial class Mapper
+                          {
+                              [MappaSettings(GlobalNumberStyle = NumberStyles.AllowThousands | NumberStyles.AllowParentheses)]
+                              public partial {{aliasNumericType}} Map(string input);
+                          }
+                          """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                numericType,
+                NullableAnnotation.NotAnnotated,
+                typeof(string).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(2)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                numericType,
+                                identifierName,
+                                expressionSyntaxAssertions => expressionSyntaxAssertions.BeInvocationExpressionSyntax(
+                                    $"{aliasNumericType}.Parse",
+                                    firstParameter => firstParameter.BeIdentifierNameSyntax("input"),
+                                    secondParameter => secondParameter.BeBinaryExpressionSyntax(
+                                        left => left.BeMemberAccessExpressionSyntax("System.Globalization.NumberStyles.AllowParentheses"),
+                                        SyntaxKind.BarToken,
+                                        right => right.BeMemberAccessExpressionSyntax("System.Globalization.NumberStyles.AllowThousands"))));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax(identifierName));
+                        });
+                });
+    }
 }

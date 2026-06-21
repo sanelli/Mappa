@@ -795,4 +795,82 @@ public sealed partial class InvokeParseStringWithFormatMapStrategyIntegrationTes
                         });
                 });
     }
+
+    /// <summary>
+    /// Test combined type-specific date/time style flags defined on the method are emitted as a bitwise OR expression.
+    /// </summary>
+    /// <param name="targetType">The target of the mapping.</param>
+    /// <param name="stylePropertyName">The style property name.</param>
+    /// <param name="editorConfigStyleKey">The editorconfig style key.</param>
+    /// <param name="format">The default format for combined settings tests.</param>
+    /// <returns>The async task.</returns>
+    [Theory]
+    [MemberData(nameof(DateTimeStylesMappaSettingsTestHelper.DateTimeTypeTestData), MemberType = typeof(DateTimeStylesMappaSettingsTestHelper))]
+    [IntegrationTest]
+    public async Task CanMapStringToTargetWithCombinedDateTimeStyleFlagsDefinedOnMethod(
+        Type targetType,
+        string stylePropertyName,
+        string editorConfigStyleKey,
+        string format)
+    {
+        _ = editorConfigStyleKey;
+        _ = format;
+
+        ArgumentNullException.ThrowIfNull(targetType);
+        ArgumentException.ThrowIfNullOrWhiteSpace(stylePropertyName);
+
+        const string identifierName = "__mappa_tmp_1";
+
+        var sourceCode = $$"""
+                          #nullable enable
+                          using System;
+                          using System.Globalization;
+                          using Mappa.Attributes;
+
+                          namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                          [Mappa]
+                          public sealed partial class Mapper
+                          {
+                              [MappaSettings({{stylePropertyName}} = DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.AssumeUniversal)]
+                              public partial {{targetType}} Map(string input);
+                          }
+                          """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                targetType.ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(string).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(2)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                targetType.ToString(),
+                                identifierName,
+                                expressionSyntaxAssertions => expressionSyntaxAssertions.BeInvocationExpressionSyntax(
+                                    $"{targetType.FullName}.Parse",
+                                    firstParameter => firstParameter.BeIdentifierNameSyntax("input"),
+                                    secondParameter => secondParameter.BeLiteralExpressionSyntax(null),
+                                    thirdParameter => thirdParameter.BeBinaryExpressionSyntax(
+                                        left => left.BeMemberAccessExpressionSyntax("System.Globalization.DateTimeStyles.AllowWhiteSpaces"),
+                                        SyntaxKind.BarToken,
+                                        right => right.BeMemberAccessExpressionSyntax("System.Globalization.DateTimeStyles.AssumeUniversal"))));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax(identifierName));
+                        });
+                });
+    }
 }
