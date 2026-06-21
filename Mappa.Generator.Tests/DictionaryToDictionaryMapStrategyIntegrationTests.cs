@@ -768,6 +768,55 @@ public sealed class DictionaryToDictionaryMapStrategyIntegrationTests
     }
 
     /// <summary>
+    /// Test a mapping cannot be created from <see cref="Dictionary{TKey,TValue}"/>
+    /// when the value type cannot be mapped to the target value type.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CannotMapDictionaryWhenValueTypeCannotBeMapped()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+
+                                  using Mappa.Attributes;
+                                  using System.Collections.Generic;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class SourceValue
+                                  {
+                                      public int Id { get; set; }
+                                  }
+
+                                  public class TargetValue
+                                  {
+                                      public string Name { get; set; }
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial Dictionary<int, TargetValue> Map(Dictionary<int, SourceValue> input);
+                                  }
+
+                                  #nullable restore
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(
+                MappaDiagnosticDescriptors.CannotIdentifyStrategy,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.SourceValue",
+                "Mappa.Generator.Tests.UnitTests.SourceCode.TargetValue");
+    }
+
+    /// <summary>
     /// Test a mapping can be created from  derived implementation of <see cref="IDictionary{TKey,TValue}"/>
     /// that exposes generic parameters to <see cref="Dictionary{TKey,TValue}"/>.
     /// </summary>
