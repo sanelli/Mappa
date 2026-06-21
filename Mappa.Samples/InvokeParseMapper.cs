@@ -680,12 +680,12 @@ public sealed partial class ParseMapperWithFormatInvariantCultureAndDateTimeStyl
 /// </summary>
 [Mappa]
 [MappaSettings(
-    DateTimeFormat = InvokeToStringStrategySettings.DateTimeFormat,
-    DateTimeOffsetFormat = InvokeToStringStrategySettings.DateTimeOffsetFormat,
-    DateOnlyFormat = InvokeToStringStrategySettings.DateOnlyFormat,
-    TimeOnlyFormat = InvokeToStringStrategySettings.TimeOnlyFormat,
-    TimeSpanFormat = InvokeToStringStrategySettings.TimeSpanFormat,
-    GuidFormat = InvokeToStringStrategySettings.GuidFormat)]
+    DateTimeFormat = InvokeParseStrategySettings.DateTimeFormat,
+    DateTimeOffsetFormat = InvokeParseStrategySettings.DateTimeOffsetFormat,
+    DateOnlyFormat = InvokeParseStrategySettings.DateOnlyFormat,
+    TimeOnlyFormat = InvokeParseStrategySettings.TimeOnlyFormat,
+    TimeSpanFormat = InvokeParseStrategySettings.TimeSpanFormat,
+    GuidFormat = InvokeParseStrategySettings.GuidFormat)]
 public sealed partial class ParseMapperWithFormatSettingsOnClass
 {
     /// <summary>
@@ -742,12 +742,12 @@ public sealed partial class ParseMapperWithFormatSettingsOnClass
 /// </summary>
 [Mappa]
 [MappaSettings(
-    DateTimeFormat = InvokeToStringStrategySettings.DateTimeFormat,
-    DateTimeOffsetFormat = InvokeToStringStrategySettings.DateTimeOffsetFormat,
-    DateOnlyFormat = InvokeToStringStrategySettings.DateOnlyFormat,
-    TimeOnlyFormat = InvokeToStringStrategySettings.TimeOnlyFormat,
-    TimeSpanFormat = InvokeToStringStrategySettings.TimeSpanFormat,
-    GuidFormat = InvokeToStringStrategySettings.GuidFormat,
+    DateTimeFormat = InvokeParseStrategySettings.DateTimeFormat,
+    DateTimeOffsetFormat = InvokeParseStrategySettings.DateTimeOffsetFormat,
+    DateOnlyFormat = InvokeParseStrategySettings.DateOnlyFormat,
+    TimeOnlyFormat = InvokeParseStrategySettings.TimeOnlyFormat,
+    TimeSpanFormat = InvokeParseStrategySettings.TimeSpanFormat,
+    GuidFormat = InvokeParseStrategySettings.GuidFormat,
     CultureInfoSetting = CultureInfoSetting.InvariantCulture)]
 public sealed partial class ParseMapperWithFormatAndInvariantCultureSettingsOnClass
 {
