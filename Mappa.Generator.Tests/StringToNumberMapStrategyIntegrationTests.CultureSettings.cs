@@ -154,6 +154,81 @@ public sealed partial class StringToNumberMapStrategyIntegrationTests
     }
 
     /// <summary>
+    /// Test a mapping can be created from a string to a number using current culture defined in <c>.editorconfig</c>.
+    /// </summary>
+    /// <param name="aliasNumericType">The type alias.</param>
+    /// <param name="numericType">The type full name.</param>
+    /// <param name="formatPropertyName">The format property name.</param>
+    /// <param name="editorConfigFormatKey">The editorconfig format key.</param>
+    /// <returns>The async task.</returns>
+    [Theory]
+    [MemberData(nameof(NumericMappaSettingsTestHelper.NumericTypeTestData), MemberType = typeof(NumericMappaSettingsTestHelper))]
+    [IntegrationTest]
+    public async Task CanMapStringToNumberWithCurrentCultureDefinedInEditorConfig(
+        string aliasNumericType,
+        string numericType,
+        string formatPropertyName,
+        string editorConfigFormatKey)
+    {
+        _ = formatPropertyName;
+        _ = editorConfigFormatKey;
+
+        const string identifierName = "__mappa_tmp_1";
+
+        const string editorConfig = """
+                                    root = true
+
+                                    [*.cs]
+                                    mappa.cultureinfosettings = CurrentCulture
+                                    """;
+
+        var sourceCode = $$"""
+                          #nullable enable
+                          using Mappa.Attributes;
+
+                          namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                          [Mappa]
+                          public sealed partial class Mapper
+                          {
+                              public partial {{aliasNumericType}} Map(string input);
+                          }
+                          """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, editorConfig, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                numericType,
+                NullableAnnotation.NotAnnotated,
+                typeof(string).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(2)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                numericType,
+                                identifierName,
+                                expressionSyntaxAssertions => expressionSyntaxAssertions.BeInvocationExpressionSyntax(
+                                    $"{aliasNumericType}.Parse",
+                                    firstParameter => firstParameter.BeIdentifierNameSyntax("input"),
+                                    secondParameter => secondParameter.BeMemberAccessExpressionSyntax("System.Globalization.CultureInfo.CurrentCulture")));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax(identifierName));
+                        });
+                });
+    }
+
+    /// <summary>
     /// Test a mapping can be created from a string to a number using user defined culture.
     /// </summary>
     /// <param name="aliasNumericType">The type alias.</param>
