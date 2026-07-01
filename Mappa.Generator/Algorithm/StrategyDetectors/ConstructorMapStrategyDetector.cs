@@ -165,6 +165,7 @@ internal sealed class ConstructorMapStrategyDetector
                                         this.context.SourceType,
                                         ref sourceProperty,
                                         StringComparison.OrdinalIgnoreCase,
+                                        isConstructorParameterPath: true,
                                         out var propertyStrategyFromAttribute))
                                 {
                                     propertyStrategyFromAttribute = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, sourceProperties, propertyStrategyFromAttribute);
@@ -446,6 +447,7 @@ internal sealed class ConstructorMapStrategyDetector
                                     this.context.SourceType,
                                     ref sourceProperty,
                                     StringComparison.Ordinal,
+                                    isConstructorParameterPath: false,
                                     out var propertyStrategyFromAttribute))
                             {
                                 if (!targetProperty.IsSetterAccessible(this.compilation, this.context.MapMethod))
@@ -796,6 +798,7 @@ internal sealed class ConstructorMapStrategyDetector
         ITypeSymbol sourceClassType,
         ref IPropertySymbol? sourceProperty,
         StringComparison stringComparison,
+        bool isConstructorParameterPath,
         out MapStrategy strategy)
     {
         strategy = new NoMapStrategy(targetType, null!);
@@ -837,6 +840,19 @@ internal sealed class ConstructorMapStrategyDetector
         switch (attribute)
         {
             case MappaInvokeMethodAttribute mappaInvokeMethodAttribute:
+                if (!string.IsNullOrWhiteSpace(mappaInvokeMethodAttribute.SourcePropertyName))
+                {
+                    this.ReportMappaUsePropertySourcePropertyWillNotBeUsedIfPresent(
+                        targetName,
+                        stringComparison,
+                        nameof(MappaInvokeMethodAttribute));
+                    this.TryResolveSourcePropertyForMappaInvokeMethodAttribute(
+                        mappaInvokeMethodAttribute,
+                        sourceClassType,
+                        isConstructorParameterPath,
+                        ref sourceProperty);
+                }
+
                 this.TryGetStrategyUsingMappaInvokeMethodAttribute(
                     targetName,
                     targetType,
@@ -913,6 +929,32 @@ internal sealed class ConstructorMapStrategyDetector
             targetName,
             usePropertyAttributes[0].SourcePropertyName,
             conflictingAttributeName));
+    }
+
+    private void TryResolveSourcePropertyForMappaInvokeMethodAttribute(
+        MappaInvokeMethodAttribute mappaInvokeMethodAttribute,
+        ITypeSymbol sourceClassType,
+        bool isConstructorParameterPath,
+        ref IPropertySymbol? sourceProperty)
+    {
+        if (mappaInvokeMethodAttribute.SourcePropertyName is not string sourcePropertyName ||
+            string.IsNullOrWhiteSpace(sourcePropertyName))
+        {
+            return;
+        }
+
+        var sourceProperties = sourceClassType.GetTypeProperties()
+            .Where(property => !property.IsIndexer && property.IsGetterAccessible(this.compilation, this.context.GetRootMapMethod()))
+            .ToArray();
+
+        PropertyMapNameMatcher.TryFindSourceProperty(
+            sourceProperties,
+            sourcePropertyName,
+            this.context.MappaUserSettings.ForceCaseInsensitivePropertyMap,
+            this.context.MappaUserSettings.IgnoreUnderscoreForPropertyMap,
+            isConstructorParameterPath,
+            useExactNameFromAttribute: true,
+            out sourceProperty);
     }
 
     private void TryGetStrategyUsingMappaAssignFromContextAttribute(
@@ -1078,7 +1120,17 @@ internal sealed class ConstructorMapStrategyDetector
             .Where(attribute => attribute.TargetPropertyName.Equals(targetName, stringComparison))
             .ToArray();
 
-        if (usePropertyAttributes.Length == 1 &&
+        string? explicitSourcePropertyName = null;
+        if (!string.IsNullOrWhiteSpace(mappaInvokeMethodAttribute.SourcePropertyName))
+        {
+            explicitSourcePropertyName = mappaInvokeMethodAttribute.SourcePropertyName;
+        }
+        else if (usePropertyAttributes.Length == 1)
+        {
+            explicitSourcePropertyName = usePropertyAttributes[0].SourcePropertyName;
+        }
+
+        if (explicitSourcePropertyName is not null &&
             !method.UsesSourceProperty(
                 this.compilation,
                 sourceProperty,
@@ -1089,7 +1141,7 @@ internal sealed class ConstructorMapStrategyDetector
                 mapMethodMethodDeclarationSyntax,
                 this.context.GetRootMapMethod().MethodName,
                 targetName,
-                usePropertyAttributes[0].SourcePropertyName,
+                explicitSourcePropertyName,
                 mappaInvokeMethodAttribute.MethodName));
         }
 
