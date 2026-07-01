@@ -303,9 +303,9 @@ internal sealed class StringMapStrategyDetector
 
     private bool CanMapStringToNumber()
     {
-        var isTargetDateTime = this.context.TargetType.IsNumeric();
+        var isTargetNumeric = this.context.TargetType.IsNumeric();
         var isSourceString = this.context.SourceType.IsString();
-        return isTargetDateTime && isSourceString;
+        return isTargetNumeric && isSourceString;
     }
 
     private NumberStyles? GetNumericNumberStyleWithSource(ITypeSymbol typeSymbol, out string? propertyName)
