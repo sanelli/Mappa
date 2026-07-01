@@ -237,7 +237,7 @@ The constructor strategy has three sub-strategies, tried in order:
         - `[MappaIgnoreTargetProperty]` *(empty-constructor path only)*
         - `[MappaAssignFromContext]`
         - `[MappaAssignFromConstant]`
-        - `[MappaInvokeMethod]`
+        - `[MappaInvokeMethod]` — optionally accepts `SourcePropertyName` to select the source property passed to the invoked method
         - `[MappaAssignToContext]` *(post-construction context writes; requires the caller to provide `MappaContext`)*
     - When `MappaSettings.ProtobufOptional` is enabled, optional protobuf members are handled via companion `Has*` properties on the source and target types.
 

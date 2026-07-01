@@ -16,6 +16,7 @@ namespace Mappa.Attributes;
 /// <item><description><c>(targetPropertyName, classType, methodName)</c>: a <c>static</c> method declared on <see cref="ClassType"/> or one of its base classes.</description></item>
 /// <item><description><c>(targetPropertyName, fieldName, methodName)</c>: a non-<c>static</c> method declared on the type of the field or property identified by <see cref="FieldName"/> (including its base classes). The field or property must be declared on the mapper class or an accessible base class. When the root map method is <c>static</c>, the field or property must also be <c>static</c>.</description></item>
 /// </list>
+/// <see cref="SourcePropertyName"/> can be supplied as an optional named parameter on any constructor overload to specify which source property supplies the value for the invoked method. When set, it overrides the default name-based source property match for this target member.<br/>
 /// When multiple methods with the same name exist in a type hierarchy, methods declared on the most derived type are preferred.<br/>
 /// <br/>
 /// Every candidate method must satisfy all of the following requirements:<br/>
@@ -28,7 +29,7 @@ namespace Mappa.Attributes;
 /// <br/>
 /// When the root map method accepts a <see cref="Mappa.MappaContext"/> as its second parameter, invoked methods may also accept a <see cref="Mappa.MappaContext"/> parameter. The <see cref="Mappa.MappaContext"/> parameter is always the last parameter when combined with source and/or source-property arguments, and its type must be <c>Mappa.MappaContext</c>. Overloads that require <see cref="Mappa.MappaContext"/> are ignored when the map method does not provide one. If only <see cref="Mappa.MappaContext"/>-requiring overloads exist and the map method has no <see cref="Mappa.MappaContext"/> parameter, mapping fails.<br/>
 /// <br/>
-/// If multiple candidate methods match, the method is selected following the priority order below. The first matching overload wins. Tiers that reference a source property apply only when a source property is available for the target member (via name matching or <c>[MappaUseProperty]</c>):<br/>
+/// If multiple candidate methods match, the method is selected following the priority order below. The first matching overload wins. Tiers that reference a source property apply only when a source property is available for the target member (via name matching, <c>[MappaUseProperty]</c>, or <see cref="SourcePropertyName"/>):<br/>
 /// <list type="number">
 /// <item><description>Three parameters: the source <c>class</c>/<c>struct</c>/<c>record</c> (exact type), the source property (exact type), and <see cref="Mappa.MappaContext"/>. Requires the map method to provide <see cref="Mappa.MappaContext"/>.</description></item>
 /// <item><description>Two parameters: the source <c>class</c>/<c>struct</c>/<c>record</c> (exact type) and the source property (exact type).</description></item>
@@ -102,4 +103,10 @@ public sealed class MappaInvokeMethodAttribute
     /// Gets the name of the field or property on the mapper class or an accessible base class whose type exposes the non-<c>static</c> method <see cref="MethodName"/>. When the root map method is <c>static</c>, the field or property must also be <c>static</c>.
     /// </summary>
     public string? FieldName { get; }
+
+    /// <summary>
+    /// Gets or sets the name of the source property to use when resolving method overloads that accept a source property argument.
+    /// When set, this value overrides the default name-based source property match for the target member specified by <see cref="TargetPropertyName"/>.
+    /// </summary>
+    public string? SourcePropertyName { get; set; }
 }

@@ -11,7 +11,7 @@ This is the list of attributes provided:
 - `MappaIgnoreTargetProperty`: When mapping structured types via an empty constructor, excludes a target property from property-initializer mapping; has no effect when mapping uses a constructor with parameters;
 - `MappaAssignFromContext`: When mapping structured types, allows specifying which value from a `MappaContext` to use for a target property or constructor parameter;
 - `MappaAssignToContext`: When mapping structured types via the constructor-map strategy, stores the value of a target property or field in `MappaContext` after the target object has been fully constructed;
-- `MappaInvokeMethodAttribute`: When mapping structured types via the constructor-map strategy, forces a target property or constructor parameter to be mapped by invoking a named method (see [MappaInvokeMethodAttribute](#mappainvokemethodattribute));
+- `MappaInvokeMethodAttribute`: When mapping structured types via the constructor-map strategy, forces a target property or constructor parameter to be mapped by invoking a named method; supports an optional `SourcePropertyName` named parameter (see [MappaInvokeMethodAttribute](#mappainvokemethodattribute));
 - `MappaAssignFromConstant`: When mapping structured types, allows specifying a constant value for a target property or constructor parameter;
 - `MappaTypeMapping`: When mapping structured types or interfaces, allows defining the target type depending on the source type;
 - `MappaTypeMappingDefault`: Describes the default behaviour for polymorphic methods defined via `MappaTypeMapping`.
@@ -61,6 +61,22 @@ Depending on which constructor overload is used, the invoked method is resolved 
 
 When multiple methods with the same name exist in a type hierarchy, methods declared on the most derived type are preferred.
 
+### SourcePropertyName
+
+`SourcePropertyName` is an optional named parameter on any constructor overload. When set, it selects which source property is passed to method overloads that accept a source-property argument for the target member specified by `TargetPropertyName`. It overrides the default name-based source property match for that invoke-method mapping.
+
+Example:
+
+```csharp
+[MappaInvokeMethod(
+    nameof(Target.PropertyA),
+    nameof(CustomMap),
+    SourcePropertyName = nameof(Source.SourceProperty))]
+public partial Target Map(Source input);
+```
+
+When only the invoke-method mapping needs a custom source property, prefer `SourcePropertyName` on `[MappaInvokeMethod]` instead of combining it with `[MappaUseProperty]`. Use `[MappaUseProperty]` when other target members on the same map method also require a non-default source property mapping. If both `[MappaUseProperty]` and `SourcePropertyName` target the same member, the generator emits warning **MP00031** because `[MappaUseProperty]` is ignored for that invoke-method mapping.
+
 ### Candidate requirements
 
 Every candidate method must satisfy all of the following:
@@ -76,7 +92,7 @@ When the root map method accepts a `MappaContext` as its second parameter, invok
 
 ### Overload selection priority
 
-If multiple candidate methods match, the first matching overload in the following list is selected. Tiers that reference a source property apply only when a source property is available for the target member (via name matching or `[MappaUseProperty]`):
+If multiple candidate methods match, the first matching overload in the following list is selected. Tiers that reference a source property apply only when a source property is available for the target member (via name matching, `[MappaUseProperty]`, or `SourcePropertyName` on `[MappaInvokeMethod]`):
 
 1. Three parameters: source type (exact), source property (exact), `MappaContext` — requires the map method to provide `MappaContext`.
 2. Two parameters: source type (exact), source property (exact).

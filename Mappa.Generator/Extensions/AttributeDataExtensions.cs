@@ -99,42 +99,56 @@ internal static class AttributeDataExtensions
     {
         var mappaInvokeMethodAttributeSymbol = compilation.GetTypeByMetadataName(MappaInvokeMethodAttributeFullName);
         List<MappaInvokeMethodAttribute> results = new();
-        foreach (var constructorArguments in attributes
-                     .Where(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, mappaInvokeMethodAttributeSymbol))
-                     .Select(attributeData => attributeData.ConstructorArguments))
+        foreach (var attributeData in attributes
+                     .Where(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, mappaInvokeMethodAttributeSymbol)))
         {
-                switch (constructorArguments.Length)
+            MappaInvokeMethodAttribute? attribute = null;
+            var constructorArguments = attributeData.ConstructorArguments;
+            switch (constructorArguments.Length)
+            {
+                case 2: // (targetPropertyName, methodName)
+                    {
+                        if (constructorArguments[0].Value is string targetParameterName &&
+                            constructorArguments[1].Value is string methodName)
+                        {
+                            attribute = new MappaInvokeMethodAttribute(targetParameterName, methodName);
+                        }
+                    }
+
+                    break;
+
+                case 3: // (targetPropertyName, classType, methodName) or (targetPropertyName, fieldName, methodName)
+                    {
+                        if (constructorArguments[0].Value is string targetParameterName &&
+                            constructorArguments[2].Value is string methodName)
+                        {
+                            attribute = constructorArguments[1].Value switch
+                            {
+                                string fieldName => new MappaInvokeMethodAttribute(targetParameterName, fieldName, methodName),
+                                INamedTypeSymbol classType => new MappaInvokeMethodAttribute(targetParameterName, new FakeType(classType.ToDisplayString()), methodName),
+                                _ => null,
+                            };
+                        }
+                    }
+
+                    break;
+            }
+
+            if (attribute is null)
+            {
+                continue;
+            }
+
+            foreach (var namedArgument in attributeData.NamedArguments)
+            {
+                if (namedArgument.Key == nameof(MappaInvokeMethodAttribute.SourcePropertyName) &&
+                    namedArgument.Value.Value is string sourcePropertyName)
                 {
-                    case 2: // (targetPropertyName, methodName)
-                        {
-                            if (constructorArguments[0].Value is string targetParameterName &&
-                                constructorArguments[1].Value is string methodName)
-                            {
-                                results.Add(new MappaInvokeMethodAttribute(targetParameterName, methodName));
-                            }
-                        }
-
-                        break;
-
-                    case 3: // (targetPropertyName, classType, methodName) or (targetPropertyName, fieldName, methodName)
-                        {
-                            if (constructorArguments[0].Value is string targetParameterName &&
-                                constructorArguments[2].Value is string methodName)
-                            {
-                                switch (constructorArguments[1].Value)
-                                {
-                                    case string fieldName:
-                                        results.Add(new MappaInvokeMethodAttribute(targetParameterName, fieldName, methodName));
-                                        break;
-                                    case INamedTypeSymbol classType:
-                                        results.Add(new MappaInvokeMethodAttribute(targetParameterName, new FakeType(classType.ToDisplayString()), methodName));
-                                        break;
-                                }
-                            }
-                        }
-
-                        break;
+                    attribute.SourcePropertyName = sourcePropertyName;
                 }
+            }
+
+            results.Add(attribute);
         }
 
         return [.. results];
