@@ -641,6 +641,40 @@ public sealed partial class MapEmptyConstructorWithLocalStaticMethodWithSourceCl
 }
 
 /// <summary>
+/// Map from <see cref="SourceClassModel"/> to <see cref="TargetClassModel"/>
+/// using:
+/// <list type="table">
+/// <item><term>Mapping mode</term><description>Empty constructor.</description></item>
+/// <item><term>Custom method location</term><description><see cref="MapEmptyConstructorWithLocalMethodUsingSourcePropertyName"/>.</description></item>
+/// <item><term>Custom method is static</term><description><c>true</c>.</description></item>
+/// <item><term>Custom method input(s)</term><description><see cref="CountingValues"/>.</description></item>
+/// <item><term>Source property selection</term><description><see cref="MappaInvokeMethodAttribute.SourcePropertyName"/>.</description></item>
+/// </list>
+/// </summary>
+[Mappa]
+public sealed partial class MapEmptyConstructorWithLocalMethodUsingSourcePropertyName
+{
+    /// <summary>
+    /// Map from <see cref="SourceClassModel"/> to <see cref="TargetClassModel"/>
+    /// using <see cref="MappaInvokeMethodAttribute.SourcePropertyName"/> to supply
+    /// <see cref="SourceClassModel.ParamB"/> to the invoked method for
+    /// <see cref="TargetClassModel.ParamA"/>.
+    /// </summary>
+    /// <param name="source">The source model to map.</param>
+    /// <returns>The mapped object.</returns>
+    [MappaInvokeMethod(
+        nameof(TargetClassModel.ParamA),
+        nameof(CustomMap),
+        SourcePropertyName = nameof(SourceClassModel.ParamB))]
+    public partial TargetClassModel Map(SourceClassModel source);
+
+    private static string CustomMap(CountingValues sourceProperty)
+    {
+        return $"{nameof(MapEmptyConstructorWithLocalMethodUsingSourcePropertyName)}/static/({nameof(CountingValues)})/{sourceProperty}";
+    }
+}
+
+/// <summary>
 /// Mapper helper method that can be invoked by other classes.
 /// </summary>
 public sealed class MapperDependencyHelper

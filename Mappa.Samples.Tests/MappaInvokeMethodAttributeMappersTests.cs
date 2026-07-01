@@ -370,4 +370,23 @@ public sealed class MappaInvokeMethodAttributeMappersTests
         actual.ParamA.Should().Be($"{nameof(MapEmptyConstructorWithLocalStaticMethodWithSourceClassPropertyAndMappaContextInput)}/static/({nameof(SourceClassModel)},int,{nameof(MappaContext)})/{source.ParamA}/{source.ParamB}/{source.ParamA}/Use the custom value");
         actual.ParamB.Should().Be((int)source.ParamB);
     }
+
+    /// <summary>
+    /// Test for <see cref="MapEmptyConstructorWithLocalMethodUsingSourcePropertyName"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void TestMapEmptyConstructorWithLocalMethodUsingSourcePropertyName()
+    {
+        // Arrange
+        var mapper = new MapEmptyConstructorWithLocalMethodUsingSourcePropertyName();
+        var source = new SourceClassModel { ParamA = 10, ParamB = CountingValues.Three };
+
+        // Act
+        var actual = mapper.Map(source);
+
+        // Assert
+        actual.ParamA.Should().Be($"{nameof(MapEmptyConstructorWithLocalMethodUsingSourcePropertyName)}/static/({nameof(CountingValues)})/{source.ParamB}");
+        actual.ParamB.Should().Be((int)source.ParamB);
+    }
 }

@@ -191,5 +191,14 @@ internal static class MappaInvokeMethodAttributeMappersRunner
             nameof(TargetClassModel),
             sourceClass,
             withMappaContext.Map(sourceClass, context));
+
+        report.BeginMapper(nameof(MapEmptyConstructorWithLocalMethodUsingSourcePropertyName));
+        var withSourcePropertyName = new MapEmptyConstructorWithLocalMethodUsingSourcePropertyName();
+        report.RecordInvocation(
+            nameof(MapEmptyConstructorWithLocalMethodUsingSourcePropertyName.Map),
+            nameof(SourceClassModel),
+            nameof(TargetClassModel),
+            sourceClass,
+            withSourcePropertyName.Map(sourceClass));
     }
 }

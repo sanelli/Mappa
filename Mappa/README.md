@@ -10,7 +10,7 @@ This is the list of attributes provided:
 - `MappaIgnoreTargetProperty`: When mapping structured types via an empty constructor, excludes a target property from property-initializer mapping; has no effect when mapping uses a constructor with parameters;
 - `MappaAssignFromContext`: When mapping structured types, allows specifying which value from a `MappaContext` to use for a target property or constructor parameter;
 - `MappaAssignToContext`: When mapping structured types via the constructor-map strategy, stores the value of a target property or field in `MappaContext` after the target object has been fully constructed;
-- `MappaInvokeMethodAttribute`: When mapping structured types via the constructor-map strategy, forces a target property or constructor parameter to be mapped by invoking a named method;
+- `MappaInvokeMethodAttribute`: When mapping structured types via the constructor-map strategy, forces a target property or constructor parameter to be mapped by invoking a named method; supports an optional `SourcePropertyName` named parameter to select the source property passed to the invoked method;
 - `MappaAssignFromConstant`: When mapping structured types, allows specifying a constant value for a target property or constructor parameter;
 - `MappaTypeMapping`: When mapping structured types or interfaces, allows defining the target type depending on the source type;
 - `MappaTypeMappingDefault`: Describes the default behaviour for polymorphic methods defined via `MappaTypeMapping`.
