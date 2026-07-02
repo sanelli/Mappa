@@ -249,7 +249,6 @@ internal sealed class MappaGlobalOptions
     private const string MappaSettingsContainerCapacityConstructors = "containercapacityconstructors";
     private const string MappaSettingsPolymorphicMapMethodWithMatchingDefaultAttribute = "polymorphicmapmethodwithmatchingdefaultattribute";
     private const string MappaSettingsCaseInsensitivePropertyMap = "caseinsensitivepropertymap";
-    private const string MappaSettingsLegacyForceCaseInsensitivePropertyMap = "forcecaseinsensitivepropertymap";
     private const string MappaSettingsIgnoreUnderscoreForPropertyMap = "ignoreunderscoreforpropertymap";
     private const string MappaSettingsCaseInsensitiveStringToEnumMap = "caseinsensitivestringtoenummap";
 
@@ -384,7 +383,9 @@ internal sealed class MappaGlobalOptions
             ? GetBooleanSettingFromString(polymorphicMapMethodWithMatchingDefaultAttribute)
             : BooleanSetting.Undefined;
 
-        this.CaseInsensitivePropertyMap = ReadCaseInsensitivePropertyMapOption(options);
+        this.CaseInsensitivePropertyMap = options.TryGetValue(GetOptionName(MappaSettingsCaseInsensitivePropertyMap), out var caseInsensitivePropertyMap)
+            ? GetBooleanSettingFromString(caseInsensitivePropertyMap)
+            : BooleanSetting.Undefined;
 
         this.IgnoreUnderscoreForPropertyMap = options.TryGetValue(GetOptionName(MappaSettingsIgnoreUnderscoreForPropertyMap), out var ignoreUnderscoreForPropertyMap)
             ? GetBooleanSettingFromString(ignoreUnderscoreForPropertyMap)
@@ -469,21 +470,6 @@ internal sealed class MappaGlobalOptions
             => options.TryGetValue(GetOptionName(optionName), out var numberStyles)
                 ? ParseNumberStylesCodeHelper.TryParseFromString(numberStyles)
                 : null;
-
-        static BooleanSetting ReadCaseInsensitivePropertyMapOption(AnalyzerConfigOptions options)
-        {
-            if (options.TryGetValue(GetOptionName(MappaSettingsCaseInsensitivePropertyMap), out var caseInsensitivePropertyMap))
-            {
-                return GetBooleanSettingFromString(caseInsensitivePropertyMap);
-            }
-
-            if (options.TryGetValue(GetOptionName(MappaSettingsLegacyForceCaseInsensitivePropertyMap), out var legacyForceCaseInsensitivePropertyMap))
-            {
-                return GetBooleanSettingFromString(legacyForceCaseInsensitivePropertyMap);
-            }
-
-            return BooleanSetting.Undefined;
-        }
     }
 
     /// <inheritdoc />
