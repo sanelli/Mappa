@@ -244,4 +244,10 @@ internal interface IMappaUserSettings
     /// by name.
     /// </summary>
     BooleanSetting IgnoreUnderscoreForPropertyMap { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether <see cref="string"/> values are matched
+    /// case-insensitively to enum member names when mapping from <see cref="string"/> to an enum.
+    /// </summary>
+    BooleanSetting CaseInsensitiveStringToEnumMap { get; }
 }

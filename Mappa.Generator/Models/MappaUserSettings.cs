@@ -58,6 +58,7 @@ internal sealed class MappaUserSettings
     private readonly StackSetting<BooleanSetting> polymorphicMapMethodWithMatchingDefaultAttribute;
     private readonly StackSetting<BooleanSetting> forceCaseInsensitivePropertyMap;
     private readonly StackSetting<BooleanSetting> ignoreUnderscoreForPropertyMap;
+    private readonly StackSetting<BooleanSetting> caseInsensitiveStringToEnumMap;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaUserSettings"/> class.
@@ -107,7 +108,8 @@ internal sealed class MappaUserSettings
             otherSettings.ContainerCapacityConstructors,
             otherSettings.PolymorphicMapMethodWithMatchingDefaultAttribute,
             otherSettings.ForceCaseInsensitivePropertyMap,
-            otherSettings.IgnoreUnderscoreForPropertyMap)
+            otherSettings.IgnoreUnderscoreForPropertyMap,
+            otherSettings.CaseInsensitiveStringToEnumMap)
     {
     }
 
@@ -157,6 +159,7 @@ internal sealed class MappaUserSettings
     /// <param name="polymorphicMapMethodWithMatchingDefaultAttribute">Enable or disable the support for <see cref="MappaTypeMappingDefaultBehavior.MapSourceType"/> when picking up a polymorphic method.</param>
     /// <param name="forceCaseInsensitivePropertyMap">Enable or disable case-insensitive matching when pairing a target member with a source property by name.</param>
     /// <param name="ignoreUnderscoreForPropertyMap">Enable or disable ignoring underscore characters when pairing a target member with a source property by name.</param>
+    /// <param name="caseInsensitiveStringToEnumMap">Enable or disable case-insensitive matching when mapping from <see cref="string"/> to an enum.</param>
     private MappaUserSettings(
         string? dateTimeFormat,
         string? dateTimeOffsetFormat,
@@ -200,7 +203,8 @@ internal sealed class MappaUserSettings
         BooleanSetting containerCapacityConstructors,
         BooleanSetting polymorphicMapMethodWithMatchingDefaultAttribute,
         BooleanSetting forceCaseInsensitivePropertyMap,
-        BooleanSetting ignoreUnderscoreForPropertyMap)
+        BooleanSetting ignoreUnderscoreForPropertyMap,
+        BooleanSetting caseInsensitiveStringToEnumMap)
     {
         this.dateTimeFormat = new(dateTimeFormat);
         this.dateTimeOffsetFormat = new(dateTimeOffsetFormat);
@@ -245,6 +249,7 @@ internal sealed class MappaUserSettings
         this.polymorphicMapMethodWithMatchingDefaultAttribute = new(polymorphicMapMethodWithMatchingDefaultAttribute);
         this.forceCaseInsensitivePropertyMap = new(forceCaseInsensitivePropertyMap);
         this.ignoreUnderscoreForPropertyMap = new(ignoreUnderscoreForPropertyMap);
+        this.caseInsensitiveStringToEnumMap = new(caseInsensitiveStringToEnumMap);
     }
 
     /// <inheritdoc />
@@ -376,6 +381,9 @@ internal sealed class MappaUserSettings
     /// <inheritdoc/>
     public BooleanSetting IgnoreUnderscoreForPropertyMap => this.ignoreUnderscoreForPropertyMap;
 
+    /// <inheritdoc/>
+    public BooleanSetting CaseInsensitiveStringToEnumMap => this.caseInsensitiveStringToEnumMap;
+
     /// <summary>
     /// Push the changes required by the <paramref name="mappaSettingsAttribute"/> on the stack.
     /// If <paramref name="mappaSettingsAttribute"/> is <c>null</c>
@@ -436,6 +444,7 @@ internal sealed class MappaUserSettings
             this.polymorphicMapMethodWithMatchingDefaultAttribute.Apply(mappaSettingsAttribute.PolymorphicMapMethodWithMatchingDefaultAttribute is not BooleanSetting.Undefined ? mappaSettingsAttribute.PolymorphicMapMethodWithMatchingDefaultAttribute : this.polymorphicMapMethodWithMatchingDefaultAttribute),
             this.forceCaseInsensitivePropertyMap.Apply(mappaSettingsAttribute.ForceCaseInsensitivePropertyMap is not BooleanSetting.Undefined ? mappaSettingsAttribute.ForceCaseInsensitivePropertyMap : this.forceCaseInsensitivePropertyMap),
             this.ignoreUnderscoreForPropertyMap.Apply(mappaSettingsAttribute.IgnoreUnderscoreForPropertyMap is not BooleanSetting.Undefined ? mappaSettingsAttribute.IgnoreUnderscoreForPropertyMap : this.ignoreUnderscoreForPropertyMap),
+            this.caseInsensitiveStringToEnumMap.Apply(mappaSettingsAttribute.CaseInsensitiveStringToEnumMap is not BooleanSetting.Undefined ? mappaSettingsAttribute.CaseInsensitiveStringToEnumMap : this.caseInsensitiveStringToEnumMap),
  #pragma warning restore CA2000
         ]);
     }

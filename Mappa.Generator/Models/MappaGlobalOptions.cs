@@ -195,6 +195,10 @@ namespace Mappa.Generator.Models;
 ///         <term><c>mappa.ignoreunderscoreforpropertymap</c></term>
 ///         <description>Set the default value to enable or disable ignoring underscore characters when pairing a target property or constructor parameter with a source property by name.</description>
 ///     </item>
+///     <item>
+///         <term><c>mappa.caseinsensitivestringtoenummap</c></term>
+///         <description>Set the default value to enable or disable case-insensitive matching when mapping from <see cref="string"/> to an enum.</description>
+///     </item>
 /// </list>
 /// </summary>
 internal sealed class MappaGlobalOptions
@@ -246,6 +250,7 @@ internal sealed class MappaGlobalOptions
     private const string MappaSettingsPolymorphicMapMethodWithMatchingDefaultAttribute = "polymorphicmapmethodwithmatchingdefaultattribute";
     private const string MappaSettingsForceCaseInsensitivePropertyMap = "forcecaseinsensitivepropertymap";
     private const string MappaSettingsIgnoreUnderscoreForPropertyMap = "ignoreunderscoreforpropertymap";
+    private const string MappaSettingsCaseInsensitiveStringToEnumMap = "caseinsensitivestringtoenummap";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaGlobalOptions"/> class.
@@ -384,6 +389,10 @@ internal sealed class MappaGlobalOptions
 
         this.IgnoreUnderscoreForPropertyMap = options.TryGetValue(GetOptionName(MappaSettingsIgnoreUnderscoreForPropertyMap), out var ignoreUnderscoreForPropertyMap)
             ? GetBooleanSettingFromString(ignoreUnderscoreForPropertyMap)
+            : BooleanSetting.Undefined;
+
+        this.CaseInsensitiveStringToEnumMap = options.TryGetValue(GetOptionName(MappaSettingsCaseInsensitiveStringToEnumMap), out var caseInsensitiveStringToEnumMap)
+            ? GetBooleanSettingFromString(caseInsensitiveStringToEnumMap)
             : BooleanSetting.Undefined;
 
         static CultureInfoSetting GetCultureInfoSettingsFromString(string cultureInfoSettings)
@@ -591,6 +600,9 @@ internal sealed class MappaGlobalOptions
 
     /// <inheritdoc/>
     public BooleanSetting IgnoreUnderscoreForPropertyMap { get; }
+
+    /// <inheritdoc/>
+    public BooleanSetting CaseInsensitiveStringToEnumMap { get; }
 
     /// <summary>
     /// Gets a value indicating whether to report debug INFO diagnostics.
