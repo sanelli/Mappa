@@ -16,13 +16,13 @@ public sealed class PropertyMapNameSettingsIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {
     /// <summary>
-    /// Test case-insensitive property mapping with <see cref="MappaSettingsAttribute.ForceCaseInsensitivePropertyMap"/>
+    /// Test case-insensitive property mapping with <see cref="MappaSettingsAttribute.CaseInsensitivePropertyMap"/>
     /// enabled on the mapper class.
     /// </summary>
     /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
-    public async Task CanMapUsingEmptyConstructorWhenForceCaseInsensitivePropertyMapIsEnabledOnClass()
+    public async Task CanMapUsingEmptyConstructorWhenCaseInsensitivePropertyMapIsEnabledOnClass()
     {
         // Arrange
         const string sourceCode = """
@@ -42,7 +42,7 @@ public sealed class PropertyMapNameSettingsIntegrationTests
                                   }
 
                                   [Mappa]
-                                  [MappaSettings(ForceCaseInsensitivePropertyMap = BooleanSetting.Enable)]
+                                  [MappaSettings(CaseInsensitivePropertyMap = BooleanSetting.Enable)]
                                   public sealed partial class Mapper
                                   {
                                       public partial Target Map(Source input);
@@ -92,13 +92,13 @@ public sealed class PropertyMapNameSettingsIntegrationTests
     }
 
     /// <summary>
-    /// Test case-insensitive property mapping with <see cref="MappaSettingsAttribute.ForceCaseInsensitivePropertyMap"/>
+    /// Test case-insensitive property mapping with <see cref="MappaSettingsAttribute.CaseInsensitivePropertyMap"/>
     /// enabled on the map method.
     /// </summary>
     /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
-    public async Task CanMapUsingEmptyConstructorWhenForceCaseInsensitivePropertyMapIsEnabledOnMethod()
+    public async Task CanMapUsingEmptyConstructorWhenCaseInsensitivePropertyMapIsEnabledOnMethod()
     {
         // Arrange
         const string sourceCode = """
@@ -120,7 +120,7 @@ public sealed class PropertyMapNameSettingsIntegrationTests
                                   [Mappa]
                                   public sealed partial class Mapper
                                   {
-                                      [MappaSettings(ForceCaseInsensitivePropertyMap = BooleanSetting.Enable)]
+                                      [MappaSettings(CaseInsensitivePropertyMap = BooleanSetting.Enable)]
                                       public partial Target Map(Source input);
                                   }
                                   #nullable restore
@@ -168,12 +168,12 @@ public sealed class PropertyMapNameSettingsIntegrationTests
     }
 
     /// <summary>
-    /// Test method-level <see cref="MappaSettingsAttribute.ForceCaseInsensitivePropertyMap"/> overrides class-level disable.
+    /// Test method-level <see cref="MappaSettingsAttribute.CaseInsensitivePropertyMap"/> overrides class-level disable.
     /// </summary>
     /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
-    public async Task CanMapUsingEmptyConstructorWhenForceCaseInsensitivePropertyMapIsDisabledOnClassButEnabledOnMethod()
+    public async Task CanMapUsingEmptyConstructorWhenCaseInsensitivePropertyMapIsDisabledOnClassButEnabledOnMethod()
     {
         // Arrange
         const string sourceCode = """
@@ -193,10 +193,10 @@ public sealed class PropertyMapNameSettingsIntegrationTests
                                   }
 
                                   [Mappa]
-                                  [MappaSettings(ForceCaseInsensitivePropertyMap = BooleanSetting.Disable)]
+                                  [MappaSettings(CaseInsensitivePropertyMap = BooleanSetting.Disable)]
                                   public sealed partial class Mapper
                                   {
-                                      [MappaSettings(ForceCaseInsensitivePropertyMap = BooleanSetting.Enable)]
+                                      [MappaSettings(CaseInsensitivePropertyMap = BooleanSetting.Enable)]
                                       public partial Target Map(Source input);
                                   }
                                   #nullable restore
@@ -244,12 +244,12 @@ public sealed class PropertyMapNameSettingsIntegrationTests
     }
 
     /// <summary>
-    /// Test method-level <see cref="MappaSettingsAttribute.ForceCaseInsensitivePropertyMap"/> overrides class-level enable.
+    /// Test method-level <see cref="MappaSettingsAttribute.CaseInsensitivePropertyMap"/> overrides class-level enable.
     /// </summary>
     /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
-    public async Task CannotMapUsingEmptyConstructorWhenForceCaseInsensitivePropertyMapIsEnabledOnClassButDisabledOnMethod()
+    public async Task CannotMapUsingEmptyConstructorWhenCaseInsensitivePropertyMapIsEnabledOnClassButDisabledOnMethod()
     {
         // Arrange
         const string sourceCode = """
@@ -271,10 +271,10 @@ public sealed class PropertyMapNameSettingsIntegrationTests
                                   }
 
                                   [Mappa]
-                                  [MappaSettings(ForceCaseInsensitivePropertyMap = BooleanSetting.Enable)]
+                                  [MappaSettings(CaseInsensitivePropertyMap = BooleanSetting.Enable)]
                                   public sealed partial class Mapper
                                   {
-                                      [MappaSettings(ForceCaseInsensitivePropertyMap = BooleanSetting.Disable)]
+                                      [MappaSettings(CaseInsensitivePropertyMap = BooleanSetting.Disable)]
                                       public partial Target Map(Source input);
                                   }
                                   #nullable restore
@@ -422,7 +422,7 @@ public sealed class PropertyMapNameSettingsIntegrationTests
                                   public sealed partial class Mapper
                                   {
                                       [MappaSettings(
-                                          ForceCaseInsensitivePropertyMap = BooleanSetting.Enable,
+                                          CaseInsensitivePropertyMap = BooleanSetting.Enable,
                                           IgnoreUnderscoreForPropertyMap = BooleanSetting.Enable)]
                                       public partial Target Map(Source input);
                                   }
@@ -611,7 +611,88 @@ public sealed class PropertyMapNameSettingsIntegrationTests
     /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
-    public async Task CanMapUsingEmptyConstructorWhenForceCaseInsensitivePropertyMapIsEnabledInEditorConfig()
+    public async Task CanMapUsingEmptyConstructorWhenCaseInsensitivePropertyMapIsEnabledInEditorConfig()
+    {
+        // Arrange
+        const string editorConfig = """
+                                    root = true
+
+                                    [*.cs]
+                                    mappa.caseinsensitivepropertymap = enable
+                                    """;
+
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class Source
+                                  {
+                                      public int propertya { get; set; }
+                                  }
+
+                                  public class Target
+                                  {
+                                      public string PropertyA { get; set; }
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial Target Map(Source input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, editorConfig, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                NullableAnnotation.NotAnnotated,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(4)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(int).ToString(),
+                                "__mappa_tmp_1",
+                                initializationAssertions => initializationAssertions.BeMemberAccessExpressionSyntax("input.propertya")))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(string).ToString(),
+                                "__mappa_tmp_2",
+                                initializationAssertions => initializationAssertions.BeInvocationExpressionSyntax($"__mappa_tmp_1.{nameof(this.ToString)}")))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                "__mappa_tmp_3",
+                                initializationAssertions =>
+                                    initializationAssertions.BeObjectCreationExpressionSyntax(
+                                        "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                        ("PropertyA", initAssertions => initAssertions.BeIdentifierNameSyntax("__mappa_tmp_2")))))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_3")));
+                });
+    }
+
+    /// <summary>
+    /// Test case-insensitive property mapping configured via legacy <c>mappa.forcecaseinsensitivepropertymap</c> in <c>.editorconfig</c>.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapUsingEmptyConstructorWhenLegacyForceCaseInsensitivePropertyMapIsEnabledInEditorConfig()
     {
         // Arrange
         const string editorConfig = """
@@ -759,7 +840,7 @@ public sealed class PropertyMapNameSettingsIntegrationTests
 
                                   [Mappa]
                                   [MappaSettings(
-                                      ForceCaseInsensitivePropertyMap = BooleanSetting.Enable,
+                                      CaseInsensitivePropertyMap = BooleanSetting.Enable,
                                       IgnoreUnderscoreForPropertyMap = BooleanSetting.Enable)]
                                   public sealed partial class Mapper
                                   {
@@ -808,7 +889,7 @@ public sealed class PropertyMapNameSettingsIntegrationTests
 
                                   [Mappa]
                                   [MappaSettings(
-                                      ForceCaseInsensitivePropertyMap = BooleanSetting.Enable,
+                                      CaseInsensitivePropertyMap = BooleanSetting.Enable,
                                       IgnoreUnderscoreForPropertyMap = BooleanSetting.Enable)]
                                   public sealed partial class Mapper
                                   {
@@ -885,7 +966,7 @@ public sealed class PropertyMapNameSettingsIntegrationTests
                                   }
 
                                   [Mappa]
-                                  [MappaSettings(ForceCaseInsensitivePropertyMap = BooleanSetting.Enable)]
+                                  [MappaSettings(CaseInsensitivePropertyMap = BooleanSetting.Enable)]
                                   public sealed partial class Mapper
                                   {
                                       [MappaUseProperty(nameof(Target.PropertyA), "foo")]
@@ -987,19 +1068,19 @@ public sealed class PropertyMapNameSettingsIntegrationTests
     }
 
     /// <summary>
-    /// Test class-level <see cref="MappaSettingsAttribute.ForceCaseInsensitivePropertyMap"/> disable overrides
+    /// Test class-level <see cref="MappaSettingsAttribute.CaseInsensitivePropertyMap"/> disable overrides
     /// enable defined in <c>.editorconfig</c>.
     /// </summary>
     /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
-    public async Task CannotMapUsingEmptyConstructorWhenForceCaseInsensitivePropertyMapIsEnabledInEditorConfigButDisabledOnClass()
+    public async Task CannotMapUsingEmptyConstructorWhenCaseInsensitivePropertyMapIsEnabledInEditorConfigButDisabledOnClass()
     {
         const string editorConfig = """
                                     root = true
 
                                     [*.cs]
-                                    mappa.forcecaseinsensitivepropertymap = enable
+                                    mappa.caseinsensitivepropertymap = enable
                                     """;
 
         const string sourceCode = """
@@ -1021,7 +1102,7 @@ public sealed class PropertyMapNameSettingsIntegrationTests
                                   }
 
                                   [Mappa]
-                                  [MappaSettings(ForceCaseInsensitivePropertyMap = BooleanSetting.Disable)]
+                                  [MappaSettings(CaseInsensitivePropertyMap = BooleanSetting.Disable)]
                                   public sealed partial class Mapper
                                   {
                                       public partial Target Map(Source input);

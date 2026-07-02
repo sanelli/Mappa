@@ -30,7 +30,7 @@ See the [tutorial](../Documentation/tutorial.md) for a guided introduction, or b
 |--------|--------------|
 | [`InvokeParseMapper.cs`](InvokeParseMapper.cs) | Parse settings: culture and format for date/time, `Guid`, and numeric types |
 | [`InvokeToStringMapper.cs`](InvokeToStringMapper.cs) | ToString settings: culture and format |
-| [`PropertyMapNameSettingsMapper.cs`](PropertyMapNameSettingsMapper.cs) | `ForceCaseInsensitivePropertyMap`, `IgnoreUnderscoreForPropertyMap` |
+| [`PropertyMapNameSettingsMapper.cs`](PropertyMapNameSettingsMapper.cs) | `CaseInsensitivePropertyMap`, `IgnoreUnderscoreForPropertyMap` |
 | [`CaseInsensitiveStringToEnumMapper.cs`](CaseInsensitiveStringToEnumMapper.cs) | `CaseInsensitiveStringToEnumMap` |
 | [`PragmaWarningSettingMapper.cs`](PragmaWarningSettingMapper.cs) | `PragmaWarning` |
 | [`FastCollectionToCollectionMapper.cs`](FastCollectionToCollectionMapper.cs) | `FastCollections` |

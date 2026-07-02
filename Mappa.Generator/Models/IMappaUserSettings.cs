@@ -236,7 +236,7 @@ internal interface IMappaUserSettings
     /// case-insensitively when pairing a target property or constructor parameter
     /// with a source property by name.
     /// </summary>
-    BooleanSetting ForceCaseInsensitivePropertyMap { get; }
+    BooleanSetting CaseInsensitivePropertyMap { get; }
 
     /// <summary>
     /// Gets a value indicating whether underscore characters are ignored
