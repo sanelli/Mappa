@@ -212,4 +212,9 @@ internal enum MappaDiagnosticsKind
     /// A <see cref="MappaSettingsAttribute"/> style property has an integer value that is not a valid enum combination.
     /// </summary>
     InvalidMappaSettingsStyleValue,
+
+    /// <summary>
+    /// Not all source enum members can be mapped to the target enum by member name.
+    /// </summary>
+    NotAllSourceEnumMembersCanBeMapped,
 }

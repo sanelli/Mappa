@@ -38,9 +38,7 @@ internal sealed class EnumToEnumMapStrategyBuilder
         builder.AppendLine($"switch ({source})");
         using (builder.CurlyBracesBlock())
         {
-            var sourceEnumNames = new HashSet<string>(this.strategy.SourceType.GetEnumValues().Select(enumValue => enumValue.Name));
-            var targetEnumNames = new HashSet<string>(this.strategy.TargetType.GetEnumValues().Select(enumValue => enumValue.Name));
-            var sharedEnumNames = sourceEnumNames.Intersect(targetEnumNames).OrderBy(enumValue => enumValue).ToArray();
+            var sharedEnumNames = this.strategy.SourceType.GetSharedEnumMemberNamesByName(this.strategy.TargetType);
 
             foreach (var enumName in sharedEnumNames)
             {

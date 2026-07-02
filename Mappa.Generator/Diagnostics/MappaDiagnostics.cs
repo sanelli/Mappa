@@ -637,4 +637,24 @@ internal static class MappaDiagnostics
             propertyName,
             value,
             enumTypeName);
+
+    /// <summary>
+    /// Diagnostic to report that not all source enum members can be mapped to the target enum by name.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="sourceEnumTypeName">The display name of the source enum type.</param>
+    /// <param name="targetEnumTypeName">The display name of the target enum type.</param>
+    /// <param name="unmappedMemberNames">The formatted list of unmapped source enum member names.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic NotAllSourceEnumMembersCanBeMapped(
+        MethodDeclarationSyntax? methodDeclarationSyntax,
+        string sourceEnumTypeName,
+        string targetEnumTypeName,
+        string unmappedMemberNames)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.NotAllSourceEnumMembersCanBeMapped,
+            methodDeclarationSyntax?.GetLocation(),
+            sourceEnumTypeName,
+            targetEnumTypeName,
+            unmappedMemberNames);
 }

@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Extensions;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
@@ -76,13 +77,30 @@ internal sealed class EnumMapStrategyDetector
         else if (this.CanMapEnumToEnum())
         {
             // TODO [#18] Allow to map the source enum to the target enum using numeric values instead than their name.
-            // TODO [#19] Allow to fail the map from the source enum to the target enum if not all values can be mapped.
             mapStrategy = new EnumToEnumMapStrategy(
                 this.context.TargetType,
                 this.context.SourceType);
+            this.ReportUnmappedSourceEnumMembersIfAny();
         }
 
         return mapStrategy is not NoMapStrategy;
+    }
+
+    private void ReportUnmappedSourceEnumMembersIfAny()
+    {
+        var unmappedMemberNames = this.context.SourceType.GetUnmappedEnumMemberNamesByName(this.context.TargetType);
+        if (unmappedMemberNames.Length == 0)
+        {
+            return;
+        }
+
+        var formattedUnmappedMemberNames = string.Join(", ", unmappedMemberNames.Select(name => $"'{name}'"));
+        this.context.ReportDiagnostic(
+            MappaDiagnostics.NotAllSourceEnumMembersCanBeMapped(
+                this.context.GetRootMapMethod().MethodDeclarationSyntax,
+                this.context.SourceType.ToDisplayString(),
+                this.context.TargetType.ToDisplayString(),
+                formattedUnmappedMemberNames));
     }
 
     private bool CanMapEnumToString()
