@@ -151,7 +151,7 @@ internal sealed class ConstructorMapStrategyDetector
                                 PropertyMapNameMatcher.TryFindSourceProperty(
                                     sourceProperties,
                                     expectedSourcePropertyName,
-                                    this.context.MappaUserSettings.ForceCaseInsensitivePropertyMap,
+                                    this.context.MappaUserSettings.CaseInsensitivePropertyMap,
                                     this.context.MappaUserSettings.IgnoreUnderscoreForPropertyMap,
                                     isConstructorParameterPath: true,
                                     useExactNameFromAttribute,
@@ -433,7 +433,7 @@ internal sealed class ConstructorMapStrategyDetector
                             PropertyMapNameMatcher.TryFindSourceProperty(
                                 sourceProperties,
                                 expectedSourcePropertyName,
-                                this.context.MappaUserSettings.ForceCaseInsensitivePropertyMap,
+                                this.context.MappaUserSettings.CaseInsensitivePropertyMap,
                                 this.context.MappaUserSettings.IgnoreUnderscoreForPropertyMap,
                                 isConstructorParameterPath: false,
                                 useExactNameFromAttribute,
@@ -950,7 +950,7 @@ internal sealed class ConstructorMapStrategyDetector
         PropertyMapNameMatcher.TryFindSourceProperty(
             sourceProperties,
             sourcePropertyName,
-            this.context.MappaUserSettings.ForceCaseInsensitivePropertyMap,
+            this.context.MappaUserSettings.CaseInsensitivePropertyMap,
             this.context.MappaUserSettings.IgnoreUnderscoreForPropertyMap,
             isConstructorParameterPath,
             useExactNameFromAttribute: true,

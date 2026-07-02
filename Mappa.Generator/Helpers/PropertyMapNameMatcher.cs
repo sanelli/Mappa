@@ -16,7 +16,7 @@ internal static class PropertyMapNameMatcher
     /// </summary>
     /// <param name="sourceProperties">The source properties.</param>
     /// <param name="expectedName">The expected source property name.</param>
-    /// <param name="forceCaseInsensitivePropertyMap">The case-insensitive matching setting.</param>
+    /// <param name="caseInsensitivePropertyMap">The case-insensitive matching setting.</param>
     /// <param name="ignoreUnderscoreForPropertyMap">The ignore-underscore matching setting.</param>
     /// <param name="isConstructorParameterPath">Whether the match is for a constructor parameter.</param>
     /// <param name="useExactNameFromAttribute">Whether an explicit source property name was provided.</param>
@@ -25,7 +25,7 @@ internal static class PropertyMapNameMatcher
     internal static bool TryFindSourceProperty(
         IReadOnlyList<IPropertySymbol> sourceProperties,
         string expectedName,
-        BooleanSetting forceCaseInsensitivePropertyMap,
+        BooleanSetting caseInsensitivePropertyMap,
         BooleanSetting ignoreUnderscoreForPropertyMap,
         bool isConstructorParameterPath,
         bool useExactNameFromAttribute,
@@ -40,7 +40,7 @@ internal static class PropertyMapNameMatcher
             if (!NamesMatch(
                     expectedName,
                     property.Name,
-                    forceCaseInsensitivePropertyMap,
+                    caseInsensitivePropertyMap,
                     ignoreUnderscoreForPropertyMap,
                     isConstructorParameterPath,
                     useExactNameFromAttribute))
@@ -65,7 +65,7 @@ internal static class PropertyMapNameMatcher
     private static bool NamesMatch(
         string expectedName,
         string actualName,
-        BooleanSetting forceCaseInsensitivePropertyMap,
+        BooleanSetting caseInsensitivePropertyMap,
         BooleanSetting ignoreUnderscoreForPropertyMap,
         bool isConstructorParameterPath,
         bool useExactNameFromAttribute)
@@ -77,7 +77,7 @@ internal static class PropertyMapNameMatcher
 
         var normalizedExpected = Normalize(expectedName, ignoreUnderscoreForPropertyMap);
         var normalizedActual = Normalize(actualName, ignoreUnderscoreForPropertyMap);
-        var comparison = GetComparison(forceCaseInsensitivePropertyMap, isConstructorParameterPath);
+        var comparison = GetComparison(caseInsensitivePropertyMap, isConstructorParameterPath);
         return normalizedExpected.Equals(normalizedActual, comparison);
     }
 
@@ -86,8 +86,8 @@ internal static class PropertyMapNameMatcher
             ? name.Replace("_", string.Empty)
             : name;
 
-    private static StringComparison GetComparison(BooleanSetting forceCaseInsensitivePropertyMap, bool isConstructorParameterPath)
-        => forceCaseInsensitivePropertyMap is BooleanSetting.Enable || isConstructorParameterPath
+    private static StringComparison GetComparison(BooleanSetting caseInsensitivePropertyMap, bool isConstructorParameterPath)
+        => caseInsensitivePropertyMap is BooleanSetting.Enable || isConstructorParameterPath
             ? StringComparison.OrdinalIgnoreCase
             : StringComparison.Ordinal;
 }

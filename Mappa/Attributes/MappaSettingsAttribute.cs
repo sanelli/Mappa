@@ -271,7 +271,7 @@ public sealed class MappaSettingsAttribute
     /// case-insensitively when pairing a target property or constructor parameter
     /// with a source property by name.
     /// </summary>
-    public BooleanSetting ForceCaseInsensitivePropertyMap { get; set; } = BooleanSetting.Undefined;
+    public BooleanSetting CaseInsensitivePropertyMap { get; set; } = BooleanSetting.Undefined;
 
     /// <summary>
     /// Gets or sets a value indicating whether underscore characters are ignored

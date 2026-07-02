@@ -240,12 +240,12 @@ Numeric format properties (for example `IntFormat`, `DecimalFormat`) apply to `T
 See also: [InvokeParseMapper.cs](../Mappa.Samples/InvokeParseMapper.cs), [InvokeToStringMapper.cs](../Mappa.Samples/InvokeToStringMapper.cs), and [Mappa attributes](./mappa-attributes.md#mappasettings).
 
 ### Property name matching settings
-`ForceCaseInsensitivePropertyMap` and `IgnoreUnderscoreForPropertyMap` change how source and target properties are paired by name during constructor-map mapping:
+`CaseInsensitivePropertyMap` and `IgnoreUnderscoreForPropertyMap` change how source and target properties are paired by name during constructor-map mapping:
 
 ```csharp
 [Mappa]
 [MappaSettings(
-    ForceCaseInsensitivePropertyMap = BooleanSetting.Enable,
+    CaseInsensitivePropertyMap = BooleanSetting.Enable,
     IgnoreUnderscoreForPropertyMap = BooleanSetting.Enable)]
 public sealed partial class Mapper
 {

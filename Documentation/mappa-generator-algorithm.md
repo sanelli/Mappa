@@ -229,7 +229,7 @@ The constructor strategy has three sub-strategies, tried in order:
     - Each property, constructor argument, or mapping-constructor parameter is mapped and a new instance of `TTarget` is generated;
     - Get-only dictionary or collection properties for which a mapper exists are filled with mapped values from the corresponding source;
 - _Notes_:
-    - **Empty-constructor path**: property name matching is case-sensitive by default, configurable via `ForceCaseInsensitivePropertyMap` and `IgnoreUnderscoreForPropertyMap` in `MappaSettings`;
+    - **Empty-constructor path**: property name matching is case-sensitive by default, configurable via `CaseInsensitivePropertyMap` and `IgnoreUnderscoreForPropertyMap` in `MappaSettings`;
     - **Parameterized-constructor path**: constructor parameter names are matched to source properties case-insensitively by default, with optional underscore-insensitive matching via `IgnoreUnderscoreForPropertyMap`;
     - Explicit interface implementation is supported for get-only dictionary and collection properties;
     - Get-only `Stack<T>`, `Queue<T>`, `ConcurrentStack<T>`, `ConcurrentQueue<T>`, `ConcurrentBag<T>`, and `BlockingCollection<T>` properties are filled post-construction using `Push`, `Enqueue`, or `Add` respectively;

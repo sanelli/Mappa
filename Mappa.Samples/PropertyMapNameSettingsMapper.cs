@@ -12,7 +12,7 @@ namespace Mappa.Samples;
 /// </summary>
 [Mappa]
 [MappaSettings(
-    ForceCaseInsensitivePropertyMap = BooleanSetting.Enable,
+    CaseInsensitivePropertyMap = BooleanSetting.Enable,
     IgnoreUnderscoreForPropertyMap = BooleanSetting.Enable)]
 public sealed partial class PropertyMapNameSettingsMapper
 {

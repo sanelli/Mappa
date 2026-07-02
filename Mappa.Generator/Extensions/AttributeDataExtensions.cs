@@ -439,8 +439,8 @@ internal static class AttributeDataExtensions
                     attribute.PolymorphicMapMethodWithMatchingDefaultAttribute = (BooleanSetting)value;
                     break;
 
-                case nameof(MappaSettingsAttribute.ForceCaseInsensitivePropertyMap) when namedArgument.Value.Value is int value:
-                    attribute.ForceCaseInsensitivePropertyMap = (BooleanSetting)value;
+                case nameof(MappaSettingsAttribute.CaseInsensitivePropertyMap) when namedArgument.Value.Value is int value:
+                    attribute.CaseInsensitivePropertyMap = (BooleanSetting)value;
                     break;
 
                 case nameof(MappaSettingsAttribute.IgnoreUnderscoreForPropertyMap) when namedArgument.Value.Value is int value:
