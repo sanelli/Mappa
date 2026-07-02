@@ -116,6 +116,7 @@ When no existing method applies (or for root methods), `TypeMapIdentifierAlgorit
     - `TSource` is a `string` and `TTarget` is an `enum`;
 - _What_:
     - **Enum → enum** and **enum → string**: a `switch` statement maps by shared enum member names;
+    - When mapping **enum → enum** by shared member names, if at least one source enum member has no matching name in the target enum, the generator reports warning **MP00039** and continues code generation; unmapped source values throw `ArgumentOutOfRangeException` at runtime;
     - **Enum → integral**: maps enum members to their underlying integral values;
     - **Integral → enum**: maps integral values (cast to the enum underlying type) to enum members;
     - **String → enum**: maps string input to enum members by name (handled by the enum strategy, not the string strategy, because the enum detector runs first);

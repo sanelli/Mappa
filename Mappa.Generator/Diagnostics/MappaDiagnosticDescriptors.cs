@@ -52,6 +52,7 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? cannotUseMappaAssignToContextAttributeWithoutContextParameter;
     private static DiagnosticDescriptor? multipleMappaAssignToContextAttributesUseTheSameContextKey;
     private static DiagnosticDescriptor? invalidMappaSettingsStyleValue;
+    private static DiagnosticDescriptor? notAllSourceEnumMembersCanBeMapped;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -356,6 +357,14 @@ internal static class MappaDiagnosticDescriptors
         => invalidMappaSettingsStyleValue ??= BuildWarning(
             MappaDiagnosticsKind.InvalidMappaSettingsStyleValue,
             DiagnosticsResources.InvalidMappaSettingsStyleValue);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.NotAllSourceEnumMembersCanBeMapped"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor NotAllSourceEnumMembersCanBeMapped
+        => notAllSourceEnumMembersCanBeMapped ??= BuildWarning(
+            MappaDiagnosticsKind.NotAllSourceEnumMembersCanBeMapped,
+            DiagnosticsResources.NotAllSourceEnumMembersCanBeMapped);
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(

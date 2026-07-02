@@ -915,6 +915,30 @@ internal static class TypeSymbolExtensions
     }
 
     /// <summary>
+    /// Gets the enum member names shared by source and target enums when mapping by member name.
+    /// </summary>
+    /// <param name="sourceType">The source enum type.</param>
+    /// <param name="targetType">The target enum type.</param>
+    /// <returns>The shared enum member names in ascending order.</returns>
+    internal static string[] GetSharedEnumMemberNamesByName(this ITypeSymbol sourceType, ITypeSymbol targetType)
+        => sourceType.GetEnumValues().Select(enumValue => enumValue.Name)
+            .Intersect(targetType.GetEnumValues().Select(enumValue => enumValue.Name))
+            .OrderBy(name => name)
+            .ToArray();
+
+    /// <summary>
+    /// Gets the source enum member names that have no matching name in the target enum.
+    /// </summary>
+    /// <param name="sourceType">The source enum type.</param>
+    /// <param name="targetType">The target enum type.</param>
+    /// <returns>The unmapped source enum member names in ascending order.</returns>
+    internal static string[] GetUnmappedEnumMemberNamesByName(this ITypeSymbol sourceType, ITypeSymbol targetType)
+        => sourceType.GetEnumValues().Select(enumValue => enumValue.Name)
+            .Except(targetType.GetEnumValues().Select(enumValue => enumValue.Name))
+            .OrderBy(name => name)
+            .ToArray();
+
+    /// <summary>
     /// Gets the list of accessible constructors for <paramref name="typeSymbol"/>.
     /// </summary>
     /// <param name="typeSymbol">The symbol for which you require the list of constructors.</param>

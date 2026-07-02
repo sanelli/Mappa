@@ -272,5 +272,11 @@ namespace Mappa.Generator.Diagnostics {
                 return ResourceManager.GetString("InvalidMappaSettingsStyleValue", resourceCulture);
             }
         }
+
+        internal static string NotAllSourceEnumMembersCanBeMapped {
+            get {
+                return ResourceManager.GetString("NotAllSourceEnumMembersCanBeMapped", resourceCulture);
+            }
+        }
     }
 }

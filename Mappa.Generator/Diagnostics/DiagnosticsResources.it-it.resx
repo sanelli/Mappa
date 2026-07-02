@@ -125,4 +125,7 @@
     <data name="InvalidMappaSettingsStyleValue" xml:space="preserve">
         <value>MappaSettings.{0} ha il valore '{1}' che non è una combinazione valida di {2}; i bit non riconosciuti verranno ignorati nel codice di parsing generato.</value>
     </data>
+    <data name="NotAllSourceEnumMembersCanBeMapped" xml:space="preserve">
+        <value>Non tutti i membri dell'enum sorgente '{0}' possono essere mappati sull'enum di destinazione '{1}' per nome: {2}. I valori sorgente non mappati generano ArgumentOutOfRangeException a runtime.</value>
+    </data>
 </root>

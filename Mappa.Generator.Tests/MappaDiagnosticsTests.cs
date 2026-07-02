@@ -115,4 +115,23 @@ public sealed class MappaDiagnosticsTests
 
         diagnostic.Location.Should().Be(Location.None);
     }
+
+    /// <summary>
+    /// Test <see cref="MappaDiagnostics.NotAllSourceEnumMembersCanBeMapped"/> accepts a null method declaration.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void NotAllSourceEnumMembersCanBeMappedAcceptsNullMethodDeclaration()
+    {
+        var diagnostic = MappaDiagnostics.NotAllSourceEnumMembersCanBeMapped(
+            null,
+            "Mappa.Generator.Tests.UnitTests.SourceCode.TestSourceEnum",
+            "Mappa.Generator.Tests.UnitTests.SourceCode.TestTargetEnum",
+            "'One'");
+
+        diagnostic.Location.Should().Be(Location.None);
+        diagnostic.GetMessage(CultureInfo.CurrentCulture)
+            .Should()
+            .Be("Not all members of source enum 'Mappa.Generator.Tests.UnitTests.SourceCode.TestSourceEnum' can be mapped to target enum 'Mappa.Generator.Tests.UnitTests.SourceCode.TestTargetEnum' by name: 'One'. Unmapped source values throw ArgumentOutOfRangeException at runtime.");
+    }
 }
