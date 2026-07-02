@@ -446,6 +446,10 @@ internal static class AttributeDataExtensions
                 case nameof(MappaSettingsAttribute.IgnoreUnderscoreForPropertyMap) when namedArgument.Value.Value is int value:
                     attribute.IgnoreUnderscoreForPropertyMap = (BooleanSetting)value;
                     break;
+
+                case nameof(MappaSettingsAttribute.CaseInsensitiveStringToEnumMap) when namedArgument.Value.Value is int value:
+                    attribute.CaseInsensitiveStringToEnumMap = (BooleanSetting)value;
+                    break;
             }
         }
 

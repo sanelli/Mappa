@@ -40,7 +40,8 @@ Via `MappaSettings` the following settings can be tweaked:
 - `ContainerCapacityConstructors`: supports mapping custom containers using (if available) a constructor accepting an integer value representing the initial capacity of the container;
 - `PolymorphicMapMethodWithMatchingDefaultAttribute`: when enabled, `MappaTypeMappingDefault` can be used to locate an appropriate polymorphic method when looking for the mapping between two types;
 - `ForceCaseInsensitivePropertyMap`: when enabled, source property names are matched case-insensitively when pairing a target property or constructor parameter with a source property by name;
-- `IgnoreUnderscoreForPropertyMap`: when enabled, underscore characters are stripped from names before comparing a target property or constructor parameter with a source property by name.
+- `IgnoreUnderscoreForPropertyMap`: when enabled, underscore characters are stripped from names before comparing a target property or constructor parameter with a source property by name;
+- `CaseInsensitiveStringToEnumMap`: when enabled, string values are matched case-insensitively to enum member names when mapping from `string` to an enum.
 
 Via `MappaTypeMappingDefault` the following settings can be tweaked:
 - `Undefined`: this setting should never be used;

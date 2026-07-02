@@ -59,10 +59,10 @@ internal sealed class EnumMapStrategyDetector
         else if (this.CanMapStringToEnum())
         {
             // TODO [#16] Support using the Description attribute when mapping string to enum.
-            // TODO [#17] Support case insensitive mapping from string to enum.
             mapStrategy = new StringToEnumMapStrategy(
                 this.context.TargetType,
-                this.context.SourceType);
+                this.context.SourceType,
+                this.context.MappaUserSettings.CaseInsensitiveStringToEnumMap);
         }
 
         // 04. integral -> enum : IntegralToEnum strategy.

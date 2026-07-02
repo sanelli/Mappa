@@ -255,6 +255,22 @@ public sealed partial class Mapper
 
 See also: [PropertyMapNameSettingsMapper.cs](../Mappa.Samples/PropertyMapNameSettingsMapper.cs).
 
+### String-to-enum matching settings
+`CaseInsensitiveStringToEnumMap` enables case-insensitive matching of string input to enum member names:
+
+```csharp
+[Mappa]
+[MappaSettings(CaseInsensitiveStringToEnumMap = BooleanSetting.Enable)]
+public sealed partial class Mapper
+{
+    public partial MyEnum Map(string input);
+}
+```
+
+With this setting enabled, `"one"`, `"ONE"`, and `"One"` all map to `MyEnum.One`. By default, only the exact member name matches (for example `"One"`).
+
+See also: [CaseInsensitiveStringToEnumMapper.cs](../Mappa.Samples/CaseInsensitiveStringToEnumMapper.cs).
+
 ### MappaInvokeMethod attribute
 When mapping structured types, `[MappaInvokeMethod]` forces a target property or constructor parameter to be mapped by invoking a named method:
 

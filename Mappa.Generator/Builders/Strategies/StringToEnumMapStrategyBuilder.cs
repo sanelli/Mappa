@@ -32,15 +32,20 @@ internal sealed class StringToEnumMapStrategyBuilder
 
         var enumFullName = this.strategy.TargetType.ToDisplayString();
         var temporary = context.NextTemporary();
+        var caseInsensitive = this.strategy.CaseInsensitiveStringToEnumMap is BooleanSetting.Enable;
+        var switchExpression = caseInsensitive ? $"{source}.ToUpperInvariant()" : source;
         builder.AppendLine($"{enumFullName} {temporary};");
-        builder.AppendLine($"switch ({source})");
+        builder.AppendLine($"switch ({switchExpression})");
         using (builder.CurlyBracesBlock())
         {
             var enumValues = this.strategy.TargetType.GetEnumValues();
-            foreach (var enumValue in enumValues)
+            foreach (var enumName in enumValues.Select(enumValue => enumValue.Name))
             {
-                var enumValueFullName = $"{enumFullName}.{enumValue.Name}";
-                builder.AppendLine($"case nameof({enumValueFullName}):");
+                var enumValueFullName = $"{enumFullName}.{enumName}";
+                var caseLabel = caseInsensitive
+                    ? $"\"{enumName.ToUpperInvariant()}\""
+                    : $"nameof({enumValueFullName})";
+                builder.AppendLine($"case {caseLabel}:");
                 using (builder.CurlyBracesBlock())
                 {
                     builder.AppendLine($"{temporary} = {enumValueFullName};");
