@@ -119,9 +119,10 @@ When no existing method applies (or for root methods), `TypeMapIdentifierAlgorit
     - When mapping **enum → enum** by shared member names, if at least one source enum member has no matching name in the target enum, the generator reports warning **MP00039** and continues code generation; unmapped source values throw `ArgumentOutOfRangeException` at runtime;
     - **Enum → integral**: maps enum members to their underlying integral values;
     - **Integral → enum**: maps integral values (cast to the enum underlying type) to enum members;
-    - **String → enum**: maps string input to enum members by name (handled by the enum strategy, not the string strategy, because the enum detector runs first);
+    - **String → enum**: maps string input to enum members by name (handled by the enum strategy, not the string strategy, because the enum detector runs first); when `CaseInsensitiveStringToEnumMap` is enabled in `MappaSettings`, member names are matched case-insensitively via `ToUpperInvariant()`;
 - _Notes_:
-    - The enum detector runs before the general string strategy, so **`string` → `enum`** is handled here rather than by the string strategy.
+    - The enum detector runs before the general string strategy, so **`string` → `enum`** is handled here rather than by the string strategy;
+    - **String → enum** matching is case-sensitive by default; enable `CaseInsensitiveStringToEnumMap` for case-insensitive member name matching.
 
 ### 5. String strategy
 

@@ -18,6 +18,7 @@ internal static class Program
     {
         var report = new AotReport();
         CollectionToCollectionMapperRunner.Run(report);
+        CaseInsensitiveStringToEnumMapperRunner.Run(report);
         ContainersWithCapacityConstructorMapperRunner.Run(report);
         DateAndTimeMapperRunner.Run(report);
         DictionaryToDictionaryMapperRunner.Run(report);
