@@ -10,7 +10,7 @@
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <AnalysisLevel>latest-all</AnalysisLevel>
-        <WarningsNotAsErrors>MP00000;MP00039</WarningsNotAsErrors>
+        <WarningsNotAsErrors>MP00000</WarningsNotAsErrors>
         <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     </PropertyGroup>
 

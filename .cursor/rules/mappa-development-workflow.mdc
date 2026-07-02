@@ -102,6 +102,7 @@ A single feature may require **two** bumps (e.g. one after **Mappa**, one after 
 - Add samples in **Mappa.Samples** after **Mappa.Generator** changes that add features or enhance existing behavior.
 - **Do not** add new samples for bug fixes alone.
 - Before adding samples, ensure the **Mappa.Generator** version bump and rebuild described in **Versioning** has already been done.
+- **Warning suppression:** when a sample intentionally triggers a Mappa analyzer warning (e.g. MP00013, MP00016, MP00039), suppress it with `#pragma warning disable` / `#pragma warning restore` at the method or file level, including a short explanatory comment. Do **not** suppress sample warnings via `WarningsNotAsErrors`, `NoWarn`, or global analyzer config in the `.csproj`. Exception: `MP00000` may remain in `WarningsNotAsErrors` (debug diagnostic infrastructure). See [`InvokeParseMapper.cs`](Mappa.Samples/InvokeParseMapper.cs), [`MappaIgnoreMappers.cs`](Mappa.Samples/MappaIgnoreMappers.cs), and [`EnumToEnumMapper.cs`](Mappa.Samples/EnumToEnumMapper.cs) for examples.
 
 ## Documentation
 
