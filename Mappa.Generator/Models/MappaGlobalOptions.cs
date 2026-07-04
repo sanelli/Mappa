@@ -207,6 +207,10 @@ namespace Mappa.Generator.Models;
 ///         <term><c>mappa.enumtoenummapsetting</c></term>
 ///         <description>Set the default enum-to-enum member pairing mode. Valid values are the values of the <see cref="EnumToEnumMapSetting"/> <c>enum</c>.</description>
 ///     </item>
+///     <item>
+///         <term><c>mappa.identitymapdeepcopy</c></term>
+///         <description>Set the default identity deep copy mode. Valid values are the values of the <see cref="IdentityMapDeepCopySetting"/> <c>enum</c>.</description>
+///     </item>
 /// </list>
 /// </summary>
 internal sealed class MappaGlobalOptions
@@ -261,6 +265,7 @@ internal sealed class MappaGlobalOptions
     private const string MappaSettingsCaseInsensitiveEnumMap = "caseinsensitiveenummap";
     private const string MappaSettingsEnumStringMapSetting = "enumstringmapsetting";
     private const string MappaSettingsEnumToEnumMapSetting = "enumtoenummapsetting";
+    private const string MappaSettingsIdentityMapDeepCopy = "identitymapdeepcopy";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaGlobalOptions"/> class.
@@ -413,6 +418,10 @@ internal sealed class MappaGlobalOptions
             ? GetEnumToEnumMapSettingFromString(enumToEnumMapSetting)
             : EnumToEnumMapSetting.MemberName;
 
+        this.IdentityMapDeepCopy = options.TryGetValue(GetOptionName(MappaSettingsIdentityMapDeepCopy), out var identityMapDeepCopy)
+            ? GetIdentityMapDeepCopySettingFromString(identityMapDeepCopy)
+            : IdentityMapDeepCopySetting.ShallowCopy;
+
         static CultureInfoSetting GetCultureInfoSettingsFromString(string cultureInfoSettings)
         {
             if (cultureInfoSettings.Equals(nameof(CultureInfoSetting.CurrentCulture), StringComparison.OrdinalIgnoreCase))
@@ -486,6 +495,26 @@ internal sealed class MappaGlobalOptions
             }
 
             return EnumStringMapSetting.MemberName;
+        }
+
+        static IdentityMapDeepCopySetting GetIdentityMapDeepCopySettingFromString(string identityMapDeepCopyValue)
+        {
+            if (identityMapDeepCopyValue.Equals(nameof(IdentityMapDeepCopySetting.DeepCopy), StringComparison.OrdinalIgnoreCase))
+            {
+                return IdentityMapDeepCopySetting.DeepCopy;
+            }
+
+            if (identityMapDeepCopyValue.Equals(nameof(IdentityMapDeepCopySetting.NestedDeepCopy), StringComparison.OrdinalIgnoreCase))
+            {
+                return IdentityMapDeepCopySetting.NestedDeepCopy;
+            }
+
+            if (identityMapDeepCopyValue.Equals(nameof(IdentityMapDeepCopySetting.Undefined), StringComparison.OrdinalIgnoreCase))
+            {
+                return IdentityMapDeepCopySetting.Undefined;
+            }
+
+            return IdentityMapDeepCopySetting.ShallowCopy;
         }
 
         static PragmaWarningSetting GetPragmaWarningSettingFromString(string enableSettings)
@@ -662,6 +691,9 @@ internal sealed class MappaGlobalOptions
 
     /// <inheritdoc/>
     public EnumToEnumMapSetting EnumToEnumMapSetting { get; }
+
+    /// <inheritdoc/>
+    public IdentityMapDeepCopySetting IdentityMapDeepCopy { get; }
 
     /// <summary>
     /// Gets a value indicating whether to report debug INFO diagnostics.

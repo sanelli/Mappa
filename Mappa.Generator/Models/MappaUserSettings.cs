@@ -61,6 +61,7 @@ internal sealed class MappaUserSettings
     private readonly StackSetting<BooleanSetting> caseInsensitiveEnumMap;
     private readonly StackSetting<EnumStringMapSetting> enumStringMapSetting;
     private readonly StackSetting<EnumToEnumMapSetting> enumToEnumMapSetting;
+    private readonly StackSetting<IdentityMapDeepCopySetting> identityMapDeepCopy;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaUserSettings"/> class.
@@ -113,7 +114,8 @@ internal sealed class MappaUserSettings
             otherSettings.IgnoreUnderscoreForPropertyMap,
             otherSettings.CaseInsensitiveEnumMap,
             otherSettings.EnumStringMapSetting,
-            otherSettings.EnumToEnumMapSetting)
+            otherSettings.EnumToEnumMapSetting,
+            otherSettings.IdentityMapDeepCopy)
     {
     }
 
@@ -166,6 +168,7 @@ internal sealed class MappaUserSettings
     /// <param name="caseInsensitiveEnumMap">Enable or disable case-insensitive matching when mapping enum members or string values to enums.</param>
     /// <param name="enumStringMapSetting">Defines how enum members are paired with string values.</param>
     /// <param name="enumToEnumMapSetting">Defines how enum members are paired when mapping from one enum to another enum.</param>
+    /// <param name="identityMapDeepCopy">Defines how identity mappings copy a type to itself.</param>
     private MappaUserSettings(
         string? dateTimeFormat,
         string? dateTimeOffsetFormat,
@@ -212,7 +215,8 @@ internal sealed class MappaUserSettings
         BooleanSetting ignoreUnderscoreForPropertyMap,
         BooleanSetting caseInsensitiveEnumMap,
         EnumStringMapSetting enumStringMapSetting,
-        EnumToEnumMapSetting enumToEnumMapSetting)
+        EnumToEnumMapSetting enumToEnumMapSetting,
+        IdentityMapDeepCopySetting identityMapDeepCopy)
     {
         this.dateTimeFormat = new(dateTimeFormat);
         this.dateTimeOffsetFormat = new(dateTimeOffsetFormat);
@@ -260,6 +264,7 @@ internal sealed class MappaUserSettings
         this.caseInsensitiveEnumMap = new(caseInsensitiveEnumMap);
         this.enumStringMapSetting = new(enumStringMapSetting);
         this.enumToEnumMapSetting = new(enumToEnumMapSetting);
+        this.identityMapDeepCopy = new(identityMapDeepCopy);
     }
 
     /// <inheritdoc />
@@ -400,6 +405,9 @@ internal sealed class MappaUserSettings
     /// <inheritdoc/>
     public EnumToEnumMapSetting EnumToEnumMapSetting => this.enumToEnumMapSetting;
 
+    /// <inheritdoc/>
+    public IdentityMapDeepCopySetting IdentityMapDeepCopy => this.identityMapDeepCopy;
+
     /// <summary>
     /// Push the changes required by the <paramref name="mappaSettingsAttribute"/> on the stack.
     /// If <paramref name="mappaSettingsAttribute"/> is <c>null</c>
@@ -463,6 +471,7 @@ internal sealed class MappaUserSettings
             this.caseInsensitiveEnumMap.Apply(mappaSettingsAttribute.CaseInsensitiveEnumMap is not BooleanSetting.Undefined ? mappaSettingsAttribute.CaseInsensitiveEnumMap : this.caseInsensitiveEnumMap),
             this.enumStringMapSetting.Apply(mappaSettingsAttribute.EnumStringMapSetting is not EnumStringMapSetting.Undefined ? mappaSettingsAttribute.EnumStringMapSetting : this.enumStringMapSetting),
             this.enumToEnumMapSetting.Apply(mappaSettingsAttribute.EnumToEnumMapSetting is not EnumToEnumMapSetting.Undefined ? mappaSettingsAttribute.EnumToEnumMapSetting : this.enumToEnumMapSetting),
+            this.identityMapDeepCopy.Apply(mappaSettingsAttribute.IdentityMapDeepCopy is not IdentityMapDeepCopySetting.Undefined ? mappaSettingsAttribute.IdentityMapDeepCopy : this.identityMapDeepCopy),
  #pragma warning restore CA2000
         ]);
     }

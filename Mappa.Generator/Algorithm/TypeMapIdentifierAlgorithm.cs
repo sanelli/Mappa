@@ -60,7 +60,7 @@ internal class TypeMapIdentifierAlgorithm
         IMapStrategyDetector[] detectors = [
 
             // 01. Identity strategy.
-            new IdentityMapStrategyDetector(this.Context, this.Compilation),
+            new IdentityMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
 
             // 02. Nullable related strategies.
             new NullableMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
@@ -106,6 +106,9 @@ internal class TypeMapIdentifierAlgorithm
                 // in the case this algorithm is run inside the nullable reference strategy
                 // detector itself.
                 case NullableMapStrategyDetector when !this.Context.AlgorithmSettings.UseNullableMapStrategyDetector:
+
+                // Skip the identity strategy when resolving nested field mappings for nested deep copy.
+                case IdentityMapStrategyDetector when !this.Context.AlgorithmSettings.UseIdentityMapStrategyDetector:
                     continue;
 
                 // Polymorphism detector can only run at the root or if following a

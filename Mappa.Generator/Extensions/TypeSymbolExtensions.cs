@@ -119,6 +119,38 @@ internal static class TypeSymbolExtensions
         => typeSymbol is IArrayTypeSymbol { Rank: 1 };
 
     /// <summary>
+    /// Gets accessible instance fields declared on the type and its base types.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <param name="within">The symbol within which field access must be accessible.</param>
+    /// <returns>The accessible instance fields.</returns>
+    internal static IEnumerable<IFieldSymbol> GetAccessibleInstanceFields(
+        this ITypeSymbol typeSymbol,
+        Compilation compilation,
+        ISymbol within)
+    {
+        var currentType = typeSymbol;
+        while (currentType is not null)
+        {
+            foreach (var field in currentType.GetMembers().OfType<IFieldSymbol>())
+            {
+                if (field.IsStatic || field.IsConst)
+                {
+                    continue;
+                }
+
+                if (compilation.IsSymbolAccessibleWithin(field, within))
+                {
+                    yield return field;
+                }
+            }
+
+            currentType = currentType.BaseType;
+        }
+    }
+
+    /// <summary>
     /// Check if the type is <see cref="IList{T}"/>.
     /// </summary>
     /// <param name="typeSymbol">The type symbol.</param>

@@ -458,6 +458,10 @@ internal static class AttributeDataExtensions
                 case nameof(MappaSettingsAttribute.EnumToEnumMapSetting) when namedArgument.Value.Value is int value:
                     attribute.EnumToEnumMapSetting = (EnumToEnumMapSetting)value;
                     break;
+
+                case nameof(MappaSettingsAttribute.IdentityMapDeepCopy) when namedArgument.Value.Value is int value:
+                    attribute.IdentityMapDeepCopy = (IdentityMapDeepCopySetting)value;
+                    break;
             }
         }
 
