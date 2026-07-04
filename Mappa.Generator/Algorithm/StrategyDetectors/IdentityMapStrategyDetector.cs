@@ -18,6 +18,7 @@ internal sealed class IdentityMapStrategyDetector
 {
     private readonly MappaMapAlgorithmContext context;
     private readonly Compilation compilation;
+    private readonly CancellationToken cancellationToken;
     private readonly bool nullableEnabled;
     private readonly bool notNullableEnabled;
 
@@ -26,12 +27,15 @@ internal sealed class IdentityMapStrategyDetector
     /// </summary>
     /// <param name="context">The mappa class generator context.</param>
     /// <param name="compilation">The compilation.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     public IdentityMapStrategyDetector(
         MappaMapAlgorithmContext context,
-        Compilation compilation)
+        Compilation compilation,
+        CancellationToken cancellationToken)
     {
         this.context = context;
         this.compilation = compilation;
+        this.cancellationToken = cancellationToken;
         this.nullableEnabled = this.context.IsNullableEnabled();
         this.notNullableEnabled = !this.nullableEnabled;
     }
@@ -41,20 +45,208 @@ internal sealed class IdentityMapStrategyDetector
     {
         mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
 
-        // 01. Map to the very same type.
-        // 02. Map to object
-        // 03. Implicit conversion.
-        if (this.CanMapUsingMapToSameTypeRule()
-            || this.CanMapUsingMapToObjectRule()
-            || this.CanMapUsingImplicitConversion())
+        if (this.CanMapUsingMapToSameTypeRule())
         {
-            // TODO [#14] Add support for deep copy instead of shallow copy when the type is the same via attribute.
-           mapStrategy = new IdentityMapStrategy(
-                this.context.TargetType,
-                this.context.SourceType);
+            if (this.TryCreateSameTypeIdentityStrategy(out mapStrategy))
+            {
+                return true;
+            }
+
+            return false;
         }
 
-        return mapStrategy is not NoMapStrategy;
+        if (this.CanMapUsingMapToObjectRule() || this.CanMapUsingImplicitConversion())
+        {
+            mapStrategy = new IdentityMapStrategy(
+                this.context.TargetType,
+                this.context.SourceType);
+            return true;
+        }
+
+        return false;
+    }
+
+    private static IdentityMapDeepCopySetting GetEffectiveIdentityMapDeepCopySetting(
+        IdentityMapDeepCopySetting identityMapDeepCopySetting)
+        => identityMapDeepCopySetting is IdentityMapDeepCopySetting.Undefined
+            ? IdentityMapDeepCopySetting.ShallowCopy
+            : identityMapDeepCopySetting;
+
+    private static bool IgnoresIdentityMapDeepCopySetting(ITypeSymbol typeSymbol)
+    {
+        if (typeSymbol.IsString() || typeSymbol.IsEnum())
+        {
+            return true;
+        }
+
+        if (typeSymbol.IsValueTypeNullable())
+        {
+            var underlyingType = ((INamedTypeSymbol)typeSymbol).TypeArguments[0];
+            return IgnoresIdentityMapDeepCopySetting(underlyingType);
+        }
+
+        return typeSymbol is { IsValueType: true, TypeKind: not TypeKind.Struct };
+    }
+
+    private static bool IsArrayOrCollectionSameTypeRoot(ITypeSymbol typeSymbol)
+    {
+        if (typeSymbol.IsString())
+        {
+            return false;
+        }
+
+        return typeSymbol.IsArray() || typeSymbol.IsOrImplementIEnumerable();
+    }
+
+    private bool TryCreateSameTypeIdentityStrategy(out MapStrategy mapStrategy)
+    {
+        mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
+        var targetType = this.context.TargetType;
+        var sourceType = this.context.SourceType;
+
+        if (IgnoresIdentityMapDeepCopySetting(sourceType))
+        {
+            mapStrategy = new IdentityMapStrategy(targetType, sourceType);
+            return true;
+        }
+
+        var effectiveSetting = GetEffectiveIdentityMapDeepCopySetting(this.context.MappaUserSettings.IdentityMapDeepCopy);
+        var isStructRoot = sourceType is { TypeKind: TypeKind.Struct, IsValueType: true };
+
+        if (IsArrayOrCollectionSameTypeRoot(sourceType))
+        {
+            if (effectiveSetting is IdentityMapDeepCopySetting.NestedDeepCopy)
+            {
+                return false;
+            }
+
+            if (effectiveSetting is IdentityMapDeepCopySetting.DeepCopy)
+            {
+                mapStrategy = new IdentityMapStrategy(
+                    targetType,
+                    sourceType,
+                    effectiveSetting,
+                    requiresMemberwiseClone: true);
+                return true;
+            }
+
+            mapStrategy = new IdentityMapStrategy(targetType, sourceType);
+            return true;
+        }
+
+        if (isStructRoot)
+        {
+            return this.TryCreateStructSameTypeIdentityStrategy(targetType, sourceType, effectiveSetting, out mapStrategy);
+        }
+
+        return this.TryCreateReferenceSameTypeIdentityStrategy(targetType, sourceType, effectiveSetting, out mapStrategy);
+    }
+
+    private bool TryCreateStructSameTypeIdentityStrategy(
+        ITypeSymbol targetType,
+        ITypeSymbol sourceType,
+        IdentityMapDeepCopySetting effectiveSetting,
+        out MapStrategy mapStrategy)
+    {
+        mapStrategy = new NoMapStrategy(targetType, sourceType);
+
+        if (effectiveSetting is IdentityMapDeepCopySetting.NestedDeepCopy)
+        {
+            if (!this.TryCreateNestedFieldStrategies(sourceType, out var nestedFieldStrategies))
+            {
+                return false;
+            }
+
+            mapStrategy = new IdentityMapStrategy(
+                targetType,
+                sourceType,
+                effectiveSetting,
+                isStructRoot: true,
+                nestedFieldStrategies: nestedFieldStrategies);
+            return true;
+        }
+
+        mapStrategy = new IdentityMapStrategy(
+            targetType,
+            sourceType,
+            effectiveSetting,
+            isStructRoot: true);
+        return true;
+    }
+
+    private bool TryCreateReferenceSameTypeIdentityStrategy(
+        ITypeSymbol targetType,
+        ITypeSymbol sourceType,
+        IdentityMapDeepCopySetting effectiveSetting,
+        out MapStrategy mapStrategy)
+    {
+        mapStrategy = new NoMapStrategy(targetType, sourceType);
+
+        switch (effectiveSetting)
+        {
+            case IdentityMapDeepCopySetting.ShallowCopy:
+                mapStrategy = new IdentityMapStrategy(targetType, sourceType);
+                return true;
+            case IdentityMapDeepCopySetting.DeepCopy:
+                mapStrategy = new IdentityMapStrategy(
+                    targetType,
+                    sourceType,
+                    effectiveSetting,
+                    requiresMemberwiseClone: true);
+                return true;
+            case IdentityMapDeepCopySetting.NestedDeepCopy:
+                if (!this.TryCreateNestedFieldStrategies(sourceType, out var nestedFieldStrategies))
+                {
+                    return false;
+                }
+
+                mapStrategy = new IdentityMapStrategy(
+                    targetType,
+                    sourceType,
+                    effectiveSetting,
+                    requiresMemberwiseClone: true,
+                    nestedFieldStrategies: nestedFieldStrategies);
+                return true;
+            default:
+                mapStrategy = new IdentityMapStrategy(targetType, sourceType);
+                return true;
+        }
+    }
+
+    private bool TryCreateNestedFieldStrategies(
+        ITypeSymbol typeSymbol,
+        out IReadOnlyList<IdentityMapNestedFieldStrategy> nestedFieldStrategies)
+    {
+        nestedFieldStrategies = [];
+        var rootMapMethod = this.context.GetRootMapMethod();
+        var within = rootMapMethod.MethodSymbol.ContainingSymbol;
+        var nestedFields = new List<IdentityMapNestedFieldStrategy>();
+
+        foreach (var field in typeSymbol.GetAccessibleInstanceFields(this.compilation, within))
+        {
+            if (!this.TryGetNestedFieldStrategy(field.Type, out var fieldStrategy))
+            {
+                return false;
+            }
+
+            nestedFields.Add(new IdentityMapNestedFieldStrategy(field, fieldStrategy));
+        }
+
+        nestedFieldStrategies = nestedFields;
+        return true;
+    }
+
+    private bool TryGetNestedFieldStrategy(ITypeSymbol fieldType, out MapStrategy fieldStrategy)
+    {
+        fieldStrategy = new NoMapStrategy(fieldType, fieldType);
+        var derivedContext = new DerivedMappaMapAlgorithmContext(this.context, fieldType, fieldType);
+        using (this.context.AlgorithmSettings.UseIdentityMapStrategyDetector.Apply(false))
+        {
+            var algorithm = new TypeMapIdentifierWithMapMethodAlgorithm(derivedContext, this.compilation, this.cancellationToken);
+            fieldStrategy = algorithm.GetStrategy();
+        }
+
+        return fieldStrategy is not NoMapStrategy && !this.context.HasErrorDiagnostics;
     }
 
     private bool CanMapUsingMapToSameTypeRule()

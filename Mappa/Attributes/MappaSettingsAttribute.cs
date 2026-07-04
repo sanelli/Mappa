@@ -298,4 +298,10 @@ public sealed class MappaSettingsAttribute
     /// When unset, members are matched by name.
     /// </summary>
     public EnumToEnumMapSetting EnumToEnumMapSetting { get; set; } = EnumToEnumMapSetting.Undefined;
+
+    /// <summary>
+    /// Gets or sets how identity mappings copy a type to itself.
+    /// When unset, the original reference is returned.
+    /// </summary>
+    public IdentityMapDeepCopySetting IdentityMapDeepCopy { get; set; } = IdentityMapDeepCopySetting.Undefined;
 }

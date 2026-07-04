@@ -53,6 +53,11 @@ internal sealed class MappaMapAlgorithmContextSettings
     internal StackSetting<bool> UseNullableMapStrategyDetector { get; } = new(true);
 
     /// <summary>
+    /// Gets the stack settings that enable or disable the identity map strategy detector.
+    /// </summary>
+    internal StackSetting<bool> UseIdentityMapStrategyDetector { get; } = new(true);
+
+    /// <summary>
     /// Gets the stack settings that enable or disable the usage
     /// of mappa attributes when performing a constructor mapping.
     /// </summary>

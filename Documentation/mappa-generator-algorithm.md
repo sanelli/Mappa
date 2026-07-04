@@ -77,10 +77,16 @@ When no existing method applies (or for root methods), `TypeMapIdentifierAlgorit
     - `TSource` can be implicitly converted into `TTarget` (e.g. `TSource => int` and `TTarget => long`) OR,
     - `TSource` maps to `object` or `object?` (nullable-context rules apply: in `#nullable enable`, `T` maps to `object?`; in `#nullable disable`, `T` maps to `object`; when the source is not explicitly non-nullable annotated, `T` may map to non-nullable `object`);
 - _What_:
-    - The input value is simply assigned to the target;
+    - By default (`ShallowCopy`), the input value is assigned to the target;
+    - When `IdentityMapDeepCopy` is `DeepCopy` on a reference-type same-type root, the mapper clones the instance via `Mappa.MappaCloning.MemberwiseClone` (nested references remain shared);
+    - When `IdentityMapDeepCopy` is `NestedDeepCopy` on a reference-type root, the mapper clones the instance and recursively maps every accessible instance field; on a struct root, the struct is copied and fields are mapped recursively (no `MemberwiseClone` on the struct itself);
+    - Primitives, enums, and `string` same-type mappings always assign and ignore `IdentityMapDeepCopy`;
 - _Notes_:
     - `DateTime` → `DateTimeOffset` is handled by the identity strategy (implicit conversion);
-    - The identity detector is skipped when the root method has `[MappaTypeMapping]` attributes so that polymorphic mapping can run instead.
+    - The identity detector is skipped when the root method has `[MappaTypeMapping]` attributes so that polymorphic mapping can run instead;
+    - Same-type constructor-parameter identity in the constructor detector always uses shallow pass-through; `IdentityMapDeepCopy` applies only when the identity strategy is selected directly;
+    - `NestedDeepCopy` on array or collection same-type roots falls through to the container strategy so elements are mapped;
+    - Nested field resolution disables the identity detector to avoid infinite recursion.
 
 ### 2. Nullable strategy
 

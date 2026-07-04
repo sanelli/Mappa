@@ -14,6 +14,13 @@ namespace Mappa.Generator.Tests;
 public sealed class IdentityStrategyIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {
+    private const string IdentityDeepCopyPersonTypeName = "Mappa.Generator.Tests.UnitTests.SourceCode.IdentityDeepCopyPerson";
+    private const string IdentityNestedChildTypeName = "Mappa.Generator.Tests.UnitTests.SourceCode.IdentityNestedChild";
+    private const string IdentityNestedStructTypeName = "Mappa.Generator.Tests.UnitTests.SourceCode.IdentityNestedStruct";
+    private const string IdentityNestedContainerTypeName = "Mappa.Generator.Tests.UnitTests.SourceCode.IdentityNestedContainer";
+    private const string IdentityNestedChildListTypeName = "global::System.Collections.Generic.List<Mappa.Generator.Tests.UnitTests.SourceCode.IdentityNestedChild>";
+    private const string IdentityMapDeepCopyMemberwiseCloneInvocation = "global::Mappa.MappaCloning.MemberwiseClone";
+
     /// <summary>
     /// Test a mapping can be created when source and target type are the
     /// very same non reference type and nullable is enabled.
@@ -659,5 +666,596 @@ public sealed class IdentityStrategyIntegrationTests
                             expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
                         }));
                 });
+    }
+
+    /// <summary>
+    /// Test same-type reference mapping uses <see cref="IdentityMapDeepCopySetting.DeepCopy"/>
+    /// and emits <see cref="object.MemberwiseClone"/>.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapReferenceTypeToSameReferenceWhenIdentityMapDeepCopyIsDeepCopy()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public sealed class IdentityDeepCopyPerson
+                                  {
+                                      public string Name = string.Empty;
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaSettings(IdentityMapDeepCopy = IdentityMapDeepCopySetting.DeepCopy)]
+                                      public partial IdentityDeepCopyPerson Map(IdentityDeepCopyPerson input);
+                                  }
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .HaveDefaultMapMethod(
+                IdentityDeepCopyPersonTypeName,
+                IdentityDeepCopyPersonTypeName,
+                AssertMemberwiseCloneIdentityMapBody);
+    }
+
+    /// <summary>
+    /// Test <see cref="IdentityMapDeepCopySetting.NestedDeepCopy"/> on a reference type
+    /// emits a clone and nested field assignments.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapReferenceTypeToSameReferenceWhenIdentityMapDeepCopyIsNestedDeepCopy()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public sealed class IdentityNestedChild
+                                  {
+                                      public string Name = string.Empty;
+
+                                      public IdentityNestedChild()
+                                      {
+                                      }
+
+                                      public IdentityNestedChild(IdentityNestedChild other)
+                                      {
+                                          this.Name = other.Name;
+                                      }
+                                  }
+
+                                  public sealed class IdentityDeepCopyPerson
+                                  {
+                                      public IdentityNestedChild Child = null!;
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaSettings(IdentityMapDeepCopy = IdentityMapDeepCopySetting.NestedDeepCopy)]
+                                      public partial IdentityDeepCopyPerson Map(IdentityDeepCopyPerson input);
+                                  }
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .HaveDefaultMapMethod(
+                IdentityDeepCopyPersonTypeName,
+                IdentityDeepCopyPersonTypeName,
+                AssertNestedDeepCopyPersonIdentityMapBody);
+    }
+
+    /// <summary>
+    /// Test <see cref="IdentityMapDeepCopySetting.NestedDeepCopy"/> on a struct root
+    /// uses struct copy instead of <see cref="object.MemberwiseClone"/>.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapStructToSameStructWhenIdentityMapDeepCopyIsNestedDeepCopy()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public sealed class IdentityNestedChild
+                                  {
+                                      public string Name = string.Empty;
+
+                                      public IdentityNestedChild()
+                                      {
+                                      }
+
+                                      public IdentityNestedChild(IdentityNestedChild other)
+                                      {
+                                          this.Name = other.Name;
+                                      }
+                                  }
+
+                                  public struct IdentityNestedStruct
+                                  {
+                                      public IdentityNestedChild Child;
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaSettings(IdentityMapDeepCopy = IdentityMapDeepCopySetting.NestedDeepCopy)]
+                                      public partial IdentityNestedStruct Map(IdentityNestedStruct input);
+                                  }
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .HaveDefaultMapMethod(
+                IdentityNestedStructTypeName,
+                IdentityNestedStructTypeName,
+                AssertNestedDeepCopyStructIdentityMapBody);
+    }
+
+    /// <summary>
+    /// Test primitive same-type identity mapping ignores <see cref="IdentityMapDeepCopySetting.DeepCopy"/>.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapNonReferenceTypeToSameNonReferenceWhenIdentityMapDeepCopyIsDeepCopy()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaSettings(IdentityMapDeepCopy = IdentityMapDeepCopySetting.DeepCopy)]
+                                      public partial int Map(int input);
+                                  }
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .HaveDefaultMapMethod(
+                typeof(int).ToString(),
+                typeof(int).ToString(),
+                AssertShallowIdentityMapBody);
+    }
+
+    /// <summary>
+    /// Test <see cref="IdentityMapDeepCopySetting.NestedDeepCopy"/> maps collection fields
+    /// using the container strategy instead of identity pass-through.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapReferenceTypeToSameReferenceWhenIdentityMapDeepCopyIsNestedDeepCopyWithCollectionField()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using System.Collections.Generic;
+                                  using Mappa;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public sealed class IdentityNestedChild
+                                  {
+                                      public string Name = string.Empty;
+
+                                      public IdentityNestedChild()
+                                      {
+                                      }
+
+                                      public IdentityNestedChild(IdentityNestedChild other)
+                                      {
+                                          this.Name = other.Name;
+                                      }
+                                  }
+
+                                  public sealed class IdentityNestedContainer
+                                  {
+                                      public List<IdentityNestedChild> Children = null!;
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaSettings(IdentityMapDeepCopy = IdentityMapDeepCopySetting.NestedDeepCopy)]
+                                      public partial IdentityNestedContainer Map(IdentityNestedContainer input);
+                                  }
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .HaveDefaultMapMethod(
+                IdentityNestedContainerTypeName,
+                IdentityNestedContainerTypeName,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(6)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                IdentityNestedContainerTypeName,
+                                "__mappa_tmp_1",
+                                initializationAssertions => initializationAssertions.BeCastExpressionSyntax(
+                                    IdentityNestedContainerTypeName,
+                                    castExpressionAssertions => castExpressionAssertions.BeInvocationExpressionSyntax(
+                                        IdentityMapDeepCopyMemberwiseCloneInvocation,
+                                        argumentAssertions => argumentAssertions.BeIdentifierNameSyntax("input"))));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                IdentityNestedChildListTypeName,
+                                "__mappa_tmp_2",
+                                initializationAssertions => initializationAssertions.BeMemberAccessExpressionSyntax("input.Children"));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                IdentityNestedChildListTypeName,
+                                "__mappa_tmp_3",
+                                initializationAssertions => initializationAssertions.BeObjectCreationExpressionSyntax(
+                                    IdentityNestedChildListTypeName,
+                                    firstParameterSyntaxAssertions => firstParameterSyntaxAssertions.BeMemberAccessExpressionSyntax("__mappa_tmp_2.Count")));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeForStatementSyntax(
+                                declarationAssertions => declarationAssertions.BeAssignmentFromConstant(typeof(int).ToString(), "__mappa_tmp_4", 0),
+                                conditionAssertions => conditionAssertions.BeBinaryExpressionSyntax(
+                                    leftExpressionAssertions => leftExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_4"),
+                                    SyntaxKind.LessThanToken,
+                                    rightExpressionAssertions => rightExpressionAssertions.BeMemberAccessExpressionSyntax("__mappa_tmp_2.Count")),
+                                incrementorAssertions => incrementorAssertions.BePrefixUnaryExpressionSyntax(
+                                    SyntaxKind.PlusPlusToken,
+                                    operandAssertions => operandAssertions.BeIdentifierNameSyntax("__mappa_tmp_4")),
+                                statementAssertions => statementAssertions.BeBlockStatement());
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeAssignmentExpressionStatement(
+                                leftExpressionAssertions => leftExpressionAssertions.BeMemberAccessExpressionSyntax("__mappa_tmp_1.Children"),
+                                rightExpressionAssertions => rightExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_3"));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
+                            {
+                                expressionSyntaxAssertions.BeIdentifierNameSyntax("__mappa_tmp_1");
+                            });
+                        });
+                });
+    }
+
+    /// <summary>
+    /// Test <c>.editorconfig</c> <c>mappa.identitymapdeepcopy</c> applies to same-type reference mapping.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapReferenceTypeToSameReferenceWhenIdentityMapDeepCopyIsSetInEditorConfig()
+    {
+        const string editorConfig = """
+                                    root = true
+
+                                    [*.cs]
+                                    mappa.identitymapdeepcopy = DeepCopy
+                                    """;
+
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public sealed class IdentityDeepCopyPerson
+                                  {
+                                      public string Name = string.Empty;
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial IdentityDeepCopyPerson Map(IdentityDeepCopyPerson input);
+                                  }
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, editorConfig, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .HaveDefaultMapMethod(
+                IdentityDeepCopyPersonTypeName,
+                IdentityDeepCopyPersonTypeName,
+                AssertMemberwiseCloneIdentityMapBody);
+    }
+
+    /// <summary>
+    /// Test class-level <see cref="MappaSettingsAttribute.IdentityMapDeepCopy"/> overrides
+    /// <c>.editorconfig</c> for same-type reference mapping.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapReferenceTypeToSameReferenceWhenClassIdentityMapDeepCopyOverridesEditorConfig()
+    {
+        const string editorConfig = """
+                                    root = true
+
+                                    [*.cs]
+                                    mappa.identitymapdeepcopy = DeepCopy
+                                    """;
+
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public sealed class IdentityDeepCopyPerson
+                                  {
+                                      public string Name = string.Empty;
+                                  }
+
+                                  [Mappa]
+                                  [MappaSettings(IdentityMapDeepCopy = IdentityMapDeepCopySetting.ShallowCopy)]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial IdentityDeepCopyPerson Map(IdentityDeepCopyPerson input);
+                                  }
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, editorConfig, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .HaveDefaultMapMethod(
+                IdentityDeepCopyPersonTypeName,
+                IdentityDeepCopyPersonTypeName,
+                AssertShallowIdentityMapBody);
+    }
+
+    /// <summary>
+    /// Test method-level <see cref="MappaSettingsAttribute.IdentityMapDeepCopy"/> overrides
+    /// class-level and <c>.editorconfig</c> settings for same-type reference mapping.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapReferenceTypeToSameReferenceWhenMethodIdentityMapDeepCopyOverridesClassAndEditorConfig()
+    {
+        const string editorConfig = """
+                                    root = true
+
+                                    [*.cs]
+                                    mappa.identitymapdeepcopy = DeepCopy
+                                    """;
+
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public sealed class IdentityNestedChild
+                                  {
+                                      public string Name = string.Empty;
+
+                                      public IdentityNestedChild()
+                                      {
+                                      }
+
+                                      public IdentityNestedChild(IdentityNestedChild other)
+                                      {
+                                          this.Name = other.Name;
+                                      }
+                                  }
+
+                                  public sealed class IdentityDeepCopyPerson
+                                  {
+                                      public IdentityNestedChild Child = null!;
+                                  }
+
+                                  [Mappa]
+                                  [MappaSettings(IdentityMapDeepCopy = IdentityMapDeepCopySetting.ShallowCopy)]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaSettings(IdentityMapDeepCopy = IdentityMapDeepCopySetting.NestedDeepCopy)]
+                                      public partial IdentityDeepCopyPerson Map(IdentityDeepCopyPerson input);
+                                  }
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, editorConfig, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .HaveDefaultMapMethod(
+                IdentityDeepCopyPersonTypeName,
+                IdentityDeepCopyPersonTypeName,
+                AssertNestedDeepCopyPersonIdentityMapBody);
+    }
+
+    private static void AssertNestedDeepCopyPersonIdentityMapBody(BlockSyntaxAssertions blockSyntaxAssertions)
+    {
+        blockSyntaxAssertions
+            .HasSyntaxNodesCount(6)
+            .HasNextSyntaxNode(syntaxNodeAssertions =>
+            {
+                syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                    IdentityDeepCopyPersonTypeName,
+                    "__mappa_tmp_1",
+                    initializationAssertions => initializationAssertions.BeCastExpressionSyntax(
+                        IdentityDeepCopyPersonTypeName,
+                        castExpressionAssertions => castExpressionAssertions.BeInvocationExpressionSyntax(
+                            IdentityMapDeepCopyMemberwiseCloneInvocation,
+                            argumentAssertions => argumentAssertions.BeIdentifierNameSyntax("input"))));
+            })
+            .HasNextSyntaxNode(syntaxNodeAssertions =>
+            {
+                syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                    IdentityNestedChildTypeName,
+                    "__mappa_tmp_2",
+                    initializationAssertions => initializationAssertions.BeMemberAccessExpressionSyntax("input.Child"));
+            })
+            .HasNextSyntaxNode(syntaxNodeAssertions =>
+            {
+                syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                    IdentityNestedChildTypeName,
+                    "__mappa_tmp_3",
+                    initializationAssertions => initializationAssertions.BeIdentifierNameSyntax("__mappa_tmp_2"));
+            })
+            .HasNextSyntaxNode(syntaxNodeAssertions =>
+            {
+                syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                    IdentityNestedChildTypeName,
+                    "__mappa_tmp_4",
+                    initializationAssertions => initializationAssertions.BeObjectCreationExpressionSyntax(
+                        IdentityNestedChildTypeName,
+                        firstParameterSyntaxAssertions => firstParameterSyntaxAssertions.BeIdentifierNameSyntax("__mappa_tmp_3")));
+            })
+            .HasNextSyntaxNode(syntaxNodeAssertions =>
+            {
+                syntaxNodeAssertions.BeAssignmentExpressionStatement(
+                    leftExpressionAssertions => leftExpressionAssertions.BeMemberAccessExpressionSyntax("__mappa_tmp_1.Child"),
+                    rightExpressionAssertions => rightExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_4"));
+            })
+            .HasNextSyntaxNode(syntaxNodeAssertions =>
+            {
+                syntaxNodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
+                {
+                    expressionSyntaxAssertions.BeIdentifierNameSyntax("__mappa_tmp_1");
+                });
+            });
+    }
+
+    private static void AssertNestedDeepCopyStructIdentityMapBody(BlockSyntaxAssertions blockSyntaxAssertions)
+    {
+        blockSyntaxAssertions
+            .HasSyntaxNodesCount(6)
+            .HasNextSyntaxNode(syntaxNodeAssertions =>
+            {
+                syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                    IdentityNestedStructTypeName,
+                    "__mappa_tmp_1",
+                    initializationAssertions => initializationAssertions.BeIdentifierNameSyntax("input"));
+            })
+            .HasNextSyntaxNode(syntaxNodeAssertions =>
+            {
+                syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                    IdentityNestedChildTypeName,
+                    "__mappa_tmp_2",
+                    initializationAssertions => initializationAssertions.BeMemberAccessExpressionSyntax("input.Child"));
+            })
+            .HasNextSyntaxNode(syntaxNodeAssertions =>
+            {
+                syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                    IdentityNestedChildTypeName,
+                    "__mappa_tmp_3",
+                    initializationAssertions => initializationAssertions.BeIdentifierNameSyntax("__mappa_tmp_2"));
+            })
+            .HasNextSyntaxNode(syntaxNodeAssertions =>
+            {
+                syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                    IdentityNestedChildTypeName,
+                    "__mappa_tmp_4",
+                    initializationAssertions => initializationAssertions.BeObjectCreationExpressionSyntax(
+                        IdentityNestedChildTypeName,
+                        firstParameterSyntaxAssertions => firstParameterSyntaxAssertions.BeIdentifierNameSyntax("__mappa_tmp_3")));
+            })
+            .HasNextSyntaxNode(syntaxNodeAssertions =>
+            {
+                syntaxNodeAssertions.BeAssignmentExpressionStatement(
+                    leftExpressionAssertions => leftExpressionAssertions.BeMemberAccessExpressionSyntax("__mappa_tmp_1.Child"),
+                    rightExpressionAssertions => rightExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_4"));
+            })
+            .HasNextSyntaxNode(syntaxNodeAssertions =>
+            {
+                syntaxNodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
+                {
+                    expressionSyntaxAssertions.BeIdentifierNameSyntax("__mappa_tmp_1");
+                });
+            });
+    }
+
+    private static void AssertMemberwiseCloneIdentityMapBody(BlockSyntaxAssertions blockSyntaxAssertions)
+    {
+        blockSyntaxAssertions
+            .HasSyntaxNodesCount(2)
+            .HasNextSyntaxNode(syntaxNodeAssertions =>
+            {
+                syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                    IdentityDeepCopyPersonTypeName,
+                    "__mappa_tmp_1",
+                    initializationAssertions => initializationAssertions.BeCastExpressionSyntax(
+                        IdentityDeepCopyPersonTypeName,
+                        castExpressionAssertions => castExpressionAssertions.BeInvocationExpressionSyntax(
+                            IdentityMapDeepCopyMemberwiseCloneInvocation,
+                            argumentAssertions => argumentAssertions.BeIdentifierNameSyntax("input"))));
+            })
+            .HasNextSyntaxNode(syntaxNodeAssertions =>
+            {
+                syntaxNodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
+                {
+                    expressionSyntaxAssertions.BeIdentifierNameSyntax("__mappa_tmp_1");
+                });
+            });
+    }
+
+    private static void AssertShallowIdentityMapBody(BlockSyntaxAssertions blockSyntaxAssertions)
+    {
+        blockSyntaxAssertions
+            .HasSyntaxNodesCount(1)
+            .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
+            {
+                expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
+            }));
     }
 }

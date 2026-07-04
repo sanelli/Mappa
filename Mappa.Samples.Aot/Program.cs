@@ -32,6 +32,7 @@ internal static class Program
         ExtensionMethodMapperRunner.Run(report);
         FastCollectionToCollectionMapperRunner.Run(report);
         GuidStrategyMapperRunner.Run(report);
+        IdentityMapDeepCopyMapperRunner.Run(report);
         IdentityStrategyMapperDupRunner.Run(report);
         IdentityStrategyMapperRunner.Run(report);
         IntegralToEnumMapperRunner.Run(report);

@@ -260,4 +260,9 @@ internal interface IMappaUserSettings
     /// Gets how enum members are paired when mapping from one enum to another enum.
     /// </summary>
     EnumToEnumMapSetting EnumToEnumMapSetting { get; }
+
+    /// <summary>
+    /// Gets how identity mappings copy a type to itself.
+    /// </summary>
+    IdentityMapDeepCopySetting IdentityMapDeepCopy { get; }
 }
