@@ -553,6 +553,327 @@ public sealed class StringToEnumMapStrategyIntegrationTests
                 "Enum 'Mappa.Generator.Tests.UnitTests.SourceCode.TestEnum' has duplicate Description values for members: 'One', 'Two'.");
     }
 
+    /// <summary>
+    /// Test class-level <see cref="MappaSettingsAttribute.CaseInsensitiveEnumMap"/> overrides
+    /// <c>.editorconfig</c> for string-to-enum mapping.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapStringToEnumWhenClassCaseInsensitiveEnumMapOverridesEditorConfig()
+    {
+        const string editorConfig = """
+                                    root = true
+
+                                    [*.cs]
+                                    mappa.caseinsensitiveenummap = enable
+                                    """;
+
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public enum TestEnum
+                                  {
+                                      One,
+                                      Two,
+                                      Three,
+                                  }
+
+                                  [Mappa]
+                                  [MappaSettings(CaseInsensitiveEnumMap = BooleanSetting.Disable)]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial TestEnum Map(string input);
+                                  }
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, editorConfig, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.TestEnum",
+                NullableAnnotation.NotAnnotated,
+                typeof(string).ToString(),
+                NullableAnnotation.NotAnnotated,
+                AssertCaseSensitiveStringToEnumSwitch);
+    }
+
+    /// <summary>
+    /// Test method-level <see cref="MappaSettingsAttribute.CaseInsensitiveEnumMap"/> overrides
+    /// class-level and <c>.editorconfig</c> settings for string-to-enum mapping.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapStringToEnumWhenMethodCaseInsensitiveEnumMapOverridesClassAndEditorConfig()
+    {
+        const string editorConfig = """
+                                    root = true
+
+                                    [*.cs]
+                                    mappa.caseinsensitiveenummap = disable
+                                    """;
+
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public enum TestEnum
+                                  {
+                                      One,
+                                      Two,
+                                      Three,
+                                  }
+
+                                  [Mappa]
+                                  [MappaSettings(CaseInsensitiveEnumMap = BooleanSetting.Disable)]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaSettings(CaseInsensitiveEnumMap = BooleanSetting.Enable)]
+                                      public partial TestEnum Map(string input);
+                                  }
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, editorConfig, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.TestEnum",
+                NullableAnnotation.NotAnnotated,
+                typeof(string).ToString(),
+                NullableAnnotation.NotAnnotated,
+                AssertCaseInsensitiveEnumSwitch);
+    }
+
+    /// <summary>
+    /// Test string-to-enum mapping by Description with <see cref="MappaSettingsAttribute.EnumStringMapSetting"/>
+    /// enabled on the map method.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapStringToEnumByDescriptionOnMethod()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using System.ComponentModel;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public enum TestEnum
+                                  {
+                                      [Description("First")]
+                                      One,
+                                      [Description("Second")]
+                                      Two,
+                                      [Description("Third")]
+                                      Three,
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaSettings(EnumStringMapSetting = EnumStringMapSetting.Description)]
+                                      public partial TestEnum Map(string input);
+                                  }
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.TestEnum",
+                NullableAnnotation.NotAnnotated,
+                typeof(string).ToString(),
+                NullableAnnotation.NotAnnotated,
+                AssertDescriptionStringToEnumSwitch);
+    }
+
+    /// <summary>
+    /// Test string-to-enum mapping by Description configured via <c>.editorconfig</c>.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapStringToEnumByDescriptionInEditorConfig()
+    {
+        const string editorConfig = """
+                                    root = true
+
+                                    [*.cs]
+                                    mappa.enumstringmapsetting = Description
+                                    """;
+
+        const string sourceCode = """
+                                  #nullable enable
+                                  using System.ComponentModel;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public enum TestEnum
+                                  {
+                                      [Description("First")]
+                                      One,
+                                      [Description("Second")]
+                                      Two,
+                                      [Description("Third")]
+                                      Three,
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial TestEnum Map(string input);
+                                  }
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, editorConfig, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.TestEnum",
+                NullableAnnotation.NotAnnotated,
+                typeof(string).ToString(),
+                NullableAnnotation.NotAnnotated,
+                AssertDescriptionStringToEnumSwitch);
+    }
+
+    /// <summary>
+    /// Test class-level <see cref="MappaSettingsAttribute.EnumStringMapSetting"/> overrides
+    /// <c>.editorconfig</c> for string-to-enum mapping.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapStringToEnumWhenClassEnumStringMapSettingOverridesEditorConfig()
+    {
+        const string editorConfig = """
+                                    root = true
+
+                                    [*.cs]
+                                    mappa.enumstringmapsetting = Description
+                                    """;
+
+        const string sourceCode = """
+                                  #nullable enable
+                                  using System.ComponentModel;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public enum TestEnum
+                                  {
+                                      [Description("First")]
+                                      One,
+                                      [Description("Second")]
+                                      Two,
+                                      [Description("Third")]
+                                      Three,
+                                  }
+
+                                  [Mappa]
+                                  [MappaSettings(EnumStringMapSetting = EnumStringMapSetting.MemberName)]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial TestEnum Map(string input);
+                                  }
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, editorConfig, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.TestEnum",
+                NullableAnnotation.NotAnnotated,
+                typeof(string).ToString(),
+                NullableAnnotation.NotAnnotated,
+                AssertCaseSensitiveStringToEnumSwitch);
+    }
+
+    /// <summary>
+    /// Test method-level <see cref="MappaSettingsAttribute.EnumStringMapSetting"/> overrides
+    /// class-level and <c>.editorconfig</c> settings for string-to-enum mapping.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapStringToEnumWhenMethodEnumStringMapSettingOverridesClassAndEditorConfig()
+    {
+        const string editorConfig = """
+                                    root = true
+
+                                    [*.cs]
+                                    mappa.enumstringmapsetting = MemberName
+                                    """;
+
+        const string sourceCode = """
+                                  #nullable enable
+                                  using System.ComponentModel;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public enum TestEnum
+                                  {
+                                      [Description("First")]
+                                      One,
+                                      [Description("Second")]
+                                      Two,
+                                      [Description("Third")]
+                                      Three,
+                                  }
+
+                                  [Mappa]
+                                  [MappaSettings(EnumStringMapSetting = EnumStringMapSetting.MemberName)]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaSettings(EnumStringMapSetting = EnumStringMapSetting.Description)]
+                                      public partial TestEnum Map(string input);
+                                  }
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, editorConfig, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.TestEnum",
+                NullableAnnotation.NotAnnotated,
+                typeof(string).ToString(),
+                NullableAnnotation.NotAnnotated,
+                AssertDescriptionStringToEnumSwitch);
+    }
+
     private static void AssertDescriptionStringToEnumSwitch(BlockSyntaxAssertions blockSyntaxAssertions)
     {
         blockSyntaxAssertions
