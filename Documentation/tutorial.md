@@ -271,6 +271,22 @@ With this setting enabled, `"one"`, `"ONE"`, and `"One"` all map to `MyEnum.One`
 
 See also: [CaseInsensitiveStringToEnumMapper.cs](../Mappa.Samples/CaseInsensitiveStringToEnumMapper.cs).
 
+### Enum-to-enum matching settings
+`EnumToEnumMapSetting` selects how enum-to-enum mappings pair source and target members. By default, members are matched by name. Set `NumericValue` to match by underlying numeric value instead:
+
+```csharp
+[Mappa]
+[MappaSettings(EnumToEnumMapSetting = EnumToEnumMapSetting.NumericValue)]
+public sealed partial class Mapper
+{
+    public partial TargetEnum Map(SourceEnum input);
+}
+```
+
+With `NumericValue`, source members are mapped to target members that share the same constant value, even when member names differ. The generator emits an explicit `switch` with per-case assignments (no cross-enum cast). When multiple target members share the same value, the first target member name in alphabetical order is used.
+
+See also: [NumericValueEnumToEnumMapper.cs](../Mappa.Samples/NumericValueEnumToEnumMapper.cs).
+
 ### MappaInvokeMethod attribute
 When mapping structured types, `[MappaInvokeMethod]` forces a target property or constructor parameter to be mapped by invoking a named method:
 

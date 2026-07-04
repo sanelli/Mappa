@@ -32,6 +32,7 @@ See the [tutorial](../Documentation/tutorial.md) for a guided introduction, or b
 | [`InvokeToStringMapper.cs`](InvokeToStringMapper.cs) | ToString settings: culture and format |
 | [`PropertyMapNameSettingsMapper.cs`](PropertyMapNameSettingsMapper.cs) | `CaseInsensitivePropertyMap`, `IgnoreUnderscoreForPropertyMap` |
 | [`CaseInsensitiveStringToEnumMapper.cs`](CaseInsensitiveStringToEnumMapper.cs) | `CaseInsensitiveStringToEnumMap` |
+| [`NumericValueEnumToEnumMapper.cs`](NumericValueEnumToEnumMapper.cs) | `EnumToEnumMapSetting` |
 | [`PragmaWarningSettingMapper.cs`](PragmaWarningSettingMapper.cs) | `PragmaWarning` |
 | [`FastCollectionToCollectionMapper.cs`](FastCollectionToCollectionMapper.cs) | `FastCollections` |
 | [`ContainersWithCapacityConstructorMapper.cs`](ContainersWithCapacityConstructorMapper.cs) | `ContainerCapacityConstructors` |

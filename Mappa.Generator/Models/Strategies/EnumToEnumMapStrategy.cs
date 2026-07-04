@@ -13,9 +13,18 @@ namespace Mappa.Generator.Models.Strategies;
 /// </summary>
 /// <param name="targetType">The target type.</param>
 /// <param name="sourceType">The source type.</param>
-internal sealed class EnumToEnumMapStrategy(ITypeSymbol targetType, ITypeSymbol sourceType)
+/// <param name="enumToEnumMapSetting">The enum-to-enum member pairing setting.</param>
+internal sealed class EnumToEnumMapStrategy(
+    ITypeSymbol targetType,
+    ITypeSymbol sourceType,
+    EnumToEnumMapSetting enumToEnumMapSetting)
         : MapStrategy(targetType, sourceType)
 {
+    /// <summary>
+    /// Gets the enum-to-enum member pairing setting.
+    /// </summary>
+    public EnumToEnumMapSetting EnumToEnumMapSetting { get; } = enumToEnumMapSetting;
+
     /// <inheritdoc/>
     internal override IMappaStrategyBuilder GetBuilder() => new EnumToEnumMapStrategyBuilder(this);
 }

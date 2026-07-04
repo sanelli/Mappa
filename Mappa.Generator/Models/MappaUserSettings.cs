@@ -59,6 +59,7 @@ internal sealed class MappaUserSettings
     private readonly StackSetting<BooleanSetting> caseInsensitivePropertyMap;
     private readonly StackSetting<BooleanSetting> ignoreUnderscoreForPropertyMap;
     private readonly StackSetting<BooleanSetting> caseInsensitiveStringToEnumMap;
+    private readonly StackSetting<EnumToEnumMapSetting> enumToEnumMapSetting;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaUserSettings"/> class.
@@ -109,7 +110,8 @@ internal sealed class MappaUserSettings
             otherSettings.PolymorphicMapMethodWithMatchingDefaultAttribute,
             otherSettings.CaseInsensitivePropertyMap,
             otherSettings.IgnoreUnderscoreForPropertyMap,
-            otherSettings.CaseInsensitiveStringToEnumMap)
+            otherSettings.CaseInsensitiveStringToEnumMap,
+            otherSettings.EnumToEnumMapSetting)
     {
     }
 
@@ -160,6 +162,7 @@ internal sealed class MappaUserSettings
     /// <param name="caseInsensitivePropertyMap">Enable or disable case-insensitive matching when pairing a target member with a source property by name.</param>
     /// <param name="ignoreUnderscoreForPropertyMap">Enable or disable ignoring underscore characters when pairing a target member with a source property by name.</param>
     /// <param name="caseInsensitiveStringToEnumMap">Enable or disable case-insensitive matching when mapping from <see cref="string"/> to an enum.</param>
+    /// <param name="enumToEnumMapSetting">Defines how enum members are paired when mapping from one enum to another enum.</param>
     private MappaUserSettings(
         string? dateTimeFormat,
         string? dateTimeOffsetFormat,
@@ -204,7 +207,8 @@ internal sealed class MappaUserSettings
         BooleanSetting polymorphicMapMethodWithMatchingDefaultAttribute,
         BooleanSetting caseInsensitivePropertyMap,
         BooleanSetting ignoreUnderscoreForPropertyMap,
-        BooleanSetting caseInsensitiveStringToEnumMap)
+        BooleanSetting caseInsensitiveStringToEnumMap,
+        EnumToEnumMapSetting enumToEnumMapSetting)
     {
         this.dateTimeFormat = new(dateTimeFormat);
         this.dateTimeOffsetFormat = new(dateTimeOffsetFormat);
@@ -250,6 +254,7 @@ internal sealed class MappaUserSettings
         this.caseInsensitivePropertyMap = new(caseInsensitivePropertyMap);
         this.ignoreUnderscoreForPropertyMap = new(ignoreUnderscoreForPropertyMap);
         this.caseInsensitiveStringToEnumMap = new(caseInsensitiveStringToEnumMap);
+        this.enumToEnumMapSetting = new(enumToEnumMapSetting);
     }
 
     /// <inheritdoc />
@@ -384,6 +389,9 @@ internal sealed class MappaUserSettings
     /// <inheritdoc/>
     public BooleanSetting CaseInsensitiveStringToEnumMap => this.caseInsensitiveStringToEnumMap;
 
+    /// <inheritdoc/>
+    public EnumToEnumMapSetting EnumToEnumMapSetting => this.enumToEnumMapSetting;
+
     /// <summary>
     /// Push the changes required by the <paramref name="mappaSettingsAttribute"/> on the stack.
     /// If <paramref name="mappaSettingsAttribute"/> is <c>null</c>
@@ -445,6 +453,7 @@ internal sealed class MappaUserSettings
             this.caseInsensitivePropertyMap.Apply(mappaSettingsAttribute.CaseInsensitivePropertyMap is not BooleanSetting.Undefined ? mappaSettingsAttribute.CaseInsensitivePropertyMap : this.caseInsensitivePropertyMap),
             this.ignoreUnderscoreForPropertyMap.Apply(mappaSettingsAttribute.IgnoreUnderscoreForPropertyMap is not BooleanSetting.Undefined ? mappaSettingsAttribute.IgnoreUnderscoreForPropertyMap : this.ignoreUnderscoreForPropertyMap),
             this.caseInsensitiveStringToEnumMap.Apply(mappaSettingsAttribute.CaseInsensitiveStringToEnumMap is not BooleanSetting.Undefined ? mappaSettingsAttribute.CaseInsensitiveStringToEnumMap : this.caseInsensitiveStringToEnumMap),
+            this.enumToEnumMapSetting.Apply(mappaSettingsAttribute.EnumToEnumMapSetting is not EnumToEnumMapSetting.Undefined ? mappaSettingsAttribute.EnumToEnumMapSetting : this.enumToEnumMapSetting),
  #pragma warning restore CA2000
         ]);
     }

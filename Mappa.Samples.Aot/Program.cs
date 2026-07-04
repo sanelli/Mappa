@@ -52,6 +52,7 @@ internal static class Program
         MappaInvokeMethodAttributeMappersRunner.Run(report);
         MappaUsePropertyAttributeMapperRunner.Run(report);
         NullableToNullableMapperRunner.Run(report);
+        NumericValueEnumToEnumMapperRunner.Run(report);
         ParamsAndInMapperRunner.Run(report);
         PolymorphicMethodMapMapperRunner.Run(report);
         PolymorphismMappersRunner.Run(report);
