@@ -29,6 +29,7 @@ internal static class Program
         EnumToEnumMapperRunner.Run(report);
         EnumToIntegralMapperRunner.Run(report);
         EnumToStringMapperRunner.Run(report);
+        EnumerableConcreteTypeMapperRunner.Run(report);
         ExtensionMethodMapperRunner.Run(report);
         FastCollectionToCollectionMapperRunner.Run(report);
         GuidStrategyMapperRunner.Run(report);
