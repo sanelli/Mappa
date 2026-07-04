@@ -132,4 +132,4 @@ See also [NuGet packages](./nuget.md) and [Protobuf and Bson dependency packages
 
 ## Diagnostics
 
-Mappa emits compile-time diagnostics **MP00000** through **MP00041** (errors and warnings). See the full catalog in [Errors and warnings](./error-codes.md). Examples tied to features include **MP00039** (partial enum-to-enum mapping) demonstrated in [EnumToEnumMapper.cs](../Mappa.Samples/EnumToEnumMapper.cs), **MP00040** (missing `[Description]` on enum members), and **MP00041** (ambiguous enum mapping).
+Mappa emits compile-time diagnostics **MP00000** through **MP00042** (errors and warnings). See the full catalog in [Errors and warnings](./error-codes.md). Examples tied to features include **MP00039** (partial enum-to-enum mapping) demonstrated in [EnumToEnumMapper.cs](../Mappa.Samples/EnumToEnumMapper.cs), **MP00040** (missing `[Description]` on enum members), **MP00041** (ambiguous enum mapping), and **MP00042** (ambiguous invoke-method resolution for `[MappaInvokeMethod]` and polymorphism `[MappaTypeMappingDefault]` invoke-method defaults).

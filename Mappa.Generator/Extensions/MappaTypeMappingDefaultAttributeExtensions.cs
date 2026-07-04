@@ -5,6 +5,7 @@
 using Mappa.Attributes;
 using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Exceptions;
+using Mappa.Generator.Helpers;
 
 using Microsoft.CodeAnalysis;
 
@@ -27,6 +28,7 @@ internal static class MappaTypeMappingDefaultAttributeExtensions
     /// <param name="compilation">The compilation.</param>
     /// <param name="location">The location on which the diagnostic should be pointing to.</param>
     /// <param name="diagnostics">The generated diagnostic in case of error or warnings.</param>
+    /// <param name="resolvedInvokeMethod">The resolved invoke method when behavior is <see cref="MappaTypeMappingDefaultBehavior.InvokeMethod"/>.</param>
     /// <returns><c>true</c> if the attribute is valid, <c>false</c> otherwise.</returns>
     internal static bool IsValid(
         this MappaTypeMappingDefaultAttribute attribute,
@@ -37,9 +39,11 @@ internal static class MappaTypeMappingDefaultAttributeExtensions
         bool mapMethodHasTwoParameters,
         Compilation compilation,
         Location? location,
-        out ICollection<Diagnostic> diagnostics)
+        out ICollection<Diagnostic> diagnostics,
+        out IMethodSymbol? resolvedInvokeMethod)
     {
         diagnostics = [];
+        resolvedInvokeMethod = null;
         switch (attribute.Behavior)
         {
             case MappaTypeMappingDefaultBehavior.Undefined:
@@ -135,20 +139,32 @@ internal static class MappaTypeMappingDefaultAttributeExtensions
                     throw new MappaGeneratorException("Type that can be used to identify the method to invoke cannot be loaded.");
                 }
 
-                var methods = invokeMethodTypeSymbol.LocateMethods(attribute.MethodName!);
-                var method = methods.FirstOrDefault(methodSymbol => methodSymbol.IsMethodValidToMapToTargetSymbolForPolymorphism(
+                var resolutionResult = InvokeMethodResolution.TryResolvePolymorphismInvokeMethod(
+                    invokeMethodTypeSymbol,
+                    attribute.MethodName!,
                     sourceType,
                     compilation,
                     attribute.Type is not null,
                     nullableEnabled,
-                    mapMethodHasTwoParameters));
-                if (method is null)
+                    mapMethodHasTwoParameters,
+                    out var method,
+                    out var ambiguityDetails);
+                switch (resolutionResult)
                 {
-                    diagnostics.Add(MappaDiagnostics.CannotIdentifySuitableMethodToInvoke(
-                        invokeMethodTypeSymbol.ToDisplayString(),
-                        attribute.MethodName!,
-                        location));
-                    return false;
+                    case InvokeMethodResolutionResult.NotFound:
+                        diagnostics.Add(MappaDiagnostics.CannotIdentifySuitableMethodToInvoke(
+                            invokeMethodTypeSymbol.ToDisplayString(),
+                            attribute.MethodName!,
+                            location));
+                        return false;
+
+                    case InvokeMethodResolutionResult.Ambiguous:
+                        diagnostics.Add(MappaDiagnostics.AmbiguousInvokeMethodResolution(location, ambiguityDetails));
+                        return false;
+
+                    case InvokeMethodResolutionResult.Success:
+                        resolvedInvokeMethod = method;
+                        break;
                 }
 
                 break;

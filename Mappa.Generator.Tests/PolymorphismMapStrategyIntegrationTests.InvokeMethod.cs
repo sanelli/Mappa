@@ -2520,4 +2520,174 @@ public sealed partial class PolymorphismMapStrategyIntegrationTests
             .HaveDiagnostics(1)
             .HaveDiagnostic(MappaDiagnosticDescriptors.CannotIdentifySuitableMethodToInvoke, "InvokeMe", "Mappa.Generator.Tests.UnitTests.SourceCode.Helper");
     }
+
+    /// <summary>
+    /// Test MP00042 is emitted when polymorphism default invoke-method resolution is ambiguous.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task AnErrorIsEmittedWhenPolymorphismInvokeMethodResolutionIsAmbiguous()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using System;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class SourceBaseClass
+                                  {
+                                      public byte BaseClassProperty { get; set; }
+                                  }
+
+                                  public class SourceFirstDerivedClass : SourceBaseClass
+                                  {
+                                      public float FirstDerivedClassProperty { get; set; }
+                                  }
+
+                                  public class SourceSecondDerivedClass : SourceBaseClass
+                                  {
+                                      public DateTime SecondDerivedClassProperty { get; set; }
+                                  }
+
+                                  public class SourceThirdDerivedClass : SourceSecondDerivedClass
+                                  {
+                                      public string ThirdDerivedClassProperty { get; set; }
+                                  }
+
+                                  public class TargetBaseClass
+                                  {
+                                      public int BaseClassProperty { get; set; }
+                                  }
+
+                                  public class TargetFirstDerivedClass : TargetBaseClass
+                                  {
+                                      public string FirstDerivedClassProperty { get; set; }
+                                  }
+
+                                  public class TargetSecondDerivedClass : TargetBaseClass
+                                  {
+                                      public DateOnly SecondDerivedClassProperty { get; set; }
+                                  }
+
+                                  public class TargetThirdDerivedClass : TargetSecondDerivedClass
+                                  {
+                                      public long ThirdDerivedClassProperty { get; set; }
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaIgnore]
+                                      public static TargetBaseClass InvokeMe(SourceBaseClass input)
+                                      {
+                                          return new TargetBaseClass();
+                                      }
+
+                                      [MappaIgnore]
+                                      public TargetBaseClass InvokeMe(SourceBaseClass input)
+                                      {
+                                          return new TargetBaseClass();
+                                      }
+
+                                      [MappaTypeMapping(typeof(TargetThirdDerivedClass), typeof(SourceThirdDerivedClass))]
+                                      [MappaTypeMapping(typeof(TargetSecondDerivedClass), typeof(SourceSecondDerivedClass))]
+                                      [MappaTypeMapping(typeof(TargetFirstDerivedClass), typeof(SourceFirstDerivedClass))]
+                                      [MappaTypeMappingDefault(nameof(InvokeMe))]
+                                      public partial TargetBaseClass Map(SourceBaseClass input);
+                                  }
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .ContainAmbiguousInvokeMethodResolutionDiagnostic("InvokeMe");
+    }
+
+    /// <summary>
+    /// Test MP00042 is emitted when polymorphism default invoke-method has both one- and two-parameter overloads.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task AnErrorIsEmittedWhenPolymorphismInvokeMethodHasBothOneAndTwoParameterOverloads()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using System;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class SourceBaseClass
+                                  {
+                                      public byte BaseClassProperty { get; set; }
+                                  }
+
+                                  public class SourceFirstDerivedClass : SourceBaseClass
+                                  {
+                                      public float FirstDerivedClassProperty { get; set; }
+                                  }
+
+                                  public class SourceSecondDerivedClass : SourceBaseClass
+                                  {
+                                      public DateTime SecondDerivedClassProperty { get; set; }
+                                  }
+
+                                  public class SourceThirdDerivedClass : SourceSecondDerivedClass
+                                  {
+                                      public string ThirdDerivedClassProperty { get; set; }
+                                  }
+
+                                  public class TargetBaseClass
+                                  {
+                                      public int BaseClassProperty { get; set; }
+                                  }
+
+                                  public class TargetFirstDerivedClass : TargetBaseClass
+                                  {
+                                      public string FirstDerivedClassProperty { get; set; }
+                                  }
+
+                                  public class TargetSecondDerivedClass : TargetBaseClass
+                                  {
+                                      public DateOnly SecondDerivedClassProperty { get; set; }
+                                  }
+
+                                  public class TargetThirdDerivedClass : TargetSecondDerivedClass
+                                  {
+                                      public long ThirdDerivedClassProperty { get; set; }
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaIgnore]
+                                      public static TargetBaseClass InvokeMe(SourceBaseClass input)
+                                      {
+                                          return new TargetBaseClass();
+                                      }
+
+                                      [MappaIgnore]
+                                      public static TargetBaseClass InvokeMe(SourceBaseClass input, MappaContext context)
+                                      {
+                                          return new TargetBaseClass();
+                                      }
+
+                                      [MappaTypeMapping(typeof(TargetThirdDerivedClass), typeof(SourceThirdDerivedClass))]
+                                      [MappaTypeMapping(typeof(TargetSecondDerivedClass), typeof(SourceSecondDerivedClass))]
+                                      [MappaTypeMapping(typeof(TargetFirstDerivedClass), typeof(SourceFirstDerivedClass))]
+                                      [MappaTypeMappingDefault(nameof(InvokeMe))]
+                                      public partial TargetBaseClass Map(SourceBaseClass input, MappaContext context);
+                                  }
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .ContainAmbiguousInvokeMethodResolutionDiagnostic("InvokeMe");
+    }
 }

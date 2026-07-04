@@ -227,4 +227,9 @@ internal enum MappaDiagnosticsKind
     /// Enum mapping is ambiguous because multiple members match the same target.
     /// </summary>
     AmbiguousEnumMap,
+
+    /// <summary>
+    /// Invoke method resolution is ambiguous because multiple methods match.
+    /// </summary>
+    AmbiguousInvokeMethodResolution,
 }

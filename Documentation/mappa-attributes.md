@@ -92,7 +92,7 @@ When the root map method accepts a `MappaContext` as its second parameter, invok
 
 ### Overload selection priority
 
-If multiple candidate methods match, the first matching overload in the following list is selected. Tiers that reference a source property apply only when a source property is available for the target member (via name matching, `[MappaUseProperty]`, or `SourcePropertyName` on `[MappaInvokeMethod]`):
+If multiple candidate methods match at the same selection tier, the generator reports error **MP00042** instead of picking one arbitrarily. When candidates remain in the same tier after hierarchy tie-breaking (a method declared on a more derived type wins over one on a base type), the first matching overload in the following list is selected. Tiers that reference a source property apply only when a source property is available for the target member (via name matching, `[MappaUseProperty]`, or `SourcePropertyName` on `[MappaInvokeMethod]`):
 
 1. Three parameters: source type (exact), source property (exact), `MappaContext` — requires the map method to provide `MappaContext`.
 2. Two parameters: source type (exact), source property (exact).
@@ -153,7 +153,7 @@ When resolving parse styles for a mapping target, the generator uses the type-sp
 - `Default`: returns `default`;
 - `Null`: returns `null`;
 - `MapSourceType`: maps the source type to the target type of the method or the type specified in the attribute;
-- `InvokeMethod`: invokes a method in the mapper with the name specified in the attribute to perform the mapping; the attribute can also specify the type on which the method is defined—in that case the method must be `static`. The method can optionally accept a `MappaContext` parameter.
+- `InvokeMethod`: invokes a method in the mapper with the name specified in the attribute to perform the mapping; the attribute can also specify the type on which the method is defined—in that case the method must be `static`. The method can optionally accept a `MappaContext` parameter. When more than one method matches, the generator reports error **MP00042** (see [Overload selection priority](#overload-selection-priority) for `[MappaInvokeMethod]` tier rules).
 
 ## .editorconfig
 

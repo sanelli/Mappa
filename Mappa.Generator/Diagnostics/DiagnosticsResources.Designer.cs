@@ -290,5 +290,11 @@ namespace Mappa.Generator.Diagnostics {
                 return ResourceManager.GetString("AmbiguousEnumMap", resourceCulture);
             }
         }
+
+        internal static string AmbiguousInvokeMethodResolution {
+            get {
+                return ResourceManager.GetString("AmbiguousInvokeMethodResolution", resourceCulture);
+            }
+        }
     }
 }

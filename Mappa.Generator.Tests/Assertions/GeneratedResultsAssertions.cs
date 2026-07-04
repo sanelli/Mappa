@@ -3,7 +3,9 @@
 // </copyright>
 
 using System.Diagnostics;
+using System.Globalization;
 
+using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Tests.Models;
 
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -63,6 +65,22 @@ internal sealed class GeneratedResultsAssertions
     {
         var runResult = this.HaveOneResult();
         runResult.Should().ContainDiagnostic(diagnosticDescriptor, parameters);
+        return this;
+    }
+
+    /// <summary>
+    /// Check it contains an ambiguous invoke-method resolution diagnostic mentioning the method name.
+    /// </summary>
+    /// <param name="methodName">The ambiguous method name.</param>
+    /// <returns>The assertions instance.</returns>
+    public GeneratedResultsAssertions ContainAmbiguousInvokeMethodResolutionDiagnostic(string methodName)
+    {
+        var runResult = this.HaveOneResult();
+        runResult.Diagnostics.Should().ContainSingle(diagnostic =>
+            diagnostic.Descriptor.Equals(MappaDiagnosticDescriptors.AmbiguousInvokeMethodResolution) &&
+            diagnostic.GetMessage(CultureInfo.CurrentCulture).Contains(
+                $"multiple methods named '{methodName}'",
+                StringComparison.Ordinal));
         return this;
     }
 

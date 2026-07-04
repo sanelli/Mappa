@@ -134,4 +134,7 @@
     <data name="AmbiguousEnumMap" xml:space="preserve">
         <value>La mappatura enum è ambigua: {0}.</value>
     </data>
+    <data name="AmbiguousInvokeMethodResolution" xml:space="preserve">
+        <value>La risoluzione del metodo da invocare è ambigua: {0}.</value>
+    </data>
 </root>

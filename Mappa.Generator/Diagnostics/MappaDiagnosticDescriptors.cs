@@ -55,6 +55,7 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? notAllSourceEnumMembersCanBeMapped;
     private static DiagnosticDescriptor? enumMemberMissingDescription;
     private static DiagnosticDescriptor? ambiguousEnumMap;
+    private static DiagnosticDescriptor? ambiguousInvokeMethodResolution;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -383,6 +384,14 @@ internal static class MappaDiagnosticDescriptors
         => ambiguousEnumMap ??= BuildError(
             MappaDiagnosticsKind.AmbiguousEnumMap,
             DiagnosticsResources.AmbiguousEnumMap);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.AmbiguousInvokeMethodResolution"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor AmbiguousInvokeMethodResolution
+        => ambiguousInvokeMethodResolution ??= BuildError(
+            MappaDiagnosticsKind.AmbiguousInvokeMethodResolution,
+            DiagnosticsResources.AmbiguousInvokeMethodResolution);
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(
