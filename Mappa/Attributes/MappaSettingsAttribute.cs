@@ -285,4 +285,10 @@ public sealed class MappaSettingsAttribute
     /// case-insensitively to enum member names when mapping from <see cref="string"/> to an enum.
     /// </summary>
     public BooleanSetting CaseInsensitiveStringToEnumMap { get; set; } = BooleanSetting.Undefined;
+
+    /// <summary>
+    /// Gets or sets how enum members are paired when mapping from one enum to another enum.
+    /// When unset, members are matched by name.
+    /// </summary>
+    public EnumToEnumMapSetting EnumToEnumMapSetting { get; set; } = EnumToEnumMapSetting.Undefined;
 }
