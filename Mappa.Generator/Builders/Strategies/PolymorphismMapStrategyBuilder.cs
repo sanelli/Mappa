@@ -55,7 +55,7 @@ internal sealed class PolymorphismMapStrategyBuilder(PolymorphismMapStrategy str
                     source,
                     targetTemporary,
                     this.strategy.DefaultBehaviorStrategy,
-                    this.strategy.NullableEnabled,
+                    this.strategy.DefaultInvokeMethod,
                     this.strategy.MapMethodContextParameterName,
                     builder,
                     context,
@@ -71,7 +71,7 @@ internal sealed class PolymorphismMapStrategyBuilder(PolymorphismMapStrategy str
         string source,
         string targetTemporary,
         MapStrategy defaultBehaviorStrategy,
-        bool nullableEnabled,
+        IMethodSymbol? defaultInvokeMethod,
         string? contextParameterName,
         PrettyCode.StringBuilder builder,
         MappaBuilderContext context,
@@ -122,6 +122,11 @@ internal sealed class PolymorphismMapStrategyBuilder(PolymorphismMapStrategy str
                 builder.AppendLine("break;");
                 break;
             case MappaTypeMappingDefaultBehavior.InvokeMethod:
+                if (defaultInvokeMethod is null)
+                {
+                    throw new MappaGeneratorException("Cannot identify the method to be invoked.");
+                }
+
                 var invokeMethodTypeSymbol =
                     (attribute.Type is { } invokingType && !string.IsNullOrWhiteSpace(invokingType.FullName))
                         ? context.Compilation.GetTypeByMetadataName(invokingType.FullName)
@@ -131,22 +136,10 @@ internal sealed class PolymorphismMapStrategyBuilder(PolymorphismMapStrategy str
                     throw new MappaGeneratorException("Cannot identify the type on which the method is being invoked on.");
                 }
 
-                var methods = invokeMethodTypeSymbol.LocateMethods(attribute.MethodName!);
-                var method = methods.FirstOrDefault(m => m.IsMethodValidToMapToTargetSymbolForPolymorphism(
-                    defaultBehaviorStrategy.SourceType,
-                    context.Compilation,
-                    attribute.Type is not null,
-                    nullableEnabled,
-                    contextParameterName is not null));
-                if (method is null)
-                {
-                    throw new MappaGeneratorException("Cannot identify the method to be invoked.");
-                }
-
                 var methodInvocationCode = BuildMethodInvocationCode(
                     context.GetMapMethod().MethodSymbol.ContainingType,
                     invokeMethodTypeSymbol,
-                    method,
+                    defaultInvokeMethod,
                     source,
                     contextParameterName);
                 builder.AppendLine($"{targetTemporary} = {methodInvocationCode};");

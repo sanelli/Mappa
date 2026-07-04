@@ -19,6 +19,7 @@ namespace Mappa.Generator.Models.Strategies;
 /// <param name="defaultBehaviorStrategy">Strategy to map <see cref="MappaTypeMappingDefaultBehavior.MapSourceType"/> behavior.</param>
 /// <param name="nullableEnabled"><c>true</c> if nullable is enabled, <c>false</c> otherwise.</param>
 /// <param name="mapMethodContextParameterName">The name of the map method context parameter (if present).</param>
+/// <param name="defaultInvokeMethod">The resolved default invoke method when behavior is <see cref="MappaTypeMappingDefaultBehavior.InvokeMethod"/>.</param>
 internal sealed class PolymorphismMapStrategy(
     ITypeSymbol targetType,
     ITypeSymbol sourceType,
@@ -26,7 +27,8 @@ internal sealed class PolymorphismMapStrategy(
     MappaTypeMappingDefaultAttribute defaultBehavior,
     MapStrategy defaultBehaviorStrategy,
     bool nullableEnabled,
-    string? mapMethodContextParameterName)
+    string? mapMethodContextParameterName,
+    IMethodSymbol? defaultInvokeMethod)
     : MapStrategy(targetType, sourceType)
 {
     /// <summary>
@@ -53,6 +55,11 @@ internal sealed class PolymorphismMapStrategy(
     /// Gets the mappings for all the subtypes.
     /// </summary>
     internal MapStrategy[] SubtypesMappingsStrategies => subtypesMappingsStrategies;
+
+    /// <summary>
+    /// Gets the resolved default invoke method when <see cref="DefaultBehavior"/> is <see cref="MappaTypeMappingDefaultBehavior.InvokeMethod"/>.
+    /// </summary>
+    internal IMethodSymbol? DefaultInvokeMethod { get; } = defaultInvokeMethod;
 
     /// <inheritdoc/>
     internal override IMappaStrategyBuilder GetBuilder() => new PolymorphismMapStrategyBuilder(this);

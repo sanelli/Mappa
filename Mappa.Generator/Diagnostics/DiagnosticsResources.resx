@@ -141,4 +141,7 @@
     <data name="AmbiguousEnumMap" xml:space="preserve">
         <value>Enum mapping is ambiguous: {0}.</value>
     </data>
+    <data name="AmbiguousInvokeMethodResolution" xml:space="preserve">
+        <value>Invoke method resolution is ambiguous: {0}.</value>
+    </data>
 </root>

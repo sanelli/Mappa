@@ -169,4 +169,21 @@ public sealed class MappaDiagnosticsTests
             .Should()
             .Be("Enum mapping is ambiguous: Target enum member 'one' is matched by multiple source members: 'ONe', 'One'..");
     }
+
+    /// <summary>
+    /// Test <see cref="MappaDiagnostics.AmbiguousInvokeMethodResolution"/> accepts a null location.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void AmbiguousInvokeMethodResolutionAcceptsNullLocation()
+    {
+        var diagnostic = MappaDiagnostics.AmbiguousInvokeMethodResolution(
+            null,
+            "multiple methods named 'InvokeMe' in 'Mapper' match.");
+
+        diagnostic.Location.Should().Be(Location.None);
+        diagnostic.GetMessage(CultureInfo.CurrentCulture)
+            .Should()
+            .Be("Invoke method resolution is ambiguous: multiple methods named 'InvokeMe' in 'Mapper' match..");
+    }
 }

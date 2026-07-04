@@ -688,4 +688,18 @@ internal static class MappaDiagnostics
             MappaDiagnosticDescriptors.AmbiguousEnumMap,
             methodDeclarationSyntax?.GetLocation(),
             details);
+
+    /// <summary>
+    /// Diagnostic to report that invoke method resolution is ambiguous.
+    /// </summary>
+    /// <param name="location">The location of the diagnostic.</param>
+    /// <param name="details">The ambiguity details.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic AmbiguousInvokeMethodResolution(
+        Location? location,
+        string details)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.AmbiguousInvokeMethodResolution,
+            location,
+            details);
 }

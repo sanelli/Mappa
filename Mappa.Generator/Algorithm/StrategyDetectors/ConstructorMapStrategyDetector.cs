@@ -11,6 +11,7 @@ using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Mappa.Generator.Algorithm.StrategyDetectors;
 
@@ -38,13 +39,6 @@ internal sealed class ConstructorMapStrategyDetector
         this.context = context;
         this.cancellationToken = cancellationToken;
         this.compilation = compilation;
-    }
-
-    private enum MethodDetectorMethodStaticRequirement
-    {
-        StaticOrNotStatic,
-        Static,
-        NotStatic,
     }
 
     /// <inheritdoc/>
@@ -994,13 +988,14 @@ internal sealed class ConstructorMapStrategyDetector
     {
         strategy = new NoMapStrategy(targetType, null!);
 
-        IMethodSymbol? method;
         var mapMethod = this.context.MapMethod ?? throw new MappaGeneratorException("Map method needs to be defined.");
         var mapMethodMethodDeclarationSyntax = mapMethod.MethodDeclarationSyntax ?? throw new MappaGeneratorException("Method declaration syntax has not been defined.");
         var mapMethodClass = (INamedTypeSymbol)mapMethod.MethodSymbol.ContainingSymbol;
 
         var rootMethod = this.context.GetRootMapMethod();
         ISymbol? fieldOrProperty = null;
+        InvokeMethodResolutionResult resolutionResult;
+        IMethodSymbol? method;
         if (mappaInvokeMethodAttribute.FieldName is not null)
         {
             fieldOrProperty = this.compilation.LocateAccessibleFieldOrPropertyInTypeHierarchy(
@@ -1031,17 +1026,17 @@ internal sealed class ConstructorMapStrategyDetector
                 _ => throw new MappaGeneratorException($"Unexpected symbol kind '{fieldOrProperty.Kind}' for field or property '{fieldOrProperty.Name}'."),
             };
 
-            method = GetBestMethodSymbol(
-                this.compilation,
+            resolutionResult = this.TryResolveInvokeMethodForAttribute(
                 mapMethodClass,
-                methods: fieldOrPropertyType.LocateMethods(mappaInvokeMethodAttribute.MethodName),
+                fieldOrPropertyType.LocateMethods(mappaInvokeMethodAttribute.MethodName),
                 mappaInvokeMethodAttribute.MethodName,
                 targetType,
                 sourceClassType,
                 sourceProperty,
-                this.context.IsNullableEnabled(),
-                MethodDetectorMethodStaticRequirement.NotStatic,
-                rootMethod);
+                InvokeMethodStaticRequirement.NotStatic,
+                rootMethod,
+                mapMethodMethodDeclarationSyntax,
+                out method);
         }
         else if (mappaInvokeMethodAttribute.ClassType is not null)
         {
@@ -1055,40 +1050,44 @@ internal sealed class ConstructorMapStrategyDetector
                 return;
             }
 
-            method = GetBestMethodSymbol(
-                this.compilation,
+            resolutionResult = this.TryResolveInvokeMethodForAttribute(
                 mapMethodClass,
-                methods: className.LocateMethods(mappaInvokeMethodAttribute.MethodName),
+                className.LocateMethods(mappaInvokeMethodAttribute.MethodName),
                 mappaInvokeMethodAttribute.MethodName,
                 targetType,
                 sourceClassType,
                 sourceProperty,
-                this.context.IsNullableEnabled(),
-                MethodDetectorMethodStaticRequirement.Static,
-                rootMethod);
+                InvokeMethodStaticRequirement.Static,
+                rootMethod,
+                mapMethodMethodDeclarationSyntax,
+                out method);
         }
         else
         {
             var rootMapMethod = rootMethod;
             var staticRequirement = rootMapMethod.MethodSymbol.IsStatic
-                ? MethodDetectorMethodStaticRequirement.Static
-                : MethodDetectorMethodStaticRequirement.StaticOrNotStatic;
+                ? InvokeMethodStaticRequirement.Static
+                : InvokeMethodStaticRequirement.StaticOrNotStatic;
 
-            // At this point we look for a method (static or not static in the mapper class or an accessible base class)
-            method = GetBestMethodSymbol(
-                this.compilation,
+            resolutionResult = this.TryResolveInvokeMethodForAttribute(
                 mapMethodClass,
-                methods: mapMethodClass.LocateMethods(mappaInvokeMethodAttribute.MethodName),
+                mapMethodClass.LocateMethods(mappaInvokeMethodAttribute.MethodName),
                 mappaInvokeMethodAttribute.MethodName,
                 targetType,
                 sourceClassType,
                 sourceProperty,
-                this.context.IsNullableEnabled(),
                 staticRequirement,
-                rootMethod);
+                rootMethod,
+                mapMethodMethodDeclarationSyntax,
+                out method);
         }
 
-        if (method is null)
+        if (resolutionResult is InvokeMethodResolutionResult.Ambiguous)
+        {
+            return;
+        }
+
+        if (resolutionResult is not InvokeMethodResolutionResult.Success || method is null)
         {
             var displayClassName = mappaInvokeMethodAttribute.ClassType is not null
                 ? mappaInvokeMethodAttribute.ClassType.FullName ?? "unknown"
@@ -1144,239 +1143,41 @@ internal sealed class ConstructorMapStrategyDetector
                 explicitSourcePropertyName,
                 mappaInvokeMethodAttribute.MethodName));
         }
+    }
 
-        static IMethodSymbol? GetBestMethodSymbol(
-            Compilation compilation,
-            ITypeSymbol mapClass,
-            IMethodSymbol[] methods,
-            string methodName,
-            ITypeSymbol targetType,
-            ITypeSymbol sourceClassType,
-            IPropertySymbol? sourceProperty,
-            bool nullableEnabled,
-            MethodDetectorMethodStaticRequirement isStatic,
-            MapMethod rootMapMethod)
+    private InvokeMethodResolutionResult TryResolveInvokeMethodForAttribute(
+        ITypeSymbol mapClass,
+        IMethodSymbol[] methods,
+        string methodName,
+        ITypeSymbol targetType,
+        ITypeSymbol sourceClassType,
+        IPropertySymbol? sourceProperty,
+        InvokeMethodStaticRequirement staticRequirement,
+        MapMethod rootMapMethod,
+        MethodDeclarationSyntax mapMethodMethodDeclarationSyntax,
+        out IMethodSymbol? method)
+    {
+        var resolutionResult = InvokeMethodResolution.TryResolveMappaInvokeMethod(
+            this.compilation,
+            mapClass,
+            methods,
+            methodName,
+            targetType,
+            sourceClassType,
+            sourceProperty,
+            this.context.IsNullableEnabled(),
+            staticRequirement,
+            rootMapMethod,
+            out method,
+            out var ambiguityDetails);
+
+        if (resolutionResult is InvokeMethodResolutionResult.Ambiguous)
         {
-            var methodsWithTheRightNameAndReturnType = methods
-                .Where(method =>
-                    method.Name.Equals(methodName, StringComparison.Ordinal) &&
-                    compilation.IsSymbolAccessibleWithin(method, mapClass) &&
-                    (method.ReturnType.IsEqualTo(targetType, nullableEnabled) || compilation.HasImplicitConversion(method.ReturnType, targetType)) &&
-                    isStatic switch
-                    {
-                        MethodDetectorMethodStaticRequirement.StaticOrNotStatic => true,
-                        MethodDetectorMethodStaticRequirement.Static => method.IsStatic,
-                        MethodDetectorMethodStaticRequirement.NotStatic => !method.IsStatic,
-                        _ => throw new MappaGeneratorException($"'isStatic' attribute is not valid (value: {isStatic})"),
-                    })
-                .ToArray();
-
-            if (methodsWithTheRightNameAndReturnType.Length == 0)
-            {
-                return null;
-            }
-
-            var rootProvidesMappaContext = rootMapMethod.ProvideMappaContextWhenInvoked();
-
-            bool IsExactSourceType(ITypeSymbol parameterType)
-                => parameterType.IsEqualTo(sourceClassType, nullableEnabled);
-
-            bool IsImplicitSourceType(ITypeSymbol parameterType)
-                => IsExactSourceType(parameterType) ||
-                   compilation.HasImplicitConversion(sourceClassType, parameterType);
-
-            bool IsExactSourcePropertyType(ITypeSymbol parameterType)
-                => sourceProperty is not null &&
-                   parameterType.IsEqualTo(sourceProperty.Type, nullableEnabled);
-
-            bool IsImplicitSourcePropertyType(ITypeSymbol parameterType)
-                => sourceProperty is not null &&
-                   (IsExactSourcePropertyType(parameterType) ||
-                    compilation.HasImplicitConversion(sourceProperty.Type, parameterType));
-
-            // Tier 1: source (exact), sourceProperty (exact), MappaContext.
-            if (rootProvidesMappaContext && sourceProperty is not null)
-            {
-                var match = Array.Find(
-                    methodsWithTheRightNameAndReturnType,
-                    method => method.Parameters.Length == 3 &&
-                              IsExactSourceType(method.Parameters[0].Type) &&
-                              IsExactSourcePropertyType(method.Parameters[1].Type) &&
-                              method.ParameterIsMappaContext(compilation, 2));
-                if (match is not null)
-                {
-                    return match;
-                }
-            }
-
-            // Tier 2: source (exact), sourceProperty (exact).
-            if (sourceProperty is not null)
-            {
-                var match = Array.Find(
-                    methodsWithTheRightNameAndReturnType,
-                    method => method.Parameters.Length == 2 &&
-                              IsExactSourceType(method.Parameters[0].Type) &&
-                              IsExactSourcePropertyType(method.Parameters[1].Type));
-                if (match is not null)
-                {
-                    return match;
-                }
-            }
-
-            // Tier 3: source (implicit), sourceProperty (implicit), MappaContext.
-            if (rootProvidesMappaContext && sourceProperty is not null)
-            {
-                var match = Array.Find(
-                    methodsWithTheRightNameAndReturnType,
-                    method => method.Parameters.Length == 3 &&
-                              IsImplicitSourceType(method.Parameters[0].Type) &&
-                              IsImplicitSourcePropertyType(method.Parameters[1].Type) &&
-                              method.ParameterIsMappaContext(compilation, 2));
-                if (match is not null)
-                {
-                    return match;
-                }
-            }
-
-            // Tier 4: source (implicit), sourceProperty (implicit).
-            if (sourceProperty is not null)
-            {
-                var match = Array.Find(
-                    methodsWithTheRightNameAndReturnType,
-                    method => method.Parameters.Length == 2 &&
-                              IsImplicitSourceType(method.Parameters[0].Type) &&
-                              IsImplicitSourcePropertyType(method.Parameters[1].Type));
-                if (match is not null)
-                {
-                    return match;
-                }
-            }
-
-            // Tier 5: source (exact), MappaContext.
-            if (rootProvidesMappaContext)
-            {
-                var match = Array.Find(
-                    methodsWithTheRightNameAndReturnType,
-                    method => method.Parameters.Length == 2 &&
-                              IsExactSourceType(method.Parameters[0].Type) &&
-                              method.ParameterIsMappaContext(compilation, 1));
-                if (match is not null)
-                {
-                    return match;
-                }
-            }
-
-            // Tier 6: source (exact).
-            var tier6Match = Array.Find(
-                methodsWithTheRightNameAndReturnType,
-                method => method.Parameters.Length == 1 &&
-                          IsExactSourceType(method.Parameters[0].Type));
-            if (tier6Match is not null)
-            {
-                return tier6Match;
-            }
-
-            // Tier 7: source (implicit), MappaContext.
-            if (rootProvidesMappaContext)
-            {
-                var match = Array.Find(
-                    methodsWithTheRightNameAndReturnType,
-                    method => method.Parameters.Length == 2 &&
-                              IsImplicitSourceType(method.Parameters[0].Type) &&
-                              method.ParameterIsMappaContext(compilation, 1));
-                if (match is not null)
-                {
-                    return match;
-                }
-            }
-
-            // Tier 8: source (implicit).
-            var tier8Match = Array.Find(
-                methodsWithTheRightNameAndReturnType,
-                method => method.Parameters.Length == 1 &&
-                          compilation.HasImplicitConversion(sourceClassType, method.Parameters[0].Type));
-            if (tier8Match is not null)
-            {
-                return tier8Match;
-            }
-
-            // Tier 9: sourceProperty (exact), MappaContext.
-            if (rootProvidesMappaContext && sourceProperty is not null)
-            {
-                var match = Array.Find(
-                    methodsWithTheRightNameAndReturnType,
-                    method => method.Parameters.Length == 2 &&
-                              IsExactSourcePropertyType(method.Parameters[0].Type) &&
-                              method.ParameterIsMappaContext(compilation, 1));
-                if (match is not null)
-                {
-                    return match;
-                }
-            }
-
-            // Tier 10: sourceProperty (exact).
-            if (sourceProperty is not null)
-            {
-                var match = Array.Find(
-                    methodsWithTheRightNameAndReturnType,
-                    method => method.Parameters.Length == 1 &&
-                              IsExactSourcePropertyType(method.Parameters[0].Type));
-                if (match is not null)
-                {
-                    return match;
-                }
-            }
-
-            // Tier 11: sourceProperty (implicit), MappaContext.
-            if (rootProvidesMappaContext && sourceProperty is not null)
-            {
-                var match = Array.Find(
-                    methodsWithTheRightNameAndReturnType,
-                    method => method.Parameters.Length == 2 &&
-                              IsImplicitSourcePropertyType(method.Parameters[0].Type) &&
-                              method.ParameterIsMappaContext(compilation, 1));
-                if (match is not null)
-                {
-                    return match;
-                }
-            }
-
-            // Tier 12: sourceProperty (implicit).
-            if (sourceProperty is not null)
-            {
-                var match = Array.Find(
-                    methodsWithTheRightNameAndReturnType,
-                    method => method.Parameters.Length == 1 &&
-                              compilation.HasImplicitConversion(sourceProperty.Type, method.Parameters[0].Type));
-                if (match is not null)
-                {
-                    return match;
-                }
-            }
-
-            // Tier 13: MappaContext.
-            if (rootProvidesMappaContext)
-            {
-                var match = Array.Find(
-                    methodsWithTheRightNameAndReturnType,
-                    method => method.Parameters.Length == 1 &&
-                              method.ParameterIsMappaContext(compilation, 0));
-                if (match is not null)
-                {
-                    return match;
-                }
-            }
-
-            // Tier 14: no parameters.
-            var tier14Match = Array.Find(
-                methodsWithTheRightNameAndReturnType,
-                method => method.Parameters.Length == 0);
-            if (tier14Match is not null)
-            {
-                return tier14Match;
-            }
-
-            return null;
+            this.context.ReportDiagnostic(MappaDiagnostics.AmbiguousInvokeMethodResolution(
+                mapMethodMethodDeclarationSyntax.GetLocation(),
+                ambiguityDetails));
         }
+
+        return resolutionResult;
     }
 }

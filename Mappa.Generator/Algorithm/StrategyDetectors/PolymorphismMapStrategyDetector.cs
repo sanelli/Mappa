@@ -135,7 +135,8 @@ internal sealed class PolymorphismMapStrategyDetector(MappaMapAlgorithmContext c
             mapMethodHasTwoParameters,
             this.compilation,
             rootMapMethod.Location,
-            out var validationDiagnosis);
+            out var validationDiagnosis,
+            out var resolvedInvokeMethod);
         foreach (var diagnostic in validationDiagnosis)
         {
             this.context.ReportDiagnostic(diagnostic);
@@ -186,7 +187,8 @@ internal sealed class PolymorphismMapStrategyDetector(MappaMapAlgorithmContext c
             mappaTypeMappingDefaultAttribute,
             defaultMappingStrategy,
             rootMapMethod.NullableEnabled,
-            rootMapMethod.MaybeGetMappaContextParameterName());
+            rootMapMethod.MaybeGetMappaContextParameterName(),
+            resolvedInvokeMethod);
         return true;
     }
 
