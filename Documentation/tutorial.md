@@ -337,6 +337,23 @@ Both enums must define a non-empty `[Description]` on every member used in the m
 
 See also: [NumericValueEnumToEnumMapper.cs](../Mappa.Samples/NumericValueEnumToEnumMapper.cs), [DescriptionEnumToEnumMapper.cs](../Mappa.Samples/DescriptionEnumToEnumMapper.cs).
 
+#### Identity map deep copy settings
+
+`IdentityMapDeepCopy` controls how the generator copies a type to itself when the identity strategy applies. The default is `ShallowCopy` (return the same reference). Set `DeepCopy` to clone the root instance without recursively copying nested references. Set `NestedDeepCopy` to clone the root and recursively map every accessible instance field (including reference-type fields inside struct roots):
+
+```csharp
+[Mappa]
+[MappaSettings(IdentityMapDeepCopy = IdentityMapDeepCopySetting.DeepCopy)]
+public sealed partial class IdentityMapDeepCopyDeepMapper
+{
+    public partial Person Map(Person input);
+}
+```
+
+Because Mappa allows only one map method per source/target pair in a mapper class, use separate mapper classes for each mode (shallow, deep, nested). Primitives, enums, and `string` always assign and ignore this setting. Same-type constructor-parameter mapping in the constructor detector always uses shallow pass-through.
+
+See also: [IdentityMapDeepCopyMapper.cs](../Mappa.Samples/IdentityMapDeepCopyMapper.cs).
+
 ### MappaInvokeMethod attribute
 When mapping structured types, `[MappaInvokeMethod]` forces a target property or constructor parameter to be mapped by invoking a named method:
 

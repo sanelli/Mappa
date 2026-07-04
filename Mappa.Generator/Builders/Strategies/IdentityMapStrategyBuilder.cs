@@ -44,7 +44,7 @@ internal sealed class IdentityMapStrategyBuilder(IdentityMapStrategy strategy)
     {
         var cloneTemporary = context.NextTemporary();
         var typeDisplayString = this.strategy.TargetType.ToDisplayString();
-        var code = $"{typeDisplayString} {cloneTemporary} = ({typeDisplayString}){source}.MemberwiseClone();";
+        var code = $"{typeDisplayString} {cloneTemporary} = ({typeDisplayString})global::Mappa.MappaCloning.MemberwiseClone({source});";
         return (cloneTemporary, code);
     }
 
@@ -63,7 +63,7 @@ internal sealed class IdentityMapStrategyBuilder(IdentityMapStrategy strategy)
         }
         else
         {
-            builder.AppendLine($"{typeDisplayString} {cloneTemporary} = ({typeDisplayString}){source}.MemberwiseClone();");
+            builder.AppendLine($"{typeDisplayString} {cloneTemporary} = ({typeDisplayString})global::Mappa.MappaCloning.MemberwiseClone({source});");
         }
 
         foreach (var nestedFieldStrategy in this.strategy.NestedFieldStrategies)

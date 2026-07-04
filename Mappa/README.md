@@ -44,7 +44,7 @@ Via `MappaSettings` the following settings can be tweaked:
 - `CaseInsensitiveEnumMap`: when enabled, enum member names or `[Description]` values are matched case-insensitively when mapping between enums or from `string` to an enum;
 - `EnumStringMapSetting`: selects whether enum and string mappings match members by name (default) or by `[Description]` attribute value;
 - `EnumToEnumMapSetting`: selects whether enum-to-enum mappings match members by name (default), by underlying numeric value, or by `[Description]` attribute value;
-- `IdentityMapDeepCopy`: selects whether identity mappings return the original reference, clone via `MemberwiseClone`, or recursively copy nested fields.
+- `IdentityMapDeepCopy`: selects whether identity mappings return the original reference, clone via `MemberwiseClone`, or recursively copy nested fields (see `Mappa.MappaCloning.MemberwiseClone`).
 
 Via `MappaTypeMappingDefault` the following settings can be tweaked:
 - `Undefined`: this setting should never be used;
