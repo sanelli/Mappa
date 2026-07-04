@@ -982,6 +982,274 @@ internal static class TypeSymbolExtensions
     }
 
     /// <summary>
+    /// Gets the Description attribute value for an enum field, if present and non-empty.
+    /// </summary>
+    /// <param name="fieldSymbol">The enum field symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The description text, or <c>null</c> if missing or empty.</returns>
+    internal static string? GetEnumMemberDescription(this IFieldSymbol fieldSymbol, Compilation compilation)
+    {
+        var descriptionAttributeSymbol = compilation.GetTypeByMetadataName("System.ComponentModel.DescriptionAttribute");
+
+        foreach (var attribute in fieldSymbol.GetAttributes())
+        {
+            var attributeClass = attribute.AttributeClass;
+            if (attributeClass is null)
+            {
+                continue;
+            }
+
+            var isDescriptionAttribute = descriptionAttributeSymbol is not null
+                && SymbolEqualityComparer.Default.Equals(attributeClass, descriptionAttributeSymbol);
+            isDescriptionAttribute |= attributeClass.Name == "DescriptionAttribute"
+                && attributeClass.ContainingNamespace.ToDisplayString() == "System.ComponentModel";
+            if (!isDescriptionAttribute)
+            {
+                continue;
+            }
+
+            if (attribute.ConstructorArguments.Length > 0
+                && attribute.ConstructorArguments[0].Value is string description
+                && !string.IsNullOrWhiteSpace(description))
+            {
+                return description;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Gets enum member names and Description attribute values for members that have a non-empty description.
+    /// </summary>
+    /// <param name="typeSymbol">The enum type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>Member names paired with description text.</returns>
+    internal static (string Name, string Description)[] GetEnumMembersWithDescriptions(this ITypeSymbol typeSymbol, Compilation compilation)
+        => typeSymbol.GetEnumValues()
+            .Select(enumValue => typeSymbol.GetMembers(enumValue.Name).OfType<IFieldSymbol>().First())
+            .Select(fieldSymbol => (fieldSymbol.Name, Description: fieldSymbol.GetEnumMemberDescription(compilation)))
+            .Where(member => member.Description is not null)
+            .Select(member => (member.Name, member.Description!))
+            .OrderBy(member => member.Name)
+            .ToArray();
+
+    /// <summary>
+    /// Gets enum member names that lack a non-empty Description attribute.
+    /// </summary>
+    /// <param name="typeSymbol">The enum type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>Member names missing a Description attribute.</returns>
+    internal static string[] GetEnumMemberNamesMissingDescription(this ITypeSymbol typeSymbol, Compilation compilation)
+        => typeSymbol.GetEnumValues()
+            .Select(enumValue => typeSymbol.GetMembers(enumValue.Name).OfType<IFieldSymbol>().First())
+            .Where(fieldSymbol => fieldSymbol.GetEnumMemberDescription(compilation) is null)
+            .Select(fieldSymbol => fieldSymbol.Name)
+            .OrderBy(name => name)
+            .ToArray();
+
+    /// <summary>
+    /// Gets duplicate Description values within an enum.
+    /// </summary>
+    /// <param name="typeSymbol">The enum type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <param name="caseInsensitive">Whether description comparison is case-insensitive.</param>
+    /// <returns>Formatted duplicate description groups.</returns>
+    internal static string[] GetDuplicateDescriptionGroups(this ITypeSymbol typeSymbol, Compilation compilation, bool caseInsensitive)
+    {
+        var comparer = caseInsensitive ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+        var membersByDescription = typeSymbol.GetEnumMembersWithDescriptions(compilation)
+            .GroupBy(member => member.Description, comparer)
+            .Where(group => group.Count() > 1)
+            .Select(group => string.Join(", ", group.Select(member => $"'{member.Name}'")))
+            .OrderBy(group => group, StringComparer.Ordinal)
+            .ToArray();
+
+        return membersByDescription;
+    }
+
+    /// <summary>
+    /// Gets source and target enum member name pairs matched by member name case-insensitively.
+    /// </summary>
+    /// <param name="sourceType">The source enum type.</param>
+    /// <param name="targetType">The target enum type.</param>
+    /// <returns>The shared enum member mappings in ascending source member name order.</returns>
+    internal static (string SourceMemberName, string TargetMemberName)[] GetSharedEnumMemberMappingsByNameCaseInsensitive(
+        this ITypeSymbol sourceType,
+        ITypeSymbol targetType)
+    {
+        var targetMemberNames = targetType.GetEnumValues().Select(enumValue => enumValue.Name).ToArray();
+        return sourceType.GetEnumValues()
+            .Select(sourceEnumValue => (SourceName: sourceEnumValue.Name, TargetName: targetMemberNames.FirstOrDefault(targetName => string.Equals(sourceEnumValue.Name, targetName, StringComparison.OrdinalIgnoreCase))))
+            .Where(pair => pair.TargetName is not null)
+            .OrderBy(pair => pair.SourceName)
+            .Select(pair => (pair.SourceName, pair.TargetName!))
+            .ToArray();
+    }
+
+    /// <summary>
+    /// Gets source and target enum member name pairs matched by Description attribute value.
+    /// </summary>
+    /// <param name="sourceType">The source enum type.</param>
+    /// <param name="targetType">The target enum type.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <param name="caseInsensitive">Whether description comparison is case-insensitive.</param>
+    /// <returns>The shared enum member mappings in ascending source member name order.</returns>
+    internal static (string SourceMemberName, string TargetMemberName)[] GetSharedEnumMemberMappingsByDescription(
+        this ITypeSymbol sourceType,
+        ITypeSymbol targetType,
+        Compilation compilation,
+        bool caseInsensitive)
+    {
+        var comparer = caseInsensitive ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+        var targetMembersByDescription = targetType.GetEnumMembersWithDescriptions(compilation)
+            .GroupBy(member => member.Description, comparer)
+            .ToDictionary(
+                group => group.Key,
+                group => group.OrderBy(member => member.Name).First().Name,
+                comparer);
+
+        return sourceType.GetEnumMembersWithDescriptions(compilation)
+            .Where(sourceMember => targetMembersByDescription.ContainsKey(sourceMember.Description))
+            .OrderBy(sourceMember => sourceMember.Name)
+            .Select(sourceMember => (sourceMember.Name, targetMembersByDescription[sourceMember.Description]))
+            .ToArray();
+    }
+
+    /// <summary>
+    /// Gets the source enum member names that have no matching Description in the target enum.
+    /// </summary>
+    /// <param name="sourceType">The source enum type.</param>
+    /// <param name="targetType">The target enum type.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <param name="caseInsensitive">Whether description comparison is case-insensitive.</param>
+    /// <returns>The unmapped source enum member names in ascending order.</returns>
+    internal static string[] GetUnmappedEnumMemberNamesByDescription(
+        this ITypeSymbol sourceType,
+        ITypeSymbol targetType,
+        Compilation compilation,
+        bool caseInsensitive)
+    {
+        var comparer = caseInsensitive ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+        var targetDescriptions = new HashSet<string>(
+            targetType.GetEnumMembersWithDescriptions(compilation).Select(member => member.Description),
+            comparer);
+
+        return sourceType.GetEnumMembersWithDescriptions(compilation)
+            .Where(sourceMember => !targetDescriptions.Contains(sourceMember.Description))
+            .Select(sourceMember => sourceMember.Name)
+            .OrderBy(name => name)
+            .ToArray();
+    }
+
+    /// <summary>
+    /// Determines whether case-insensitive enum member name mapping between source and target is ambiguous.
+    /// </summary>
+    /// <param name="sourceType">The source enum type.</param>
+    /// <param name="targetType">The target enum type.</param>
+    /// <param name="ambiguityDetails">The ambiguity details when mapping is ambiguous.</param>
+    /// <returns><c>true</c> if mapping is ambiguous; otherwise, <c>false</c>.</returns>
+    internal static bool HasAmbiguousEnumMemberNameCaseInsensitiveMap(
+        this ITypeSymbol sourceType,
+        ITypeSymbol targetType,
+        out string ambiguityDetails)
+    {
+        ambiguityDetails = string.Empty;
+        var sourceMemberNames = sourceType.GetEnumValues().Select(enumValue => enumValue.Name).ToArray();
+        var targetMemberNames = targetType.GetEnumValues().Select(enumValue => enumValue.Name).ToArray();
+        var mappings = new List<(string SourceMemberName, string TargetMemberName)>();
+
+        foreach (var sourceMemberName in sourceMemberNames)
+        {
+            var targetMatches = targetMemberNames
+                .Where(targetMemberName => string.Equals(sourceMemberName, targetMemberName, StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+            if (targetMatches.Length > 1)
+            {
+                ambiguityDetails = $"Source enum member '{sourceMemberName}' matches multiple target members: {string.Join(", ", targetMatches.Select(name => $"'{name}'"))}.";
+                return true;
+            }
+
+            if (targetMatches.Length == 1)
+            {
+                mappings.Add((sourceMemberName, targetMatches[0]));
+            }
+        }
+
+        var duplicateTargetMappings = mappings
+            .GroupBy(mapping => mapping.TargetMemberName, StringComparer.OrdinalIgnoreCase)
+            .FirstOrDefault(group => group.Count() > 1);
+        if (duplicateTargetMappings is not null)
+        {
+            var sourceMembers = duplicateTargetMappings.Select(mapping => mapping.SourceMemberName).ToArray();
+            ambiguityDetails = $"Target enum member '{duplicateTargetMappings.Key}' is matched by multiple source members: {string.Join(", ", sourceMembers.Select(name => $"'{name}'"))}.";
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Determines whether Description-based enum mapping between source and target is ambiguous.
+    /// </summary>
+    /// <param name="sourceType">The source enum type.</param>
+    /// <param name="targetType">The target enum type.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <param name="caseInsensitive">Whether description comparison is case-insensitive.</param>
+    /// <param name="ambiguityDetails">The ambiguity details when mapping is ambiguous.</param>
+    /// <returns><c>true</c> if mapping is ambiguous; otherwise, <c>false</c>.</returns>
+    internal static bool HasAmbiguousEnumMemberDescriptionMap(
+        this ITypeSymbol sourceType,
+        ITypeSymbol targetType,
+        Compilation compilation,
+        bool caseInsensitive,
+        out string ambiguityDetails)
+    {
+        ambiguityDetails = string.Empty;
+        var comparer = caseInsensitive ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+        var sourceMembers = sourceType.GetEnumMembersWithDescriptions(compilation);
+        var targetMembers = targetType.GetEnumMembersWithDescriptions(compilation);
+        var mappings = new List<(string SourceMemberName, string TargetMemberName)>();
+
+        foreach (var sourceMember in sourceMembers)
+        {
+            var targetMatches = targetMembers
+                .Where(targetMember => comparer.Equals(sourceMember.Description, targetMember.Description))
+                .ToArray();
+            if (targetMatches.Length > 1)
+            {
+                ambiguityDetails = $"Source enum member '{sourceMember.Name}' matches multiple target members by Description: {string.Join(", ", targetMatches.Select(member => $"'{member.Name}'"))}.";
+                return true;
+            }
+
+            if (targetMatches.Length == 1)
+            {
+                mappings.Add((sourceMember.Name, targetMatches[0].Name));
+            }
+        }
+
+        var duplicateTargetMappings = mappings
+            .GroupBy(mapping => mapping.TargetMemberName, StringComparer.Ordinal)
+            .FirstOrDefault(group => group.Count() > 1);
+        if (duplicateTargetMappings is not null)
+        {
+            var sourceMembersMatched = duplicateTargetMappings.Select(mapping => mapping.SourceMemberName).ToArray();
+            ambiguityDetails = $"Target enum member '{duplicateTargetMappings.Key}' is matched by multiple source members by Description: {string.Join(", ", sourceMembersMatched.Select(name => $"'{name}'"))}.";
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Formats a C# string literal for generated code.
+    /// </summary>
+    /// <param name="value">The string value.</param>
+    /// <returns>The escaped C# string literal.</returns>
+    internal static string ToCSharpStringLiteral(string value)
+        => $"\"{value.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\r", "\\r").Replace("\n", "\\n").Replace("\t", "\\t")}\"";
+
+    /// <summary>
     /// Gets the list of accessible constructors for <paramref name="typeSymbol"/>.
     /// </summary>
     /// <param name="typeSymbol">The symbol for which you require the list of constructors.</param>

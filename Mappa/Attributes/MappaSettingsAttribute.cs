@@ -281,10 +281,17 @@ public sealed class MappaSettingsAttribute
     public BooleanSetting IgnoreUnderscoreForPropertyMap { get; set; } = BooleanSetting.Undefined;
 
     /// <summary>
-    /// Gets or sets a value indicating whether <see cref="string"/> values are matched
-    /// case-insensitively to enum member names when mapping from <see cref="string"/> to an enum.
+    /// Gets or sets a value indicating whether enum member names or
+    /// <see cref="System.ComponentModel.DescriptionAttribute"/> values are matched
+    /// case-insensitively when mapping between enums or from <see cref="string"/> to an enum.
     /// </summary>
-    public BooleanSetting CaseInsensitiveStringToEnumMap { get; set; } = BooleanSetting.Undefined;
+    public BooleanSetting CaseInsensitiveEnumMap { get; set; } = BooleanSetting.Undefined;
+
+    /// <summary>
+    /// Gets or sets how enum members are paired with string values when mapping
+    /// between an enum and <see cref="string"/>. When unset, members are matched by name.
+    /// </summary>
+    public EnumStringMapSetting EnumStringMapSetting { get; set; } = EnumStringMapSetting.Undefined;
 
     /// <summary>
     /// Gets or sets how enum members are paired when mapping from one enum to another enum.

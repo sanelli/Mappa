@@ -135,4 +135,10 @@
     <data name="NotAllSourceEnumMembersCanBeMapped" xml:space="preserve">
         <value>Not all members of source enum '{0}' can be mapped to target enum '{1}' by name: {2}. Unmapped source values throw ArgumentOutOfRangeException at runtime.</value>
     </data>
+    <data name="EnumMemberMissingDescription" xml:space="preserve">
+        <value>Enum '{0}' has members without a non-empty Description attribute required for Description mapping: {1}.</value>
+    </data>
+    <data name="AmbiguousEnumMap" xml:space="preserve">
+        <value>Enum mapping is ambiguous: {0}.</value>
+    </data>
 </root>

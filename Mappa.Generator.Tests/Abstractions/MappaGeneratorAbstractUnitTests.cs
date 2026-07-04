@@ -66,6 +66,7 @@ public abstract class MappaGeneratorAbstractUnitTests
     {
         var frameworkPath = Path.GetDirectoryName(typeof(Attribute).GetTypeInfo().Assembly.Location)!;
         var dateTimeStylesAssembly = typeof(MappaSettingsAttribute).GetProperty(nameof(MappaSettingsAttribute.DateTimeStyle))!.PropertyType.Assembly;
+        var descriptionAttributeAssembly = typeof(System.ComponentModel.DescriptionAttribute).Assembly;
         var metadataReferences = new List<PortableExecutableReference>
         {
             MetadataReference.CreateFromFile(typeof(MappaAttribute).GetTypeInfo().Assembly.Location),
@@ -74,6 +75,7 @@ public abstract class MappaGeneratorAbstractUnitTests
             MetadataReference.CreateFromFile(typeof(object).GetTypeInfo().Assembly.Location),
             MetadataReference.CreateFromFile(typeof(Uri).GetTypeInfo().Assembly.Location),
             MetadataReference.CreateFromFile(dateTimeStylesAssembly.Location),
+            MetadataReference.CreateFromFile(descriptionAttributeAssembly.Location),
             MetadataReference.CreateFromFile(Path.Combine(frameworkPath, "netstandard.dll")),
             MetadataReference.CreateFromFile(Path.Combine(frameworkPath, "System.Runtime.dll")),
             MetadataReference.CreateFromFile(Path.Combine(frameworkPath, "System.Collections.Immutable.dll")),

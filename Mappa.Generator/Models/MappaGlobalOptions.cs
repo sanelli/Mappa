@@ -196,8 +196,12 @@ namespace Mappa.Generator.Models;
 ///         <description>Set the default value to enable or disable ignoring underscore characters when pairing a target property or constructor parameter with a source property by name.</description>
 ///     </item>
 ///     <item>
-///         <term><c>mappa.caseinsensitivestringtoenummap</c></term>
-///         <description>Set the default value to enable or disable case-insensitive matching when mapping from <see cref="string"/> to an enum.</description>
+///         <term><c>mappa.caseinsensitiveenummap</c></term>
+///         <description>Set the default value to enable or disable case-insensitive matching when mapping enum members or string values to enums.</description>
+///     </item>
+///     <item>
+///         <term><c>mappa.enumstringmapsetting</c></term>
+///         <description>Set the default enum and string member pairing mode. Valid values are the values of the <see cref="EnumStringMapSetting"/> <c>enum</c>.</description>
 ///     </item>
 ///     <item>
 ///         <term><c>mappa.enumtoenummapsetting</c></term>
@@ -254,7 +258,8 @@ internal sealed class MappaGlobalOptions
     private const string MappaSettingsPolymorphicMapMethodWithMatchingDefaultAttribute = "polymorphicmapmethodwithmatchingdefaultattribute";
     private const string MappaSettingsCaseInsensitivePropertyMap = "caseinsensitivepropertymap";
     private const string MappaSettingsIgnoreUnderscoreForPropertyMap = "ignoreunderscoreforpropertymap";
-    private const string MappaSettingsCaseInsensitiveStringToEnumMap = "caseinsensitivestringtoenummap";
+    private const string MappaSettingsCaseInsensitiveEnumMap = "caseinsensitiveenummap";
+    private const string MappaSettingsEnumStringMapSetting = "enumstringmapsetting";
     private const string MappaSettingsEnumToEnumMapSetting = "enumtoenummapsetting";
 
     /// <summary>
@@ -396,9 +401,13 @@ internal sealed class MappaGlobalOptions
             ? GetBooleanSettingFromString(ignoreUnderscoreForPropertyMap)
             : BooleanSetting.Undefined;
 
-        this.CaseInsensitiveStringToEnumMap = options.TryGetValue(GetOptionName(MappaSettingsCaseInsensitiveStringToEnumMap), out var caseInsensitiveStringToEnumMap)
-            ? GetBooleanSettingFromString(caseInsensitiveStringToEnumMap)
+        this.CaseInsensitiveEnumMap = options.TryGetValue(GetOptionName(MappaSettingsCaseInsensitiveEnumMap), out var caseInsensitiveEnumMap)
+            ? GetBooleanSettingFromString(caseInsensitiveEnumMap)
             : BooleanSetting.Undefined;
+
+        this.EnumStringMapSetting = options.TryGetValue(GetOptionName(MappaSettingsEnumStringMapSetting), out var enumStringMapSetting)
+            ? GetEnumStringMapSettingFromString(enumStringMapSetting)
+            : EnumStringMapSetting.MemberName;
 
         this.EnumToEnumMapSetting = options.TryGetValue(GetOptionName(MappaSettingsEnumToEnumMapSetting), out var enumToEnumMapSetting)
             ? GetEnumToEnumMapSettingFromString(enumToEnumMapSetting)
@@ -451,12 +460,32 @@ internal sealed class MappaGlobalOptions
                 return EnumToEnumMapSetting.NumericValue;
             }
 
+            if (enumToEnumMapSettingValue.Equals(nameof(EnumToEnumMapSetting.Description), StringComparison.OrdinalIgnoreCase))
+            {
+                return EnumToEnumMapSetting.Description;
+            }
+
             if (enumToEnumMapSettingValue.Equals(nameof(EnumToEnumMapSetting.Undefined), StringComparison.OrdinalIgnoreCase))
             {
                 return EnumToEnumMapSetting.Undefined;
             }
 
             return EnumToEnumMapSetting.MemberName;
+        }
+
+        static EnumStringMapSetting GetEnumStringMapSettingFromString(string enumStringMapSettingValue)
+        {
+            if (enumStringMapSettingValue.Equals(nameof(EnumStringMapSetting.Description), StringComparison.OrdinalIgnoreCase))
+            {
+                return EnumStringMapSetting.Description;
+            }
+
+            if (enumStringMapSettingValue.Equals(nameof(EnumStringMapSetting.Undefined), StringComparison.OrdinalIgnoreCase))
+            {
+                return EnumStringMapSetting.Undefined;
+            }
+
+            return EnumStringMapSetting.MemberName;
         }
 
         static PragmaWarningSetting GetPragmaWarningSettingFromString(string enableSettings)
@@ -626,7 +655,10 @@ internal sealed class MappaGlobalOptions
     public BooleanSetting IgnoreUnderscoreForPropertyMap { get; }
 
     /// <inheritdoc/>
-    public BooleanSetting CaseInsensitiveStringToEnumMap { get; }
+    public BooleanSetting CaseInsensitiveEnumMap { get; }
+
+    /// <inheritdoc/>
+    public EnumStringMapSetting EnumStringMapSetting { get; }
 
     /// <inheritdoc/>
     public EnumToEnumMapSetting EnumToEnumMapSetting { get; }

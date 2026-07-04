@@ -217,4 +217,14 @@ internal enum MappaDiagnosticsKind
     /// Not all source enum members can be mapped to the target enum by member name.
     /// </summary>
     NotAllSourceEnumMembersCanBeMapped,
+
+    /// <summary>
+    /// An enum member is missing a <see cref="System.ComponentModel.DescriptionAttribute"/> when Description mapping is enabled.
+    /// </summary>
+    EnumMemberMissingDescription,
+
+    /// <summary>
+    /// Enum mapping is ambiguous because multiple members match the same target.
+    /// </summary>
+    AmbiguousEnumMap,
 }

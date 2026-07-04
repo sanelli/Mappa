@@ -1,18 +1,18 @@
-// <copyright file="CaseInsensitiveStringToEnumMapperUnitTest.cs" company="Stefano Anelli">
+// <copyright file="CaseInsensitiveEnumMapperUnitTest.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
 namespace Mappa.Samples.Tests;
 
 /// <summary>
-/// Tests for the <see cref="CaseInsensitiveStringToEnumMapper"/>.
+/// Tests for the <see cref="CaseInsensitiveEnumMapper"/>.
 /// </summary>
-public sealed class CaseInsensitiveStringToEnumMapperUnitTest
+public sealed class CaseInsensitiveEnumMapperUnitTest
 {
-    private readonly CaseInsensitiveStringToEnumMapper mapper = new();
+    private readonly CaseInsensitiveEnumMapper mapper = new();
 
     /// <summary>
-    /// Unit test for <see cref="CaseInsensitiveStringToEnumMapper.MapToEnum"/>.
+    /// Unit test for <see cref="CaseInsensitiveEnumMapper.MapToEnum"/>.
     /// </summary>
     /// <param name="value">The value to map.</param>
     /// <param name="expected">The expected value of the mapping.</param>
@@ -33,7 +33,7 @@ public sealed class CaseInsensitiveStringToEnumMapperUnitTest
     }
 
     /// <summary>
-    /// Unit test for <see cref="CaseInsensitiveStringToEnumMapper.MapToEnum"/> when the input is invalid.
+    /// Unit test for <see cref="CaseInsensitiveEnumMapper.MapToEnum"/> when the input is invalid.
     /// </summary>
     [Fact]
     [UnitTest]

@@ -41,14 +41,11 @@ internal sealed class EnumMapStrategyDetector
         // 01. enum -> string : EnumToString strategy.
         if (this.CanMapEnumToString())
         {
-            // TODO [#15] Support using the Description attribute when mapping enum to string.
-            mapStrategy = new EnumToStringMapStrategy(
-                this.context.TargetType,
-                this.context.SourceType);
+            return this.TryCreateEnumToStringStrategy(out mapStrategy);
         }
 
         // 02. enum -> implicit-convertible-integral : EnumToIntegral strategy.
-        else if (this.CanMapEnumToIntegral())
+        if (this.CanMapEnumToIntegral())
         {
             mapStrategy = new EnumToIntegralMapStrategy(
                 this.context.TargetType,
@@ -58,11 +55,7 @@ internal sealed class EnumMapStrategyDetector
         // 03. string -> enum : StringToEnum strategy.
         else if (this.CanMapStringToEnum())
         {
-            // TODO [#16] Support using the Description attribute when mapping string to enum.
-            mapStrategy = new StringToEnumMapStrategy(
-                this.context.TargetType,
-                this.context.SourceType,
-                this.context.MappaUserSettings.CaseInsensitiveStringToEnumMap);
+            return this.TryCreateStringToEnumStrategy(out mapStrategy);
         }
 
         // 04. integral -> enum : IntegralToEnum strategy.
@@ -76,38 +69,182 @@ internal sealed class EnumMapStrategyDetector
         // 05. enum -> enum: EnumToEnumStrategy
         else if (this.CanMapEnumToEnum())
         {
-            mapStrategy = new EnumToEnumMapStrategy(
-                this.context.TargetType,
-                this.context.SourceType,
-                this.context.MappaUserSettings.EnumToEnumMapSetting);
-            this.ReportUnmappedSourceEnumMembersIfAny();
+            return this.TryCreateEnumToEnumStrategy(out mapStrategy);
         }
 
         return mapStrategy is not NoMapStrategy;
     }
 
+    private static EnumStringMapSetting GetEffectiveEnumStringMapSetting(EnumStringMapSetting enumStringMapSetting)
+        => enumStringMapSetting is EnumStringMapSetting.Undefined
+            ? EnumStringMapSetting.MemberName
+            : enumStringMapSetting;
+
+    private static EnumToEnumMapSetting GetEffectiveEnumToEnumMapSetting(EnumToEnumMapSetting enumToEnumMapSetting)
+        => enumToEnumMapSetting is EnumToEnumMapSetting.Undefined
+            ? EnumToEnumMapSetting.MemberName
+            : enumToEnumMapSetting;
+
+    private static string FormatMemberNames(IReadOnlyList<string> memberNames)
+        => string.Join(", ", memberNames.Select(name => $"'{name}'"));
+
+    private bool TryCreateEnumToStringStrategy(out MapStrategy mapStrategy)
+    {
+        mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
+        var settings = this.context.MappaUserSettings;
+        var effectiveEnumStringMapSetting = GetEffectiveEnumStringMapSetting(settings.EnumStringMapSetting);
+        var caseInsensitive = settings.CaseInsensitiveEnumMap is BooleanSetting.Enable;
+
+        if (effectiveEnumStringMapSetting is EnumStringMapSetting.Description
+            && !this.ValidateDescriptionMapping(this.context.SourceType, caseInsensitive))
+        {
+            return false;
+        }
+
+        mapStrategy = new EnumToStringMapStrategy(
+            this.context.TargetType,
+            this.context.SourceType,
+            settings.EnumStringMapSetting);
+        return true;
+    }
+
+    private bool TryCreateStringToEnumStrategy(out MapStrategy mapStrategy)
+    {
+        mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
+        var settings = this.context.MappaUserSettings;
+        var effectiveEnumStringMapSetting = GetEffectiveEnumStringMapSetting(settings.EnumStringMapSetting);
+        var caseInsensitive = settings.CaseInsensitiveEnumMap is BooleanSetting.Enable;
+
+        if (effectiveEnumStringMapSetting is EnumStringMapSetting.Description
+            && !this.ValidateDescriptionMapping(this.context.TargetType, caseInsensitive))
+        {
+            return false;
+        }
+
+        mapStrategy = new StringToEnumMapStrategy(
+            this.context.TargetType,
+            this.context.SourceType,
+            settings.CaseInsensitiveEnumMap,
+            settings.EnumStringMapSetting);
+        return true;
+    }
+
+    private bool TryCreateEnumToEnumStrategy(out MapStrategy mapStrategy)
+    {
+        mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
+        var settings = this.context.MappaUserSettings;
+        var effectiveEnumToEnumMapSetting = GetEffectiveEnumToEnumMapSetting(settings.EnumToEnumMapSetting);
+        var caseInsensitive = settings.CaseInsensitiveEnumMap is BooleanSetting.Enable;
+
+        if (effectiveEnumToEnumMapSetting is EnumToEnumMapSetting.Description)
+        {
+            if (!this.ValidateDescriptionMapping(this.context.SourceType, caseInsensitive)
+                || !this.ValidateDescriptionMapping(this.context.TargetType, caseInsensitive))
+            {
+                return false;
+            }
+
+            if (this.context.SourceType.HasAmbiguousEnumMemberDescriptionMap(
+                this.context.TargetType,
+                this.compilation,
+                caseInsensitive,
+                out var ambiguityDetails))
+            {
+                this.ReportAmbiguousEnumMap(ambiguityDetails);
+                return false;
+            }
+        }
+        else if (effectiveEnumToEnumMapSetting is EnumToEnumMapSetting.MemberName
+                 && caseInsensitive
+                 && this.context.SourceType.HasAmbiguousEnumMemberNameCaseInsensitiveMap(
+                     this.context.TargetType,
+                     out var ambiguityDetails))
+        {
+            this.ReportAmbiguousEnumMap(ambiguityDetails);
+            return false;
+        }
+
+        mapStrategy = new EnumToEnumMapStrategy(
+            this.context.TargetType,
+            this.context.SourceType,
+            settings.EnumToEnumMapSetting,
+            settings.CaseInsensitiveEnumMap);
+        this.ReportUnmappedSourceEnumMembersIfAny();
+        return true;
+    }
+
+    private bool ValidateDescriptionMapping(ITypeSymbol enumType, bool caseInsensitive)
+    {
+        var missingMemberNames = enumType.GetEnumMemberNamesMissingDescription(this.compilation);
+        if (missingMemberNames.Length > 0)
+        {
+            this.context.ReportDiagnostic(
+                MappaDiagnostics.EnumMemberMissingDescription(
+                    this.context.GetRootMapMethod().MethodDeclarationSyntax,
+                    enumType.ToDisplayString(),
+                    FormatMemberNames(missingMemberNames)));
+            return false;
+        }
+
+        var duplicateDescriptionGroups = enumType.GetDuplicateDescriptionGroups(this.compilation, caseInsensitive);
+        if (duplicateDescriptionGroups.Length > 0)
+        {
+            this.ReportAmbiguousEnumMap(
+                $"Enum '{enumType.ToDisplayString()}' has duplicate Description values for members: {string.Join("; ", duplicateDescriptionGroups)}.");
+            return false;
+        }
+
+        return true;
+    }
+
+    private void ReportAmbiguousEnumMap(string ambiguityDetails)
+        => this.context.ReportDiagnostic(
+            MappaDiagnostics.AmbiguousEnumMap(
+                this.context.GetRootMapMethod().MethodDeclarationSyntax,
+                ambiguityDetails));
+
     private void ReportUnmappedSourceEnumMembersIfAny()
     {
-        static EnumToEnumMapSetting GetEffectiveEnumToEnumMapSetting(EnumToEnumMapSetting enumToEnumMapSetting)
-            => enumToEnumMapSetting is EnumToEnumMapSetting.Undefined
-                ? EnumToEnumMapSetting.MemberName
-                : enumToEnumMapSetting;
+        var settings = this.context.MappaUserSettings;
+        var effectiveEnumToEnumMapSetting = GetEffectiveEnumToEnumMapSetting(settings.EnumToEnumMapSetting);
+        var caseInsensitive = settings.CaseInsensitiveEnumMap is BooleanSetting.Enable;
 
-        var unmappedMemberNames = GetEffectiveEnumToEnumMapSetting(this.context.MappaUserSettings.EnumToEnumMapSetting) is EnumToEnumMapSetting.NumericValue
-            ? this.context.SourceType.GetUnmappedEnumMemberNamesByValue(this.context.TargetType)
-            : this.context.SourceType.GetUnmappedEnumMemberNamesByName(this.context.TargetType);
+        var unmappedMemberNames = effectiveEnumToEnumMapSetting switch
+        {
+            EnumToEnumMapSetting.NumericValue => this.context.SourceType.GetUnmappedEnumMemberNamesByValue(this.context.TargetType),
+            EnumToEnumMapSetting.Description => this.context.SourceType.GetUnmappedEnumMemberNamesByDescription(
+                this.context.TargetType,
+                this.compilation,
+                caseInsensitive),
+            _ when caseInsensitive => this.GetUnmappedEnumMemberNamesByNameCaseInsensitive(),
+            _ => this.context.SourceType.GetUnmappedEnumMemberNamesByName(this.context.TargetType),
+        };
         if (unmappedMemberNames.Length == 0)
         {
             return;
         }
 
-        var formattedUnmappedMemberNames = string.Join(", ", unmappedMemberNames.Select(name => $"'{name}'"));
+        var formattedUnmappedMemberNames = FormatMemberNames(unmappedMemberNames);
         this.context.ReportDiagnostic(
             MappaDiagnostics.NotAllSourceEnumMembersCanBeMapped(
                 this.context.GetRootMapMethod().MethodDeclarationSyntax,
                 this.context.SourceType.ToDisplayString(),
                 this.context.TargetType.ToDisplayString(),
                 formattedUnmappedMemberNames));
+    }
+
+    private string[] GetUnmappedEnumMemberNamesByNameCaseInsensitive()
+    {
+        var mappedSourceMemberNames = new HashSet<string>(
+            this.context.SourceType.GetSharedEnumMemberMappingsByNameCaseInsensitive(this.context.TargetType)
+                .Select(mapping => mapping.SourceMemberName),
+            StringComparer.Ordinal);
+
+        return this.context.SourceType.GetEnumValues()
+            .Select(enumValue => enumValue.Name)
+            .Where(sourceMemberName => !mappedSourceMemberNames.Contains(sourceMemberName))
+            .OrderBy(sourceMemberName => sourceMemberName)
+            .ToArray();
     }
 
     private bool CanMapEnumToString()
