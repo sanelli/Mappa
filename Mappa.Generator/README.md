@@ -115,15 +115,18 @@ When no existing method applies (or for root methods), `TypeMapIdentifierAlgorit
     - `TSource` is an integral numeric type compatible with the enum and `TTarget` is an `enum` OR,
     - `TSource` is a `string` and `TTarget` is an `enum`;
 - _What_:
-    - **Enum → enum** and **enum → string**: a `switch` statement maps by shared enum member names, or by shared underlying numeric values when `EnumToEnumMapSetting` is `NumericValue`;
-    - When mapping **enum → enum**, if at least one source enum member cannot be paired with a target member (by name or by numeric value, depending on `EnumToEnumMapSetting`), the generator reports warning **MP00039** and continues code generation; unmapped source values throw `ArgumentOutOfRangeException` at runtime;
+    - **Enum → enum** and **enum → string**: a `switch` statement maps by shared enum member names, by shared underlying numeric values when `EnumToEnumMapSetting` is `NumericValue`, or by shared `[Description]` attribute values when `EnumStringMapSetting` or `EnumToEnumMapSetting` is `Description`;
+    - When mapping **enum → enum**, if at least one source enum member cannot be paired with a target member (by name, numeric value, or Description, depending on `EnumToEnumMapSetting`), the generator reports warning **MP00039** and continues code generation; unmapped source values throw `ArgumentOutOfRangeException` at runtime;
+    - When **Description** mapping is enabled, every enum member involved must have a non-empty `[Description]` attribute; otherwise the generator reports error **MP00040** and does not generate the mapping;
+    - When **Description** mapping or case-insensitive member-name mapping would pair multiple source members with the same target member, the generator reports error **MP00041** and does not generate the mapping;
     - **Enum → integral**: maps enum members to their underlying integral values;
     - **Integral → enum**: maps integral values (cast to the enum underlying type) to enum members;
-    - **String → enum**: maps string input to enum members by name (handled by the enum strategy, not the string strategy, because the enum detector runs first); when `CaseInsensitiveStringToEnumMap` is enabled in `MappaSettings`, member names are matched case-insensitively via `ToUpperInvariant()`;
+    - **String → enum**: maps string input to enum members by name or by `[Description]` value (handled by the enum strategy, not the string strategy, because the enum detector runs first); when `CaseInsensitiveEnumMap` is enabled in `MappaSettings`, member names or Description values are matched case-insensitively via `ToUpperInvariant()`;
 - _Notes_:
     - The enum detector runs before the general string strategy, so **`string` → `enum`** is handled here rather than by the string strategy;
-    - **Enum → enum** matching uses member names by default; set `EnumToEnumMapSetting` to `NumericValue` to match by underlying numeric value;
-    - **String → enum** matching is case-sensitive by default; enable `CaseInsensitiveStringToEnumMap` for case-insensitive member name matching.
+    - **Enum → enum** matching uses member names by default; set `EnumToEnumMapSetting` to `NumericValue` to match by underlying numeric value, or to `Description` to match by `[Description]` attribute value;
+    - **Enum ↔ string** matching uses member names by default; set `EnumStringMapSetting` to `Description` to match by `[Description]` attribute value;
+    - **String → enum** and **enum → enum** member-name matching is case-sensitive by default; enable `CaseInsensitiveEnumMap` for case-insensitive member name or Description matching.
 
 ### 5. String strategy
 

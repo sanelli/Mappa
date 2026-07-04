@@ -255,23 +255,60 @@ public sealed partial class Mapper
 
 See also: [PropertyMapNameSettingsMapper.cs](../Mappa.Samples/PropertyMapNameSettingsMapper.cs).
 
-### String-to-enum matching settings
-`CaseInsensitiveStringToEnumMap` enables case-insensitive matching of string input to enum member names:
+### Enum matching settings
+
+#### Case-insensitive matching
+
+`CaseInsensitiveEnumMap` enables case-insensitive matching of enum member names when mapping between enums or from `string` to an enum. When `EnumStringMapSetting` or `EnumToEnumMapSetting` is `Description`, the same setting also applies case-insensitively to `Description` attribute values:
 
 ```csharp
 [Mappa]
-[MappaSettings(CaseInsensitiveStringToEnumMap = BooleanSetting.Enable)]
+[MappaSettings(CaseInsensitiveEnumMap = BooleanSetting.Enable)]
 public sealed partial class Mapper
 {
     public partial MyEnum Map(string input);
+    public partial TargetEnum Map(SourceEnum input);
 }
 ```
 
-With this setting enabled, `"one"`, `"ONE"`, and `"One"` all map to `MyEnum.One`. By default, only the exact member name matches (for example `"One"`).
+With this setting enabled for string-to-enum mapping, `"one"`, `"ONE"`, and `"One"` all map to `MyEnum.One`. By default, only the exact member name matches (for example `"One"`).
 
-See also: [CaseInsensitiveStringToEnumMapper.cs](../Mappa.Samples/CaseInsensitiveStringToEnumMapper.cs).
+For enum-to-enum mapping, member names are compared case-insensitively when `CaseInsensitiveEnumMap` is enabled and `EnumToEnumMapSetting` is unset or `MemberName`. This allows source and target enums to use different casing for otherwise matching names.
 
-### Enum-to-enum matching settings
+See also: [CaseInsensitiveEnumMapper.cs](../Mappa.Samples/CaseInsensitiveEnumMapper.cs), [CaseInsensitiveEnumToEnumMapper.cs](../Mappa.Samples/CaseInsensitiveEnumToEnumMapper.cs).
+
+#### Description-based string mapping
+
+`EnumStringMapSetting` selects how enum members are paired with string values when mapping between an enum and `string`. Set `Description` to match by each member's `[Description]` attribute value instead of the member name:
+
+```csharp
+using System.ComponentModel;
+
+public enum MyEnum
+{
+    [Description("First")]
+    One,
+    [Description("Second")]
+    Two,
+}
+
+[Mappa]
+[MappaSettings(EnumStringMapSetting = EnumStringMapSetting.Description)]
+public sealed partial class Mapper
+{
+    public partial string MapToString(MyEnum input);
+    public partial MyEnum MapToEnum(string input);
+}
+```
+
+With `Description`, `MyEnum.One` maps to `"First"` and `"First"` maps back to `MyEnum.One`. Every enum member used in the mapping must have a non-empty `[Description]` attribute; duplicate Description values on the same enum are reported as errors.
+
+Combine with `CaseInsensitiveEnumMap` for case-insensitive Description matching (for example `"first"` maps to `MyEnum.One`).
+
+See also: [DescriptionEnumToStringMapper.cs](../Mappa.Samples/DescriptionEnumToStringMapper.cs), [DescriptionStringToEnumMapper.cs](../Mappa.Samples/DescriptionStringToEnumMapper.cs).
+
+#### Enum-to-enum matching settings
+
 `EnumToEnumMapSetting` selects how enum-to-enum mappings pair source and target members. By default, members are matched by name. Set `NumericValue` to match by underlying numeric value instead:
 
 ```csharp
@@ -285,7 +322,20 @@ public sealed partial class Mapper
 
 With `NumericValue`, source members are mapped to target members that share the same constant value, even when member names differ. The generator emits an explicit `switch` with per-case assignments (no cross-enum cast). When multiple target members share the same value, the first target member name in alphabetical order is used.
 
-See also: [NumericValueEnumToEnumMapper.cs](../Mappa.Samples/NumericValueEnumToEnumMapper.cs).
+Set `Description` to match source and target members by shared `[Description]` attribute values instead of member names:
+
+```csharp
+[Mappa]
+[MappaSettings(EnumToEnumMapSetting = EnumToEnumMapSetting.Description)]
+public sealed partial class Mapper
+{
+    public partial TargetEnum Map(SourceEnum input);
+}
+```
+
+Both enums must define a non-empty `[Description]` on every member used in the mapping. Duplicate Description values within an enum, or ambiguous pairings between source and target enums, are reported as errors.
+
+See also: [NumericValueEnumToEnumMapper.cs](../Mappa.Samples/NumericValueEnumToEnumMapper.cs), [DescriptionEnumToEnumMapper.cs](../Mappa.Samples/DescriptionEnumToEnumMapper.cs).
 
 ### MappaInvokeMethod attribute
 When mapping structured types, `[MappaInvokeMethod]` forces a target property or constructor parameter to be mapped by invoking a named method:
