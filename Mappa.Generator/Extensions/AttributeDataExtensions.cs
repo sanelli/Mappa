@@ -462,6 +462,10 @@ internal static class AttributeDataExtensions
                 case nameof(MappaSettingsAttribute.IdentityMapDeepCopy) when namedArgument.Value.Value is int value:
                     attribute.IdentityMapDeepCopy = (IdentityMapDeepCopySetting)value;
                     break;
+
+                case nameof(MappaSettingsAttribute.EnumerableConcreteType) when namedArgument.Value.Value is int value:
+                    attribute.EnumerableConcreteType = (EnumerableConcreteTypeSetting)value;
+                    break;
             }
         }
 

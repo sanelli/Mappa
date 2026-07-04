@@ -211,6 +211,10 @@ namespace Mappa.Generator.Models;
 ///         <term><c>mappa.identitymapdeepcopy</c></term>
 ///         <description>Set the default identity deep copy mode. Valid values are the values of the <see cref="IdentityMapDeepCopySetting"/> <c>enum</c>.</description>
 ///     </item>
+///     <item>
+///         <term><c>mappa.enumerableconcretetype</c></term>
+///         <description>Set the default concrete type for sequence-like collection interface targets. Valid values are the values of the <see cref="EnumerableConcreteTypeSetting"/> <c>enum</c>.</description>
+///     </item>
 /// </list>
 /// </summary>
 internal sealed class MappaGlobalOptions
@@ -266,6 +270,7 @@ internal sealed class MappaGlobalOptions
     private const string MappaSettingsEnumStringMapSetting = "enumstringmapsetting";
     private const string MappaSettingsEnumToEnumMapSetting = "enumtoenummapsetting";
     private const string MappaSettingsIdentityMapDeepCopy = "identitymapdeepcopy";
+    private const string MappaSettingsEnumerableConcreteType = "enumerableconcretetype";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaGlobalOptions"/> class.
@@ -422,6 +427,10 @@ internal sealed class MappaGlobalOptions
             ? GetIdentityMapDeepCopySettingFromString(identityMapDeepCopy)
             : IdentityMapDeepCopySetting.ShallowCopy;
 
+        this.EnumerableConcreteType = options.TryGetValue(GetOptionName(MappaSettingsEnumerableConcreteType), out var enumerableConcreteType)
+            ? GetEnumerableConcreteTypeSettingFromString(enumerableConcreteType)
+            : EnumerableConcreteTypeSetting.List;
+
         static CultureInfoSetting GetCultureInfoSettingsFromString(string cultureInfoSettings)
         {
             if (cultureInfoSettings.Equals(nameof(CultureInfoSetting.CurrentCulture), StringComparison.OrdinalIgnoreCase))
@@ -515,6 +524,21 @@ internal sealed class MappaGlobalOptions
             }
 
             return IdentityMapDeepCopySetting.ShallowCopy;
+        }
+
+        static EnumerableConcreteTypeSetting GetEnumerableConcreteTypeSettingFromString(string enumerableConcreteTypeValue)
+        {
+            if (enumerableConcreteTypeValue.Equals(nameof(EnumerableConcreteTypeSetting.Array), StringComparison.OrdinalIgnoreCase))
+            {
+                return EnumerableConcreteTypeSetting.Array;
+            }
+
+            if (enumerableConcreteTypeValue.Equals(nameof(EnumerableConcreteTypeSetting.Undefined), StringComparison.OrdinalIgnoreCase))
+            {
+                return EnumerableConcreteTypeSetting.Undefined;
+            }
+
+            return EnumerableConcreteTypeSetting.List;
         }
 
         static PragmaWarningSetting GetPragmaWarningSettingFromString(string enableSettings)
@@ -694,6 +718,9 @@ internal sealed class MappaGlobalOptions
 
     /// <inheritdoc/>
     public IdentityMapDeepCopySetting IdentityMapDeepCopy { get; }
+
+    /// <inheritdoc/>
+    public EnumerableConcreteTypeSetting EnumerableConcreteType { get; }
 
     /// <summary>
     /// Gets a value indicating whether to report debug INFO diagnostics.

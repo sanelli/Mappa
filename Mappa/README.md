@@ -38,6 +38,7 @@ Via `MappaSettings` the following settings can be tweaked:
 - `PragmaWarning`: allows surrounding the generated methods with a `#pragma warning disable` block;
 - `FastCollections`: uses `Span<T>` to make mappings involving arrays and `System.Collections.Generic.List<T>` faster;
 - `ContainerCapacityConstructors`: supports mapping custom containers using (if available) a constructor accepting an integer value representing the initial capacity of the container;
+- `EnumerableConcreteType`: selects whether mappings to sequence-like collection interfaces (for example `IEnumerable<T>`) use `List<T>` (default) or `T[]` as the concrete buffer;
 - `PolymorphicMapMethodWithMatchingDefaultAttribute`: when enabled, `MappaTypeMappingDefault` can be used to locate an appropriate polymorphic method when looking for the mapping between two types;
 - `CaseInsensitivePropertyMap`: when enabled, source property names are matched case-insensitively when pairing a target property or constructor parameter with a source property by name;
 - `IgnoreUnderscoreForPropertyMap`: when enabled, underscore characters are stripped from names before comparing a target property or constructor parameter with a source property by name;

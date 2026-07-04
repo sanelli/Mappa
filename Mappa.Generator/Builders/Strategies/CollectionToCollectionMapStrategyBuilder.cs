@@ -41,6 +41,7 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
             this.strategy.SourceType,
             this.strategy.FastCollections,
             this.strategy.ContainerCapacityConstructors,
+            this.strategy.EnumerableConcreteType,
             out var targetVariableName,
             out var addMethod,
             out var targetCounterTemporary,
@@ -193,6 +194,7 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
         ITypeSymbol sourceTypeSymbol,
         BooleanSetting fastCollections,
         BooleanSetting containerCapacityConstructors,
+        EnumerableConcreteTypeSetting enumerableConcreteType,
         out string targetVariableName,
         out InsertionMethod insertionMethod,
         out string? counterVariableName,
@@ -344,6 +346,20 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
 
             stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {targetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}({capacity});");
         }
+        else if (ShouldUseArrayForEnumerableInterfaceTarget(targetTypeSymbol, enumerableConcreteType))
+        {
+            AppendArrayTargetVariable(
+                stringBuilder,
+                source,
+                context,
+                targetTypeSymbol,
+                sourceTypeSymbol,
+                fastCollections,
+                ref targetVariableName,
+                out insertionMethod,
+                out counterVariableName,
+                out variableToAccessFrom);
+        }
         else if (targetTypeSymbol.IsIEnumerable()
             || targetTypeSymbol.IsList(context.Compilation)
             || targetTypeSymbol.IsIList()
@@ -444,6 +460,67 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
         else
         {
             throw new MappaGeneratorException($"Unsupported target type {targetTypeSymbol.ToDisplayString()} during generation of collection to collection mapping.");
+        }
+    }
+
+    private static bool ShouldUseArrayForEnumerableInterfaceTarget(
+        ITypeSymbol targetTypeSymbol,
+        EnumerableConcreteTypeSetting enumerableConcreteType)
+    {
+        if (enumerableConcreteType is not EnumerableConcreteTypeSetting.Array)
+        {
+            return false;
+        }
+
+        if (targetTypeSymbol.TypeKind is not TypeKind.Interface)
+        {
+            return false;
+        }
+
+        return targetTypeSymbol.IsIEnumerable()
+               || targetTypeSymbol.IsIList()
+               || targetTypeSymbol.IsIReadOnlyList()
+               || targetTypeSymbol.IsICollection()
+               || targetTypeSymbol.IsIReadOnlyCollection();
+    }
+
+    private static void AppendArrayTargetVariable(
+        PrettyCode.StringBuilder stringBuilder,
+        string source,
+        MappaBuilderContext context,
+        ITypeSymbol targetTypeSymbol,
+        ITypeSymbol sourceTypeSymbol,
+        BooleanSetting fastCollections,
+        ref string targetVariableName,
+        out InsertionMethod insertionMethod,
+        out string? counterVariableName,
+        out string? variableToAccessFrom)
+    {
+        insertionMethod = InsertionMethod.Indexer;
+        counterVariableName = null;
+        variableToAccessFrom = null;
+
+        var elementTypeDisplayString = targetTypeSymbol.GetElementType().ToDisplayString();
+        var isFastCollectionOnSource = fastCollections is BooleanSetting.Enable
+            && (sourceTypeSymbol.IsList(context.Compilation) || sourceTypeSymbol.IsArray());
+
+        if (isFastCollectionOnSource)
+        {
+            var capacity = GetLengthExpression(source, sourceTypeSymbol, context.Compilation);
+            variableToAccessFrom = context.NextTemporary();
+            stringBuilder.AppendLine($"{elementTypeDisplayString}[] {targetVariableName} = new {elementTypeDisplayString}[{capacity}];");
+            stringBuilder.AppendLine($"global::System.Span<{elementTypeDisplayString}> {variableToAccessFrom} = {targetVariableName}.AsSpan();");
+        }
+        else
+        {
+            var capacity = GetLengthExpression(source, sourceTypeSymbol, context.Compilation);
+            stringBuilder.AppendLine($"{elementTypeDisplayString}[] {targetVariableName} = new {elementTypeDisplayString}[{capacity}];");
+
+            if (!HasIndexer(context, sourceTypeSymbol))
+            {
+                counterVariableName = context.NextTemporary();
+                stringBuilder.AppendLine($"int {counterVariableName} = 0;");
+            }
         }
     }
 
