@@ -31,8 +31,12 @@ See the [tutorial](../Documentation/tutorial.md) for a guided introduction, or b
 | [`InvokeParseMapper.cs`](InvokeParseMapper.cs) | Parse settings: culture and format for date/time, `Guid`, and numeric types |
 | [`InvokeToStringMapper.cs`](InvokeToStringMapper.cs) | ToString settings: culture and format |
 | [`PropertyMapNameSettingsMapper.cs`](PropertyMapNameSettingsMapper.cs) | `CaseInsensitivePropertyMap`, `IgnoreUnderscoreForPropertyMap` |
-| [`CaseInsensitiveStringToEnumMapper.cs`](CaseInsensitiveStringToEnumMapper.cs) | `CaseInsensitiveStringToEnumMap` |
-| [`NumericValueEnumToEnumMapper.cs`](NumericValueEnumToEnumMapper.cs) | `EnumToEnumMapSetting` |
+| [`CaseInsensitiveEnumMapper.cs`](CaseInsensitiveEnumMapper.cs) | `CaseInsensitiveEnumMap` (string-to-enum) |
+| [`CaseInsensitiveEnumToEnumMapper.cs`](CaseInsensitiveEnumToEnumMapper.cs) | `CaseInsensitiveEnumMap` (enum-to-enum) |
+| [`DescriptionEnumToStringMapper.cs`](DescriptionEnumToStringMapper.cs) | `EnumStringMapSetting` (enum-to-string) |
+| [`DescriptionStringToEnumMapper.cs`](DescriptionStringToEnumMapper.cs) | `EnumStringMapSetting` (string-to-enum) |
+| [`DescriptionEnumToEnumMapper.cs`](DescriptionEnumToEnumMapper.cs) | `EnumToEnumMapSetting.Description` |
+| [`NumericValueEnumToEnumMapper.cs`](NumericValueEnumToEnumMapper.cs) | `EnumToEnumMapSetting.NumericValue` |
 | [`PragmaWarningSettingMapper.cs`](PragmaWarningSettingMapper.cs) | `PragmaWarning` |
 | [`FastCollectionToCollectionMapper.cs`](FastCollectionToCollectionMapper.cs) | `FastCollections` |
 | [`ContainersWithCapacityConstructorMapper.cs`](ContainersWithCapacityConstructorMapper.cs) | `ContainerCapacityConstructors` |

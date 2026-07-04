@@ -1,4 +1,4 @@
-// <copyright file="CaseInsensitiveStringToEnumMapper.cs" company="Stefano Anelli">
+// <copyright file="CaseInsensitiveEnumMapper.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -11,8 +11,8 @@ namespace Mappa.Samples;
 /// Mapper demonstrating case-insensitive string-to-enum mapping via <see cref="MappaSettingsAttribute"/>.
 /// </summary>
 [Mappa]
-[MappaSettings(CaseInsensitiveStringToEnumMap = BooleanSetting.Enable)]
-public sealed partial class CaseInsensitiveStringToEnumMapper
+[MappaSettings(CaseInsensitiveEnumMap = BooleanSetting.Enable)]
+public sealed partial class CaseInsensitiveEnumMapper
 {
     /// <summary>
     /// Map a string to an enum using case-insensitive member name matching.
