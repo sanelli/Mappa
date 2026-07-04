@@ -71,6 +71,7 @@ A version bump updates `MappaVersion.targets` and rebuilds all downstream projec
 
 - Run tests **before** bumping; no version bump is needed just to run tests.
 - Bump whenever **Mappa** or **Mappa.Generator** changes must be consumed by the next project in the workflow — not once at the end of the issue.
+- **CI requirement:** every pull request must increase `MappaVersion` in [`MappaVersion.targets`](MappaVersion.targets) relative to `main`. CI runs [`Scripts/CheckVersionIncrease.ps1`](Scripts/CheckVersionIncrease.ps1) (see [`.github/workflows/pr.yml`](.github/workflows/pr.yml)). Finish every issue with at least one alpha increment and `.\Scripts\RebuildUponVersionChange.ps1`, including documentation-only or workflow-rule-only changes.
 
 ### When to bump
 
@@ -79,7 +80,7 @@ A version bump updates `MappaVersion.targets` and rebuilds all downstream projec
 | **Mappa** changed (new attribute, API, etc.) | Yes, before **Mappa.Generator** work | Generator must compile against the updated Mappa package (`typeof(...)`, `GetTypeByMetadataName`, etc.). |
 | **Mappa.Generator** changed (feature complete, tests pass) | Yes, before **Mappa.Samples** | Samples reference the generator analyzer package; they need the published generator behavior before sample code is added. |
 | **Mappa.Samples** / **Mappa.Samples.Tests** / **Mappa.Samples.Aot** only | No | Sample projects do not modify **Mappa** or **Mappa.Generator**; the prior generator bump is sufficient. |
-| **Documentation** only | No | Docs do not affect package references. |
+| **Documentation** only | Yes (alpha increment at end) | Required by CI version check; no functional inter-project bump is needed. |
 | Bug fix in **Mappa.Generator** with no new **Mappa** surface | Yes, once after generator changes (before samples if samples are updated) | Same as any generator change. |
 
 ### How to bump
@@ -109,6 +110,7 @@ A single feature may require **two** bumps (e.g. one after **Mappa**, one after 
 - When a new feature is added or a new setting is added, update the relevant sections of [`Documentation/tutorial.md`](Documentation/tutorial.md).
 - When adding a new `MappaSettings` property, update [`Documentation/mappa-attributes.md`](Documentation/mappa-attributes.md) and [`Mappa/README.md`](Mappa/README.md) as needed, but do **not** update the root [`.editorconfig`](.editorconfig).
 - When the source generator algorithm is updated, update [`Documentation/mappa-generator-algorithm.md`](Documentation/mappa-generator-algorithm.md) and [`Mappa.Generator/README.md`](Mappa.Generator/README.md).
+- When a new feature is added (mapping strategy, attribute, `MappaSettings` property, integration package, or other user-facing capability), add or update the corresponding entry in [`Documentation/features.md`](Documentation/features.md) with links to tutorial, attributes, algorithm, and samples as applicable.
 
 ## Final Step
 

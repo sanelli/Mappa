@@ -17,6 +17,7 @@ this has multiple benefits:
 - [Mappa attributes](./mappa-attributes.md): description of the attributes that can impact code generation;
 - [Errors and warnings](./error-codes.md): list of errors and warnings that can be raised by Mappa;
 - [Tutorial](./tutorial.md): simple tutorial highlighting the main features of Mappa;
+- [Features](./features.md): complete list of features available in Mappa;
 - [Upgrade guide](./upgrade.md): breaking changes when upgrading between Mappa versions;
 - [Mappa.Samples](../Mappa.Samples): a project containing samples showcasing how to use all Mappa features;
 - [Development](./development.md): how to extend Mappa functionality;
