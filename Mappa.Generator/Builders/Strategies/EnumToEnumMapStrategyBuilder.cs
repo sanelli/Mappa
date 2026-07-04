@@ -37,38 +37,33 @@ internal sealed class EnumToEnumMapStrategyBuilder
 
         var sourceEnumFullType = this.strategy.SourceType.ToDisplayString();
         var targetEnumFullType = this.strategy.TargetType.ToDisplayString();
+        var caseInsensitive = this.strategy.CaseInsensitiveEnumMap is BooleanSetting.Enable;
 
         var temporary = context.NextTemporary();
         builder.AppendLine($"{targetEnumFullType} {temporary};");
         builder.AppendLine($"switch ({source})");
         using (builder.CurlyBracesBlock())
         {
-            if (GetEffectiveEnumToEnumMapSetting(this.strategy.EnumToEnumMapSetting) is EnumToEnumMapSetting.NumericValue)
+            var effectiveSetting = GetEffectiveEnumToEnumMapSetting(this.strategy.EnumToEnumMapSetting);
+            IEnumerable<(string SourceMemberName, string TargetMemberName)> sharedEnumMemberMappings = effectiveSetting switch
             {
-                var sharedEnumMemberMappings = this.strategy.SourceType.GetSharedEnumMemberMappingsByValue(this.strategy.TargetType);
+                EnumToEnumMapSetting.NumericValue => this.strategy.SourceType.GetSharedEnumMemberMappingsByValue(this.strategy.TargetType),
+                EnumToEnumMapSetting.Description => this.strategy.SourceType.GetSharedEnumMemberMappingsByDescription(
+                    this.strategy.TargetType,
+                    context.Compilation,
+                    caseInsensitive),
+                _ when caseInsensitive => this.strategy.SourceType.GetSharedEnumMemberMappingsByNameCaseInsensitive(this.strategy.TargetType),
+                _ => this.strategy.SourceType.GetSharedEnumMemberNamesByName(this.strategy.TargetType)
+                    .Select(enumName => (enumName, enumName)),
+            };
 
-                foreach (var (sourceMemberName, targetMemberName) in sharedEnumMemberMappings)
-                {
-                    builder.AppendLine($"case {sourceEnumFullType}.{sourceMemberName}:");
-                    using (builder.CurlyBracesBlock())
-                    {
-                        builder.AppendLine($"{temporary} = {targetEnumFullType}.{targetMemberName};");
-                        builder.AppendLine("break;");
-                    }
-                }
-            }
-            else
+            foreach (var (sourceMemberName, targetMemberName) in sharedEnumMemberMappings)
             {
-                var sharedEnumNames = this.strategy.SourceType.GetSharedEnumMemberNamesByName(this.strategy.TargetType);
-
-                foreach (var enumName in sharedEnumNames)
+                builder.AppendLine($"case {sourceEnumFullType}.{sourceMemberName}:");
+                using (builder.CurlyBracesBlock())
                 {
-                    builder.AppendLine($"case {sourceEnumFullType}.{enumName}:");
-                    using (builder.CurlyBracesBlock())
-                    {
-                        builder.AppendLine($"{temporary} = {targetEnumFullType}.{enumName};");
-                        builder.AppendLine("break;");
-                    }
+                    builder.AppendLine($"{temporary} = {targetEnumFullType}.{targetMemberName};");
+                    builder.AppendLine("break;");
                 }
             }
 

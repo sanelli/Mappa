@@ -58,7 +58,8 @@ internal sealed class MappaUserSettings
     private readonly StackSetting<BooleanSetting> polymorphicMapMethodWithMatchingDefaultAttribute;
     private readonly StackSetting<BooleanSetting> caseInsensitivePropertyMap;
     private readonly StackSetting<BooleanSetting> ignoreUnderscoreForPropertyMap;
-    private readonly StackSetting<BooleanSetting> caseInsensitiveStringToEnumMap;
+    private readonly StackSetting<BooleanSetting> caseInsensitiveEnumMap;
+    private readonly StackSetting<EnumStringMapSetting> enumStringMapSetting;
     private readonly StackSetting<EnumToEnumMapSetting> enumToEnumMapSetting;
 
     /// <summary>
@@ -110,7 +111,8 @@ internal sealed class MappaUserSettings
             otherSettings.PolymorphicMapMethodWithMatchingDefaultAttribute,
             otherSettings.CaseInsensitivePropertyMap,
             otherSettings.IgnoreUnderscoreForPropertyMap,
-            otherSettings.CaseInsensitiveStringToEnumMap,
+            otherSettings.CaseInsensitiveEnumMap,
+            otherSettings.EnumStringMapSetting,
             otherSettings.EnumToEnumMapSetting)
     {
     }
@@ -161,7 +163,8 @@ internal sealed class MappaUserSettings
     /// <param name="polymorphicMapMethodWithMatchingDefaultAttribute">Enable or disable the support for <see cref="MappaTypeMappingDefaultBehavior.MapSourceType"/> when picking up a polymorphic method.</param>
     /// <param name="caseInsensitivePropertyMap">Enable or disable case-insensitive matching when pairing a target member with a source property by name.</param>
     /// <param name="ignoreUnderscoreForPropertyMap">Enable or disable ignoring underscore characters when pairing a target member with a source property by name.</param>
-    /// <param name="caseInsensitiveStringToEnumMap">Enable or disable case-insensitive matching when mapping from <see cref="string"/> to an enum.</param>
+    /// <param name="caseInsensitiveEnumMap">Enable or disable case-insensitive matching when mapping enum members or string values to enums.</param>
+    /// <param name="enumStringMapSetting">Defines how enum members are paired with string values.</param>
     /// <param name="enumToEnumMapSetting">Defines how enum members are paired when mapping from one enum to another enum.</param>
     private MappaUserSettings(
         string? dateTimeFormat,
@@ -207,7 +210,8 @@ internal sealed class MappaUserSettings
         BooleanSetting polymorphicMapMethodWithMatchingDefaultAttribute,
         BooleanSetting caseInsensitivePropertyMap,
         BooleanSetting ignoreUnderscoreForPropertyMap,
-        BooleanSetting caseInsensitiveStringToEnumMap,
+        BooleanSetting caseInsensitiveEnumMap,
+        EnumStringMapSetting enumStringMapSetting,
         EnumToEnumMapSetting enumToEnumMapSetting)
     {
         this.dateTimeFormat = new(dateTimeFormat);
@@ -253,7 +257,8 @@ internal sealed class MappaUserSettings
         this.polymorphicMapMethodWithMatchingDefaultAttribute = new(polymorphicMapMethodWithMatchingDefaultAttribute);
         this.caseInsensitivePropertyMap = new(caseInsensitivePropertyMap);
         this.ignoreUnderscoreForPropertyMap = new(ignoreUnderscoreForPropertyMap);
-        this.caseInsensitiveStringToEnumMap = new(caseInsensitiveStringToEnumMap);
+        this.caseInsensitiveEnumMap = new(caseInsensitiveEnumMap);
+        this.enumStringMapSetting = new(enumStringMapSetting);
         this.enumToEnumMapSetting = new(enumToEnumMapSetting);
     }
 
@@ -387,7 +392,10 @@ internal sealed class MappaUserSettings
     public BooleanSetting IgnoreUnderscoreForPropertyMap => this.ignoreUnderscoreForPropertyMap;
 
     /// <inheritdoc/>
-    public BooleanSetting CaseInsensitiveStringToEnumMap => this.caseInsensitiveStringToEnumMap;
+    public BooleanSetting CaseInsensitiveEnumMap => this.caseInsensitiveEnumMap;
+
+    /// <inheritdoc/>
+    public EnumStringMapSetting EnumStringMapSetting => this.enumStringMapSetting;
 
     /// <inheritdoc/>
     public EnumToEnumMapSetting EnumToEnumMapSetting => this.enumToEnumMapSetting;
@@ -452,7 +460,8 @@ internal sealed class MappaUserSettings
             this.polymorphicMapMethodWithMatchingDefaultAttribute.Apply(mappaSettingsAttribute.PolymorphicMapMethodWithMatchingDefaultAttribute is not BooleanSetting.Undefined ? mappaSettingsAttribute.PolymorphicMapMethodWithMatchingDefaultAttribute : this.polymorphicMapMethodWithMatchingDefaultAttribute),
             this.caseInsensitivePropertyMap.Apply(mappaSettingsAttribute.CaseInsensitivePropertyMap is not BooleanSetting.Undefined ? mappaSettingsAttribute.CaseInsensitivePropertyMap : this.caseInsensitivePropertyMap),
             this.ignoreUnderscoreForPropertyMap.Apply(mappaSettingsAttribute.IgnoreUnderscoreForPropertyMap is not BooleanSetting.Undefined ? mappaSettingsAttribute.IgnoreUnderscoreForPropertyMap : this.ignoreUnderscoreForPropertyMap),
-            this.caseInsensitiveStringToEnumMap.Apply(mappaSettingsAttribute.CaseInsensitiveStringToEnumMap is not BooleanSetting.Undefined ? mappaSettingsAttribute.CaseInsensitiveStringToEnumMap : this.caseInsensitiveStringToEnumMap),
+            this.caseInsensitiveEnumMap.Apply(mappaSettingsAttribute.CaseInsensitiveEnumMap is not BooleanSetting.Undefined ? mappaSettingsAttribute.CaseInsensitiveEnumMap : this.caseInsensitiveEnumMap),
+            this.enumStringMapSetting.Apply(mappaSettingsAttribute.EnumStringMapSetting is not EnumStringMapSetting.Undefined ? mappaSettingsAttribute.EnumStringMapSetting : this.enumStringMapSetting),
             this.enumToEnumMapSetting.Apply(mappaSettingsAttribute.EnumToEnumMapSetting is not EnumToEnumMapSetting.Undefined ? mappaSettingsAttribute.EnumToEnumMapSetting : this.enumToEnumMapSetting),
  #pragma warning restore CA2000
         ]);

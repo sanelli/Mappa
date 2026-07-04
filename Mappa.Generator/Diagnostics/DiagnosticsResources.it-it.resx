@@ -128,4 +128,10 @@
     <data name="NotAllSourceEnumMembersCanBeMapped" xml:space="preserve">
         <value>Non tutti i membri dell'enum sorgente '{0}' possono essere mappati sull'enum di destinazione '{1}' per nome: {2}. I valori sorgente non mappati generano ArgumentOutOfRangeException a runtime.</value>
     </data>
+    <data name="EnumMemberMissingDescription" xml:space="preserve">
+        <value>L'enum '{0}' ha membri senza un attributo Description non vuoto richiesto per la mappatura Description: {1}.</value>
+    </data>
+    <data name="AmbiguousEnumMap" xml:space="preserve">
+        <value>La mappatura enum è ambigua: {0}.</value>
+    </data>
 </root>

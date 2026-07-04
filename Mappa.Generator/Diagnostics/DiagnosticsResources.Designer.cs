@@ -278,5 +278,17 @@ namespace Mappa.Generator.Diagnostics {
                 return ResourceManager.GetString("NotAllSourceEnumMembersCanBeMapped", resourceCulture);
             }
         }
+
+        internal static string EnumMemberMissingDescription {
+            get {
+                return ResourceManager.GetString("EnumMemberMissingDescription", resourceCulture);
+            }
+        }
+
+        internal static string AmbiguousEnumMap {
+            get {
+                return ResourceManager.GetString("AmbiguousEnumMap", resourceCulture);
+            }
+        }
     }
 }

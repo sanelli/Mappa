@@ -657,4 +657,35 @@ internal static class MappaDiagnostics
             sourceEnumTypeName,
             targetEnumTypeName,
             unmappedMemberNames);
+
+    /// <summary>
+    /// Diagnostic to report that an enum member is missing a Description attribute.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="enumTypeName">The display name of the enum type.</param>
+    /// <param name="missingMemberNames">The formatted list of member names missing a Description attribute.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic EnumMemberMissingDescription(
+        MethodDeclarationSyntax? methodDeclarationSyntax,
+        string enumTypeName,
+        string missingMemberNames)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.EnumMemberMissingDescription,
+            methodDeclarationSyntax?.GetLocation(),
+            enumTypeName,
+            missingMemberNames);
+
+    /// <summary>
+    /// Diagnostic to report that enum mapping is ambiguous.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="details">The ambiguity details.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic AmbiguousEnumMap(
+        MethodDeclarationSyntax? methodDeclarationSyntax,
+        string details)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.AmbiguousEnumMap,
+            methodDeclarationSyntax?.GetLocation(),
+            details);
 }

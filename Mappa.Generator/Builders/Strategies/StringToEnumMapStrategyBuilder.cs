@@ -28,28 +28,53 @@ internal sealed class StringToEnumMapStrategyBuilder
     /// <inheritdoc/>
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
+        static EnumStringMapSetting GetEffectiveEnumStringMapSetting(EnumStringMapSetting enumStringMapSetting)
+            => enumStringMapSetting is EnumStringMapSetting.Undefined
+                ? EnumStringMapSetting.MemberName
+                : enumStringMapSetting;
+
         var builder = new PrettyCode.StringBuilder();
 
         var enumFullName = this.strategy.TargetType.ToDisplayString();
         var temporary = context.NextTemporary();
-        var caseInsensitive = this.strategy.CaseInsensitiveStringToEnumMap is BooleanSetting.Enable;
+        var caseInsensitive = this.strategy.CaseInsensitiveEnumMap is BooleanSetting.Enable;
         var switchExpression = caseInsensitive ? $"{source}.ToUpperInvariant()" : source;
         builder.AppendLine($"{enumFullName} {temporary};");
         builder.AppendLine($"switch ({switchExpression})");
         using (builder.CurlyBracesBlock())
         {
-            var enumValues = this.strategy.TargetType.GetEnumValues();
-            foreach (var enumName in enumValues.Select(enumValue => enumValue.Name))
+            if (GetEffectiveEnumStringMapSetting(this.strategy.EnumStringMapSetting) is EnumStringMapSetting.Description)
             {
-                var enumValueFullName = $"{enumFullName}.{enumName}";
-                var caseLabel = caseInsensitive
-                    ? $"\"{enumName.ToUpperInvariant()}\""
-                    : $"nameof({enumValueFullName})";
-                builder.AppendLine($"case {caseLabel}:");
-                using (builder.CurlyBracesBlock())
+                var membersWithDescriptions = this.strategy.TargetType.GetEnumMembersWithDescriptions(context.Compilation);
+                foreach (var (memberName, description) in membersWithDescriptions)
                 {
-                    builder.AppendLine($"{temporary} = {enumValueFullName};");
-                    builder.AppendLine("break;");
+                    var enumValueFullName = $"{enumFullName}.{memberName}";
+                    var caseLabel = caseInsensitive
+                        ? TypeSymbolExtensions.ToCSharpStringLiteral(description.ToUpperInvariant())
+                        : TypeSymbolExtensions.ToCSharpStringLiteral(description);
+                    builder.AppendLine($"case {caseLabel}:");
+                    using (builder.CurlyBracesBlock())
+                    {
+                        builder.AppendLine($"{temporary} = {enumValueFullName};");
+                        builder.AppendLine("break;");
+                    }
+                }
+            }
+            else
+            {
+                var enumValues = this.strategy.TargetType.GetEnumValues();
+                foreach (var enumName in enumValues.Select(enumValue => enumValue.Name))
+                {
+                    var enumValueFullName = $"{enumFullName}.{enumName}";
+                    var caseLabel = caseInsensitive
+                        ? $"\"{enumName.ToUpperInvariant()}\""
+                        : $"nameof({enumValueFullName})";
+                    builder.AppendLine($"case {caseLabel}:");
+                    using (builder.CurlyBracesBlock())
+                    {
+                        builder.AppendLine($"{temporary} = {enumValueFullName};");
+                        builder.AppendLine("break;");
+                    }
                 }
             }
 

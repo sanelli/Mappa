@@ -134,4 +134,39 @@ public sealed class MappaDiagnosticsTests
             .Should()
             .Be("Not all members of source enum 'Mappa.Generator.Tests.UnitTests.SourceCode.TestSourceEnum' can be mapped to target enum 'Mappa.Generator.Tests.UnitTests.SourceCode.TestTargetEnum' by name: 'One'. Unmapped source values throw ArgumentOutOfRangeException at runtime.");
     }
+
+    /// <summary>
+    /// Test <see cref="MappaDiagnostics.EnumMemberMissingDescription"/> accepts a null method declaration.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void EnumMemberMissingDescriptionAcceptsNullMethodDeclaration()
+    {
+        var diagnostic = MappaDiagnostics.EnumMemberMissingDescription(
+            null,
+            "Mappa.Generator.Tests.UnitTests.SourceCode.TestEnum",
+            "'One'");
+
+        diagnostic.Location.Should().Be(Location.None);
+        diagnostic.GetMessage(CultureInfo.CurrentCulture)
+            .Should()
+            .Be("Enum 'Mappa.Generator.Tests.UnitTests.SourceCode.TestEnum' has members without a non-empty Description attribute required for Description mapping: 'One'.");
+    }
+
+    /// <summary>
+    /// Test <see cref="MappaDiagnostics.AmbiguousEnumMap"/> accepts a null method declaration.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void AmbiguousEnumMapAcceptsNullMethodDeclaration()
+    {
+        var diagnostic = MappaDiagnostics.AmbiguousEnumMap(
+            null,
+            "Target enum member 'one' is matched by multiple source members: 'ONe', 'One'.");
+
+        diagnostic.Location.Should().Be(Location.None);
+        diagnostic.GetMessage(CultureInfo.CurrentCulture)
+            .Should()
+            .Be("Enum mapping is ambiguous: Target enum member 'one' is matched by multiple source members: 'ONe', 'One'..");
+    }
 }

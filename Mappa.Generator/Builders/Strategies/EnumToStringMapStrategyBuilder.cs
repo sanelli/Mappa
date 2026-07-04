@@ -28,6 +28,11 @@ internal sealed class EnumToStringMapStrategyBuilder
     /// <inheritdoc/>
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
+        static EnumStringMapSetting GetEffectiveEnumStringMapSetting(EnumStringMapSetting enumStringMapSetting)
+            => enumStringMapSetting is EnumStringMapSetting.Undefined
+                ? EnumStringMapSetting.MemberName
+                : enumStringMapSetting;
+
         var builder = new PrettyCode.StringBuilder();
 
         var enumFullName = this.strategy.SourceType.ToDisplayString();
@@ -36,15 +41,32 @@ internal sealed class EnumToStringMapStrategyBuilder
         builder.AppendLine($"switch ({source})");
         using (builder.CurlyBracesBlock())
         {
-            var enumValues = this.strategy.SourceType.GetEnumValues();
-            foreach (var enumValue in enumValues)
+            if (GetEffectiveEnumStringMapSetting(this.strategy.EnumStringMapSetting) is EnumStringMapSetting.Description)
             {
-                var enumValueFullName = $"{enumFullName}.{enumValue.Name}";
-                builder.AppendLine($"case {enumValueFullName}:");
-                using (builder.CurlyBracesBlock())
+                var membersWithDescriptions = this.strategy.SourceType.GetEnumMembersWithDescriptions(context.Compilation);
+                foreach (var (memberName, description) in membersWithDescriptions)
                 {
-                    builder.AppendLine($"{temporary} = nameof({enumValueFullName});");
-                    builder.AppendLine("break;");
+                    var enumValueFullName = $"{enumFullName}.{memberName}";
+                    builder.AppendLine($"case {enumValueFullName}:");
+                    using (builder.CurlyBracesBlock())
+                    {
+                        builder.AppendLine($"{temporary} = {TypeSymbolExtensions.ToCSharpStringLiteral(description)};");
+                        builder.AppendLine("break;");
+                    }
+                }
+            }
+            else
+            {
+                var enumValues = this.strategy.SourceType.GetEnumValues();
+                foreach (var enumValue in enumValues)
+                {
+                    var enumValueFullName = $"{enumFullName}.{enumValue.Name}";
+                    builder.AppendLine($"case {enumValueFullName}:");
+                    using (builder.CurlyBracesBlock())
+                    {
+                        builder.AppendLine($"{temporary} = nameof({enumValueFullName});");
+                        builder.AppendLine("break;");
+                    }
                 }
             }
 
