@@ -115,13 +115,14 @@ When no existing method applies (or for root methods), `TypeMapIdentifierAlgorit
     - `TSource` is an integral numeric type compatible with the enum and `TTarget` is an `enum` OR,
     - `TSource` is a `string` and `TTarget` is an `enum`;
 - _What_:
-    - **Enum → enum** and **enum → string**: a `switch` statement maps by shared enum member names;
-    - When mapping **enum → enum** by shared member names, if at least one source enum member has no matching name in the target enum, the generator reports warning **MP00039** and continues code generation; unmapped source values throw `ArgumentOutOfRangeException` at runtime;
+    - **Enum → enum** and **enum → string**: a `switch` statement maps by shared enum member names, or by shared underlying numeric values when `EnumToEnumMapSetting` is `NumericValue`;
+    - When mapping **enum → enum**, if at least one source enum member cannot be paired with a target member (by name or by numeric value, depending on `EnumToEnumMapSetting`), the generator reports warning **MP00039** and continues code generation; unmapped source values throw `ArgumentOutOfRangeException` at runtime;
     - **Enum → integral**: maps enum members to their underlying integral values;
     - **Integral → enum**: maps integral values (cast to the enum underlying type) to enum members;
     - **String → enum**: maps string input to enum members by name (handled by the enum strategy, not the string strategy, because the enum detector runs first); when `CaseInsensitiveStringToEnumMap` is enabled in `MappaSettings`, member names are matched case-insensitively via `ToUpperInvariant()`;
 - _Notes_:
     - The enum detector runs before the general string strategy, so **`string` → `enum`** is handled here rather than by the string strategy;
+    - **Enum → enum** matching uses member names by default; set `EnumToEnumMapSetting` to `NumericValue` to match by underlying numeric value;
     - **String → enum** matching is case-sensitive by default; enable `CaseInsensitiveStringToEnumMap` for case-insensitive member name matching.
 
 ### 5. String strategy
