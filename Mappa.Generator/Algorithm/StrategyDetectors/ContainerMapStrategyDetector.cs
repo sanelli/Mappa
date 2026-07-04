@@ -53,7 +53,6 @@ internal sealed class ContainerMapStrategyDetector
         }
 
         // 02. Collection -> Collection strategy.
-        // TODO [#29] Allow to prefer returning array over lists for interfaces.
         // TODO [#108] Prevent using Enumerable.Count() when the user asks for it.
         else if (this.CanMapCollectionToCollection(out var elementStrategy))
         {
@@ -63,11 +62,18 @@ internal sealed class ContainerMapStrategyDetector
                 elementStrategy,
                 this.context.MapMethod?.MethodSymbol,
                 this.context.MappaUserSettings.FastCollections,
-                this.context.MappaUserSettings.ContainerCapacityConstructors);
+                this.context.MappaUserSettings.ContainerCapacityConstructors,
+                GetEffectiveEnumerableConcreteType(this.context.MappaUserSettings.EnumerableConcreteType));
         }
 
         return mapStrategy is not NoMapStrategy;
     }
+
+    private static EnumerableConcreteTypeSetting GetEffectiveEnumerableConcreteType(
+        EnumerableConcreteTypeSetting enumerableConcreteTypeSetting)
+        => enumerableConcreteTypeSetting is EnumerableConcreteTypeSetting.Undefined
+            ? EnumerableConcreteTypeSetting.List
+            : enumerableConcreteTypeSetting;
 
     private bool CanMapDictionaryToDictionary(out MapStrategy keyStrategy, out MapStrategy valueStrategy)
     {

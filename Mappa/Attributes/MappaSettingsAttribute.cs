@@ -254,6 +254,13 @@ public sealed class MappaSettingsAttribute
     public BooleanSetting ContainerCapacityConstructors { get; set; } = BooleanSetting.Undefined;
 
     /// <summary>
+    /// Gets or sets the concrete type used when mapping to sequence-like collection interfaces
+    /// such as <see cref="System.Collections.Generic.IEnumerable{T}"/>.
+    /// When unset, <see cref="EnumerableConcreteTypeSetting.List"/> is used.
+    /// </summary>
+    public EnumerableConcreteTypeSetting EnumerableConcreteType { get; set; } = EnumerableConcreteTypeSetting.Undefined;
+
+    /// <summary>
     /// Gets or sets a value indicating whether to allow the source generator to
     /// use the <see cref="MappaTypeMappingDefaultAttribute"/> when looking for a
     /// polymorphic method to support a mapping between two types and the behavior

@@ -219,6 +219,11 @@ internal interface IMappaUserSettings
     BooleanSetting ContainerCapacityConstructors { get; }
 
     /// <summary>
+    /// Gets the concrete type used when mapping to sequence-like collection interfaces.
+    /// </summary>
+    EnumerableConcreteTypeSetting EnumerableConcreteType { get; }
+
+    /// <summary>
     /// Gets a value indicating whether to allow the source generator to
     /// use the <see cref="MappaTypeMappingDefaultAttribute"/> when looking for a
     /// polymorphic method to support a mapping between two types and the behavior

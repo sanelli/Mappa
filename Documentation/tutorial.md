@@ -354,6 +354,21 @@ Because Mappa allows only one map method per source/target pair in a mapper clas
 
 See also: [IdentityMapDeepCopyMapper.cs](../Mappa.Samples/IdentityMapDeepCopyMapper.cs).
 
+#### Enumerable concrete type settings
+
+`EnumerableConcreteType` controls the concrete buffer used when a collection mapping targets a sequence-like interface. The default is `List` (`List<T>` with `Add`). Set `Array` to allocate `T[]` instead (indexer insertion). Concrete `List<T>` return types always remain lists. The setting applies to interface targets such as `IEnumerable<T>`, `IList<T>`, `ICollection<T>`, `IReadOnlyList<T>`, and `IReadOnlyCollection<T>`:
+
+```csharp
+[Mappa]
+[MappaSettings(EnumerableConcreteType = EnumerableConcreteTypeSetting.Array)]
+public sealed partial class EnumerableConcreteTypeArrayMapper
+{
+    public partial IEnumerable<int> Map(IEnumerable<MyEnum> input);
+}
+```
+
+See also: [EnumerableConcreteTypeMapper.cs](../Mappa.Samples/EnumerableConcreteTypeMapper.cs).
+
 ### MappaInvokeMethod attribute
 When mapping structured types, `[MappaInvokeMethod]` forces a target property or constructor parameter to be mapped by invoking a named method:
 

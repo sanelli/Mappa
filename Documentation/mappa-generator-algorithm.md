@@ -201,6 +201,7 @@ When no existing method applies (or for root methods), `TypeMapIdentifierAlgorit
 - _Notes_:
     - When possible for some types (e.g. `List<T>`), the constructor accepting capacity is preferred to reduce allocations (`ContainerCapacityConstructors`);
     - When `MappaSettings.FastCollections` (or the corresponding `.editorconfig` setting) is enabled, collection mapping may use span-based iteration for array and `List<T>` sources and may allocate target arrays with a known capacity;
+    - When `MappaSettings.EnumerableConcreteType` is `Array` (or the corresponding `.editorconfig` setting), sequence-like interface targets such as `IEnumerable<T>`, `IList<T>`, `ICollection<T>`, `IReadOnlyList<T>`, and `IReadOnlyCollection<T>` use a `T[]` buffer instead of `List<T>`; concrete `List<T>` targets are unchanged;
     - Explicit interface implementation is supported;
     - Types with an empty constructor are supported if they are derived from any of the supported interfaces or classes.
 
