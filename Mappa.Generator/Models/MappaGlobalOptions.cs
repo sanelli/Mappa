@@ -199,6 +199,10 @@ namespace Mappa.Generator.Models;
 ///         <term><c>mappa.caseinsensitivestringtoenummap</c></term>
 ///         <description>Set the default value to enable or disable case-insensitive matching when mapping from <see cref="string"/> to an enum.</description>
 ///     </item>
+///     <item>
+///         <term><c>mappa.enumtoenummapsetting</c></term>
+///         <description>Set the default enum-to-enum member pairing mode. Valid values are the values of the <see cref="EnumToEnumMapSetting"/> <c>enum</c>.</description>
+///     </item>
 /// </list>
 /// </summary>
 internal sealed class MappaGlobalOptions
@@ -251,6 +255,7 @@ internal sealed class MappaGlobalOptions
     private const string MappaSettingsCaseInsensitivePropertyMap = "caseinsensitivepropertymap";
     private const string MappaSettingsIgnoreUnderscoreForPropertyMap = "ignoreunderscoreforpropertymap";
     private const string MappaSettingsCaseInsensitiveStringToEnumMap = "caseinsensitivestringtoenummap";
+    private const string MappaSettingsEnumToEnumMapSetting = "enumtoenummapsetting";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaGlobalOptions"/> class.
@@ -395,6 +400,10 @@ internal sealed class MappaGlobalOptions
             ? GetBooleanSettingFromString(caseInsensitiveStringToEnumMap)
             : BooleanSetting.Undefined;
 
+        this.EnumToEnumMapSetting = options.TryGetValue(GetOptionName(MappaSettingsEnumToEnumMapSetting), out var enumToEnumMapSetting)
+            ? GetEnumToEnumMapSettingFromString(enumToEnumMapSetting)
+            : EnumToEnumMapSetting.MemberName;
+
         static CultureInfoSetting GetCultureInfoSettingsFromString(string cultureInfoSettings)
         {
             if (cultureInfoSettings.Equals(nameof(CultureInfoSetting.CurrentCulture), StringComparison.OrdinalIgnoreCase))
@@ -433,6 +442,21 @@ internal sealed class MappaGlobalOptions
             }
 
             return BooleanSetting.Undefined;
+        }
+
+        static EnumToEnumMapSetting GetEnumToEnumMapSettingFromString(string enumToEnumMapSettingValue)
+        {
+            if (enumToEnumMapSettingValue.Equals(nameof(EnumToEnumMapSetting.NumericValue), StringComparison.OrdinalIgnoreCase))
+            {
+                return EnumToEnumMapSetting.NumericValue;
+            }
+
+            if (enumToEnumMapSettingValue.Equals(nameof(EnumToEnumMapSetting.Undefined), StringComparison.OrdinalIgnoreCase))
+            {
+                return EnumToEnumMapSetting.Undefined;
+            }
+
+            return EnumToEnumMapSetting.MemberName;
         }
 
         static PragmaWarningSetting GetPragmaWarningSettingFromString(string enableSettings)
@@ -603,6 +627,9 @@ internal sealed class MappaGlobalOptions
 
     /// <inheritdoc/>
     public BooleanSetting CaseInsensitiveStringToEnumMap { get; }
+
+    /// <inheritdoc/>
+    public EnumToEnumMapSetting EnumToEnumMapSetting { get; }
 
     /// <summary>
     /// Gets a value indicating whether to report debug INFO diagnostics.

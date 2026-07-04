@@ -250,4 +250,9 @@ internal interface IMappaUserSettings
     /// case-insensitively to enum member names when mapping from <see cref="string"/> to an enum.
     /// </summary>
     BooleanSetting CaseInsensitiveStringToEnumMap { get; }
+
+    /// <summary>
+    /// Gets how enum members are paired when mapping from one enum to another enum.
+    /// </summary>
+    EnumToEnumMapSetting EnumToEnumMapSetting { get; }
 }

@@ -450,6 +450,10 @@ internal static class AttributeDataExtensions
                 case nameof(MappaSettingsAttribute.CaseInsensitiveStringToEnumMap) when namedArgument.Value.Value is int value:
                     attribute.CaseInsensitiveStringToEnumMap = (BooleanSetting)value;
                     break;
+
+                case nameof(MappaSettingsAttribute.EnumToEnumMapSetting) when namedArgument.Value.Value is int value:
+                    attribute.EnumToEnumMapSetting = (EnumToEnumMapSetting)value;
+                    break;
             }
         }
 

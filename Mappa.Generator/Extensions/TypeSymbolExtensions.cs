@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Frozen;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
+using System.Globalization;
 
 using Mappa.Generator.Exceptions;
 
@@ -937,6 +938,48 @@ internal static class TypeSymbolExtensions
             .Except(targetType.GetEnumValues().Select(enumValue => enumValue.Name))
             .OrderBy(name => name)
             .ToArray();
+
+    /// <summary>
+    /// Gets source and target enum member name pairs shared by underlying numeric value.
+    /// </summary>
+    /// <param name="sourceType">The source enum type.</param>
+    /// <param name="targetType">The target enum type.</param>
+    /// <returns>The shared enum member mappings in ascending source member name order.</returns>
+    internal static (string SourceMemberName, string TargetMemberName)[] GetSharedEnumMemberMappingsByValue(
+        this ITypeSymbol sourceType,
+        ITypeSymbol targetType)
+    {
+        var targetMembersByValue = targetType.GetEnumValues()
+            .GroupBy(enumValue => Convert.ToDecimal(enumValue.Value, CultureInfo.InvariantCulture))
+            .ToDictionary(
+                group => group.Key,
+                group => group.OrderBy(enumValue => enumValue.Name).First().Name);
+
+        return sourceType.GetEnumValues()
+            .Select(sourceEnumValue => (SourceEnumValue: sourceEnumValue, Value: Convert.ToDecimal(sourceEnumValue.Value, CultureInfo.InvariantCulture)))
+            .Where(pair => targetMembersByValue.ContainsKey(pair.Value))
+            .OrderBy(pair => pair.SourceEnumValue.Name)
+            .Select(pair => (pair.SourceEnumValue.Name, targetMembersByValue[pair.Value]))
+            .ToArray();
+    }
+
+    /// <summary>
+    /// Gets the source enum member names that have no matching numeric value in the target enum.
+    /// </summary>
+    /// <param name="sourceType">The source enum type.</param>
+    /// <param name="targetType">The target enum type.</param>
+    /// <returns>The unmapped source enum member names in ascending order.</returns>
+    internal static string[] GetUnmappedEnumMemberNamesByValue(this ITypeSymbol sourceType, ITypeSymbol targetType)
+    {
+        var targetValues = new HashSet<decimal>(
+            targetType.GetEnumValues().Select(enumValue => Convert.ToDecimal(enumValue.Value, CultureInfo.InvariantCulture)));
+
+        return sourceType.GetEnumValues()
+            .Where(sourceEnumValue => !targetValues.Contains(Convert.ToDecimal(sourceEnumValue.Value, CultureInfo.InvariantCulture)))
+            .Select(sourceEnumValue => sourceEnumValue.Name)
+            .OrderBy(name => name)
+            .ToArray();
+    }
 
     /// <summary>
     /// Gets the list of accessible constructors for <paramref name="typeSymbol"/>.

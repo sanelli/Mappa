@@ -76,10 +76,10 @@ internal sealed class EnumMapStrategyDetector
         // 05. enum -> enum: EnumToEnumStrategy
         else if (this.CanMapEnumToEnum())
         {
-            // TODO [#18] Allow to map the source enum to the target enum using numeric values instead than their name.
             mapStrategy = new EnumToEnumMapStrategy(
                 this.context.TargetType,
-                this.context.SourceType);
+                this.context.SourceType,
+                this.context.MappaUserSettings.EnumToEnumMapSetting);
             this.ReportUnmappedSourceEnumMembersIfAny();
         }
 
@@ -88,7 +88,14 @@ internal sealed class EnumMapStrategyDetector
 
     private void ReportUnmappedSourceEnumMembersIfAny()
     {
-        var unmappedMemberNames = this.context.SourceType.GetUnmappedEnumMemberNamesByName(this.context.TargetType);
+        static EnumToEnumMapSetting GetEffectiveEnumToEnumMapSetting(EnumToEnumMapSetting enumToEnumMapSetting)
+            => enumToEnumMapSetting is EnumToEnumMapSetting.Undefined
+                ? EnumToEnumMapSetting.MemberName
+                : enumToEnumMapSetting;
+
+        var unmappedMemberNames = GetEffectiveEnumToEnumMapSetting(this.context.MappaUserSettings.EnumToEnumMapSetting) is EnumToEnumMapSetting.NumericValue
+            ? this.context.SourceType.GetUnmappedEnumMemberNamesByValue(this.context.TargetType)
+            : this.context.SourceType.GetUnmappedEnumMemberNamesByName(this.context.TargetType);
         if (unmappedMemberNames.Length == 0)
         {
             return;
