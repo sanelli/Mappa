@@ -374,4 +374,88 @@ public sealed class TypeSymbolExtensionsTests
         nullableSample.IsNullabilityMatchOrRelaxed(nonNullableSample, isNullableEnabled: true).Should().BeTrue();
         nonNullableSample.IsNullabilityMatchOrRelaxed(nullableSample, isNullableEnabled: true).Should().BeTrue();
     }
+
+    /// <summary>
+    /// Test <see cref="TypeSymbolExtensions.IsRelaxedNullabilityMatch"/> rejects different underlying types.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void IsRelaxedNullabilityMatchReturnsFalseForDifferentUnderlyingTypes()
+    {
+        const string source = """
+                              #nullable enable
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public sealed class Sample
+                              {
+                              }
+
+                              public sealed class OtherSample
+                              {
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var sampleType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Sample")!;
+        var otherSampleType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.OtherSample")!;
+        var nullableSample = sampleType.WithNullableAnnotation(NullableAnnotation.Annotated);
+        var nonNullableOtherSample = otherSampleType.WithNullableAnnotation(NullableAnnotation.NotAnnotated);
+
+        nullableSample.IsRelaxedNullabilityMatch(nonNullableOtherSample, isNullableEnabled: true).Should().BeFalse();
+    }
+
+    /// <summary>
+    /// Test <see cref="TypeSymbolExtensions.IsRelaxedNullabilityMatch"/> rejects oblivious nullability annotations.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void IsRelaxedNullabilityMatchReturnsFalseWhenNullableAnnotationIsNone()
+    {
+        const string source = """
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public sealed class Sample
+                              {
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var sampleType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Sample")!;
+        var obliviousSample = sampleType.WithNullableAnnotation(NullableAnnotation.None);
+        var nonNullableSample = sampleType.WithNullableAnnotation(NullableAnnotation.NotAnnotated);
+        var nullableSample = sampleType.WithNullableAnnotation(NullableAnnotation.Annotated);
+
+        obliviousSample.IsRelaxedNullabilityMatch(nonNullableSample, isNullableEnabled: true).Should().BeFalse();
+        nonNullableSample.IsRelaxedNullabilityMatch(obliviousSample, isNullableEnabled: true).Should().BeFalse();
+        obliviousSample.IsRelaxedNullabilityMatch(nullableSample, isNullableEnabled: true).Should().BeFalse();
+    }
+
+    /// <summary>
+    /// Test <see cref="TypeSymbolExtensions.IsNullabilityMatchOrRelaxed"/> rejects different underlying types.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void IsNullabilityMatchOrRelaxedReturnsFalseForDifferentUnderlyingTypes()
+    {
+        const string source = """
+                              #nullable enable
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public sealed class Sample
+                              {
+                              }
+
+                              public sealed class OtherSample
+                              {
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var sampleType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Sample")!;
+        var otherSampleType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.OtherSample")!;
+
+        sampleType.IsNullabilityMatchOrRelaxed(otherSampleType, isNullableEnabled: true).Should().BeFalse();
+    }
 }
