@@ -119,6 +119,7 @@ internal sealed class MappaClassGeneratorContext
     /// <param name="nullableEnabled"><c>true</c> if nullable is enabled,<c>false</c> otherwise.</param>
     /// <param name="requireStaticContext"><c>true</c> if the invocation require only method that can invoked in a static context,<c>false</c> otherwise.</param>
     /// <param name="mapMethod">The map method, if it exists.</param>
+    /// <param name="allowRelaxedNullability"><c>true</c> to allow relaxed nullability matching when no exact match exists.</param>
     /// <returns><c>true</c> if the method to map from <paramref name="sourceType"/> to
     /// <paramref name="targetType"/>, <c>false</c> otherwise.</returns>
     internal bool TryGetMethod(
@@ -126,19 +127,26 @@ internal sealed class MappaClassGeneratorContext
         ITypeSymbol sourceType,
         bool nullableEnabled,
         bool requireStaticContext,
-        out MapMethod mapMethod)
+        out MapMethod mapMethod,
+        bool allowRelaxedNullability = true)
     {
-        var foundMethod =
-            this.mapMethods.Find(method =>
-            {
-                // This is to avoid invoking a non-static method in a static context.
-                if (requireStaticContext && !method.CanBeUsedByStaticMethod)
-                {
-                    return false;
-                }
+        var foundMethod = this.FindMatchingMethod(
+            targetType,
+            sourceType,
+            nullableEnabled,
+            requireStaticContext,
+            exactOnly: true);
 
-                return method.IsMapFor(targetType, sourceType, nullableEnabled);
-            });
+        if (foundMethod is null && allowRelaxedNullability)
+        {
+            foundMethod = this.FindMatchingMethod(
+                targetType,
+                sourceType,
+                nullableEnabled,
+                requireStaticContext,
+                exactOnly: false);
+        }
+
         mapMethod = foundMethod!;
         return foundMethod is not null;
     }
@@ -163,70 +171,26 @@ internal sealed class MappaClassGeneratorContext
         IMappaUserSettings mappaUserSettings,
         out MapMethod mapMethod)
     {
-        foreach (var method in this.mapMethods)
+        if (this.TryFindPolymorphicMethod(
+                targetType,
+                sourceType,
+                nullableEnabled,
+                requireStaticContext,
+                mappaUserSettings,
+                exactOnly: true,
+                out mapMethod))
         {
-            // This is to avoid invoking a non-static method in a static context.
-            if (requireStaticContext && !method.CanBeUsedByStaticMethod)
-            {
-                continue;
-            }
-
-            // Only look for methods that have any MappaTypeMappingAttribute.
-            var typeMappingAttributes = method.GetAttributes<MappaTypeMappingAttribute>();
-            if (typeMappingAttributes.Length <= 0)
-            {
-                continue;
-            }
-
-            // Search in the attributes to see if there is a mapping that can be used.
-            foreach (var typeMappingAttribute in typeMappingAttributes)
-            {
-                var attributeSourceType =
-                    this.Compilation.GetTypeByMetadataName(typeMappingAttribute.SourceType.FullName!);
-                var attributeTargetType =
-                    this.Compilation.GetTypeByMetadataName(typeMappingAttribute.TargetType.FullName!);
-
-                var attributeSourceTypeWithNullability = attributeSourceType?.WithNullableAnnotation(method.TargetType.NullableAnnotation);
-                var attributeTargetTypeWithNullability = attributeTargetType?.WithNullableAnnotation(method.TargetType.NullableAnnotation);
-
-                if (attributeSourceTypeWithNullability is not null &&
-                    attributeTargetTypeWithNullability is not null &&
-                    attributeSourceTypeWithNullability.IsEqualTo(sourceType, nullableEnabled) &&
-                    attributeTargetTypeWithNullability.IsEqualTo(targetType, nullableEnabled))
-                {
-                    mapMethod = method;
-                    return true;
-                }
-            }
-
-            // Pick up the MappaTypeMappingDefault only if defined and it specify the behavior MapSourceType.
-            // Not that this will only pick up the setup where the target type is defined.
-            // If the attribute target type is the same as the target type we would not even be here because
-            // the method would be picked up earlier by the non polymorphic version of this.
-            if (mappaUserSettings.PolymorphicMapMethodWithMatchingDefaultAttribute is BooleanSetting.Enable)
-            {
-                var mappaTypeMappingDefaultAttribute = method.GetAttribute<MappaTypeMappingDefaultAttribute>();
-                if (mappaTypeMappingDefaultAttribute is not null &&
-                    mappaTypeMappingDefaultAttribute.Behavior is MappaTypeMappingDefaultBehavior.MapSourceType &&
-                    mappaTypeMappingDefaultAttribute.Type is not null)
-                {
-                    var attributeTargetType =
-                        this.Compilation.GetTypeByMetadataName(mappaTypeMappingDefaultAttribute.Type.FullName!);
-
-                    var attributeTargetTypeWithNullability = attributeTargetType?.WithNullableAnnotation(method.TargetType.NullableAnnotation);
-
-                    if (attributeTargetTypeWithNullability is not null &&
-                        attributeTargetTypeWithNullability.IsEqualTo(targetType, nullableEnabled))
-                    {
-                        mapMethod = method;
-                        return true;
-                    }
-                }
-            }
+            return true;
         }
 
-        mapMethod = null!;
-        return false;
+        return this.TryFindPolymorphicMethod(
+            targetType,
+            sourceType,
+            nullableEnabled,
+            requireStaticContext,
+            mappaUserSettings,
+            exactOnly: false,
+            out mapMethod);
     }
 
     /// <summary>
@@ -242,7 +206,8 @@ internal sealed class MappaClassGeneratorContext
                 mapMethod.SourceType,
                 mapMethod.NullableEnabled,
                 false, // Bypass the require static requirements here since I just want to add it.
-                out _))
+                out _,
+                allowRelaxedNullability: false))
         {
             this.mapMethods.Add(mapMethod);
             return true;
@@ -273,4 +238,154 @@ internal sealed class MappaClassGeneratorContext
     /// <param name="diagnostic">The diagnostic to be added.</param>
     internal void ReportDiagnostic(Diagnostic diagnostic)
         => this.ReportDiagnostics([diagnostic]);
+
+    private static bool TypesMatchForPolymorphicMapping(
+        ITypeSymbol requiredSourceType,
+        ITypeSymbol attributeSourceType,
+        ITypeSymbol requiredTargetType,
+        ITypeSymbol attributeTargetType,
+        bool nullableEnabled,
+        bool exactOnly)
+    {
+        if (exactOnly)
+        {
+            return attributeSourceType.IsEqualTo(requiredSourceType, nullableEnabled)
+                   && attributeTargetType.IsEqualTo(requiredTargetType, nullableEnabled);
+        }
+
+        return requiredSourceType.IsNullabilityMatchOrRelaxed(attributeSourceType, nullableEnabled)
+               && requiredTargetType.IsNullabilityMatchOrRelaxed(attributeTargetType, nullableEnabled);
+    }
+
+    private MapMethod? FindMatchingMethod(
+        ITypeSymbol targetType,
+        ITypeSymbol sourceType,
+        bool nullableEnabled,
+        bool requireStaticContext,
+        bool exactOnly)
+    {
+        return this.mapMethods.Find(method =>
+        {
+            if (requireStaticContext && !method.CanBeUsedByStaticMethod)
+            {
+                return false;
+            }
+
+            return exactOnly
+                ? method.IsMapFor(targetType, sourceType, nullableEnabled)
+                : method.IsRelaxedMapFor(targetType, sourceType, nullableEnabled);
+        });
+    }
+
+    private bool TryFindPolymorphicMethod(
+        ITypeSymbol targetType,
+        ITypeSymbol sourceType,
+        bool nullableEnabled,
+        bool requireStaticContext,
+        IMappaUserSettings mappaUserSettings,
+        bool exactOnly,
+        out MapMethod mapMethod)
+    {
+        foreach (var method in this.mapMethods)
+        {
+            if (requireStaticContext && !method.CanBeUsedByStaticMethod)
+            {
+                continue;
+            }
+
+            var typeMappingAttributes = method.GetAttributes<MappaTypeMappingAttribute>();
+            if (typeMappingAttributes.Length <= 0)
+            {
+                continue;
+            }
+
+            if (typeMappingAttributes.Any(typeMappingAttribute =>
+                    this.TryMatchPolymorphicTypeMappingAttribute(
+                        method,
+                        typeMappingAttribute,
+                        targetType,
+                        sourceType,
+                        nullableEnabled,
+                        exactOnly)))
+            {
+                mapMethod = method;
+                return true;
+            }
+
+            if (mappaUserSettings.PolymorphicMapMethodWithMatchingDefaultAttribute is BooleanSetting.Enable
+                && this.TryMatchPolymorphicTypeMappingDefaultAttribute(
+                    method,
+                    targetType,
+                    nullableEnabled,
+                    exactOnly))
+            {
+                mapMethod = method;
+                return true;
+            }
+        }
+
+        mapMethod = null!;
+        return false;
+    }
+
+    private bool TryMatchPolymorphicTypeMappingAttribute(
+        MapMethod method,
+        MappaTypeMappingAttribute typeMappingAttribute,
+        ITypeSymbol targetType,
+        ITypeSymbol sourceType,
+        bool nullableEnabled,
+        bool exactOnly)
+    {
+        var attributeSourceType =
+            this.Compilation.GetTypeByMetadataName(typeMappingAttribute.SourceType.FullName!);
+        var attributeTargetType =
+            this.Compilation.GetTypeByMetadataName(typeMappingAttribute.TargetType.FullName!);
+
+        var attributeSourceTypeWithNullability =
+            attributeSourceType?.WithNullableAnnotation(method.TargetType.NullableAnnotation);
+        var attributeTargetTypeWithNullability =
+            attributeTargetType?.WithNullableAnnotation(method.TargetType.NullableAnnotation);
+
+        if (attributeSourceTypeWithNullability is null || attributeTargetTypeWithNullability is null)
+        {
+            return false;
+        }
+
+        return TypesMatchForPolymorphicMapping(
+            sourceType,
+            attributeSourceTypeWithNullability,
+            targetType,
+            attributeTargetTypeWithNullability,
+            nullableEnabled,
+            exactOnly);
+    }
+
+    private bool TryMatchPolymorphicTypeMappingDefaultAttribute(
+        MapMethod method,
+        ITypeSymbol targetType,
+        bool nullableEnabled,
+        bool exactOnly)
+    {
+        var mappaTypeMappingDefaultAttribute = method.GetAttribute<MappaTypeMappingDefaultAttribute>();
+        if (mappaTypeMappingDefaultAttribute is null
+            || mappaTypeMappingDefaultAttribute.Behavior is not MappaTypeMappingDefaultBehavior.MapSourceType
+            || mappaTypeMappingDefaultAttribute.Type is null)
+        {
+            return false;
+        }
+
+        var attributeTargetType =
+            this.Compilation.GetTypeByMetadataName(mappaTypeMappingDefaultAttribute.Type.FullName!);
+        var attributeTargetTypeWithNullability =
+            attributeTargetType?.WithNullableAnnotation(method.TargetType.NullableAnnotation);
+
+        if (attributeTargetTypeWithNullability is null)
+        {
+            return false;
+        }
+
+        return exactOnly
+            ? attributeTargetTypeWithNullability.IsEqualTo(targetType, nullableEnabled)
+            : targetType.IsNullabilityMatchOrRelaxed(attributeTargetTypeWithNullability, nullableEnabled);
+    }
 }

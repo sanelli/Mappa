@@ -190,6 +190,26 @@ internal sealed class MapMethod
                && this.SourceType.IsEqualTo(sourceType, includeNullability);
 
     /// <summary>
+    /// Check if the method is map from <paramref name="sourceType"/>
+    /// to <paramref name="targetType"/> using relaxed nullability matching.
+    /// </summary>
+    /// <param name="targetType">The target type.</param>
+    /// <param name="sourceType">The source type.</param>
+    /// <param name="includeNullability"><c>true</c> to include nullability for reference types.</param>
+    /// <returns><c>true</c> if the method is a relaxed map from
+    /// <paramref name="sourceType"/> to <paramref name="targetType"/>.</returns>
+    internal bool IsRelaxedMapFor(ITypeSymbol targetType, ITypeSymbol sourceType, bool includeNullability)
+    {
+        if (!includeNullability)
+        {
+            return false;
+        }
+
+        return targetType.IsNullabilityMatchOrRelaxed(this.TargetType, includeNullability)
+               && sourceType.IsNullabilityMatchOrRelaxed(this.SourceType, includeNullability);
+    }
+
+    /// <summary>
     /// Gets all the attributes of type <typeparamref name="TAttribute"/>
     /// applied to the method.
     /// </summary>
