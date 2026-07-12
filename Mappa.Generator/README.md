@@ -52,7 +52,8 @@ Before the detector chain, `TypeMapIdentifierWithMapMethodAlgorithm` checks whet
     - The existing method is invoked;
 - _Notes_:
     - A nested mapper method that requires `MappaContext` is only invoked when the caller provides context (the root map method has a `MappaContext` parameter);
-    - This pre-step is used when mapping elements of an array, keys or values of dictionaries, elements of tuples, and properties or constructor parameters of class/struct/record types.
+    - This pre-step is used when mapping elements of an array, keys or values of dictionaries, elements of tuples, and properties or constructor parameters of class/struct/record types;
+    - When `#nullable enable` is active, nullability annotations must match exactly first. If no exact match exists, the generator may reuse a method with a relaxed nullability signature on the same underlying types: nested mapping to `TTarget?` may invoke a method returning `TTarget`, and nested mapping from `TSource` may invoke a method accepting `TSource?`.
 
 ### Detector chain order
 
