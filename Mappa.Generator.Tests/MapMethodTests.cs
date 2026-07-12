@@ -164,7 +164,104 @@ public sealed class MapMethodTests
         mapMethod.RequireMappaContextWhenInvoked().Should().BeTrue();
     }
 
-    private static MapMethod CreateMapMethodFromSyntax(string source, string methodName)
+    /// <summary>
+    /// Test <see cref="MapMethod.IsRelaxedMapFor"/> matches when nullability can be relaxed on both axes.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void IsRelaxedMapForReturnsTrueForSupportedNullabilityMismatches()
+    {
+        const string source = """
+                              #nullable enable
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { }
+
+                              public class Target { }
+
+                              [Mappa]
+                              public sealed partial class Mapper
+                              {
+                                  public partial Target? Map(Source? input);
+                              }
+                              """;
+
+        var mapMethod = CreateMapMethodFromSyntax(source, "Map", nullableEnabled: true);
+        var requiredTarget = mapMethod.TargetType.WithNullableAnnotation(NullableAnnotation.NotAnnotated);
+        var requiredSource = mapMethod.SourceType.WithNullableAnnotation(NullableAnnotation.NotAnnotated);
+
+        mapMethod.IsRelaxedMapFor(requiredTarget, requiredSource, includeNullability: true).Should().BeTrue();
+        mapMethod.IsMapFor(requiredTarget, requiredSource, includeNullability: true).Should().BeFalse();
+    }
+
+    /// <summary>
+    /// Test <see cref="MapMethod.IsRelaxedMapFor"/> rejects unsupported nullability mismatches.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void IsRelaxedMapForReturnsFalseForUnsupportedNullabilityMismatches()
+    {
+        const string source = """
+                              #nullable enable
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { }
+
+                              public class Target { }
+
+                              [Mappa]
+                              public sealed partial class Mapper
+                              {
+                                  public Target Map(Source input);
+                              }
+                              """;
+
+        var mapMethod = CreateMapMethodFromSyntax(source, "Map", nullableEnabled: true);
+        var compilation = BuildCompilation(source);
+        var sourceType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Source")!
+            .WithNullableAnnotation(NullableAnnotation.Annotated);
+        var targetType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Target")!
+            .WithNullableAnnotation(NullableAnnotation.NotAnnotated);
+
+        mapMethod.IsRelaxedMapFor(targetType, sourceType, includeNullability: true).Should().BeFalse();
+    }
+
+    /// <summary>
+    /// Test <see cref="MapMethod.IsRelaxedMapFor"/> is disabled when nullability is disabled.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void IsRelaxedMapForReturnsFalseWhenNullabilityIsDisabled()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { }
+
+                              public class Target { }
+
+                              [Mappa]
+                              public sealed partial class Mapper
+                              {
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var mapMethod = CreateMapMethodFromSyntax(source, "Map", nullableEnabled: false);
+        var compilation = BuildCompilation(source);
+        var sourceType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Source")!;
+        var targetType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Target")!;
+
+        mapMethod.IsRelaxedMapFor(targetType, sourceType, includeNullability: false).Should().BeFalse();
+    }
+
+    private static MapMethod CreateMapMethodFromSyntax(string source, string methodName, bool nullableEnabled = false)
     {
         var compilation = BuildCompilation(source);
         var syntaxTree = compilation.SyntaxTrees[0];
@@ -177,7 +274,7 @@ public sealed class MapMethodTests
         return new MapMethod(
             methodDeclarationSyntax,
             semanticModel,
-            nullableEnabled: false,
+            nullableEnabled,
             CancellationToken.None);
     }
 }
