@@ -1,5 +1,5 @@
 ---
-description: Mappa development workflow — planning, code, git, versioning, tests, and samples
+description: Mappa development workflow — planning, code, code coverage, git, versioning, tests, and samples
 alwaysApply: true
 ---
 
@@ -24,7 +24,15 @@ The development environment uses **PowerShell**. All commands run in the termina
 - **Plan frontmatter format:** each TODO entry uses `id: "<n>"` and `content: <n>. <description>` where `<n>` is the same integer as the corresponding `### <n>.` heading in the plan body.
 - Plan steps must follow the **Code** project order below, but only include projects that require changes — do **not** add empty steps for unchanged projects.
 - Step numbers are **sequential** (1, 2, 3, …) across the included projects; they do **not** need to match the fixed project position numbers in the Code list (e.g. if **Mappa** and **Mappa.Tests** need no changes, the first step may be **Mappa.Generator** numbered as step `1`).
+- **Before implementation**, establish the **code coverage baseline** described in **Code Coverage** below.
 - Generated code **must compile** and **all tests must pass** before finishing.
+
+## Code Coverage
+
+- **Before starting work** on a new feature or GitHub issue, run `.\Scripts\RunTestsAndReportCoverage.ps1` and record the baseline from [`.mappa-tests-and-coverage/Summary.xml`](.mappa-tests-and-coverage/Summary.xml): **line**, **branch**, and **method** coverage. Also note coverage for any assembly expected to change (especially **Mappa.Generator**).
+- **Coverage must not decrease** relative to that baseline when the issue is finished. Compare the final run using the same metrics.
+- If coverage decreases — including after adding new production code with uncovered paths — **add or extend tests** until coverage is restored. Prefer targeted unit and integration tests for new branches, edge cases, and negative paths.
+- When analyzing gaps, use [`.mappa-tests-and-coverage/Summary.xml`](.mappa-tests-and-coverage/Summary.xml) and the HTML report under [`.mappa-tests-and-coverage/`](.mappa-tests-and-coverage/) to find uncovered lines and branches.
 
 ## Code
 
@@ -94,6 +102,7 @@ A single feature may require **two** bumps (e.g. one after **Mappa**, one after 
 
 - Update tests after changing a project.
 - Cover **happy path and negative paths** where possible.
+- Maintain or improve **code coverage** relative to the baseline recorded at the start of the issue (see **Code Coverage**).
 - For **Mappa.Generator**, test error/warning messages and corner cases.
 - For **Mappa.Generator.Tests** integration tests that assert generated syntax: when `blockSyntaxAssertions` (or nested block assertions) include `HasSyntaxNodesCount(X)`, there must be exactly **X** subsequent `HasNextSyntaxNode` entries chained after it. Tests that only assert diagnostic errors and do not inspect generated syntax are exempt.
 - When adding samples in **Mappa.Samples**, also update **Mappa.Samples.Aot**.
@@ -119,3 +128,5 @@ Always end with:
 ```powershell
 .\Scripts\RunTestsAndReportCoverage.ps1
 ```
+
+Confirm that **line**, **branch**, and **method** coverage in [`.mappa-tests-and-coverage/Summary.xml`](.mappa-tests-and-coverage/Summary.xml) are **greater than or equal to** the baseline recorded before starting the issue. If any metric decreased, add tests and re-run until coverage is restored.
