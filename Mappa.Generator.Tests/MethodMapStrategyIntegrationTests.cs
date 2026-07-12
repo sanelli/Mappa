@@ -2521,4 +2521,296 @@ public sealed class MethodMapStrategyIntegrationTests
                         });
                 });
     }
+
+    /// <summary>
+    /// Test a mapping can reuse an existing method when the nested target type is nullable
+    /// and the method returns the non-nullable type.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapUsingExistingMethodWithRelaxedReturnNullability()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class InnerSource { public int A { get; set; } }
+                                  public class InnerTarget { public int A { get; set; } }
+
+                                  public class Source { public InnerSource Property { get; set; } }
+                                  public class Target { public InnerTarget? Property { get; set; } }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public InnerTarget Map(InnerSource input)
+                                      {
+                                          return new InnerTarget { A = input.A };
+                                      }
+
+                                      public partial Target Map(Source input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                NullableAnnotation.NotAnnotated,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
+                NullableAnnotation.NotAnnotated,
+                NullableSetup.Enable,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(4)
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                            "Mappa.Generator.Tests.UnitTests.SourceCode.InnerSource",
+                            "__mappa_tmp_1",
+                            initializerAssertions => initializerAssertions.BeMemberAccessExpressionSyntax("input.Property")))
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                            "Mappa.Generator.Tests.UnitTests.SourceCode.InnerTarget",
+                            "__mappa_tmp_2",
+                            initializerAssertions => initializerAssertions.BeInvocationExpressionSyntax(
+                                "this.Map",
+                                parameterAssertions => parameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_1"))))
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                            "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                            "__mappa_tmp_3",
+                            initializerAssertions => initializerAssertions.BeObjectCreationExpressionSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                ("Property", expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_2")))))
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement("__mappa_tmp_3"));
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping can reuse an existing method when the nested source type is non-nullable
+    /// and the method accepts the nullable source type.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapUsingExistingMethodWithRelaxedParameterNullability()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class InnerSource { public int A { get; set; } }
+                                  public class InnerTarget { public int A { get; set; } }
+
+                                  public class Source { public InnerSource Property { get; set; } }
+                                  public class Target { public InnerTarget Property { get; set; } }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public InnerTarget Map(InnerSource? input)
+                                      {
+                                          return new InnerTarget { A = input!.A };
+                                      }
+
+                                      public partial Target Map(Source input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                NullableAnnotation.NotAnnotated,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
+                NullableAnnotation.NotAnnotated,
+                NullableSetup.Enable,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(4)
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                            "Mappa.Generator.Tests.UnitTests.SourceCode.InnerSource",
+                            "__mappa_tmp_1",
+                            initializerAssertions => initializerAssertions.BeMemberAccessExpressionSyntax("input.Property")))
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                            "Mappa.Generator.Tests.UnitTests.SourceCode.InnerTarget",
+                            "__mappa_tmp_2",
+                            initializerAssertions => initializerAssertions.BeInvocationExpressionSyntax(
+                                "this.Map",
+                                parameterAssertions => parameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_1"))))
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                            "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                            "__mappa_tmp_3",
+                            initializerAssertions => initializerAssertions.BeObjectCreationExpressionSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                ("Property", expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_2")))))
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement("__mappa_tmp_3"));
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping prefers an exact nullability match over a relaxed match when both methods exist.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapUsingExactMatchingMethodWhenExactAndRelaxedMatchesExist()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class InnerSource { public int A { get; set; } }
+                                  public class InnerTarget { public int A { get; set; } }
+
+                                  public class Source { public InnerSource Property { get; set; } }
+                                  public class Target { public InnerTarget Property { get; set; } }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public InnerTarget MapExact(InnerSource input)
+                                      {
+                                          return new InnerTarget { A = input.A };
+                                      }
+
+                                      public InnerTarget MapRelaxed(InnerSource? input)
+                                      {
+                                          return new InnerTarget { A = input!.A };
+                                      }
+
+                                      public partial Target Map(Source input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                NullableAnnotation.NotAnnotated,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
+                NullableAnnotation.NotAnnotated,
+                NullableSetup.Enable,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(4)
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                            "Mappa.Generator.Tests.UnitTests.SourceCode.InnerSource",
+                            "__mappa_tmp_1",
+                            initializerAssertions => initializerAssertions.BeMemberAccessExpressionSyntax("input.Property")))
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                            "Mappa.Generator.Tests.UnitTests.SourceCode.InnerTarget",
+                            "__mappa_tmp_2",
+                            initializerAssertions => initializerAssertions.BeInvocationExpressionSyntax(
+                                "this.MapExact",
+                                parameterAssertions => parameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_1"))))
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                            "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                            "__mappa_tmp_3",
+                            initializerAssertions => initializerAssertions.BeObjectCreationExpressionSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                ("Property", expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_2")))))
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement("__mappa_tmp_3"));
+                });
+    }
+
+    /// <summary>
+    /// Test a mapping does not reuse an existing method when the nested source type differs.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapWithoutUsingExistingMethodWhenRelaxedNullabilityMismatchIsUnsupported()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class InnerSource { public int A { get; set; } }
+                                  public class OtherSource { public int A { get; set; } }
+                                  public class InnerTarget { public int A { get; set; } }
+
+                                  public class Source { public InnerSource Property { get; set; } }
+                                  public class Target { public InnerTarget Property { get; set; } }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public InnerTarget Map(OtherSource input)
+                                      {
+                                          return new InnerTarget { A = input.A };
+                                      }
+
+                                      public partial Target Map(Source input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                NullableAnnotation.NotAnnotated,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
+                NullableAnnotation.NotAnnotated,
+                NullableSetup.Enable,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(5)
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                            "Mappa.Generator.Tests.UnitTests.SourceCode.InnerSource",
+                            "__mappa_tmp_1",
+                            initializerAssertions => initializerAssertions.BeMemberAccessExpressionSyntax("input.Property")))
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                            typeof(int).ToString(),
+                            "__mappa_tmp_2",
+                            initializerAssertions => initializerAssertions.BeMemberAccessExpressionSyntax("__mappa_tmp_1.A")))
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                            "Mappa.Generator.Tests.UnitTests.SourceCode.InnerTarget",
+                            "__mappa_tmp_3",
+                            initializerAssertions => initializerAssertions.BeObjectCreationExpressionSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.InnerTarget",
+                                ("A", expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_2")))))
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                            "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                            "__mappa_tmp_4",
+                            initializerAssertions => initializerAssertions.BeObjectCreationExpressionSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                ("Property", expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_3")))))
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement("__mappa_tmp_4"));
+                });
+    }
 }

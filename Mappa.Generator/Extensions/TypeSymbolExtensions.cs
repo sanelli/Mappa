@@ -908,6 +908,72 @@ internal static class TypeSymbolExtensions
     }
 
     /// <summary>
+    /// Check if <paramref name="methodType"/> can satisfy a mapping that requires
+    /// <paramref name="requiredType"/> under the relaxed nullability rules.
+    /// </summary>
+    /// <param name="requiredType">The type required by the mapping.</param>
+    /// <param name="methodType">The type from the existing map method.</param>
+    /// <param name="isNullableEnabled"><c>true</c> if nullable is enabled.</param>
+    /// <returns><c>true</c> if the relaxed nullability rule applies.</returns>
+    internal static bool IsRelaxedNullabilityMatch(
+        this ITypeSymbol requiredType,
+        ITypeSymbol methodType,
+        bool isNullableEnabled)
+    {
+        if (!isNullableEnabled)
+        {
+            return false;
+        }
+
+        if (!SymbolEqualityComparer.Default.Equals(requiredType, methodType))
+        {
+            return false;
+        }
+
+        if (requiredType.NullableAnnotation == NullableAnnotation.None
+            || methodType.NullableAnnotation == NullableAnnotation.None)
+        {
+            return false;
+        }
+
+        if (requiredType.NullableAnnotation == NullableAnnotation.Annotated
+            && methodType.NullableAnnotation == NullableAnnotation.NotAnnotated)
+        {
+            return true;
+        }
+
+        if (requiredType.NullableAnnotation == NullableAnnotation.NotAnnotated
+            && methodType.NullableAnnotation == NullableAnnotation.Annotated)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Check if <paramref name="methodType"/> satisfies a mapping that requires
+    /// <paramref name="requiredType"/> with an exact or relaxed nullability match.
+    /// </summary>
+    /// <param name="requiredType">The type required by the mapping.</param>
+    /// <param name="methodType">The type from the existing map method.</param>
+    /// <param name="isNullableEnabled"><c>true</c> if nullable is enabled.</param>
+    /// <returns><c>true</c> if the types match exactly or under relaxed nullability rules.</returns>
+    internal static bool IsNullabilityMatchOrRelaxed(
+        this ITypeSymbol requiredType,
+        ITypeSymbol methodType,
+        bool isNullableEnabled)
+    {
+        if (!SymbolEqualityComparer.Default.Equals(requiredType, methodType))
+        {
+            return false;
+        }
+
+        return requiredType.IsEqualTo(methodType, isNullableEnabled)
+               || requiredType.IsRelaxedNullabilityMatch(methodType, isNullableEnabled);
+    }
+
+    /// <summary>
     /// Check if the type is <c>void</c>.
     /// </summary>
     /// <param name="typeSymbol">The type symbol.</param>

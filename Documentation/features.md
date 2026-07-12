@@ -42,8 +42,9 @@ Before the detector chain, nested mappings may invoke an existing map method on 
 
 | Feature | Sample |
 |---------|--------|
-| Hand-written map methods on the mapper | [MapMethodStrategyMapper.cs](../Mappa.Samples/MapMethodStrategyMapper.cs), [MapMethodStrategyWithUserCustomInstanceMethodMapper.cs](../Mappa.Samples/MapMethodStrategyWithUserCustomInstanceMethodMapper.cs), [MapMethodStrategyWithUserCustomStaticMethodMapper.cs](../Mappa.Samples/MapMethodStrategyWithUserCustomStaticMethodMapper.cs) |
+| Hand-written map methods on the mapper | [MapMethodStrategyMapper.cs](../Mappa.Samples/MapMethodStrategyMapper.cs), [MapMethodStrategyWithUserCustomInstanceMethodMapper.cs](../Mappa.Samples/MapMethodStrategyWithUserCustomInstanceMethodMapper.cs), [MapMethodStrategyWithUserCustomStaticMethodMapper.cs](../Mappa.Samples/MapMethodStrategyWithUserCustomStaticMethodMapper.cs), [RelaxedNullabilityMethodMapMapper.cs](../Mappa.Samples/RelaxedNullabilityMethodMapMapper.cs) |
 | Polymorphic method resolution for nested properties | [PolymorphicMethodMapMapper.cs](../Mappa.Samples/PolymorphicMethodMapMapper.cs) |
+| Relaxed nullability when reusing existing map methods | [Algorithm — existing-method pre-step](./mappa-generator-algorithm.md#existing-method-pre-step-nested-mappings-only), [RelaxedNullabilityMethodMapMapper.cs](../Mappa.Samples/RelaxedNullabilityMethodMapMapper.cs) |
 
 ## Attributes
 

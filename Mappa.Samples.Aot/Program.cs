@@ -67,6 +67,7 @@ internal static class Program
         ProtobufOptionalMapperRunner.Run(report);
         ReadOnlyTargetCollectionMapperRunner.Run(report);
         ReferenceNullableToReferenceNullableMapperRunner.Run(report);
+        RelaxedNullabilityMethodMapMapperRunner.Run(report);
         ReferenceToReferenceWithNullableDisabledMapperRunner.Run(report);
         StringToEnumMapperRunner.Run(report);
         StringToSystemEntitiesMapperRunner.Run(report);
