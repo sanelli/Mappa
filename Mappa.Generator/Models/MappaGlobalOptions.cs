@@ -215,6 +215,10 @@ namespace Mappa.Generator.Models;
 ///         <term><c>mappa.enumerableconcretetype</c></term>
 ///         <description>Set the default concrete type for sequence-like collection interface targets. Valid values are the values of the <see cref="EnumerableConcreteTypeSetting"/> <c>enum</c>.</description>
 ///     </item>
+///     <item>
+///         <term><c>mappa.dictionaryassignment</c></term>
+///         <description>Set how entries are inserted when mapping between dictionaries. Valid values are the values of the <see cref="DictionaryAssignmentSetting"/> <c>enum</c>.</description>
+///     </item>
 /// </list>
 /// </summary>
 internal sealed class MappaGlobalOptions
@@ -271,6 +275,7 @@ internal sealed class MappaGlobalOptions
     private const string MappaSettingsEnumToEnumMapSetting = "enumtoenummapsetting";
     private const string MappaSettingsIdentityMapDeepCopy = "identitymapdeepcopy";
     private const string MappaSettingsEnumerableConcreteType = "enumerableconcretetype";
+    private const string MappaSettingsDictionaryAssignment = "dictionaryassignment";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaGlobalOptions"/> class.
@@ -431,6 +436,10 @@ internal sealed class MappaGlobalOptions
             ? GetEnumerableConcreteTypeSettingFromString(enumerableConcreteType)
             : EnumerableConcreteTypeSetting.List;
 
+        this.DictionaryAssignment = options.TryGetValue(GetOptionName(MappaSettingsDictionaryAssignment), out var dictionaryAssignment)
+            ? GetDictionaryAssignmentSettingFromString(dictionaryAssignment)
+            : DictionaryAssignmentSetting.Indexer;
+
         static CultureInfoSetting GetCultureInfoSettingsFromString(string cultureInfoSettings)
         {
             if (cultureInfoSettings.Equals(nameof(CultureInfoSetting.CurrentCulture), StringComparison.OrdinalIgnoreCase))
@@ -539,6 +548,21 @@ internal sealed class MappaGlobalOptions
             }
 
             return EnumerableConcreteTypeSetting.List;
+        }
+
+        static DictionaryAssignmentSetting GetDictionaryAssignmentSettingFromString(string dictionaryAssignmentValue)
+        {
+            if (dictionaryAssignmentValue.Equals(nameof(DictionaryAssignmentSetting.Add), StringComparison.OrdinalIgnoreCase))
+            {
+                return DictionaryAssignmentSetting.Add;
+            }
+
+            if (dictionaryAssignmentValue.Equals(nameof(DictionaryAssignmentSetting.Undefined), StringComparison.OrdinalIgnoreCase))
+            {
+                return DictionaryAssignmentSetting.Undefined;
+            }
+
+            return DictionaryAssignmentSetting.Indexer;
         }
 
         static PragmaWarningSetting GetPragmaWarningSettingFromString(string enableSettings)
@@ -721,6 +745,9 @@ internal sealed class MappaGlobalOptions
 
     /// <inheritdoc/>
     public EnumerableConcreteTypeSetting EnumerableConcreteType { get; }
+
+    /// <inheritdoc/>
+    public DictionaryAssignmentSetting DictionaryAssignment { get; }
 
     /// <summary>
     /// Gets a value indicating whether to report debug INFO diagnostics.

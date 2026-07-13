@@ -12,7 +12,7 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Tests for <see cref="ReadonlyDictionaryPropertyMapStrategy"/>.
 /// </summary>
-public sealed class ReadonlyDictionaryPropertyMapStrategyIntegrationTests
+public sealed partial class ReadonlyDictionaryPropertyMapStrategyIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {
     /// <summary>

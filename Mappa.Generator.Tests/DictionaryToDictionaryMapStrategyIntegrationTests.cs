@@ -13,7 +13,7 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Integration tests for <see cref="DictionaryToDictionaryMapStrategy"/> strategy.
 /// </summary>
-public sealed class DictionaryToDictionaryMapStrategyIntegrationTests
+public sealed partial class DictionaryToDictionaryMapStrategyIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {
     /// <summary>

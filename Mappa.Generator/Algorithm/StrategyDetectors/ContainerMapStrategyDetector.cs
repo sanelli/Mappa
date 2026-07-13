@@ -3,6 +3,7 @@
 // </copyright>
 
 using Mappa.Generator.Extensions;
+using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -44,12 +45,12 @@ internal sealed class ContainerMapStrategyDetector
         // 01. Dictionary -> Dictionary strategy.
         if (this.CanMapDictionaryToDictionary(out var dictionaryKeyStrategy, out var dictionaryValueStrategy))
         {
-            // TODO [#34] Allow the user to specify if they want to use .Add or the indexer.
             mapStrategy = new DictionaryToDictionaryMapStrategy(
                 this.context.TargetType,
                 this.context.SourceType,
                 dictionaryKeyStrategy,
-                dictionaryValueStrategy);
+                dictionaryValueStrategy,
+                DictionaryAssignmentSettingHelper.GetEffective(this.context.MappaUserSettings.DictionaryAssignment));
         }
 
         // 02. Collection -> Collection strategy.

@@ -15,11 +15,13 @@ namespace Mappa.Generator.Models.Strategies;
 /// <param name="sourceType">The source type.</param>
 /// <param name="keyStrategy">The strategy for the keys.</param>
 /// <param name="valueStrategy">The strategy for the values.</param>
+/// <param name="dictionaryAssignment">The dictionary assignment setting.</param>
 internal sealed class DictionaryToDictionaryMapStrategy(
     ITypeSymbol targetType,
     ITypeSymbol sourceType,
     MapStrategy keyStrategy,
-    MapStrategy valueStrategy)
+    MapStrategy valueStrategy,
+    DictionaryAssignmentSetting dictionaryAssignment)
         : MapStrategy(targetType, sourceType)
 {
     /// <summary>
@@ -31,6 +33,11 @@ internal sealed class DictionaryToDictionaryMapStrategy(
     /// Gets the strategy for the values.
     /// </summary>
     public MapStrategy ValueStrategy { get; } = valueStrategy;
+
+    /// <summary>
+    /// Gets the dictionary assignment setting.
+    /// </summary>
+    internal DictionaryAssignmentSetting DictionaryAssignment { get; } = dictionaryAssignment;
 
     /// <inheritdoc/>
     internal override IMappaStrategyBuilder GetBuilder() => new DictionaryToDictionaryMapStrategyBuilder(this);

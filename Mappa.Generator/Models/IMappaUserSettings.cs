@@ -224,6 +224,11 @@ internal interface IMappaUserSettings
     EnumerableConcreteTypeSetting EnumerableConcreteType { get; }
 
     /// <summary>
+    /// Gets how entries are inserted when mapping between dictionaries.
+    /// </summary>
+    DictionaryAssignmentSetting DictionaryAssignment { get; }
+
+    /// <summary>
     /// Gets a value indicating whether to allow the source generator to
     /// use the <see cref="MappaTypeMappingDefaultAttribute"/> when looking for a
     /// polymorphic method to support a mapping between two types and the behavior

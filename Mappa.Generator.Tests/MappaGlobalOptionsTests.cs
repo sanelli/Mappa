@@ -75,5 +75,6 @@ public sealed class MappaGlobalOptionsTests
         options.CultureName.Should().BeNull();
         options.MappaDebug.Should().BeFalse();
         options.MappaDebugComments.Should().BeFalse();
+        options.DictionaryAssignment.Should().Be(DictionaryAssignmentSetting.Indexer);
     }
 }

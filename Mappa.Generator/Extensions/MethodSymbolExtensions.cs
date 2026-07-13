@@ -333,6 +333,75 @@ internal static class MethodSymbolExtensions
     }
 
     /// <summary>
+    /// Check if <see cref="IDictionary{TKey,TValue}.Add(TKey, TValue)"/> can be accessed directly
+    /// or needs an interface because it was implemented explicitly.
+    /// </summary>
+    /// <param name="targetTypeSymbol">The target type implementing <see cref="IDictionary{TKey,TValue}"/>.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The way the <c>Add</c> method can be accessed.</returns>
+    internal static InterfaceMethodAccessMode GetIDictionaryInterfaceAddAccessMode(
+        this ITypeSymbol targetTypeSymbol,
+        Compilation compilation)
+    {
+        var (keyType, valueType) = targetTypeSymbol.GetKeyAndValueTypes(compilation);
+
+        var currentType = targetTypeSymbol;
+        while (currentType is not null)
+        {
+            if (HasAdd("Add"))
+            {
+                return InterfaceMethodAccessMode.Direct;
+            }
+
+            currentType = currentType.BaseType;
+        }
+
+        var nonGenericName = $"System.Collections.Generic.IDictionary<{TypeSymbolExtensions.NormalizeType(keyType.ToDisplayString())},{TypeSymbolExtensions.NormalizeType(valueType.ToDisplayString())}>.Add";
+        currentType = targetTypeSymbol;
+        while (currentType is not null)
+        {
+            if (HasAdd(nonGenericName))
+            {
+                return InterfaceMethodAccessMode.InterfaceExplicit;
+            }
+
+            currentType = currentType.BaseType;
+        }
+
+        if (targetTypeSymbol is INamedTypeSymbol { OriginalDefinition.TypeArguments.Length: 2 } namedTypeSymbol)
+        {
+            var keyTypeArgument = namedTypeSymbol.OriginalDefinition.TypeArguments[0].Name;
+            var valueTypeArgument = namedTypeSymbol.OriginalDefinition.TypeArguments[1].Name;
+
+            var genericName = $"System.Collections.Generic.IDictionary<{keyTypeArgument},{valueTypeArgument}>.Add";
+
+            currentType = targetTypeSymbol;
+            while (currentType is not null)
+            {
+                if (HasAdd(genericName))
+                {
+                    return InterfaceMethodAccessMode.InterfaceExplicit;
+                }
+
+                currentType = currentType.BaseType;
+            }
+        }
+
+        return InterfaceMethodAccessMode.None;
+
+        bool HasAdd(string name)
+        {
+            return targetTypeSymbol.GetMembers()
+                .OfType<IMethodSymbol>()
+                .Any(methodSymbol => methodSymbol.Name.Equals(name, StringComparison.OrdinalIgnoreCase)
+                                     && methodSymbol.ReturnType.IsVoid()
+                                     && methodSymbol.Parameters.Length == 2
+                                     && SymbolEqualityComparer.Default.Equals(methodSymbol.Parameters[0].Type, keyType)
+                                     && SymbolEqualityComparer.Default.Equals(methodSymbol.Parameters[1].Type, valueType));
+        }
+    }
+
+    /// <summary>
     /// Validate that the ref kind for the method parameters are
     /// either <see cref="RefKind.None"/> or <see cref="RefKind.In"/>.
     /// </summary>
