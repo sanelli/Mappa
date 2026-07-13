@@ -9,6 +9,7 @@ See the [tutorial](../Documentation/tutorial.md) for a guided introduction, or b
 | [`IdentityStrategyMapper.cs`](IdentityStrategyMapper.cs) | Identity and implicit conversion mappings |
 | [`CollectionToCollectionMapper.cs`](CollectionToCollectionMapper.cs) | Collection-to-collection mapping |
 | [`DictionaryToDictionaryMapper.cs`](DictionaryToDictionaryMapper.cs) | Dictionary-to-dictionary mapping |
+| [`DictionaryAssignmentMapper.cs`](DictionaryAssignmentMapper.cs) | `DictionaryAssignment` indexer vs `Add` for dictionary-to-dictionary mapping |
 | [`EnumToEnumMapper.cs`](EnumToEnumMapper.cs) | Enum-to-enum mapping |
 | [`DateAndTimeMapper.cs`](DateAndTimeMapper.cs) | Date and time type conversions |
 | [`GuidStrategyMapper.cs`](GuidStrategyMapper.cs) | `Guid` ↔ `byte[]` mapping |

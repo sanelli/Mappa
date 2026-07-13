@@ -466,6 +466,10 @@ internal static class AttributeDataExtensions
                 case nameof(MappaSettingsAttribute.EnumerableConcreteType) when namedArgument.Value.Value is int value:
                     attribute.EnumerableConcreteType = (EnumerableConcreteTypeSetting)value;
                     break;
+
+                case nameof(MappaSettingsAttribute.DictionaryAssignment) when namedArgument.Value.Value is int value:
+                    attribute.DictionaryAssignment = (DictionaryAssignmentSetting)value;
+                    break;
             }
         }
 

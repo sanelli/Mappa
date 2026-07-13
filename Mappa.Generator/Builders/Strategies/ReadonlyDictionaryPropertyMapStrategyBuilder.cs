@@ -50,19 +50,15 @@ internal sealed class ReadonlyDictionaryPropertyMapStrategyBuilder
             builder.AppendLine(targetValueStrategyCode);
             builder.AppendEmptyLine();
 
-            // Assign using the indexer.
-            var interfaceIndexerAccessMode = this.strategy.TargetType.GetIDictionaryInterfaceIndexerAccessMode(context.Compilation);
-            if (interfaceIndexerAccessMode == InterfaceMethodAccessMode.InterfaceExplicit)
-            {
-                var (targetKeyType, targetValueType) = this.strategy.TargetType.GetKeyAndValueTypes(context.Compilation);
-                var interfaceTemporary = context.NextTemporary();
-                builder.AppendLine($"global::System.Collections.Generic.IDictionary<{targetKeyType.ToDisplayString()},{targetValueType.ToDisplayString()}> {interfaceTemporary} = {context.GetCompositeTypeTargetName()}.{this.strategy.TargetProperty.Name};");
-                builder.AppendLine($"{interfaceTemporary}[{targetKeyTemporary}] = {targetValueTemporary};");
-            }
-            else
-            {
-                builder.AppendLine($"{context.GetCompositeTypeTargetName()}.{this.strategy.TargetProperty.Name}[{targetKeyTemporary}] = {targetValueTemporary};");
-            }
+            DictionaryMapEntryCodeBuilder.AppendEntry(
+                builder,
+                context,
+                context.Compilation,
+                this.strategy.TargetType,
+                this.strategy.DictionaryAssignment,
+                $"{context.GetCompositeTypeTargetName()}.{this.strategy.TargetProperty.Name}",
+                targetKeyTemporary,
+                targetValueTemporary);
         }
 
         return (string.Empty, builder.ToString());

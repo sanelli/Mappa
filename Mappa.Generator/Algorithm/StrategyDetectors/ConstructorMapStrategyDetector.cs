@@ -461,7 +461,6 @@ internal sealed class ConstructorMapStrategyDetector
                                 targetProperty.GetMethod is not null)
                             {
                                 // Check if it implements IDictionary<K, V>
-                                // TODO [#34] Allow the user to specify if they want to use .Add or the indexer.
                                 if (targetProperty.Type.IsOrImplementIDictionary(this.compilation)
                                     && sourceProperty.Type.IsOrImplementIDictionary(this.compilation)
                                     && this.context.TryGetKeyAndValueStrategy(
@@ -472,7 +471,12 @@ internal sealed class ConstructorMapStrategyDetector
                                         out var valueStrategy,
                                         this.cancellationToken))
                                 {
-                                    var dictionaryPropertyStrategy = new ReadonlyDictionaryPropertyMapStrategy(targetProperty, sourceProperty, keyStrategy, valueStrategy);
+                                    var dictionaryPropertyStrategy = new ReadonlyDictionaryPropertyMapStrategy(
+                                        targetProperty,
+                                        sourceProperty,
+                                        keyStrategy,
+                                        valueStrategy,
+                                        DictionaryAssignmentSettingHelper.GetEffective(this.context.MappaUserSettings.DictionaryAssignment));
                                     return new PropertyMapStrategy(targetProperty, sourceProperty, dictionaryPropertyStrategy, true);
                                 }
 

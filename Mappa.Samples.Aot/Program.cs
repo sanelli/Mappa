@@ -26,6 +26,7 @@ internal static class Program
         DescriptionEnumToStringMapperRunner.Run(report);
         DescriptionStringToEnumMapperRunner.Run(report);
         DictionaryToDictionaryMapperRunner.Run(report);
+        DictionaryAssignmentMapperRunner.Run(report);
         EnumToEnumMapperRunner.Run(report);
         EnumToIntegralMapperRunner.Run(report);
         EnumToStringMapperRunner.Run(report);

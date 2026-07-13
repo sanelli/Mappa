@@ -18,18 +18,18 @@ The development environment uses **PowerShell**. All commands run in the termina
 - **Always** create a plan with numbered steps before starting implementation.
 - **Always** save the plan file under `.cursor/plans/` in the repository.
 - **Always** name the plan file `issue_<number>_<short-description>.plan.md` when the work is tied to a GitHub issue (e.g. `.cursor/plans/issue_214_datetimestyle_mappasettings.plan.md`). If no issue number is provided, ask the user for one before creating the plan.
+- **Step 1 must always compute the code coverage baseline** (see **Code Coverage** below): run `.\Scripts\RunTestsAndReportCoverage.ps1` and record **line**, **branch**, and **method** coverage from [`.mappa-tests-and-coverage/Summary.xml`](.mappa-tests-and-coverage/Summary.xml), plus coverage for any assembly expected to change. No code changes before step 1 is complete.
 - **TODOs MUST ALWAYS match plan steps 1:1.** Create exactly one numbered TODO for each numbered plan step, and exactly one numbered plan step for each TODO — no extras, no omissions, no combined or split items.
 - **Step numbers must match TODO numbers** (e.g. plan step `3.` ↔ TODO `3`); TODO content must describe the same work as its corresponding step.
-- **TODO content must be prefixed with the step number** (e.g. `1. Mappa — …`, `2. Bump MappaVersion.targets …`). The `id` field and the leading number in `content` must both match the plan step number.
+- **TODO content must be prefixed with the step number** (e.g. `1. Run .\Scripts\RunTestsAndReportCoverage.ps1 …`, `2. Mappa — …`, `3. Bump MappaVersion.targets …`). The `id` field and the leading number in `content` must both match the plan step number.
 - **Plan frontmatter format:** each TODO entry uses `id: "<n>"` and `content: <n>. <description>` where `<n>` is the same integer as the corresponding `### <n>.` heading in the plan body.
-- Plan steps must follow the **Code** project order below, but only include projects that require changes — do **not** add empty steps for unchanged projects.
-- Step numbers are **sequential** (1, 2, 3, …) across the included projects; they do **not** need to match the fixed project position numbers in the Code list (e.g. if **Mappa** and **Mappa.Tests** need no changes, the first step may be **Mappa.Generator** numbered as step `1`).
-- **Before implementation**, establish the **code coverage baseline** described in **Code Coverage** below.
+- Plan steps **2 onward** must follow the **Code** project order below, but only include projects that require changes — do **not** add empty steps for unchanged projects.
+- Step numbers are **sequential** (1, 2, 3, …) across all steps; step `1` is always the coverage baseline. Project work starts at step `2` (e.g. if **Mappa** and **Mappa.Tests** need no changes, the first project step may be **Mappa.Generator** numbered as step `2`).
 - Generated code **must compile** and **all tests must pass** before finishing.
 
 ## Code Coverage
 
-- **Before starting work** on a new feature or GitHub issue, run `.\Scripts\RunTestsAndReportCoverage.ps1` and record the baseline from [`.mappa-tests-and-coverage/Summary.xml`](.mappa-tests-and-coverage/Summary.xml): **line**, **branch**, and **method** coverage. Also note coverage for any assembly expected to change (especially **Mappa.Generator**).
+- **Step 1 of every plan** runs `.\Scripts\RunTestsAndReportCoverage.ps1` and records the baseline from [`.mappa-tests-and-coverage/Summary.xml`](.mappa-tests-and-coverage/Summary.xml): **line**, **branch**, and **method** coverage. Also note coverage for any assembly expected to change (especially **Mappa.Generator**).
 - **Coverage must not decrease** relative to that baseline when the issue is finished. Compare the final run using the same metrics.
 - If coverage decreases — including after adding new production code with uncovered paths — **add or extend tests** until coverage is restored. Prefer targeted unit and integration tests for new branches, edge cases, and negative paths.
 - When analyzing gaps, use [`.mappa-tests-and-coverage/Summary.xml`](.mappa-tests-and-coverage/Summary.xml) and the HTML report under [`.mappa-tests-and-coverage/`](.mappa-tests-and-coverage/) to find uncovered lines and branches.
@@ -102,7 +102,7 @@ A single feature may require **two** bumps (e.g. one after **Mappa**, one after 
 
 - Update tests after changing a project.
 - Cover **happy path and negative paths** where possible.
-- Maintain or improve **code coverage** relative to the baseline recorded at the start of the issue (see **Code Coverage**).
+- Maintain or improve **code coverage** relative to the baseline recorded in plan step 1 (see **Code Coverage**).
 - For **Mappa.Generator**, test error/warning messages and corner cases.
 - For **Mappa.Generator.Tests** integration tests that assert generated syntax: when `blockSyntaxAssertions` (or nested block assertions) include `HasSyntaxNodesCount(X)`, there must be exactly **X** subsequent `HasNextSyntaxNode` entries chained after it. Tests that only assert diagnostic errors and do not inspect generated syntax are exempt.
 - When adding samples in **Mappa.Samples**, also update **Mappa.Samples.Aot**.
@@ -129,4 +129,4 @@ Always end with:
 .\Scripts\RunTestsAndReportCoverage.ps1
 ```
 
-Confirm that **line**, **branch**, and **method** coverage in [`.mappa-tests-and-coverage/Summary.xml`](.mappa-tests-and-coverage/Summary.xml) are **greater than or equal to** the baseline recorded before starting the issue. If any metric decreased, add tests and re-run until coverage is restored.
+Confirm that **line**, **branch**, and **method** coverage in [`.mappa-tests-and-coverage/Summary.xml`](.mappa-tests-and-coverage/Summary.xml) are **greater than or equal to** the baseline recorded in **step 1**. If any metric decreased, add tests and re-run until coverage is restored.

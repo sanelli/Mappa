@@ -40,6 +40,7 @@ public sealed class MappaGlobalOptionsTests
                                     mappa.cultureinfosettings = UserDefined
                                     mappa.culturename = de-DE
                                     mappa.pragmawarning = disable
+                                    mappa.dictionaryassignment = Add
                                     """;
 
         var compilation = BuildCompilation("namespace Mappa.Generator.Tests.UnitTests.SourceCode { internal class Placeholder { } }");
@@ -56,6 +57,52 @@ public sealed class MappaGlobalOptionsTests
         options.CultureInfoSetting.Should().Be(CultureInfoSetting.UserDefined);
         options.CultureName.Should().Be("de-DE");
         options.PragmaWarning.Should().Be(PragmaWarningSetting.Disable);
+        options.DictionaryAssignment.Should().Be(DictionaryAssignmentSetting.Add);
+    }
+
+    /// <summary>
+    /// Test <see cref="MappaGlobalOptions"/> parses <c>mappa.dictionaryassignment</c> values.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void ParsesDictionaryAssignmentFromEditorConfig()
+    {
+        const string undefinedEditorConfig = """
+                                             root = true
+
+                                             [*.cs]
+                                             mappa.dictionaryassignment = Undefined
+                                             """;
+
+        var compilation = BuildCompilation("namespace Mappa.Generator.Tests.UnitTests.SourceCode { internal class Placeholder { } }");
+        var undefinedOptions = new MappaGlobalOptions(
+            TestAnalyzerConfigOptionsProvider.FromEditorConfig(undefinedEditorConfig),
+            compilation.SyntaxTrees[0]);
+        undefinedOptions.DictionaryAssignment.Should().Be(DictionaryAssignmentSetting.Undefined);
+
+        const string invalidEditorConfig = """
+                                           root = true
+
+                                           [*.cs]
+                                           mappa.dictionaryassignment = NotAValidValue
+                                           """;
+
+        var invalidOptions = new MappaGlobalOptions(
+            TestAnalyzerConfigOptionsProvider.FromEditorConfig(invalidEditorConfig),
+            compilation.SyntaxTrees[0]);
+        invalidOptions.DictionaryAssignment.Should().Be(DictionaryAssignmentSetting.Indexer);
+
+        const string indexerEditorConfig = """
+                                           root = true
+
+                                           [*.cs]
+                                           mappa.dictionaryassignment = Indexer
+                                           """;
+
+        var indexerOptions = new MappaGlobalOptions(
+            TestAnalyzerConfigOptionsProvider.FromEditorConfig(indexerEditorConfig),
+            compilation.SyntaxTrees[0]);
+        indexerOptions.DictionaryAssignment.Should().Be(DictionaryAssignmentSetting.Indexer);
     }
 
     /// <summary>
@@ -75,5 +122,6 @@ public sealed class MappaGlobalOptionsTests
         options.CultureName.Should().BeNull();
         options.MappaDebug.Should().BeFalse();
         options.MappaDebugComments.Should().BeFalse();
+        options.DictionaryAssignment.Should().Be(DictionaryAssignmentSetting.Indexer);
     }
 }
