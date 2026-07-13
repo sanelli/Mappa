@@ -261,6 +261,12 @@ public sealed class MappaSettingsAttribute
     public EnumerableConcreteTypeSetting EnumerableConcreteType { get; set; } = EnumerableConcreteTypeSetting.Undefined;
 
     /// <summary>
+    /// Gets or sets how entries are inserted when mapping between dictionaries.
+    /// When unset, <see cref="DictionaryAssignmentSetting.Indexer"/> is used.
+    /// </summary>
+    public DictionaryAssignmentSetting DictionaryAssignment { get; set; } = DictionaryAssignmentSetting.Undefined;
+
+    /// <summary>
     /// Gets or sets a value indicating whether to allow the source generator to
     /// use the <see cref="MappaTypeMappingDefaultAttribute"/> when looking for a
     /// polymorphic method to support a mapping between two types and the behavior
