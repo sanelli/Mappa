@@ -297,6 +297,54 @@ public sealed partial class DictionaryToDictionaryMapStrategyIntegrationTests
     }
 
     /// <summary>
+    /// Test a mapping from <see cref="Dictionary{TKey,TValue}"/> to <see cref="Dictionary{TKey,TValue}"/>
+    /// when <c>mappa.dictionaryassignment</c> is <see cref="DictionaryAssignmentSetting.Undefined"/> in <c>.editorconfig</c>.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapDictionaryToDictionaryWhenDictionaryAssignmentIsUndefinedInEditorConfig()
+    {
+        const string editorConfig = """
+                                    root = true
+
+                                    [*.cs]
+                                    mappa.dictionaryassignment = Undefined
+                                    """;
+
+        const string sourceCode = """
+                                  #nullable enable
+
+                                  using Mappa.Attributes;
+                                  using System.Collections.Generic;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial Dictionary<int, long> Map(Dictionary<short, int> input);
+                                  }
+
+                                  #nullable restore
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, editorConfig, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                typeof(Dictionary<int, long>).ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(Dictionary<short, int>).ToString(),
+                NullableAnnotation.NotAnnotated,
+                AssertDictionaryToDictionaryUsesIndexerInForEachBody);
+    }
+
+    /// <summary>
     /// Test method-level <see cref="MappaSettingsAttribute.DictionaryAssignment"/> overrides
     /// class-level setting for dictionary-to-dictionary mapping.
     /// </summary>
@@ -338,6 +386,95 @@ public sealed partial class DictionaryToDictionaryMapStrategyIntegrationTests
                 typeof(Dictionary<short, int>).ToString(),
                 NullableAnnotation.NotAnnotated,
                 AssertDictionaryToDictionaryUsesIndexerInForEachBody);
+    }
+
+    /// <summary>
+    /// Test a mapping from <see cref="Dictionary{TKey,TValue}"/>
+    /// to <see cref="System.Collections.Concurrent.ConcurrentDictionary{TKey,TValue}"/>
+    /// with <see cref="MappaSettingsAttribute.DictionaryAssignment"/> set to <see cref="DictionaryAssignmentSetting.Add"/>.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapDictionaryToConcurrentDictionaryWhenDictionaryAssignmentIsAdd()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+
+                                  using Mappa;
+                                  using Mappa.Attributes;
+                                  using System.Collections.Concurrent;
+                                  using System.Collections.Generic;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  [Mappa]
+                                  [MappaSettings(DictionaryAssignment = DictionaryAssignmentSetting.Add)]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial ConcurrentDictionary<int, long> Map(Dictionary<short, int> input);
+                                  }
+
+                                  #nullable restore
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                typeof(System.Collections.Concurrent.ConcurrentDictionary<int, long>).ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(Dictionary<short, int>).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(3)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(System.Collections.Concurrent.ConcurrentDictionary<int, long>).ToString(),
+                                "__mappa_tmp_1",
+                                assertions => assertions.BeObjectCreationExpressionSyntax(typeof(System.Collections.Concurrent.ConcurrentDictionary<int, long>).ToString())))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeForEachStatementSyntax(
+                                typeof(KeyValuePair<short, int>).ToString(),
+                                "__mappa_tmp_2",
+                                expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("input"),
+                                statementAssertions =>
+                                {
+                                    statementAssertions
+                                        .BeBlockStatement()
+                                        .AsBlock()
+                                        .HasSyntaxNodesCount(4)
+                                        .HasNextSyntaxNode(forEachStatementAssertions =>
+                                            forEachStatementAssertions.BeLocalDeclarationStatementSyntax(
+                                                typeof(short).ToString(),
+                                                "__mappa_tmp_3",
+                                                assertions => assertions.BeMemberAccessExpressionSyntax($"__mappa_tmp_2.{nameof(KeyValuePair<short, int>.Key)}")))
+                                        .HasNextSyntaxNode(forEachStatementAssertions =>
+                                            forEachStatementAssertions.BeLocalDeclarationStatementSyntax(
+                                                typeof(int).ToString(),
+                                                "__mappa_tmp_4",
+                                                assertions => assertions.BeMemberAccessExpressionSyntax($"__mappa_tmp_2.{nameof(KeyValuePair<short, int>.Value)}")))
+                                        .HasNextSyntaxNode(forEachStatementAssertions =>
+                                            forEachStatementAssertions.BeLocalDeclarationStatementSyntax(
+                                                "System.Collections.Generic.IDictionary<int, long>",
+                                                "__mappa_tmp_5",
+                                                assertions => assertions.BeIdentifierNameSyntax("__mappa_tmp_1")))
+                                        .HasNextSyntaxNode(forEachStatementAssertions =>
+                                            forEachStatementAssertions.BeInvocationExpressionSyntaxStatement(
+                                                "__mappa_tmp_5.Add",
+                                                firstParameterAssertions => firstParameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_3"),
+                                                secondParameterAssertions => secondParameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_4")));
+                                });
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement(assertions => assertions.BeIdentifierNameSyntax("__mappa_tmp_1")));
+                });
     }
 
     private static void AssertDictionaryToDictionaryUsesAddInForEachBody(BlockSyntaxAssertions blockSyntaxAssertions)

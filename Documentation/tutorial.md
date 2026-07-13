@@ -369,6 +369,21 @@ public sealed partial class EnumerableConcreteTypeArrayMapper
 
 See also: [EnumerableConcreteTypeMapper.cs](../Mappa.Samples/EnumerableConcreteTypeMapper.cs).
 
+#### Dictionary assignment settings
+
+`DictionaryAssignment` controls how entries are inserted when mapping between dictionaries. The default is `Indexer` (`target[key] = value`). Set `Add` to call `IDictionary<TKey, TValue>.Add(key, value)` instead. Both modes produce equivalent results for unique keys. The setting applies to dictionary return types and get-only dictionary properties:
+
+```csharp
+[Mappa]
+[MappaSettings(DictionaryAssignment = DictionaryAssignmentSetting.Add)]
+public sealed partial class DictionaryAssignmentAddMapper
+{
+    public partial Dictionary<string, string> Map(Dictionary<int, MyEnum> input);
+}
+```
+
+See also: [DictionaryAssignmentMapper.cs](../Mappa.Samples/DictionaryAssignmentMapper.cs).
+
 ### MappaInvokeMethod attribute
 When mapping structured types, `[MappaInvokeMethod]` forces a target property or constructor parameter to be mapped by invoking a named method:
 

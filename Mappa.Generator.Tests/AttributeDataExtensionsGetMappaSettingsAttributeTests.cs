@@ -211,4 +211,41 @@ public sealed class AttributeDataExtensionsGetMappaSettingsAttributeTests
         settings!.DateTimeStyle.Should().Be((DateTimeStyles)999);
         settings.IntStyle.Should().Be((NumberStyles)1048576);
     }
+
+    /// <summary>
+    /// Test <see cref="AttributeDataExtensions.GetMappaSettingsAttribute"/> reads <see cref="MappaSettingsAttribute.DictionaryAssignment"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetMappaSettingsAttributeReadsDictionaryAssignment()
+    {
+        const string source = """
+                              using Mappa;
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { }
+
+                              public class Target { }
+
+                              [Mappa]
+                              public sealed partial class TestMapper
+                              {
+                                  [MappaSettings(DictionaryAssignment = DictionaryAssignmentSetting.Add)]
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetMethodAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.MapperMetadataName,
+            "Map");
+
+        var settings = attributes.GetMappaSettingsAttribute(compilation);
+
+        settings.Should().NotBeNull();
+        settings!.DictionaryAssignment.Should().Be(DictionaryAssignmentSetting.Add);
+    }
 }
