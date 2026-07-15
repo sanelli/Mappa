@@ -5,8 +5,15 @@
 namespace Mappa.Attributes;
 
 /// <summary>
-/// Instruct the Mappa source generator to store the value of a target property or field
-/// in the input context after the target object has been fully constructed.
+/// Instruct the Mappa source generator to store the value of a target property or field in the input context after the target object has been fully constructed.
+/// <para>
+/// <see cref="TargetPropertyName"/> may be a single property or field name or a dot-separated chain of nested member names
+/// (for example <c>"Address.City"</c>).
+/// </para>
+/// <para>
+/// For a path with multiple segments, the generator reads the nested member chain from the constructed target instance.
+/// For example, <c>"Foo.Bar"</c> stores the value of <c>result.Foo.Bar</c> in the context.
+/// </para>
 /// </summary>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 public sealed class MappaAssignToContextAttribute
@@ -16,7 +23,7 @@ public sealed class MappaAssignToContextAttribute
     /// Initializes a new instance of the <see cref="MappaAssignToContextAttribute"/> class.
     /// </summary>
     /// <param name="contextKey">The key of the context entry to assign.</param>
-    /// <param name="targetPropertyName">The name of the target property or field whose value is stored in the context.</param>
+    /// <param name="targetPropertyName">The name of the target property or field whose value is stored in the context, or a dot-separated chain of nested member names.</param>
     public MappaAssignToContextAttribute(string contextKey, string targetPropertyName)
     {
         this.ContextKey = contextKey;
@@ -29,7 +36,7 @@ public sealed class MappaAssignToContextAttribute
     public string ContextKey { get; }
 
     /// <summary>
-    /// Gets the name of the target property or field whose value is stored in the context.
+    /// Gets the name of the target property or field whose value is stored in the context, which may be a single name or a dot-separated chain of nested member names.
     /// </summary>
     public string TargetPropertyName { get; }
 }
