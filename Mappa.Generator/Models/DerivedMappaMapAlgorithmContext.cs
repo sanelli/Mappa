@@ -12,10 +12,12 @@ namespace Mappa.Generator.Models;
 /// <param name="parentContext">The parent context.</param>
 /// <param name="targetType">The target type.</param>
 /// <param name="sourceType">The source type.</param>
+/// <param name="propertyPathContext">The active nested property path context.</param>
 internal sealed class DerivedMappaMapAlgorithmContext(
     MappaMapAlgorithmContext parentContext,
     ITypeSymbol targetType,
-    ITypeSymbol sourceType)
+    ITypeSymbol sourceType,
+    PropertyPathContext? propertyPathContext = null)
     : MappaMapAlgorithmContext
 {
     /// <summary>
@@ -45,6 +47,9 @@ internal sealed class DerivedMappaMapAlgorithmContext(
 
     /// <inheritdoc/>
     internal override MapMethod? MapMethod => null;
+
+    /// <inheritdoc/>
+    internal override PropertyPathContext? PropertyPathContext => propertyPathContext;
 
     /// <inheritdoc/>
     internal override bool IsNullableEnabled()

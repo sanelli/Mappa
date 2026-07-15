@@ -296,5 +296,17 @@ namespace Mappa.Generator.Diagnostics {
                 return ResourceManager.GetString("AmbiguousInvokeMethodResolution", resourceCulture);
             }
         }
+
+        internal static string MappingAttributeSourcePropertyPathIsShorterThanTargetPropertyPath {
+            get {
+                return ResourceManager.GetString("MappingAttributeSourcePropertyPathIsShorterThanTargetPropertyPath", resourceCulture);
+            }
+        }
+
+        internal static string MappingAttributeSourcePropertyPathSegmentDoesNotExist {
+            get {
+                return ResourceManager.GetString("MappingAttributeSourcePropertyPathSegmentDoesNotExist", resourceCulture);
+            }
+        }
     }
 }

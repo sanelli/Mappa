@@ -89,7 +89,7 @@ internal sealed class InvokeConstructorMapStrategyBuilder
             {
                 foreach (var assignToContextEntry in this.strategy.AssignToContextEntries)
                 {
-                    builder.AppendLine($"{this.strategy.ContextParameterName}[{CSharpLiteralHelper.ToStringLiteral(assignToContextEntry.ContextKey)}] = {resultTemporary}.{assignToContextEntry.MemberName};");
+                    builder.AppendLine($"{this.strategy.ContextParameterName}[{CSharpLiteralHelper.ToStringLiteral(assignToContextEntry.ContextKey)}] = {PropertyPathExpressionBuilder.BuildTargetMemberAccessExpression(resultTemporary, assignToContextEntry.MemberName)};");
                 }
             }
         }

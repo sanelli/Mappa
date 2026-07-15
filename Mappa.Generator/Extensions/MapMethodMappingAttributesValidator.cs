@@ -4,9 +4,11 @@
 
 using Mappa.Attributes;
 using Mappa.Generator.Diagnostics;
+using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Mappa.Generator.Extensions;
 
@@ -44,6 +46,7 @@ internal static class MapMethodMappingAttributesValidator
         }
 
         var targetType = context.TargetType;
+        var sourceType = context.SourceType;
         var propertyNames = new HashSet<string>(
             targetType.GetTypeProperties().Select(property => property.Name),
             StringComparer.Ordinal);
@@ -55,39 +58,98 @@ internal static class MapMethodMappingAttributesValidator
 
         var methodName = context.GetRootMapMethod().MethodName;
         var targetTypeName = targetType.ToDisplayString();
+        var sourceTypeName = sourceType.ToDisplayString();
 
-        var attributeTargets = mapMethod.GetAttributes<MappaUsePropertyAttribute>()
-            .Select(attribute => (AttributeName: nameof(MappaUsePropertyAttribute), TargetName: attribute.TargetPropertyName))
-            .Concat(mapMethod.GetAttributes<MappaInvokeMethodAttribute>()
-                .Select(attribute => (AttributeName: nameof(MappaInvokeMethodAttribute), TargetName: attribute.TargetPropertyName)))
-            .Concat(mapMethod.GetAttributes<MappaAssignFromContextAttribute>()
-                .Select(attribute => (AttributeName: nameof(MappaAssignFromContextAttribute), TargetName: attribute.TargetPropertyName)))
-            .Concat(mapMethod.GetAttributes<MappaAssignFromConstantAttribute>()
-                .Select(attribute => (AttributeName: nameof(MappaAssignFromConstantAttribute), TargetName: attribute.TargetPropertyName)));
-
-        foreach (var (attributeName, targetName) in attributeTargets.Where(
-                     attributeTarget => !IsValidTargetName(
-                         attributeTarget.TargetName,
-                         propertyNames,
-                         constructorParameterNames)))
+        foreach (var attribute in mapMethod.GetAttributes<MappaUsePropertyAttribute>())
         {
-            context.ReportDiagnostic(MappaDiagnostics.MappingAttributeTargetPropertyOrParameterDoesNotExist(
+            ValidateTargetPropertyPath(
+                context,
                 methodDeclarationSyntax,
                 methodName,
-                attributeName,
-                targetName,
-                targetTypeName));
+                targetTypeName,
+                nameof(MappaUsePropertyAttribute),
+                attribute.TargetPropertyName,
+                propertyNames,
+                constructorParameterNames,
+                targetType);
+            ValidateSourcePropertyPath(
+                context,
+                methodDeclarationSyntax,
+                methodName,
+                sourceTypeName,
+                nameof(MappaUsePropertyAttribute),
+                attribute.TargetPropertyName,
+                attribute.SourcePropertyName,
+                sourceType);
         }
 
-        foreach (var ignoreAttribute in mapMethod.GetAttributes<MappaIgnoreTargetPropertyAttribute>()
-                     .Where(attribute => !propertyNames.Contains(attribute.TargetPropertyName)))
+        foreach (var attribute in mapMethod.GetAttributes<MappaInvokeMethodAttribute>())
         {
-            context.ReportDiagnostic(MappaDiagnostics.MappingAttributeTargetPropertyOrParameterDoesNotExist(
+            ValidateTargetPropertyPath(
+                context,
                 methodDeclarationSyntax,
                 methodName,
+                targetTypeName,
+                nameof(MappaInvokeMethodAttribute),
+                attribute.TargetPropertyName,
+                propertyNames,
+                constructorParameterNames,
+                targetType);
+
+            if (!string.IsNullOrWhiteSpace(attribute.SourcePropertyName))
+            {
+                ValidateSourcePropertyPath(
+                    context,
+                    methodDeclarationSyntax,
+                    methodName,
+                    sourceTypeName,
+                    nameof(MappaInvokeMethodAttribute),
+                    attribute.TargetPropertyName,
+                    attribute.SourcePropertyName!,
+                    sourceType);
+            }
+        }
+
+        foreach (var attribute in mapMethod.GetAttributes<MappaAssignFromContextAttribute>())
+        {
+            ValidateTargetPropertyPath(
+                context,
+                methodDeclarationSyntax,
+                methodName,
+                targetTypeName,
+                nameof(MappaAssignFromContextAttribute),
+                attribute.TargetPropertyName,
+                propertyNames,
+                constructorParameterNames,
+                targetType);
+        }
+
+        foreach (var attribute in mapMethod.GetAttributes<MappaAssignFromConstantAttribute>())
+        {
+            ValidateTargetPropertyPath(
+                context,
+                methodDeclarationSyntax,
+                methodName,
+                targetTypeName,
+                nameof(MappaAssignFromConstantAttribute),
+                attribute.TargetPropertyName,
+                propertyNames,
+                constructorParameterNames,
+                targetType);
+        }
+
+        foreach (var ignoreAttribute in mapMethod.GetAttributes<MappaIgnoreTargetPropertyAttribute>())
+        {
+            ValidateTargetPropertyPath(
+                context,
+                methodDeclarationSyntax,
+                methodName,
+                targetTypeName,
                 nameof(MappaIgnoreTargetPropertyAttribute),
                 ignoreAttribute.TargetPropertyName,
-                targetTypeName));
+                propertyNames,
+                constructorParameterNames,
+                targetType);
         }
     }
 
@@ -155,6 +217,100 @@ internal static class MapMethodMappingAttributesValidator
             context.ReportDiagnostic(MappaDiagnostics.MultipleAttributesTargetTheSamePropertyOrParameter(
                 methodDeclarationSyntax,
                 ignoredPropertyName));
+        }
+    }
+
+    private static void ValidateTargetPropertyPath(
+        MappaMapAlgorithmContext context,
+        MethodDeclarationSyntax methodDeclarationSyntax,
+        string methodName,
+        string targetTypeName,
+        string attributeName,
+        string targetPropertyPath,
+        HashSet<string> propertyNames,
+        string[] constructorParameterNames,
+        ITypeSymbol targetType)
+    {
+        var parsedTargetPath = PropertyPath.Parse(targetPropertyPath);
+        if (parsedTargetPath.Segments.Length == 0)
+        {
+            return;
+        }
+
+        var firstSegment = parsedTargetPath.GetFirstSegment();
+        if (firstSegment is null || !IsValidTargetName(firstSegment, propertyNames, constructorParameterNames))
+        {
+            context.ReportDiagnostic(MappaDiagnostics.MappingAttributeTargetPropertyOrParameterDoesNotExist(
+                methodDeclarationSyntax,
+                methodName,
+                attributeName,
+                targetPropertyPath,
+                targetTypeName));
+            return;
+        }
+
+        if (parsedTargetPath.IsNested
+            && !PropertyPathSymbolResolver.TryResolvePropertyPath(
+                targetType,
+                parsedTargetPath,
+                out _,
+                out _))
+        {
+            context.ReportDiagnostic(MappaDiagnostics.MappingAttributeTargetPropertyOrParameterDoesNotExist(
+                methodDeclarationSyntax,
+                methodName,
+                attributeName,
+                targetPropertyPath,
+                targetTypeName));
+        }
+    }
+
+    private static void ValidateSourcePropertyPath(
+        MappaMapAlgorithmContext context,
+        MethodDeclarationSyntax methodDeclarationSyntax,
+        string methodName,
+        string sourceTypeName,
+        string attributeName,
+        string targetPropertyPath,
+        string sourcePropertyPath,
+        ITypeSymbol sourceType)
+    {
+        var parsedTargetPath = PropertyPath.Parse(targetPropertyPath);
+        var parsedSourcePath = PropertyPath.Parse(sourcePropertyPath);
+        if (parsedSourcePath.Segments.Length == 0)
+        {
+            return;
+        }
+
+        if (parsedSourcePath.Segments.Length == 0 || !parsedSourcePath.IsNested)
+        {
+            return;
+        }
+
+        if (parsedSourcePath.Segments.Length < parsedTargetPath.Segments.Length)
+        {
+            context.ReportDiagnostic(MappaDiagnostics.MappingAttributeSourcePropertyPathIsShorterThanTargetPropertyPath(
+                methodDeclarationSyntax,
+                methodName,
+                attributeName,
+                sourcePropertyPath,
+                targetPropertyPath));
+            return;
+        }
+
+        if (!PropertyPathSymbolResolver.TryResolvePropertyPath(
+                sourceType,
+                parsedSourcePath,
+                out _,
+                out var missingSegment))
+        {
+            context.ReportDiagnostic(MappaDiagnostics.MappingAttributeSourcePropertyPathSegmentDoesNotExist(
+                methodDeclarationSyntax,
+                methodName,
+                attributeName,
+                sourcePropertyPath,
+                missingSegment ?? string.Empty,
+                sourceTypeName));
         }
     }
 

@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -30,7 +31,26 @@ internal sealed class PropertyMapStrategyBuilder
         var builder = new PrettyCode.StringBuilder();
 
         var sourcePropertyTemporary = string.Empty;
-        if (this.strategy.SourceProperty is not null)
+        if (this.strategy.ChainedSourcePropertyPath is not null)
+        {
+            var chainedSourcePropertyPath = this.strategy.ChainedSourcePropertyPath;
+            var accessExpression = PropertyPathExpressionBuilder.BuildChainedAccessExpression(
+                source,
+                chainedSourcePropertyPath.ReceiverPathPrefix,
+                chainedSourcePropertyPath.RemainingSourceSegments,
+                chainedSourcePropertyPath.StartingSourceType,
+                context.GetMapMethod().NullableEnabled,
+                this.strategy.TargetProperty.Type,
+                out var resolvedProperties);
+
+            var innermostSourceType = resolvedProperties.Length > 0
+                ? resolvedProperties[resolvedProperties.Length - 1].Type
+                : chainedSourcePropertyPath.StartingSourceType;
+
+            sourcePropertyTemporary = context.NextTemporary();
+            builder.AppendLine($"{innermostSourceType.ToDisplayString()} {sourcePropertyTemporary} = {accessExpression};");
+        }
+        else if (this.strategy.SourceProperty is not null)
         {
             sourcePropertyTemporary = context.NextTemporary();
             builder.AppendLine($"{this.strategy.SourceProperty.Type.ToDisplayString()} {sourcePropertyTemporary} = {source}.{this.strategy.SourceProperty.Name};");

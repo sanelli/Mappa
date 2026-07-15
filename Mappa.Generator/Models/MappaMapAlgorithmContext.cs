@@ -35,6 +35,11 @@ internal abstract class MappaMapAlgorithmContext
     internal abstract MapMethod? MapMethod { get; }
 
     /// <summary>
+    /// Gets the active nested property path context, if any.
+    /// </summary>
+    internal virtual PropertyPathContext? PropertyPathContext => null;
+
+    /// <summary>
     /// Gets the context settings.
     /// </summary>
     internal abstract MappaMapAlgorithmContextSettings AlgorithmSettings { get; }

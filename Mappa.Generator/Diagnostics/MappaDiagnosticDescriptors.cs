@@ -56,6 +56,8 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? enumMemberMissingDescription;
     private static DiagnosticDescriptor? ambiguousEnumMap;
     private static DiagnosticDescriptor? ambiguousInvokeMethodResolution;
+    private static DiagnosticDescriptor? mappingAttributeSourcePropertyPathIsShorterThanTargetPropertyPath;
+    private static DiagnosticDescriptor? mappingAttributeSourcePropertyPathSegmentDoesNotExist;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -392,6 +394,22 @@ internal static class MappaDiagnosticDescriptors
         => ambiguousInvokeMethodResolution ??= BuildError(
             MappaDiagnosticsKind.AmbiguousInvokeMethodResolution,
             DiagnosticsResources.AmbiguousInvokeMethodResolution);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MappingAttributeSourcePropertyPathIsShorterThanTargetPropertyPath"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MappingAttributeSourcePropertyPathIsShorterThanTargetPropertyPath
+        => mappingAttributeSourcePropertyPathIsShorterThanTargetPropertyPath ??= BuildError(
+            MappaDiagnosticsKind.MappingAttributeSourcePropertyPathIsShorterThanTargetPropertyPath,
+            DiagnosticsResources.MappingAttributeSourcePropertyPathIsShorterThanTargetPropertyPath);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MappingAttributeSourcePropertyPathSegmentDoesNotExist"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MappingAttributeSourcePropertyPathSegmentDoesNotExist
+        => mappingAttributeSourcePropertyPathSegmentDoesNotExist ??= BuildError(
+            MappaDiagnosticsKind.MappingAttributeSourcePropertyPathSegmentDoesNotExist,
+            DiagnosticsResources.MappingAttributeSourcePropertyPathSegmentDoesNotExist);
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(

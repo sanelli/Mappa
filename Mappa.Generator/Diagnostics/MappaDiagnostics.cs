@@ -702,4 +702,53 @@ internal static class MappaDiagnostics
             MappaDiagnosticDescriptors.AmbiguousInvokeMethodResolution,
             location,
             details);
+
+    /// <summary>
+    /// Diagnostic to report that a mapping attribute source property path is shorter than the target property path.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="methodName">The method name.</param>
+    /// <param name="attributeName">The attribute name.</param>
+    /// <param name="sourcePropertyPath">The source property path.</param>
+    /// <param name="targetPropertyPath">The target property path.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappingAttributeSourcePropertyPathIsShorterThanTargetPropertyPath(
+        MethodDeclarationSyntax methodDeclarationSyntax,
+        string methodName,
+        string attributeName,
+        string sourcePropertyPath,
+        string targetPropertyPath)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappingAttributeSourcePropertyPathIsShorterThanTargetPropertyPath,
+            methodDeclarationSyntax.GetLocation(),
+            methodName,
+            attributeName,
+            sourcePropertyPath,
+            targetPropertyPath);
+
+    /// <summary>
+    /// Diagnostic to report that a mapping attribute source property path segment does not exist.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="methodName">The method name.</param>
+    /// <param name="attributeName">The attribute name.</param>
+    /// <param name="sourcePropertyPath">The source property path.</param>
+    /// <param name="missingSegment">The missing segment.</param>
+    /// <param name="sourceTypeName">The source type display name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappingAttributeSourcePropertyPathSegmentDoesNotExist(
+        MethodDeclarationSyntax methodDeclarationSyntax,
+        string methodName,
+        string attributeName,
+        string sourcePropertyPath,
+        string missingSegment,
+        string sourceTypeName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappingAttributeSourcePropertyPathSegmentDoesNotExist,
+            methodDeclarationSyntax.GetLocation(),
+            methodName,
+            attributeName,
+            sourcePropertyPath,
+            missingSegment,
+            sourceTypeName);
 }
