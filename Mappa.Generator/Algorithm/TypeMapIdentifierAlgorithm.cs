@@ -109,6 +109,7 @@ internal class TypeMapIdentifierAlgorithm
 
                 // Skip the identity strategy when resolving nested field mappings for nested deep copy.
                 case IdentityMapStrategyDetector when !this.Context.AlgorithmSettings.UseIdentityMapStrategyDetector:
+                case IdentityMapStrategyDetector when this.Context.PropertyPathContext is not null:
                     continue;
 
                 // Polymorphism detector can only run at the root or if following a

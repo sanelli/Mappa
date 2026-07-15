@@ -52,6 +52,43 @@ internal static class PropertyPathSymbolResolver
     }
 
     /// <summary>
+    /// Resolves the receiver type reached by a dotted path prefix from the root source receiver.
+    /// </summary>
+    /// <param name="rootSourceType">The root source type.</param>
+    /// <param name="rootReceiverExpression">The root receiver expression.</param>
+    /// <param name="receiverPathPrefix">The dotted receiver path prefix.</param>
+    /// <param name="receiverType">The resolved receiver type.</param>
+    /// <returns><c>true</c> when the prefix resolves; otherwise, <c>false</c>.</returns>
+    internal static bool TryGetReceiverTypeForPathPrefix(
+        ITypeSymbol rootSourceType,
+        string rootReceiverExpression,
+        string receiverPathPrefix,
+        out ITypeSymbol receiverType)
+    {
+        receiverType = rootSourceType;
+        if (string.IsNullOrWhiteSpace(receiverPathPrefix)
+            || receiverPathPrefix.Equals(rootReceiverExpression, StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        var prefixSuffix = $"{rootReceiverExpression}.";
+        if (!receiverPathPrefix.StartsWith(prefixSuffix, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        var suffixPath = PropertyPath.Parse(receiverPathPrefix.Substring(prefixSuffix.Length));
+        if (!TryResolvePropertyPath(rootSourceType, suffixPath, out var resolvedProperties, out _))
+        {
+            return false;
+        }
+
+        receiverType = resolvedProperties[resolvedProperties.Length - 1].Type;
+        return true;
+    }
+
+    /// <summary>
     /// Tries to resolve a property path on a type, including fields for assign-to-context targets.
     /// </summary>
     /// <param name="typeSymbol">The starting type.</param>

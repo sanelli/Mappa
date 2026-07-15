@@ -34,15 +34,27 @@ internal static class PropertyPathExpressionBuilder
         out IPropertySymbol[] resolvedProperties)
     {
         var path = PropertyPath.FromRemainingSegments(pathSegments);
-        if (!PropertyPathSymbolResolver.TryResolvePropertyPath(startingType, path, out resolvedProperties, out _))
+        var chainExpression = string.IsNullOrWhiteSpace(receiverPathPrefix)
+            ? receiverExpression
+            : receiverPathPrefix;
+
+        if (!PropertyPathSymbolResolver.TryGetReceiverTypeForPathPrefix(
+                startingType,
+                receiverExpression,
+                chainExpression,
+                out var pathStartingType))
         {
+            resolvedProperties = [];
             return receiverExpression;
         }
 
-        var expression = receiverExpression;
-        var diagnosticPath = string.IsNullOrWhiteSpace(receiverPathPrefix)
-            ? receiverExpression
-            : receiverPathPrefix;
+        if (!PropertyPathSymbolResolver.TryResolvePropertyPath(pathStartingType, path, out resolvedProperties, out _))
+        {
+            return chainExpression;
+        }
+
+        var expression = chainExpression;
+        var diagnosticPath = chainExpression;
 
         for (var index = 0; index < pathSegments.Length; index++)
         {

@@ -38,6 +38,14 @@ internal static class PropertyPathAttributeMatching
                    && firstSegment.Equals(memberName, stringComparison);
         }
 
+        if (propertyPathContext.IsNestedAttributeScope)
+        {
+            return propertyPathContext.OuterTargetSegment is string outerTargetSegment
+                   && targetPath.Segments.Length >= 2
+                   && targetPath.Segments[0].Equals(outerTargetSegment, stringComparison)
+                   && targetPath.Segments[targetPath.Segments.Length - 1].Equals(memberName, stringComparison);
+        }
+
         return propertyPathContext.RemainingTargetSegments.Length > 0
                && propertyPathContext.RemainingTargetSegments[0].Equals(memberName, stringComparison)
                && targetPath.EndsWith(propertyPathContext.RemainingTargetSegments);

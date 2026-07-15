@@ -16,16 +16,22 @@ internal sealed class PropertyPathContext
     /// <param name="originalSourcePath">The full source path from the attribute, if any.</param>
     /// <param name="remainingTargetSegments">The target segments still to resolve at the current level.</param>
     /// <param name="remainingSourceSegments">The source segments still to resolve at the current level.</param>
+    /// <param name="isNestedAttributeScope">Whether the context represents a nested attribute scope.</param>
+    /// <param name="outerTargetSegment">The outer target member name for nested attribute scopes.</param>
     internal PropertyPathContext(
         string originalTargetPath,
         string? originalSourcePath,
         string[] remainingTargetSegments,
-        string[] remainingSourceSegments)
+        string[] remainingSourceSegments,
+        bool isNestedAttributeScope = false,
+        string? outerTargetSegment = null)
     {
         this.OriginalTargetPath = originalTargetPath;
         this.OriginalSourcePath = originalSourcePath;
         this.RemainingTargetSegments = remainingTargetSegments;
         this.RemainingSourceSegments = remainingSourceSegments;
+        this.IsNestedAttributeScope = isNestedAttributeScope;
+        this.OuterTargetSegment = outerTargetSegment;
     }
 
     /// <summary>
@@ -52,6 +58,24 @@ internal sealed class PropertyPathContext
     /// Gets a value indicating whether the remaining target path has a single segment.
     /// </summary>
     internal bool IsLeafTargetMapping => this.RemainingTargetSegments.Length == 1;
+
+    /// <summary>
+    /// Gets a value indicating whether the context represents a nested attribute scope for an outer target member.
+    /// </summary>
+    internal bool IsNestedAttributeScope { get; }
+
+    /// <summary>
+    /// Gets the outer target member name when <see cref="IsNestedAttributeScope"/> is <c>true</c>.
+    /// </summary>
+    internal string? OuterTargetSegment { get; }
+
+    /// <summary>
+    /// Creates a nested attribute scope for mapping multiple nested paths under the same outer target member.
+    /// </summary>
+    /// <param name="outerTargetSegment">The outer target member name.</param>
+    /// <returns>The property path context.</returns>
+    internal static PropertyPathContext CreateNestedAttributeScope(string outerTargetSegment)
+        => new(outerTargetSegment, null, [], [], true, outerTargetSegment);
 
     /// <summary>
     /// Creates a new context after descending one nested level.

@@ -129,4 +129,19 @@ internal abstract class MappaMapAlgorithmContext
 
         return context.GetMapMethod();
     }
+
+    /// <summary>
+    /// Gets the root source type for the map method being generated.
+    /// </summary>
+    /// <returns>The root source type.</returns>
+    internal ITypeSymbol GetRootSourceType()
+    {
+        MappaMapAlgorithmContext context = this;
+        while (context is DerivedMappaMapAlgorithmContext algorithmContext)
+        {
+            context = algorithmContext.ParentContext;
+        }
+
+        return context.SourceType;
+    }
 }

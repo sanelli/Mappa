@@ -36,34 +36,37 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
     {
         this.CancellationToken.ThrowIfCancellationRequested();
 
-        // TODO [#13] `GetStrategy` should also allow to get compatible methods in some scenarios.
-        // This will require identifying a mapping between input & target parameter.
-        if (this.Context.TryGetMethod(this.Context.TargetType, this.Context.SourceType, out var mapMethod))
+        if (this.Context.PropertyPathContext is null)
         {
-            var mapMethodRequireMappaContext = mapMethod.RequireMappaContextWhenInvoked();
-            var rootMapMethod = this.Context.GetRootMapMethod();
-            var callerMethodProvideMappaContext = rootMapMethod.ProvideMappaContextWhenInvoked();
-
-            if (!mapMethodRequireMappaContext || /* mapMethodRequireMappaContext && */ callerMethodProvideMappaContext)
+            // TODO [#13] `GetStrategy` should also allow to get compatible methods in some scenarios.
+            // This will require identifying a mapping between input & target parameter.
+            if (this.Context.TryGetMethod(this.Context.TargetType, this.Context.SourceType, out var mapMethod))
             {
-                return new MethodMapStrategy(mapMethod, rootMapMethod.MaybeGetMappaContextParameterName());
+                var mapMethodRequireMappaContext = mapMethod.RequireMappaContextWhenInvoked();
+                var rootMapMethod = this.Context.GetRootMapMethod();
+                var callerMethodProvideMappaContext = rootMapMethod.ProvideMappaContextWhenInvoked();
+
+                if (!mapMethodRequireMappaContext || /* mapMethodRequireMappaContext && */ callerMethodProvideMappaContext)
+                {
+                    return new MethodMapStrategy(mapMethod, rootMapMethod.MaybeGetMappaContextParameterName());
+                }
             }
-        }
 
-        if (this.Context.TryGetPolymorphicMethod(this.Context.TargetType, this.Context.SourceType, this.Context.MappaUserSettings, out mapMethod)
-            && !ReferenceEquals(mapMethod.MethodSymbol, this.Context.GetRootMapMethod().MethodSymbol))
-        {
-            var mapMethodRequireMappaContext = mapMethod.RequireMappaContextWhenInvoked();
-            var rootMapMethod = this.Context.GetRootMapMethod();
-            var callerMethodProvideMappaContext = rootMapMethod.ProvideMappaContextWhenInvoked();
-
-            if (!mapMethodRequireMappaContext || /* mapMethodRequireMappaContext && */ callerMethodProvideMappaContext)
+            if (this.Context.TryGetPolymorphicMethod(this.Context.TargetType, this.Context.SourceType, this.Context.MappaUserSettings, out mapMethod)
+                && !ReferenceEquals(mapMethod.MethodSymbol, this.Context.GetRootMapMethod().MethodSymbol))
             {
-                return new PolymorphicMethodMapStrategy(
-                    this.Context.TargetType,
-                    this.Context.SourceType,
-                    mapMethod,
-                    rootMapMethod.MaybeGetMappaContextParameterName());
+                var mapMethodRequireMappaContext = mapMethod.RequireMappaContextWhenInvoked();
+                var rootMapMethod = this.Context.GetRootMapMethod();
+                var callerMethodProvideMappaContext = rootMapMethod.ProvideMappaContextWhenInvoked();
+
+                if (!mapMethodRequireMappaContext || /* mapMethodRequireMappaContext && */ callerMethodProvideMappaContext)
+                {
+                    return new PolymorphicMethodMapStrategy(
+                        this.Context.TargetType,
+                        this.Context.SourceType,
+                        mapMethod,
+                        rootMapMethod.MaybeGetMappaContextParameterName());
+                }
             }
         }
 

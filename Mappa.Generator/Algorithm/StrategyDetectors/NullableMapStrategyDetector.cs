@@ -63,7 +63,8 @@ internal sealed class NullableMapStrategyDetector
         var derivedContext = new DerivedMappaMapAlgorithmContext(
             this.context,
             targetInnerType,
-            sourceInnerType);
+            sourceInnerType,
+            this.context.PropertyPathContext);
 
         using (this.context.AlgorithmSettings.UseNullableMapStrategyDetector.Apply(false))
         {

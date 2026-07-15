@@ -439,8 +439,21 @@ internal sealed partial class ConstructorMapStrategyDetector
                                 }
 
                                 default:
-                                    this.context.ReportDiagnostic(MappaDiagnostics.TooManyUsePropertyAttributesForTheSameTargetProperty(this.context.GetRootMapMethod().MethodDeclarationSyntax, this.context.GetRootMapMethod().MethodName, targetProperty.Name));
-                                    return new PropertyMapStrategy(targetProperty, null, noMapStrategy, false);
+                                {
+                                    var distinctTargetPaths = usePropertyAttributes
+                                        .Select(attribute => attribute.TargetPropertyName)
+                                        .Distinct(StringComparer.Ordinal)
+                                        .ToArray();
+                                    if (distinctTargetPaths.Length == 1)
+                                    {
+                                        this.context.ReportDiagnostic(MappaDiagnostics.TooManyUsePropertyAttributesForTheSameTargetProperty(this.context.GetRootMapMethod().MethodDeclarationSyntax, this.context.GetRootMapMethod().MethodName, targetProperty.Name));
+                                        return new PropertyMapStrategy(targetProperty, null, noMapStrategy, false);
+                                    }
+
+                                    expectedSourcePropertyName = targetProperty.Name;
+                                    nestedPropertyPathContext = PropertyPathContext.CreateNestedAttributeScope(targetProperty.Name);
+                                    break;
+                                }
                             }
 
                             IPropertySymbol? sourceProperty = null;
@@ -455,9 +468,8 @@ internal sealed partial class ConstructorMapStrategyDetector
                                     useExactNameFromAttribute,
                                     out sourceProperty);
                             }
-                            else if (PropertyPathSymbolResolver.TryResolvePropertyPath(
-                                         this.context.SourceType,
-                                         PropertyPath.FromRemainingSegments(chainedSourcePropertyPath.RemainingSourceSegments),
+                            else if (this.TryResolveChainedSourceProperty(
+                                         chainedSourcePropertyPath,
                                          out var resolvedSourceProperties,
                                          out _))
                             {
@@ -487,30 +499,20 @@ internal sealed partial class ConstructorMapStrategyDetector
                             }
 
                             if (chainedSourcePropertyPath is not null
-                                && PropertyPathSymbolResolver.TryResolvePropertyPath(
-                                    this.context.SourceType,
-                                    PropertyPath.FromRemainingSegments(chainedSourcePropertyPath.RemainingSourceSegments),
+                                && this.TryResolveChainedSourceProperty(
+                                    chainedSourcePropertyPath,
                                     out var chainedSourceProperties,
                                     out _))
                             {
                                 var innerSourceType = chainedSourceProperties[chainedSourceProperties.Length - 1].Type;
-                                if (this.TryGetStrategyBetweenTypes(
-                                        targetProperty.Type,
-                                        innerSourceType,
-                                        true,
-                                        nestedPropertyPathContext,
-                                        out var chainedPropertyStrategy))
-                                {
-                                    chainedPropertyStrategy = this.EncapsulateMapStrategyForTargetOptional(targetProperty, allTargetProperties, chainedPropertyStrategy, out var chainedPostConstructorInitializer);
-                                    return new PropertyMapStrategy(
-                                        targetProperty,
-                                        null,
-                                        chainedPropertyStrategy,
-                                        chainedPostConstructorInitializer,
-                                        chainedSourcePropertyPath);
-                                }
-
-                                return new PropertyMapStrategy(targetProperty, null, noMapStrategy, false);
+                                MapStrategy chainedPropertyStrategy = new IdentityMapStrategy(targetProperty.Type, innerSourceType);
+                                chainedPropertyStrategy = this.EncapsulateMapStrategyForTargetOptional(targetProperty, allTargetProperties, chainedPropertyStrategy, out var chainedPostConstructorInitializer);
+                                return new PropertyMapStrategy(
+                                    targetProperty,
+                                    null,
+                                    chainedPropertyStrategy,
+                                    chainedPostConstructorInitializer,
+                                    chainedSourcePropertyPath);
                             }
 
                             // Look up for post initialization collection properties
@@ -614,7 +616,12 @@ internal sealed partial class ConstructorMapStrategyDetector
                             var targetPropertyType = targetProperty.Type;
                             var sourcePropertyType = sourceProperty.Type;
 
-                            if (this.TryGetStrategyBetweenTypes(targetPropertyType, sourcePropertyType, true, nestedPropertyPathContext, out var propertyStrategy))
+                            if (this.TryGetStrategyBetweenTypes(
+                                    targetPropertyType,
+                                    sourcePropertyType,
+                                    true,
+                                    ConstructorMapStrategyDetector.GetNestedTypeMappingPropertyPathContext(targetProperty.Name, nestedPropertyPathContext),
+                                    out var propertyStrategy))
                             {
                                 propertyStrategy = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, sourceProperties, propertyStrategy);
                                 propertyStrategy = this.EncapsulateMapStrategyForTargetOptional(targetProperty, allTargetProperties, propertyStrategy, out var postConstructorInitializer);
@@ -881,6 +888,7 @@ internal sealed partial class ConstructorMapStrategyDetector
             .GetAttributes<Attribute>()
             .OfType<IMappaTargetPropertyNameAttribute>()
             .Where(attribute => this.AttributeTargetPathMatches(attribute.TargetPropertyName, targetName, stringComparison))
+            .Where(attribute => this.IsMappingAttributeActiveAtCurrentLevel(attribute.TargetPropertyName))
             .ToArray();
 
         // No such attribute.

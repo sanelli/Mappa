@@ -17,6 +17,30 @@ namespace Mappa.Generator.Algorithm.StrategyDetectors;
 /// </summary>
 internal sealed partial class ConstructorMapStrategyDetector
 {
+    private static PropertyPathContext? GetNestedTypeMappingPropertyPathContext(
+        string targetMemberName,
+        PropertyPathContext? nestedPropertyPathContext)
+    {
+        if (nestedPropertyPathContext is null)
+        {
+            return null;
+        }
+
+        if (nestedPropertyPathContext.IsNestedAttributeScope)
+        {
+            return nestedPropertyPathContext;
+        }
+
+        var originalTargetFirstSegment = PropertyPath.Parse(nestedPropertyPathContext.OriginalTargetPath).GetFirstSegment();
+        if (originalTargetFirstSegment is not null
+            && originalTargetFirstSegment.Equals(targetMemberName, StringComparison.Ordinal))
+        {
+            return PropertyPathContext.CreateNestedAttributeScope(targetMemberName);
+        }
+
+        return nestedPropertyPathContext;
+    }
+
     private MapMethod GetAttributeMapMethod()
         => this.context.MapMethod ?? this.context.GetRootMapMethod();
 
@@ -78,24 +102,31 @@ internal sealed partial class ConstructorMapStrategyDetector
 
         var targetPath = PropertyPath.Parse(usePropertyAttribute.TargetPropertyName);
         var sourcePath = PropertyPath.Parse(usePropertyAttribute.SourcePropertyName);
+        var activePropertyPathContext = this.context.PropertyPathContext;
+        if (activePropertyPathContext?.IsNestedAttributeScope == true)
+        {
+            activePropertyPathContext = PropertyPathAttributeMatching.CreatePropertyPathContext(
+                usePropertyAttribute.TargetPropertyName,
+                usePropertyAttribute.SourcePropertyName);
+        }
 
         if (this.context.PropertyPathContext is null && !targetPath.IsNested && sourcePath.IsNested)
         {
             chainedSourcePropertyPath = new ChainedSourcePropertyPathInfo(
                 usePropertyAttribute.SourcePropertyName,
                 sourcePath.Segments,
-                this.context.SourceType,
+                this.context.GetRootSourceType(),
                 this.context.GetRootMapMethod().MethodSymbol.Parameters[0].Name);
             return false;
         }
 
-        if (isLeafTargetMapping && (sourcePath.IsNested || this.context.PropertyPathContext is not null))
+        if (isLeafTargetMapping && (sourcePath.IsNested || activePropertyPathContext is not null))
         {
             var receiverPrefix = this.context.GetRootMapMethod().MethodSymbol.Parameters[0].Name;
-            if (this.context.PropertyPathContext is not null
-                && sourcePath.Segments.Length > this.context.PropertyPathContext.RemainingSourceSegments.Length)
+            if (activePropertyPathContext is not null
+                && sourcePath.Segments.Length > activePropertyPathContext.RemainingSourceSegments.Length)
             {
-                var consumedCount = sourcePath.Segments.Length - this.context.PropertyPathContext.RemainingSourceSegments.Length;
+                var consumedCount = sourcePath.Segments.Length - activePropertyPathContext.RemainingSourceSegments.Length;
                 receiverPrefix = string.Join(
                     ".",
                     new[] { this.context.GetRootMapMethod().MethodSymbol.Parameters[0].Name }
@@ -104,15 +135,15 @@ internal sealed partial class ConstructorMapStrategyDetector
 
             chainedSourcePropertyPath = new ChainedSourcePropertyPathInfo(
                 usePropertyAttribute.SourcePropertyName,
-                this.context.PropertyPathContext?.RemainingSourceSegments ?? sourcePath.Segments,
-                this.context.SourceType,
+                activePropertyPathContext?.RemainingSourceSegments ?? sourcePath.Segments,
+                this.context.GetRootSourceType(),
                 receiverPrefix);
             return false;
         }
 
         var expectedSegment = PropertyPathAttributeMatching.GetExpectedSourcePropertyNameForCurrentLevel(
             usePropertyAttribute.SourcePropertyName,
-            this.context.PropertyPathContext,
+            activePropertyPathContext,
             isLeafTargetMapping);
 
         if (expectedSegment is null)
@@ -127,8 +158,34 @@ internal sealed partial class ConstructorMapStrategyDetector
         return true;
     }
 
+    private bool IsMappingAttributeActiveAtCurrentLevel(string targetPropertyPath)
+    {
+        var parsedPath = PropertyPath.Parse(targetPropertyPath);
+        if (!parsedPath.IsNested)
+        {
+            return true;
+        }
+
+        if (this.context.PropertyPathContext?.IsNestedAttributeScope == true)
+        {
+            return true;
+        }
+
+        if (this.context.PropertyPathContext is null)
+        {
+            return false;
+        }
+
+        return this.context.PropertyPathContext.IsLeafTargetMapping;
+    }
+
     private bool IsLeafTargetMappingForAttribute(string targetPropertyPath)
     {
+        if (this.context.PropertyPathContext?.IsNestedAttributeScope == true)
+        {
+            return PropertyPath.Parse(targetPropertyPath).IsNested;
+        }
+
         if (this.context.PropertyPathContext is not null)
         {
             return this.context.PropertyPathContext.IsLeafTargetMapping;
@@ -162,6 +219,38 @@ internal sealed partial class ConstructorMapStrategyDetector
                 return elementStrategy is not NoMapStrategy;
             }
         }
+    }
+
+    private bool TryResolveChainedSourceProperty(
+        ChainedSourcePropertyPathInfo chainedSourcePropertyPath,
+        out IPropertySymbol[] resolvedProperties,
+        out IPropertySymbol? firstProperty)
+    {
+        resolvedProperties = [];
+        firstProperty = null;
+
+        var rootSourceType = this.context.GetRootSourceType();
+        var rootReceiverExpression = this.context.GetRootMapMethod().MethodSymbol.Parameters[0].Name;
+        if (!PropertyPathSymbolResolver.TryGetReceiverTypeForPathPrefix(
+                rootSourceType,
+                rootReceiverExpression,
+                chainedSourcePropertyPath.ReceiverPathPrefix,
+                out var chainReceiverType))
+        {
+            chainReceiverType = chainedSourcePropertyPath.StartingSourceType;
+        }
+
+        if (!PropertyPathSymbolResolver.TryResolvePropertyPath(
+                chainReceiverType,
+                PropertyPath.FromRemainingSegments(chainedSourcePropertyPath.RemainingSourceSegments),
+                out resolvedProperties,
+                out _))
+        {
+            return false;
+        }
+
+        firstProperty = resolvedProperties[0];
+        return true;
     }
 
     private bool AttributeTargetPathMatches(

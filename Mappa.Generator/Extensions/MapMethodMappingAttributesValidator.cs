@@ -71,7 +71,8 @@ internal static class MapMethodMappingAttributesValidator
                 attribute.TargetPropertyName,
                 propertyNames,
                 constructorParameterNames,
-                targetType);
+                targetType,
+                context.PropertyPathContext);
             ValidateSourcePropertyPath(
                 context,
                 methodDeclarationSyntax,
@@ -80,7 +81,8 @@ internal static class MapMethodMappingAttributesValidator
                 nameof(MappaUsePropertyAttribute),
                 attribute.TargetPropertyName,
                 attribute.SourcePropertyName,
-                sourceType);
+                sourceType,
+                context.PropertyPathContext);
         }
 
         foreach (var attribute in mapMethod.GetAttributes<MappaInvokeMethodAttribute>())
@@ -94,7 +96,8 @@ internal static class MapMethodMappingAttributesValidator
                 attribute.TargetPropertyName,
                 propertyNames,
                 constructorParameterNames,
-                targetType);
+                targetType,
+                context.PropertyPathContext);
 
             if (!string.IsNullOrWhiteSpace(attribute.SourcePropertyName))
             {
@@ -106,7 +109,8 @@ internal static class MapMethodMappingAttributesValidator
                     nameof(MappaInvokeMethodAttribute),
                     attribute.TargetPropertyName,
                     attribute.SourcePropertyName!,
-                    sourceType);
+                    sourceType,
+                    context.PropertyPathContext);
             }
         }
 
@@ -121,7 +125,8 @@ internal static class MapMethodMappingAttributesValidator
                 attribute.TargetPropertyName,
                 propertyNames,
                 constructorParameterNames,
-                targetType);
+                targetType,
+                context.PropertyPathContext);
         }
 
         foreach (var attribute in mapMethod.GetAttributes<MappaAssignFromConstantAttribute>())
@@ -135,7 +140,8 @@ internal static class MapMethodMappingAttributesValidator
                 attribute.TargetPropertyName,
                 propertyNames,
                 constructorParameterNames,
-                targetType);
+                targetType,
+                context.PropertyPathContext);
         }
 
         foreach (var ignoreAttribute in mapMethod.GetAttributes<MappaIgnoreTargetPropertyAttribute>())
@@ -149,7 +155,8 @@ internal static class MapMethodMappingAttributesValidator
                 ignoreAttribute.TargetPropertyName,
                 propertyNames,
                 constructorParameterNames,
-                targetType);
+                targetType,
+                context.PropertyPathContext);
         }
     }
 
@@ -229,11 +236,31 @@ internal static class MapMethodMappingAttributesValidator
         string targetPropertyPath,
         HashSet<string> propertyNames,
         string[] constructorParameterNames,
-        ITypeSymbol targetType)
+        ITypeSymbol targetType,
+        PropertyPathContext? propertyPathContext)
     {
         var parsedTargetPath = PropertyPath.Parse(targetPropertyPath);
         if (parsedTargetPath.Segments.Length == 0)
         {
+            return;
+        }
+
+        if (propertyPathContext is not null)
+        {
+            if (!ShouldValidateAttributeTargetPathAtCurrentLevel(parsedTargetPath, propertyPathContext))
+            {
+                return;
+            }
+
+            ValidateTargetPathSegments(
+                context,
+                methodDeclarationSyntax,
+                methodName,
+                targetTypeName,
+                attributeName,
+                targetPropertyPath,
+                propertyPathContext.RemainingTargetSegments,
+                targetType);
             return;
         }
 
@@ -265,6 +292,66 @@ internal static class MapMethodMappingAttributesValidator
         }
     }
 
+    private static void ValidateTargetPathSegments(
+        MappaMapAlgorithmContext context,
+        MethodDeclarationSyntax methodDeclarationSyntax,
+        string methodName,
+        string targetTypeName,
+        string attributeName,
+        string targetPropertyPath,
+        string[] segmentsToValidate,
+        ITypeSymbol targetType)
+    {
+        if (segmentsToValidate.Length == 0)
+        {
+            return;
+        }
+
+        if (segmentsToValidate.Length == 1)
+        {
+            var segment = segmentsToValidate[0];
+            if (!targetType.GetTypeProperties().Any(property => property.Name.Equals(segment, StringComparison.Ordinal)))
+            {
+                context.ReportDiagnostic(MappaDiagnostics.MappingAttributeTargetPropertyOrParameterDoesNotExist(
+                    methodDeclarationSyntax,
+                    methodName,
+                    attributeName,
+                    targetPropertyPath,
+                    targetTypeName));
+            }
+
+            return;
+        }
+
+        if (!PropertyPathSymbolResolver.TryResolvePropertyPath(
+                targetType,
+                PropertyPath.FromRemainingSegments(segmentsToValidate),
+                out _,
+                out _))
+        {
+            context.ReportDiagnostic(MappaDiagnostics.MappingAttributeTargetPropertyOrParameterDoesNotExist(
+                methodDeclarationSyntax,
+                methodName,
+                attributeName,
+                targetPropertyPath,
+                targetTypeName));
+        }
+    }
+
+    private static bool ShouldValidateAttributeTargetPathAtCurrentLevel(
+        PropertyPath attributeTargetPath,
+        PropertyPathContext propertyPathContext)
+    {
+        if (propertyPathContext.IsNestedAttributeScope)
+        {
+            return propertyPathContext.OuterTargetSegment is string outerTargetSegment
+                   && attributeTargetPath.Segments.Length >= 2
+                   && attributeTargetPath.Segments[0].Equals(outerTargetSegment, StringComparison.Ordinal);
+        }
+
+        return attributeTargetPath.EndsWith(propertyPathContext.RemainingTargetSegments);
+    }
+
     private static void ValidateSourcePropertyPath(
         MappaMapAlgorithmContext context,
         MethodDeclarationSyntax methodDeclarationSyntax,
@@ -273,8 +360,14 @@ internal static class MapMethodMappingAttributesValidator
         string attributeName,
         string targetPropertyPath,
         string sourcePropertyPath,
-        ITypeSymbol sourceType)
+        ITypeSymbol sourceType,
+        PropertyPathContext? propertyPathContext)
     {
+        if (propertyPathContext is not null)
+        {
+            return;
+        }
+
         var parsedTargetPath = PropertyPath.Parse(targetPropertyPath);
         var parsedSourcePath = PropertyPath.Parse(sourcePropertyPath);
         if (parsedSourcePath.Segments.Length == 0)
