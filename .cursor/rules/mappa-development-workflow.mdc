@@ -117,6 +117,7 @@ A single feature may require **two** bumps (e.g. one after **Mappa**, one after 
 ## Documentation
 
 - When a new feature is added or a new setting is added, update the relevant sections of [`Documentation/tutorial.md`](Documentation/tutorial.md).
+- When adding, changing, or removing a Mappa attribute (or changing its documented behaviour, including XML docs that describe public parameters), update [`Documentation/mappa-attributes.md`](Documentation/mappa-attributes.md) and [`Mappa/README.md`](Mappa/README.md).
 - When adding a new `MappaSettings` property, update [`Documentation/mappa-attributes.md`](Documentation/mappa-attributes.md) and [`Mappa/README.md`](Mappa/README.md) as needed, but do **not** update the root [`.editorconfig`](.editorconfig).
 - When the source generator algorithm is updated, update [`Documentation/mappa-generator-algorithm.md`](Documentation/mappa-generator-algorithm.md) and [`Mappa.Generator/README.md`](Mappa.Generator/README.md).
 - When a new feature is added (mapping strategy, attribute, `MappaSettings` property, integration package, or other user-facing capability), add or update the corresponding entry in [`Documentation/features.md`](Documentation/features.md) with links to tutorial, attributes, algorithm, and samples as applicable.

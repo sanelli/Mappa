@@ -6,8 +6,14 @@ namespace Mappa.Attributes;
 
 /// <summary>
 /// When the constructor-map strategy is used, forces the <see cref="Mappa"/> source generator
-/// to map a target property or constructor parameter by invoking <see cref="MethodName"/>.
-/// This attribute does not apply when mapping nested inner types.<br/>
+/// to map a target property or constructor parameter by invoking <see cref="MethodName"/>.<br/>
+/// <br/>
+/// <see cref="TargetPropertyName"/> may be a single property name or a dot-separated chain of nested property names
+/// (for example <c>"Address.City"</c>). For a path with multiple segments, the attribute applies when mapping the first segment;
+/// the remaining segments are used while mapping the nested property type.<br/>
+/// <see cref="SourcePropertyName"/> may likewise be a single name or a dot-separated chain of nested source property names.
+/// The source path may contain the same number of segments as the target path or more, but not fewer.
+/// When the remaining target path has a single segment, the generator reads the full remaining source path from the current source receiver.<br/>
 /// <br/>
 /// The method <see cref="MethodName"/> can be located in one of the following ways,
 /// depending on which constructor overload is used:<br/>
@@ -54,7 +60,7 @@ public sealed class MappaInvokeMethodAttribute
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaInvokeMethodAttribute"/> class.
     /// </summary>
-    /// <param name="targetPropertyName">The name of the target property or constructor parameter.</param>
+    /// <param name="targetPropertyName">The name of the target property or constructor parameter, or a dot-separated chain of nested target property names.</param>
     /// <param name="methodName">The name of the method to invoke on the mapper class or an accessible base class.</param>
     public MappaInvokeMethodAttribute(string targetPropertyName, string methodName)
     {
@@ -65,7 +71,7 @@ public sealed class MappaInvokeMethodAttribute
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaInvokeMethodAttribute"/> class.
     /// </summary>
-    /// <param name="targetPropertyName">The name of the target property or constructor parameter.</param>
+    /// <param name="targetPropertyName">The name of the target property or constructor parameter, or a dot-separated chain of nested target property names.</param>
     /// <param name="classType">The type defining the <c>static</c> method <paramref name="methodName"/> or one of its base classes.</param>
     /// <param name="methodName">The name of the <c>static</c> method to execute.</param>
     public MappaInvokeMethodAttribute(string targetPropertyName, Type classType, string methodName)
@@ -77,7 +83,7 @@ public sealed class MappaInvokeMethodAttribute
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaInvokeMethodAttribute"/> class.
     /// </summary>
-    /// <param name="targetPropertyName">The name of the target property or constructor parameter.</param>
+    /// <param name="targetPropertyName">The name of the target property or constructor parameter, or a dot-separated chain of nested target property names.</param>
     /// <param name="fieldName">The name of the field or property on the mapper class or an accessible base class whose type exposes the non-<c>static</c> method <paramref name="methodName"/>. Must be <c>static</c> when the root map method is <c>static</c>.</param>
     /// <param name="methodName">The name of the non-<c>static</c> method to execute.</param>
     public MappaInvokeMethodAttribute(string targetPropertyName, string fieldName, string methodName)
@@ -107,6 +113,7 @@ public sealed class MappaInvokeMethodAttribute
     /// <summary>
     /// Gets or sets the name of the source property to use when resolving method overloads that accept a source property argument.
     /// When set, this value overrides the default name-based source property match for the target member specified by <see cref="TargetPropertyName"/>.
+    /// May be a single property name or a dot-separated chain of nested source property names.
     /// </summary>
     public string? SourcePropertyName { get; set; }
 }

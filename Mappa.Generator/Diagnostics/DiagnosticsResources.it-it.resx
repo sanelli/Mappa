@@ -137,4 +137,10 @@
     <data name="AmbiguousInvokeMethodResolution" xml:space="preserve">
         <value>La risoluzione del metodo da invocare è ambigua: {0}.</value>
     </data>
+    <data name="MappingAttributeSourcePropertyPathIsShorterThanTargetPropertyPath" xml:space="preserve">
+        <value>Il metodo '{0}' definisce '{1}' con percorso sorgente '{2}' per il target '{3}', ma il percorso sorgente ha meno segmenti del percorso target.</value>
+    </data>
+    <data name="MappingAttributeSourcePropertyPathSegmentDoesNotExist" xml:space="preserve">
+        <value>Il metodo '{0}' definisce '{1}' con percorso sorgente '{2}', ma il segmento '{3}' non esiste sul tipo '{4}'.</value>
+    </data>
 </root>

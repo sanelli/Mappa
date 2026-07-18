@@ -144,4 +144,10 @@
     <data name="AmbiguousInvokeMethodResolution" xml:space="preserve">
         <value>Invoke method resolution is ambiguous: {0}.</value>
     </data>
+    <data name="MappingAttributeSourcePropertyPathIsShorterThanTargetPropertyPath" xml:space="preserve">
+        <value>Method '{0}' defines '{1}' with source property path '{2}' targeting '{3}', but the source path has fewer segments than the target path.</value>
+    </data>
+    <data name="MappingAttributeSourcePropertyPathSegmentDoesNotExist" xml:space="preserve">
+        <value>Method '{0}' defines '{1}' with source property path '{2}', but segment '{3}' does not exist on type '{4}'.</value>
+    </data>
 </root>

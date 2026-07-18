@@ -232,4 +232,14 @@ internal enum MappaDiagnosticsKind
     /// Invoke method resolution is ambiguous because multiple methods match.
     /// </summary>
     AmbiguousInvokeMethodResolution,
+
+    /// <summary>
+    /// A mapping attribute source property path is shorter than the target property path.
+    /// </summary>
+    MappingAttributeSourcePropertyPathIsShorterThanTargetPropertyPath,
+
+    /// <summary>
+    /// A mapping attribute source property path segment does not exist on the source type.
+    /// </summary>
+    MappingAttributeSourcePropertyPathSegmentDoesNotExist,
 }

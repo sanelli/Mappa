@@ -7,12 +7,12 @@ This is the list of attributes provided:
 - `MappaDependency`: Identifies a property or field inside a mapper class that can be used when identifying suitable mappings between two types; fields and properties tagged on **accessible base classes of the mapper** are also considered; methods on the dependency type **and its base classes** are considered when the field or property type is that type or a derived type;
 - `MappaStaticDependency`: Defines a static class whose methods can be used as dependencies while performing mappings;
 - `MappaSettings`: Allows specifying mapping behaviour (for example, culture when parsing or formatting date/time, `Guid`, and numeric types, and format when converting numeric types to `string`);
-- `MappaUseProperty`: When mapping structured types (`class`, `struct`, and records) allows specifying which source property to use for a target property or constructor parameter;
-- `MappaIgnoreTargetProperty`: When mapping structured types via an empty constructor, excludes a target property from property-initializer mapping; has no effect when mapping uses a constructor with parameters;
-- `MappaAssignFromContext`: When mapping structured types, allows specifying which value from a `MappaContext` to use for a target property or constructor parameter;
-- `MappaAssignToContext`: When mapping structured types via the constructor-map strategy, stores the value of a target property or field in `MappaContext` after the target object has been fully constructed;
-- `MappaInvokeMethodAttribute`: When mapping structured types via the constructor-map strategy, forces a target property or constructor parameter to be mapped by invoking a named method; supports an optional `SourcePropertyName` named parameter (see [MappaInvokeMethodAttribute](#mappainvokemethodattribute));
-- `MappaAssignFromConstant`: When mapping structured types, allows specifying a constant value for a target property or constructor parameter;
+- `MappaUseProperty`: When mapping structured types (`class`, `struct`, and records) allows specifying which source property to use for a target property or constructor parameter; `TargetPropertyName` and `SourcePropertyName` may be a single name or a [dot-separated nested property path](#nested-property-paths);
+- `MappaIgnoreTargetProperty`: When mapping structured types via an empty constructor, excludes a target property from property-initializer mapping; has no effect when mapping uses a constructor with parameters; `TargetPropertyName` may be a single name or a [dot-separated nested property path](#nested-property-paths);
+- `MappaAssignFromContext`: When mapping structured types, allows specifying which value from a `MappaContext` to use for a target property or constructor parameter; `TargetPropertyName` may be a single name or a [dot-separated nested property path](#nested-property-paths);
+- `MappaAssignToContext`: When mapping structured types via the constructor-map strategy, stores the value of a target property or field in `MappaContext` after the target object has been fully constructed; `TargetPropertyName` may be a single name or a [dot-separated nested property path](#nested-property-paths);
+- `MappaInvokeMethodAttribute`: When mapping structured types via the constructor-map strategy, forces a target property or constructor parameter to be mapped by invoking a named method; supports an optional `SourcePropertyName` named parameter (see [MappaInvokeMethodAttribute](#mappainvokemethodattribute)); `TargetPropertyName` and optional `SourcePropertyName` may be a single name or a [dot-separated nested property path](#nested-property-paths);
+- `MappaAssignFromConstant`: When mapping structured types, allows specifying a constant value for a target property or constructor parameter; `TargetPropertyName` may be a single name or a [dot-separated nested property path](#nested-property-paths);
 - `MappaTypeMapping`: When mapping structured types or interfaces, allows defining the target type depending on the source type;
 - `MappaTypeMappingDefault`: Describes the default behaviour for polymorphic methods defined via `MappaTypeMapping`.
 
@@ -27,29 +27,56 @@ The [Mappa](https://www.nuget.org/packages/Mappa/) package also provides the `Ma
 
 When the root map method is `static`, instance dependencies are not available unless the dependency field or property is also `static`.
 
+## Nested property paths
+
+Attributes that accept `TargetPropertyName` and/or `SourcePropertyName` support **dot-separated nested property paths** (for example `"Address.City"` or `"Location.Address.City"`) in addition to flat single-segment names.
+
+| Attribute | Target path | Source path |
+|-----------|-------------|-------------|
+| `MappaUseProperty` | yes | yes |
+| `MappaInvokeMethod` | yes | optional `SourcePropertyName` |
+| `MappaAssignFromConstant` | yes | — |
+| `MappaAssignFromContext` | yes | — |
+| `MappaAssignToContext` | yes | — |
+| `MappaIgnoreTargetProperty` | yes | — |
+
+**Target paths**
+
+- A single segment (`"City"`) keeps the existing flat behaviour.
+- A multi-segment path (`"Address.City"`) applies when mapping the **first** segment (`Address`). Remaining segments are resolved while mapping the nested type.
+- A missing first or later target segment reports warning **MP00033**.
+
+**Source paths**
+
+- May be longer than the target path, but must not be shorter (segment count). A shorter source path reports error **MP00043**.
+- Every source segment must exist on the resolved source type. A missing segment reports error **MP00044**.
+- At the leaf target member, the generator emits a chained source read. With `#nullable disable`, reference types and `Nullable<T>` use `?.`. With `#nullable enable`, only annotated nullable references and `Nullable<T>` use `?.`; otherwise `.` is used. When the target member cannot be null, the chain may append `?? throw new System.NullReferenceException("...")` with the full dotted path.
+
+See also: [Mappa generator algorithm — nested property paths](./mappa-generator-algorithm.md#nested-property-paths), [tutorial](./tutorial.md#nested-property-paths), and [NestedPropertyPathAttributeMapper.cs](../Mappa.Samples/NestedPropertyPathAttributeMapper.cs).
+
 ## MappaUseProperty
 
-When mapping structured types, Mappa pairs source and target members by name. `[MappaUseProperty]` overrides that pairing by specifying which source property supplies the value for a given target property or constructor parameter.
+When mapping structured types, Mappa pairs source and target members by name. `[MappaUseProperty]` overrides that pairing by specifying which source property supplies the value for a given target property or constructor parameter. Both `TargetPropertyName` and `SourcePropertyName` support [nested property paths](#nested-property-paths).
 
 ## MappaIgnoreTargetProperty
 
-When mapping via an empty constructor, Mappa assigns each target property with an accessible setter from the corresponding source property. `[MappaIgnoreTargetProperty]` excludes a target property from this mapping. It has no effect when the target is constructed via a constructor with parameters.
+When mapping via an empty constructor, Mappa assigns each target property with an accessible setter from the corresponding source property. `[MappaIgnoreTargetProperty]` excludes a target property from this mapping. It has no effect when the target is constructed via a constructor with parameters. `TargetPropertyName` supports [nested property paths](#nested-property-paths).
 
 ## MappaAssignFromConstant
 
-`[MappaAssignFromConstant]` assigns a compile-time constant value to a target property or constructor parameter. The constant must be compatible with the target member type.
+`[MappaAssignFromConstant]` assigns a compile-time constant value to a target property or constructor parameter. The constant must be compatible with the target member type. `TargetPropertyName` supports [nested property paths](#nested-property-paths).
 
 ## MappaAssignFromContext
 
-`[MappaAssignFromContext]` reads a value from `MappaContext` and assigns it to a target property or constructor parameter. The map method must accept `MappaContext` as its second parameter.
+`[MappaAssignFromContext]` reads a value from `MappaContext` and assigns it to a target property or constructor parameter. The map method must accept `MappaContext` as its second parameter. `TargetPropertyName` supports [nested property paths](#nested-property-paths).
 
 ## MappaAssignToContext
 
-`[MappaAssignToContext]` stores the mapped value of a target property or field into `MappaContext` after the target object has been fully constructed. The map method must accept `MappaContext` as its second parameter. Each context key must be unique within a method.
+`[MappaAssignToContext]` stores the mapped value of a target property or field into `MappaContext` after the target object has been fully constructed. The map method must accept `MappaContext` as its second parameter. Each context key must be unique within a method. `TargetPropertyName` supports [nested property paths](#nested-property-paths).
 
 ## MappaInvokeMethodAttribute
 
-When the constructor-map strategy is used, this attribute forces the source generator to map a target property or constructor parameter by invoking a named method. It does not apply when mapping nested inner types.
+When the constructor-map strategy is used, this attribute forces the source generator to map a target property or constructor parameter by invoking a named method. It does not apply when mapping nested inner types. `TargetPropertyName` and optional `SourcePropertyName` support [nested property paths](#nested-property-paths).
 
 ### Method location
 
@@ -63,7 +90,7 @@ When multiple methods with the same name exist in a type hierarchy, methods decl
 
 ### SourcePropertyName
 
-`SourcePropertyName` is an optional named parameter on any constructor overload. When set, it selects which source property is passed to method overloads that accept a source-property argument for the target member specified by `TargetPropertyName`. It overrides the default name-based source property match for that invoke-method mapping.
+`SourcePropertyName` is an optional named parameter on any constructor overload. When set, it selects which source property is passed to method overloads that accept a source-property argument for the target member specified by `TargetPropertyName`. It overrides the default name-based source property match for that invoke-method mapping. Like `TargetPropertyName`, it may be a single name or a [dot-separated nested property path](#nested-property-paths).
 
 Example:
 

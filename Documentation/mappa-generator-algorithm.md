@@ -253,7 +253,35 @@ The constructor strategy has three sub-strategies, tried in order:
         - `[MappaAssignFromConstant]`
         - `[MappaInvokeMethod]` — optionally accepts `SourcePropertyName` to select the source property passed to the invoked method
         - `[MappaAssignToContext]` *(post-construction context writes; requires the caller to provide `MappaContext`)*
+    - Those attributes accept flat names or [dot-separated nested property paths](#nested-property-paths);
     - When `MappaSettings.ProtobufOptional` is enabled, optional protobuf members are handled via companion `Has*` properties on the source and target types.
+
+### Nested property paths
+
+Mapping attributes that accept `TargetPropertyName` / `SourcePropertyName` may use dot-separated paths (for example `"Address.City"` ← `"Location.Address.City"`). See also [Mappa attributes — Nested property paths](mappa-attributes.md#nested-property-paths).
+
+```mermaid
+flowchart TD
+    attr["Attribute on root map method e.g. Target=Foo.Bar.Baz Source=Outer.Inner.Value"]
+    root["Root constructor-map: iterate target member Foo"]
+    match{"First target segment == current member?"}
+    trim["Trim paths: target=Bar.Baz source=Inner.Value"]
+    nested["Nested mapping between Foo types with path context"]
+    leaf{"Remaining target has 1 segment?"}
+    chain["Emit source chain access with ?. and optional NRE throw"]
+    map["Map innermost source type to target member type"]
+
+    attr --> root --> match
+    match -->|no| root
+    match -->|yes| trim --> nested --> leaf
+    leaf -->|yes| chain --> map
+    leaf -->|no| nested
+```
+
+- A `PropertyPathContext` carries the remaining target and source segments while nested constructor mapping runs with attributes still enabled for path-filtered matching.
+- Multi-segment target paths apply at the first segment; remaining segments are resolved on the nested type.
+- At the leaf target member, remaining source segments become a chained read (`?.` / `.` per nullability rules). When the target cannot be null, the generator may append `?? throw new System.NullReferenceException("...")`.
+- Invalid target paths report **MP00033**. A source path shorter than the target path reports **MP00043**. A missing source segment reports **MP00044**.
 
 ## Limitations
 

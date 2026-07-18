@@ -15,8 +15,14 @@ namespace Mappa.Generator.Models.Strategies;
 /// <param name="sourceProperty">The source property.</param>
 /// <param name="propertyStrategy">The strategy between these properties.</param>
 /// <param name="postConstructorInitializer"><c>true</c> if this property initializer must happen after the constructor invocation.</param>
-internal sealed class PropertyMapStrategy(IPropertySymbol targetProperty, IPropertySymbol? sourceProperty, MapStrategy propertyStrategy, bool postConstructorInitializer)
-    : MapStrategy(targetProperty.Type, sourceProperty?.Type ?? null!)
+/// <param name="chainedSourcePropertyPath">The chained source property path to read before mapping, if any.</param>
+internal sealed class PropertyMapStrategy(
+    IPropertySymbol targetProperty,
+    IPropertySymbol? sourceProperty,
+    MapStrategy propertyStrategy,
+    bool postConstructorInitializer,
+    ChainedSourcePropertyPathInfo? chainedSourcePropertyPath = null)
+    : MapStrategy(targetProperty.Type, sourceProperty?.Type ?? chainedSourcePropertyPath?.StartingSourceType ?? null!)
 {
     /// <summary>
     /// Gets the target property.
@@ -37,6 +43,11 @@ internal sealed class PropertyMapStrategy(IPropertySymbol targetProperty, IPrope
     /// Gets a value indicating whether the property should be initialised after the constructor.
     /// </summary>
     public bool PostConstructorInitializer { get; } = postConstructorInitializer;
+
+    /// <summary>
+    /// Gets the chained source property path to read before mapping, if any.
+    /// </summary>
+    public ChainedSourcePropertyPathInfo? ChainedSourcePropertyPath { get; } = chainedSourcePropertyPath;
 
     /// <inheritdoc/>
     internal override IMappaStrategyBuilder GetBuilder() => new PropertyMapStrategyBuilder(this);

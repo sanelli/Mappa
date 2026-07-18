@@ -35,6 +35,11 @@ internal abstract class MappaMapAlgorithmContext
     internal abstract MapMethod? MapMethod { get; }
 
     /// <summary>
+    /// Gets the active nested property path context, if any.
+    /// </summary>
+    internal virtual PropertyPathContext? PropertyPathContext => null;
+
+    /// <summary>
     /// Gets the context settings.
     /// </summary>
     internal abstract MappaMapAlgorithmContextSettings AlgorithmSettings { get; }
@@ -123,5 +128,20 @@ internal abstract class MappaMapAlgorithmContext
         }
 
         return context.GetMapMethod();
+    }
+
+    /// <summary>
+    /// Gets the root source type for the map method being generated.
+    /// </summary>
+    /// <returns>The root source type.</returns>
+    internal ITypeSymbol GetRootSourceType()
+    {
+        MappaMapAlgorithmContext context = this;
+        while (context is DerivedMappaMapAlgorithmContext algorithmContext)
+        {
+            context = algorithmContext.ParentContext;
+        }
+
+        return context.SourceType;
     }
 }
