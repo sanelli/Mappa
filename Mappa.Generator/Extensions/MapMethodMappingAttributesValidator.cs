@@ -27,9 +27,16 @@ internal static class MapMethodMappingAttributesValidator
         this MappaMapAlgorithmContext context,
         Compilation compilation)
     {
-        if (context.MapMethod is null)
+        var mapMethod = context.MapMethod;
+        if (mapMethod is null)
         {
-            return;
+            // Derived nested mappings omit MapMethod; use the root method when a property path context is active.
+            if (context.PropertyPathContext is null)
+            {
+                return;
+            }
+
+            mapMethod = context.GetRootMapMethod();
         }
 
         if (context.AlgorithmSettings.UseAttributesForConstructorDetectorSettings
@@ -38,7 +45,6 @@ internal static class MapMethodMappingAttributesValidator
             return;
         }
 
-        var mapMethod = context.MapMethod;
         var methodDeclarationSyntax = mapMethod.MethodDeclarationSyntax;
         if (methodDeclarationSyntax is null)
         {

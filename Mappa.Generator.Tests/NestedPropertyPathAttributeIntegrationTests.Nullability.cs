@@ -161,4 +161,52 @@ public sealed partial class NestedPropertyPathAttributeIntegrationTests
             .HaveGeneratedSourceCode();
         generatedSource.Should().Contain("input.Outer?.Code");
     }
+
+    /// <summary>
+    /// Test chained source reads use plain member access for non-nullable value type segments.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapChainedSourcePathThroughNonNullableValueTypeSegment()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class Outer
+                                  {
+                                      public int Code { get; set; }
+                                  }
+
+                                  public class Source
+                                  {
+                                      public Outer Outer { get; set; } = null!;
+                                  }
+
+                                  public class Target
+                                  {
+                                      public Outer Outer { get; set; } = null!;
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaUseProperty("Outer.Code", "Outer.Code")]
+                                      public partial Target Map(Source input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+        var generatedSource = GetGeneratedMapperSource(generatedResults);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode();
+        generatedSource.Should().Contain("input.Outer.Code");
+        generatedSource.Should().NotContain("input.Outer?.Code");
+    }
 }

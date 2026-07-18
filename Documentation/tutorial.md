@@ -416,6 +416,24 @@ public sealed partial class Mapper
 
 See also: [MappaUsePropertyAttributeMapper.cs](../Mappa.Samples/MappaUsePropertyAttributeMapper.cs).
 
+### Nested property paths
+Attributes that accept `TargetPropertyName` and/or `SourcePropertyName` also support **dot-separated nested property paths**. Use this when the value lives under nested members rather than on the root source or target type:
+
+```csharp
+[Mappa]
+public sealed partial class Mapper
+{
+    // Map nested target Address.City / Address.ZipCode from a deeper source chain.
+    [MappaUseProperty("Address.City", "Location.Address.City")]
+    [MappaUseProperty("Address.ZipCode", "Location.Address.ZipCode")]
+    public partial PersonTarget Map(LocationSource source);
+}
+```
+
+The same path syntax works on `[MappaInvokeMethod]`, `[MappaAssignFromConstant]`, `[MappaAssignFromContext]`, `[MappaAssignToContext]`, and `[MappaIgnoreTargetProperty]`. The generator trims paths while mapping nested types and emits chained source reads with `?.` / `.` according to nullability rules.
+
+See also: [Mappa attributes — Nested property paths](./mappa-attributes.md#nested-property-paths), [algorithm](./mappa-generator-algorithm.md#nested-property-paths), and [NestedPropertyPathAttributeMapper.cs](../Mappa.Samples/NestedPropertyPathAttributeMapper.cs).
+
 ### MappaAssignFromConstant attribute
 Assign a compile-time constant to a target property or constructor parameter:
 

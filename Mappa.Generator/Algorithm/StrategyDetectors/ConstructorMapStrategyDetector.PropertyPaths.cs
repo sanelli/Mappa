@@ -31,6 +31,19 @@ internal sealed partial class ConstructorMapStrategyDetector
             return nestedPropertyPathContext;
         }
 
+        // Remaining segments are already relative to the nested type being mapped.
+        // Descend when the current member is an intermediate (non-leaf) remaining segment.
+        if (nestedPropertyPathContext.RemainingTargetSegments.Length > 0)
+        {
+            if (nestedPropertyPathContext.RemainingTargetSegments[0].Equals(targetMemberName, StringComparison.Ordinal)
+                && nestedPropertyPathContext.RemainingTargetSegments.Length > 1)
+            {
+                return nestedPropertyPathContext.DescendOneLevel();
+            }
+
+            return nestedPropertyPathContext;
+        }
+
         var originalTargetPath = PropertyPath.Parse(nestedPropertyPathContext.OriginalTargetPath);
         if (!originalTargetPath.IsNested)
         {
@@ -87,28 +100,34 @@ internal sealed partial class ConstructorMapStrategyDetector
     private bool HasNestedPathAttributesForTargetMember(
         string targetMemberName,
         StringComparison stringComparison)
+        => this.CountNestedPathAttributesForTargetMember(targetMemberName, stringComparison) > 0;
+
+    private int CountNestedPathAttributesForTargetMember(
+        string targetMemberName,
+        StringComparison stringComparison)
     {
         var mapMethod = this.GetAttributeMapMethod();
-        var nestedTargetNameAttributes = mapMethod
+        var nestedTargetNameAttributeCount = mapMethod
             .GetAttributes<Attribute>()
             .OfType<IMappaTargetPropertyNameAttribute>()
             .Where(attribute => PropertyPath.Parse(attribute.TargetPropertyName).IsNested)
-            .Where(attribute => PropertyPathAttributeMatching.MatchesTargetMember(
+            .Count(attribute => PropertyPathAttributeMatching.MatchesTargetMember(
                 attribute.TargetPropertyName,
                 targetMemberName,
                 null,
                 stringComparison));
 
-        var nestedIgnoreAttributes = mapMethod
+        // Ignore does not implement IMappaTargetPropertyNameAttribute.
+        var nestedIgnoreAttributeCount = mapMethod
             .GetAttributes<MappaIgnoreTargetPropertyAttribute>()
             .Where(attribute => PropertyPath.Parse(attribute.TargetPropertyName).IsNested)
-            .Where(attribute => PropertyPathAttributeMatching.MatchesTargetMember(
+            .Count(attribute => PropertyPathAttributeMatching.MatchesTargetMember(
                 attribute.TargetPropertyName,
                 targetMemberName,
                 null,
                 stringComparison));
 
-        return nestedTargetNameAttributes.Any() || nestedIgnoreAttributes.Any();
+        return nestedTargetNameAttributeCount + nestedIgnoreAttributeCount;
     }
 
     private MappaUsePropertyAttribute[] GetMatchingUsePropertyAttributes(

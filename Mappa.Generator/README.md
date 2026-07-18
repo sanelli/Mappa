@@ -254,6 +254,7 @@ The constructor strategy has three sub-strategies, tried in order:
         - `[MappaAssignFromConstant]`
         - `[MappaInvokeMethod]` — optionally accepts `SourcePropertyName` to select the source property passed to the invoked method
         - `[MappaAssignToContext]` *(post-construction context writes; requires the caller to provide `MappaContext`)*
+    - Those attributes accept flat names or [dot-separated nested property paths](../Documentation/mappa-attributes.md#nested-property-paths) (see also [algorithm — nested property paths](../Documentation/mappa-generator-algorithm.md#nested-property-paths));
     - When `MappaSettings.ProtobufOptional` is enabled, optional protobuf members are handled via companion `Has*` properties on the source and target types.
 
 ## Limitations

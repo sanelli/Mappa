@@ -470,10 +470,13 @@ internal sealed partial class ConstructorMapStrategyDetector
                                 }
                             }
 
-                            if (nestedPropertyPathContext is null
-                                && this.context.PropertyPathContext is null
-                                && this.HasNestedPathAttributesForTargetMember(targetProperty.Name, StringComparison.Ordinal))
+                            if (this.context.PropertyPathContext is null
+                                && this.HasNestedPathAttributesForTargetMember(targetProperty.Name, StringComparison.Ordinal)
+                                && (nestedPropertyPathContext is null
+                                    || this.CountNestedPathAttributesForTargetMember(targetProperty.Name, StringComparison.Ordinal) > 1))
                             {
+                                // Prefer nested attribute scope for a single nested ignore/constant/etc.,
+                                // or when multiple nested attributes share this root (e.g. UseProperty + Ignore).
                                 nestedPropertyPathContext = PropertyPathContext.CreateNestedAttributeScope(targetProperty.Name);
                             }
 

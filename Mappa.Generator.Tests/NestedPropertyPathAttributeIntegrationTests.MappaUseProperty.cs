@@ -112,6 +112,60 @@ public sealed partial class NestedPropertyPathAttributeIntegrationTests
     }
 
     /// <summary>
+    /// Test mapping succeeds with a three-segment nested target path (Location.Address.City).
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapUsingMappaUsePropertyWithThreeSegmentNestedTargetPath()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class AddressDto
+                                  {
+                                      public string City { get; set; } = null!;
+                                  }
+
+                                  public class LocationDto
+                                  {
+                                      public AddressDto Address { get; set; } = null!;
+                                  }
+
+                                  public class Source
+                                  {
+                                      public LocationDto Location { get; set; } = null!;
+                                  }
+
+                                  public class Target
+                                  {
+                                      public LocationDto Location { get; set; } = null!;
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaUseProperty("Location.Address.City", "Location.Address.City")]
+                                      public partial Target Map(Source input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+        var generatedSource = GetGeneratedMapperSource(generatedResults);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode();
+        generatedSource.Should().Contain("Location");
+        generatedSource.Should().Contain("Address");
+        generatedSource.Should().Contain("City");
+    }
+
+    /// <summary>
     /// Test multiple <see cref="MappaUsePropertyAttribute"/> declarations with different nested paths under the same root target member.
     /// </summary>
     /// <returns>The async task.</returns>
