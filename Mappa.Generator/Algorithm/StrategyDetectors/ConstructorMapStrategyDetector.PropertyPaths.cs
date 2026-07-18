@@ -31,7 +31,13 @@ internal sealed partial class ConstructorMapStrategyDetector
             return nestedPropertyPathContext;
         }
 
-        var originalTargetFirstSegment = PropertyPath.Parse(nestedPropertyPathContext.OriginalTargetPath).GetFirstSegment();
+        var originalTargetPath = PropertyPath.Parse(nestedPropertyPathContext.OriginalTargetPath);
+        if (!originalTargetPath.IsNested)
+        {
+            return null;
+        }
+
+        var originalTargetFirstSegment = originalTargetPath.GetFirstSegment();
         if (originalTargetFirstSegment is not null
             && originalTargetFirstSegment.Equals(targetMemberName, StringComparison.Ordinal))
         {
@@ -70,7 +76,39 @@ internal sealed partial class ConstructorMapStrategyDetector
             return parsedPath.Segments.Length == 1;
         }
 
+        if (this.context.PropertyPathContext.IsNestedAttributeScope)
+        {
+            return parsedPath.IsNested;
+        }
+
         return this.context.PropertyPathContext.IsLeafTargetMapping;
+    }
+
+    private bool HasNestedPathAttributesForTargetMember(
+        string targetMemberName,
+        StringComparison stringComparison)
+    {
+        var mapMethod = this.GetAttributeMapMethod();
+        var nestedTargetNameAttributes = mapMethod
+            .GetAttributes<Attribute>()
+            .OfType<IMappaTargetPropertyNameAttribute>()
+            .Where(attribute => PropertyPath.Parse(attribute.TargetPropertyName).IsNested)
+            .Where(attribute => PropertyPathAttributeMatching.MatchesTargetMember(
+                attribute.TargetPropertyName,
+                targetMemberName,
+                null,
+                stringComparison));
+
+        var nestedIgnoreAttributes = mapMethod
+            .GetAttributes<MappaIgnoreTargetPropertyAttribute>()
+            .Where(attribute => PropertyPath.Parse(attribute.TargetPropertyName).IsNested)
+            .Where(attribute => PropertyPathAttributeMatching.MatchesTargetMember(
+                attribute.TargetPropertyName,
+                targetMemberName,
+                null,
+                stringComparison));
+
+        return nestedTargetNameAttributes.Any() || nestedIgnoreAttributes.Any();
     }
 
     private MappaUsePropertyAttribute[] GetMatchingUsePropertyAttributes(
@@ -152,9 +190,11 @@ internal sealed partial class ConstructorMapStrategyDetector
         }
 
         expectedSourcePropertyName = expectedSegment;
-        nestedPropertyPathContext = PropertyPathAttributeMatching.CreatePropertyPathContext(
-            usePropertyAttribute.TargetPropertyName,
-            usePropertyAttribute.SourcePropertyName);
+        nestedPropertyPathContext = targetPath.IsNested
+            ? PropertyPathAttributeMatching.CreatePropertyPathContext(
+                usePropertyAttribute.TargetPropertyName,
+                usePropertyAttribute.SourcePropertyName)
+            : null;
         return true;
     }
 

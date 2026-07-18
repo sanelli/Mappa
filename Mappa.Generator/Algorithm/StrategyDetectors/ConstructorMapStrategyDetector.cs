@@ -450,10 +450,31 @@ internal sealed partial class ConstructorMapStrategyDetector
                                         return new PropertyMapStrategy(targetProperty, null, noMapStrategy, false);
                                     }
 
-                                    expectedSourcePropertyName = targetProperty.Name;
+                                    var distinctSourceRoots = usePropertyAttributes
+                                        .Select(attribute => PropertyPath.Parse(attribute.SourcePropertyName).GetFirstSegment())
+                                        .Where(segment => segment is not null)
+                                        .Distinct(StringComparer.Ordinal)
+                                        .ToArray();
+                                    if (distinctSourceRoots.Length == 1)
+                                    {
+                                        expectedSourcePropertyName = distinctSourceRoots[0]!;
+                                        useExactNameFromAttribute = true;
+                                    }
+                                    else
+                                    {
+                                        expectedSourcePropertyName = targetProperty.Name;
+                                    }
+
                                     nestedPropertyPathContext = PropertyPathContext.CreateNestedAttributeScope(targetProperty.Name);
                                     break;
                                 }
+                            }
+
+                            if (nestedPropertyPathContext is null
+                                && this.context.PropertyPathContext is null
+                                && this.HasNestedPathAttributesForTargetMember(targetProperty.Name, StringComparison.Ordinal))
+                            {
+                                nestedPropertyPathContext = PropertyPathContext.CreateNestedAttributeScope(targetProperty.Name);
                             }
 
                             IPropertySymbol? sourceProperty = null;

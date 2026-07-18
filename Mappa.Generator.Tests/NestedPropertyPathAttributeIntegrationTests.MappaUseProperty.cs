@@ -212,6 +212,63 @@ public sealed partial class NestedPropertyPathAttributeIntegrationTests
     }
 
     /// <summary>
+    /// Test multiple nested <see cref="MappaUsePropertyAttribute"/> paths that share a target root
+    /// but use a different first source segment.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapUsingMultipleMappaUsePropertyAttributesWithDifferentSourceRootThanTargetRoot()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class AddressDto
+                                  {
+                                      public string City { get; set; } = null!;
+                                      public string ZipCode { get; set; } = null!;
+                                  }
+
+                                  public class LocationDto
+                                  {
+                                      public AddressDto Address { get; set; } = null!;
+                                  }
+
+                                  public class Source
+                                  {
+                                      public LocationDto Location { get; set; } = null!;
+                                  }
+
+                                  public class Target
+                                  {
+                                      public AddressDto Address { get; set; } = null!;
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaUseProperty("Address.City", "Location.Address.City")]
+                                      [MappaUseProperty("Address.ZipCode", "Location.Address.ZipCode")]
+                                      public partial Target Map(Source input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+        var generatedSource = GetGeneratedMapperSource(generatedResults);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode();
+        generatedSource.Should().Contain("input.Location");
+        generatedSource.Should().Contain(".City");
+        generatedSource.Should().Contain(".ZipCode");
+    }
+
+    /// <summary>
     /// Test mapping fails when multiple <see cref="MappaUsePropertyAttribute"/> declarations target the same exact nested path.
     /// </summary>
     /// <returns>The async task.</returns>
@@ -297,5 +354,53 @@ public sealed partial class NestedPropertyPathAttributeIntegrationTests
         generatedResults.Should()
             .HaveDiagnostics(1)
             .HaveDiagnostic(MappaDiagnosticDescriptors.TooManyUsePropertyAttributesForTheSameTargetProperty, "Map", "PropertyA");
+    }
+
+    /// <summary>
+    /// Test swapped flat <see cref="MappaUsePropertyAttribute"/> mappings including identity int-to-int.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapUsingSwappedFlatMappaUsePropertyIncludingIntToIntIdentity()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public enum CountingValues { One, Two, Three }
+
+                                  public class Source
+                                  {
+                                      public int ParamA { get; set; }
+                                      public CountingValues ParamB { get; set; }
+                                  }
+
+                                  public class Target
+                                  {
+                                      public string ParamA { get; set; } = string.Empty;
+                                      public int ParamB { get; set; }
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaUseProperty(nameof(Target.ParamA), nameof(Source.ParamB))]
+                                      [MappaUseProperty(nameof(Target.ParamB), nameof(Source.ParamA))]
+                                      public partial Target Map(Source input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+        var generatedSource = GetGeneratedMapperSource(generatedResults);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode();
+        generatedSource.Should().Contain("ParamB");
+        generatedSource.Should().Contain("input.ParamA");
     }
 }
