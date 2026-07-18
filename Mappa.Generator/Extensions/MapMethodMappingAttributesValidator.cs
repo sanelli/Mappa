@@ -233,6 +233,83 @@ internal static class MapMethodMappingAttributesValidator
         }
     }
 
+    /// <summary>
+    /// Validates that each segment in <paramref name="segmentsToValidate"/> exists when resolved from <paramref name="targetType"/>.
+    /// </summary>
+    /// <param name="context">The mapping algorithm context.</param>
+    /// <param name="methodDeclarationSyntax">The map method declaration.</param>
+    /// <param name="methodName">The map method name.</param>
+    /// <param name="targetTypeName">The display name of the target type.</param>
+    /// <param name="attributeName">The attribute type name.</param>
+    /// <param name="targetPropertyPath">The full target property path from the attribute.</param>
+    /// <param name="segmentsToValidate">The remaining target path segments to validate at the current type.</param>
+    /// <param name="targetType">The type from which segments are resolved.</param>
+    internal static void ValidateTargetPathSegments(
+        MappaMapAlgorithmContext context,
+        MethodDeclarationSyntax methodDeclarationSyntax,
+        string methodName,
+        string targetTypeName,
+        string attributeName,
+        string targetPropertyPath,
+        string[] segmentsToValidate,
+        ITypeSymbol targetType)
+    {
+        if (segmentsToValidate.Length == 0)
+        {
+            return;
+        }
+
+        if (segmentsToValidate.Length == 1)
+        {
+            var segment = segmentsToValidate[0];
+            if (!targetType.GetTypeProperties().Any(property => property.Name.Equals(segment, StringComparison.Ordinal)))
+            {
+                context.ReportDiagnostic(MappaDiagnostics.MappingAttributeTargetPropertyOrParameterDoesNotExist(
+                    methodDeclarationSyntax,
+                    methodName,
+                    attributeName,
+                    targetPropertyPath,
+                    targetTypeName));
+            }
+
+            return;
+        }
+
+        if (!PropertyPathSymbolResolver.TryResolvePropertyPath(
+                targetType,
+                PropertyPath.FromRemainingSegments(segmentsToValidate),
+                out _,
+                out _))
+        {
+            context.ReportDiagnostic(MappaDiagnostics.MappingAttributeTargetPropertyOrParameterDoesNotExist(
+                methodDeclarationSyntax,
+                methodName,
+                attributeName,
+                targetPropertyPath,
+                targetTypeName));
+        }
+    }
+
+    /// <summary>
+    /// Returns whether the attribute target path should be validated against the type at the current nesting level.
+    /// </summary>
+    /// <param name="attributeTargetPath">The attribute target path.</param>
+    /// <param name="propertyPathContext">The active property path context.</param>
+    /// <returns><see langword="true"/> when validation applies at the current level; otherwise, <see langword="false"/>.</returns>
+    internal static bool ShouldValidateAttributeTargetPathAtCurrentLevel(
+        PropertyPath attributeTargetPath,
+        PropertyPathContext propertyPathContext)
+    {
+        if (propertyPathContext.IsNestedAttributeScope)
+        {
+            return propertyPathContext.OuterTargetSegment is string outerTargetSegment
+                   && attributeTargetPath.Segments.Length >= 2
+                   && attributeTargetPath.Segments[0].Equals(outerTargetSegment, StringComparison.Ordinal);
+        }
+
+        return attributeTargetPath.EndsWith(propertyPathContext.RemainingTargetSegments);
+    }
+
     private static void ValidateTargetPropertyPath(
         MappaMapAlgorithmContext context,
         MethodDeclarationSyntax methodDeclarationSyntax,
@@ -296,66 +373,6 @@ internal static class MapMethodMappingAttributesValidator
                 targetPropertyPath,
                 targetTypeName));
         }
-    }
-
-    private static void ValidateTargetPathSegments(
-        MappaMapAlgorithmContext context,
-        MethodDeclarationSyntax methodDeclarationSyntax,
-        string methodName,
-        string targetTypeName,
-        string attributeName,
-        string targetPropertyPath,
-        string[] segmentsToValidate,
-        ITypeSymbol targetType)
-    {
-        if (segmentsToValidate.Length == 0)
-        {
-            return;
-        }
-
-        if (segmentsToValidate.Length == 1)
-        {
-            var segment = segmentsToValidate[0];
-            if (!targetType.GetTypeProperties().Any(property => property.Name.Equals(segment, StringComparison.Ordinal)))
-            {
-                context.ReportDiagnostic(MappaDiagnostics.MappingAttributeTargetPropertyOrParameterDoesNotExist(
-                    methodDeclarationSyntax,
-                    methodName,
-                    attributeName,
-                    targetPropertyPath,
-                    targetTypeName));
-            }
-
-            return;
-        }
-
-        if (!PropertyPathSymbolResolver.TryResolvePropertyPath(
-                targetType,
-                PropertyPath.FromRemainingSegments(segmentsToValidate),
-                out _,
-                out _))
-        {
-            context.ReportDiagnostic(MappaDiagnostics.MappingAttributeTargetPropertyOrParameterDoesNotExist(
-                methodDeclarationSyntax,
-                methodName,
-                attributeName,
-                targetPropertyPath,
-                targetTypeName));
-        }
-    }
-
-    private static bool ShouldValidateAttributeTargetPathAtCurrentLevel(
-        PropertyPath attributeTargetPath,
-        PropertyPathContext propertyPathContext)
-    {
-        if (propertyPathContext.IsNestedAttributeScope)
-        {
-            return propertyPathContext.OuterTargetSegment is string outerTargetSegment
-                   && attributeTargetPath.Segments.Length >= 2
-                   && attributeTargetPath.Segments[0].Equals(outerTargetSegment, StringComparison.Ordinal);
-        }
-
-        return attributeTargetPath.EndsWith(propertyPathContext.RemainingTargetSegments);
     }
 
     private static void ValidateSourcePropertyPath(

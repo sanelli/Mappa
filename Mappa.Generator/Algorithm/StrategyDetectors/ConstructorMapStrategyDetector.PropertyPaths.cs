@@ -17,7 +17,13 @@ namespace Mappa.Generator.Algorithm.StrategyDetectors;
 /// </summary>
 internal sealed partial class ConstructorMapStrategyDetector
 {
-    private static PropertyPathContext? GetNestedTypeMappingPropertyPathContext(
+    /// <summary>
+    /// Computes the property-path context to pass into a nested type mapping for <paramref name="targetMemberName"/>.
+    /// </summary>
+    /// <param name="targetMemberName">The target member currently being mapped.</param>
+    /// <param name="nestedPropertyPathContext">The property-path context from the parent mapping, if any.</param>
+    /// <returns>The context for the nested mapping, or <see langword="null"/> when nested-path handling does not apply.</returns>
+    internal static PropertyPathContext? GetNestedTypeMappingPropertyPathContext(
         string targetMemberName,
         PropertyPathContext? nestedPropertyPathContext)
     {
