@@ -51,10 +51,24 @@ function Get-BaselineCoverageFromGist
     param([string]$GistId)
 
     # Same retrieval path as Scripts/UpdateCodeCoverageGists.ps1.
-    $currentHistory = $( gh gist view $GistId --raw -f "MAPPA-CODE-COVERAGE-HISTORY.MD" )
-    if (-not $?)
+    # Prefer GH_PAT for gist API access; GITHUB_TOKEN cannot read private/org-restricted gists.
+    $previousToken = $env:GH_TOKEN
+    try
     {
-        throw "Failed to download coverage history from gist $GistId."
+        if (-not [string]::IsNullOrWhiteSpace($env:GH_PAT))
+        {
+            $env:GH_TOKEN = $env:GH_PAT
+        }
+
+        $currentHistory = $( gh gist view $GistId --raw -f "MAPPA-CODE-COVERAGE-HISTORY.MD" )
+        if (-not $?)
+        {
+            throw "Failed to download coverage history from gist $GistId."
+        }
+    }
+    finally
+    {
+        $env:GH_TOKEN = $previousToken
     }
 
     $line = $null
@@ -127,43 +141,12 @@ function Get-MetricDrop
     return [Math]::Round($Baseline - $Current, 1)
 }
 
-function Find-ExistingCoverageCommentId
-{
-    param(
-        [string]$Repository,
-        [int]$PullRequestNumber,
-        [string]$Marker
-    )
-
-    $commentsJson = gh api "repos/$Repository/issues/$PullRequestNumber/comments" --paginate
-    if (-not $?)
-    {
-        throw "Failed to list pull request comments for $Repository#$PullRequestNumber."
-    }
-
-    $comments = $commentsJson | ConvertFrom-Json
-    $existing = @(
-        $comments |
-            Where-Object { $_.body -like "*$Marker*" } |
-            Sort-Object -Property created_at |
-            Select-Object -Last 1
-    )
-
-    if ($existing.Count -eq 0)
-    {
-        return $null
-    }
-
-    return [long]$existing[0].id
-}
-
 function Publish-PullRequestCoverageComment
 {
     param(
         [string]$Repository,
         [int]$PullRequestNumber,
-        [string]$Body,
-        [string]$Marker
+        [string]$Body
     )
 
     $bodyFile = Join-Path ([System.IO.Path]::GetTempPath()) ("mappa-pr-coverage-" + [guid]::NewGuid().ToString("N") + ".md")
@@ -171,26 +154,20 @@ function Publish-PullRequestCoverageComment
     {
         Set-Content -LiteralPath $bodyFile -Value $Body -Encoding utf8
 
-        $existingId = Find-ExistingCoverageCommentId -Repository $Repository -PullRequestNumber $PullRequestNumber -Marker $Marker
-        if ($null -ne $existingId)
-        {
-            gh api -X PATCH "repos/$Repository/issues/comments/$existingId" -F "body=@$bodyFile" | Out-Null
-            if (-not $?)
-            {
-                throw "Failed to update coverage comment $existingId on $Repository#$PullRequestNumber."
-            }
-
-            Write-Host "Updated coverage comment $existingId on PR #$PullRequestNumber."
-            return
-        }
-
-        gh pr comment $PullRequestNumber --repo $Repository --body-file $bodyFile | Out-Null
+        # Uses github.token (GH_TOKEN). gh pr comment --edit-last updates the bot's previous
+        # coverage comment, or --create-if-none posts a new one on the first run.
+        # See https://cli.github.com/manual/gh_pr_comment
+        gh pr comment $PullRequestNumber `
+            --repo $Repository `
+            --body-file $bodyFile `
+            --edit-last `
+            --create-if-none | Out-Null
         if (-not $?)
         {
-            throw "Failed to create coverage comment on $Repository#$PullRequestNumber."
+            throw "Failed to create or update coverage comment on $Repository#$PullRequestNumber."
         }
 
-        Write-Host "Created coverage comment on PR #$PullRequestNumber."
+        Write-Host "Published coverage comment on PR #$PullRequestNumber."
     }
     finally
     {
@@ -297,8 +274,7 @@ else
     Publish-PullRequestCoverageComment `
         -Repository $repository `
         -PullRequestNumber $pullRequestNumber `
-        -Body $commentBody `
-        -Marker $CommentMarker
+        -Body $commentBody
 }
 
 if ($failMetrics.Count -gt 0)
