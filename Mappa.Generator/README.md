@@ -257,6 +257,10 @@ The constructor strategy has three sub-strategies, tried in order:
     - Those attributes accept flat names or [dot-separated nested property paths](../Documentation/mappa-attributes.md#nested-property-paths) (see also [algorithm — nested property paths](../Documentation/mappa-generator-algorithm.md#nested-property-paths));
     - When `MappaSettings.ProtobufOptional` is enabled, optional protobuf members are handled via companion `Has*` properties on the source and target types.
 
+### Nested property paths
+
+Leaf source chains use conditional access based on each **receiver** type, reuse nested source temps, and append `?? throw new System.NullReferenceException("...")` only when the expression can be null and the target cannot (never on plain non-nullable value-type leaves). Nested `[MappaIgnoreTargetProperty]` applies alongside sibling nested attributes under the same root. Nested `[MappaAssignToContext]` reads the leaf from the constructed result after mapping. Details: [Documentation/mappa-generator-algorithm.md — Nested property paths](../Documentation/mappa-generator-algorithm.md#nested-property-paths).
+
 ## Limitations
 
 Currently unsupported features include:

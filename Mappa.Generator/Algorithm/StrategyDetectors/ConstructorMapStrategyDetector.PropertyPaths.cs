@@ -123,6 +123,16 @@ internal sealed partial class ConstructorMapStrategyDetector
                 null,
                 stringComparison));
 
+        // MappaUsePropertyAttribute does not implement IMappaTargetPropertyNameAttribute.
+        var nestedUsePropertyAttributeCount = mapMethod
+            .GetAttributes<MappaUsePropertyAttribute>()
+            .Where(attribute => PropertyPath.Parse(attribute.TargetPropertyName).IsNested)
+            .Count(attribute => PropertyPathAttributeMatching.MatchesTargetMember(
+                attribute.TargetPropertyName,
+                targetMemberName,
+                null,
+                stringComparison));
+
         // Ignore does not implement IMappaTargetPropertyNameAttribute.
         var nestedIgnoreAttributeCount = mapMethod
             .GetAttributes<MappaIgnoreTargetPropertyAttribute>()
@@ -133,7 +143,7 @@ internal sealed partial class ConstructorMapStrategyDetector
                 null,
                 stringComparison));
 
-        return nestedTargetNameAttributeCount + nestedIgnoreAttributeCount;
+        return nestedTargetNameAttributeCount + nestedUsePropertyAttributeCount + nestedIgnoreAttributeCount;
     }
 
     private MappaUsePropertyAttribute[] GetMatchingUsePropertyAttributes(
@@ -183,25 +193,33 @@ internal sealed partial class ConstructorMapStrategyDetector
             return false;
         }
 
-        if (isLeafTargetMapping && (sourcePath.IsNested || activePropertyPathContext is not null))
+        if (isLeafTargetMapping
+            && (sourcePath.IsNested || activePropertyPathContext is not null)
+            && this.context.PropertyPathContext is not null)
         {
-            var receiverPrefix = this.context.GetRootMapMethod().MethodSymbol.Parameters[0].Name;
-            if (activePropertyPathContext is not null
-                && sourcePath.Segments.Length > activePropertyPathContext.RemainingSourceSegments.Length)
+            // Prefer reading remaining segments from the current nested source receiver
+            // so intermediate temps are reused instead of rebuilding the chain from the root.
+            string[] remainingSourceSegments;
+            if (this.context.PropertyPathContext.IsNestedAttributeScope)
             {
-                var consumedCount = sourcePath.Segments.Length - activePropertyPathContext.RemainingSourceSegments.Length;
-                receiverPrefix = string.Join(
-                    ".",
-                    new[] { this.context.GetRootMapMethod().MethodSymbol.Parameters[0].Name }
-                        .Concat(sourcePath.Segments.Take(consumedCount)));
+                remainingSourceSegments = activePropertyPathContext?.RemainingSourceSegments ?? sourcePath.Segments;
+            }
+            else
+            {
+                remainingSourceSegments = this.context.PropertyPathContext.RemainingSourceSegments.Length > 0
+                    ? this.context.PropertyPathContext.RemainingSourceSegments
+                    : sourcePath.Segments;
             }
 
-            chainedSourcePropertyPath = new ChainedSourcePropertyPathInfo(
-                usePropertyAttribute.SourcePropertyName,
-                activePropertyPathContext?.RemainingSourceSegments ?? sourcePath.Segments,
-                this.context.GetRootSourceType(),
-                receiverPrefix);
-            return false;
+            if (remainingSourceSegments.Length > 0)
+            {
+                chainedSourcePropertyPath = new ChainedSourcePropertyPathInfo(
+                    usePropertyAttribute.SourcePropertyName,
+                    remainingSourceSegments,
+                    this.context.SourceType,
+                    string.Empty);
+                return false;
+            }
         }
 
         var expectedSegment = PropertyPathAttributeMatching.GetExpectedSourcePropertyNameForCurrentLevel(
@@ -294,15 +312,23 @@ internal sealed partial class ConstructorMapStrategyDetector
         resolvedProperties = [];
         firstProperty = null;
 
-        var rootSourceType = this.context.GetRootSourceType();
-        var rootReceiverExpression = this.context.GetRootMapMethod().MethodSymbol.Parameters[0].Name;
-        if (!PropertyPathSymbolResolver.TryGetReceiverTypeForPathPrefix(
-                rootSourceType,
-                rootReceiverExpression,
-                chainedSourcePropertyPath.ReceiverPathPrefix,
-                out var chainReceiverType))
+        ITypeSymbol chainReceiverType;
+        if (string.IsNullOrWhiteSpace(chainedSourcePropertyPath.ReceiverPathPrefix))
         {
             chainReceiverType = chainedSourcePropertyPath.StartingSourceType;
+        }
+        else
+        {
+            var rootSourceType = this.context.GetRootSourceType();
+            var rootReceiverExpression = this.context.GetRootMapMethod().MethodSymbol.Parameters[0].Name;
+            if (!PropertyPathSymbolResolver.TryGetReceiverTypeForPathPrefix(
+                    rootSourceType,
+                    rootReceiverExpression,
+                    chainedSourcePropertyPath.ReceiverPathPrefix,
+                    out chainReceiverType))
+            {
+                chainReceiverType = chainedSourcePropertyPath.StartingSourceType;
+            }
         }
 
         if (!PropertyPathSymbolResolver.TryResolvePropertyPath(

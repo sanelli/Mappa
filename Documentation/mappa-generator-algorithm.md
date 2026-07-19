@@ -280,7 +280,10 @@ flowchart TD
 
 - A `PropertyPathContext` carries the remaining target and source segments while nested constructor mapping runs with attributes still enabled for path-filtered matching.
 - Multi-segment target paths apply at the first segment; remaining segments are resolved on the nested type.
-- At the leaf target member, remaining source segments become a chained read (`?.` / `.` per nullability rules). When the target cannot be null, the generator may append `?? throw new System.NullReferenceException("...")`.
+- When multiple nested attributes share the same outer target member (for example `[MappaUseProperty("Address.City", ...)]` with `[MappaIgnoreTargetProperty("Address.ZipCode")]`), mapping uses a nested attribute scope so sibling ignore/constant/context attributes apply correctly.
+- At the leaf target member, remaining source segments are read from the **current nested source receiver** (reusing intermediate temps) as a chained access. Conditional access (`?.` vs `.`) is chosen from the **receiver** type at each step (`#nullable disable`: references and `Nullable<T>` use `?.`; `#nullable enable`: only annotated nullable references and `Nullable<T>`).
+- `?? throw new System.NullReferenceException("...")` is appended only when the access expression can be null (any `?.` was used, or the leaf type is nullable-capable) **and** the target cannot be null. Non-nullable value-type leaves such as `int` never receive `?? throw`.
+- `[MappaAssignToContext]` with a nested target path writes the leaf from the fully constructed result (for example `context[key] = result.Address.City`) after the parent object graph has been mapped.
 - Invalid target paths report **MP00033**. A source path shorter than the target path reports **MP00043**. A missing source segment reports **MP00044**.
 
 ## Limitations

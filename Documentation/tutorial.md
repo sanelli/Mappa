@@ -430,7 +430,7 @@ public sealed partial class Mapper
 }
 ```
 
-The same path syntax works on `[MappaInvokeMethod]`, `[MappaAssignFromConstant]`, `[MappaAssignFromContext]`, `[MappaAssignToContext]`, and `[MappaIgnoreTargetProperty]`. The generator trims paths while mapping nested types and emits chained source reads with `?.` / `.` according to nullability rules.
+The same path syntax works on `[MappaInvokeMethod]`, `[MappaAssignFromConstant]`, `[MappaAssignFromContext]`, `[MappaAssignToContext]`, and `[MappaIgnoreTargetProperty]`. The generator trims paths while mapping nested types, reuses nested source receivers for leaf chains, and emits `?.` / `.` from each receiver's nullability. `?? throw` is added only when the chain can be null and the target cannot. Nested `[MappaAssignToContext]` stores the leaf from the constructed result (for example `result.Address.City`).
 
 See also: [Mappa attributes — Nested property paths](./mappa-attributes.md#nested-property-paths), [algorithm](./mappa-generator-algorithm.md#nested-property-paths), and [NestedPropertyPathAttributeMapper.cs](../Mappa.Samples/NestedPropertyPathAttributeMapper.cs).
 
