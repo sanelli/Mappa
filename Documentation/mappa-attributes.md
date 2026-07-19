@@ -50,7 +50,13 @@ Attributes that accept `TargetPropertyName` and/or `SourcePropertyName` support 
 
 - May be longer than the target path, but must not be shorter (segment count). A shorter source path reports error **MP00043**.
 - Every source segment must exist on the resolved source type. A missing segment reports error **MP00044**.
-- At the leaf target member, the generator emits a chained source read. With `#nullable disable`, reference types and `Nullable<T>` use `?.`. With `#nullable enable`, only annotated nullable references and `Nullable<T>` use `?.`; otherwise `.` is used. When the target member cannot be null, the chain may append `?? throw new System.NullReferenceException("...")` with the full dotted path.
+- At the leaf target member, the generator emits a chained source read from the current nested source receiver (reusing intermediate temps when present).
+- Conditional access (`?.` vs `.`) is chosen from the **receiver** type at each step: with `#nullable disable`, reference types and `Nullable<T>` use `?.`; with `#nullable enable`, only annotated nullable references and `Nullable<T>` use `?.`; otherwise `.` is used.
+- The chain appends `?? throw new System.NullReferenceException("...")` (with the original attribute source path) only when the access expression can be null (any `?.` was used, or the leaf type is nullable-capable) **and** the target member cannot be null. Plain non-nullable value-type leaves (for example `int`) never get `?? throw`.
+
+**Combining attributes under the same root**
+
+- Nested `[MappaIgnoreTargetProperty]` under a shared root with `[MappaUseProperty]` (or other nested attributes) is honoured: ignored sibling members are omitted from the nested object initializer.
 
 See also: [Mappa generator algorithm — nested property paths](./mappa-generator-algorithm.md#nested-property-paths), [tutorial](./tutorial.md#nested-property-paths), and [NestedPropertyPathAttributeMapper.cs](../Mappa.Samples/NestedPropertyPathAttributeMapper.cs).
 
@@ -60,7 +66,7 @@ When mapping structured types, Mappa pairs source and target members by name. `[
 
 ## MappaIgnoreTargetProperty
 
-When mapping via an empty constructor, Mappa assigns each target property with an accessible setter from the corresponding source property. `[MappaIgnoreTargetProperty]` excludes a target property from this mapping. It has no effect when the target is constructed via a constructor with parameters. `TargetPropertyName` supports [nested property paths](#nested-property-paths).
+When mapping via an empty constructor, Mappa assigns each target property with an accessible setter from the corresponding source property. `[MappaIgnoreTargetProperty]` excludes a target property from this mapping. It has no effect when the target is constructed via a constructor with parameters. `TargetPropertyName` supports [nested property paths](#nested-property-paths). A nested ignore under the same root as a nested `[MappaUseProperty]` (for example ignore `Address.ZipCode` while mapping `Address.City`) is applied to that sibling member.
 
 ## MappaAssignFromConstant
 
@@ -72,7 +78,7 @@ When mapping via an empty constructor, Mappa assigns each target property with a
 
 ## MappaAssignToContext
 
-`[MappaAssignToContext]` stores the mapped value of a target property or field into `MappaContext` after the target object has been fully constructed. The map method must accept `MappaContext` as its second parameter. Each context key must be unique within a method. `TargetPropertyName` supports [nested property paths](#nested-property-paths).
+`[MappaAssignToContext]` stores the mapped value of a target property or field into `MappaContext` after the target object has been fully constructed. The map method must accept `MappaContext` as its second parameter. Each context key must be unique within a method. `TargetPropertyName` supports [nested property paths](#nested-property-paths). For a nested path such as `"Address.City"`, the generator still maps the parent `Address` as part of building the result, then writes the leaf from the constructed object (for example `context[key] = result.Address.City`).
 
 ## MappaInvokeMethodAttribute
 
