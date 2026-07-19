@@ -111,7 +111,10 @@ A single feature may require **two** bumps (e.g. one after **Mappa**, one after 
 - Cover **happy path and negative paths** where possible.
 - Maintain or improve **code coverage** relative to the baseline recorded in plan step 1 (see **Code Coverage**).
 - For **Mappa.Generator**, test error/warning messages and corner cases.
-- For **Mappa.Generator.Tests** integration tests that assert generated syntax: when `blockSyntaxAssertions` (or nested block assertions) include `HasSyntaxNodesCount(X)`, there must be exactly **X** subsequent `HasNextSyntaxNode` entries chained after it. Tests that only assert diagnostic errors and do not inspect generated syntax are exempt.
+- **Mappa.Generator.Tests integration tests — generated syntax (mandatory):** when asserting that generated mapping code is correct, **always** walk the syntax tree with the `HasNextSyntaxNode` pattern (typically after `HaveDefaultMapMethod` / `blockSyntaxAssertions`, using helpers such as `BeLocalDeclarationStatementSyntax`, `BeReturnStatement`, `BeObjectCreationExpressionSyntax`, nested `HasSyntaxNodesCount` / `HasNextSyntaxNode` chains, etc.). See existing tests such as [`InvokeConstructorMapStrategyIntegrationTests.cs`](Mappa.Generator.Tests/InvokeConstructorMapStrategyIntegrationTests.cs) for the required style.
+- **Do NOT** assert generated output by checking whether a string is contained (or not contained) in the generated source text — for example, avoid `Contains(...)`, `DoesNotContain(...)`, `Should().Contain(...)`, `Should().NotContain(...)`, or any equivalent substring / full-text match on the generated code. This is a hard rule: string-based assertions on generated text are forbidden for new or updated integration tests.
+- When `blockSyntaxAssertions` (or nested block assertions) include `HasSyntaxNodesCount(X)`, there must be exactly **X** subsequent `HasNextSyntaxNode` entries chained after it.
+- Tests that only assert diagnostic errors/warnings and do not inspect generated syntax are exempt from the `HasNextSyntaxNode` requirement (they still must not use string-containment checks as a substitute for syntax assertions).
 - When adding samples in **Mappa.Samples**, also update **Mappa.Samples.Aot**.
 
 ## Samples
