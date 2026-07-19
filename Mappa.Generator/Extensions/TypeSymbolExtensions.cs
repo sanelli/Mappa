@@ -2136,6 +2136,31 @@ internal static class TypeSymbolExtensions
     }
 
     /// <summary>
+    /// Locate all methods with the given name in the type hierarchy and, for an
+    /// interface type, in its inherited interfaces.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol to investigate.</param>
+    /// <param name="methodName">The method name.</param>
+    /// <returns>The methods with name <paramref name="methodName"/>.</returns>
+    internal static IMethodSymbol[] LocateMethodsIncludingInheritedInterfaces(
+        this ITypeSymbol typeSymbol,
+        string methodName)
+    {
+        var methods = new List<IMethodSymbol>(typeSymbol.LocateMethods(methodName));
+        if (typeSymbol.TypeKind is TypeKind.Interface)
+        {
+            foreach (var interfaceType in typeSymbol.AllInterfaces)
+            {
+                methods.AddRange(interfaceType
+                    .GetMembers(methodName)
+                    .OfType<IMethodSymbol>());
+            }
+        }
+
+        return [.. methods];
+    }
+
+    /// <summary>
     /// Check if method <paramref name="methodSymbol"/> is a method with the
     /// given characteristic to be used for mapping.
     /// </summary>

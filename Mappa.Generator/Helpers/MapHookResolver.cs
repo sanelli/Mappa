@@ -171,7 +171,7 @@ internal sealed class MapHookResolver
                 : InvokeMethodStaticRequirement.StaticOrNotStatic;
         }
 
-        var methods = lookupType.LocateMethods(attribute.MethodName);
+        var methods = lookupType.LocateMethodsIncludingInheritedInterfaces(attribute.MethodName);
         var resolutionResult = this.TryResolveHook(
             lookupType,
             methods,
