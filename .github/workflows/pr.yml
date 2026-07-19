@@ -4,6 +4,10 @@ on:
   pull_request:
     branches: [ "main" ]
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   build:
 
@@ -35,3 +39,10 @@ jobs:
       - name: Test and code coverage
         shell: pwsh
         run: ./Scripts/RunTestsAndReportCoverage.ps1
+      - name: Comment pull request coverage
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: ./Scripts/CommentPullRequestCoverage.ps1
