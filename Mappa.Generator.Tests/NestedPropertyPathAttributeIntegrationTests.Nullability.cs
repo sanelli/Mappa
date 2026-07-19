@@ -3,6 +3,10 @@
 // </copyright>
 
 using Mappa.Generator.Tests.Assertions;
+using Mappa.Generator.Tests.Assertions.Extensions;
+
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Mappa.Generator.Tests;
 
@@ -55,13 +59,36 @@ public sealed partial class NestedPropertyPathAttributeIntegrationTests
                                   """;
 
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
-        var generatedSource = GetGeneratedMapperSource(generatedResults);
 
         generatedResults.Should()
             .NotHaveDiagnostics()
-            .HaveGeneratedSourceCode();
-        generatedSource.Should().Contain("input.Location");
-        generatedSource.Should().Contain(".Address?.City");
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                TargetTypeName,
+                NullableAnnotation.NotAnnotated,
+                SourceTypeName,
+                NullableAnnotation.NotAnnotated,
+                block => block
+                    .HasSyntaxNodesCount(5)
+                    .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.LocationDto?", "__mappa_tmp_1", value => value.BeMemberAccessExpressionSyntax("input.Location")))
+                    .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.AddressDto", "__mappa_tmp_2"))
+                    .HasNextSyntaxNode(node => node.BeIfStatementSyntax(
+                        condition => condition.BeIsPatternExpressionSyntax(
+                            expression => expression.BeIdentifierNameSyntax("__mappa_tmp_1"),
+                            pattern => pattern.BeUnaryPatternSyntax(SyntaxKind.NotKeyword, inner => inner.BeConstantPatternSyntax(null))),
+                        thenStatement => thenStatement.BeBlockStatement().AsBlock()
+                            .HasSyntaxNodesCount(4)
+                            .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.LocationDto", "__mappa_tmp_3", value => value.BeIdentifierNameSyntax("__mappa_tmp_1")))
+                            .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax("string?", "__mappa_tmp_4", value => value.BeConditionalAccessExpressionSyntax("__mappa_tmp_3?.Address?.City")))
+                            .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.AddressDto", "__mappa_tmp_5", value => value.BeObjectCreationExpressionSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.AddressDto", ("City", property => property.BeIdentifierNameSyntax("__mappa_tmp_4")))))
+                            .HasNextSyntaxNode(node => node.BeAssignmentExpressionStatement("__mappa_tmp_2", value => value.BeIdentifierNameSyntax("__mappa_tmp_5"))),
+                        elseStatement => elseStatement.BeBlockStatement().AsBlock()
+                            .HasSyntaxNodesCount(1)
+                            .HasNextSyntaxNode(node => node.BeThrowStatementSyntax<NullReferenceException>(message => message.BeLiteralExpressionSyntax("\"__mappa_tmp_1\" is null.")))))
+                    .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax(TargetTypeName, "__mappa_tmp_6", value => value.BeObjectCreationExpressionSyntax(TargetTypeName, ("Address", property => property.BeIdentifierNameSyntax("__mappa_tmp_2")))))
+                    .HasNextSyntaxNode(node => node.BeReturnStatement("__mappa_tmp_6")));
     }
 
     /// <summary>
@@ -108,13 +135,57 @@ public sealed partial class NestedPropertyPathAttributeIntegrationTests
                                   """;
 
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
-        var generatedSource = GetGeneratedMapperSource(generatedResults);
 
         generatedResults.Should()
             .NotHaveDiagnostics()
-            .HaveGeneratedSourceCode();
-        generatedSource.Should().Contain(".Location");
-        generatedSource.Should().Contain("?.Address?.City");
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                TargetTypeName,
+                NullableAnnotation.None,
+                SourceTypeName,
+                NullableAnnotation.None,
+                1,
+                NullableSetup.Disable,
+                PragmaWarning.NoBlock,
+                block => block
+                    .HasSyntaxNodesCount(3)
+                    .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax(TargetTypeName, "__mappa_tmp_1"))
+                    .HasNextSyntaxNode(node => node.BeIfStatementSyntax(
+                        condition => condition.BeIsPatternExpressionSyntax(
+                            expression => expression.BeIdentifierNameSyntax("input"),
+                            pattern => pattern.BeUnaryPatternSyntax(SyntaxKind.NotKeyword, inner => inner.BeConstantPatternSyntax(null))),
+                        thenStatement => thenStatement.BeBlockStatement().AsBlock()
+                            .HasSyntaxNodesCount(6)
+                            .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax(SourceTypeName, "__mappa_tmp_2", value => value.BeIdentifierNameSyntax("input")))
+                            .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.LocationDto", "__mappa_tmp_3", value => value.BeMemberAccessExpressionSyntax("__mappa_tmp_2.Location")))
+                            .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.AddressDto", "__mappa_tmp_4"))
+                            .HasNextSyntaxNode(node => node.BeIfStatementSyntax(
+                                condition => condition.BeIsPatternExpressionSyntax(
+                                    expression => expression.BeIdentifierNameSyntax("__mappa_tmp_3"),
+                                    pattern => pattern.BeUnaryPatternSyntax(SyntaxKind.NotKeyword, inner => inner.BeConstantPatternSyntax(null))),
+                                thenStatement => thenStatement.BeBlockStatement().AsBlock()
+                                    .HasSyntaxNodesCount(4)
+                                    .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.LocationDto", "__mappa_tmp_5", value => value.BeIdentifierNameSyntax("__mappa_tmp_3")))
+                                    .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax(typeof(string).ToString(), "__mappa_tmp_6", value => value.BeConditionalAccessExpressionSyntax("__mappa_tmp_5?.Address?.City")))
+                                    .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.AddressDto", "__mappa_tmp_7", value => value.BeObjectCreationExpressionSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.AddressDto", ("City", property => property.BeIdentifierNameSyntax("__mappa_tmp_6")))))
+                                    .HasNextSyntaxNode(node => node.BeAssignmentExpressionStatement("__mappa_tmp_4", value => value.BeIdentifierNameSyntax("__mappa_tmp_7"))),
+                                elseStatement => elseStatement.BeBlockStatement().AsBlock()
+                                    .HasSyntaxNodesCount(1)
+                                    .HasNextSyntaxNode(node => node.BeAssignmentExpressionStatement(
+                                        "__mappa_tmp_4",
+                                        value => value.BeCastExpressionSyntax(
+                                            "Mappa.Generator.Tests.UnitTests.SourceCode.AddressDto",
+                                            cast => cast.BeLiteralExpressionSyntax(null))))))
+                            .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax(TargetTypeName, "__mappa_tmp_8", value => value.BeObjectCreationExpressionSyntax(TargetTypeName, ("Address", property => property.BeIdentifierNameSyntax("__mappa_tmp_4")))))
+                            .HasNextSyntaxNode(node => node.BeAssignmentExpressionStatement("__mappa_tmp_1", value => value.BeIdentifierNameSyntax("__mappa_tmp_8"))),
+                        elseStatement => elseStatement.BeBlockStatement().AsBlock()
+                            .HasSyntaxNodesCount(1)
+                            .HasNextSyntaxNode(node => node.BeAssignmentExpressionStatement(
+                                "__mappa_tmp_1",
+                                value => value.BeCastExpressionSyntax(TargetTypeName, cast => cast.BeLiteralExpressionSyntax(null))))))
+                    .HasNextSyntaxNode(node => node.BeReturnStatement("__mappa_tmp_1")));
     }
 
     /// <summary>
@@ -156,13 +227,30 @@ public sealed partial class NestedPropertyPathAttributeIntegrationTests
                                   """;
 
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
-        var generatedSource = GetGeneratedMapperSource(generatedResults);
 
         generatedResults.Should()
             .NotHaveDiagnostics()
-            .HaveGeneratedSourceCode();
-        generatedSource.Should().Contain("input.Outer?.Code");
-        generatedSource.Should().NotContain("?? throw");
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                TargetTypeName,
+                NullableAnnotation.NotAnnotated,
+                SourceTypeName,
+                NullableAnnotation.NotAnnotated,
+                block => block
+                    .HasSyntaxNodesCount(3)
+                    .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax(
+                        "int?",
+                        "__mappa_tmp_1",
+                        value => value.BeConditionalAccessExpressionSyntax("input.Outer?.Code")))
+                    .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax(
+                        TargetTypeName,
+                        "__mappa_tmp_2",
+                        value => value.BeObjectCreationExpressionSyntax(
+                            TargetTypeName,
+                            ("Code", property => property.BeIdentifierNameSyntax("__mappa_tmp_1")))))
+                    .HasNextSyntaxNode(node => node.BeReturnStatement("__mappa_tmp_2")));
     }
 
     /// <summary>
@@ -204,14 +292,24 @@ public sealed partial class NestedPropertyPathAttributeIntegrationTests
                                   """;
 
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
-        var generatedSource = GetGeneratedMapperSource(generatedResults);
 
         generatedResults.Should()
             .NotHaveDiagnostics()
-            .HaveGeneratedSourceCode();
-        generatedSource.Should().Contain(".Code");
-        generatedSource.Should().NotContain("?.Code");
-        generatedSource.Should().NotContain("?? throw");
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                TargetTypeName,
+                NullableAnnotation.NotAnnotated,
+                SourceTypeName,
+                NullableAnnotation.NotAnnotated,
+                block => block
+                    .HasSyntaxNodesCount(5)
+                    .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.Outer", "__mappa_tmp_1", value => value.BeMemberAccessExpressionSyntax("input.Outer")))
+                    .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax(typeof(int).ToString(), "__mappa_tmp_2", value => value.BeMemberAccessExpressionSyntax("__mappa_tmp_1.Code")))
+                    .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.Outer", "__mappa_tmp_3", value => value.BeObjectCreationExpressionSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.Outer", ("Code", property => property.BeIdentifierNameSyntax("__mappa_tmp_2")))))
+                    .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax(TargetTypeName, "__mappa_tmp_4", value => value.BeObjectCreationExpressionSyntax(TargetTypeName, ("Outer", property => property.BeIdentifierNameSyntax("__mappa_tmp_3")))))
+                    .HasNextSyntaxNode(node => node.BeReturnStatement("__mappa_tmp_4")));
     }
 
     /// <summary>
@@ -258,15 +356,30 @@ public sealed partial class NestedPropertyPathAttributeIntegrationTests
                                   """;
 
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
-        var generatedSource = GetGeneratedMapperSource(generatedResults);
 
         generatedResults.Should()
             .NotHaveDiagnostics()
-            .HaveGeneratedSourceCode();
-        generatedSource.Should().Contain("input.Location");
-        generatedSource.Should().Contain(".Address?.City");
-        generatedSource.Should().Contain("?? throw");
-        generatedSource.Should().NotContain("Location?.Address");
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                TargetTypeName,
+                NullableAnnotation.NotAnnotated,
+                SourceTypeName,
+                NullableAnnotation.NotAnnotated,
+                block => block
+                    .HasSyntaxNodesCount(5)
+                    .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.LocationDto", "__mappa_tmp_1", value => value.BeMemberAccessExpressionSyntax("input.Location")))
+                    .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax(
+                        typeof(string).ToString(),
+                        "__mappa_tmp_2",
+                        value => value.BeBinaryExpressionSyntax(
+                            left => left.BeConditionalAccessExpressionSyntax("__mappa_tmp_1.Address?.City"),
+                            SyntaxKind.CoalesceExpression,
+                            right => right.BeThrowExpressionSyntax<NullReferenceException>(message => message.BeLiteralExpressionSyntax("\"Location.Address.City\" is null.")))))
+                    .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.AddressDto", "__mappa_tmp_3", value => value.BeObjectCreationExpressionSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.AddressDto", ("City", property => property.BeIdentifierNameSyntax("__mappa_tmp_2")))))
+                    .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax(TargetTypeName, "__mappa_tmp_4", value => value.BeObjectCreationExpressionSyntax(TargetTypeName, ("Address", property => property.BeIdentifierNameSyntax("__mappa_tmp_3")))))
+                    .HasNextSyntaxNode(node => node.BeReturnStatement("__mappa_tmp_4")));
     }
 
     /// <summary>
@@ -313,14 +426,36 @@ public sealed partial class NestedPropertyPathAttributeIntegrationTests
                                   """;
 
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
-        var generatedSource = GetGeneratedMapperSource(generatedResults);
 
         generatedResults.Should()
             .NotHaveDiagnostics()
-            .HaveGeneratedSourceCode();
-        generatedSource.Should().Contain("input.Container");
-        generatedSource.Should().Contain(".Metrics.Score");
-        generatedSource.Should().NotContain("?? throw");
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                TargetTypeName,
+                NullableAnnotation.NotAnnotated,
+                SourceTypeName,
+                NullableAnnotation.NotAnnotated,
+                block => block
+                    .HasSyntaxNodesCount(5)
+                    .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.Container?", "__mappa_tmp_1", value => value.BeMemberAccessExpressionSyntax("input.Container")))
+                    .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.Metrics", "__mappa_tmp_2"))
+                    .HasNextSyntaxNode(node => node.BeIfStatementSyntax(
+                        condition => condition.BeIsPatternExpressionSyntax(
+                            expression => expression.BeIdentifierNameSyntax("__mappa_tmp_1"),
+                            pattern => pattern.BeUnaryPatternSyntax(SyntaxKind.NotKeyword, inner => inner.BeConstantPatternSyntax(null))),
+                        thenStatement => thenStatement.BeBlockStatement().AsBlock()
+                            .HasSyntaxNodesCount(4)
+                            .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.Container", "__mappa_tmp_3", value => value.BeIdentifierNameSyntax("__mappa_tmp_1")))
+                            .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax("int?", "__mappa_tmp_4", value => value.BeConditionalAccessExpressionSyntax("__mappa_tmp_3?.Metrics.Score")))
+                            .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.Metrics", "__mappa_tmp_5", value => value.BeObjectCreationExpressionSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.Metrics", ("Score", property => property.BeIdentifierNameSyntax("__mappa_tmp_4")))))
+                            .HasNextSyntaxNode(node => node.BeAssignmentExpressionStatement("__mappa_tmp_2", value => value.BeIdentifierNameSyntax("__mappa_tmp_5"))),
+                        elseStatement => elseStatement.BeBlockStatement().AsBlock()
+                            .HasSyntaxNodesCount(1)
+                            .HasNextSyntaxNode(node => node.BeThrowStatementSyntax<NullReferenceException>(message => message.BeLiteralExpressionSyntax("\"__mappa_tmp_1\" is null.")))))
+                    .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax(TargetTypeName, "__mappa_tmp_6", value => value.BeObjectCreationExpressionSyntax(TargetTypeName, ("Metrics", property => property.BeIdentifierNameSyntax("__mappa_tmp_2")))))
+                    .HasNextSyntaxNode(node => node.BeReturnStatement("__mappa_tmp_6")));
     }
 
     /// <summary>
@@ -362,13 +497,32 @@ public sealed partial class NestedPropertyPathAttributeIntegrationTests
                                   """;
 
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
-        var generatedSource = GetGeneratedMapperSource(generatedResults);
 
         generatedResults.Should()
             .NotHaveDiagnostics()
-            .HaveGeneratedSourceCode();
-        generatedSource.Should().Contain("input.Outer.Code");
-        generatedSource.Should().Contain("?? throw");
-        generatedSource.Should().NotContain("?.Code");
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                TargetTypeName,
+                NullableAnnotation.NotAnnotated,
+                SourceTypeName,
+                NullableAnnotation.NotAnnotated,
+                block => block
+                    .HasSyntaxNodesCount(3)
+                    .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax(
+                        "int?",
+                        "__mappa_tmp_1",
+                        value => value.BeBinaryExpressionSyntax(
+                            left => left.BeMemberAccessExpressionSyntax("input.Outer.Code"),
+                            SyntaxKind.CoalesceExpression,
+                            right => right.BeThrowExpressionSyntax<NullReferenceException>(message => message.BeLiteralExpressionSyntax("\"Outer.Code\" is null.")))))
+                    .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax(
+                        TargetTypeName,
+                        "__mappa_tmp_2",
+                        value => value.BeObjectCreationExpressionSyntax(
+                            TargetTypeName,
+                            ("Code", property => property.BeIdentifierNameSyntax("__mappa_tmp_1")))))
+                    .HasNextSyntaxNode(node => node.BeReturnStatement("__mappa_tmp_2")));
     }
 }

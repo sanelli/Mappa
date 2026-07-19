@@ -3,7 +3,6 @@
 // </copyright>
 
 using Mappa.Generator.Tests.Abstractions;
-using Mappa.Generator.Tests.Models;
 
 namespace Mappa.Generator.Tests;
 
@@ -15,9 +14,4 @@ public sealed partial class NestedPropertyPathAttributeIntegrationTests
 {
     private const string TargetTypeName = "Mappa.Generator.Tests.UnitTests.SourceCode.Target";
     private const string SourceTypeName = "Mappa.Generator.Tests.UnitTests.SourceCode.Source";
-
-    private static string GetGeneratedMapperSource(GeneratedResults generatedResults)
-        => string.Join(
-            Environment.NewLine,
-            generatedResults.OutputCompilation.SyntaxTrees.Skip(1).Select(tree => tree.ToString()));
 }
