@@ -261,6 +261,10 @@ The constructor strategy has three sub-strategies, tried in order:
 
 Leaf source chains use conditional access based on each **receiver** type, reuse nested source temps, and append `?? throw new System.NullReferenceException("...")` only when the expression can be null and the target cannot (never on plain non-nullable value-type leaves). Nested `[MappaIgnoreTargetProperty]` applies alongside sibling nested attributes under the same root. Nested `[MappaAssignToContext]` reads the leaf from the constructed result after mapping. Details: [Documentation/mappa-generator-algorithm.md — Nested property paths](../Documentation/mappa-generator-algorithm.md#nested-property-paths).
 
+## Before and after map hooks
+
+Root mapping methods may declare `[MappaBeforeMap]` and `[MappaAfterMap]` on the mapper class and/or method. Hooks apply only to generated root methods. Resolution prefers `ref T` + context, then `ref T`, then context, then parameterless (`T` is source for before hooks and target for after hooks). Before hooks run class-then-method; after hooks run method-then-class. Unresolved hooks warn with **MP00045**; class/method duplicates warn with **MP00046** and invoke once. After hooks force materialization of the core mapping result into a local before the after-hook calls and return. Details: [Documentation/mappa-generator-algorithm.md — Before and after map hooks](../Documentation/mappa-generator-algorithm.md#before-and-after-map-hooks).
+
 ## Limitations
 
 Currently unsupported features include:

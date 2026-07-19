@@ -25,6 +25,7 @@ See the [tutorial](../Documentation/tutorial.md) for a guided introduction, or b
 | [`MappaIgnoreTargetPropertyAttributeMapper.cs`](MappaIgnoreTargetPropertyAttributeMapper.cs) | `[MappaIgnoreTargetProperty]` |
 | [`MappaIgnoreMappers.cs`](MappaIgnoreMappers.cs) | `[MappaIgnore]` |
 | [`MappaInvokeMethodAttributeMappers.cs`](MappaInvokeMethodAttributeMappers.cs) | `[MappaInvokeMethod]` |
+| [`MappaBeforeAfterMapHooksAttributeMapper.cs`](MappaBeforeAfterMapHooksAttributeMapper.cs) | `[MappaBeforeMap]`, `[MappaAfterMap]` |
 
 ## Settings
 | Sample | Demonstrates |
