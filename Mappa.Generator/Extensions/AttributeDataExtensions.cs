@@ -7,6 +7,7 @@ using System.Globalization;
 
 using Mappa.Attributes;
 using Mappa.Generator.Exceptions;
+using Mappa.Generator.Models;
 
 using Microsoft.CodeAnalysis;
 
@@ -17,6 +18,8 @@ namespace Mappa.Generator.Extensions;
 /// </summary>
 internal static class AttributeDataExtensions
 {
+    private static readonly string MappaAfterMapAttributeFullName = typeof(MappaAfterMapAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaAfterMapAttribute)}");
+    private static readonly string MappaBeforeMapAttributeFullName = typeof(MappaBeforeMapAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaBeforeMapAttribute)}");
     private static readonly string MappaInvokeMethodAttributeFullName = typeof(MappaInvokeMethodAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaInvokeMethodAttribute)}");
     private static readonly string MappaIgnoreAttributeFullName = typeof(MappaIgnoreAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaIgnoreAttribute)}");
     private static readonly string MappaAssignFromContextAttributeFullName = typeof(MappaAssignFromContextAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaAssignFromContextAttribute)}");
@@ -153,6 +156,30 @@ internal static class AttributeDataExtensions
     }
 
     /// <summary>
+    /// Gets the <see cref="MappaBeforeMapAttribute"/>s applied to a mapper class or mapping method.
+    /// </summary>
+    /// <param name="attributes">The attributes.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The parsed attributes in declaration order.</returns>
+    internal static MapHookAttributeData[] GetMappaBeforeMapAttributes(this ImmutableArray<AttributeData> attributes, Compilation compilation)
+        => GetMapHookAttributes(
+            attributes,
+            compilation,
+            MappaBeforeMapAttributeFullName);
+
+    /// <summary>
+    /// Gets the <see cref="MappaAfterMapAttribute"/>s applied to a mapper class or mapping method.
+    /// </summary>
+    /// <param name="attributes">The attributes.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The parsed attributes in declaration order.</returns>
+    internal static MapHookAttributeData[] GetMappaAfterMapAttributes(this ImmutableArray<AttributeData> attributes, Compilation compilation)
+        => GetMapHookAttributes(
+            attributes,
+            compilation,
+            MappaAfterMapAttributeFullName);
+
+    /// <summary>
     /// Gets the <see cref="MappaAssignFromContextAttribute"/>s applied.
     /// </summary>
     /// <param name="attributes">The attributes.</param>
@@ -174,7 +201,7 @@ internal static class AttributeDataExtensions
             }
         }
 
-        return [..results];
+        return [.. results];
     }
 
     /// <summary>
@@ -223,7 +250,7 @@ internal static class AttributeDataExtensions
             }
         }
 
-        return [..results];
+        return [.. results];
     }
 
     /// <summary>
@@ -518,7 +545,7 @@ internal static class AttributeDataExtensions
             }
         }
 
-        return [..results];
+        return [.. results];
     }
 
     /// <summary>
@@ -567,6 +594,54 @@ internal static class AttributeDataExtensions
             }
         }
 
-        return [..results];
+        return [.. results];
+    }
+
+    private static MapHookAttributeData[] GetMapHookAttributes(
+        ImmutableArray<AttributeData> attributes,
+        Compilation compilation,
+        string attributeFullName)
+    {
+        var attributeSymbol = compilation.GetTypeByMetadataName(attributeFullName);
+        var results = new List<MapHookAttributeData>();
+
+        foreach (var attributeData in attributes
+                     .Where(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, attributeSymbol)))
+        {
+            var constructorArguments = attributeData.ConstructorArguments;
+            var location = attributeData.ApplicationSyntaxReference?.GetSyntax().GetLocation();
+            if (constructorArguments.Length == 1 &&
+                constructorArguments[0].Value is string mapperMethodName)
+            {
+                results.Add(new MapHookAttributeData(
+                    mapperMethodName,
+                    null,
+                    null,
+                    location));
+            }
+            else if (constructorArguments.Length == 2 &&
+                     constructorArguments[1].Value is string locatedMethodName)
+            {
+                switch (constructorArguments[0].Value)
+                {
+                    case string fieldName:
+                        results.Add(new MapHookAttributeData(
+                            locatedMethodName,
+                            null,
+                            fieldName,
+                            location));
+                        break;
+                    case INamedTypeSymbol classType:
+                        results.Add(new MapHookAttributeData(
+                            locatedMethodName,
+                            new FakeType(classType.ToDisplayString()),
+                            null,
+                            location));
+                        break;
+                }
+            }
+        }
+
+        return [.. results];
     }
 }

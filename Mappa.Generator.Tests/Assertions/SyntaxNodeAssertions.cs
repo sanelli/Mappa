@@ -400,6 +400,74 @@ internal sealed class SyntaxNodeAssertions
     }
 
     /// <summary>
+    /// Assert that the syntax node is an invocation statement with argument modifiers.
+    /// </summary>
+    /// <param name="accessIdentifier">Describe the access to the method.</param>
+    /// <param name="argumentAssertions">The argument modifier and expression assertions.</param>
+    /// <returns>The assertions.</returns>
+    internal SyntaxNodeAssertions BeInvocationExpressionSyntaxStatementWithArguments(
+        string accessIdentifier,
+        params (SyntaxKind RefKind, Action<ExpressionSyntaxAssertions> ExpressionAssertion)[] argumentAssertions)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(accessIdentifier);
+        ArgumentNullException.ThrowIfNull(argumentAssertions);
+
+        this.Subject.Should().BeOfType<ExpressionStatementSyntax>();
+        var expressionStatementSyntax = (ExpressionStatementSyntax)this.Subject;
+
+        expressionStatementSyntax.Expression.Should().BeOfType<InvocationExpressionSyntax>();
+        var invocationExpressionSyntax = (InvocationExpressionSyntax)expressionStatementSyntax.Expression;
+
+        new ExpressionSyntaxAssertions(invocationExpressionSyntax.Expression, this.semanticModel, this.compilation)
+            .BeMemberAccessExpressionSyntax(accessIdentifier);
+
+        invocationExpressionSyntax.ArgumentList.Arguments.Should().HaveCount(argumentAssertions.Length);
+        for (var index = 0; index < argumentAssertions.Length; ++index)
+        {
+            var argument = invocationExpressionSyntax.ArgumentList.Arguments[index];
+            argument.RefKindKeyword.Kind().Should().Be(argumentAssertions[index].RefKind);
+            argumentAssertions[index].ExpressionAssertion(
+                new ExpressionSyntaxAssertions(argument.Expression, this.semanticModel, this.compilation));
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Assert that the syntax node is an invocation statement using an identifier name.
+    /// </summary>
+    /// <param name="methodName">The method name.</param>
+    /// <param name="argumentAssertions">The argument modifier and expression assertions.</param>
+    /// <returns>The assertions.</returns>
+    internal SyntaxNodeAssertions BeInvocationExpressionUsingIdentifierNameSyntaxStatement(
+        string methodName,
+        params (SyntaxKind RefKind, Action<ExpressionSyntaxAssertions> ExpressionAssertion)[] argumentAssertions)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(methodName);
+        ArgumentNullException.ThrowIfNull(argumentAssertions);
+
+        this.Subject.Should().BeOfType<ExpressionStatementSyntax>();
+        var expressionStatementSyntax = (ExpressionStatementSyntax)this.Subject;
+
+        expressionStatementSyntax.Expression.Should().BeOfType<InvocationExpressionSyntax>();
+        var invocationExpressionSyntax = (InvocationExpressionSyntax)expressionStatementSyntax.Expression;
+
+        new ExpressionSyntaxAssertions(invocationExpressionSyntax.Expression, this.semanticModel, this.compilation)
+            .BeIdentifierNameSyntax(methodName);
+
+        invocationExpressionSyntax.ArgumentList.Arguments.Should().HaveCount(argumentAssertions.Length);
+        for (var index = 0; index < argumentAssertions.Length; ++index)
+        {
+            var argument = invocationExpressionSyntax.ArgumentList.Arguments[index];
+            argument.RefKindKeyword.Kind().Should().Be(argumentAssertions[index].RefKind);
+            argumentAssertions[index].ExpressionAssertion(
+                new ExpressionSyntaxAssertions(argument.Expression, this.semanticModel, this.compilation));
+        }
+
+        return this;
+    }
+
+    /// <summary>
     /// Assert that the statement is a <c>foreach</c> statement.
     /// </summary>
     /// <param name="type">The type of the identifier being defined.</param>

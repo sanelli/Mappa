@@ -58,6 +58,8 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? ambiguousInvokeMethodResolution;
     private static DiagnosticDescriptor? mappingAttributeSourcePropertyPathIsShorterThanTargetPropertyPath;
     private static DiagnosticDescriptor? mappingAttributeSourcePropertyPathSegmentDoesNotExist;
+    private static DiagnosticDescriptor? hookMethodNotFound;
+    private static DiagnosticDescriptor? duplicateMapHookRegistration;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -410,6 +412,22 @@ internal static class MappaDiagnosticDescriptors
         => mappingAttributeSourcePropertyPathSegmentDoesNotExist ??= BuildError(
             MappaDiagnosticsKind.MappingAttributeSourcePropertyPathSegmentDoesNotExist,
             DiagnosticsResources.MappingAttributeSourcePropertyPathSegmentDoesNotExist);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.HookMethodNotFound"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor HookMethodNotFound
+        => hookMethodNotFound ??= BuildWarning(
+            MappaDiagnosticsKind.HookMethodNotFound,
+            DiagnosticsResources.HookMethodNotFound);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.DuplicateMapHookRegistration"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor DuplicateMapHookRegistration
+        => duplicateMapHookRegistration ??= BuildWarning(
+            MappaDiagnosticsKind.DuplicateMapHookRegistration,
+            DiagnosticsResources.DuplicateMapHookRegistration);
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(

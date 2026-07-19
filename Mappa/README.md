@@ -12,10 +12,12 @@ This is the list of attributes provided:
 - `MappaAssignToContext`: When mapping structured types via the constructor-map strategy, stores the value of a target property or field in `MappaContext` after the target object has been fully constructed; `TargetPropertyName` may be a single name or a dot-separated chain of nested member names;
 - `MappaInvokeMethodAttribute`: When mapping structured types via the constructor-map strategy, forces a target property or constructor parameter to be mapped by invoking a named method; supports an optional `SourcePropertyName` named parameter to select the source property passed to the invoked method; both `TargetPropertyName` and `SourcePropertyName` may be a single name or a dot-separated chain of nested property names;
 - `MappaAssignFromConstant`: When mapping structured types, allows specifying a constant value for a target property or constructor parameter; `TargetPropertyName` may be a single name or a dot-separated chain of nested property names;
+- `MappaBeforeMap`: Invokes a named hook immediately before the generated root mapping body; applies to mapper classes and mapping methods;
+- `MappaAfterMap`: Invokes a named hook immediately after the generated root mapping body and before returning the target; applies to mapper classes and mapping methods;
 - `MappaTypeMapping`: When mapping structured types or interfaces, allows defining the target type depending on the source type;
 - `MappaTypeMappingDefault`: Describes the default behaviour for polymorphic methods defined via `MappaTypeMapping`.
 
-This package also provides the `MappaContext` class that can be used to pass contextual values to mappers via the `MappaAssignFromContext` attribute, store mapped values via the `MappaAssignToContext` attribute, or supply context to methods invoked via the `MappaInvokeMethodAttribute` attribute.
+This package also provides the `MappaContext` class that can be used to pass contextual values to mappers via the `MappaAssignFromContext` attribute, store mapped values via the `MappaAssignToContext` attribute, supply context to methods invoked via the `MappaInvokeMethodAttribute` attribute, or supply context to before/after map hooks.
 
 Via `MappaSettings` the following settings can be tweaked:
 - `DateTimeFormat`: the format to use when mapping `string`s to and from `System.DateTime`;

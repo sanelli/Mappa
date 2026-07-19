@@ -401,6 +401,30 @@ public sealed partial class Mapper
 
 See also: [MappaInvokeMethodAttributeMappers.cs](../Mappa.Samples/MappaInvokeMethodAttributeMappers.cs) and [Mappa attributes](./mappa-attributes.md#mappainvokemethodattribute).
 
+### MappaBeforeMap and MappaAfterMap attributes
+`[MappaBeforeMap]` and `[MappaAfterMap]` invoke named hooks around the generated body of a root mapping method. Class-level before hooks run before method-level before hooks; method-level after hooks run before class-level after hooks:
+
+```csharp
+[Mappa]
+[MappaBeforeMap(nameof(ClassBefore))]
+[MappaAfterMap(nameof(ClassAfter))]
+public sealed partial class Mapper
+{
+    [MappaBeforeMap(nameof(MethodBefore))]
+    [MappaAfterMap(nameof(MethodAfter))]
+    public partial Person Map(Person input, MappaContext context);
+
+    private void ClassBefore(ref Person input, MappaContext context) { /* ... */ }
+    private void MethodBefore(ref Person input) { /* ... */ }
+    private void MethodAfter(ref Person target) { /* ... */ }
+    private void ClassAfter(ref Person target) { /* ... */ }
+}
+```
+
+Hooks must return `void` and may accept no parameters, `MappaContext`, `ref T` (source for before, target for after), or `ref T` plus `MappaContext`. The `ref` type must match exactly. Unresolved hooks warn with **MP00045**; a class/method duplicate warns with **MP00046** and runs once.
+
+See also: [MappaBeforeAfterMapHooksAttributeMapper.cs](../Mappa.Samples/MappaBeforeAfterMapHooksAttributeMapper.cs) and [Mappa attributes](./mappa-attributes.md#mappabeforemap-and-mappaaftermap).
+
 ### MappaUseProperty attribute
 When source and target property names differ, `[MappaUseProperty]` selects which source property supplies a target member:
 

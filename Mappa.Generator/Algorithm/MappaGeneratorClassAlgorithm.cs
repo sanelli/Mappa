@@ -9,6 +9,7 @@ using Mappa.Generator.Builders;
 using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Diagnostics.Debug;
 using Mappa.Generator.Extensions;
+using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -96,6 +97,8 @@ internal sealed class MappaGeneratorClassAlgorithm
     private void GenerateStrategyForEachMethod(
         MappaClassGeneratorContext classContext,
         MappaUserSettings mappaUserSettings,
+        MapHookAttributeData[] classBeforeMapAttributes,
+        MapHookAttributeData[] classAfterMapAttributes,
         CancellationToken cancellationToken)
     {
         foreach (var mapMethod in classContext.MapMethods)
@@ -117,7 +120,18 @@ internal sealed class MappaGeneratorClassAlgorithm
                     this.Compilation,
                     cancellationToken);
                 var strategy = typeIdentifierAlgorithm.GetStrategy();
-                var methodParameterMapStrategy = new MethodParameterMapStrategy(strategy);
+                var mapHookResolver = new MapHookResolver(this.Compilation, classContext, mapMethod);
+                var methodAttributes = mapMethod.MethodSymbol.GetAttributes();
+                var beforeMapHooks = mapHookResolver.ResolveBeforeMapHooks(
+                    classBeforeMapAttributes,
+                    methodAttributes.GetMappaBeforeMapAttributes(this.Compilation));
+                var afterMapHooks = mapHookResolver.ResolveAfterMapHooks(
+                    classAfterMapAttributes,
+                    methodAttributes.GetMappaAfterMapAttributes(this.Compilation));
+                var methodParameterMapStrategy = new MethodParameterMapStrategy(
+                    strategy,
+                    beforeMapHooks,
+                    afterMapHooks);
                 mapMethod.SetStrategy(methodParameterMapStrategy);
                 mapMethod.MarkMapped();
             }
@@ -208,9 +222,9 @@ internal sealed class MappaGeneratorClassAlgorithm
         // - have a getter method
         // - have MappaDependency attribute
         var processedDependencyMemberNames = new HashSet<string>(StringComparer.Ordinal);
-        #pragma warning disable S3267 // Loops should be simplified using the "Where" LINQ method
+#pragma warning disable S3267 // Loops should be simplified using the "Where" LINQ method
         foreach (var propertyDeclarationSyntax in classDeclarationSyntax.ChildNodes().OfType<PropertyDeclarationSyntax>())
-        #pragma warning restore S3267 // Loops should be simplified using the "Where" LINQ method
+#pragma warning restore S3267 // Loops should be simplified using the "Where" LINQ method
         {
             if (propertyDeclarationSyntax.AccessorList is not null && propertyDeclarationSyntax.AccessorList.Accessors.Any(accessor => accessor.Kind() == SyntaxKind.GetAccessorDeclaration))
             {
@@ -291,8 +305,11 @@ internal sealed class MappaGeneratorClassAlgorithm
                 classContext);
         }
 
+        var classAttributes = classContext.ClassSymbol.GetAttributes();
+        var classBeforeMapAttributes = classAttributes.GetMappaBeforeMapAttributes(this.Compilation);
+        var classAfterMapAttributes = classAttributes.GetMappaAfterMapAttributes(this.Compilation);
         var mappaUserSettings = new MappaUserSettings(options);
-        var mappaSettingsAttribute = classContext.ClassSymbol.GetAttributes().GetMappaSettingsAttribute(this.Compilation);
+        var mappaSettingsAttribute = classAttributes.GetMappaSettingsAttribute(this.Compilation);
 
         using (mappaUserSettings.Apply(mappaSettingsAttribute))
         {
@@ -300,7 +317,12 @@ internal sealed class MappaGeneratorClassAlgorithm
             // While generating strategies new methods might be found or requested to be generated.
             while (!classContext.AreAllMethodsMapped())
             {
-                this.GenerateStrategyForEachMethod(classContext, mappaUserSettings, cancellationToken);
+                this.GenerateStrategyForEachMethod(
+                    classContext,
+                    mappaUserSettings,
+                    classBeforeMapAttributes,
+                    classAfterMapAttributes,
+                    cancellationToken);
             }
         }
 

@@ -138,9 +138,20 @@ internal static class MappaDiagnostics
     internal static Diagnostic CannotDetectType(
         MethodDeclarationSyntax methodDeclarationSyntax,
         string type)
+        => CannotDetectType(methodDeclarationSyntax.GetLocation(), type);
+
+    /// <summary>
+    /// Diagnostic to report the fact that it is not possible identify a suitable type for the method to invoke.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="type">The type that cannot be found.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic CannotDetectType(
+        Location? location,
+        string type)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.CannotDetectType,
-            methodDeclarationSyntax.GetLocation(),
+            location,
             type);
 
     /// <summary>
@@ -152,9 +163,20 @@ internal static class MappaDiagnostics
     internal static Diagnostic CannotFindFieldOrProperty(
         MethodDeclarationSyntax methodDeclarationSyntax,
         string fieldName)
+        => CannotFindFieldOrProperty(methodDeclarationSyntax.GetLocation(), fieldName);
+
+    /// <summary>
+    /// Diagnostic to report the fact that it is not possible identify a suitable field or property.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="fieldName">The field or property that cannot be found.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic CannotFindFieldOrProperty(
+        Location? location,
+        string fieldName)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.CannotFindFieldOrProperty,
-            methodDeclarationSyntax.GetLocation(),
+            location,
             fieldName);
 
     /// <summary>
@@ -751,4 +773,44 @@ internal static class MappaDiagnostics
             sourcePropertyPath,
             missingSegment,
             sourceTypeName);
+
+    /// <summary>
+    /// Diagnostic to report that a before-map or after-map hook method cannot be resolved.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="mapMethodName">The mapping method name.</param>
+    /// <param name="hookKind">The hook kind.</param>
+    /// <param name="hookMethodName">The hook method name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic HookMethodNotFound(
+        Location? location,
+        string mapMethodName,
+        string hookKind,
+        string hookMethodName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.HookMethodNotFound,
+            location,
+            mapMethodName,
+            hookKind,
+            hookMethodName);
+
+    /// <summary>
+    /// Diagnostic to report that the same hook method is registered at class and method scope.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="mapMethodName">The mapping method name.</param>
+    /// <param name="hookKind">The hook kind.</param>
+    /// <param name="hookMethodName">The resolved hook method name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic DuplicateMapHookRegistration(
+        Location? location,
+        string mapMethodName,
+        string hookKind,
+        string hookMethodName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.DuplicateMapHookRegistration,
+            location,
+            mapMethodName,
+            hookKind,
+            hookMethodName);
 }

@@ -286,6 +286,35 @@ flowchart TD
 - `[MappaAssignToContext]` with a nested target path writes the leaf from the fully constructed result (for example `context[key] = result.Address.City`) after the parent object graph has been mapped.
 - Invalid target paths report **MP00033**. A source path shorter than the target path reports **MP00043**. A missing source segment reports **MP00044**.
 
+## Before and after map hooks
+
+Root mapping methods may declare `[MappaBeforeMap]` and `[MappaAfterMap]` attributes on the mapper class and/or on the method. Hooks apply only to generated **root** methods; nested strategies do not resolve or emit them.
+
+### Resolution
+
+For each root method the generator collects class-scope then method-scope before attributes, and method-scope then class-scope after attributes, preserving Roslyn attribute declaration order within each scope. Each attribute is resolved to an accessible `void` method using the same location rules as `[MappaInvokeMethod]` (mapper-local, explicit static type, or field/property member type, including interface members). Accepted signature tiers, in order, are:
+
+1. `ref T` + `MappaContext` (requires the map method to provide context)
+2. `ref T`
+3. `MappaContext` (requires the map method to provide context)
+4. no parameters
+
+`T` is the source type for before hooks and the target type for after hooks and must match exactly. An unresolved or invalid hook reports warning **MP00045** and is skipped. An ambiguous winning tier reports error **MP00042**. When class and method scope resolve to the same method for the same phase, warning **MP00046** is reported and the hook is kept once (class position for before map; method position for after map).
+
+### Code generation
+
+Generated root bodies wrap the core strategy as follows:
+
+1. Invoke ordered before hooks (class then method). When the source parameter is `in` and a before hook requires `ref`, the generator copies the source into a mutable local first.
+2. Execute the core mapping strategy.
+3. When any after hooks exist, materialize the core result into a target local (including identity, nullable, collection, and polymorphic roots that would otherwise return an expression directly).
+4. Invoke ordered after hooks (method then class) with `ref` target and optional context arguments as required.
+5. Return the (possibly mutated) target.
+
+When no after hooks are present, the existing return shape is preserved to avoid unrelated generated-code churn.
+
+See also: [Mappa attributes — MappaBeforeMap and MappaAfterMap](mappa-attributes.md#mappabeforemap-and-mappaaftermap) and [MappaBeforeAfterMapHooksAttributeMapper.cs](../Mappa.Samples/MappaBeforeAfterMapHooksAttributeMapper.cs).
+
 ## Limitations
 
 Currently unsupported features include:

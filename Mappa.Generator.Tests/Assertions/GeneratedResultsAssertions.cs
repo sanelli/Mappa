@@ -1,4 +1,4 @@
-﻿// <copyright file="GeneratedResultsAssertions.cs" company="Stefano Anelli">
+// <copyright file="GeneratedResultsAssertions.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -104,6 +104,20 @@ internal sealed class GeneratedResultsAssertions
     {
         var runResult = this.HaveOneResult();
         runResult.Should().NotHaveDiagnostics();
+        return this;
+    }
+
+    /// <summary>
+    /// Check the generated output compilation contains no errors.
+    /// </summary>
+    /// <returns>The assertions instance.</returns>
+    public GeneratedResultsAssertions NotHaveCompilationErrors()
+    {
+        this.Subject.OutputCompilation
+            .GetDiagnostics()
+            .Where(diagnostic => diagnostic.Severity is DiagnosticSeverity.Error)
+            .Should()
+            .BeEmpty();
         return this;
     }
 

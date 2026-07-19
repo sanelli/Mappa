@@ -13,10 +13,12 @@ This is the list of attributes provided:
 - `MappaAssignToContext`: When mapping structured types via the constructor-map strategy, stores the value of a target property or field in `MappaContext` after the target object has been fully constructed; `TargetPropertyName` may be a single name or a [dot-separated nested property path](#nested-property-paths);
 - `MappaInvokeMethodAttribute`: When mapping structured types via the constructor-map strategy, forces a target property or constructor parameter to be mapped by invoking a named method; supports an optional `SourcePropertyName` named parameter (see [MappaInvokeMethodAttribute](#mappainvokemethodattribute)); `TargetPropertyName` and optional `SourcePropertyName` may be a single name or a [dot-separated nested property path](#nested-property-paths);
 - `MappaAssignFromConstant`: When mapping structured types, allows specifying a constant value for a target property or constructor parameter; `TargetPropertyName` may be a single name or a [dot-separated nested property path](#nested-property-paths);
+- `MappaBeforeMap`: Invokes a named hook immediately before the generated root mapping body (see [MappaBeforeMap and MappaAfterMap](#mappabeforemap-and-mappaaftermap));
+- `MappaAfterMap`: Invokes a named hook immediately after the generated root mapping body and before returning the target (see [MappaBeforeMap and MappaAfterMap](#mappabeforemap-and-mappaaftermap));
 - `MappaTypeMapping`: When mapping structured types or interfaces, allows defining the target type depending on the source type;
 - `MappaTypeMappingDefault`: Describes the default behaviour for polymorphic methods defined via `MappaTypeMapping`.
 
-The [Mappa](https://www.nuget.org/packages/Mappa/) package also provides the `MappaContext` class that can be used to pass contextual values to mappers via the `MappaAssignFromContext` attribute, store mapped values via the `MappaAssignToContext` attribute, or supply context to methods invoked via the `MappaInvokeMethodAttribute` attribute.
+The [Mappa](https://www.nuget.org/packages/Mappa/) package also provides the `MappaContext` class that can be used to pass contextual values to mappers via the `MappaAssignFromContext` attribute, store mapped values via the `MappaAssignToContext` attribute, supply context to methods invoked via the `MappaInvokeMethodAttribute` attribute, or supply context to before/after map hooks.
 
 ## MappaDependency and MappaStaticDependency
 
@@ -141,6 +143,41 @@ If multiple candidate methods match at the same selection tier, the generator re
 12. One parameter with a type implicitly convertible from the source property type.
 13. One parameter of type `MappaContext` — requires the map method to provide `MappaContext`.
 14. No parameters.
+
+## MappaBeforeMap and MappaAfterMap
+
+`[MappaBeforeMap]` and `[MappaAfterMap]` invoke named hooks around the generated body of a **root** mapping method. They do not apply to nested type mappings (collection elements, dictionary keys/values, tuple items, constructor parameters, or property initializers). Both attributes may be applied to the mapper class and/or to individual mapping methods, and both allow multiple instances.
+
+### Hook location
+
+Depending on which constructor overload is used, the hook is resolved as follows:
+
+- `(methodName)`: a `static` or instance method declared on the mapper class or an accessible base class. When the root map method is `static`, only `static` hooks are considered; otherwise both `static` and instance hooks are considered.
+- `(classType, methodName)`: a `static` method declared on the specified type or one of its base classes. Instance methods on an explicit type are not valid.
+- `(fieldName, methodName)`: a method declared on the type of the field or property identified by `fieldName` (including base classes and interface members when the declared type is an interface). Instance hooks are invoked through the field or property. Static hooks are invoked through the member's declared type without evaluating the field or property. When the root map method is `static`, an instance hook requires a `static` field or property.
+
+When multiple methods with the same name exist in a type hierarchy, methods declared on the most derived type are preferred.
+
+### Supported signatures
+
+A hook must return `void`. Valid signatures are:
+
+| Phase | Signatures (priority order) |
+|-------|-----------------------------|
+| Before map | `Hook(ref TSource, MappaContext)`, `Hook(ref TSource)`, `Hook(MappaContext)`, `Hook()` |
+| After map | `Hook(ref TTarget, MappaContext)`, `Hook(ref TTarget)`, `Hook(MappaContext)`, `Hook()` |
+
+Because `ref` is invariant, the `ref` parameter type must match the mapping source type (before) or target type (after) exactly. Context-aware signatures are considered only when the root map method provides a `MappaContext` parameter. Within a winning tier, the same most-derived / unique-candidate rules used by `[MappaInvokeMethod]` apply; an ambiguous winning tier reports error **MP00042**.
+
+### Ordering and duplicates
+
+- **Before map**: class-level hooks run before method-level hooks. Declaration order is preserved within each scope.
+- **After map**: method-level hooks run before class-level hooks. Declaration order is preserved within each scope.
+- Class-level hooks resolve independently for each mapping method based on that method's source and target types.
+- If class and method scope resolve to the same hook for the same phase, the generator reports warning **MP00046** and invokes the hook once (at the class-level position for before map, and at the method-level position for after map).
+- If a hook cannot be resolved with a supported signature, the generator reports warning **MP00045**, skips that hook, and still generates the core mapping.
+
+See also: [tutorial](./tutorial.md#mappabeforemap-and-mappaaftermap-attributes), [algorithm](./mappa-generator-algorithm.md#before-and-after-map-hooks), and [MappaBeforeAfterMapHooksAttributeMapper.cs](../Mappa.Samples/MappaBeforeAfterMapHooksAttributeMapper.cs).
 
 ## MappaSettings
 
