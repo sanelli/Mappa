@@ -238,6 +238,45 @@ public sealed class PropertyPathSymbolResolverAndExpressionBuilderTests
     }
 
     /// <summary>
+    /// Test <see cref="PropertyPathExpressionBuilder.BuildChainedAccessExpression"/> treats
+    /// <see cref="Nullable{T}"/> leaves as nullable-capable without prior conditional access.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void BuildChainedAccessExpressionTreatsNullableValueTypeLeafAsNullableCapable()
+    {
+        var compilation = BuildCompilation("""
+                                           #nullable enable
+                                           namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                           public class Outer
+                                           {
+                                               public int? Code { get; set; }
+                                           }
+
+                                           public class Source
+                                           {
+                                               public Outer Outer { get; set; } = null!;
+                                           }
+                                           """);
+        var sourceType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Source")!;
+        var intType = compilation.GetSpecialType(SpecialType.System_Int32);
+
+        var nullableValueLeaf = PropertyPathExpressionBuilder.BuildChainedAccessExpression(
+            "input",
+            "input",
+            ["Outer", "Code"],
+            sourceType,
+            nullableEnabled: true,
+            intType,
+            out var resolved);
+        resolved.Should().HaveCount(2);
+        nullableValueLeaf.Should().Contain("input.Outer.Code");
+        nullableValueLeaf.Should().NotContain("?.Code");
+        nullableValueLeaf.Should().Contain("?? throw");
+    }
+
+    /// <summary>
     /// Test <see cref="PropertyPathExpressionBuilder.BuildTargetMemberAccessExpression"/> for flat and nested paths.
     /// </summary>
     [Fact]

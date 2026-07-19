@@ -58,7 +58,7 @@ internal static class PropertyPathExpressionBuilder
         }
 
         var expression = chainExpression;
-        var diagnosticPath = chainExpression;
+        var diagnosticPath = string.Empty;
         var usedConditionalAccess = false;
         var receiverTypeForAccess = pathStartingType;
 

@@ -193,52 +193,33 @@ internal sealed partial class ConstructorMapStrategyDetector
             return false;
         }
 
-        if (isLeafTargetMapping && (sourcePath.IsNested || activePropertyPathContext is not null))
+        if (isLeafTargetMapping
+            && (sourcePath.IsNested || activePropertyPathContext is not null)
+            && this.context.PropertyPathContext is not null)
         {
             // Prefer reading remaining segments from the current nested source receiver
             // so intermediate temps are reused instead of rebuilding the chain from the root.
-            if (this.context.PropertyPathContext is not null)
+            string[] remainingSourceSegments;
+            if (this.context.PropertyPathContext.IsNestedAttributeScope)
             {
-                string[] remainingSourceSegments;
-                if (this.context.PropertyPathContext.IsNestedAttributeScope)
-                {
-                    remainingSourceSegments = activePropertyPathContext?.RemainingSourceSegments ?? sourcePath.Segments;
-                }
-                else
-                {
-                    remainingSourceSegments = this.context.PropertyPathContext.RemainingSourceSegments.Length > 0
-                        ? this.context.PropertyPathContext.RemainingSourceSegments
-                        : sourcePath.Segments;
-                }
-
-                if (remainingSourceSegments.Length > 0)
-                {
-                    chainedSourcePropertyPath = new ChainedSourcePropertyPathInfo(
-                        usePropertyAttribute.SourcePropertyName,
-                        remainingSourceSegments,
-                        this.context.SourceType,
-                        string.Empty);
-                    return false;
-                }
+                remainingSourceSegments = activePropertyPathContext?.RemainingSourceSegments ?? sourcePath.Segments;
+            }
+            else
+            {
+                remainingSourceSegments = this.context.PropertyPathContext.RemainingSourceSegments.Length > 0
+                    ? this.context.PropertyPathContext.RemainingSourceSegments
+                    : sourcePath.Segments;
             }
 
-            var receiverPrefix = this.context.GetRootMapMethod().MethodSymbol.Parameters[0].Name;
-            if (activePropertyPathContext is not null
-                && sourcePath.Segments.Length > activePropertyPathContext.RemainingSourceSegments.Length)
+            if (remainingSourceSegments.Length > 0)
             {
-                var consumedCount = sourcePath.Segments.Length - activePropertyPathContext.RemainingSourceSegments.Length;
-                receiverPrefix = string.Join(
-                    ".",
-                    new[] { this.context.GetRootMapMethod().MethodSymbol.Parameters[0].Name }
-                        .Concat(sourcePath.Segments.Take(consumedCount)));
+                chainedSourcePropertyPath = new ChainedSourcePropertyPathInfo(
+                    usePropertyAttribute.SourcePropertyName,
+                    remainingSourceSegments,
+                    this.context.SourceType,
+                    string.Empty);
+                return false;
             }
-
-            chainedSourcePropertyPath = new ChainedSourcePropertyPathInfo(
-                usePropertyAttribute.SourcePropertyName,
-                activePropertyPathContext?.RemainingSourceSegments ?? sourcePath.Segments,
-                this.context.GetRootSourceType(),
-                receiverPrefix);
-            return false;
         }
 
         var expectedSegment = PropertyPathAttributeMatching.GetExpectedSourcePropertyNameForCurrentLevel(

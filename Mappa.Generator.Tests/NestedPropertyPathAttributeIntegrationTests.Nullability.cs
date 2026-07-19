@@ -322,4 +322,53 @@ public sealed partial class NestedPropertyPathAttributeIntegrationTests
         generatedSource.Should().Contain(".Metrics.Score");
         generatedSource.Should().NotContain("?? throw");
     }
+
+    /// <summary>
+    /// Test a non-nullable reference chain ending in <see cref="Nullable{T}"/> appends <c>?? throw</c> for a non-nullable target.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapChainedSourcePathWithNullableValueTypeLeafOntoNonNullableTarget()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class Outer
+                                  {
+                                      public int? Code { get; set; }
+                                  }
+
+                                  public class Source
+                                  {
+                                      public Outer Outer { get; set; } = null!;
+                                  }
+
+                                  public class Target
+                                  {
+                                      public int Code { get; set; }
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaUseProperty(nameof(Target.Code), "Outer.Code")]
+                                      public partial Target Map(Source input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+        var generatedSource = GetGeneratedMapperSource(generatedResults);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode();
+        generatedSource.Should().Contain("input.Outer.Code");
+        generatedSource.Should().Contain("?? throw");
+        generatedSource.Should().NotContain("?.Code");
+    }
 }
