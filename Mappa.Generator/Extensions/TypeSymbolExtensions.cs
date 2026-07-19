@@ -44,7 +44,6 @@ internal static class TypeSymbolExtensions
     private const string Tuple6Fullname = "System.Tuple`6";
     private const string Tuple7Fullname = "System.Tuple`7";
     private const string Tuple8Fullname = "System.Tuple`8";
-    private const string DictionaryFullName = "System.Collections.Generic.Dictionary`2";
     private const string ReadOnlyDictionaryFullName = "System.Collections.ObjectModel.ReadOnlyDictionary`2";
     private const string ReadOnlyCollectionFullName = "System.Collections.ObjectModel.ReadOnlyCollection`1";
     private const string ReadOnlySetFullName = "System.Collections.ObjectModel.ReadOnlySet`1";
@@ -247,19 +246,6 @@ internal static class TypeSymbolExtensions
         var listType = compilation.GetTypeByMetadataName(ReadOnlyDictionaryInterfaceFullName);
         var isList = SymbolEqualityComparer.Default.Equals(listType, typeSymbol.OriginalDefinition);
         return isList;
-    }
-
-    /// <summary>
-    /// Check if the type is <see cref="Dictionary{K,V}"/>.
-    /// </summary>
-    /// <param name="typeSymbol">The type symbol.</param>
-    /// <param name="compilation">The compilation.</param>
-    /// <returns><c>true</c> if the type symbol is <see cref="Dictionary{K,V}"/>.</returns>
-    internal static bool IsDictionary(this ITypeSymbol typeSymbol, Compilation compilation)
-    {
-        var dictionaryType = compilation.GetTypeByMetadataName(DictionaryFullName);
-        var isDictionary = SymbolEqualityComparer.Default.Equals(dictionaryType, typeSymbol.OriginalDefinition);
-        return isDictionary;
     }
 
     /// <summary>
@@ -551,15 +537,6 @@ internal static class TypeSymbolExtensions
     /// <returns><c>true</c> if the type symbol implements <see cref="IDictionary{K,V}"/>.</returns>
     internal static bool IsOrImplementIDictionary(this ITypeSymbol typeSymbol, Compilation compilation)
         => typeSymbol.IsIDictionary(compilation) || typeSymbol.AllInterfaces.Any(@interface => @interface.IsIDictionary(compilation));
-
-    /// <summary>
-    /// Check if the type is <see cref="IReadOnlyDictionary{K,V}"/> or implements <see cref="IReadOnlyDictionary{K,V}"/>.
-    /// </summary>
-    /// <param name="typeSymbol">The type symbol.</param>
-    /// <param name="compilation">The compilation.</param>
-    /// <returns><c>true</c> if the type symbol implements <see cref="IDictionary{K,V}"/>.</returns>
-    internal static bool IsOrImplementIReadOnlyDictionary(this ITypeSymbol typeSymbol, Compilation compilation)
-        => typeSymbol.IsIReadOnlyDictionary(compilation) || typeSymbol.AllInterfaces.Any(@interface => @interface.IsIReadOnlyDictionary(compilation));
 
     /// <summary>
     /// Check if the type is <see cref="Tuple"/>.
@@ -1651,19 +1628,6 @@ internal static class TypeSymbolExtensions
         }
 
         return false;
-    }
-
-    /// <summary>
-    /// Check if the type is <see cref="ConcurrentBag{T}"/>.
-    /// </summary>
-    /// <param name="typeSymbol">The type symbol.</param>
-    /// <param name="compilation">The compilation.</param>
-    /// <returns><c>true</c> if the type symbol is <see cref="ConcurrentBag{T}"/>.</returns>
-    internal static bool IsConcurrentBag(this ITypeSymbol typeSymbol, Compilation compilation)
-    {
-        var blockingCollectionSymbol = compilation.GetTypeByMetadataName(ConcurrentBagFullName);
-        var isConcurrentBags = SymbolEqualityComparer.Default.Equals(blockingCollectionSymbol, typeSymbol.OriginalDefinition);
-        return isConcurrentBags;
     }
 
     /// <summary>

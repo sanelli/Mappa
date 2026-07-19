@@ -18,16 +18,21 @@ function Out-Svg
     foreach ($line in $html.table.tbody.tr)
     {
         $line = $line.td
-        if (-not ($line[1].Contains("-")))
-        {
-            $xLabels = "$xLabels<text x=`"$x`" y=`"400`">$( $line[1] )</text>"
-        }
-
         if ($line[2] -eq "LINE")
         {
-            [double]$y = 375.00 - [System.Double]::Parse($line[3]) * 370.00 / 100.00
-            $LineCoverageCircles = "$LineCoverageCircles<circle cx=`"$x`" cy=`"$y`" r=`"4`"/>"
+            # Plot every version (main + intermediate); label only main releases on the X axis.
+            if (-not ($line[1].Contains("-")))
+            {
+                $xLabels = "$xLabels<text x=`"$x`" y=`"400`">$( $line[1] )</text>"
+            }
+
+            [double]$y = 375.00 - ([System.Double]::Parse($line[3]) - 80.00) * 370.00 / 20.00
             $LineCoveragePoints = "$LineCoveragePoints$x,$y "
+            if (-not ($line[1].Contains("-")))
+            {
+                $LineCoverageCircles = "$LineCoverageCircles<circle cx=`"$x`" cy=`"$y`" r=`"4`"/>"
+            }
+
             $x = $x + $xSpacing
         }
     }
@@ -41,9 +46,13 @@ function Out-Svg
         $line = $line.td
         if ($line[2] -eq "BRANCH")
         {
-            [double]$y = 375.00 - [System.Double]::Parse($line[3]) * 370.00 / 100.00
-            $BranchCoverageCircles = "$BranchCoverageCircles<circle cx=`"$x`" cy=`"$y`" r=`"4`"/>"
+            [double]$y = 375.00 - ([System.Double]::Parse($line[3]) - 80.00) * 370.00 / 20.00
             $BranchCoveragePoints = "$BranchCoveragePoints$x,$y "
+            if (-not ($line[1].Contains("-")))
+            {
+                $BranchCoverageCircles = "$BranchCoverageCircles<circle cx=`"$x`" cy=`"$y`" r=`"4`"/>"
+            }
+
             $x = $x + $xSpacing
         }
     }
@@ -57,9 +66,13 @@ function Out-Svg
         $line = $line.td
         if ($line[2] -eq "METHOD")
         {
-            [double]$y = 375.00 - [System.Double]::Parse($line[3]) * 370.00 / 100.00
-            $MethodCoverageCircles = "$MethodCoverageCircles$circles<circle cx=`"$x`" cy=`"$y`" r=`"4`"/>"
+            [double]$y = 375.00 - ([System.Double]::Parse($line[3]) - 80.00) * 370.00 / 20.00
             $MethodCoveragePoints = "$MethodCoveragePoints$x,$y "
+            if (-not ($line[1].Contains("-")))
+            {
+                $MethodCoverageCircles = "$MethodCoverageCircles<circle cx=`"$x`" cy=`"$y`" r=`"4`"/>"
+            }
+
             $x = $x + $xSpacing
         }
     }
@@ -74,11 +87,14 @@ function Out-Svg
     "            <text x=`"400`" y=`"440`" style=`"font-weight: bold;text-transform: uppercase;font-size: 12px;fill: black;`">Versions</text>" | Out-File -Append $SvgFilename
     "    </g>" | Out-File -Append $SvgFilename
     "    <g style=`"text-anchor: end;font-size: 13px;`">" | Out-File -Append $SvgFilename
-    "        <text x=`"80`" y=`"15`">100</text><text x=`"80`" y=`"52`">90</text><text x=`"80`" y=`"89`">80</text><text x=`"80`" y=`"126`">70</text>" | Out-File -Append $SvgFilename
-    "        <text x=`"80`" y=`"163`">60</text><text x=`"80`" y=`"200`">50</text><text x=`"80`" y=`"237`">40</text><text x=`"80`" y=`"274`">30</text>" | Out-File -Append $SvgFilename
-    "        <text x=`"80`" y=`"311`">20</text><text x=`"80`" y=`"340`">10</text><text x=`"80`" y=`"375`">0</text>" | Out-File -Append $SvgFilename
+    "        <text x=`"80`" y=`"15`">100</text><text x=`"80`" y=`"107.5`">95</text><text x=`"80`" y=`"200`">90</text><text x=`"80`" y=`"292.5`">85</text><text x=`"80`" y=`"375`">80</text>" | Out-File -Append $SvgFilename
     "        <text x=`"50`" y=`"200`" style=`"font-weight: bold;text-transform: uppercase;font-size: 12px;fill: black;`">%</text>" | Out-File -Append $SvgFilename
     "    </g>"  | Out-File -Append $SvgFilename
+    "    <g style=`"font-size: 12px;`" aria-label=`"Legend`">" | Out-File -Append $SvgFilename
+    "        <line x1=`"520`" y1=`"310`" x2=`"550`" y2=`"310`" style=`"stroke:red;stroke-width:2`" /><circle cx=`"535`" cy=`"310`" r=`"4`" style=`"fill:red;stroke:red`" /><text x=`"560`" y=`"314`" style=`"fill:black`">Line coverage</text>" | Out-File -Append $SvgFilename
+    "        <line x1=`"520`" y1=`"330`" x2=`"550`" y2=`"330`" style=`"stroke:blue;stroke-width:2`" /><circle cx=`"535`" cy=`"330`" r=`"4`" style=`"fill:blue;stroke:blue`" /><text x=`"560`" y=`"334`" style=`"fill:black`">Branch coverage</text>" | Out-File -Append $SvgFilename
+    "        <line x1=`"520`" y1=`"350`" x2=`"550`" y2=`"350`" style=`"stroke:green;stroke-width:2`" /><circle cx=`"535`" cy=`"350`" r=`"4`" style=`"fill:green;stroke:green`" /><text x=`"560`" y=`"354`" style=`"fill:black`">Method coverage</text>" | Out-File -Append $SvgFilename
+    "    </g>" | Out-File -Append $SvgFilename
     "    <g style=`"stroke:red; fill:red`" data-setname=`"Line coverage`">" | Out-File -Append $SvgFilename
     "        <polyline points=`"$LineCoveragePoints`" style=`"fill:none`" />" | Out-File -Append $SvgFilename
     "        $LineCoverageCircles" | Out-File -Append $SvgFilename
