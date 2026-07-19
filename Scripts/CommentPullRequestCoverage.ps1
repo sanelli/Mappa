@@ -46,37 +46,58 @@ function Get-CoverageFromSummary
     }
 }
 
-function Get-CoverageFromBadgeGist
-{
-    param(
-        [string]$GistId,
-        [string]$FileName
-    )
-
-    $raw = gh gist view $GistId --raw -f $FileName
-    if (-not $?)
-    {
-        throw "Failed to download coverage badge gist file '$FileName' from gist $GistId."
-    }
-
-    $json = $raw | ConvertFrom-Json
-    $message = [string]$json.message
-    if ([string]::IsNullOrWhiteSpace($message) -or -not $message.EndsWith("%"))
-    {
-        throw "Unexpected badge message in '$FileName': '$message'."
-    }
-
-    return [double]::Parse($message.TrimEnd("%"), [System.Globalization.CultureInfo]::InvariantCulture)
-}
-
 function Get-BaselineCoverageFromGist
 {
     param([string]$GistId)
 
+    # Same retrieval path as Scripts/UpdateCodeCoverageGists.ps1.
+    $currentHistory = $( gh gist view $GistId --raw -f "MAPPA-CODE-COVERAGE-HISTORY.MD" )
+    if (-not $?)
+    {
+        throw "Failed to download coverage history from gist $GistId."
+    }
+
+    $line = $null
+    $branch = $null
+    $method = $null
+    foreach ($historyLine in ($currentHistory -split "`r?`n"))
+    {
+        if ($historyLine -notmatch '^\|')
+        {
+            continue
+        }
+
+        $cells = @($historyLine.Split("|") | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" })
+        if ($cells.Count -lt 4)
+        {
+            continue
+        }
+
+        $type = $cells[2]
+        $percentageText = $cells[3]
+        if ($type -eq "Type" -or $percentageText -eq "Percentage" -or $percentageText -match '^-+$')
+        {
+            continue
+        }
+
+        $percentage = [double]::Parse($percentageText, [System.Globalization.CultureInfo]::InvariantCulture)
+        switch ($type)
+        {
+            "LINE" { $line = $percentage }
+            "BRANCH" { $branch = $percentage }
+            "METHOD" { $method = $percentage }
+        }
+    }
+
+    if (($null -eq $line) -or ($null -eq $branch) -or ($null -eq $method))
+    {
+        throw "Could not parse baseline LINE/BRANCH/METHOD coverage from gist history."
+    }
+
     return [pscustomobject]@{
-        Line = Get-CoverageFromBadgeGist -GistId $GistId -FileName "MAPPA-BADGE-LINE-COVERAGE.json"
-        Branch = Get-CoverageFromBadgeGist -GistId $GistId -FileName "MAPPA-BADGE-BRANCH-COVERAGE.json"
-        Method = Get-CoverageFromBadgeGist -GistId $GistId -FileName "MAPPA-BADGE-METHOD-COVERAGE.json"
+        Line = $line
+        Branch = $branch
+        Method = $method
     }
 }
 
@@ -210,7 +231,7 @@ $bodyBuilder = New-Object System.Text.StringBuilder
 [void]$bodyBuilder.AppendLine($CommentMarker)
 [void]$bodyBuilder.AppendLine("## Code coverage")
 [void]$bodyBuilder.AppendLine()
-[void]$bodyBuilder.AppendLine("Compared against the latest published coverage badges from the [code coverage gist](https://gist.github.com/sanelli/$GistId).")
+[void]$bodyBuilder.AppendLine("Compared against the latest published coverage history from the [code coverage gist](https://gist.github.com/sanelli/$GistId).")
 [void]$bodyBuilder.AppendLine()
 [void]$bodyBuilder.AppendLine("| Metric | Baseline | PR | Δ | Trend |")
 [void]$bodyBuilder.AppendLine("| ------ | -------- | -- | - | ----- |")
