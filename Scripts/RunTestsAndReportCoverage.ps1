@@ -60,7 +60,7 @@ if (-not $?)
 }
 
 dotnet tool restore
-dotnet reportgenerator -reports:"$MappaTestsAndCoveragePath/coverage.cobertura*.xml" -targetdir:"$MappaTestsAndCoveragePath" -title:"Mappa" -reporttypes:"Html;MarkdownSummary;XmlSummary" -filefilters:"-*.g.cs" -assemblyfilters:"-Mappa.Samples;-Moq" -classfilters:"-Mappa.Generator.Exceptions.MappaGeneratorException;-Mappa.Generator.Diagnostics.Debug.MappaDebug;-Mappa.Generator.Diagnostics.DiagnosticsResources;-Mappa.Generator.Diagnostics.MappaDiagnosticDescriptors"
+dotnet reportgenerator -reports:"$MappaTestsAndCoveragePath/coverage.cobertura*.xml" -targetdir:"$MappaTestsAndCoveragePath" -title:"Mappa" -reporttypes:"Html;MarkdownSummary;XmlSummary" -filefilters:"-*.g.cs" -assemblyfilters:"-Mappa.Samples;-Moq" -classfilters:"-Mappa.Generator.Exceptions.MappaGeneratorException;-Mappa.Generator.Diagnostics.Debug.MappaDebug;-Mappa.Generator.Diagnostics.DiagnosticsResources;-Mappa.Generator.Diagnostics.MappaDiagnosticDescriptors;-Mappa.Generator.Extensions.AttributeDataExtensions/FakeType"
 if (-not $?)
 {
     Write-Host "Report failed" -ForegroundColor Red
