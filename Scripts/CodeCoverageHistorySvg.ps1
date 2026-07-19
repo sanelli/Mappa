@@ -43,6 +43,63 @@ function Get-CoverageTrendArrow
     return " &#61;"
 }
 
+function Get-CoverageLinearTrendLine
+{
+    param(
+        [Parameter(Mandatory = $true)]
+        [System.Collections.IList]$Values,
+
+        [double]$StartX = 90.0,
+
+        [double]$EndX = 690.0
+    )
+
+    $n = $Values.Count
+    if ($n -lt 2)
+    {
+        return $null
+    }
+
+    $sumX = 0.0
+    $sumY = 0.0
+    $sumXY = 0.0
+    $sumXX = 0.0
+    for ($index = 0; $index -lt $n; $index++)
+    {
+        $x = [double]$index
+        $y = [double]$Values[$index]
+        $sumX += $x
+        $sumY += $y
+        $sumXY += $x * $y
+        $sumXX += $x * $x
+    }
+
+    $denominator = ($n * $sumXX) - ($sumX * $sumX)
+    if ([Math]::Abs($denominator) -lt 1e-9)
+    {
+        $meanPercent = $sumY / $n
+        $meanY = Get-CoverageHistoryY -Percentage $meanPercent
+        return [pscustomobject]@{
+            X1 = [Math]::Round($StartX, 2)
+            Y1 = $meanY
+            X2 = [Math]::Round($EndX, 2)
+            Y2 = $meanY
+        }
+    }
+
+    $slope = (($n * $sumXY) - ($sumX * $sumY)) / $denominator
+    $intercept = ($sumY - ($slope * $sumX)) / $n
+    $startPercent = $intercept
+    $endPercent = $intercept + ($slope * ($n - 1))
+
+    return [pscustomobject]@{
+        X1 = [Math]::Round($StartX, 2)
+        Y1 = Get-CoverageHistoryY -Percentage $startPercent
+        X2 = [Math]::Round($EndX, 2)
+        Y2 = Get-CoverageHistoryY -Percentage $endPercent
+    }
+}
+
 function New-CodeCoverageHistorySvg
 {
     param(
@@ -176,6 +233,22 @@ function New-CodeCoverageHistorySvg
     $methodCirclesText = ($methodCircles -join "")
     $xLabelsText = ($xLabels -join "")
 
+    $chartStartX = 90.0
+    $chartEndX = if ($numberOfItems -eq 1) { 90.0 } else { 690.0 }
+    $lineTrend = Get-CoverageLinearTrendLine -Values $lineValues -StartX $chartStartX -EndX $chartEndX
+    $branchTrend = Get-CoverageLinearTrendLine -Values $branchValues -StartX $chartStartX -EndX $chartEndX
+    $methodTrend = Get-CoverageLinearTrendLine -Values $methodValues -StartX $chartStartX -EndX $chartEndX
+
+    $lineTrendLine = if ($null -ne $lineTrend) {
+        "<line x1=`"$($lineTrend.X1)`" y1=`"$($lineTrend.Y1)`" x2=`"$($lineTrend.X2)`" y2=`"$($lineTrend.Y2)`" style=`"fill:none;stroke-dasharray:6 4;stroke-width:1.5`" />"
+    } else { "" }
+    $branchTrendLine = if ($null -ne $branchTrend) {
+        "<line x1=`"$($branchTrend.X1)`" y1=`"$($branchTrend.Y1)`" x2=`"$($branchTrend.X2)`" y2=`"$($branchTrend.Y2)`" style=`"fill:none;stroke-dasharray:6 4;stroke-width:1.5`" />"
+    } else { "" }
+    $methodTrendLine = if ($null -ne $methodTrend) {
+        "<line x1=`"$($methodTrend.X1)`" y1=`"$($methodTrend.Y1)`" x2=`"$($methodTrend.X2)`" y2=`"$($methodTrend.Y2)`" style=`"fill:none;stroke-dasharray:6 4;stroke-width:1.5`" />"
+    } else { "" }
+
     $y100 = Get-CoverageHistoryY -Percentage 100
     $y975 = Get-CoverageHistoryY -Percentage 97.5
     $y95 = Get-CoverageHistoryY -Percentage 95
@@ -217,14 +290,17 @@ function New-CodeCoverageHistorySvg
         <line x1="520" y1="350" x2="550" y2="350" style="stroke:green;stroke-width:2" /><circle cx="535" cy="350" r="4" style="fill:green;stroke:green" /><text x="560" y="354" style="fill:black">Method coverage</text>
     </g>
     <g style="stroke:red; fill:red" data-setname="Line coverage">
+        $lineTrendLine
         <polyline points="$linePointsText" style="fill:none" />
         $lineCirclesText
     </g>
     <g style="stroke:blue; fill:blue" data-setname="Branch coverage">
+        $branchTrendLine
         <polyline points="$branchPointsText" style="fill:none" />
         $branchCirclesText
     </g>
     <g style="stroke:green; fill:green" data-setname="Method coverage">
+        $methodTrendLine
         <polyline points="$methodPointsText" style="fill:none" />
         $methodCirclesText
     </g>
