@@ -242,4 +242,14 @@ internal enum MappaDiagnosticsKind
     /// A mapping attribute source property path segment does not exist on the source type.
     /// </summary>
     MappingAttributeSourcePropertyPathSegmentDoesNotExist,
+
+    /// <summary>
+    /// A before-map or after-map hook method cannot be resolved.
+    /// </summary>
+    HookMethodNotFound,
+
+    /// <summary>
+    /// The same hook method is registered at class and method scope.
+    /// </summary>
+    DuplicateMapHookRegistration,
 }

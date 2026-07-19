@@ -2,8 +2,12 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Exceptions;
+using Mappa.Generator.Extensions;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
+
+using Microsoft.CodeAnalysis;
 
 namespace Mappa.Generator.Builders.Strategies;
 
@@ -30,7 +34,106 @@ internal sealed class MethodParameterMapStrategyBuilder
     /// <inheritdoc/>
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
-        var (strategySource, header) = this.MethodParameterMapStrategy.Strategy.GetBuilder().BuildSource(source, context, mappaGlobalOptions);
-        return ($"return {strategySource};", header);
+        var beforeMapHooks = this.MethodParameterMapStrategy.BeforeMapHooks;
+        var afterMapHooks = this.MethodParameterMapStrategy.AfterMapHooks;
+        if (beforeMapHooks.Count == 0 && afterMapHooks.Count == 0)
+        {
+            var (strategySource, header) = this.MethodParameterMapStrategy.Strategy.GetBuilder().BuildSource(source, context, mappaGlobalOptions);
+            return ($"return {strategySource};", header);
+        }
+
+        var code = new List<string>();
+        var strategyInput = source;
+        if (beforeMapHooks.Any(hook => RequiresMappedValue(hook, context.Compilation)) &&
+            context.GetMapMethod().MethodSymbol.Parameters[0].RefKind is RefKind.In)
+        {
+            strategyInput = context.NextTemporary();
+            code.Add($"{this.MethodParameterMapStrategy.SourceType.ToDisplayString()} {strategyInput} = {source};");
+        }
+
+        foreach (var hook in beforeMapHooks)
+        {
+            code.Add(BuildHookInvocation(hook, strategyInput, context));
+        }
+
+        var (mappedValue, mappingCode) = this.MethodParameterMapStrategy.Strategy.GetBuilder().BuildSource(strategyInput, context, mappaGlobalOptions);
+        if (!string.IsNullOrWhiteSpace(mappingCode))
+        {
+            code.Add(mappingCode);
+        }
+
+        if (afterMapHooks.Count == 0)
+        {
+            return ($"return {mappedValue};", string.Join("\n", code));
+        }
+
+        var targetTemporary = context.NextTemporary();
+        code.Add($"{this.MethodParameterMapStrategy.TargetType.ToDisplayString()} {targetTemporary} = {mappedValue};");
+        foreach (var hook in afterMapHooks)
+        {
+            code.Add(BuildHookInvocation(hook, targetTemporary, context));
+        }
+
+        return ($"return {targetTemporary};", string.Join("\n", code));
     }
+
+    private static bool RequiresMappedValue(MapHook hook, Compilation compilation)
+        => hook.Method.Parameters.Length > 0 &&
+           !hook.Method.ParameterIsMappaContext(compilation, 0);
+
+    private static string BuildHookInvocation(
+        MapHook hook,
+        string mappedValue,
+        MappaBuilderContext context)
+    {
+        var accessor = GetAccessor(hook);
+        var arguments = GetArguments(hook, mappedValue, context);
+        return $"{accessor}{hook.Method.Name}({arguments});";
+    }
+
+    private static string GetAccessor(MapHook hook)
+    {
+        if (hook.ExplicitType is not null)
+        {
+            return $"{hook.ExplicitType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}.";
+        }
+
+        if (hook.FieldOrProperty is not null)
+        {
+            if (hook.Method.IsStatic)
+            {
+                var fieldOrPropertyType = GetFieldOrPropertyType(hook.FieldOrProperty);
+                return $"{fieldOrPropertyType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}.";
+            }
+
+            var fieldOrPropertyAccessor = hook.FieldOrProperty.IsStatic ? string.Empty : "this.";
+            return $"{fieldOrPropertyAccessor}{hook.FieldOrProperty.Name}.";
+        }
+
+        return hook.Method.IsStatic ? string.Empty : "this.";
+    }
+
+    private static string GetArguments(
+        MapHook hook,
+        string mappedValue,
+        MappaBuilderContext context)
+    {
+        return hook.Method.Parameters.Length switch
+        {
+            0 => string.Empty,
+            1 when hook.Method.ParameterIsMappaContext(context.Compilation, 0)
+                => context.GetMapMethod().GetMappaContextParameterName(),
+            1 => $"ref {mappedValue}",
+            2 => $"ref {mappedValue}, {context.GetMapMethod().GetMappaContextParameterName()}",
+            _ => throw new MappaGeneratorException($"Unexpected hook method signature '{hook.Method.ToDisplayString()}'."),
+        };
+    }
+
+    private static ITypeSymbol GetFieldOrPropertyType(ISymbol fieldOrProperty)
+        => fieldOrProperty switch
+        {
+            IFieldSymbol field => field.Type,
+            IPropertySymbol property => property.Type,
+            _ => throw new MappaGeneratorException($"Unexpected symbol kind '{fieldOrProperty.Kind}' for field or property '{fieldOrProperty.Name}'."),
+        };
 }

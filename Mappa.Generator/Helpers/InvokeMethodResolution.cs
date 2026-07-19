@@ -99,6 +99,115 @@ internal static class InvokeMethodResolution
     }
 
     /// <summary>
+    /// Resolves a before-map or after-map hook method.
+    /// </summary>
+    /// <param name="compilation">The compilation.</param>
+    /// <param name="mapClass">The mapper class.</param>
+    /// <param name="lookupType">The type on which hook methods were located.</param>
+    /// <param name="methods">Candidate methods located by name.</param>
+    /// <param name="methodName">The hook method name.</param>
+    /// <param name="mappedValueType">The source type for a before hook or target type for an after hook.</param>
+    /// <param name="nullableEnabled"><c>true</c> when nullable is enabled.</param>
+    /// <param name="staticRequirement">The static requirement.</param>
+    /// <param name="mapMethodProvidesContext"><c>true</c> when the mapping method provides a context.</param>
+    /// <param name="method">The resolved method when successful.</param>
+    /// <param name="ambiguityDetails">Ambiguity details when resolution is ambiguous.</param>
+    /// <returns>The resolution result.</returns>
+    internal static InvokeMethodResolutionResult TryResolveMapHook(
+        Compilation compilation,
+        ITypeSymbol mapClass,
+        ITypeSymbol lookupType,
+        IMethodSymbol[] methods,
+        string methodName,
+        ITypeSymbol mappedValueType,
+        bool nullableEnabled,
+        InvokeMethodStaticRequirement staticRequirement,
+        bool mapMethodProvidesContext,
+        out IMethodSymbol? method,
+        out string ambiguityDetails)
+    {
+        method = null;
+        ambiguityDetails = string.Empty;
+
+        var candidates = methods
+            .Where(candidate =>
+                candidate.Name.Equals(methodName, StringComparison.Ordinal) &&
+                candidate.IsVoid() &&
+                compilation.IsSymbolAccessibleWithin(candidate, mapClass) &&
+                staticRequirement switch
+                {
+                    InvokeMethodStaticRequirement.StaticOrNotStatic => true,
+                    InvokeMethodStaticRequirement.Static => candidate.IsStatic,
+                    InvokeMethodStaticRequirement.NotStatic => !candidate.IsStatic,
+                    _ => false,
+                })
+            .ToArray();
+
+        bool IsMappedValueParameter(IParameterSymbol parameter)
+            => parameter.RefKind is RefKind.Ref &&
+               parameter.Type.IsEqualTo(mappedValueType, nullableEnabled);
+
+        bool IsContextParameter(IMethodSymbol candidate, int index)
+            => candidate.Parameters[index].RefKind is RefKind.None &&
+               candidate.ParameterIsMappaContext(compilation, index);
+
+        if (mapMethodProvidesContext)
+        {
+            var mappedValueAndContextResult = PickFromTier(
+                candidates,
+                methodName,
+                lookupType.ToDisplayString(),
+                candidate => candidate.Parameters.Length == 2 &&
+                             IsMappedValueParameter(candidate.Parameters[0]) &&
+                             IsContextParameter(candidate, 1));
+            if (mappedValueAndContextResult.Status is not InvokeMethodResolutionResult.NotFound)
+            {
+                method = mappedValueAndContextResult.Method;
+                ambiguityDetails = mappedValueAndContextResult.AmbiguityDetails;
+                return mappedValueAndContextResult.Status;
+            }
+        }
+
+        var mappedValueResult = PickFromTier(
+            candidates,
+            methodName,
+            lookupType.ToDisplayString(),
+            candidate => candidate.Parameters.Length == 1 &&
+                         IsMappedValueParameter(candidate.Parameters[0]));
+        if (mappedValueResult.Status is not InvokeMethodResolutionResult.NotFound)
+        {
+            method = mappedValueResult.Method;
+            ambiguityDetails = mappedValueResult.AmbiguityDetails;
+            return mappedValueResult.Status;
+        }
+
+        if (mapMethodProvidesContext)
+        {
+            var contextResult = PickFromTier(
+                candidates,
+                methodName,
+                lookupType.ToDisplayString(),
+                candidate => candidate.Parameters.Length == 1 &&
+                             IsContextParameter(candidate, 0));
+            if (contextResult.Status is not InvokeMethodResolutionResult.NotFound)
+            {
+                method = contextResult.Method;
+                ambiguityDetails = contextResult.AmbiguityDetails;
+                return contextResult.Status;
+            }
+        }
+
+        var parameterlessResult = PickFromTier(
+            candidates,
+            methodName,
+            lookupType.ToDisplayString(),
+            candidate => candidate.Parameters.Length == 0);
+        method = parameterlessResult.Method;
+        ambiguityDetails = parameterlessResult.AmbiguityDetails;
+        return parameterlessResult.Status;
+    }
+
+    /// <summary>
     /// Resolves an invoke method for <see cref="Mappa.Attributes.MappaInvokeMethodAttribute"/>.
     /// </summary>
     /// <param name="compilation">The compilation.</param>

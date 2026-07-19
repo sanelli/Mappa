@@ -150,4 +150,10 @@
     <data name="MappingAttributeSourcePropertyPathSegmentDoesNotExist" xml:space="preserve">
         <value>Method '{0}' defines '{1}' with source property path '{2}', but segment '{3}' does not exist on type '{4}'.</value>
     </data>
+    <data name="HookMethodNotFound" xml:space="preserve">
+        <value>Mapping method '{0}' defines a {1} hook named '{2}', but no accessible method with a supported signature was found; the hook will be ignored.</value>
+    </data>
+    <data name="DuplicateMapHookRegistration" xml:space="preserve">
+        <value>Mapping method '{0}' resolves {1} hook '{2}' at both class and method scope; the hook will be invoked once.</value>
+    </data>
 </root>

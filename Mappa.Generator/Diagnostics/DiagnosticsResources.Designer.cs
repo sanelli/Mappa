@@ -308,5 +308,17 @@ namespace Mappa.Generator.Diagnostics {
                 return ResourceManager.GetString("MappingAttributeSourcePropertyPathSegmentDoesNotExist", resourceCulture);
             }
         }
+
+        internal static string HookMethodNotFound {
+            get {
+                return ResourceManager.GetString("HookMethodNotFound", resourceCulture);
+            }
+        }
+
+        internal static string DuplicateMapHookRegistration {
+            get {
+                return ResourceManager.GetString("DuplicateMapHookRegistration", resourceCulture);
+            }
+        }
     }
 }

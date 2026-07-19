@@ -10,13 +10,28 @@ namespace Mappa.Generator.Models.Strategies;
 /// Strategy to map the source parameter of a method using a specific strategy.
 /// </summary>
 /// <param name="strategy">The strategy to be used for mapping the method parameter.</param>
-internal sealed class MethodParameterMapStrategy(MapStrategy strategy)
+/// <param name="beforeMapHooks">The hooks to invoke before mapping.</param>
+/// <param name="afterMapHooks">The hooks to invoke after mapping.</param>
+internal sealed class MethodParameterMapStrategy(
+    MapStrategy strategy,
+    MapHook[]? beforeMapHooks = null,
+    MapHook[]? afterMapHooks = null)
         : MapStrategy(strategy.TargetType, strategy.SourceType)
 {
     /// <summary>
     /// Gets the strategy to be used to map the method.
     /// </summary>
     internal MapStrategy Strategy { get; } = strategy;
+
+    /// <summary>
+    /// Gets the hooks to invoke before mapping.
+    /// </summary>
+    internal IReadOnlyList<MapHook> BeforeMapHooks { get; } = beforeMapHooks ?? [];
+
+    /// <summary>
+    /// Gets the hooks to invoke after mapping.
+    /// </summary>
+    internal IReadOnlyList<MapHook> AfterMapHooks { get; } = afterMapHooks ?? [];
 
     /// <inheritdoc/>
     internal override IMappaStrategyBuilder GetBuilder() => new MethodParameterMapStrategyBuilder(this);
