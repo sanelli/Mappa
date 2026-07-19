@@ -16,19 +16,22 @@ internal static class SyntaxNodeAssertionsExtensions
     /// <param name="contextParameterName">The context parameter name.</param>
     /// <param name="contextKey">The context key.</param>
     /// <param name="targetTemporaryName">The target temporary variable name.</param>
-    /// <param name="memberName">The target member name.</param>
+    /// <param name="memberPath">
+    /// The target member path relative to <paramref name="targetTemporaryName"/>
+    /// (a single segment such as <c>Property</c>, or a nested path such as <c>Address.City</c>).
+    /// </param>
     /// <returns>The assertions instance.</returns>
     internal static SyntaxNodeAssertions BeAssignToContextStatement(
         this SyntaxNodeAssertions @this,
         string contextParameterName,
         string contextKey,
         string targetTemporaryName,
-        string memberName)
+        string memberPath)
     {
         ArgumentNullException.ThrowIfNull(@this);
 
         return @this.BeAssignmentExpressionStatement(
             leftExpressionAssertions => leftExpressionAssertions.BeElementAccessExpressionSyntaxWithLiteralSyntax(contextParameterName, contextKey),
-            rightExpressionAssertions => rightExpressionAssertions.BeMemberAccessExpressionSyntax($"{targetTemporaryName}.{memberName}"));
+            rightExpressionAssertions => rightExpressionAssertions.BeMemberAccessExpressionSyntax($"{targetTemporaryName}.{memberPath}"));
     }
 }

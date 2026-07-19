@@ -99,6 +99,61 @@ internal sealed class ExpressionSyntaxAssertions
     }
 
     /// <summary>
+    /// Assert that the expression is a conditional access expression syntax
+    /// whose string representation is the same as <paramref name="fullAccessPath"/>.
+    /// </summary>
+    /// <param name="fullAccessPath">The string representation of the expression.</param>
+    /// <returns>The assertions.</returns>
+    internal ExpressionSyntaxAssertions BeConditionalAccessExpressionSyntax(string fullAccessPath)
+    {
+        this.Subject.Should().BeOfType<ConditionalAccessExpressionSyntax>();
+        var conditionalAccessExpressionSyntax = (ConditionalAccessExpressionSyntax)this.Subject;
+        conditionalAccessExpressionSyntax.ToString().Should().Be(fullAccessPath);
+        return this;
+    }
+
+    /// <summary>
+    /// Assert that the expression is a throw expression creating <typeparamref name="TException"/>.
+    /// </summary>
+    /// <param name="parameterAssertions">Assertions on the parameters of the created exception.</param>
+    /// <returns>The assertions.</returns>
+    /// <typeparam name="TException">The type of the exception thrown.</typeparam>
+    internal ExpressionSyntaxAssertions BeThrowExpressionSyntax<TException>(
+        params Action<ExpressionSyntaxAssertions>[] parameterAssertions)
+        where TException : Exception
+        => this.BeThrowExpressionSyntax(
+            typeof(TException).FullName ?? throw new ArgumentException("Cannot obtain exception type full name"),
+            parameterAssertions);
+
+    /// <summary>
+    /// Assert that the expression is a throw expression creating the given exception type.
+    /// </summary>
+    /// <param name="exceptionType">The type of the exception.</param>
+    /// <param name="parameterAssertions">Assertions on the parameters of the created exception.</param>
+    /// <returns>The assertions.</returns>
+    internal ExpressionSyntaxAssertions BeThrowExpressionSyntax(
+        string exceptionType,
+        params Action<ExpressionSyntaxAssertions>[] parameterAssertions)
+    {
+        ArgumentNullException.ThrowIfNull(parameterAssertions);
+
+        this.Subject.Should().BeOfType<ThrowExpressionSyntax>();
+        var throwExpressionSyntax = (ThrowExpressionSyntax)this.Subject;
+        throwExpressionSyntax.Expression.Should().BeOfType<ObjectCreationExpressionSyntax>();
+        var objectCreationExpressionSyntax = (ObjectCreationExpressionSyntax)throwExpressionSyntax.Expression;
+        objectCreationExpressionSyntax.Type.ToString().Should().Be(exceptionType);
+        objectCreationExpressionSyntax.ArgumentList.Should().NotBeNull();
+        objectCreationExpressionSyntax.ArgumentList!.Arguments.Should().HaveCount(parameterAssertions.Length);
+
+        for (int index = 0; index < parameterAssertions.Length; ++index)
+        {
+            parameterAssertions[index](new ExpressionSyntaxAssertions(objectCreationExpressionSyntax.ArgumentList!.Arguments[index].Expression, this.semanticModel, this.compilation));
+        }
+
+        return this;
+    }
+
+    /// <summary>
     /// Assert that the expression is a literal expression.
     /// </summary>
     /// <param name="value">The expected value of the expression.</param>
@@ -366,7 +421,14 @@ internal sealed class ExpressionSyntaxAssertions
         this.Subject.Should().BeOfType<BinaryExpressionSyntax>();
         var binaryExpressionSyntax = (BinaryExpressionSyntax)this.Subject;
 
-        binaryExpressionSyntax.OperatorToken.Kind().Should().Be(@operator);
+        if (@operator == binaryExpressionSyntax.Kind())
+        {
+            binaryExpressionSyntax.Kind().Should().Be(@operator);
+        }
+        else
+        {
+            binaryExpressionSyntax.OperatorToken.Kind().Should().Be(@operator);
+        }
 
         leftExpressionAssertions(new ExpressionSyntaxAssertions(binaryExpressionSyntax.Left, this.semanticModel, this.compilation));
         rightExpressionAssertions(new ExpressionSyntaxAssertions(binaryExpressionSyntax.Right, this.semanticModel, this.compilation));
