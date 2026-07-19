@@ -980,6 +980,7 @@ internal sealed partial class ConstructorMapStrategyDetector
                     out strategy);
                 if (strategy is not NoMapStrategy)
                 {
+                    sourceProperty = null; // Ignore any input property.
                     this.ReportMappaUsePropertySourcePropertyWillNotBeUsedIfPresent(
                         targetName,
                         stringComparison,

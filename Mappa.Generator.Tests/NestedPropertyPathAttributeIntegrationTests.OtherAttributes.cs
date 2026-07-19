@@ -109,8 +109,8 @@ public sealed partial class NestedPropertyPathAttributeIntegrationTests
         generatedResults.Should()
             .NotHaveDiagnostics()
             .HaveGeneratedSourceCode();
-        generatedSource.Should().Contain("input?.Location?.Address");
-        generatedSource.Should().Contain(".City");
+        generatedSource.Should().Contain("input.Location?.Address?.City");
+        generatedSource.Should().Contain("throw new System.NullReferenceException");
     }
 
     /// <summary>
@@ -146,17 +146,20 @@ public sealed partial class NestedPropertyPathAttributeIntegrationTests
                                   [Mappa]
                                   public sealed partial class Mapper
                                   {
-                                      [MappaAssignFromConstant("Address.City", "\"London\"")]
+                                      [MappaAssignFromConstant("Address.City", "London")]
                                       public partial Target Map(Source input, MappaContext context);
                                   }
                                   #nullable restore
                                   """;
 
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+        var generatedSource = GetGeneratedMapperSource(generatedResults);
 
         generatedResults.Should()
             .NotHaveDiagnostics()
             .HaveGeneratedSourceCode();
+        generatedSource.Should().Contain("= \"London\"");
+        generatedSource.Should().NotContain("\\\"London\\\"");
     }
 
     /// <summary>
@@ -199,10 +202,13 @@ public sealed partial class NestedPropertyPathAttributeIntegrationTests
                                   """;
 
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+        var generatedSource = GetGeneratedMapperSource(generatedResults);
 
         generatedResults.Should()
             .NotHaveDiagnostics()
             .HaveGeneratedSourceCode();
+        generatedSource.Should().Contain("context[\"city\"]");
+        generatedSource.Should().NotContain(".City;");
     }
 
     /// <summary>

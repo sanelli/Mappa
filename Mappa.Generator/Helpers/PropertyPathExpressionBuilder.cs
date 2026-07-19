@@ -23,6 +23,9 @@ internal static class PropertyPathExpressionBuilder
     /// <param name="nullableEnabled">Whether nullable reference types are enabled.</param>
     /// <param name="targetType">The final target member type.</param>
     /// <param name="resolvedProperties">The resolved properties for each segment.</param>
+    /// <param name="diagnosticPathOverride">
+    /// Optional full path used in null-reference diagnostics (for example the original attribute source path).
+    /// </param>
     /// <returns>The chained access expression.</returns>
     internal static string BuildChainedAccessExpression(
         string receiverExpression,
@@ -31,7 +34,8 @@ internal static class PropertyPathExpressionBuilder
         ITypeSymbol startingType,
         bool nullableEnabled,
         ITypeSymbol targetType,
-        out IPropertySymbol[] resolvedProperties)
+        out IPropertySymbol[] resolvedProperties,
+        string? diagnosticPathOverride = null)
     {
         var path = PropertyPath.FromRemainingSegments(pathSegments);
         var chainExpression = string.IsNullOrWhiteSpace(receiverPathPrefix)
@@ -55,21 +59,31 @@ internal static class PropertyPathExpressionBuilder
 
         var expression = chainExpression;
         var diagnosticPath = chainExpression;
+        var usedConditionalAccess = false;
+        var receiverTypeForAccess = pathStartingType;
 
         for (var index = 0; index < pathSegments.Length; index++)
         {
             var segment = pathSegments[index];
-            var segmentType = resolvedProperties[index].Type;
-            var accessOperator = ShouldUseConditionalAccess(segmentType, nullableEnabled) ? "?." : ".";
+            var useConditionalAccess = ShouldUseConditionalAccess(receiverTypeForAccess, nullableEnabled);
+            usedConditionalAccess = usedConditionalAccess || useConditionalAccess;
+            var accessOperator = useConditionalAccess ? "?." : ".";
             expression = $"{expression}{accessOperator}{segment}";
             diagnosticPath = string.IsNullOrWhiteSpace(diagnosticPath)
                 ? segment
                 : $"{diagnosticPath}.{segment}";
+            receiverTypeForAccess = resolvedProperties[index].Type;
         }
 
-        if (!targetType.IsNullable())
+        // Append ?? throw only when the access expression can be null and the target cannot.
+        var expressionCanBeNull = usedConditionalAccess
+            || IsNullableCapableType(receiverTypeForAccess, nullableEnabled);
+        if (expressionCanBeNull && !targetType.IsNullable())
         {
-            expression = $"{expression} ?? throw new System.NullReferenceException({CSharpLiteralHelper.ToStringLiteral($"\"{diagnosticPath}\" is null.")})";
+            var pathForDiagnostic = string.IsNullOrWhiteSpace(diagnosticPathOverride)
+                ? diagnosticPath
+                : diagnosticPathOverride;
+            expression = $"{expression} ?? throw new System.NullReferenceException({CSharpLiteralHelper.ToStringLiteral($"\"{pathForDiagnostic}\" is null.")})";
         }
 
         return expression;
@@ -93,19 +107,22 @@ internal static class PropertyPathExpressionBuilder
     }
 
     private static bool ShouldUseConditionalAccess(ITypeSymbol segmentType, bool nullableEnabled)
+        => IsNullableCapableType(segmentType, nullableEnabled);
+
+    private static bool IsNullableCapableType(ITypeSymbol typeSymbol, bool nullableEnabled)
     {
-        if (segmentType.IsValueTypeNullable())
+        if (typeSymbol.IsValueTypeNullable())
         {
             return true;
         }
 
-        if (!segmentType.IsReferenceType)
+        if (!typeSymbol.IsReferenceType)
         {
             return false;
         }
 
         return nullableEnabled
-            ? segmentType.NullableAnnotation is NullableAnnotation.Annotated
-            : segmentType.IsReferenceType;
+            ? typeSymbol.NullableAnnotation is NullableAnnotation.Annotated
+            : typeSymbol.IsReferenceType;
     }
 }

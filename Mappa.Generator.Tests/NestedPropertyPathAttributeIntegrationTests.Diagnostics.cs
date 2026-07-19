@@ -317,5 +317,7 @@ public sealed partial class NestedPropertyPathAttributeIntegrationTests
             .NotHaveDiagnostics()
             .HaveGeneratedSourceCode();
         generatedSource.Should().Contain(".City");
+        generatedSource.Should().NotContain(".ZipCode");
+        generatedSource.Should().NotContain("ZipCode =");
     }
 }

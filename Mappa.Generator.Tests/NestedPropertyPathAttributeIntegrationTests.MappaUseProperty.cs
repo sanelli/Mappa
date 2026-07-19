@@ -106,8 +106,8 @@ public sealed partial class NestedPropertyPathAttributeIntegrationTests
         generatedResults.Should()
             .NotHaveDiagnostics()
             .HaveGeneratedSourceCode();
-        generatedSource.Should().Contain("input.Location?.Address");
-        generatedSource.Should().Contain(".City");
+        generatedSource.Should().Contain("input.Location");
+        generatedSource.Should().Contain(".Address?.City");
         generatedSource.Should().Contain("throw new System.NullReferenceException");
     }
 

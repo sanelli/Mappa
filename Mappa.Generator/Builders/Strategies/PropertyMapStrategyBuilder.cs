@@ -38,21 +38,26 @@ internal sealed class PropertyMapStrategyBuilder
             var chainedSourcePropertyPath = this.strategy.ChainedSourcePropertyPath;
             var chainSource = source;
             var rootParameterName = context.GetMapMethod().MethodSymbol.Parameters[0].Name;
-            if (!string.IsNullOrWhiteSpace(chainedSourcePropertyPath.ReceiverPathPrefix)
-                && (chainedSourcePropertyPath.ReceiverPathPrefix.Equals(rootParameterName, StringComparison.Ordinal)
-                    || chainedSourcePropertyPath.ReceiverPathPrefix.StartsWith($"{rootParameterName}.", StringComparison.Ordinal)))
+            var receiverPathPrefix = chainedSourcePropertyPath.ReceiverPathPrefix;
+
+            // Only rewrite to the root parameter when the chain is intentionally rooted there.
+            // Empty prefix means read remaining segments from the current nested source receiver.
+            if (!string.IsNullOrWhiteSpace(receiverPathPrefix)
+                && (receiverPathPrefix.Equals(rootParameterName, StringComparison.Ordinal)
+                    || receiverPathPrefix.StartsWith($"{rootParameterName}.", StringComparison.Ordinal)))
             {
                 chainSource = rootParameterName;
             }
 
             var accessExpression = PropertyPathExpressionBuilder.BuildChainedAccessExpression(
                 chainSource,
-                chainedSourcePropertyPath.ReceiverPathPrefix,
+                receiverPathPrefix,
                 chainedSourcePropertyPath.RemainingSourceSegments,
                 chainedSourcePropertyPath.StartingSourceType,
                 context.GetMapMethod().NullableEnabled,
                 this.strategy.TargetProperty.Type,
-                out var resolvedProperties);
+                out var resolvedProperties,
+                chainedSourcePropertyPath.OriginalSourcePath);
 
             ITypeSymbol innermostSourceType;
             if (resolvedProperties.Length > 0)
@@ -62,7 +67,7 @@ internal sealed class PropertyMapStrategyBuilder
             else if (PropertyPathSymbolResolver.TryGetReceiverTypeForPathPrefix(
                          chainedSourcePropertyPath.StartingSourceType,
                          chainSource,
-                         chainedSourcePropertyPath.ReceiverPathPrefix,
+                         string.IsNullOrWhiteSpace(receiverPathPrefix) ? chainSource : receiverPathPrefix,
                          out var receiverType))
             {
                 innermostSourceType = receiverType;

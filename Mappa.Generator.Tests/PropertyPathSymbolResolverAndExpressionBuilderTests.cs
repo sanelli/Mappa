@@ -179,6 +179,62 @@ public sealed class PropertyPathSymbolResolverAndExpressionBuilderTests
         resolvedValueType.Should().HaveCount(2);
         valueTypeAccess.Should().Contain(".Code");
         valueTypeAccess.Should().NotContain("?.Code");
+        valueTypeAccess.Should().NotContain("?? throw");
+    }
+
+    /// <summary>
+    /// Test <see cref="PropertyPathExpressionBuilder.BuildChainedAccessExpression"/> appends
+    /// <c>?? throw</c> only when conditional access makes the expression nullable-capable.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void BuildChainedAccessExpressionAppendsNullForgivingThrowOnlyWhenExpressionCanBeNull()
+    {
+        var compilation = BuildCompilation("""
+                                           #nullable enable
+                                           namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                           public class Address
+                                           {
+                                               public string City { get; set; } = null!;
+                                           }
+
+                                           public class Location
+                                           {
+                                               public Address? Address { get; set; }
+                                           }
+
+                                           public class Source
+                                           {
+                                               public Location Location { get; set; } = null!;
+                                           }
+                                           """);
+        var sourceType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Source")!;
+        var addressType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Address")!;
+        var cityProperty = addressType.GetMembers("City").OfType<IPropertySymbol>().Single();
+        var locationType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Location")!;
+
+        var nullableIntermediate = PropertyPathExpressionBuilder.BuildChainedAccessExpression(
+            "input",
+            "input",
+            ["Location", "Address", "City"],
+            sourceType,
+            nullableEnabled: true,
+            cityProperty.Type,
+            out _);
+        nullableIntermediate.Should().Contain("Location.Address?.City");
+        nullableIntermediate.Should().Contain("?? throw");
+
+        var nonNullableChain = PropertyPathExpressionBuilder.BuildChainedAccessExpression(
+            "input",
+            "input",
+            ["Location"],
+            sourceType,
+            nullableEnabled: true,
+            locationType,
+            out _);
+        nonNullableChain.Should().Be("input.Location");
+        nonNullableChain.Should().NotContain("?? throw");
     }
 
     /// <summary>
