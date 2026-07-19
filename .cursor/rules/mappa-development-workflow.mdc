@@ -1,5 +1,5 @@
 ---
-description: Mappa development workflow — planning, code, code coverage, git, versioning, tests, and samples
+description: Mappa development workflow — planning, code, code coverage, git, pull requests, versioning, tests, and samples
 alwaysApply: true
 ---
 
@@ -72,6 +72,13 @@ The development environment uses **PowerShell**. All commands run in the termina
 - When committing, do **not** use `cat` or heredoc syntax (PowerShell does not support bash heredocs). Use `git commit -m` for the subject and body, and `--trailer` for any trailers (e.g. `git commit -m "#123 Subject." -m "Body paragraph." --trailer "Co-authored-by: Name <email@example.com>"`).
 - Do not query GitHub to read the issue provided, unless instructed.
 - Before finishing work for a GitHub issue, remove any TODOs related to that issue. If no GitHub issue was provided, ask the user for one.
+
+## Pull Requests
+
+- When creating a pull request for a GitHub issue, **also upload the plan** used for that work to the **original GitHub issue** (not only the PR description).
+- Post the plan as an issue comment with `gh issue comment <number>` after the PR exists (so the comment can include the PR URL).
+- Include: a short heading (e.g. `## Implementation plan`), a link to the PR, and the full contents of the plan file under `.cursor/plans/` (e.g. `issue_<number>_*.plan.md`). Prefer `--body-file` with a temporary markdown file built in PowerShell rather than bash heredocs.
+- If no issue number is known when creating the PR, ask the user for one before posting the plan.
 
 ## Versioning
 
