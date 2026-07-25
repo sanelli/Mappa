@@ -173,6 +173,18 @@ internal static class MethodSymbolExtensions
     }
 
     /// <summary>
+    /// Returns <c>true</c> when the method maps <see cref="System.Linq.IQueryable{T}"/>
+    /// to <see cref="System.Linq.IQueryable{T}"/>.
+    /// </summary>
+    /// <param name="methodSymbol">The method to validate.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> when the method is a queryable projection map method.</returns>
+    internal static bool IsQueryableProjectionMapMethod(this IMethodSymbol methodSymbol, Compilation compilation)
+        => methodSymbol.Parameters.Length > 0
+           && methodSymbol.Parameters[0].Type.IsOrImplementIQueryable(compilation)
+           && methodSymbol.ReturnType.IsOrImplementIQueryable(compilation);
+
+    /// <summary>
     /// Check if a method can be accessed directly or can be accessed
     /// via explicit interface.
     /// </summary>

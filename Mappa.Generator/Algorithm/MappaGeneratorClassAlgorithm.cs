@@ -110,6 +110,17 @@ internal sealed class MappaGeneratorClassAlgorithm
                 continue;
             }
 
+            if (!ProjectionMapMethodEligibilityValidator.TryValidate(
+                    mapMethod,
+                    this.Compilation,
+                    classContext,
+                    classBeforeMapAttributes,
+                    classAfterMapAttributes))
+            {
+                mapMethod.MarkMapped();
+                continue;
+            }
+
             var mappaSettingsAttribute = mapMethod.GetAttribute<MappaSettingsAttribute>();
             using (mappaUserSettings.Apply(mappaSettingsAttribute))
             {

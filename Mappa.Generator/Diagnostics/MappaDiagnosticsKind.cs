@@ -297,4 +297,15 @@ internal enum MappaDiagnosticsKind
     /// Multiple <see cref="MappaMapEnumDefaultAttribute{TEnum}"/> declarations target the same enum.
     /// </summary>
     DuplicateEnumMapDefaultAttribute,
+
+    /// <summary>
+    /// A queryable projection map method declares <see cref="MappaBeforeMapAttribute"/>
+    /// or <see cref="MappaAfterMapAttribute"/> hooks.
+    /// </summary>
+    ProjectionMethodHasBeforeOrAfterMapHooks,
+
+    /// <summary>
+    /// A queryable projection map method declares a <see cref="MappaContext"/> parameter.
+    /// </summary>
+    ProjectionMethodHasMappaContextParameter,
 }

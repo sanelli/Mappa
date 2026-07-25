@@ -173,4 +173,10 @@
     <data name="DuplicateEnumMapDefaultAttribute" xml:space="preserve">
         <value>Il metodo '{0}' dichiara più attributi MappaMapEnumDefault per l'enum '{1}'.</value>
     </data>
+    <data name="ProjectionMethodHasBeforeOrAfterMapHooks" xml:space="preserve">
+        <value>Il metodo '{0}' proietta IQueryable ma dichiara hook MappaBeforeMap o MappaAfterMap che non sono supportati per le proiezioni queryable.</value>
+    </data>
+    <data name="ProjectionMethodHasMappaContextParameter" xml:space="preserve">
+        <value>Il metodo '{0}' proietta IQueryable ma dichiara un parametro MappaContext che non è supportato per le proiezioni queryable.</value>
+    </data>
 </root>

@@ -128,6 +128,13 @@ internal sealed class ContainerMapStrategyDetector
 
     private bool CanMapCollectionToCollection(out MapStrategy elementStrategy)
     {
+        if (this.context.SourceType.IsOrImplementIQueryable(this.compilation)
+            || this.context.TargetType.IsOrImplementIQueryable(this.compilation))
+        {
+            elementStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
+            return false;
+        }
+
         var isSourceCollection = this.context.SourceType.IsOrImplementIEnumerable()
             || this.context.SourceType.IsSpan(this.compilation)
             || this.context.SourceType.IsMemory(this.compilation)

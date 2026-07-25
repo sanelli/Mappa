@@ -68,6 +68,8 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? enumMapDefaultAttributeUnusedDefaultValue;
     private static DiagnosticDescriptor? tooManyEnumMapDefaultAttributesOnDirectEnumMap;
     private static DiagnosticDescriptor? duplicateEnumMapDefaultAttribute;
+    private static DiagnosticDescriptor? projectionMethodHasBeforeOrAfterMapHooks;
+    private static DiagnosticDescriptor? projectionMethodHasMappaContextParameter;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -500,6 +502,22 @@ internal static class MappaDiagnosticDescriptors
         => duplicateEnumMapDefaultAttribute ??= BuildError(
             MappaDiagnosticsKind.DuplicateEnumMapDefaultAttribute,
             DiagnosticsResources.DuplicateEnumMapDefaultAttribute);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.ProjectionMethodHasBeforeOrAfterMapHooks"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor ProjectionMethodHasBeforeOrAfterMapHooks
+        => projectionMethodHasBeforeOrAfterMapHooks ??= BuildError(
+            MappaDiagnosticsKind.ProjectionMethodHasBeforeOrAfterMapHooks,
+            DiagnosticsResources.ProjectionMethodHasBeforeOrAfterMapHooks);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.ProjectionMethodHasMappaContextParameter"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor ProjectionMethodHasMappaContextParameter
+        => projectionMethodHasMappaContextParameter ??= BuildError(
+            MappaDiagnosticsKind.ProjectionMethodHasMappaContextParameter,
+            DiagnosticsResources.ProjectionMethodHasMappaContextParameter);
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(

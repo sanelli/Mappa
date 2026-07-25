@@ -368,5 +368,17 @@ namespace Mappa.Generator.Diagnostics {
                 return ResourceManager.GetString("DuplicateEnumMapDefaultAttribute", resourceCulture);
             }
         }
+
+        internal static string ProjectionMethodHasBeforeOrAfterMapHooks {
+            get {
+                return ResourceManager.GetString("ProjectionMethodHasBeforeOrAfterMapHooks", resourceCulture);
+            }
+        }
+
+        internal static string ProjectionMethodHasMappaContextParameter {
+            get {
+                return ResourceManager.GetString("ProjectionMethodHasMappaContextParameter", resourceCulture);
+            }
+        }
     }
 }

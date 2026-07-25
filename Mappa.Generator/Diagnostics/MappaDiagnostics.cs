@@ -970,4 +970,32 @@ internal static class MappaDiagnostics
             methodDeclarationSyntax?.GetLocation(),
             methodName,
             enumTypeName);
+
+    /// <summary>
+    /// Diagnostic to report that a queryable projection map method declares before or after map hooks.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="methodName">The mapping method name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic ProjectionMethodHasBeforeOrAfterMapHooks(
+        MethodDeclarationSyntax? methodDeclarationSyntax,
+        string methodName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.ProjectionMethodHasBeforeOrAfterMapHooks,
+            methodDeclarationSyntax?.GetLocation(),
+            methodName);
+
+    /// <summary>
+    /// Diagnostic to report that a queryable projection map method declares a <see cref="MappaContext"/> parameter.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="methodName">The mapping method name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic ProjectionMethodHasMappaContextParameter(
+        MethodDeclarationSyntax? methodDeclarationSyntax,
+        string methodName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.ProjectionMethodHasMappaContextParameter,
+            methodDeclarationSyntax?.GetLocation(),
+            methodName);
 }

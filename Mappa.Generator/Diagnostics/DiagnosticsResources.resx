@@ -180,4 +180,10 @@
     <data name="DuplicateEnumMapDefaultAttribute" xml:space="preserve">
         <value>Method '{0}' declares multiple MappaMapEnumDefault attributes for enum '{1}'.</value>
     </data>
+    <data name="ProjectionMethodHasBeforeOrAfterMapHooks" xml:space="preserve">
+        <value>Method '{0}' projects IQueryable but declares MappaBeforeMap or MappaAfterMap hooks which are not supported for queryable projections.</value>
+    </data>
+    <data name="ProjectionMethodHasMappaContextParameter" xml:space="preserve">
+        <value>Method '{0}' projects IQueryable but declares a MappaContext parameter which is not supported for queryable projections.</value>
+    </data>
 </root>
