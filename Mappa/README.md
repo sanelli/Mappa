@@ -16,6 +16,9 @@ This is the list of attributes provided:
 - `MappaAfterMap`: Invokes a named hook immediately after the generated root mapping body and before returning the target; applies to mapper classes and mapping methods;
 - `MappaTypeMapping`: When mapping structured types or interfaces, allows defining the target type depending on the source type;
 - `MappaTypeMappingDefault`: Describes the default behaviour for polymorphic methods defined via `MappaTypeMapping`.
+- `MappaMapEnumMember`: Configures explicit enum↔integral, enum↔string, or enum↔enum member pairings;
+- `MappaMapEnumIgnore`: Excludes a specific enum member from mapping;
+- `MappaMapEnumDefault`: Configures fallback behaviour when an enum value cannot be mapped;
 
 This package also provides the `MappaContext` class that can be used to pass contextual values to mappers via the `MappaAssignFromContext` attribute, store mapped values via the `MappaAssignToContext` attribute, supply context to methods invoked via the `MappaInvokeMethodAttribute` attribute, or supply context to before/after map hooks.
 
@@ -57,6 +60,10 @@ Via `MappaTypeMappingDefault` the following settings can be tweaked:
 - `Null`: returns `null`;
 - `MapSourceType`: maps the source type to the target type of the method or the type specified in the `MappaTypeMappingDefault` attribute;
 - `InvokeMethod`: invokes a method in the mapper with the name specified in `MappaTypeMappingDefault` to perform the mapping; `MappaTypeMappingDefault` can also specify the type on which the method is defined—in that case the method must be `static`. The method can optionally accept a `MappaContext` parameter.
+
+Via `MappaMapEnumDefaultBehavior` the following settings can be tweaked:
+- `Throw`: throws `ArgumentOutOfRangeException` when an enum value cannot be mapped (default);
+- `UseDefaultValue`: returns the default value provided via `[MappaMapEnumDefault]` when an enum value cannot be mapped.
 
 Relevant packages:
 - [Mappa source generator](https://www.nuget.org/packages/Mappa.Generator/): source generator that automatically generates mappings between classes and value types;

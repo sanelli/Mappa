@@ -129,11 +129,14 @@ When no existing method applies (or for root methods), `TypeMapIdentifierAlgorit
     - **Enum → integral**: maps enum members to their underlying integral values;
     - **Integral → enum**: maps integral values (cast to the enum underlying type) to enum members;
     - **String → enum**: maps string input to enum members by name or by `[Description]` value (handled by the enum strategy, not the string strategy, because the enum detector runs first); when `CaseInsensitiveEnumMap` is enabled in `MappaSettings`, member names or Description values are matched case-insensitively via `ToUpperInvariant()`;
+    - **`[MappaMapEnumMember]`**, **`[MappaMapEnumIgnore]`**, and **`[MappaMapEnumDefault]`** on the map method are merged with settings-based pairing by `EnumMapConfigurationResolver`; explicit member overrides take precedence, ignored members are omitted, and unmapped values use the configured default arm (`Throw` or `UseDefaultValue`);
 - _Notes_:
     - The enum detector runs before the general string strategy, so **`string` → `enum`** is handled here rather than by the string strategy;
     - **Enum → enum** matching uses member names by default; set `EnumToEnumMapSetting` to `NumericValue` to match by underlying numeric value, or to `Description` to match by `[Description]` attribute value;
     - **Enum ↔ string** matching uses member names by default; set `EnumStringMapSetting` to `Description` to match by `[Description]` attribute value;
-    - **String → enum** and **enum → enum** member-name matching is case-sensitive by default; enable `CaseInsensitiveEnumMap` for case-insensitive member name or Description matching.
+    - **String → enum** and **enum → enum** member-name matching is case-sensitive by default; enable `CaseInsensitiveEnumMap` for case-insensitive member name or Description matching;
+    - Warning **MP00039** is suppressed for members excluded via `[MappaMapEnumIgnore]` and when `[MappaMapEnumDefault]` is configured with `UseDefaultValue`;
+    - Errors **MP00047**–**MP00054** halt mapping generation when enum configuration attribute validation fails (see [enum mapping configuration attributes](../Documentation/mappa-attributes.md#mappamapenummember-mappamapenumignore-and-mappamapenumdefault)).
 
 ### 5. String strategy
 
