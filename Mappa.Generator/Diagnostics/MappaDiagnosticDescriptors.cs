@@ -60,6 +60,14 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? mappingAttributeSourcePropertyPathSegmentDoesNotExist;
     private static DiagnosticDescriptor? hookMethodNotFound;
     private static DiagnosticDescriptor? duplicateMapHookRegistration;
+    private static DiagnosticDescriptor? enumMapAttributeEnumTypeMismatch;
+    private static DiagnosticDescriptor? enumMapMemberMappingClash;
+    private static DiagnosticDescriptor? enumMapIgnoreConflictsWithMemberMapping;
+    private static DiagnosticDescriptor? enumMapDefaultBehaviorRequiresDefaultValue;
+    private static DiagnosticDescriptor? enumMapDefaultValueConstructorMismatch;
+    private static DiagnosticDescriptor? enumMapDefaultAttributeUnusedDefaultValue;
+    private static DiagnosticDescriptor? tooManyEnumMapDefaultAttributesOnDirectEnumMap;
+    private static DiagnosticDescriptor? duplicateEnumMapDefaultAttribute;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -428,6 +436,70 @@ internal static class MappaDiagnosticDescriptors
         => duplicateMapHookRegistration ??= BuildWarning(
             MappaDiagnosticsKind.DuplicateMapHookRegistration,
             DiagnosticsResources.DuplicateMapHookRegistration);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.EnumMapAttributeEnumTypeMismatch"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor EnumMapAttributeEnumTypeMismatch
+        => enumMapAttributeEnumTypeMismatch ??= BuildError(
+            MappaDiagnosticsKind.EnumMapAttributeEnumTypeMismatch,
+            DiagnosticsResources.EnumMapAttributeEnumTypeMismatch);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.EnumMapMemberMappingClash"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor EnumMapMemberMappingClash
+        => enumMapMemberMappingClash ??= BuildError(
+            MappaDiagnosticsKind.EnumMapMemberMappingClash,
+            DiagnosticsResources.EnumMapMemberMappingClash);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.EnumMapIgnoreConflictsWithMemberMapping"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor EnumMapIgnoreConflictsWithMemberMapping
+        => enumMapIgnoreConflictsWithMemberMapping ??= BuildError(
+            MappaDiagnosticsKind.EnumMapIgnoreConflictsWithMemberMapping,
+            DiagnosticsResources.EnumMapIgnoreConflictsWithMemberMapping);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.EnumMapDefaultBehaviorRequiresDefaultValue"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor EnumMapDefaultBehaviorRequiresDefaultValue
+        => enumMapDefaultBehaviorRequiresDefaultValue ??= BuildError(
+            MappaDiagnosticsKind.EnumMapDefaultBehaviorRequiresDefaultValue,
+            DiagnosticsResources.EnumMapDefaultBehaviorRequiresDefaultValue);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.EnumMapDefaultValueConstructorMismatch"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor EnumMapDefaultValueConstructorMismatch
+        => enumMapDefaultValueConstructorMismatch ??= BuildError(
+            MappaDiagnosticsKind.EnumMapDefaultValueConstructorMismatch,
+            DiagnosticsResources.EnumMapDefaultValueConstructorMismatch);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.EnumMapDefaultAttributeUnusedDefaultValue"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor EnumMapDefaultAttributeUnusedDefaultValue
+        => enumMapDefaultAttributeUnusedDefaultValue ??= BuildWarning(
+            MappaDiagnosticsKind.EnumMapDefaultAttributeUnusedDefaultValue,
+            DiagnosticsResources.EnumMapDefaultAttributeUnusedDefaultValue);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.TooManyEnumMapDefaultAttributesOnDirectEnumMap"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor TooManyEnumMapDefaultAttributesOnDirectEnumMap
+        => tooManyEnumMapDefaultAttributesOnDirectEnumMap ??= BuildError(
+            MappaDiagnosticsKind.TooManyEnumMapDefaultAttributesOnDirectEnumMap,
+            DiagnosticsResources.TooManyEnumMapDefaultAttributesOnDirectEnumMap);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.DuplicateEnumMapDefaultAttribute"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor DuplicateEnumMapDefaultAttribute
+        => duplicateEnumMapDefaultAttribute ??= BuildError(
+            MappaDiagnosticsKind.DuplicateEnumMapDefaultAttribute,
+            DiagnosticsResources.DuplicateEnumMapDefaultAttribute);
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(

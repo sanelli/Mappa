@@ -15,11 +15,13 @@ namespace Mappa.Generator.Models.Strategies;
 /// <param name="sourceType">The source type.</param>
 /// <param name="caseInsensitiveEnumMap">The case-insensitive enum matching setting.</param>
 /// <param name="enumStringMapSetting">The enum and string member pairing setting.</param>
+/// <param name="enumMapConfiguration">The resolved enum mapping configuration.</param>
 internal sealed class StringToEnumMapStrategy(
     ITypeSymbol targetType,
     ITypeSymbol sourceType,
     BooleanSetting caseInsensitiveEnumMap,
-    EnumStringMapSetting enumStringMapSetting)
+    EnumStringMapSetting enumStringMapSetting,
+    EnumMapConfiguration enumMapConfiguration)
         : MapStrategy(targetType, sourceType)
 {
     /// <summary>
@@ -31,6 +33,11 @@ internal sealed class StringToEnumMapStrategy(
     /// Gets the enum and string member pairing setting.
     /// </summary>
     public EnumStringMapSetting EnumStringMapSetting { get; } = enumStringMapSetting;
+
+    /// <summary>
+    /// Gets the resolved enum mapping configuration.
+    /// </summary>
+    public EnumMapConfiguration EnumMapConfiguration { get; } = enumMapConfiguration;
 
     /// <inheritdoc />
     internal override IMappaStrategyBuilder GetBuilder() => new StringToEnumMapStrategyBuilder(this);

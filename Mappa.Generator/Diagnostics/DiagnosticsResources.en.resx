@@ -149,4 +149,28 @@
     <data name="DuplicateMapHookRegistration" xml:space="preserve">
         <value>Mapping method '{0}' resolves {1} hook '{2}' at both class and method scope; the hook will be invoked once.</value>
     </data>
+    <data name="EnumMapAttributeEnumTypeMismatch" xml:space="preserve">
+        <value>Method '{0}' declares {1} for enum '{2}' which is not part of the mapping from '{3}' to '{4}'.</value>
+    </data>
+    <data name="EnumMapMemberMappingClash" xml:space="preserve">
+        <value>Method '{0}' declares conflicting enum mapping configuration for enum '{1}': {2}.</value>
+    </data>
+    <data name="EnumMapIgnoreConflictsWithMemberMapping" xml:space="preserve">
+        <value>Method '{0}' excludes member '{2}' of enum '{1}' via MappaMapEnumIgnore but the same member is also configured via MappaMapEnumMember.</value>
+    </data>
+    <data name="EnumMapDefaultBehaviorRequiresDefaultValue" xml:space="preserve">
+        <value>Method '{0}' declares MappaMapEnumDefault for enum '{1}' with behavior UseDefaultValue but no default value has been provided.</value>
+    </data>
+    <data name="EnumMapDefaultValueConstructorMismatch" xml:space="preserve">
+        <value>Method '{0}' declares MappaMapEnumDefault for enum '{1}' with a default value which is not compatible with the mapping target type '{2}'.</value>
+    </data>
+    <data name="EnumMapDefaultAttributeUnusedDefaultValue" xml:space="preserve">
+        <value>Method '{0}' declares MappaMapEnumDefault for enum '{1}' with behavior Throw; the provided default value will not be used.</value>
+    </data>
+    <data name="TooManyEnumMapDefaultAttributesOnDirectEnumMap" xml:space="preserve">
+        <value>Method '{0}' maps an enum directly therefore at most one MappaMapEnumDefault attribute is allowed but {1} have been found.</value>
+    </data>
+    <data name="DuplicateEnumMapDefaultAttribute" xml:space="preserve">
+        <value>Method '{0}' declares multiple MappaMapEnumDefault attributes for enum '{1}'.</value>
+    </data>
 </root>

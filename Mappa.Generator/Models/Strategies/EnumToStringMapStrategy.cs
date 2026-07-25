@@ -13,16 +13,23 @@ namespace Mappa.Generator.Models.Strategies;
 /// <param name="targetType">The target type.</param>
 /// <param name="sourceType">The source type.</param>
 /// <param name="enumStringMapSetting">The enum and string member pairing setting.</param>
+/// <param name="enumMapConfiguration">The resolved enum mapping configuration.</param>
 internal sealed class EnumToStringMapStrategy(
     ITypeSymbol targetType,
     ITypeSymbol sourceType,
-    EnumStringMapSetting enumStringMapSetting)
+    EnumStringMapSetting enumStringMapSetting,
+    EnumMapConfiguration enumMapConfiguration)
         : MapStrategy(targetType, sourceType)
 {
     /// <summary>
     /// Gets the enum and string member pairing setting.
     /// </summary>
     public EnumStringMapSetting EnumStringMapSetting { get; } = enumStringMapSetting;
+
+    /// <summary>
+    /// Gets the resolved enum mapping configuration.
+    /// </summary>
+    public EnumMapConfiguration EnumMapConfiguration { get; } = enumMapConfiguration;
 
     /// <inheritdoc />
     internal override IMappaStrategyBuilder GetBuilder() => new EnumToStringMapStrategyBuilder(this);

@@ -2,7 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using Mappa.Generator.Extensions;
+using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -28,53 +28,18 @@ internal sealed class EnumToStringMapStrategyBuilder
     /// <inheritdoc/>
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
-        static EnumStringMapSetting GetEffectiveEnumStringMapSetting(EnumStringMapSetting enumStringMapSetting)
-            => enumStringMapSetting is EnumStringMapSetting.Undefined
-                ? EnumStringMapSetting.MemberName
-                : enumStringMapSetting;
-
         var builder = new PrettyCode.StringBuilder();
 
-        var enumFullName = this.strategy.SourceType.ToDisplayString();
         var temporary = context.NextTemporary();
         builder.AppendLine($"string {temporary};");
         builder.AppendLine($"switch ({source})");
         using (builder.CurlyBracesBlock())
         {
-            if (GetEffectiveEnumStringMapSetting(this.strategy.EnumStringMapSetting) is EnumStringMapSetting.Description)
-            {
-                var membersWithDescriptions = this.strategy.SourceType.GetEnumMembersWithDescriptions(context.Compilation);
-                foreach (var (memberName, description) in membersWithDescriptions)
-                {
-                    var enumValueFullName = $"{enumFullName}.{memberName}";
-                    builder.AppendLine($"case {enumValueFullName}:");
-                    using (builder.CurlyBracesBlock())
-                    {
-                        builder.AppendLine($"{temporary} = {TypeSymbolExtensions.ToCSharpStringLiteral(description)};");
-                        builder.AppendLine("break;");
-                    }
-                }
-            }
-            else
-            {
-                var enumValues = this.strategy.SourceType.GetEnumValues();
-                foreach (var enumValue in enumValues)
-                {
-                    var enumValueFullName = $"{enumFullName}.{enumValue.Name}";
-                    builder.AppendLine($"case {enumValueFullName}:");
-                    using (builder.CurlyBracesBlock())
-                    {
-                        builder.AppendLine($"{temporary} = nameof({enumValueFullName});");
-                        builder.AppendLine("break;");
-                    }
-                }
-            }
-
-            builder.AppendLine($"default:");
-            using (builder.CurlyBracesBlock())
-            {
-                builder.AppendLine($"throw new System.ArgumentOutOfRangeException(\"{source}\");");
-            }
+            EnumMapSwitchCodeHelper.AppendSwitchArms(
+                builder,
+                this.strategy.EnumMapConfiguration,
+                temporary,
+                source);
         }
 
         return (temporary, builder.ToString());

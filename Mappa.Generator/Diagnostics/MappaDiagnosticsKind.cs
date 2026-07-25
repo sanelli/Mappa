@@ -252,4 +252,49 @@ internal enum MappaDiagnosticsKind
     /// The same hook method is registered at class and method scope.
     /// </summary>
     DuplicateMapHookRegistration,
+
+    /// <summary>
+    /// An enum mapping configuration attribute references an enum which is not part of the current mapping.
+    /// </summary>
+    EnumMapAttributeEnumTypeMismatch,
+
+    /// <summary>
+    /// Two or more <see cref="MappaMapEnumMemberAttribute{TEnum}"/> declarations conflict with each other.
+    /// </summary>
+    EnumMapMemberMappingClash,
+
+    /// <summary>
+    /// A <see cref="MappaMapEnumIgnoreAttribute{TEnum}"/> excludes a member which is
+    /// also configured by a <see cref="MappaMapEnumMemberAttribute{TEnum}"/>.
+    /// </summary>
+    EnumMapIgnoreConflictsWithMemberMapping,
+
+    /// <summary>
+    /// A <see cref="MappaMapEnumDefaultAttribute{TEnum}"/> uses
+    /// <see cref="MappaMapEnumDefaultBehavior.UseDefaultValue"/> without providing a default value.
+    /// </summary>
+    EnumMapDefaultBehaviorRequiresDefaultValue,
+
+    /// <summary>
+    /// A <see cref="MappaMapEnumDefaultAttribute{TEnum}"/> provides a default value
+    /// which is not compatible with the target type of the mapping.
+    /// </summary>
+    EnumMapDefaultValueConstructorMismatch,
+
+    /// <summary>
+    /// A <see cref="MappaMapEnumDefaultAttribute{TEnum}"/> provides a default value
+    /// which is not used because the behaviour is <see cref="MappaMapEnumDefaultBehavior.Throw"/>.
+    /// </summary>
+    EnumMapDefaultAttributeUnusedDefaultValue,
+
+    /// <summary>
+    /// More than one <see cref="MappaMapEnumDefaultAttribute{TEnum}"/> is applied to a
+    /// map method whose source or return type is an enum.
+    /// </summary>
+    TooManyEnumMapDefaultAttributesOnDirectEnumMap,
+
+    /// <summary>
+    /// Multiple <see cref="MappaMapEnumDefaultAttribute{TEnum}"/> declarations target the same enum.
+    /// </summary>
+    DuplicateEnumMapDefaultAttribute,
 }

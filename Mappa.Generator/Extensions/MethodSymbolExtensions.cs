@@ -84,6 +84,11 @@ internal static class MethodSymbolExtensions
             result.Add(mappaTypeMappingDefaultAttribute);
         }
 
+        // Mappa enum mapping configuration attributes
+        result.AddRange(attributes.GetEnumMapMemberAttributes(compilation));
+        result.AddRange(attributes.GetEnumMapIgnoreAttributes(compilation));
+        result.AddRange(attributes.GetEnumMapDefaultAttributes(compilation));
+
         // All done.
         return [.. result];
     }
