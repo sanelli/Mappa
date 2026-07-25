@@ -17,6 +17,9 @@ This is the list of attributes provided:
 - `MappaAfterMap`: Invokes a named hook immediately after the generated root mapping body and before returning the target (see [MappaBeforeMap and MappaAfterMap](#mappabeforemap-and-mappaaftermap));
 - `MappaTypeMapping`: When mapping structured types or interfaces, allows defining the target type depending on the source type;
 - `MappaTypeMappingDefault`: Describes the default behaviour for polymorphic methods defined via `MappaTypeMapping`.
+- `MappaMapEnumMember`: Configures explicit enum↔integral, enum↔string, or enum↔enum member pairings (see [MappaMapEnumMember, MappaMapEnumIgnore, and MappaMapEnumDefault](#mappamapenummember-mappamapenumignore-and-mappamapenumdefault));
+- `MappaMapEnumIgnore`: Excludes a specific enum member from mapping;
+- `MappaMapEnumDefault`: Configures fallback behaviour when an enum value cannot be mapped;
 
 The [Mappa](https://www.nuget.org/packages/Mappa/) package also provides the `MappaContext` class that can be used to pass contextual values to mappers via the `MappaAssignFromContext` attribute, store mapped values via the `MappaAssignToContext` attribute, supply context to methods invoked via the `MappaInvokeMethodAttribute` attribute, or supply context to before/after map hooks.
 
@@ -227,6 +230,55 @@ When resolving parse styles for a mapping target, the generator uses the type-sp
 - `Null`: returns `null`;
 - `MapSourceType`: maps the source type to the target type of the method or the type specified in the attribute;
 - `InvokeMethod`: invokes a method in the mapper with the name specified in the attribute to perform the mapping; the attribute can also specify the type on which the method is defined—in that case the method must be `static`. The method can optionally accept a `MappaContext` parameter. When more than one method matches, the generator reports error **MP00042** (see [Overload selection priority](#overload-selection-priority) for `[MappaInvokeMethod]` tier rules).
+
+## MappaMapEnumMember, MappaMapEnumIgnore, and MappaMapEnumDefault
+
+`[MappaMapEnumMember]`, `[MappaMapEnumIgnore]`, and `[MappaMapEnumDefault]` are applied to mapping methods. All three allow multiple instances and are **bidirectional**: the same declaration configures mapping in both directions (for example `TEnum` → `int` and `int` → `TEnum`).
+
+Use them on **root enum map methods** (where the source or return type is an enum) and on **class/struct map methods** to configure nested enum properties being mapped.
+
+### MappaMapEnumMember
+
+`[MappaMapEnumMember]` declares an explicit pairing that overrides settings-based matching for that member:
+
+- `[MappaMapEnumMember<TEnum>(TEnum, int)]` — pairs an enum member with an integral value;
+- `[MappaMapEnumMember<TEnum>(TEnum, string)]` — pairs an enum member with a string value;
+- `[MappaMapEnumMember<TEnum, TOtherEnum>(TEnum, TOtherEnum)]` — pairs members of two enums.
+
+### MappaMapEnumIgnore
+
+`[MappaMapEnumIgnore<TEnum>(TEnum)]` excludes a specific enum member from mapping. When that member is encountered at runtime, the fallback configured by `[MappaMapEnumDefault]` is applied (throw by default).
+
+### MappaMapEnumDefault
+
+`[MappaMapEnumDefault<TEnum>]` configures fallback behaviour when a value of `TEnum` cannot be mapped (for example because it was ignored or has no pairing):
+
+- `Throw` (default) — throws `ArgumentOutOfRangeException`;
+- `UseDefaultValue` — returns a default value supplied via a constructor overload: `TEnum` when the target is an enum, `int` when the target is integral, or `string` when the target is `string`.
+
+### Multiplicity
+
+- On a mapping method whose source or return type is itself an enum, at most **one** `[MappaMapEnumDefault]` may be present.
+- On class/struct map methods, at most **one** `[MappaMapEnumDefault]` per distinct `TEnum` type may be present (for example one default for a nested `ConfigStatus` property and another for a nested `ConfigPriority` property).
+
+### Settings interaction
+
+`EnumStringMapSetting`, `EnumToEnumMapSetting`, and `CaseInsensitiveEnumMap` from `[MappaSettings]` still apply for members that are not overridden by these attributes.
+
+### Diagnostics
+
+| Code | Summary |
+|------|---------|
+| **MP00047** | An attribute references an enum that is not part of the current mapping. |
+| **MP00048** | Conflicting `[MappaMapEnumMember]` declarations for the same enum. |
+| **MP00049** | `[MappaMapEnumIgnore]` excludes a member also configured by `[MappaMapEnumMember]`. |
+| **MP00050** | `[MappaMapEnumDefault]` uses `UseDefaultValue` without a default value. |
+| **MP00051** | `[MappaMapEnumDefault]` default value is incompatible with the mapping target type. |
+| **MP00052** | `[MappaMapEnumDefault]` provides a default value with behaviour `Throw` that will not be used. |
+| **MP00053** | More than one `[MappaMapEnumDefault]` on a method that maps an enum directly. |
+| **MP00054** | Multiple `[MappaMapEnumDefault]` attributes target the same enum on a class/struct map method. |
+
+See also: [tutorial](./tutorial.md#enum-mapping-configuration-attributes), [algorithm](./mappa-generator-algorithm.md#4-enum-strategy), and [EnumMappingConfigurationMappers.cs](../Mappa.Samples/EnumMappingConfigurationMappers.cs).
 
 ## .editorconfig
 

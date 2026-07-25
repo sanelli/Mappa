@@ -813,4 +813,161 @@ internal static class MappaDiagnostics
             mapMethodName,
             hookKind,
             hookMethodName);
+
+    /// <summary>
+    /// Diagnostic to report that an enum mapping configuration attribute references an enum
+    /// which is not part of the current mapping.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="methodName">The mapping method name.</param>
+    /// <param name="attributeName">The name of the offending attribute.</param>
+    /// <param name="enumTypeName">The enum type referenced by the attribute.</param>
+    /// <param name="sourceTypeName">The source type of the mapping.</param>
+    /// <param name="targetTypeName">The target type of the mapping.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic EnumMapAttributeEnumTypeMismatch(
+        MethodDeclarationSyntax? methodDeclarationSyntax,
+        string methodName,
+        string attributeName,
+        string enumTypeName,
+        string sourceTypeName,
+        string targetTypeName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.EnumMapAttributeEnumTypeMismatch,
+            methodDeclarationSyntax?.GetLocation(),
+            methodName,
+            attributeName,
+            enumTypeName,
+            sourceTypeName,
+            targetTypeName);
+
+    /// <summary>
+    /// Diagnostic to report that two or more enum member mappings conflict with each other.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="methodName">The mapping method name.</param>
+    /// <param name="enumTypeName">The enum type being configured.</param>
+    /// <param name="details">The clash details.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic EnumMapMemberMappingClash(
+        MethodDeclarationSyntax? methodDeclarationSyntax,
+        string methodName,
+        string enumTypeName,
+        string details)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.EnumMapMemberMappingClash,
+            methodDeclarationSyntax?.GetLocation(),
+            methodName,
+            enumTypeName,
+            details);
+
+    /// <summary>
+    /// Diagnostic to report that an ignored enum member is also configured by an explicit member mapping.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="methodName">The mapping method name.</param>
+    /// <param name="enumTypeName">The enum type being configured.</param>
+    /// <param name="enumMemberName">The conflicting enum member name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic EnumMapIgnoreConflictsWithMemberMapping(
+        MethodDeclarationSyntax? methodDeclarationSyntax,
+        string methodName,
+        string enumTypeName,
+        string enumMemberName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.EnumMapIgnoreConflictsWithMemberMapping,
+            methodDeclarationSyntax?.GetLocation(),
+            methodName,
+            enumTypeName,
+            enumMemberName);
+
+    /// <summary>
+    /// Diagnostic to report that a default enum mapping behaviour requires a default value.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="methodName">The mapping method name.</param>
+    /// <param name="enumTypeName">The enum type being configured.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic EnumMapDefaultBehaviorRequiresDefaultValue(
+        MethodDeclarationSyntax? methodDeclarationSyntax,
+        string methodName,
+        string enumTypeName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.EnumMapDefaultBehaviorRequiresDefaultValue,
+            methodDeclarationSyntax?.GetLocation(),
+            methodName,
+            enumTypeName);
+
+    /// <summary>
+    /// Diagnostic to report that the default value provided for an enum mapping
+    /// is not compatible with the target type of the mapping.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="methodName">The mapping method name.</param>
+    /// <param name="enumTypeName">The enum type being configured.</param>
+    /// <param name="targetTypeName">The target type of the mapping.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic EnumMapDefaultValueConstructorMismatch(
+        MethodDeclarationSyntax? methodDeclarationSyntax,
+        string methodName,
+        string enumTypeName,
+        string targetTypeName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.EnumMapDefaultValueConstructorMismatch,
+            methodDeclarationSyntax?.GetLocation(),
+            methodName,
+            enumTypeName,
+            targetTypeName);
+
+    /// <summary>
+    /// Diagnostic to report that the default value provided for an enum mapping will not be used.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="methodName">The mapping method name.</param>
+    /// <param name="enumTypeName">The enum type being configured.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic EnumMapDefaultAttributeUnusedDefaultValue(
+        MethodDeclarationSyntax? methodDeclarationSyntax,
+        string methodName,
+        string enumTypeName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.EnumMapDefaultAttributeUnusedDefaultValue,
+            methodDeclarationSyntax?.GetLocation(),
+            methodName,
+            enumTypeName);
+
+    /// <summary>
+    /// Diagnostic to report that too many default enum mapping attributes have been applied
+    /// to a map method whose source or return type is an enum.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="methodName">The mapping method name.</param>
+    /// <param name="numberOfAttributes">The number of attributes found.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic TooManyEnumMapDefaultAttributesOnDirectEnumMap(
+        MethodDeclarationSyntax? methodDeclarationSyntax,
+        string methodName,
+        int numberOfAttributes)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.TooManyEnumMapDefaultAttributesOnDirectEnumMap,
+            methodDeclarationSyntax?.GetLocation(),
+            methodName,
+            numberOfAttributes);
+
+    /// <summary>
+    /// Diagnostic to report that multiple default enum mapping attributes target the same enum.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="methodName">The mapping method name.</param>
+    /// <param name="enumTypeName">The duplicated enum type.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic DuplicateEnumMapDefaultAttribute(
+        MethodDeclarationSyntax? methodDeclarationSyntax,
+        string methodName,
+        string enumTypeName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.DuplicateEnumMapDefaultAttribute,
+            methodDeclarationSyntax?.GetLocation(),
+            methodName,
+            enumTypeName);
 }

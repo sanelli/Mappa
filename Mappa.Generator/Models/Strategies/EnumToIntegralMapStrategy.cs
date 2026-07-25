@@ -12,9 +12,18 @@ namespace Mappa.Generator.Models.Strategies;
 /// </summary>
 /// <param name="targetType">The target type.</param>
 /// <param name="sourceType">The source type.</param>
-internal sealed class EnumToIntegralMapStrategy(ITypeSymbol targetType, ITypeSymbol sourceType)
+/// <param name="enumMapConfiguration">The resolved enum mapping configuration.</param>
+internal sealed class EnumToIntegralMapStrategy(
+    ITypeSymbol targetType,
+    ITypeSymbol sourceType,
+    EnumMapConfiguration enumMapConfiguration)
         : MapStrategy(targetType, sourceType)
 {
+    /// <summary>
+    /// Gets the resolved enum mapping configuration.
+    /// </summary>
+    public EnumMapConfiguration EnumMapConfiguration { get; } = enumMapConfiguration;
+
     /// <inheritdoc />
     internal override IMappaStrategyBuilder GetBuilder() => new EnumToIntegralMapStrategyBuilder(this);
 }

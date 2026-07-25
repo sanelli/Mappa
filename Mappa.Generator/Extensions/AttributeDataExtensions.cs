@@ -32,6 +32,157 @@ internal static class AttributeDataExtensions
     private static readonly string MappaIgnoreTargetPropertyAttributeFullName = typeof(MappaIgnoreTargetPropertyAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaIgnoreTargetPropertyAttribute)}");
     private static readonly string MappaTypeMappingAttributeFullName = typeof(MappaTypeMappingAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaTypeMappingAttribute)}");
     private static readonly string MappaTypeMappingDefaultAttributeFullName = typeof(MappaTypeMappingDefaultAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaTypeMappingDefaultAttribute)}");
+    private static readonly string MappaMapEnumMemberAttributeFullName = typeof(MappaMapEnumMemberAttribute<>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaMapEnumMemberAttribute<>)}");
+    private static readonly string MappaMapEnumMemberToEnumAttributeFullName = typeof(MappaMapEnumMemberAttribute<,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaMapEnumMemberAttribute<,>)}");
+    private static readonly string MappaMapEnumIgnoreAttributeFullName = typeof(MappaMapEnumIgnoreAttribute<>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaMapEnumIgnoreAttribute<>)}");
+    private static readonly string MappaMapEnumDefaultAttributeFullName = typeof(MappaMapEnumDefaultAttribute<>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaMapEnumDefaultAttribute<>)}");
+
+    /// <summary>
+    /// Gets the <see cref="MappaMapEnumMemberAttribute{TEnum}"/> and
+    /// <see cref="MappaMapEnumMemberAttribute{TEnum, TOtherEnum}"/> declarations applied to the method.
+    /// </summary>
+    /// <param name="attributes">The attributes.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The parsed declarations in declaration order.</returns>
+    internal static EnumMapMemberInfoAttribute[] GetEnumMapMemberAttributes(this ImmutableArray<AttributeData> attributes, Compilation compilation)
+    {
+        var enumMemberAttributeSymbol = compilation.GetTypeByMetadataName(MappaMapEnumMemberAttributeFullName);
+        var enumMemberToEnumAttributeSymbol = compilation.GetTypeByMetadataName(MappaMapEnumMemberToEnumAttributeFullName);
+        var results = new List<EnumMapMemberInfoAttribute>();
+
+        foreach (var attributeData in attributes)
+        {
+            if (attributeData.AttributeClass is not { } attributeClass
+                || attributeData.ConstructorArguments.Length != 2)
+            {
+                continue;
+            }
+
+            var constructorArguments = attributeData.ConstructorArguments;
+            if (IsAttribute(attributeClass, enumMemberAttributeSymbol)
+                && GetEnumTypeArgument(attributeClass, 1, 0) is { } enumType
+                && GetEnumMemberName(constructorArguments[0]) is { } enumMemberName)
+            {
+                switch (constructorArguments[1].Value)
+                {
+                    case string stringValue:
+                        results.Add(new EnumMapMemberInfoAttribute(enumType, enumMemberName, null, stringValue, null, null));
+                        break;
+
+                    case int integerValue:
+                        results.Add(new EnumMapMemberInfoAttribute(enumType, enumMemberName, integerValue, null, null, null));
+                        break;
+                }
+
+                continue;
+            }
+
+            if (IsAttribute(attributeClass, enumMemberToEnumAttributeSymbol)
+                && GetEnumTypeArgument(attributeClass, 2, 0) is { } firstEnumType
+                && GetEnumTypeArgument(attributeClass, 2, 1) is { } secondEnumType
+                && GetEnumMemberName(constructorArguments[0]) is { } firstEnumMemberName
+                && GetEnumMemberName(constructorArguments[1]) is { } secondEnumMemberName)
+            {
+                results.Add(new EnumMapMemberInfoAttribute(
+                    firstEnumType,
+                    firstEnumMemberName,
+                    null,
+                    null,
+                    secondEnumType,
+                    secondEnumMemberName));
+            }
+        }
+
+        return [.. results];
+    }
+
+    /// <summary>
+    /// Gets the <see cref="MappaMapEnumIgnoreAttribute{TEnum}"/> declarations applied to the method.
+    /// </summary>
+    /// <param name="attributes">The attributes.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The parsed declarations in declaration order.</returns>
+    internal static EnumMapIgnoreInfoAttribute[] GetEnumMapIgnoreAttributes(this ImmutableArray<AttributeData> attributes, Compilation compilation)
+    {
+        var enumIgnoreAttributeSymbol = compilation.GetTypeByMetadataName(MappaMapEnumIgnoreAttributeFullName);
+        var results = new List<EnumMapIgnoreInfoAttribute>();
+
+        foreach (var attributeData in attributes)
+        {
+            if (attributeData.AttributeClass is not { } attributeClass
+                || !IsAttribute(attributeClass, enumIgnoreAttributeSymbol)
+                || attributeData.ConstructorArguments.Length != 1
+                || GetEnumTypeArgument(attributeClass, 1, 0) is not { } enumType
+                || GetEnumMemberName(attributeData.ConstructorArguments[0]) is not { } enumMemberName)
+            {
+                continue;
+            }
+
+            results.Add(new EnumMapIgnoreInfoAttribute(enumType, enumMemberName));
+        }
+
+        return [.. results];
+    }
+
+    /// <summary>
+    /// Gets the <see cref="MappaMapEnumDefaultAttribute{TEnum}"/> declarations applied to the method.
+    /// </summary>
+    /// <param name="attributes">The attributes.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The parsed declarations in declaration order.</returns>
+    internal static EnumMapDefaultInfoAttribute[] GetEnumMapDefaultAttributes(this ImmutableArray<AttributeData> attributes, Compilation compilation)
+    {
+        var enumDefaultAttributeSymbol = compilation.GetTypeByMetadataName(MappaMapEnumDefaultAttributeFullName);
+        var results = new List<EnumMapDefaultInfoAttribute>();
+
+        foreach (var attributeData in attributes)
+        {
+            if (attributeData.AttributeClass is not { } attributeClass
+                || !IsAttribute(attributeClass, enumDefaultAttributeSymbol)
+                || GetEnumTypeArgument(attributeClass, 1, 0) is not { } enumType)
+            {
+                continue;
+            }
+
+            var constructorArguments = attributeData.ConstructorArguments;
+            if (constructorArguments.Length == 0
+                || constructorArguments[0].Value is not int behaviorValue)
+            {
+                continue;
+            }
+
+            var behavior = (MappaMapEnumDefaultBehavior)behaviorValue;
+            if (constructorArguments.Length == 1)
+            {
+                results.Add(new EnumMapDefaultInfoAttribute(enumType, behavior, null, null, null));
+                continue;
+            }
+
+            var defaultValue = constructorArguments[1];
+            if (defaultValue.Type is INamedTypeSymbol { TypeKind: TypeKind.Enum })
+            {
+                if (GetEnumMemberName(defaultValue) is { } enumDefaultMemberName)
+                {
+                    results.Add(new EnumMapDefaultInfoAttribute(enumType, behavior, enumDefaultMemberName, null, null));
+                }
+
+                continue;
+            }
+
+            switch (defaultValue.Value)
+            {
+                case string stringDefaultValue:
+                    results.Add(new EnumMapDefaultInfoAttribute(enumType, behavior, null, null, stringDefaultValue));
+                    break;
+
+                case int integerDefaultValue:
+                    results.Add(new EnumMapDefaultInfoAttribute(enumType, behavior, null, integerDefaultValue, null));
+                    break;
+            }
+        }
+
+        return [.. results];
+    }
 
     /// <summary>
     /// Gets the <see cref="MappaTypeMappingDefaultAttribute"/> applied to the method (if any).
@@ -643,5 +794,36 @@ internal static class AttributeDataExtensions
         }
 
         return [.. results];
+    }
+
+    private static bool IsAttribute(INamedTypeSymbol attributeClass, INamedTypeSymbol? attributeSymbol)
+        => SymbolEqualityComparer.Default.Equals(attributeClass.OriginalDefinition, attributeSymbol);
+
+    private static INamedTypeSymbol? GetEnumTypeArgument(
+        INamedTypeSymbol attributeClass,
+        int expectedNumberOfTypeArguments,
+        int index)
+        => attributeClass.TypeArguments.Length == expectedNumberOfTypeArguments
+            ? attributeClass.TypeArguments[index] as INamedTypeSymbol
+            : null;
+
+    private static string? GetEnumMemberName(TypedConstant typedConstant)
+    {
+        if (typedConstant.Type is not INamedTypeSymbol { TypeKind: TypeKind.Enum } enumType
+            || typedConstant.Value is null)
+        {
+            return null;
+        }
+
+        var value = Convert.ToDecimal(typedConstant.Value, CultureInfo.InvariantCulture);
+        foreach (var (memberName, memberValue) in enumType.GetEnumValues())
+        {
+            if (Convert.ToDecimal(memberValue, CultureInfo.InvariantCulture) == value)
+            {
+                return memberName;
+            }
+        }
+
+        return null;
     }
 }

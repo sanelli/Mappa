@@ -3,7 +3,7 @@
 // </copyright>
 
 using Mappa.Generator.Exceptions;
-using Mappa.Generator.Extensions;
+using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -41,23 +41,11 @@ internal sealed class IntegralToEnumMapStrategyBuilder
         builder.AppendLine($"switch (({enumUnderlyingType.ToDisplayString()}) {source})");
         using (builder.CurlyBracesBlock())
         {
-            var enumValues = this.strategy.TargetType.GetEnumValues();
-            foreach (var enumValue in enumValues)
-            {
-                var enumValueFullName = $"{enumFullName}.{enumValue.Name}";
-                builder.AppendLine($"case {enumValue.Value}:");
-                using (builder.CurlyBracesBlock())
-                {
-                    builder.AppendLine($"{temporary} = {enumValueFullName};");
-                    builder.AppendLine("break;");
-                }
-            }
-
-            builder.AppendLine($"default:");
-            using (builder.CurlyBracesBlock())
-            {
-                builder.AppendLine($"throw new System.ArgumentOutOfRangeException(\"{source}\");");
-            }
+            EnumMapSwitchCodeHelper.AppendSwitchArms(
+                builder,
+                this.strategy.EnumMapConfiguration,
+                temporary,
+                source);
         }
 
         return (temporary, builder.ToString());

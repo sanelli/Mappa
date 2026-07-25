@@ -337,6 +337,43 @@ Both enums must define a non-empty `[Description]` on every member used in the m
 
 See also: [NumericValueEnumToEnumMapper.cs](../Mappa.Samples/NumericValueEnumToEnumMapper.cs), [DescriptionEnumToEnumMapper.cs](../Mappa.Samples/DescriptionEnumToEnumMapper.cs).
 
+### Enum mapping configuration attributes
+
+`[MappaMapEnumMember]`, `[MappaMapEnumIgnore]`, and `[MappaMapEnumDefault]` override or extend settings-based enum matching on map methods. They apply to root enum maps and to nested enum properties on class/struct maps. All three are bidirectional and allow multiple instances.
+
+**Member override** — remap a specific enum member to an integral, string, or other enum value:
+
+```csharp
+[MappaMapEnumMember<ConfigStatus>(ConfigStatus.Inactive, 99)]
+public partial int Map(ConfigStatus input);
+```
+
+**Ignore** — exclude a member from mapping (fallback via `[MappaMapEnumDefault]`, throw by default):
+
+```csharp
+[MappaMapEnumIgnore<ConfigStatus>(ConfigStatus.Deprecated)]
+public partial int Map(ConfigStatus input);
+```
+
+**Default `UseDefaultValue`** — return a fallback when a value cannot be mapped:
+
+```csharp
+[MappaMapEnumDefault<ConfigStatus>(MappaMapEnumDefaultBehavior.UseDefaultValue, 42)]
+public partial int Map(ConfigStatus input);
+```
+
+**Multi-enum class defaults** — one `[MappaMapEnumDefault]` per distinct enum type on a class/struct map:
+
+```csharp
+[MappaMapEnumDefault<ConfigStatus>(MappaMapEnumDefaultBehavior.Throw)]
+[MappaMapEnumDefault<ConfigPriority>(MappaMapEnumDefaultBehavior.UseDefaultValue, 0)]
+public partial EnumConfigMultiDefaultTargetModel Map(EnumConfigMultiDefaultSourceModel input);
+```
+
+When intentional partial enum-to-enum mapping leaves unpaired source members, suppress warning **MP00039** with `#pragma warning disable MP00039` / `#pragma warning restore MP00039` around the map method (see [EnumMappingConfigurationMappers.cs](../Mappa.Samples/EnumMappingConfigurationMappers.cs)).
+
+See also: [Mappa attributes — enum mapping configuration](./mappa-attributes.md#mappamapenummember-mappamapenumignore-and-mappamapenumdefault), [EnumMappingConfigurationMappers.cs](../Mappa.Samples/EnumMappingConfigurationMappers.cs).
+
 #### Identity map deep copy settings
 
 `IdentityMapDeepCopy` controls how the generator copies a type to itself when the identity strategy applies. The default is `ShallowCopy` (return the same reference). Set `DeepCopy` to clone the root instance without recursively copying nested references. Set `NestedDeepCopy` to clone the root and recursively map every accessible instance field (including reference-type fields inside struct roots):

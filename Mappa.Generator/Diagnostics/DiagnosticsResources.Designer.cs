@@ -320,5 +320,53 @@ namespace Mappa.Generator.Diagnostics {
                 return ResourceManager.GetString("DuplicateMapHookRegistration", resourceCulture);
             }
         }
+
+        internal static string EnumMapAttributeEnumTypeMismatch {
+            get {
+                return ResourceManager.GetString("EnumMapAttributeEnumTypeMismatch", resourceCulture);
+            }
+        }
+
+        internal static string EnumMapMemberMappingClash {
+            get {
+                return ResourceManager.GetString("EnumMapMemberMappingClash", resourceCulture);
+            }
+        }
+
+        internal static string EnumMapIgnoreConflictsWithMemberMapping {
+            get {
+                return ResourceManager.GetString("EnumMapIgnoreConflictsWithMemberMapping", resourceCulture);
+            }
+        }
+
+        internal static string EnumMapDefaultBehaviorRequiresDefaultValue {
+            get {
+                return ResourceManager.GetString("EnumMapDefaultBehaviorRequiresDefaultValue", resourceCulture);
+            }
+        }
+
+        internal static string EnumMapDefaultValueConstructorMismatch {
+            get {
+                return ResourceManager.GetString("EnumMapDefaultValueConstructorMismatch", resourceCulture);
+            }
+        }
+
+        internal static string EnumMapDefaultAttributeUnusedDefaultValue {
+            get {
+                return ResourceManager.GetString("EnumMapDefaultAttributeUnusedDefaultValue", resourceCulture);
+            }
+        }
+
+        internal static string TooManyEnumMapDefaultAttributesOnDirectEnumMap {
+            get {
+                return ResourceManager.GetString("TooManyEnumMapDefaultAttributesOnDirectEnumMap", resourceCulture);
+            }
+        }
+
+        internal static string DuplicateEnumMapDefaultAttribute {
+            get {
+                return ResourceManager.GetString("DuplicateEnumMapDefaultAttribute", resourceCulture);
+            }
+        }
     }
 }

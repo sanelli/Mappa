@@ -149,4 +149,28 @@
     <data name="DuplicateMapHookRegistration" xml:space="preserve">
         <value>Il metodo di mapping '{0}' risolve l'hook {1} '{2}' sia a livello di classe sia a livello di metodo; l'hook verrà invocato una sola volta.</value>
     </data>
+    <data name="EnumMapAttributeEnumTypeMismatch" xml:space="preserve">
+        <value>Il metodo '{0}' dichiara {1} per l'enum '{2}' che non fa parte del mapping da '{3}' a '{4}'.</value>
+    </data>
+    <data name="EnumMapMemberMappingClash" xml:space="preserve">
+        <value>Il metodo '{0}' dichiara una configurazione di mapping in conflitto per l'enum '{1}': {2}.</value>
+    </data>
+    <data name="EnumMapIgnoreConflictsWithMemberMapping" xml:space="preserve">
+        <value>Il metodo '{0}' esclude il membro '{2}' dell'enum '{1}' tramite MappaMapEnumIgnore ma lo stesso membro è configurato anche tramite MappaMapEnumMember.</value>
+    </data>
+    <data name="EnumMapDefaultBehaviorRequiresDefaultValue" xml:space="preserve">
+        <value>Il metodo '{0}' dichiara MappaMapEnumDefault per l'enum '{1}' con comportamento UseDefaultValue ma non è stato fornito alcun valore predefinito.</value>
+    </data>
+    <data name="EnumMapDefaultValueConstructorMismatch" xml:space="preserve">
+        <value>Il metodo '{0}' dichiara MappaMapEnumDefault per l'enum '{1}' con un valore predefinito non compatibile con il tipo target del mapping '{2}'.</value>
+    </data>
+    <data name="EnumMapDefaultAttributeUnusedDefaultValue" xml:space="preserve">
+        <value>Il metodo '{0}' dichiara MappaMapEnumDefault per l'enum '{1}' con comportamento Throw; il valore predefinito fornito non verrà utilizzato.</value>
+    </data>
+    <data name="TooManyEnumMapDefaultAttributesOnDirectEnumMap" xml:space="preserve">
+        <value>Il metodo '{0}' mappa direttamente un enum quindi è consentito al massimo un attributo MappaMapEnumDefault ma ne sono stati trovati {1}.</value>
+    </data>
+    <data name="DuplicateEnumMapDefaultAttribute" xml:space="preserve">
+        <value>Il metodo '{0}' dichiara più attributi MappaMapEnumDefault per l'enum '{1}'.</value>
+    </data>
 </root>
