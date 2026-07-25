@@ -989,4 +989,330 @@ public sealed class MappaMapEnumDefaultIntegrationTests
                 "Map",
                 $"{Ns}.StatusEnum");
     }
+
+    /// <summary>
+    /// Test an error is emitted when UseDefaultValue provides an integral default for an enum-to-string map.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task EmitsErrorWhenDefaultValueConstructorMismatchOnEnumToString()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public enum StatusEnum
+                                  {
+                                      Active,
+                                      Inactive,
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaMapEnumDefault<StatusEnum>(MappaMapEnumDefaultBehavior.UseDefaultValue, 42)]
+                                      public partial string Map(StatusEnum input);
+                                  }
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(
+                MappaDiagnosticDescriptors.EnumMapDefaultValueConstructorMismatch,
+                "Map",
+                $"{Ns}.StatusEnum",
+                "string");
+    }
+
+    /// <summary>
+    /// Test an error is emitted when UseDefaultValue provides a string default for an enum-to-enum map.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task EmitsErrorWhenDefaultValueConstructorMismatchOnEnumToEnum()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public enum SourceEnum
+                                  {
+                                      Alpha,
+                                      Beta,
+                                  }
+
+                                  public enum TargetEnum
+                                  {
+                                      One,
+                                      Two,
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaMapEnumDefault<SourceEnum>(MappaMapEnumDefaultBehavior.UseDefaultValue, "fallback")]
+                                      public partial TargetEnum Map(SourceEnum input);
+                                  }
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(
+                MappaDiagnosticDescriptors.EnumMapDefaultValueConstructorMismatch,
+                "Map",
+                $"{Ns}.SourceEnum",
+                $"{Ns}.TargetEnum");
+    }
+
+    /// <summary>
+    /// Test an error is emitted when UseDefaultValue provides a source-enum default for an enum-to-enum map.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task EmitsErrorWhenDefaultEnumValueTargetsSourceEnumOnEnumToEnumMap()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public enum SourceEnum
+                                  {
+                                      Alpha,
+                                      Beta,
+                                  }
+
+                                  public enum TargetEnum
+                                  {
+                                      One,
+                                      Two,
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaMapEnumDefault<SourceEnum>(MappaMapEnumDefaultBehavior.UseDefaultValue, SourceEnum.Alpha)]
+                                      public partial TargetEnum Map(SourceEnum input);
+                                  }
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(
+                MappaDiagnosticDescriptors.EnumMapDefaultValueConstructorMismatch,
+                "Map",
+                $"{Ns}.SourceEnum",
+                $"{Ns}.TargetEnum");
+    }
+
+    /// <summary>
+    /// Test a null string default value is not parsed as UseDefaultValue.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task IgnoresNullStringDefaultValueDuringAttributeParsing()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public enum StatusEnum
+                                  {
+                                      Active,
+                                      Inactive,
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaMapEnumDefault<StatusEnum>(MappaMapEnumDefaultBehavior.UseDefaultValue, null)]
+                                      public partial string Map(StatusEnum input);
+                                  }
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                typeof(string).ToString(),
+                NullableAnnotation.NotAnnotated,
+                $"{Ns}.StatusEnum",
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(3)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(typeof(string).ToString(), "__mappa_tmp_1");
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeSwitchStatementSyntax(
+                                switchExpressionAssertions => { switchExpressionAssertions.BeIdentifierNameSyntax("input"); },
+                                (labelsAssertions, statementAssertions) =>
+                                {
+                                    labelsAssertions.Should().HaveCount(1);
+                                    labelsAssertions[0].IsCase();
+                                    labelsAssertions[0].AsCase().HasValue(expressionSyntaxAssertions => expressionSyntaxAssertions.BeMemberAccessExpressionSyntax($"{Ns}.StatusEnum.Active"));
+                                    statementAssertions.Should().HaveCount(1);
+                                    statementAssertions[0].BeBlockStatement();
+                                    statementAssertions[0].AsBlock()
+                                        .HasSyntaxNodesCount(2)
+                                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeAssignmentExpressionStatement("__mappa_tmp_1", assert => assert.BeNameOf(paramAssertions => paramAssertions.BeMemberAccessExpressionSyntax($"{Ns}.StatusEnum.Active"))))
+                                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeBreakStatement());
+                                },
+                                (labelsAssertions, statementAssertions) =>
+                                {
+                                    labelsAssertions.Should().HaveCount(1);
+                                    labelsAssertions[0].IsCase();
+                                    labelsAssertions[0].AsCase().HasValue(expressionSyntaxAssertions => expressionSyntaxAssertions.BeMemberAccessExpressionSyntax($"{Ns}.StatusEnum.Inactive"));
+                                    statementAssertions.Should().HaveCount(1);
+                                    statementAssertions[0].BeBlockStatement();
+                                    statementAssertions[0].AsBlock()
+                                        .HasSyntaxNodesCount(2)
+                                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeAssignmentExpressionStatement("__mappa_tmp_1", assert => assert.BeNameOf(paramAssertions => paramAssertions.BeMemberAccessExpressionSyntax($"{Ns}.StatusEnum.Inactive"))))
+                                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeBreakStatement());
+                                },
+                                (labelsAssertions, statementAssertions) =>
+                                {
+                                    labelsAssertions.Should().HaveCount(1);
+                                    labelsAssertions[0].IsDefault();
+                                    statementAssertions.Should().HaveCount(1);
+                                    statementAssertions[0].BeBlockStatement();
+                                    statementAssertions[0].AsBlock()
+                                        .HasSyntaxNodesCount(1)
+                                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeThrowStatementSyntax<ArgumentOutOfRangeException>(
+                                            assertion => assertion.BeLiteralExpressionSyntax("input")));
+                                });
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_1"));
+                        });
+                });
+    }
+
+    /// <summary>
+    /// Test enum-to-string mapping when EnumStringMapSetting is Undefined via editorconfig.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapEnumToStringWhenEnumStringMapSettingIsUndefinedInEditorConfig()
+    {
+        const string editorConfig = """
+                                    root = true
+
+                                    [*.cs]
+                                    mappa.enumstringmapsetting = undefined
+                                    """;
+
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public enum StatusEnum
+                                  {
+                                      Active,
+                                      Inactive,
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaMapEnumDefault<StatusEnum>(MappaMapEnumDefaultBehavior.UseDefaultValue, "fallback")]
+                                      public partial string Map(StatusEnum input);
+                                  }
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, editorConfig, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                typeof(string).ToString(),
+                NullableAnnotation.NotAnnotated,
+                $"{Ns}.StatusEnum",
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(3)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(typeof(string).ToString(), "__mappa_tmp_1");
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeSwitchStatementSyntax(
+                                switchExpressionAssertions => { switchExpressionAssertions.BeIdentifierNameSyntax("input"); },
+                                (labelsAssertions, statementAssertions) =>
+                                {
+                                    labelsAssertions.Should().HaveCount(1);
+                                    labelsAssertions[0].IsCase();
+                                    labelsAssertions[0].AsCase().HasValue(expressionSyntaxAssertions => expressionSyntaxAssertions.BeMemberAccessExpressionSyntax($"{Ns}.StatusEnum.Active"));
+                                    statementAssertions.Should().HaveCount(1);
+                                    statementAssertions[0].BeBlockStatement();
+                                    statementAssertions[0].AsBlock()
+                                        .HasSyntaxNodesCount(2)
+                                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeAssignmentExpressionStatement("__mappa_tmp_1", assert => assert.BeNameOf(paramAssertions => paramAssertions.BeMemberAccessExpressionSyntax($"{Ns}.StatusEnum.Active"))))
+                                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeBreakStatement());
+                                },
+                                (labelsAssertions, statementAssertions) =>
+                                {
+                                    labelsAssertions.Should().HaveCount(1);
+                                    labelsAssertions[0].IsCase();
+                                    labelsAssertions[0].AsCase().HasValue(expressionSyntaxAssertions => expressionSyntaxAssertions.BeMemberAccessExpressionSyntax($"{Ns}.StatusEnum.Inactive"));
+                                    statementAssertions.Should().HaveCount(1);
+                                    statementAssertions[0].BeBlockStatement();
+                                    statementAssertions[0].AsBlock()
+                                        .HasSyntaxNodesCount(2)
+                                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeAssignmentExpressionStatement("__mappa_tmp_1", assert => assert.BeNameOf(paramAssertions => paramAssertions.BeMemberAccessExpressionSyntax($"{Ns}.StatusEnum.Inactive"))))
+                                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeBreakStatement());
+                                },
+                                (labelsAssertions, statementAssertions) =>
+                                {
+                                    labelsAssertions.Should().HaveCount(1);
+                                    labelsAssertions[0].IsDefault();
+                                    statementAssertions.Should().HaveCount(1);
+                                    statementAssertions[0].BeBlockStatement();
+                                    statementAssertions[0].AsBlock()
+                                        .HasSyntaxNodesCount(2)
+                                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeAssignmentExpressionStatement("__mappa_tmp_1", assert => assert.BeLiteralExpressionSyntax("fallback")))
+                                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeBreakStatement());
+                                });
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_1"));
+                        });
+                });
+    }
 }

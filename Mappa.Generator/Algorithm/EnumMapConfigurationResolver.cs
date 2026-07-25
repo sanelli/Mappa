@@ -86,7 +86,7 @@ internal sealed class EnumMapConfigurationResolver
         => left is not null && right is not null && SymbolEqualityComparer.Default.Equals(left, right);
 
     private static string FormatIntegral(object value)
-        => Convert.ToString(value, CultureInfo.InvariantCulture) ?? "0";
+        => Convert.ToInt64(value, CultureInfo.InvariantCulture).ToString(CultureInfo.InvariantCulture);
 
     private static HashSet<string> GetIgnoredMemberNames(
         EnumMapIgnoreInfoAttribute[] ignoreAttributes,
@@ -105,15 +105,8 @@ internal sealed class EnumMapConfigurationResolver
         foreach (var memberAttribute in memberAttributes)
         {
             var valueExpression = valueExpressionSelector(memberAttribute);
-            var index = pairs.FindIndex(pair => pair.MemberName.Equals(memberAttribute.EnumMemberName, StringComparison.Ordinal));
-            if (index >= 0)
-            {
-                pairs[index] = (memberAttribute.EnumMemberName, valueExpression);
-            }
-            else
-            {
-                pairs.Add((memberAttribute.EnumMemberName, valueExpression));
-            }
+            pairs.RemoveAll(pair => pair.MemberName.Equals(memberAttribute.EnumMemberName, StringComparison.Ordinal));
+            pairs.Add((memberAttribute.EnumMemberName, valueExpression));
         }
     }
 
@@ -323,13 +316,15 @@ internal sealed class EnumMapConfigurationResolver
     {
         if (this.legKind is EnumMapLegKind.EnumToString or EnumMapLegKind.StringToEnum)
         {
+            // Relevant string pairings always carry a non-null StringValue.
             var stringValue = memberAttribute.StringValue ?? string.Empty;
             return this.context.MappaUserSettings.CaseInsensitiveEnumMap is BooleanSetting.Enable
                 ? stringValue.ToUpperInvariant()
                 : stringValue;
         }
 
-        return (memberAttribute.IntegerValue ?? 0).ToString(CultureInfo.InvariantCulture);
+        // Relevant integral pairings always carry IntegerValue.
+        return memberAttribute.IntegerValue.GetValueOrDefault().ToString(CultureInfo.InvariantCulture);
     }
 
     private bool ValidateNoDuplicates(IEnumerable<string> keys, Func<string, string> detailsBuilder)
@@ -358,27 +353,36 @@ internal sealed class EnumMapConfigurationResolver
             if (this.legKind is EnumMapLegKind.EnumToEnum)
             {
                 this.TryGetEnumToEnumPair(memberAttribute, out var sourceMemberName, out var targetMemberName);
-                if (ignoredSourceMemberNames.Contains(sourceMemberName))
+                if (this.sourceEnumType is { } activeSourceEnumType
+                    && ignoredSourceMemberNames.Contains(sourceMemberName))
                 {
                     isValid = false;
-                    this.ReportIgnoreConflict(this.sourceEnumType, sourceMemberName);
+                    this.ReportIgnoreConflict(activeSourceEnumType, sourceMemberName);
                 }
 
-                if (ignoredTargetMemberNames.Contains(targetMemberName))
+                if (this.targetEnumType is { } activeTargetEnumType
+                    && ignoredTargetMemberNames.Contains(targetMemberName))
                 {
                     isValid = false;
-                    this.ReportIgnoreConflict(this.targetEnumType, targetMemberName);
+                    this.ReportIgnoreConflict(activeTargetEnumType, targetMemberName);
                 }
 
                 continue;
             }
 
-            var configuredEnumType = this.sourceEnumType ?? this.targetEnumType;
-            if (ignoredSourceMemberNames.Contains(memberAttribute.EnumMemberName)
-                || ignoredTargetMemberNames.Contains(memberAttribute.EnumMemberName))
+            if (this.sourceEnumType is { } sourceOnlyEnumType
+                && (ignoredSourceMemberNames.Contains(memberAttribute.EnumMemberName)
+                    || ignoredTargetMemberNames.Contains(memberAttribute.EnumMemberName)))
             {
                 isValid = false;
-                this.ReportIgnoreConflict(configuredEnumType, memberAttribute.EnumMemberName);
+                this.ReportIgnoreConflict(sourceOnlyEnumType, memberAttribute.EnumMemberName);
+            }
+            else if (this.targetEnumType is { } targetOnlyEnumType
+                     && (ignoredSourceMemberNames.Contains(memberAttribute.EnumMemberName)
+                         || ignoredTargetMemberNames.Contains(memberAttribute.EnumMemberName)))
+            {
+                isValid = false;
+                this.ReportIgnoreConflict(targetOnlyEnumType, memberAttribute.EnumMemberName);
             }
         }
 
@@ -518,20 +522,9 @@ internal sealed class EnumMapConfigurationResolver
         var pairs = new List<(string SourceMemberName, string TargetMemberName)>(baseMappings);
         foreach (var memberAttribute in relevantMemberAttributes)
         {
-            if (!this.TryGetEnumToEnumPair(memberAttribute, out var sourceMemberName, out var targetMemberName))
-            {
-                continue;
-            }
-
-            var index = pairs.FindIndex(pair => pair.SourceMemberName.Equals(sourceMemberName, StringComparison.Ordinal));
-            if (index >= 0)
-            {
-                pairs[index] = (sourceMemberName, targetMemberName);
-            }
-            else
-            {
-                pairs.Add((sourceMemberName, targetMemberName));
-            }
+            this.TryGetEnumToEnumPair(memberAttribute, out var sourceMemberName, out var targetMemberName);
+            pairs.RemoveAll(pair => pair.SourceMemberName.Equals(sourceMemberName, StringComparison.Ordinal));
+            pairs.Add((sourceMemberName, targetMemberName));
         }
 
         var sourceEnumFullName = sourceType.ToDisplayString();
@@ -594,7 +587,7 @@ internal sealed class EnumMapConfigurationResolver
         ApplyOverrides(
             pairs,
             relevantMemberAttributes,
-            memberAttribute => (memberAttribute.IntegerValue ?? 0).ToString(CultureInfo.InvariantCulture));
+            memberAttribute => memberAttribute.IntegerValue.GetValueOrDefault().ToString(CultureInfo.InvariantCulture));
 
         return
         [
@@ -663,7 +656,7 @@ internal sealed class EnumMapConfigurationResolver
         ApplyOverrides(
             pairs,
             relevantMemberAttributes,
-            memberAttribute => (memberAttribute.IntegerValue ?? 0).ToString(CultureInfo.InvariantCulture));
+            memberAttribute => memberAttribute.IntegerValue.GetValueOrDefault().ToString(CultureInfo.InvariantCulture));
 
         return
         [
@@ -681,17 +674,33 @@ internal sealed class EnumMapConfigurationResolver
             cases.Select(mapCase => mapCase.CaseExpression),
             duplicate => $"case label '{duplicate}' is generated more than once");
 
-    private void ReportIgnoreConflict(INamedTypeSymbol? enumType, string enumMemberName)
+    private void ReportIgnoreConflict(INamedTypeSymbol enumType, string enumMemberName)
         => this.context.ReportDiagnostic(MappaDiagnostics.EnumMapIgnoreConflictsWithMemberMapping(
             this.methodDeclarationSyntax,
             this.methodName,
-            enumType?.ToDisplayString() ?? string.Empty,
+            enumType.ToDisplayString(),
             enumMemberName));
 
     private void ReportMemberMappingClash(string details)
-        => this.context.ReportDiagnostic(MappaDiagnostics.EnumMapMemberMappingClash(
+    {
+        string enumTypeName;
+        if (this.sourceEnumType is { } sourceOnly)
+        {
+            enumTypeName = sourceOnly.ToDisplayString();
+        }
+        else if (this.targetEnumType is { } targetOnly)
+        {
+            enumTypeName = targetOnly.ToDisplayString();
+        }
+        else
+        {
+            enumTypeName = string.Empty;
+        }
+
+        this.context.ReportDiagnostic(MappaDiagnostics.EnumMapMemberMappingClash(
             this.methodDeclarationSyntax,
             this.methodName,
-            (this.sourceEnumType ?? this.targetEnumType)?.ToDisplayString() ?? string.Empty,
+            enumTypeName,
             details));
+    }
 }

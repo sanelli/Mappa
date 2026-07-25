@@ -190,16 +190,6 @@ internal sealed class EnumMapStrategyDetector
             {
                 return false;
             }
-
-            if (this.context.SourceType.HasAmbiguousEnumMemberDescriptionMap(
-                this.context.TargetType,
-                this.compilation,
-                caseInsensitive,
-                out var ambiguityDetails))
-            {
-                this.ReportAmbiguousEnumMap(ambiguityDetails);
-                return false;
-            }
         }
         else if (effectiveEnumToEnumMapSetting is EnumToEnumMapSetting.MemberName
                  && caseInsensitive

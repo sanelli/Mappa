@@ -458,4 +458,90 @@ public sealed class TypeSymbolExtensionsTests
 
         sampleType.IsNullabilityMatchOrRelaxed(otherSampleType, isNullableEnabled: true).Should().BeFalse();
     }
+
+    /// <summary>
+    /// Test <see cref="TypeSymbolExtensions.HasAmbiguousEnumMemberDescriptionMap"/> detects one source
+    /// description matching multiple targets when comparison is case-insensitive.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void HasAmbiguousEnumMemberDescriptionMapDetectsSourceMatchingMultipleTargets()
+    {
+        const string source = """
+                              using System.ComponentModel;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public enum SourceEnum
+                              {
+                                  [Description("Shared")]
+                                  Alpha,
+                              }
+
+                              public enum TargetEnum
+                              {
+                                  [Description("shared")]
+                                  One,
+                                  [Description("SHARED")]
+                                  Two,
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var sourceEnum = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.SourceEnum")!;
+        var targetEnum = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.TargetEnum")!;
+
+        var isAmbiguous = sourceEnum.HasAmbiguousEnumMemberDescriptionMap(
+            targetEnum,
+            compilation,
+            caseInsensitive: true,
+            out var ambiguityDetails);
+
+        isAmbiguous.Should().BeTrue();
+        ambiguityDetails.Should().Be(
+            "Source enum member 'Alpha' matches multiple target members by Description: 'One', 'Two'.");
+    }
+
+    /// <summary>
+    /// Test <see cref="TypeSymbolExtensions.HasAmbiguousEnumMemberDescriptionMap"/> detects multiple
+    /// source members mapping to the same target by Description.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void HasAmbiguousEnumMemberDescriptionMapDetectsMultipleSourcesMatchingOneTarget()
+    {
+        const string source = """
+                              using System.ComponentModel;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public enum SourceEnum
+                              {
+                                  [Description("Shared")]
+                                  Alpha,
+                                  [Description("shared")]
+                                  Beta,
+                              }
+
+                              public enum TargetEnum
+                              {
+                                  [Description("SHARED")]
+                                  One,
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var sourceEnum = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.SourceEnum")!;
+        var targetEnum = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.TargetEnum")!;
+
+        var isAmbiguous = sourceEnum.HasAmbiguousEnumMemberDescriptionMap(
+            targetEnum,
+            compilation,
+            caseInsensitive: true,
+            out var ambiguityDetails);
+
+        isAmbiguous.Should().BeTrue();
+        ambiguityDetails.Should().Be(
+            "Target enum member 'One' is matched by multiple source members by Description: 'Alpha', 'Beta'.");
+    }
 }

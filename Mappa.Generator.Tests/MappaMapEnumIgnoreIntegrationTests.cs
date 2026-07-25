@@ -374,4 +374,136 @@ public sealed class MappaMapEnumIgnoreIntegrationTests
                 $"{Ns}.StatusEnum",
                 "Inactive");
     }
+
+    /// <summary>
+    /// Test an error is emitted when ignore conflicts with an enum-to-enum source member mapping.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task EmitsErrorWhenIgnoreConflictsWithEnumToEnumSourceMemberMapping()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public enum SourceEnum
+                                  {
+                                      Alpha,
+                                      Beta,
+                                  }
+
+                                  public enum TargetEnum
+                                  {
+                                      One,
+                                      Two,
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaMapEnumIgnore<SourceEnum>(SourceEnum.Beta)]
+                                      [MappaMapEnumMember<SourceEnum, TargetEnum>(SourceEnum.Beta, TargetEnum.Two)]
+                                      public partial TargetEnum Map(SourceEnum input);
+                                  }
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(
+                MappaDiagnosticDescriptors.EnumMapIgnoreConflictsWithMemberMapping,
+                "Map",
+                $"{Ns}.SourceEnum",
+                "Beta");
+    }
+
+    /// <summary>
+    /// Test an error is emitted when ignore conflicts with an enum-to-enum target member mapping.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task EmitsErrorWhenIgnoreConflictsWithEnumToEnumTargetMemberMapping()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public enum SourceEnum
+                                  {
+                                      Alpha,
+                                      Beta,
+                                  }
+
+                                  public enum TargetEnum
+                                  {
+                                      One,
+                                      Two,
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaMapEnumIgnore<TargetEnum>(TargetEnum.Two)]
+                                      [MappaMapEnumMember<SourceEnum, TargetEnum>(SourceEnum.Beta, TargetEnum.Two)]
+                                      public partial TargetEnum Map(SourceEnum input);
+                                  }
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(
+                MappaDiagnosticDescriptors.EnumMapIgnoreConflictsWithMemberMapping,
+                "Map",
+                $"{Ns}.TargetEnum",
+                "Two");
+    }
+
+    /// <summary>
+    /// Test an error is emitted when ignore conflicts with a string-to-enum member mapping.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task EmitsErrorWhenIgnoreConflictsWithStringToEnumMemberMapping()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public enum StatusEnum
+                                  {
+                                      Active,
+                                      Inactive,
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaMapEnumIgnore<StatusEnum>(StatusEnum.Inactive)]
+                                      [MappaMapEnumMember<StatusEnum>(StatusEnum.Inactive, "disabled")]
+                                      public partial StatusEnum Map(string input);
+                                  }
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(
+                MappaDiagnosticDescriptors.EnumMapIgnoreConflictsWithMemberMapping,
+                "Map",
+                $"{Ns}.StatusEnum",
+                "Inactive");
+    }
 }
