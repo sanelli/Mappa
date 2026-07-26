@@ -1,4 +1,4 @@
-﻿// <copyright file="AttributeSyntaxExtensions.cs" company="Stefano Anelli">
+// <copyright file="AttributeSyntaxExtensions.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -56,7 +56,8 @@ internal static class AttributeSyntaxExtensions
     private static List<AttributeSyntax> GetAttributes<TAttribute>(this SyntaxList<AttributeListSyntax> attributeLists, SemanticModel semanticModel, CancellationToken cancellationToken)
         where TAttribute : Attribute
     {
-        var attributeTypeFullName = typeof(TAttribute).FullName ?? throw new ArgumentException($"Cannot obtain {nameof(Type.FullName)} for type '{typeof(TAttribute)}'");
+        var attributeType = typeof(TAttribute);
+        var attributeTypeFullName = $"{attributeType.Namespace}.{attributeType.Name}";
         List<AttributeSyntax> attributes = new();
         foreach (var attributeSyntax in attributeLists.SelectMany(attributeList => attributeList.Attributes))
         {

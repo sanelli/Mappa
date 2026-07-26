@@ -1,8 +1,7 @@
-﻿// <copyright file="MethodSymbolExtensions.cs" company="Stefano Anelli">
+// <copyright file="MethodSymbolExtensions.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using Mappa.Generator.Exceptions;
 using Mappa.Generator.Models;
 
 using Microsoft.CodeAnalysis;
@@ -14,7 +13,7 @@ namespace Mappa.Generator.Extensions;
 /// </summary>
 internal static class MethodSymbolExtensions
 {
-    private static readonly string MappaContextTypeFullName = typeof(MappaContext).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} from {typeof(MappaContext)}.");
+    private const string MappaContextTypeFullName = "Mappa.MappaContext";
 
     /// <summary>
     /// Returns <c>true</c> if the method returns <c>void</c>.

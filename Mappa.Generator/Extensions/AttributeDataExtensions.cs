@@ -6,7 +6,6 @@ using System.Collections.Immutable;
 using System.Globalization;
 
 using Mappa.Attributes;
-using Mappa.Generator.Exceptions;
 using Mappa.Generator.Models;
 
 using Microsoft.CodeAnalysis;
@@ -18,24 +17,24 @@ namespace Mappa.Generator.Extensions;
 /// </summary>
 internal static class AttributeDataExtensions
 {
-    private static readonly string MappaAfterMapAttributeFullName = typeof(MappaAfterMapAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaAfterMapAttribute)}");
-    private static readonly string MappaBeforeMapAttributeFullName = typeof(MappaBeforeMapAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaBeforeMapAttribute)}");
-    private static readonly string MappaInvokeMethodAttributeFullName = typeof(MappaInvokeMethodAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaInvokeMethodAttribute)}");
-    private static readonly string MappaIgnoreAttributeFullName = typeof(MappaIgnoreAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaIgnoreAttribute)}");
-    private static readonly string MappaAssignFromContextAttributeFullName = typeof(MappaAssignFromContextAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaAssignFromContextAttribute)}");
-    private static readonly string MappaAssignToContextAttributeFullName = typeof(MappaAssignToContextAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaAssignToContextAttribute)}");
-    private static readonly string MappaSettingsAttributeFullName = typeof(MappaSettingsAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaSettingsAttribute)}");
-    private static readonly string MappaUsePropertyAttributeFullName = typeof(MappaUsePropertyAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaUsePropertyAttribute)}");
-    private static readonly string MappaDependencyAttributeFullName = typeof(MappaDependencyAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaDependencyAttribute)}");
-    private static readonly string MappaStaticDependencyAttributeFullName = typeof(MappaStaticDependencyAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaStaticDependencyAttribute)}");
-    private static readonly string MappaAssignFromConstantAttributeFullName = typeof(MappaAssignFromConstantAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaAssignFromConstantAttribute)}");
-    private static readonly string MappaIgnoreTargetPropertyAttributeFullName = typeof(MappaIgnoreTargetPropertyAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaIgnoreTargetPropertyAttribute)}");
-    private static readonly string MappaTypeMappingAttributeFullName = typeof(MappaTypeMappingAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaTypeMappingAttribute)}");
-    private static readonly string MappaTypeMappingDefaultAttributeFullName = typeof(MappaTypeMappingDefaultAttribute).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaTypeMappingDefaultAttribute)}");
-    private static readonly string MappaMapEnumMemberAttributeFullName = typeof(MappaMapEnumMemberAttribute<>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaMapEnumMemberAttribute<>)}");
-    private static readonly string MappaMapEnumMemberToEnumAttributeFullName = typeof(MappaMapEnumMemberAttribute<,>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaMapEnumMemberAttribute<,>)}");
-    private static readonly string MappaMapEnumIgnoreAttributeFullName = typeof(MappaMapEnumIgnoreAttribute<>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaMapEnumIgnoreAttribute<>)}");
-    private static readonly string MappaMapEnumDefaultAttributeFullName = typeof(MappaMapEnumDefaultAttribute<>).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} for {typeof(MappaMapEnumDefaultAttribute<>)}");
+    private const string MappaAfterMapAttributeFullName = "Mappa.Attributes.MappaAfterMapAttribute";
+    private const string MappaBeforeMapAttributeFullName = "Mappa.Attributes.MappaBeforeMapAttribute";
+    private const string MappaInvokeMethodAttributeFullName = "Mappa.Attributes.MappaInvokeMethodAttribute";
+    private const string MappaIgnoreAttributeFullName = "Mappa.Attributes.MappaIgnoreAttribute";
+    private const string MappaAssignFromContextAttributeFullName = "Mappa.Attributes.MappaAssignFromContextAttribute";
+    private const string MappaAssignToContextAttributeFullName = "Mappa.Attributes.MappaAssignToContextAttribute";
+    private const string MappaSettingsAttributeFullName = "Mappa.Attributes.MappaSettingsAttribute";
+    private const string MappaUsePropertyAttributeFullName = "Mappa.Attributes.MappaUsePropertyAttribute";
+    private const string MappaDependencyAttributeFullName = "Mappa.Attributes.MappaDependencyAttribute";
+    private const string MappaStaticDependencyAttributeFullName = "Mappa.Attributes.MappaStaticDependencyAttribute";
+    private const string MappaAssignFromConstantAttributeFullName = "Mappa.Attributes.MappaAssignFromConstantAttribute";
+    private const string MappaIgnoreTargetPropertyAttributeFullName = "Mappa.Attributes.MappaIgnoreTargetPropertyAttribute";
+    private const string MappaTypeMappingAttributeFullName = "Mappa.Attributes.MappaTypeMappingAttribute";
+    private const string MappaTypeMappingDefaultAttributeFullName = "Mappa.Attributes.MappaTypeMappingDefaultAttribute";
+    private const string MappaMapEnumMemberAttributeFullName = "Mappa.Attributes.MappaMapEnumMemberAttribute`1";
+    private const string MappaMapEnumMemberToEnumAttributeFullName = "Mappa.Attributes.MappaMapEnumMemberAttribute`2";
+    private const string MappaMapEnumIgnoreAttributeFullName = "Mappa.Attributes.MappaMapEnumIgnoreAttribute`1";
+    private const string MappaMapEnumDefaultAttributeFullName = "Mappa.Attributes.MappaMapEnumDefaultAttribute`1";
 
     /// <summary>
     /// Gets the <see cref="MappaMapEnumMemberAttribute{TEnum}"/> and
