@@ -380,5 +380,35 @@ namespace Mappa.Generator.Diagnostics {
                 return ResourceManager.GetString("ProjectionMethodHasMappaContextParameter", resourceCulture);
             }
         }
+
+        internal static string ProjectionMappingNotSupported {
+            get {
+                return ResourceManager.GetString("ProjectionMappingNotSupported", resourceCulture);
+            }
+        }
+
+        internal static string ProjectionInvokeMethodNotInlinable {
+            get {
+                return ResourceManager.GetString("ProjectionInvokeMethodNotInlinable", resourceCulture);
+            }
+        }
+
+        internal static string ProjectionNestedQueryableNotSupported {
+            get {
+                return ResourceManager.GetString("ProjectionNestedQueryableNotSupported", resourceCulture);
+            }
+        }
+
+        internal static string ProjectionEnumStrategyNotSupported {
+            get {
+                return ResourceManager.GetString("ProjectionEnumStrategyNotSupported", resourceCulture);
+            }
+        }
+
+        internal static string IQueryableMappedAsCollection {
+            get {
+                return ResourceManager.GetString("IQueryableMappedAsCollection", resourceCulture);
+            }
+        }
     }
 }

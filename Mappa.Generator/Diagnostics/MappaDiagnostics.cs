@@ -998,4 +998,83 @@ internal static class MappaDiagnostics
             MappaDiagnosticDescriptors.ProjectionMethodHasMappaContextParameter,
             methodDeclarationSyntax?.GetLocation(),
             methodName);
+
+    /// <summary>
+    /// Diagnostic to report that a queryable projection element mapping contains an unsupported construct.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="methodName">The mapping method name.</param>
+    /// <param name="constructDescription">The unsupported construct description.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic ProjectionMappingNotSupported(
+        Location? location,
+        string methodName,
+        string constructDescription)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.ProjectionMappingNotSupported,
+            location,
+            methodName,
+            constructDescription);
+
+    /// <summary>
+    /// Diagnostic to report that a queryable projection invokes a method that cannot be inlined.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="methodName">The mapping method name.</param>
+    /// <param name="invokedMethodName">The invoked method name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic ProjectionInvokeMethodNotInlinable(
+        Location? location,
+        string methodName,
+        string invokedMethodName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.ProjectionInvokeMethodNotInlinable,
+            location,
+            methodName,
+            invokedMethodName);
+
+    /// <summary>
+    /// Diagnostic to report that a queryable projection involves a nested IQueryable property.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="methodName">The mapping method name.</param>
+    /// <param name="propertyName">The nested property name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic ProjectionNestedQueryableNotSupported(
+        Location? location,
+        string methodName,
+        string propertyName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.ProjectionNestedQueryableNotSupported,
+            location,
+            methodName,
+            propertyName);
+
+    /// <summary>
+    /// Diagnostic to report that a queryable projection uses an enum mapping strategy that may not translate.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="methodName">The mapping method name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic ProjectionEnumStrategyNotSupported(
+        Location? location,
+        string methodName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.ProjectionEnumStrategyNotSupported,
+            location,
+            methodName);
+
+    /// <summary>
+    /// Diagnostic to report that an IQueryable source is mapped to a concrete collection.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="methodName">The mapping method name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic IQueryableMappedAsCollection(
+        Location? location,
+        string methodName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.IQueryableMappedAsCollection,
+            location,
+            methodName);
 }

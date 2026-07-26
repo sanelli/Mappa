@@ -308,4 +308,29 @@ internal enum MappaDiagnosticsKind
     /// A queryable projection map method declares a <see cref="MappaContext"/> parameter.
     /// </summary>
     ProjectionMethodHasMappaContextParameter,
+
+    /// <summary>
+    /// A queryable projection element mapping contains an unsupported construct.
+    /// </summary>
+    ProjectionMappingNotSupported,
+
+    /// <summary>
+    /// A queryable projection element mapping invokes a method that cannot be inlined into an expression.
+    /// </summary>
+    ProjectionInvokeMethodNotInlinable,
+
+    /// <summary>
+    /// A queryable projection element mapping involves a nested <see cref="System.Linq.IQueryable{T}"/> property.
+    /// </summary>
+    ProjectionNestedQueryableNotSupported,
+
+    /// <summary>
+    /// A queryable projection uses an enum mapping strategy that may not translate in LINQ providers.
+    /// </summary>
+    ProjectionEnumStrategyNotSupported,
+
+    /// <summary>
+    /// An <see cref="System.Linq.IQueryable{T}"/> source is mapped to a concrete collection instead of a queryable projection.
+    /// </summary>
+    IQueryableMappedAsCollection,
 }

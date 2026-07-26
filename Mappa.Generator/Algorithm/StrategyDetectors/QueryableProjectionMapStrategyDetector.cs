@@ -73,7 +73,15 @@ internal sealed class QueryableProjectionMapStrategyDetector
             return false;
         }
 
-        if (!ProjectionCapabilityAnalyzer.IsSupported(elementStrategy))
+        if (!ProjectionCapabilityAnalyzer.TryAnalyze(
+                elementStrategy,
+                new ProjectionCapabilityAnalysisContext(
+                    this.context,
+                    this.compilation,
+                    this.context.MapMethod.MethodSymbol.Name,
+                    this.context.MapMethod.MethodDeclarationSyntax?.GetLocation(),
+                    this.cancellationToken),
+                out var normalizedElementStrategy))
         {
             return false;
         }
@@ -81,7 +89,7 @@ internal sealed class QueryableProjectionMapStrategyDetector
         mapStrategy = new QueryableProjectionMapStrategy(
             this.context.TargetType,
             this.context.SourceType,
-            elementStrategy,
+            normalizedElementStrategy,
             sourceElementType,
             targetElementType,
             this.context.MapMethod.MethodSymbol);

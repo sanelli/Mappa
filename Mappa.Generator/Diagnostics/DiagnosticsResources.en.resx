@@ -179,4 +179,19 @@
     <data name="ProjectionMethodHasMappaContextParameter" xml:space="preserve">
         <value>Method '{0}' projects IQueryable but declares a MappaContext parameter which is not supported for queryable projections.</value>
     </data>
+    <data name="ProjectionMappingNotSupported" xml:space="preserve">
+        <value>Method '{0}' cannot project IQueryable because '{1}' is not supported in queryable projections.</value>
+    </data>
+    <data name="ProjectionInvokeMethodNotInlinable" xml:space="preserve">
+        <value>Method '{0}' cannot project IQueryable because invoked method '{1}' cannot be inlined into an expression.</value>
+    </data>
+    <data name="ProjectionNestedQueryableNotSupported" xml:space="preserve">
+        <value>Method '{0}' cannot project IQueryable because nested IQueryable property '{1}' is not supported.</value>
+    </data>
+    <data name="ProjectionEnumStrategyNotSupported" xml:space="preserve">
+        <value>Method '{0}' uses enum mapping by member name with case-insensitive comparison which may not translate in queryable projections.</value>
+    </data>
+    <data name="IQueryableMappedAsCollection" xml:space="preserve">
+        <value>Method '{0}' maps IQueryable to a concrete collection; use an IQueryable return type for deferred ORM projection.</value>
+    </data>
 </root>
