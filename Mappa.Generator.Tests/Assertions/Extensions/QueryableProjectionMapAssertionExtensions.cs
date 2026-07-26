@@ -15,6 +15,12 @@ internal static class QueryableProjectionMapAssertionExtensions
     internal const string TestNamespace = "Mappa.Generator.Tests.UnitTests.SourceCode";
 
     /// <summary>
+    /// The message emitted on generated queryable projection methods.
+    /// </summary>
+    internal const string RequiresDynamicCodeMessage =
+        "\"Queryable projection uses expression trees that require dynamic code generation and are not compatible with Native AOT.\"";
+
+    /// <summary>
     /// Builds the <see cref="System.Linq.IQueryable{T}"/> type display string for an element type.
     /// </summary>
     /// <param name="elementType">The element type display string.</param>
@@ -84,6 +90,7 @@ internal static class QueryableProjectionMapAssertionExtensions
                                         methodDeclarationSyntaxAssertions
                                             .HaveNullabilityAnnotation(NullableSetup.Enable)
                                             .HavePragmaWarningDisableAnnotation(PragmaWarning.NoBlock)
+                                            .HaveRequiresDynamicCodeAttribute(RequiresDynamicCodeMessage)
                                             .HaveGeneratedCodeAttribute(attributeSyntaxAssertions => attributeSyntaxAssertions.BeMappaGeneratedCodeAttribute())
                                             .HaveDebuggerNonUserCodeAttribute()
                                             .HaveModifiers(methodModifiers)

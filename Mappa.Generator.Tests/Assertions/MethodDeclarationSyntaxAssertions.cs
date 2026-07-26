@@ -4,6 +4,7 @@
 
 using System.CodeDom.Compiler;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -51,6 +52,26 @@ internal sealed class MethodDeclarationSyntaxAssertions
         generatedCodeAttributes.Should().HaveCount(1);
         var generatedCodeAttribute = generatedCodeAttributes.Single();
         assert(new AttributeSyntaxAssertions(generatedCodeAttribute));
+
+        return this;
+    }
+
+    /// <summary>
+    /// Check that the method has a <see cref="RequiresDynamicCodeAttribute"/>.
+    /// </summary>
+    /// <param name="message">The expected attribute message.</param>
+    /// <returns>The assertions.</returns>
+    internal MethodDeclarationSyntaxAssertions HaveRequiresDynamicCodeAttribute(string message)
+    {
+        var attributes = this.Subject.AttributeLists.SelectMany(attributeList => attributeList.Attributes);
+        var requiresDynamicCodeAttributes = attributes.Where(attributeSyntax =>
+                attributeSyntax.Name.ToString().Equals($"global::{typeof(RequiresDynamicCodeAttribute).FullName}", StringComparison.Ordinal))
+            .ToArray();
+        requiresDynamicCodeAttributes.Should().HaveCount(1);
+        var requiresDynamicCodeAttribute = requiresDynamicCodeAttributes.Single();
+        requiresDynamicCodeAttribute.ArgumentList.Should().NotBeNull();
+        requiresDynamicCodeAttribute.ArgumentList!.Arguments.Should().HaveCount(1);
+        requiresDynamicCodeAttribute.ArgumentList.Arguments.Single().GetText().ToString().Should().Be(message);
 
         return this;
     }

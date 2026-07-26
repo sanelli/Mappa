@@ -198,7 +198,8 @@ When no existing method applies (or for root methods), `TypeMapIdentifierAlgorit
     - Mapping attributes such as `[MappaUseProperty]` on the projection method participate in element construction,
     - Nested `IQueryable` properties, polymorphic root element maps, non-inlinable invoke methods, and before/after hooks are rejected with dedicated diagnostics (MP00055–MP00060),
     - Mapping `IQueryable<TSource>` to a concrete collection (for example `List<TTarget>`) is not a projection: the container path applies and may emit warning MP00061,
-    - Prefer numeric or description enum mappings over case-insensitive member-name matching for ORM providers (warning MP00060).
+    - Prefer numeric or description enum mappings over case-insensitive member-name matching for ORM providers (warning MP00060),
+    - Generated projection methods are annotated with `[RequiresDynamicCode]` and are **not compatible with Native AOT** deployment.
 
 ### 7. Container strategy
 

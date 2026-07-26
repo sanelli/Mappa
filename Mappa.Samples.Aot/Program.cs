@@ -45,7 +45,6 @@ internal static class Program
         InvokeMappingConstructorStrategyMapperRunner.Run(report);
         InvokeParseMapperRunner.Run(report);
         InvokeToStringMapperRunner.Run(report);
-        IQueryableProjectionMapperRunner.Run(report);
         MapMethodStrategyMapperRunner.Run(report);
         MapMethodStrategyWithDependencyMapperRunner.Run(report);
         MapMethodStrategyWithInheritedMapMethodMapperRunner.Run(report);

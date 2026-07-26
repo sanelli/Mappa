@@ -519,6 +519,7 @@ Projection limitations:
 - Nested `IQueryable` properties and polymorphic root element maps are not supported.
 - Prefer numeric or description enum mappings over case-insensitive member-name matching for provider translation.
 - Mapping `IQueryable<TSource>` to a concrete collection (for example `List<TTarget>`) materializes eagerly and may emit warning MP00061.
+- Generated projection methods are annotated with `[RequiresDynamicCode]` because they build expression trees at runtime; they are **not compatible with [Native AOT](https://learn.microsoft.com/dotnet/core/deploying/native-aot)** deployment.
 
 See also: [algorithm — IQueryable projection](./mappa-generator-algorithm.md#7a-iqueryable-projection-strategy), [error codes MP00055–MP00061](./error-codes.md), and [IQueryableProjectionMapper.cs](../Mappa.Samples/IQueryableProjectionMapper.cs).
 
