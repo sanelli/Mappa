@@ -64,6 +64,7 @@ When no existing method applies (or for root methods), `TypeMapIdentifierAlgorit
 4. Enum
 5. String
 6. Date & time
+7a. IQueryable projection *(root methods with `IQueryable<TSource>` → `IQueryable<TTarget>` only)*
 7. Container
 8. Tuple
 9. Guid
@@ -179,12 +180,32 @@ When no existing method applies (or for root methods), `TypeMapIdentifierAlgorit
     - `DateTimeOffset` → `DateTime` is handled by the **date & time** strategy (not identity);
     - There is no dedicated `DateOnly` → `DateTimeOffset` strategy in the current implementation (only `DateOnly` → `DateTime`).
 
+### 7a. IQueryable projection strategy
+
+- _When_:
+    - The root map method source type implements or is `IQueryable<TSource>`,
+    - The root map method target type implements or is `IQueryable<TTarget>`,
+    - `TSource` and `TTarget` are different types,
+    - An element mapping from `TSource` to `TTarget` can be expressed as a projection-compatible expression (constructor/property mapping, identity, nullable, enums, and common primitive/date conversions),
+    - The root method does not declare `MappaBeforeMap` / `MappaAfterMap` hooks or a `MappaContext` parameter;
+- _What_:
+    - The generator emits `return source.Select(element => /* projection expression */);`,
+    - Element mapping is validated by `ProjectionCapabilityAnalyzer` and built by `ProjectionExpressionBuilder` (expression-tree-compatible code, not imperative statements),
+    - A private companion element map method may also be generated for the `TSource` → `TTarget` pair;
+- _Notes_:
+    - Projection is **signature-driven**; no dedicated projection attribute is required,
+    - Mapping attributes such as `[MappaUseProperty]` on the projection method participate in element construction,
+    - Nested `IQueryable` properties, polymorphic root element maps, non-inlinable invoke methods, and before/after hooks are rejected with dedicated diagnostics (MP00055–MP00060),
+    - Mapping `IQueryable<TSource>` to a concrete collection (for example `List<TTarget>`) is not a projection: the container path applies and may emit warning MP00061,
+    - Prefer numeric or description enum mappings over case-insensitive member-name matching for ORM providers (warning MP00060).
+
 ### 7. Container strategy
 
 - _When_:
     - `TSource` and `TTarget` are both either dictionaries or collections,
     - For dictionaries, mappings exist from source key type to target key type and from source value type to target value type,
     - For collections, a mapping exists from the source element type to the target element type,
+    - Neither side is an `IQueryable<T>` participating in a projection pair (queryable sources/targets are excluded from eager collection materialization when projection applies; see [§7a](#7a-iqueryable-projection-strategy)),
     - `TSource` dictionary types accepted:
         - any type implementing `IDictionary<TKey, TValue>`;
         - any type implementing `IReadOnlyDictionary<TKey, TValue>`;
@@ -323,3 +344,6 @@ See also: [Mappa attributes — MappaBeforeMap and MappaAfterMap](mappa-attribut
 Currently unsupported features include:
 
 - Generic type parameters on map methods (for example, `TTarget Map<TSource, TTarget>(TSource input)`).
+- Nested `IQueryable` / collection projections inside member initializers (for example projecting `source.Children` as `IQueryable` inside a parent projection).
+- Tuple and `Guid` expression builders inside queryable projections.
+- Provider-specific expression shapes that compile but are not translated by a given LINQ provider at runtime.

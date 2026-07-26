@@ -14,6 +14,7 @@ See the [tutorial](../Documentation/tutorial.md) for a guided introduction, or b
 | [`DateAndTimeMapper.cs`](DateAndTimeMapper.cs) | Date and time type conversions |
 | [`GuidStrategyMapper.cs`](GuidStrategyMapper.cs) | `Guid` ↔ `byte[]` mapping |
 | [`TupleToTupleMapper.cs`](TupleToTupleMapper.cs) | Tuple-to-tuple mapping |
+| [`IQueryableProjectionMapper.cs`](IQueryableProjectionMapper.cs) | `IQueryable<T>` → `IQueryable<T>` projection (`Select` expressions) |
 
 ## Attributes
 | Sample | Demonstrates |
