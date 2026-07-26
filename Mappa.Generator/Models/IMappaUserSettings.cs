@@ -219,6 +219,13 @@ internal interface IMappaUserSettings
     BooleanSetting ContainerCapacityConstructors { get; }
 
     /// <summary>
+    /// Gets a value indicating whether the source generator should avoid invoking
+    /// <c>System.Linq.Enumerable.Count{T}(IEnumerable{T})</c> when mapping from a source
+    /// that does not expose <c>Count</c> or <c>Length</c> to a fixed-size target.
+    /// </summary>
+    BooleanSetting PreventEnumerableCount { get; }
+
+    /// <summary>
     /// Gets the concrete type used when mapping to sequence-like collection interfaces.
     /// </summary>
     EnumerableConcreteTypeSetting EnumerableConcreteType { get; }

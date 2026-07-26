@@ -55,7 +55,6 @@ internal sealed class ContainerMapStrategyDetector
         }
 
         // 02. Collection -> Collection strategy.
-        // TODO [#108] Prevent using Enumerable.Count() when the user asks for it.
         else if (this.CanMapCollectionToCollection(out var elementStrategy))
         {
             mapStrategy = new CollectionToCollectionMapStrategy(
@@ -65,6 +64,7 @@ internal sealed class ContainerMapStrategyDetector
                 this.context.MapMethod?.MethodSymbol,
                 this.context.MappaUserSettings.FastCollections,
                 this.context.MappaUserSettings.ContainerCapacityConstructors,
+                this.context.MappaUserSettings.PreventEnumerableCount,
                 GetEffectiveEnumerableConcreteType(this.context.MappaUserSettings.EnumerableConcreteType));
         }
 

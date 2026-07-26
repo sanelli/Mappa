@@ -471,6 +471,7 @@ public sealed class ProjectionExpressionBuilderTests
             null,
             BooleanSetting.Undefined,
             BooleanSetting.Undefined,
+            BooleanSetting.Undefined,
             EnumerableConcreteTypeSetting.Undefined);
         var expressionContext = new ExpressionBuildContext(
             new MappaBuilderContext(compilation),
@@ -539,6 +540,7 @@ public sealed class ProjectionExpressionBuilderTests
             intType,
             new IdentityMapStrategy(intType, intType, IdentityMapDeepCopySetting.ShallowCopy, requiresMemberwiseClone: false, nestedFieldStrategies: []),
             null,
+            BooleanSetting.Undefined,
             BooleanSetting.Undefined,
             BooleanSetting.Undefined,
             EnumerableConcreteTypeSetting.Undefined);

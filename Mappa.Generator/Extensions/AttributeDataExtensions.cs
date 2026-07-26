@@ -610,6 +610,10 @@ internal static class AttributeDataExtensions
                     attribute.ContainerCapacityConstructors = (BooleanSetting)value;
                     break;
 
+                case nameof(MappaSettingsAttribute.PreventEnumerableCount) when namedArgument.Value.Value is int value:
+                    attribute.PreventEnumerableCount = (BooleanSetting)value;
+                    break;
+
                 case nameof(MappaSettingsAttribute.PolymorphicMapMethodWithMatchingDefaultAttribute) when namedArgument.Value.Value is int value:
                     attribute.PolymorphicMapMethodWithMatchingDefaultAttribute = (BooleanSetting)value;
                     break;
