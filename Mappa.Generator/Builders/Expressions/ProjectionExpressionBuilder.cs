@@ -82,10 +82,14 @@ internal static class ProjectionExpressionBuilder
         return true;
     }
 
-    private static string BuildIdentityExpression(string source)
-        => source;
-
-    private static string BuildNullableExpression(NullableStrategy strategy, string source, ExpressionBuildContext context)
+    /// <summary>
+    /// Builds a nullable projection expression.
+    /// </summary>
+    /// <param name="strategy">The nullable strategy.</param>
+    /// <param name="source">The source expression.</param>
+    /// <param name="context">The expression build context.</param>
+    /// <returns>The projection expression.</returns>
+    internal static string BuildNullableExpression(NullableStrategy strategy, string source, ExpressionBuildContext context)
     {
         if (!TryBuildExpression(strategy.ElementStrategy, GetNullableInnerSource(strategy, source), context, out var innerExpression))
         {
@@ -103,6 +107,61 @@ internal static class ProjectionExpressionBuilder
             ? $"{source}.HasValue ? ({strategy.TargetType.ToDisplayString()}){innerExpression} : ({strategy.TargetType.ToDisplayString()})null"
             : $"{source}.HasValue ? {innerExpression} : throw new System.NullReferenceException({CSharpLiteralHelper.ToStringLiteral($"\"{source}\" is null.")})";
     }
+
+    /// <summary>
+    /// Builds a constructor-parameter projection expression.
+    /// </summary>
+    /// <param name="parameterMapStrategy">The parameter mapping strategy.</param>
+    /// <param name="source">The source expression.</param>
+    /// <param name="context">The expression build context.</param>
+    /// <returns>The projection expression.</returns>
+    internal static string BuildParameterExpression(
+        ParameterMapStrategy parameterMapStrategy,
+        string source,
+        ExpressionBuildContext context)
+    {
+        var sourceExpression = BuildSourceMemberExpression(
+            parameterMapStrategy.SourceProperty,
+            null,
+            source,
+            context);
+
+        if (!TryBuildExpression(parameterMapStrategy.ParameterStrategy, sourceExpression, context, out var expression))
+        {
+            throw new MappaGeneratorException("Parameter projection strategy is not supported.");
+        }
+
+        return expression;
+    }
+
+    /// <summary>
+    /// Builds a property projection expression.
+    /// </summary>
+    /// <param name="propertyMapStrategy">The property mapping strategy.</param>
+    /// <param name="source">The source expression.</param>
+    /// <param name="context">The expression build context.</param>
+    /// <returns>The projection expression.</returns>
+    internal static string BuildPropertyExpression(
+        PropertyMapStrategy propertyMapStrategy,
+        string source,
+        ExpressionBuildContext context)
+    {
+        var sourceExpression = BuildSourceMemberExpression(
+            propertyMapStrategy.SourceProperty,
+            propertyMapStrategy.ChainedSourcePropertyPath,
+            source,
+            context);
+
+        if (!TryBuildExpression(propertyMapStrategy.PropertyStrategy, sourceExpression, context, out var expression))
+        {
+            throw new MappaGeneratorException("Property projection strategy is not supported.");
+        }
+
+        return expression;
+    }
+
+    private static string BuildIdentityExpression(string source)
+        => source;
 
     private static string GetNullableInnerSource(NullableStrategy strategy, string source)
     {
@@ -139,44 +198,6 @@ internal static class ProjectionExpressionBuilder
         }
 
         return $"new {targetTypeName}({string.Join(", ", parameterExpressions)}) {{ {string.Join(", ", initializerExpressions)} }}";
-    }
-
-    private static string BuildParameterExpression(
-        ParameterMapStrategy parameterMapStrategy,
-        string source,
-        ExpressionBuildContext context)
-    {
-        var sourceExpression = BuildSourceMemberExpression(
-            parameterMapStrategy.SourceProperty,
-            null,
-            source,
-            context);
-
-        if (!TryBuildExpression(parameterMapStrategy.ParameterStrategy, sourceExpression, context, out var expression))
-        {
-            throw new MappaGeneratorException("Parameter projection strategy is not supported.");
-        }
-
-        return expression;
-    }
-
-    private static string BuildPropertyExpression(
-        PropertyMapStrategy propertyMapStrategy,
-        string source,
-        ExpressionBuildContext context)
-    {
-        var sourceExpression = BuildSourceMemberExpression(
-            propertyMapStrategy.SourceProperty,
-            propertyMapStrategy.ChainedSourcePropertyPath,
-            source,
-            context);
-
-        if (!TryBuildExpression(propertyMapStrategy.PropertyStrategy, sourceExpression, context, out var expression))
-        {
-            throw new MappaGeneratorException("Property projection strategy is not supported.");
-        }
-
-        return expression;
     }
 
     private static string BuildSourceMemberExpression(

@@ -5,6 +5,7 @@
 using System.Globalization;
 
 using Mappa.Generator.Builders.Expressions;
+using Mappa.Generator.Exceptions;
 using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
@@ -479,6 +480,155 @@ public sealed class ProjectionExpressionBuilderTests
 
         built.Should().BeFalse();
         expression.Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// Test integral-to-enum projection throws when the target type has no enum underlying type.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void TryBuildExpressionThrowsWhenIntegralToEnumTargetHasNoUnderlyingType()
+    {
+        var compilation = CSharpCompilation.Create(
+            "TestAssembly",
+            references: [MetadataReference.CreateFromFile(typeof(object).Assembly.Location)]);
+        var intType = compilation.GetSpecialType(SpecialType.System_Int32);
+        var expressionContext = new ExpressionBuildContext(
+            new MappaBuilderContext(compilation),
+            new MappaGlobalOptions(TestAnalyzerConfigOptionsProvider.FromEditorConfig("root = true"), CSharpSyntaxTree.ParseText(string.Empty, cancellationToken: TestContext.Current.CancellationToken)));
+        var strategy = new IntegralToEnumMapStrategy(
+            intType,
+            intType,
+            new EnumMapConfiguration([], MappaMapEnumDefaultBehavior.Throw, null, []));
+
+        var act = () => ProjectionExpressionBuilder.TryBuildExpression(strategy, "source", expressionContext, out _);
+
+        act.Should().Throw<MappaGeneratorException>()
+            .WithMessage("*does not have an underlying type*");
+    }
+
+    /// <summary>
+    /// Test nested builders throw when their element strategies cannot be projected.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void NestedProjectionBuildersThrowWhenElementStrategyIsUnsupported()
+    {
+        const string source = """
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { public int Value { get; set; } }
+                              public class Target
+                              {
+                                  public Target(int value) { Value = value; }
+                                  public int Value { get; set; }
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var sourceType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Source")
+                         ?? throw new InvalidOperationException("Source type was not found.");
+        var targetType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Target")
+                         ?? throw new InvalidOperationException("Target type was not found.");
+        var sourceProperty = sourceType.GetMembers("Value").OfType<IPropertySymbol>().Single();
+        var targetProperty = targetType.GetMembers("Value").OfType<IPropertySymbol>().Single();
+        var parameter = targetType.InstanceConstructors.Single(candidate => candidate.Parameters.Length == 1).Parameters[0];
+        var intType = compilation.GetSpecialType(SpecialType.System_Int32);
+        var unsupported = new CollectionToCollectionMapStrategy(
+            intType,
+            intType,
+            new IdentityMapStrategy(intType, intType, IdentityMapDeepCopySetting.ShallowCopy, requiresMemberwiseClone: false, nestedFieldStrategies: []),
+            null,
+            BooleanSetting.Undefined,
+            BooleanSetting.Undefined,
+            EnumerableConcreteTypeSetting.Undefined);
+        var expressionContext = new ExpressionBuildContext(
+            new MappaBuilderContext(compilation),
+            new MappaGlobalOptions(TestAnalyzerConfigOptionsProvider.FromEditorConfig("root = true"), compilation.SyntaxTrees[0]));
+
+        var nullableAct = () => ProjectionExpressionBuilder.BuildNullableExpression(
+            new NullableStrategy(intType, intType, unsupported),
+            "source",
+            expressionContext);
+        var parameterAct = () => ProjectionExpressionBuilder.BuildParameterExpression(
+            new ParameterMapStrategy(parameter, sourceProperty, unsupported),
+            "source",
+            expressionContext);
+        var propertyAct = () => ProjectionExpressionBuilder.BuildPropertyExpression(
+            new PropertyMapStrategy(targetProperty, sourceProperty, unsupported, postConstructorInitializer: false),
+            "source",
+            expressionContext);
+
+        nullableAct.Should().Throw<MappaGeneratorException>()
+            .WithMessage("Nullable projection element strategy is not supported.");
+        parameterAct.Should().Throw<MappaGeneratorException>()
+            .WithMessage("Parameter projection strategy is not supported.");
+        propertyAct.Should().Throw<MappaGeneratorException>()
+            .WithMessage("Property projection strategy is not supported.");
+    }
+
+    /// <summary>
+    /// Test whitespace-only chained receiver prefixes do not rewrite the chain source.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void TryBuildExpressionIgnoresWhitespaceOnlyReceiverPathPrefix()
+    {
+        const string source = """
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Address
+                              {
+                                  public string City { get; set; }
+                              }
+
+                              public class Source
+                              {
+                                  public Address Address { get; set; }
+                              }
+
+                              public class Target
+                              {
+                                  public string City { get; set; }
+                              }
+
+                              public partial class Mapper
+                              {
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var addressType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Address")
+                          ?? throw new InvalidOperationException("Address type was not found.");
+        var targetType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Target")
+                         ?? throw new InvalidOperationException("Target type was not found.");
+        var cityProperty = addressType.GetMembers("City").OfType<IPropertySymbol>().Single();
+        var targetCity = targetType.GetMembers("City").OfType<IPropertySymbol>().Single();
+        var mapMethod = CreateMapMethod(compilation, "Map");
+        var expressionContext = new ExpressionBuildContext(
+            new MappaBuilderContext(compilation),
+            new MappaGlobalOptions(TestAnalyzerConfigOptionsProvider.FromEditorConfig("root = true"), compilation.SyntaxTrees[0]));
+        var identity = new IdentityMapStrategy(
+            targetCity.Type,
+            cityProperty.Type,
+            IdentityMapDeepCopySetting.ShallowCopy,
+            requiresMemberwiseClone: false,
+            nestedFieldStrategies: []);
+        var whitespacePrefix = new PropertyMapStrategy(
+            targetCity,
+            cityProperty,
+            identity,
+            postConstructorInitializer: false,
+            new ChainedSourcePropertyPathInfo("Address.City", ["City"], addressType, "   "));
+
+        using (expressionContext.BuilderContext.PushMapMethod(mapMethod))
+        {
+            ProjectionExpressionBuilder.TryBuildExpression(whitespacePrefix, "lambdaSource", expressionContext, out var expression)
+                .Should()
+                .BeTrue();
+            expression.Should().NotBeNullOrWhiteSpace();
+        }
     }
 
     private static MapMethod CreateMapMethod(CSharpCompilation compilation, string methodName)
