@@ -63,12 +63,16 @@ internal sealed class QueryableProjectionMapStrategyDetector
             return false;
         }
 
-        if (!this.context.TryGetElementStrategy(
-                targetElementType,
-                sourceElementType,
-                this.compilation,
-                out var elementStrategy,
-                this.cancellationToken))
+        var derivedContext = new DerivedMappaMapAlgorithmContext(
+            this.context,
+            targetElementType,
+            sourceElementType);
+        var elementAlgorithm = new TypeMapIdentifierWithMapMethodAlgorithm(
+            derivedContext,
+            this.compilation,
+            this.cancellationToken);
+        var elementStrategy = elementAlgorithm.GetStrategy();
+        if (elementStrategy is NoMapStrategy)
         {
             return false;
         }

@@ -91,7 +91,7 @@ internal sealed class ProjectionElementMethodDefinition
             builder
                 .AppendLine($"[global::{typeof(DebuggerNonUserCodeAttribute).FullName}]")
                 .AppendLine($"[global::{typeof(GeneratedCodeAttribute).FullName}(\"Mappa\", \"{typeof(MappaGenerator).Assembly.GetName().Version}\")]")
-                .AppendLine($"private {staticModifier}partial {this.TargetType.ToDisplayString()} {this.MethodName}({this.SourceType.ToDisplayString()} {this.SourceParameterName})");
+                .AppendLine($"private {staticModifier}{this.TargetType.ToDisplayString()} {this.MethodName}({this.SourceType.ToDisplayString()} {this.SourceParameterName})");
             using (builder.CurlyBracesBlock())
             {
                 builder.AppendLine($"return {this.Expression};");

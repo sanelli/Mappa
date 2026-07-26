@@ -55,4 +55,32 @@ public sealed class ProjectionCapabilityAnalyzerTests
 
         ProjectionCapabilityAnalyzer.IsSupported(strategy).Should().BeFalse();
     }
+
+    /// <summary>
+    /// Test collection-to-collection strategies are not supported for projections.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void IsSupportedReturnsFalseForCollectionToCollectionMapStrategy()
+    {
+        var compilation = CSharpCompilation.Create("TestAssembly");
+        var intType = compilation.GetSpecialType(SpecialType.System_Int32);
+        var listType = compilation.GetTypeByMetadataName("System.Collections.Generic.List`1")!.Construct(intType);
+        var elementStrategy = new IdentityMapStrategy(
+            intType,
+            intType,
+            IdentityMapDeepCopySetting.ShallowCopy,
+            requiresMemberwiseClone: false,
+            nestedFieldStrategies: []);
+        var strategy = new CollectionToCollectionMapStrategy(
+            listType,
+            listType,
+            elementStrategy,
+            methodSymbol: null,
+            BooleanSetting.Undefined,
+            BooleanSetting.Undefined,
+            EnumerableConcreteTypeSetting.Undefined);
+
+        ProjectionCapabilityAnalyzer.IsSupported(strategy).Should().BeFalse();
+    }
 }

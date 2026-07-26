@@ -621,4 +621,56 @@ internal sealed class ExpressionSyntaxAssertions
 
         return this;
     }
+
+    /// <summary>
+    /// Assert that the expression is a simple lambda expression.
+    /// </summary>
+    /// <param name="parameterName">The lambda parameter name.</param>
+    /// <param name="bodyAssertions">Assertions on the lambda body.</param>
+    /// <returns>The assertions.</returns>
+    internal ExpressionSyntaxAssertions BeSimpleLambdaExpressionSyntax(
+        string parameterName,
+        Action<ExpressionSyntaxAssertions> bodyAssertions)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(parameterName);
+        ArgumentNullException.ThrowIfNull(bodyAssertions);
+
+        this.Subject.Should().BeOfType<SimpleLambdaExpressionSyntax>();
+        var simpleLambdaExpressionSyntax = (SimpleLambdaExpressionSyntax)this.Subject;
+        simpleLambdaExpressionSyntax.Parameter.Identifier.Text.Should().Be(parameterName);
+        simpleLambdaExpressionSyntax.Body.Should().BeAssignableTo<ExpressionSyntax>();
+        bodyAssertions(new ExpressionSyntaxAssertions((ExpressionSyntax)simpleLambdaExpressionSyntax.Body, this.semanticModel, this.compilation));
+        return this;
+    }
+
+    /// <summary>
+    /// Assert that the expression is a switch expression.
+    /// </summary>
+    /// <param name="assertExpression">Assertions on the governing expression.</param>
+    /// <param name="assertArms">Assertions on each switch arm.</param>
+    /// <returns>The assertions.</returns>
+    internal ExpressionSyntaxAssertions BeSwitchExpressionSyntax(
+        Action<ExpressionSyntaxAssertions> assertExpression,
+        params Action<ExpressionSyntaxAssertions, ExpressionSyntaxAssertions>[] assertArms)
+    {
+        ArgumentNullException.ThrowIfNull(assertExpression);
+        ArgumentNullException.ThrowIfNull(assertArms);
+
+        this.Subject.Should().BeOfType<SwitchExpressionSyntax>();
+        var switchExpressionSyntax = (SwitchExpressionSyntax)this.Subject;
+        assertExpression(new ExpressionSyntaxAssertions(switchExpressionSyntax.GoverningExpression, this.semanticModel, this.compilation));
+        switchExpressionSyntax.Arms.Should().HaveCount(assertArms.Length);
+
+        for (var index = 0; index < assertArms.Length; ++index)
+        {
+            var arm = switchExpressionSyntax.Arms[index];
+            arm.Pattern.Should().BeOfType<ConstantPatternSyntax>();
+            var constantPatternSyntax = (ConstantPatternSyntax)arm.Pattern;
+            assertArms[index](
+                new ExpressionSyntaxAssertions(constantPatternSyntax.Expression, this.semanticModel, this.compilation),
+                new ExpressionSyntaxAssertions(arm.Expression, this.semanticModel, this.compilation));
+        }
+
+        return this;
+    }
 }
