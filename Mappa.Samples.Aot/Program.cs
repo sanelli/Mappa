@@ -68,6 +68,7 @@ internal static class Program
         PolymorphismMappersRunner.Run(report);
         PropertyMapNameSettingsMapperRunner.Run(report);
         PragmaWarningSettingMapperRunner.Run(report);
+        PreventEnumerableCountMapperRunner.Run(report);
         ProtobufOptionalMapperRunner.Run(report);
         ReadOnlyTargetCollectionMapperRunner.Run(report);
         ReferenceNullableToReferenceNullableMapperRunner.Run(report);

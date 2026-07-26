@@ -173,6 +173,43 @@ public sealed class AttributeDataExtensionsGetMappaSettingsAttributeTests
     }
 
     /// <summary>
+    /// Test <see cref="AttributeDataExtensions.GetMappaSettingsAttribute"/> reads <see cref="MappaSettingsAttribute.PreventEnumerableCount"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetMappaSettingsAttributeReadsPreventEnumerableCount()
+    {
+        const string source = """
+                              using Mappa;
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { }
+
+                              public class Target { }
+
+                              [Mappa]
+                              public sealed partial class TestMapper
+                              {
+                                  [MappaSettings(PreventEnumerableCount = BooleanSetting.Enable)]
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetMethodAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.MapperMetadataName,
+            "Map");
+
+        var settings = attributes.GetMappaSettingsAttribute(compilation);
+
+        settings.Should().NotBeNull();
+        settings!.PreventEnumerableCount.Should().Be(BooleanSetting.Enable);
+    }
+
+    /// <summary>
     /// Test <see cref="AttributeDataExtensions.GetMappaSettingsAttribute"/> reads invalid integer style casts.
     /// </summary>
     [Fact]

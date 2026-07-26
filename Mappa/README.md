@@ -45,6 +45,7 @@ Via `MappaSettings` the following settings can be tweaked:
 - `PragmaWarning`: allows surrounding the generated methods with a `#pragma warning disable` block;
 - `FastCollections`: uses `Span<T>` to make mappings involving arrays and `System.Collections.Generic.List<T>` faster;
 - `ContainerCapacityConstructors`: supports mapping custom containers using (if available) a constructor accepting an integer value representing the initial capacity of the container;
+- `PreventEnumerableCount`: when enabled, avoids calling `Enumerable.Count` when mapping from a source without `Count` or `Length` to fixed-size targets such as `T[]`, `Span<T>`, `ReadOnlySpan<T>`, `Memory<T>`, or `ReadOnlyMemory<T>`; a growable `List<T>` buffer is used so the source is enumerated only once;
 - `EnumerableConcreteType`: selects whether mappings to sequence-like collection interfaces (for example `IEnumerable<T>`) use `List<T>` (default) or `T[]` as the concrete buffer;
 - `DictionaryAssignment`: selects whether dictionary mappings insert entries via the indexer (`Indexer`, default) or `IDictionary<TKey,TValue>.Add` (`Add`);
 - `PolymorphicMapMethodWithMatchingDefaultAttribute`: when enabled, `MappaTypeMappingDefault` can be used to locate an appropriate polymorphic method when looking for the mapping between two types;

@@ -17,6 +17,7 @@ namespace Mappa.Generator.Models.Strategies;
 /// <param name="methodSymbol">The method this strategy is used for.</param>
 /// <param name="fastCollections">Enable or disable the fast collection iterations.</param>
 /// <param name="containerCapacityConstructors">Enable or disable support for custom collection with capacity constructor.</param>
+/// <param name="preventEnumerableCount">Enable or disable avoiding <c>Enumerable.Count</c> when mapping to fixed-size collection targets.</param>
 /// <param name="enumerableConcreteType">Defines the concrete type used for sequence-like collection interface targets.</param>
 internal sealed class CollectionToCollectionMapStrategy(
     ITypeSymbol targetType,
@@ -25,6 +26,7 @@ internal sealed class CollectionToCollectionMapStrategy(
     IMethodSymbol? methodSymbol,
     BooleanSetting fastCollections,
     BooleanSetting containerCapacityConstructors,
+    BooleanSetting preventEnumerableCount,
     EnumerableConcreteTypeSetting enumerableConcreteType)
         : MapStrategy(targetType, sourceType)
 {
@@ -48,6 +50,12 @@ internal sealed class CollectionToCollectionMapStrategy(
     /// with a single integer parameter representing the capacity.
     /// </summary>
     internal BooleanSetting ContainerCapacityConstructors { get; } = containerCapacityConstructors;
+
+    /// <summary>
+    /// Gets a value indicating whether to avoid invoking <c>Enumerable.Count</c> when mapping
+    /// from sources without <c>Count</c> or <c>Length</c> to fixed-size collection targets.
+    /// </summary>
+    internal BooleanSetting PreventEnumerableCount { get; } = preventEnumerableCount;
 
     /// <summary>
     /// Gets the concrete type used for sequence-like collection interface targets.

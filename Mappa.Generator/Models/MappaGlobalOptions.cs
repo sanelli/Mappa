@@ -184,6 +184,10 @@ namespace Mappa.Generator.Models;
 ///         <description>Set the default value to enable or disable the support for mapping custom containers using (if available) a constructor accepting an integer value representing the initial capacity of the container.</description>
 ///     </item>
 ///     <item>
+///         <term><c>mappa.preventenumerablecount</c></term>
+///         <description>Set the default value to enable or disable avoiding <c>Enumerable.Count</c> when mapping from sources without <c>Count</c> or <c>Length</c> to fixed-size collection targets.</description>
+///     </item>
+///     <item>
 ///         <term><c>mappa.polymorphicmapmethodwithmatchingdefaultattribute</c></term>
 ///         <description>Set the default value to enable or disable the support for <see cref="MappaTypeMappingDefaultBehavior.MapSourceType"/> when picking up a polymorphic method.</description>
 ///     </item>
@@ -267,6 +271,7 @@ internal sealed class MappaGlobalOptions
     private const string MappaSettingsPragmaWarning = "pragmawarning";
     private const string MappaSettingsFastCollections = "fastcollections";
     private const string MappaSettingsContainerCapacityConstructors = "containercapacityconstructors";
+    private const string MappaSettingsPreventEnumerableCount = "preventenumerablecount";
     private const string MappaSettingsPolymorphicMapMethodWithMatchingDefaultAttribute = "polymorphicmapmethodwithmatchingdefaultattribute";
     private const string MappaSettingsCaseInsensitivePropertyMap = "caseinsensitivepropertymap";
     private const string MappaSettingsIgnoreUnderscoreForPropertyMap = "ignoreunderscoreforpropertymap";
@@ -402,6 +407,10 @@ internal sealed class MappaGlobalOptions
 
         this.ContainerCapacityConstructors = options.TryGetValue(GetOptionName(MappaSettingsContainerCapacityConstructors), out var containerCapacityConstructors)
             ? GetBooleanSettingFromString(containerCapacityConstructors)
+            : BooleanSetting.Undefined;
+
+        this.PreventEnumerableCount = options.TryGetValue(GetOptionName(MappaSettingsPreventEnumerableCount), out var preventEnumerableCount)
+            ? GetBooleanSettingFromString(preventEnumerableCount)
             : BooleanSetting.Undefined;
 
         this.PolymorphicMapMethodWithMatchingDefaultAttribute = options.TryGetValue(GetOptionName(MappaSettingsPolymorphicMapMethodWithMatchingDefaultAttribute), out var polymorphicMapMethodWithMatchingDefaultAttribute)
@@ -721,6 +730,9 @@ internal sealed class MappaGlobalOptions
 
     /// <inheritdoc/>
     public BooleanSetting ContainerCapacityConstructors { get; }
+
+    /// <inheritdoc/>
+    public BooleanSetting PreventEnumerableCount { get; }
 
     /// <inheritdoc/>
     public BooleanSetting PolymorphicMapMethodWithMatchingDefaultAttribute { get; }

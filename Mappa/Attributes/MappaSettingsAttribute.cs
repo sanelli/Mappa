@@ -254,6 +254,16 @@ public sealed class MappaSettingsAttribute
     public BooleanSetting ContainerCapacityConstructors { get; set; } = BooleanSetting.Undefined;
 
     /// <summary>
+    /// Gets or sets a value indicating whether the source generator should avoid invoking
+    /// <c>System.Linq.Enumerable.Count{T}(IEnumerable{T})</c> when mapping from a source
+    /// that does not expose <c>Count</c> or <c>Length</c> to a fixed-size target such as
+    /// <c>T[]</c>, <c>Span{T}</c>, <c>ReadOnlySpan{T}</c>, <c>Memory{T}</c>, or
+    /// <c>ReadOnlyMemory{T}</c>. When enabled, a growable buffer is used so the source is
+    /// enumerated only once. When unset, the existing generator behavior is kept.
+    /// </summary>
+    public BooleanSetting PreventEnumerableCount { get; set; } = BooleanSetting.Undefined;
+
+    /// <summary>
     /// Gets or sets the concrete type used when mapping to sequence-like collection interfaces
     /// such as <see cref="System.Collections.Generic.IEnumerable{T}"/>.
     /// When unset, <see cref="EnumerableConcreteTypeSetting.List"/> is used.

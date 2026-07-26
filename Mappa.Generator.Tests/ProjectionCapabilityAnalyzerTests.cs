@@ -86,6 +86,7 @@ public sealed class ProjectionCapabilityAnalyzerTests
             methodSymbol: null,
             BooleanSetting.Undefined,
             BooleanSetting.Undefined,
+            BooleanSetting.Undefined,
             EnumerableConcreteTypeSetting.Undefined);
 
         ProjectionCapabilityAnalyzer.IsSupported(strategy).Should().BeFalse();
@@ -347,6 +348,7 @@ public sealed class ProjectionCapabilityAnalyzerTests
             intType,
             CreateShallowIdentity(intType, intType),
             methodSymbol: null,
+            BooleanSetting.Undefined,
             BooleanSetting.Undefined,
             BooleanSetting.Undefined,
             EnumerableConcreteTypeSetting.Undefined);

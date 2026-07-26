@@ -406,6 +406,22 @@ public sealed partial class EnumerableConcreteTypeArrayMapper
 
 See also: [EnumerableConcreteTypeMapper.cs](../Mappa.Samples/EnumerableConcreteTypeMapper.cs).
 
+#### Prevent Enumerable.Count settings
+
+`PreventEnumerableCount` controls whether the generator calls `Enumerable.Count` when mapping from a source that does not expose `Count` or `Length` (for example `IEnumerable<T>`) to a fixed-size target such as `T[]`, `Span<T>`, `ReadOnlySpan<T>`, `Memory<T>`, or `ReadOnlyMemory<T>`. When enabled, a growable `List<T>` buffer collects mapped elements in a single enumeration and the final target is materialized afterward (for example via `ToArray()`). Sources with a known length (arrays, `List<T>`, `ICollection<T>`, and similar) are unchanged:
+
+```csharp
+[Mappa]
+[MappaSettings(PreventEnumerableCount = BooleanSetting.Enable)]
+public sealed partial class PreventEnumerableCountMapper
+{
+    public partial int[] MapEnumerableToArray(IEnumerable<MyEnum> input);
+    public partial Span<int> MapEnumerableToSpan(IEnumerable<MyEnum> input);
+}
+```
+
+See also: [PreventEnumerableCountMapper.cs](../Mappa.Samples/PreventEnumerableCountMapper.cs).
+
 #### Dictionary assignment settings
 
 `DictionaryAssignment` controls how entries are inserted when mapping between dictionaries. The default is `Indexer` (`target[key] = value`). Set `Add` to call `IDictionary<TKey, TValue>.Add(key, value)` instead. Both modes produce equivalent results for unique keys. The setting applies to dictionary return types and get-only dictionary properties:

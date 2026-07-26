@@ -69,6 +69,7 @@ public sealed class QueryableProjectionMapStrategyBuilderTests
             methodSymbol: null,
             BooleanSetting.Undefined,
             BooleanSetting.Undefined,
+            BooleanSetting.Undefined,
             EnumerableConcreteTypeSetting.Undefined);
         var strategy = new QueryableProjectionMapStrategy(
             mapMethod.TargetType,

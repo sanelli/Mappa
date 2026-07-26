@@ -41,13 +41,15 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
             this.strategy.SourceType,
             this.strategy.FastCollections,
             this.strategy.ContainerCapacityConstructors,
+            this.strategy.PreventEnumerableCount,
             this.strategy.EnumerableConcreteType,
             out var targetVariableName,
             out var addMethod,
             out var targetCounterTemporary,
             out var interfaceMethodAccessMode,
             out var interfaceToAccessFrom,
-            out var variableToAccessFrom);
+            out var variableToAccessFrom,
+            out var usedGrowableBuffer);
         using (AppendLoopBlock(
                    stringBuilder,
                    source,
@@ -103,13 +105,27 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
 
         // For some types we need to do a bit of post-processing to make sure we always return the correct type
         // (e.g. if we convert a T[] into a Span<T>, even if not needed it clarifies the code).
-        AppendPostLoopCode(stringBuilder, context, this.strategy.TargetType, ref targetVariableName);
+        AppendPostLoopCode(stringBuilder, context, this.strategy.TargetType, ref targetVariableName, usedGrowableBuffer);
 
         return (targetVariableName, stringBuilder.ToString());
     }
 
-    private static void AppendPostLoopCode(PrettyCode.StringBuilder stringBuilder, MappaBuilderContext context, ITypeSymbol targetTypeSymbol, ref string targetVariableName)
+    private static void AppendPostLoopCode(
+        PrettyCode.StringBuilder stringBuilder,
+        MappaBuilderContext context,
+        ITypeSymbol targetTypeSymbol,
+        ref string targetVariableName,
+        bool usedGrowableBuffer)
     {
+        if (usedGrowableBuffer)
+        {
+            var elementTypeDisplayString = targetTypeSymbol.GetElementType().ToDisplayString();
+            var arrayVariableName = context.NextTemporary();
+            stringBuilder.AppendEmptyLine();
+            stringBuilder.AppendLine($"{elementTypeDisplayString}[] {arrayVariableName} = {targetVariableName}.ToArray();");
+            targetVariableName = arrayVariableName;
+        }
+
         if (targetTypeSymbol.IsSpan(context.Compilation)
             || targetTypeSymbol.IsReadOnlySpan(context.Compilation)
             || targetTypeSymbol.IsMemory(context.Compilation)
@@ -194,19 +210,22 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
         ITypeSymbol sourceTypeSymbol,
         BooleanSetting fastCollections,
         BooleanSetting containerCapacityConstructors,
+        BooleanSetting preventEnumerableCount,
         EnumerableConcreteTypeSetting enumerableConcreteType,
         out string targetVariableName,
         out InsertionMethod insertionMethod,
         out string? counterVariableName,
         out InterfaceMethodAccessMode interfaceMethodAccessMode,
         out string interfaceToAccessFrom,
-        out string? variableToAccessFrom)
+        out string? variableToAccessFrom,
+        out bool usedGrowableBuffer)
     {
         targetVariableName = context.NextTemporary();
         counterVariableName = null;
         interfaceMethodAccessMode = InterfaceMethodAccessMode.None;
         interfaceToAccessFrom = string.Empty;
         variableToAccessFrom = null;
+        usedGrowableBuffer = false;
 
         var isFastCollectionOnSource = fastCollections is BooleanSetting.Enable
             && (sourceTypeSymbol.IsList(context.Compilation) || sourceTypeSymbol.IsArray());
@@ -229,21 +248,35 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
                   || targetTypeSymbol.IsIImmutableStack(context.Compilation)
                   || targetTypeSymbol.IsImmutableStack(context.Compilation))
         {
-            // Array need indexers.
-            insertionMethod = InsertionMethod.Indexer;
-
-            // Capacity is always mandatory for arrays.
-            // In some scenarios it might mean we invoke the Enumerable.Count() extension method which
-            // might results in enumerations being executed twice.
-            var capacity = GetLengthExpression(source, sourceTypeSymbol, context.Compilation);
-            stringBuilder.AppendLine($"{targetTypeSymbol.GetElementType().ToDisplayString()}[] {targetVariableName} = new {targetTypeSymbol.GetElementType().ToDisplayString()}[{capacity}];");
-
-            // If source does not have an indexer we need to create a new counter variable
-            // this for instance is used when mapping generic IEnumerable<TSource> to TTarget[].
-            if (!HasIndexer(context, sourceTypeSymbol))
+            if (ShouldUseGrowableBuffer(
+                    preventEnumerableCount,
+                    source,
+                    sourceTypeSymbol,
+                    targetTypeSymbol,
+                    enumerableConcreteType,
+                    context.Compilation))
             {
-                counterVariableName = context.NextTemporary();
-                stringBuilder.AppendLine($"int {counterVariableName} = 0;");
+                AppendGrowableListTargetVariable(stringBuilder, targetTypeSymbol, ref targetVariableName, out insertionMethod);
+                usedGrowableBuffer = true;
+            }
+            else
+            {
+                // Array need indexers.
+                insertionMethod = InsertionMethod.Indexer;
+
+                // Capacity is always mandatory for arrays.
+                // In some scenarios it might mean we invoke the Enumerable.Count() extension method which
+                // might results in enumerations being executed twice.
+                var capacity = GetLengthExpression(source, sourceTypeSymbol, context.Compilation);
+                stringBuilder.AppendLine($"{targetTypeSymbol.GetElementType().ToDisplayString()}[] {targetVariableName} = new {targetTypeSymbol.GetElementType().ToDisplayString()}[{capacity}];");
+
+                // If source does not have an indexer we need to create a new counter variable
+                // this for instance is used when mapping generic IEnumerable<TSource> to TTarget[].
+                if (!HasIndexer(context, sourceTypeSymbol))
+                {
+                    counterVariableName = context.NextTemporary();
+                    stringBuilder.AppendLine($"int {counterVariableName} = 0;");
+                }
             }
         }
         else if (targetTypeSymbol.IsISet(context.Compilation)
@@ -355,10 +388,13 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
                 targetTypeSymbol,
                 sourceTypeSymbol,
                 fastCollections,
+                preventEnumerableCount,
+                enumerableConcreteType,
                 ref targetVariableName,
                 out insertionMethod,
                 out counterVariableName,
-                out variableToAccessFrom);
+                out variableToAccessFrom,
+                out usedGrowableBuffer);
         }
         else if (targetTypeSymbol.IsIEnumerable()
             || targetTypeSymbol.IsList(context.Compilation)
@@ -491,14 +527,32 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
         ITypeSymbol targetTypeSymbol,
         ITypeSymbol sourceTypeSymbol,
         BooleanSetting fastCollections,
+        BooleanSetting preventEnumerableCount,
+        EnumerableConcreteTypeSetting enumerableConcreteType,
         ref string targetVariableName,
         out InsertionMethod insertionMethod,
         out string? counterVariableName,
-        out string? variableToAccessFrom)
+        out string? variableToAccessFrom,
+        out bool usedGrowableBuffer)
     {
-        insertionMethod = InsertionMethod.Indexer;
         counterVariableName = null;
         variableToAccessFrom = null;
+        usedGrowableBuffer = false;
+
+        if (ShouldUseGrowableBuffer(
+                preventEnumerableCount,
+                source,
+                sourceTypeSymbol,
+                targetTypeSymbol,
+                enumerableConcreteType,
+                context.Compilation))
+        {
+            AppendGrowableListTargetVariable(stringBuilder, targetTypeSymbol, ref targetVariableName, out insertionMethod);
+            usedGrowableBuffer = true;
+            return;
+        }
+
+        insertionMethod = InsertionMethod.Indexer;
 
         var elementTypeDisplayString = targetTypeSymbol.GetElementType().ToDisplayString();
         var isFastCollectionOnSource = fastCollections is BooleanSetting.Enable
@@ -523,6 +577,50 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
             }
         }
     }
+
+    private static void AppendGrowableListTargetVariable(
+        PrettyCode.StringBuilder stringBuilder,
+        ITypeSymbol targetTypeSymbol,
+        ref string targetVariableName,
+        out InsertionMethod insertionMethod)
+    {
+        insertionMethod = InsertionMethod.Add;
+        var elementTypeDisplayString = targetTypeSymbol.GetElementType().ToDisplayString();
+        stringBuilder.AppendLine($"global::System.Collections.Generic.List<{elementTypeDisplayString}> {targetVariableName} = new global::System.Collections.Generic.List<{elementTypeDisplayString}>();");
+    }
+
+    private static bool ShouldUseGrowableBuffer(
+        BooleanSetting preventEnumerableCount,
+        string source,
+        ITypeSymbol sourceTypeSymbol,
+        ITypeSymbol targetTypeSymbol,
+        EnumerableConcreteTypeSetting enumerableConcreteType,
+        Compilation compilation)
+    {
+        if (preventEnumerableCount is not BooleanSetting.Enable)
+        {
+            return false;
+        }
+
+        if (TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, compilation, out _))
+        {
+            return false;
+        }
+
+        if (TargetRequiresFixedSizeBuffer(targetTypeSymbol, compilation))
+        {
+            return true;
+        }
+
+        return ShouldUseArrayForEnumerableInterfaceTarget(targetTypeSymbol, enumerableConcreteType);
+    }
+
+    private static bool TargetRequiresFixedSizeBuffer(ITypeSymbol targetTypeSymbol, Compilation compilation)
+        => targetTypeSymbol.IsArray()
+           || targetTypeSymbol.IsSpan(compilation)
+           || targetTypeSymbol.IsReadOnlySpan(compilation)
+           || targetTypeSymbol.IsMemory(compilation)
+           || targetTypeSymbol.IsReadOnlyMemory(compilation);
 
     private static bool HasIndexer(MappaBuilderContext context, ITypeSymbol sourceTypeSymbol)
     {
