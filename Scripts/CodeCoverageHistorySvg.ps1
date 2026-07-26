@@ -32,12 +32,14 @@ function Get-CoverageTrendArrow
     $previousValue = [double]$Previous
     if ($Current -gt $previousValue)
     {
-        return " &#9650;"
+        $deltaText = "+{0:0.#}" -f [Math]::Round($Current - $previousValue, 1)
+        return " &#9650;$deltaText"
     }
 
     if ($Current -lt $previousValue)
     {
-        return " &#9660;"
+        $deltaText = "{0:0.#}" -f [Math]::Round($Current - $previousValue, 1)
+        return " &#9660;$deltaText"
     }
 
     return " &#61;"

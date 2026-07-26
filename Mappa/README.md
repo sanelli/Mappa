@@ -22,6 +22,8 @@ This is the list of attributes provided:
 
 This package also provides the `MappaContext` class that can be used to pass contextual values to mappers via the `MappaAssignFromContext` attribute, store mapped values via the `MappaAssignToContext` attribute, supply context to methods invoked via the `MappaInvokeMethodAttribute` attribute, or supply context to before/after map hooks.
 
+**Queryable projection:** map methods with signature `IQueryable<TSource>` → `IQueryable<TTarget>` are handled by the generator as deferred `Select` projections for ORM providers. This is signature-driven and does not require a new attribute in this package. Generated projection methods are annotated with `[RequiresDynamicCode]` and are not compatible with Native AOT. See the [tutorial](../Documentation/tutorial.md#iqueryable-projection) and [IQueryableProjectionMapper.cs](../Mappa.Samples/IQueryableProjectionMapper.cs).
+
 Via `MappaSettings` the following settings can be tweaked:
 - `DateTimeFormat`: the format to use when mapping `string`s to and from `System.DateTime`;
 - `DateTimeOffsetFormat`: the format to use when mapping `string`s to and from `System.DateTimeOffset`;

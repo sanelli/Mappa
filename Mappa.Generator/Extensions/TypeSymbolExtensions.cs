@@ -68,6 +68,7 @@ internal static class TypeSymbolExtensions
     private const string ConcurrentQueueFullName = "System.Collections.Concurrent.ConcurrentQueue`1";
     private const string ProducerConsumerCollectionInterfaceFullName = "System.Collections.Concurrent.IProducerConsumerCollection`1";
     private const string ExceptionFullName = "System.Exception";
+    private const string IQueryableFullName = "System.Linq.IQueryable`1";
 
     /// <summary>
     /// Check if the type is <see cref="Void"/>.
@@ -461,6 +462,74 @@ internal static class TypeSymbolExtensions
     /// <returns><c>true</c> if the type symbol is or implements <see cref="IEnumerable{T}"/>, <c>false</c> otherwise.</returns>
     internal static bool IsOrImplementIEnumerable(this ITypeSymbol typeSymbol)
         => typeSymbol.IsIEnumerable() || typeSymbol.AllInterfaces.Any(@interface => @interface.IsIEnumerable());
+
+    /// <summary>
+    /// Check if the type is <see cref="System.Linq.IQueryable{T}"/>.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="System.Linq.IQueryable{T}"/>.</returns>
+    internal static bool IsIQueryable(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        if (typeSymbol is not INamedTypeSymbol { IsGenericType: true, TypeArguments.Length: 1 } namedTypeSymbol)
+        {
+            return false;
+        }
+
+        if (namedTypeSymbol.MetadataName == "IQueryable`1"
+            && namedTypeSymbol.ContainingNamespace.ToDisplayString() == "System.Linq")
+        {
+            return true;
+        }
+
+        var queryableType = compilation.GetTypeByMetadataName(IQueryableFullName);
+        return queryableType is not null
+               && SymbolEqualityComparer.Default.Equals(namedTypeSymbol.OriginalDefinition, queryableType);
+    }
+
+    /// <summary>
+    /// Check if the type is <see cref="System.Linq.IQueryable{T}"/> or implements it.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is or implements <see cref="System.Linq.IQueryable{T}"/>.</returns>
+    internal static bool IsOrImplementIQueryable(this ITypeSymbol typeSymbol, Compilation compilation)
+        => typeSymbol.IsIQueryable(compilation)
+           || typeSymbol.AllInterfaces.Any(@interface => @interface.IsIQueryable(compilation));
+
+    /// <summary>
+    /// Gets the element type of an <see cref="System.Linq.IQueryable{T}"/> type.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <param name="elementType">The queryable element type when the operation succeeds.</param>
+    /// <returns><c>true</c> when <paramref name="typeSymbol"/> is or implements <see cref="System.Linq.IQueryable{T}"/>.</returns>
+    internal static bool TryGetQueryableElementType(
+        this ITypeSymbol typeSymbol,
+        Compilation compilation,
+        out ITypeSymbol elementType)
+    {
+        elementType = null!;
+
+        if (typeSymbol is INamedTypeSymbol { TypeArguments.Length: 1 } namedTypeSymbol
+            && namedTypeSymbol.IsIQueryable(compilation))
+        {
+            elementType = namedTypeSymbol.TypeArguments[0];
+            return true;
+        }
+
+        foreach (var @interface in typeSymbol.AllInterfaces)
+        {
+            if (@interface is INamedTypeSymbol { TypeArguments.Length: 1 } queryableInterface
+                && queryableInterface.IsIQueryable(compilation))
+            {
+                elementType = queryableInterface.TypeArguments[0];
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     /// <summary>
     /// Check if the type is <see cref="IEnumerable{T}"/> of <see cref="KeyValuePair{TKey,TValue}"/>.

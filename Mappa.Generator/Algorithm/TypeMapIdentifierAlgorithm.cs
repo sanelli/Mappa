@@ -77,16 +77,19 @@ internal class TypeMapIdentifierAlgorithm
             // 06. Date and time related strategies.
             new DateAndTimeMapStrategyDetector(this.Context, this.Compilation),
 
-            // 07. Container related strategies.
+            // 07. IQueryable projection strategies.
+            new QueryableProjectionMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
+
+            // 08. Container related strategies.
             new ContainerMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
 
-            // 08. Tuple related strategies.
+            // 09. Tuple related strategies.
             new TupleMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
 
-            // 09. Guid related strategies.
+            // 10. Guid related strategies.
             new GuidStrategyDetector(this.Context, this.Compilation),
 
-            // 10. Constructor related strategies.
+            // 11. Constructor related strategies.
             new ConstructorMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
         ];
 

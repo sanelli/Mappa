@@ -495,6 +495,34 @@ The same path syntax works on `[MappaInvokeMethod]`, `[MappaAssignFromConstant]`
 
 See also: [Mappa attributes — Nested property paths](./mappa-attributes.md#nested-property-paths), [algorithm](./mappa-generator-algorithm.md#nested-property-paths), and [NestedPropertyPathAttributeMapper.cs](../Mappa.Samples/NestedPropertyPathAttributeMapper.cs).
 
+### IQueryable projection
+Map methods that take `IQueryable<TSource>` and return `IQueryable<TTarget>` emit deferred `Select` projections suitable for ORM providers such as EF Core. No dedicated attribute is required — the signature selects the strategy:
+
+```csharp
+[Mappa]
+public static partial class OrderMapper
+{
+    [MappaUseProperty(nameof(OrderDto.Title), nameof(Order.Name))]
+    public static partial IQueryable<OrderDto> ProjectToDto(this IQueryable<Order> query);
+
+    [MappaUseProperty(nameof(OrderDto.Title), nameof(Order.Name))]
+    private static partial OrderDto MapOrder(Order order);
+}
+
+// Typical EF Core usage:
+var dtos = await context.Orders.ProjectToDto().ToListAsync();
+```
+
+Projection limitations:
+
+- No `[MappaBeforeMap]` / `[MappaAfterMap]` hooks and no `MappaContext` parameter on the projection method.
+- Nested `IQueryable` properties and polymorphic root element maps are not supported.
+- Prefer numeric or description enum mappings over case-insensitive member-name matching for provider translation.
+- Mapping `IQueryable<TSource>` to a concrete collection (for example `List<TTarget>`) materializes eagerly and may emit warning MP00061.
+- Generated projection methods are annotated with `[RequiresDynamicCode]` because they build expression trees at runtime; they are **not compatible with [Native AOT](https://learn.microsoft.com/dotnet/core/deploying/native-aot)** deployment.
+
+See also: [algorithm — IQueryable projection](./mappa-generator-algorithm.md#7a-iqueryable-projection-strategy), [error codes MP00055–MP00061](./error-codes.md), and [IQueryableProjectionMapper.cs](../Mappa.Samples/IQueryableProjectionMapper.cs).
+
 ### MappaAssignFromConstant attribute
 Assign a compile-time constant to a target property or constructor parameter:
 

@@ -173,4 +173,25 @@
     <data name="DuplicateEnumMapDefaultAttribute" xml:space="preserve">
         <value>Il metodo '{0}' dichiara più attributi MappaMapEnumDefault per l'enum '{1}'.</value>
     </data>
+    <data name="ProjectionMethodHasBeforeOrAfterMapHooks" xml:space="preserve">
+        <value>Il metodo '{0}' proietta IQueryable ma dichiara hook MappaBeforeMap o MappaAfterMap che non sono supportati per le proiezioni queryable.</value>
+    </data>
+    <data name="ProjectionMethodHasMappaContextParameter" xml:space="preserve">
+        <value>Il metodo '{0}' proietta IQueryable ma dichiara un parametro MappaContext che non è supportato per le proiezioni queryable.</value>
+    </data>
+    <data name="ProjectionMappingNotSupported" xml:space="preserve">
+        <value>Il metodo '{0}' non può proiettare IQueryable perché '{1}' non è supportato nelle proiezioni queryable.</value>
+    </data>
+    <data name="ProjectionInvokeMethodNotInlinable" xml:space="preserve">
+        <value>Il metodo '{0}' non può proiettare IQueryable perché il metodo invocato '{1}' non può essere inlined in un'espressione.</value>
+    </data>
+    <data name="ProjectionNestedQueryableNotSupported" xml:space="preserve">
+        <value>Il metodo '{0}' non può proiettare IQueryable perché la proprietà IQueryable annidata '{1}' non è supportata.</value>
+    </data>
+    <data name="ProjectionEnumStrategyNotSupported" xml:space="preserve">
+        <value>Il metodo '{0}' usa la mappatura enum per nome membro con confronto case-insensitive che potrebbe non essere tradotta nelle proiezioni queryable.</value>
+    </data>
+    <data name="IQueryableMappedAsCollection" xml:space="preserve">
+        <value>Il metodo '{0}' mappa IQueryable in una collezione concreta; usare un tipo di ritorno IQueryable per la proiezione ORM differita.</value>
+    </data>
 </root>

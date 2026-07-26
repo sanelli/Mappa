@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Extensions;
 using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
@@ -128,6 +129,26 @@ internal sealed class ContainerMapStrategyDetector
 
     private bool CanMapCollectionToCollection(out MapStrategy elementStrategy)
     {
+        var sourceIsQueryable = this.context.SourceType.IsOrImplementIQueryable(this.compilation);
+        var targetIsQueryable = this.context.TargetType.IsOrImplementIQueryable(this.compilation);
+
+        if (sourceIsQueryable || targetIsQueryable)
+        {
+            if (sourceIsQueryable
+                && !targetIsQueryable
+                && this.context.MapMethod is not null
+                && this.IsConcreteCollectionTarget())
+            {
+                this.context.ReportDiagnostic(
+                    MappaDiagnostics.IQueryableMappedAsCollection(
+                        this.context.MapMethod.MethodDeclarationSyntax?.GetLocation(),
+                        this.context.MapMethod.MethodSymbol.Name));
+            }
+
+            elementStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
+            return false;
+        }
+
         var isSourceCollection = this.context.SourceType.IsOrImplementIEnumerable()
             || this.context.SourceType.IsSpan(this.compilation)
             || this.context.SourceType.IsMemory(this.compilation)
@@ -233,4 +254,40 @@ internal sealed class ContainerMapStrategyDetector
             || this.context.TargetType.IsOrDerivedFromQueue(this.compilation)
             || this.context.TargetType.IsOrDerivedFromBlockingCollection(this.compilation);
     }
+
+    private bool IsConcreteCollectionTarget()
+        => this.context.TargetType.IsArray()
+           || this.context.TargetType.IsIEnumerable()
+           || this.context.TargetType.IsIList()
+           || this.context.TargetType.IsIReadOnlyList()
+           || this.context.TargetType.IsList(this.compilation)
+           || this.context.TargetType.IsOrImplementICollection()
+           || this.context.TargetType.IsIReadOnlyCollection()
+           || this.context.TargetType.IsSpan(this.compilation)
+           || this.context.TargetType.IsReadOnlySpan(this.compilation)
+           || this.context.TargetType.IsMemory(this.compilation)
+           || this.context.TargetType.IsReadOnlyMemory(this.compilation)
+           || this.context.TargetType.IsOrDerivedFromStack(this.compilation)
+           || this.context.TargetType.IsOrDerivedFromQueue(this.compilation)
+           || this.context.TargetType.IsOrImplementISet(this.compilation)
+           || this.context.TargetType.IsIReadOnlySet(this.compilation)
+           || this.context.TargetType.IsHashSet(this.compilation)
+           || this.context.TargetType.IsReadOnlyCollection(this.compilation)
+           || this.context.TargetType.IsReadOnlySet(this.compilation)
+           || this.context.TargetType.IsFrozenSet(this.compilation)
+           || this.context.TargetType.IsIImmutableSet(this.compilation)
+           || this.context.TargetType.IsImmutableHashSet(this.compilation)
+           || this.context.TargetType.IsImmutableSortedSet(this.compilation)
+           || this.context.TargetType.IsIImmutableList(this.compilation)
+           || this.context.TargetType.IsImmutableArray(this.compilation)
+           || this.context.TargetType.IsImmutableList(this.compilation)
+           || this.context.TargetType.IsIImmutableQueue(this.compilation)
+           || this.context.TargetType.IsImmutableQueue(this.compilation)
+           || this.context.TargetType.IsIImmutableStack(this.compilation)
+           || this.context.TargetType.IsImmutableStack(this.compilation)
+           || this.context.TargetType.IsOrDerivedFromBlockingCollection(this.compilation)
+           || this.context.TargetType.IsOrDerivedFromConcurrentBag(this.compilation)
+           || this.context.TargetType.IsOrDerivedFromConcurrentStack(this.compilation)
+           || this.context.TargetType.IsOrImplementConcurrentQueue(this.compilation)
+           || this.context.TargetType.IsIProducerConsumerCollection(this.compilation);
 }

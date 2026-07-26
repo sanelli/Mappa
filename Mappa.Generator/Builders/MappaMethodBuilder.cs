@@ -7,6 +7,7 @@ using System.Diagnostics;
 
 using Mappa.Generator.Extensions;
 using Mappa.Generator.Models;
+using Mappa.Generator.Models.Strategies;
 
 using Microsoft.CodeAnalysis;
 
@@ -43,6 +44,12 @@ internal sealed class MappaMethodBuilder
         {
             using (builder.NullableDirective(isNullableEnabled))
             {
+                if (this.mapMethod.Strategy.Strategy is QueryableProjectionMapStrategy)
+                {
+                    builder.AppendLine(
+                        "[global::System.Diagnostics.CodeAnalysis.RequiresDynamicCodeAttribute(\"Queryable projection uses expression trees that require dynamic code generation and are not compatible with Native AOT.\")]");
+                }
+
                 builder
                     .AppendLine($"[global::{typeof(DebuggerNonUserCodeAttribute).FullName}]")
                     .AppendLine($"[global::{typeof(GeneratedCodeAttribute).FullName}(\"Mappa\", \"{typeof(MappaGenerator).Assembly.GetName().Version}\")]")

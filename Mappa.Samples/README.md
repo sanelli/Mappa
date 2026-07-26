@@ -14,6 +14,7 @@ See the [tutorial](../Documentation/tutorial.md) for a guided introduction, or b
 | [`DateAndTimeMapper.cs`](DateAndTimeMapper.cs) | Date and time type conversions |
 | [`GuidStrategyMapper.cs`](GuidStrategyMapper.cs) | `Guid` ↔ `byte[]` mapping |
 | [`TupleToTupleMapper.cs`](TupleToTupleMapper.cs) | Tuple-to-tuple mapping |
+| [`IQueryableProjectionMapper.cs`](IQueryableProjectionMapper.cs) | `IQueryable<T>` → `IQueryable<T>` projection (`Select` expressions) |
 
 ## Attributes
 | Sample | Demonstrates |
@@ -67,4 +68,4 @@ See the [tutorial](../Documentation/tutorial.md) for a guided introduction, or b
 | [`ReadOnlyTargetCollectionMapper.cs`](ReadOnlyTargetCollectionMapper.cs) | Get-only collection properties and protobuf collections |
 
 ## Native AOT
-All samples are also exercised under Native AOT in [Mappa.Samples.Aot](../Mappa.Samples.Aot).
+All samples except [`IQueryableProjectionMapper.cs`](IQueryableProjectionMapper.cs) are exercised under Native AOT in [Mappa.Samples.Aot](../Mappa.Samples.Aot). Queryable projection builds expression trees at runtime and is annotated with `[RequiresDynamicCode]`; it is not compatible with Native AOT deployment.

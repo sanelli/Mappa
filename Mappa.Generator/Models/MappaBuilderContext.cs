@@ -39,6 +39,11 @@ internal sealed class MappaBuilderContext
     internal IReadOnlyList<Diagnostic> Diagnostics => this.diagnostics;
 
     /// <summary>
+    /// Gets the projection element methods queued during code generation.
+    /// </summary>
+    internal List<ProjectionElementMethodDefinition> ProjectionElementMethods { get; } = [];
+
+    /// <summary>
     /// Gets a new unique temporary value.
     /// </summary>
     /// <returns>A new temporary value.</returns>

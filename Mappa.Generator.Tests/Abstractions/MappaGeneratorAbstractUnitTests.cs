@@ -82,6 +82,8 @@ public abstract class MappaGeneratorAbstractUnitTests
             MetadataReference.CreateFromFile(Path.Combine(frameworkPath, "System.Runtime.dll")),
             MetadataReference.CreateFromFile(Path.Combine(frameworkPath, "System.Collections.dll")),
             MetadataReference.CreateFromFile(Path.Combine(frameworkPath, "System.Collections.Concurrent.dll")),
+            MetadataReference.CreateFromFile(typeof(System.Linq.Enumerable).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(System.Linq.Expressions.Expression).Assembly.Location),
         };
 
         var parseOptions = CSharpParseOptions.Default;

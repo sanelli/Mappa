@@ -68,6 +68,13 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? enumMapDefaultAttributeUnusedDefaultValue;
     private static DiagnosticDescriptor? tooManyEnumMapDefaultAttributesOnDirectEnumMap;
     private static DiagnosticDescriptor? duplicateEnumMapDefaultAttribute;
+    private static DiagnosticDescriptor? projectionMethodHasBeforeOrAfterMapHooks;
+    private static DiagnosticDescriptor? projectionMethodHasMappaContextParameter;
+    private static DiagnosticDescriptor? projectionMappingNotSupported;
+    private static DiagnosticDescriptor? projectionInvokeMethodNotInlinable;
+    private static DiagnosticDescriptor? projectionNestedQueryableNotSupported;
+    private static DiagnosticDescriptor? projectionEnumStrategyNotSupported;
+    private static DiagnosticDescriptor? iQueryableMappedAsCollection;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -500,6 +507,62 @@ internal static class MappaDiagnosticDescriptors
         => duplicateEnumMapDefaultAttribute ??= BuildError(
             MappaDiagnosticsKind.DuplicateEnumMapDefaultAttribute,
             DiagnosticsResources.DuplicateEnumMapDefaultAttribute);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.ProjectionMethodHasBeforeOrAfterMapHooks"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor ProjectionMethodHasBeforeOrAfterMapHooks
+        => projectionMethodHasBeforeOrAfterMapHooks ??= BuildError(
+            MappaDiagnosticsKind.ProjectionMethodHasBeforeOrAfterMapHooks,
+            DiagnosticsResources.ProjectionMethodHasBeforeOrAfterMapHooks);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.ProjectionMethodHasMappaContextParameter"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor ProjectionMethodHasMappaContextParameter
+        => projectionMethodHasMappaContextParameter ??= BuildError(
+            MappaDiagnosticsKind.ProjectionMethodHasMappaContextParameter,
+            DiagnosticsResources.ProjectionMethodHasMappaContextParameter);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.ProjectionMappingNotSupported"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor ProjectionMappingNotSupported
+        => projectionMappingNotSupported ??= BuildError(
+            MappaDiagnosticsKind.ProjectionMappingNotSupported,
+            DiagnosticsResources.ProjectionMappingNotSupported);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.ProjectionInvokeMethodNotInlinable"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor ProjectionInvokeMethodNotInlinable
+        => projectionInvokeMethodNotInlinable ??= BuildError(
+            MappaDiagnosticsKind.ProjectionInvokeMethodNotInlinable,
+            DiagnosticsResources.ProjectionInvokeMethodNotInlinable);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.ProjectionNestedQueryableNotSupported"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor ProjectionNestedQueryableNotSupported
+        => projectionNestedQueryableNotSupported ??= BuildError(
+            MappaDiagnosticsKind.ProjectionNestedQueryableNotSupported,
+            DiagnosticsResources.ProjectionNestedQueryableNotSupported);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.ProjectionEnumStrategyNotSupported"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor ProjectionEnumStrategyNotSupported
+        => projectionEnumStrategyNotSupported ??= BuildWarning(
+            MappaDiagnosticsKind.ProjectionEnumStrategyNotSupported,
+            DiagnosticsResources.ProjectionEnumStrategyNotSupported);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.IQueryableMappedAsCollection"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor IQueryableMappedAsCollection
+        => iQueryableMappedAsCollection ??= BuildWarning(
+            MappaDiagnosticsKind.IQueryableMappedAsCollection,
+            DiagnosticsResources.IQueryableMappedAsCollection);
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(

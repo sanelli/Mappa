@@ -544,4 +544,58 @@ public sealed class TypeSymbolExtensionsTests
         ambiguityDetails.Should().Be(
             "Target enum member 'One' is matched by multiple source members by Description: 'Alpha', 'Beta'.");
     }
+
+    /// <summary>
+    /// Test <see cref="TypeSymbolExtensions.IsOrImplementIQueryable"/> recognizes <see cref="System.Linq.IQueryable{T}"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void IsOrImplementIQueryableRecognizesQueryableType()
+    {
+        const string source = """
+                              using System.Linq;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public sealed class Holder
+                              {
+                                  public IQueryable<int> Values { get; set; }
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var holder = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Holder")!;
+        var property = holder.GetMembers("Values").OfType<IPropertySymbol>().Single();
+
+        property.Type.IsOrImplementIQueryable(compilation).Should().BeTrue();
+        property.Type.IsIQueryable(compilation).Should().BeTrue();
+    }
+
+    /// <summary>
+    /// Test <see cref="TypeSymbolExtensions.TryGetQueryableElementType"/> returns the element type.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void TryGetQueryableElementTypeReturnsElementType()
+    {
+        const string source = """
+                              using System.Linq;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public sealed class Holder
+                              {
+                                  public IQueryable<string> Values { get; set; }
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var holder = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Holder")!;
+        var property = holder.GetMembers("Values").OfType<IPropertySymbol>().Single();
+
+        var success = property.Type.TryGetQueryableElementType(compilation, out var elementType);
+
+        success.Should().BeTrue();
+        elementType.ToDisplayString().Should().Be("string");
+    }
 }

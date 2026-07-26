@@ -186,4 +186,56 @@ public sealed class MappaDiagnosticsTests
             .Should()
             .Be("Invoke method resolution is ambiguous: multiple methods named 'InvokeMe' in 'Mapper' match..");
     }
+
+    /// <summary>
+    /// Test <see cref="MappaDiagnostics.ProjectionMappingNotSupported"/> accepts a null location.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void ProjectionMappingNotSupportedAcceptsNullLocation()
+    {
+        var diagnostic = MappaDiagnostics.ProjectionMappingNotSupported(null, "ProjectToDto", "ContainerMapStrategy");
+
+        diagnostic.Location.Should().Be(Location.None);
+        diagnostic.Descriptor.Should().Be(MappaDiagnosticDescriptors.ProjectionMappingNotSupported);
+    }
+
+    /// <summary>
+    /// Test <see cref="MappaDiagnostics.ProjectionInvokeMethodNotInlinable"/> accepts a null location.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void ProjectionInvokeMethodNotInlinableAcceptsNullLocation()
+    {
+        var diagnostic = MappaDiagnostics.ProjectionInvokeMethodNotInlinable(null, "ProjectToDto", "Transform");
+
+        diagnostic.Location.Should().Be(Location.None);
+        diagnostic.Descriptor.Should().Be(MappaDiagnosticDescriptors.ProjectionInvokeMethodNotInlinable);
+    }
+
+    /// <summary>
+    /// Test <see cref="MappaDiagnostics.ProjectionNestedQueryableNotSupported"/> accepts a null location.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void ProjectionNestedQueryableNotSupportedAcceptsNullLocation()
+    {
+        var diagnostic = MappaDiagnostics.ProjectionNestedQueryableNotSupported(null, "ProjectToDto", "Items");
+
+        diagnostic.Location.Should().Be(Location.None);
+        diagnostic.Descriptor.Should().Be(MappaDiagnosticDescriptors.ProjectionNestedQueryableNotSupported);
+    }
+
+    /// <summary>
+    /// Test <see cref="MappaDiagnostics.ProjectionEnumStrategyNotSupported"/> accepts a null location.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void ProjectionEnumStrategyNotSupportedAcceptsNullLocation()
+    {
+        var diagnostic = MappaDiagnostics.ProjectionEnumStrategyNotSupported(null, "ProjectToDto");
+
+        diagnostic.Location.Should().Be(Location.None);
+        diagnostic.Descriptor.Should().Be(MappaDiagnosticDescriptors.ProjectionEnumStrategyNotSupported);
+    }
 }

@@ -1,8 +1,7 @@
-﻿// <copyright file="MethodSymbolExtensions.cs" company="Stefano Anelli">
+// <copyright file="MethodSymbolExtensions.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using Mappa.Generator.Exceptions;
 using Mappa.Generator.Models;
 
 using Microsoft.CodeAnalysis;
@@ -14,7 +13,7 @@ namespace Mappa.Generator.Extensions;
 /// </summary>
 internal static class MethodSymbolExtensions
 {
-    private static readonly string MappaContextTypeFullName = typeof(MappaContext).FullName ?? throw new MappaGeneratorException($"Cannot obtain {nameof(Type.FullName)} from {typeof(MappaContext)}.");
+    private const string MappaContextTypeFullName = "Mappa.MappaContext";
 
     /// <summary>
     /// Returns <c>true</c> if the method returns <c>void</c>.
@@ -171,6 +170,18 @@ internal static class MethodSymbolExtensions
 
         return methodSymbol.ParameterIsMappaContext(compilation, 1);
     }
+
+    /// <summary>
+    /// Returns <c>true</c> when the method maps <see cref="System.Linq.IQueryable{T}"/>
+    /// to <see cref="System.Linq.IQueryable{T}"/>.
+    /// </summary>
+    /// <param name="methodSymbol">The method to validate.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> when the method is a queryable projection map method.</returns>
+    internal static bool IsQueryableProjectionMapMethod(this IMethodSymbol methodSymbol, Compilation compilation)
+        => methodSymbol.Parameters.Length > 0
+           && methodSymbol.Parameters[0].Type.IsOrImplementIQueryable(compilation)
+           && methodSymbol.ReturnType.IsOrImplementIQueryable(compilation);
 
     /// <summary>
     /// Check if a method can be accessed directly or can be accessed
