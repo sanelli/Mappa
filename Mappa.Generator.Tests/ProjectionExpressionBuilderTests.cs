@@ -13,6 +13,7 @@ using Mappa.Generator.Tests.Helpers;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 using Xunit;
 using Xunit.OpenCategories.V3;
@@ -169,6 +170,10 @@ public sealed class ProjectionExpressionBuilderTests
             new StringToEnumMapStrategy(enumType, stringType, BooleanSetting.Disable, EnumStringMapSetting.MemberName, enumMapConfiguration),
             "source",
             null);
+        AssertBuilds(
+            new EnumToEnumMapStrategy(enumType, enumType, EnumToEnumMapSetting.MemberName, BooleanSetting.Disable, enumMapConfiguration),
+            "source",
+            null);
 
         void AssertBuilds(MapStrategy strategy, string source, string? expectedExact)
         {
@@ -180,6 +185,273 @@ public sealed class ProjectionExpressionBuilderTests
                 expression.Should().Be(expectedExact);
             }
         }
+    }
+
+    /// <summary>
+    /// Test parameter and property projection expression building.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void TryBuildExpressionSupportsParameterAndPropertyStrategies()
+    {
+        const string source = """
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { public int Value { get; set; } }
+                              public class Target
+                              {
+                                  public Target(int value) { Value = value; }
+                                  public int Value { get; set; }
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var sourceType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Source")
+                         ?? throw new InvalidOperationException("Source type was not found.");
+        var targetType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Target")
+                         ?? throw new InvalidOperationException("Target type was not found.");
+        var sourceProperty = sourceType.GetMembers("Value").OfType<IPropertySymbol>().Single();
+        var targetProperty = targetType.GetMembers("Value").OfType<IPropertySymbol>().Single();
+        var parameter = targetType.InstanceConstructors.Single(candidate => candidate.Parameters.Length == 1).Parameters[0];
+        var expressionContext = new ExpressionBuildContext(
+            new MappaBuilderContext(compilation),
+            new MappaGlobalOptions(TestAnalyzerConfigOptionsProvider.FromEditorConfig("root = true"), compilation.SyntaxTrees[0]));
+
+        var parameterStrategy = new ParameterMapStrategy(
+            parameter,
+            sourceProperty,
+            new IdentityMapStrategy(parameter.Type, sourceProperty.Type, IdentityMapDeepCopySetting.ShallowCopy, requiresMemberwiseClone: false, nestedFieldStrategies: []));
+        var propertyStrategy = new PropertyMapStrategy(
+            targetProperty,
+            sourceProperty,
+            new IdentityMapStrategy(targetProperty.Type, sourceProperty.Type, IdentityMapDeepCopySetting.ShallowCopy, requiresMemberwiseClone: false, nestedFieldStrategies: []),
+            postConstructorInitializer: false);
+        var propertyWithoutSource = new PropertyMapStrategy(
+            targetProperty,
+            sourceProperty: null,
+            new IdentityMapStrategy(targetProperty.Type, targetProperty.Type, IdentityMapDeepCopySetting.ShallowCopy, requiresMemberwiseClone: false, nestedFieldStrategies: []),
+            postConstructorInitializer: false);
+        var constructorStrategy = new InvokeConstructorMapStrategy(
+            targetType,
+            sourceType,
+            targetType.InstanceConstructors.Single(candidate => candidate.Parameters.Length == 1),
+            [parameterStrategy],
+            [propertyStrategy],
+            [],
+            contextParameterName: null);
+
+        ProjectionExpressionBuilder.TryBuildExpression(parameterStrategy, "source", expressionContext, out var parameterExpression)
+            .Should()
+            .BeTrue();
+        parameterExpression.Should().Be("source.Value");
+        ProjectionExpressionBuilder.TryBuildExpression(propertyStrategy, "source", expressionContext, out var propertyExpression)
+            .Should()
+            .BeTrue();
+        propertyExpression.Should().Be("source.Value");
+        ProjectionExpressionBuilder.TryBuildExpression(propertyWithoutSource, "source", expressionContext, out var propertyWithoutSourceExpression)
+            .Should()
+            .BeTrue();
+        propertyWithoutSourceExpression.Should().Be("source");
+        ProjectionExpressionBuilder.TryBuildExpression(constructorStrategy, "source", expressionContext, out var constructorExpression)
+            .Should()
+            .BeTrue();
+        constructorExpression.Should().Contain("new");
+        constructorExpression.Should().Contain("Value =");
+    }
+
+    /// <summary>
+    /// Test nullable reference projection expression building for nullable and non-nullable targets.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void TryBuildExpressionSupportsNullableReferenceStrategies()
+    {
+        var compilation = CSharpCompilation.Create(
+            "TestAssembly",
+            references: [MetadataReference.CreateFromFile(typeof(object).Assembly.Location)]);
+        var stringType = compilation.GetSpecialType(SpecialType.System_String);
+        var nullableStringType = stringType.WithNullableAnnotation(NullableAnnotation.Annotated);
+        var nonNullableStringType = stringType.WithNullableAnnotation(NullableAnnotation.NotAnnotated);
+        var expressionContext = new ExpressionBuildContext(
+            new MappaBuilderContext(compilation),
+            new MappaGlobalOptions(TestAnalyzerConfigOptionsProvider.FromEditorConfig("root = true"), CSharpSyntaxTree.ParseText(string.Empty, cancellationToken: TestContext.Current.CancellationToken)));
+
+        ProjectionExpressionBuilder.TryBuildExpression(
+                new NullableStrategy(
+                    nullableStringType,
+                    stringType,
+                    new IdentityMapStrategy(stringType, stringType, IdentityMapDeepCopySetting.ShallowCopy, requiresMemberwiseClone: false, nestedFieldStrategies: [])),
+                "source",
+                expressionContext,
+                out var nullableTargetExpression)
+            .Should()
+            .BeTrue();
+        nullableTargetExpression.Should().Contain("== null");
+        nullableTargetExpression.Should().Contain("null :");
+        ProjectionExpressionBuilder.TryBuildExpression(
+                new NullableStrategy(
+                    nonNullableStringType,
+                    stringType,
+                    new IdentityMapStrategy(stringType, stringType, IdentityMapDeepCopySetting.ShallowCopy, requiresMemberwiseClone: false, nestedFieldStrategies: [])),
+                "source",
+                expressionContext,
+                out var nonNullableTargetExpression)
+            .Should()
+            .BeTrue();
+        nonNullableTargetExpression.Should().Contain("NullReferenceException");
+    }
+
+    /// <summary>
+    /// Test chained source property paths are expressed using the root map method parameter when applicable.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void TryBuildExpressionSupportsChainedSourcePropertyPaths()
+    {
+        const string source = """
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Address
+                              {
+                                  public string City { get; set; }
+                              }
+
+                              public class Source
+                              {
+                                  public Address Address { get; set; }
+                              }
+
+                              public class Target
+                              {
+                                  public string City { get; set; }
+                              }
+
+                              public partial class Mapper
+                              {
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var sourceType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Source")
+                         ?? throw new InvalidOperationException("Source type was not found.");
+        var addressType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Address")
+                          ?? throw new InvalidOperationException("Address type was not found.");
+        var targetType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Target")
+                         ?? throw new InvalidOperationException("Target type was not found.");
+        var cityProperty = addressType.GetMembers("City").OfType<IPropertySymbol>().Single();
+        var targetCity = targetType.GetMembers("City").OfType<IPropertySymbol>().Single();
+        var mapMethod = CreateMapMethod(compilation, "Map");
+        var expressionContext = new ExpressionBuildContext(
+            new MappaBuilderContext(compilation),
+            new MappaGlobalOptions(TestAnalyzerConfigOptionsProvider.FromEditorConfig("root = true"), compilation.SyntaxTrees[0]));
+        var identity = new IdentityMapStrategy(
+            targetCity.Type,
+            cityProperty.Type,
+            IdentityMapDeepCopySetting.ShallowCopy,
+            requiresMemberwiseClone: false,
+            nestedFieldStrategies: []);
+
+        var matchingPrefix = new PropertyMapStrategy(
+            targetCity,
+            cityProperty,
+            identity,
+            postConstructorInitializer: false,
+            new ChainedSourcePropertyPathInfo("Address.City", ["City"], addressType, "input.Address"));
+        var nestedPrefix = new PropertyMapStrategy(
+            targetCity,
+            cityProperty,
+            identity,
+            postConstructorInitializer: false,
+            new ChainedSourcePropertyPathInfo("Address.City", ["City"], addressType, "input.Address.Something"));
+        var unrelatedPrefix = new PropertyMapStrategy(
+            targetCity,
+            cityProperty,
+            identity,
+            postConstructorInitializer: false,
+            new ChainedSourcePropertyPathInfo("Address.City", ["City"], addressType, "other.Address"));
+        var emptyPrefix = new PropertyMapStrategy(
+            targetCity,
+            cityProperty,
+            identity,
+            postConstructorInitializer: false,
+            new ChainedSourcePropertyPathInfo("City", ["City"], sourceType, string.Empty));
+
+        using (expressionContext.BuilderContext.PushMapMethod(mapMethod))
+        {
+            ProjectionExpressionBuilder.TryBuildExpression(matchingPrefix, "ignored", expressionContext, out var matchingExpression)
+                .Should()
+                .BeTrue();
+            matchingExpression.Should().Contain("input");
+            ProjectionExpressionBuilder.TryBuildExpression(nestedPrefix, "ignored", expressionContext, out var nestedExpression)
+                .Should()
+                .BeTrue();
+            nestedExpression.Should().Contain("input");
+            ProjectionExpressionBuilder.TryBuildExpression(unrelatedPrefix, "ignored", expressionContext, out var unrelatedExpression)
+                .Should()
+                .BeTrue();
+            unrelatedExpression.Should().NotBeNullOrWhiteSpace();
+            ProjectionExpressionBuilder.TryBuildExpression(emptyPrefix, "source", expressionContext, out var emptyPrefixExpression)
+                .Should()
+                .BeTrue();
+            emptyPrefixExpression.Should().NotBeNullOrWhiteSpace();
+
+            var chainedWithoutSourceProperty = new PropertyMapStrategy(
+                targetCity,
+                sourceProperty: null,
+                identity,
+                postConstructorInitializer: false,
+                new ChainedSourcePropertyPathInfo("Address.City", ["City"], addressType, "input.Address"));
+            ProjectionExpressionBuilder.TryBuildExpression(chainedWithoutSourceProperty, "ignored", expressionContext, out var chainedWithoutSourceExpression)
+                .Should()
+                .BeTrue();
+            chainedWithoutSourceExpression.Should().Contain("input");
+        }
+    }
+
+    /// <summary>
+    /// Test unsupported culture settings throw when building ToString projection expressions.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void TryBuildExpressionThrowsForUnsupportedCultureInfoSetting()
+    {
+        var compilation = CSharpCompilation.Create(
+            "TestAssembly",
+            references: [MetadataReference.CreateFromFile(typeof(object).Assembly.Location)]);
+        var intType = compilation.GetSpecialType(SpecialType.System_Int32);
+        var stringType = compilation.GetSpecialType(SpecialType.System_String);
+        var expressionContext = new ExpressionBuildContext(
+            new MappaBuilderContext(compilation),
+            new MappaGlobalOptions(TestAnalyzerConfigOptionsProvider.FromEditorConfig("root = true"), CSharpSyntaxTree.ParseText(string.Empty, cancellationToken: TestContext.Current.CancellationToken)));
+        var strategy = new InvokeToStringMapStrategy(stringType, intType, null, (CultureInfoSetting)42, null);
+
+        var act = () => ProjectionExpressionBuilder.TryBuildExpression(strategy, "source", expressionContext, out _);
+
+        act.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    /// <summary>
+    /// Test user-defined culture with a null culture name falls back to an empty culture name.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void TryBuildExpressionSupportsUserDefinedCultureWithNullCultureName()
+    {
+        var compilation = CSharpCompilation.Create(
+            "TestAssembly",
+            references: [MetadataReference.CreateFromFile(typeof(object).Assembly.Location)]);
+        var intType = compilation.GetSpecialType(SpecialType.System_Int32);
+        var stringType = compilation.GetSpecialType(SpecialType.System_String);
+        var expressionContext = new ExpressionBuildContext(
+            new MappaBuilderContext(compilation),
+            new MappaGlobalOptions(TestAnalyzerConfigOptionsProvider.FromEditorConfig("root = true"), CSharpSyntaxTree.ParseText(string.Empty, cancellationToken: TestContext.Current.CancellationToken)));
+        var strategy = new InvokeToStringMapStrategy(stringType, intType, null, CultureInfoSetting.UserDefined, null);
+
+        ProjectionExpressionBuilder.TryBuildExpression(strategy, "source", expressionContext, out var expression)
+            .Should()
+            .BeTrue();
+        expression.Should().Contain("GetCultureInfo");
     }
 
     /// <summary>
@@ -207,5 +479,22 @@ public sealed class ProjectionExpressionBuilderTests
 
         built.Should().BeFalse();
         expression.Should().BeEmpty();
+    }
+
+    private static MapMethod CreateMapMethod(CSharpCompilation compilation, string methodName)
+    {
+        var syntaxTree = compilation.SyntaxTrees.Single(tree =>
+            tree.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().Any(methodSyntax => methodSyntax.Identifier.Text == methodName));
+        var methodDeclarationSyntax = syntaxTree.GetRoot()
+            .DescendantNodes()
+            .OfType<MethodDeclarationSyntax>()
+            .Single(methodSyntax => methodSyntax.Identifier.Text == methodName);
+        var semanticModel = compilation.GetSemanticModel(syntaxTree);
+
+        return new MapMethod(
+            methodDeclarationSyntax,
+            semanticModel,
+            nullableEnabled: true,
+            CancellationToken.None);
     }
 }

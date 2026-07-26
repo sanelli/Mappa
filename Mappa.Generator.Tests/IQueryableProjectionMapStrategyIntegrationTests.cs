@@ -453,4 +453,138 @@ public sealed partial class IQueryableProjectionMapStrategyIntegrationTests
                 "System.Collections.Generic.List<Mappa.Generator.Tests.UnitTests.SourceCode.OrderDto>")
             .HaveGeneratedSourceCode();
     }
+
+    /// <summary>
+    /// Test mapping from a collection into <see cref="System.Linq.IQueryable{T}"/> is rejected.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CollectionSourceToQueryableTargetIsRejected()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using System.Collections.Generic;
+                                  using System.Linq;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class Order
+                                  {
+                                      public int Id { get; set; }
+                                  }
+
+                                  public class OrderDto
+                                  {
+                                      public int Id { get; set; }
+                                  }
+
+                                  [Mappa]
+                                  public static partial class Mapper
+                                  {
+                                      public static partial IQueryable<OrderDto> Map(List<Order> source);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .HaveDiagnostic(
+                Mappa.Generator.Diagnostics.MappaDiagnosticDescriptors.CannotIdentifyStrategy,
+                "System.Collections.Generic.List<Mappa.Generator.Tests.UnitTests.SourceCode.Order>",
+                QueryableProjectionMapAssertionExtensions.QueryableOf(OrderDtoType))
+            .HaveGeneratedSourceCode();
+    }
+
+    /// <summary>
+    /// Test identical queryable element types fall back to identity mapping instead of projection.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task SameQueryableElementTypesUseIdentityMapping()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using System.Linq;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class Order
+                                  {
+                                      public int Id { get; set; }
+                                  }
+
+                                  [Mappa]
+                                  public static partial class Mapper
+                                  {
+                                      public static partial IQueryable<Order> Project(this IQueryable<Order> query);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode();
+    }
+
+    /// <summary>
+    /// Test mapping from <see cref="System.Linq.IQueryable{T}"/> to common concrete collections emits the materialization warning.
+    /// </summary>
+    /// <param name="targetTypeDeclaration">The target collection type declaration.</param>
+    /// <param name="targetTypeFullName">The expected full target type name in diagnostics.</param>
+    /// <returns>The async task.</returns>
+    [Theory]
+    [IntegrationTest]
+    [InlineData("HashSet<OrderDto>", "System.Collections.Generic.HashSet<Mappa.Generator.Tests.UnitTests.SourceCode.OrderDto>")]
+    [InlineData("Stack<OrderDto>", "System.Collections.Generic.Stack<Mappa.Generator.Tests.UnitTests.SourceCode.OrderDto>")]
+    [InlineData("Queue<OrderDto>", "System.Collections.Generic.Queue<Mappa.Generator.Tests.UnitTests.SourceCode.OrderDto>")]
+    [InlineData("ImmutableList<OrderDto>", "System.Collections.Immutable.ImmutableList<Mappa.Generator.Tests.UnitTests.SourceCode.OrderDto>")]
+    [InlineData("ImmutableHashSet<OrderDto>", "System.Collections.Immutable.ImmutableHashSet<Mappa.Generator.Tests.UnitTests.SourceCode.OrderDto>")]
+    public async Task QueryableSourceToConcreteCollectionsEmitMaterializationWarning(
+        string targetTypeDeclaration,
+        string targetTypeFullName)
+    {
+        var sourceCode = $$"""
+                           #nullable enable
+                           using System.Collections.Generic;
+                           using System.Collections.Immutable;
+                           using System.Linq;
+                           using Mappa.Attributes;
+
+                           namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                           public class Order
+                           {
+                               public int Id { get; set; }
+                           }
+
+                           public class OrderDto
+                           {
+                               public int Id { get; set; }
+                           }
+
+                           [Mappa]
+                           public static partial class Mapper
+                           {
+                               public static partial {{targetTypeDeclaration}} Map(IQueryable<Order> query);
+                           }
+                           #nullable restore
+                           """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .HaveDiagnostic(Mappa.Generator.Diagnostics.MappaDiagnosticDescriptors.IQueryableMappedAsCollection, "Map")
+            .HaveDiagnostic(
+                Mappa.Generator.Diagnostics.MappaDiagnosticDescriptors.CannotIdentifyStrategy,
+                QueryableProjectionMapAssertionExtensions.QueryableOf(OrderType),
+                targetTypeFullName)
+            .HaveGeneratedSourceCode();
+    }
 }
