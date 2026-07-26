@@ -44,6 +44,7 @@ See the [tutorial](../Documentation/tutorial.md) for a guided introduction, or b
 | [`PragmaWarningSettingMapper.cs`](PragmaWarningSettingMapper.cs) | `PragmaWarning` |
 | [`FastCollectionToCollectionMapper.cs`](FastCollectionToCollectionMapper.cs) | `FastCollections` |
 | [`ContainersWithCapacityConstructorMapper.cs`](ContainersWithCapacityConstructorMapper.cs) | `ContainerCapacityConstructors` |
+| [`PreventEnumerableCountMapper.cs`](PreventEnumerableCountMapper.cs) | `PreventEnumerableCount` avoids `Enumerable.Count` for `IEnumerable<T>` to fixed-size targets |
 | [`EnumerableConcreteTypeMapper.cs`](EnumerableConcreteTypeMapper.cs) | `EnumerableConcreteType` list vs array buffers for sequence-like interface targets |
 | [`IdentityMapDeepCopyMapper.cs`](IdentityMapDeepCopyMapper.cs) | `IdentityMapDeepCopy` shallow, deep, and nested same-type mappings (class and struct) |
 
