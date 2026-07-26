@@ -2,6 +2,8 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Builders.Expressions;
+using Mappa.Generator.Exceptions;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -19,17 +21,29 @@ internal sealed class QueryableProjectionMapStrategyBuilder(QueryableProjectionM
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
         var lambdaParameter = context.NextTemporary();
-        var (elementResult, elementCode) = this.strategy.ElementStrategy.GetBuilder()
-            .BuildSource(lambdaParameter, context, mappaGlobalOptions);
-
-        var builder = new PrettyCode.StringBuilder();
-        if (!string.IsNullOrWhiteSpace(elementCode))
+        var expressionContext = new ExpressionBuildContext(context, mappaGlobalOptions);
+        if (!ProjectionExpressionBuilder.TryBuildExpression(
+                this.strategy.ElementStrategy,
+                lambdaParameter,
+                expressionContext,
+                out var elementExpression))
         {
-            builder.AppendLine(elementCode);
+            throw new MappaGeneratorException("Queryable projection element strategy is not supported.");
         }
 
+        var mapMethod = context.GetMapMethod();
+        var elementMethodName = $"{this.strategy.MethodSymbol.Name}Element";
+        context.ProjectionElementMethods.Add(new ProjectionElementMethodDefinition(
+            elementMethodName,
+            this.strategy.SourceElementType,
+            this.strategy.TargetElementType,
+            lambdaParameter,
+            elementExpression,
+            this.strategy.MethodSymbol.IsStatic,
+            mapMethod.NullableEnabled));
+
         var selectExpression =
-            $"global::System.Linq.Queryable.Select({source}, {lambdaParameter} => {elementResult})";
-        return (selectExpression, builder.ToString());
+            $"global::System.Linq.Queryable.Select({source}, {lambdaParameter} => {elementExpression})";
+        return (selectExpression, string.Empty);
     }
 }

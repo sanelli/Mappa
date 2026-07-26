@@ -73,10 +73,17 @@ internal sealed class QueryableProjectionMapStrategyDetector
             return false;
         }
 
+        if (!ProjectionCapabilityAnalyzer.IsSupported(elementStrategy))
+        {
+            return false;
+        }
+
         mapStrategy = new QueryableProjectionMapStrategy(
             this.context.TargetType,
             this.context.SourceType,
             elementStrategy,
+            sourceElementType,
+            targetElementType,
             this.context.MapMethod.MethodSymbol);
         return true;
     }

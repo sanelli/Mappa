@@ -14,11 +14,15 @@ namespace Mappa.Generator.Models.Strategies;
 /// <param name="targetType">The target queryable type.</param>
 /// <param name="sourceType">The source queryable type.</param>
 /// <param name="elementStrategy">The strategy for the queryable element types.</param>
+/// <param name="sourceElementType">The source queryable element type.</param>
+/// <param name="targetElementType">The target queryable element type.</param>
 /// <param name="methodSymbol">The root map method symbol.</param>
 internal sealed class QueryableProjectionMapStrategy(
     ITypeSymbol targetType,
     ITypeSymbol sourceType,
     MapStrategy elementStrategy,
+    ITypeSymbol sourceElementType,
+    ITypeSymbol targetElementType,
     IMethodSymbol methodSymbol)
     : MapStrategy(targetType, sourceType)
 {
@@ -26,6 +30,16 @@ internal sealed class QueryableProjectionMapStrategy(
     /// Gets the strategy for the queryable element types.
     /// </summary>
     internal MapStrategy ElementStrategy { get; } = elementStrategy;
+
+    /// <summary>
+    /// Gets the source queryable element type.
+    /// </summary>
+    internal ITypeSymbol SourceElementType { get; } = sourceElementType;
+
+    /// <summary>
+    /// Gets the target queryable element type.
+    /// </summary>
+    internal ITypeSymbol TargetElementType { get; } = targetElementType;
 
     /// <summary>
     /// Gets the root map method symbol.
