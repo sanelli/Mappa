@@ -14,15 +14,7 @@ $MappaBenchmarkPath = ".mappa-benchmark"
 $ArtifactsPath = "BenchmarkDotNet.Artifacts"
 $ResultsPath = Join-Path $ArtifactsPath "results"
 $MapperOrder = @("Automapper", "Mapster", "Mapperly", "Mappa")
-$SvgBenchmarkNames = @(
-    "ArrayToListBenchmark",
-    "DictionaryBenchmark",
-    "ListToArrayBenchmark",
-    "FastListToArrayBenchmark",
-    "IQueryableProjectionBenchmark",
-    "NestedDtoBenchmark",
-    "ListToHashSetBenchmark"
-)
+$SvgBenchmarkNames = $script:BenchmarkChartNames
 
 function Get-BenchmarkNameFromCsvPath
 {
@@ -280,8 +272,8 @@ try
 
     $summaryPath = Join-Path $MappaBenchmarkPath "Benchmark.Summary.md"
     $historyPath = Join-Path $MappaBenchmarkPath "history-table.md"
-    $timeSvgPath = Join-Path $MappaBenchmarkPath "Benchmark.Time.svg"
-    $memorySvgPath = Join-Path $MappaBenchmarkPath "Benchmark.Memory.svg"
+    $timeSvgPath = Join-Path $MappaBenchmarkPath "MAPPA-BENCHMARK-TIME.svg"
+    $memorySvgPath = Join-Path $MappaBenchmarkPath "MAPPA-BENCHMARK-MEMORY.svg"
 
     Write-BenchmarkSummaryMarkdown -Benchmarks $benchmarks -OutputPath $summaryPath
     Write-BenchmarkHistoryTable -Benchmarks $benchmarks -MappaVersion $currentMappaVersion -OutputPath $historyPath

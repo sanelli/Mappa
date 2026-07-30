@@ -7,6 +7,8 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+. "$PSScriptRoot/BenchmarkChartsSvg.ps1"
+
 $HistoryTableHeader = @"
 | Timestamp | Version | Benchmark | Measure | Value |
 | --------- | ------- | ---- | ---------- | ------- |
@@ -55,6 +57,28 @@ function Get-BenchmarkHistoryFromGist
     }
 }
 
+function Publish-GistFile
+{
+    param(
+        [string]$GistId,
+        [string]$RemoteFileName,
+        [string]$LocalPath
+    )
+
+    if (-not (Test-Path -LiteralPath $LocalPath))
+    {
+        throw "Cannot publish missing local file: $LocalPath"
+    }
+
+    gh gist edit $GistId -f $RemoteFileName $LocalPath
+    if (-not $?)
+    {
+        throw "Failed to update gist $GistId file $RemoteFileName from $LocalPath."
+    }
+
+    Write-Host "Updated gist $GistId ($RemoteFileName)."
+}
+
 $historyRowsPath = Join-Path $MappaBenchmarkPath "history-table.md"
 if (-not (Test-Path -LiteralPath $historyRowsPath))
 {
@@ -82,9 +106,49 @@ else
 
 $fullHistoryPath = Join-Path $MappaBenchmarkPath "full-history-table.md"
 [System.IO.File]::WriteAllText($fullHistoryPath, $fullHistory)
-
 Write-Host "Wrote $fullHistoryPath"
-Get-Content -Raw -LiteralPath $fullHistoryPath | Write-Host
+
+$timeHistorySvgPath = Join-Path $MappaBenchmarkPath "MAPPA-BENCHMARK-TIME-HISTORY.svg"
+$memoryHistorySvgPath = Join-Path $MappaBenchmarkPath "MAPPA-BENCHMARK-MEMORY-HISTORY.svg"
+$timeSummarySvgPath = Join-Path $MappaBenchmarkPath "MAPPA-BENCHMARK-TIME.svg"
+$memorySummarySvgPath = Join-Path $MappaBenchmarkPath "MAPPA-BENCHMARK-MEMORY.svg"
+
+New-BenchmarkHistorySvg `
+    -HistoryMarkdownPath $fullHistoryPath `
+    -Measure "TIME_NS" `
+    -OutputPath $timeHistorySvgPath `
+    -Title "Mappa benchmark time history" `
+    -YAxisUnitLabel "us"
+
+New-BenchmarkHistorySvg `
+    -HistoryMarkdownPath $fullHistoryPath `
+    -Measure "ALLOC_B" `
+    -OutputPath $memoryHistorySvgPath `
+    -Title "Mappa benchmark memory history" `
+    -YAxisUnitLabel "KB"
+
+Write-Host "Wrote $timeHistorySvgPath"
+Write-Host "Wrote $memoryHistorySvgPath"
+
+if (-not (Test-Path -LiteralPath $timeSummarySvgPath))
+{
+    $legacyTime = Join-Path $MappaBenchmarkPath "Benchmark.Time.svg"
+    if (Test-Path -LiteralPath $legacyTime)
+    {
+        Copy-Item -LiteralPath $legacyTime -Destination $timeSummarySvgPath -Force
+        Write-Host "Copied $legacyTime -> $timeSummarySvgPath"
+    }
+}
+
+if (-not (Test-Path -LiteralPath $memorySummarySvgPath))
+{
+    $legacyMemory = Join-Path $MappaBenchmarkPath "Benchmark.Memory.svg"
+    if (Test-Path -LiteralPath $legacyMemory)
+    {
+        Copy-Item -LiteralPath $legacyMemory -Destination $memorySummarySvgPath -Force
+        Write-Host "Copied $legacyMemory -> $memorySummarySvgPath"
+    }
+}
 
 if ($DryRun)
 {
@@ -102,19 +166,23 @@ try
 
     if ($fileExists)
     {
-        gh gist edit $GistId -f $HistoryFileName $fullHistoryPath
+        Publish-GistFile -GistId $GistId -RemoteFileName $HistoryFileName -LocalPath $fullHistoryPath
     }
     else
     {
         gh gist edit $GistId -a $HistoryFileName $fullHistoryPath
+        if (-not $?)
+        {
+            throw "Failed to add gist $GistId file $HistoryFileName."
+        }
+
+        Write-Host "Added gist $GistId ($HistoryFileName)."
     }
 
-    if (-not $?)
-    {
-        throw "Failed to update gist $GistId file $HistoryFileName."
-    }
-
-    Write-Host "Updated gist $GistId ($HistoryFileName)."
+    Publish-GistFile -GistId $GistId -RemoteFileName "MAPPA-BENCHMARK-TIME.svg" -LocalPath $timeSummarySvgPath
+    Publish-GistFile -GistId $GistId -RemoteFileName "MAPPA-BENCHMARK-MEMORY.svg" -LocalPath $memorySummarySvgPath
+    Publish-GistFile -GistId $GistId -RemoteFileName "MAPPA-BENCHMARK-TIME-HISTORY.svg" -LocalPath $timeHistorySvgPath
+    Publish-GistFile -GistId $GistId -RemoteFileName "MAPPA-BENCHMARK-MEMORY-HISTORY.svg" -LocalPath $memoryHistorySvgPath
 }
 finally
 {
