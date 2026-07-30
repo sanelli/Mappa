@@ -17,6 +17,7 @@ $MapperOrder = @("Automapper", "Mapster", "Mapperly", "Mappa")
 $SvgBenchmarkNames = @(
     "ArrayToListBenchmark",
     "DictionaryBenchmark",
+    "ListToArrayBenchmark",
     "FastListToArrayBenchmark",
     "IQueryableProjectionBenchmark",
     "NestedDtoBenchmark",
@@ -306,7 +307,7 @@ try
             }
 
             $convertedMappers[$mapper] = [pscustomobject]@{
-                MeanMs = [Math]::Round($entry.MeanNs / 1000000.0, 6)
+                MeanUs = [Math]::Round($entry.MeanNs / 1000.0, 6)
                 AllocatedKb = [Math]::Round($entry.AllocatedBytes / 1024.0, 6)
             }
         }
@@ -324,11 +325,11 @@ try
 
     New-BenchmarkGroupedBarSvg `
         -Benchmarks $chartBenchmarks.ToArray() `
-        -MetricProperty "MeanMs" `
-        -YAxisLabel "Mean time (ms)" `
+        -MetricProperty "MeanUs" `
+        -YAxisLabel "Mean time (us)" `
         -Title "Benchmark mean time" `
         -OutputPath $timeSvgPath `
-        -YAxisTickStep 0.05 `
+        -YAxisTickStep 50 `
         -ValueLabelFormat "0.###"
 
     New-BenchmarkGroupedBarSvg `
