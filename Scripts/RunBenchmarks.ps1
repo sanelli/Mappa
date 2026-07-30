@@ -1,6 +1,8 @@
 param(
     # Quoted when passed to dotnet so PowerShell does not glob-expand "*".
     [string]$Filter = "*",
+    # Run only the benchmarks used by MAPPA-BENCHMARK-TIME/MEMORY.svg charts.
+    [switch]$ChartBenchmarksOnly,
     [switch]$SkipRun,
     [switch]$ListAvailable
 )
@@ -15,6 +17,35 @@ $ArtifactsPath = "BenchmarkDotNet.Artifacts"
 $ResultsPath = Join-Path $ArtifactsPath "results"
 $MapperOrder = @("Automapper", "Mapster", "Mapperly", "Mappa")
 $SvgBenchmarkNames = $script:BenchmarkChartNames
+
+function Get-BenchmarkDotNetFilterArgs
+{
+    if ($ChartBenchmarksOnly)
+    {
+        # BenchmarkDotNet accepts multiple patterns after a single --filter:
+        #   --filter '*.ClassA.*' '*.ClassB.*'
+        # Repeating --filter is rejected ("Option 'filter' is defined multiple times").
+        $filterArgs = @("--filter")
+        foreach ($name in $script:BenchmarkChartNames)
+        {
+            $filterArgs += "*$name*"
+        }
+
+        return ,$filterArgs
+    }
+
+    return @("--filter", $Filter)
+}
+
+function Get-BenchmarkFilterDescription
+{
+    if ($ChartBenchmarksOnly)
+    {
+        return ("ChartBenchmarksOnly: " + ($script:BenchmarkChartNames -join ", "))
+    }
+
+    return $Filter
+}
 
 function Get-BenchmarkNameFromCsvPath
 {
@@ -218,8 +249,9 @@ try
     if ($ListAvailable)
     {
         Write-Host "Available benchmarks:"
-        # Quote the filter: an unquoted "*" is expanded by PowerShell.
-        dotnet run -c Release --project ./Mappa.Benchmark/ -- --list flat --filter "$Filter"
+        $filterArgs = Get-BenchmarkDotNetFilterArgs
+        # Quote each filter value: an unquoted "*" is expanded by PowerShell.
+        dotnet run -c Release --project ./Mappa.Benchmark/ -- --list flat @filterArgs
         if (-not $?)
         {
             $exitCode = 1
@@ -245,10 +277,11 @@ try
 
     if (-not $SkipRun)
     {
-        Write-Host "Running benchmarks (filter: $Filter)..."
-        # Quote the filter: an unquoted "*" is expanded by PowerShell to every
-        # file/folder in the repo root, which BDN then treats as invalid filters.
-        dotnet run -c Release --project ./Mappa.Benchmark/ -- -j Short -e "Csv" "Html" "GitHub" --filter "$Filter"
+        $filterDescription = Get-BenchmarkFilterDescription
+        $filterArgs = Get-BenchmarkDotNetFilterArgs
+        Write-Host "Running benchmarks (filter: $filterDescription)..."
+        # Pass filters as separate args so PowerShell does not glob-expand "*".
+        dotnet run -c Release --project ./Mappa.Benchmark/ -- -j Short -e "Csv" "Html" "GitHub" @filterArgs
         if (-not $?)
         {
             Write-Host "Benchmark run failed." -ForegroundColor Red

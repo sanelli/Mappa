@@ -29,3 +29,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: ./Scripts/UpdateCodeCoverageGists.ps1
+      - name: Run benchmarks
+        shell: pwsh
+        run: ./Scripts/RunBenchmarks.ps1 -ChartBenchmarksOnly
+      - name: Update benchmark Gist
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: ./Scripts/UpdateBenchmarkGists.ps1
