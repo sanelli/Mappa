@@ -4,12 +4,12 @@
 
 using AutoMapper;
 
-using Mappa.Benchmark.Enums.Models;
+using Mappa.Benchmark.Nested.Models;
 
-namespace Mappa.Benchmark.Enums.Mappers;
+namespace Mappa.Benchmark.Nested.Mappers;
 
 /// <summary>
-/// The mapper profile for <see cref="AutoMapper"/>.
+/// AutoMapper profile for nested DTO benchmarks.
 /// </summary>
 internal sealed class AutomapperMapperProfile
     : Profile
@@ -19,12 +19,8 @@ internal sealed class AutomapperMapperProfile
     /// </summary>
     public AutomapperMapperProfile()
     {
-        this.CreateMap<StringComparison, string>();
-        this.CreateMap<string, StringComparison>();
-
-        this.CreateMap<StringComparison, int>();
-        this.CreateMap<int, StringComparison>();
-
-        this.CreateMap<SourceStatus, TargetStatus>();
+        this.CreateMap<LineItemDto, LineItem>();
+        this.CreateMap<CustomerDto, Customer>();
+        this.CreateMap<NestedOrderDto, NestedOrder>();
     }
 }

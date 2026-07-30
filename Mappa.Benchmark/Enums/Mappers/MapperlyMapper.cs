@@ -2,12 +2,14 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Benchmark.Enums.Models;
+
 using Riok.Mapperly.Abstractions;
 
 namespace Mappa.Benchmark.Enums.Mappers;
 
 /// <summary>
-/// Mapper using <see cref="Mappa"/>.
+/// Mapper using Mapperly.
 /// </summary>
 [Mapper]
 internal sealed partial class MapperlyMapper
@@ -27,6 +29,13 @@ internal sealed partial class MapperlyMapper
     /// <param name="stringComparison">The input object.</param>
     /// <returns>The output object.</returns>
     public partial StringComparison Map(int stringComparison);
+
+    /// <summary>
+    /// Map from <see cref="SourceStatus"/> to <see cref="TargetStatus"/>.
+    /// </summary>
+    /// <param name="status">The input enum.</param>
+    /// <returns>The output enum.</returns>
+    public partial TargetStatus Map(SourceStatus status);
 
     /// <summary>
     /// Map from <see cref="StringComparison"/>

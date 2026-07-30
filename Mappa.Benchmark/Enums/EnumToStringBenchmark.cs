@@ -50,7 +50,7 @@ public class EnumToStringBenchmark
     /// Map using <see cref="AutoMapper"/>.
     /// </summary>
     /// <returns>The mapper model.</returns>
-    [Benchmark]
+    [Benchmark(Baseline = true)]
     public string Automapper()
         => this.automapperMapper.Map<string>(Input);
 
@@ -76,7 +76,7 @@ public class EnumToStringBenchmark
     /// Map using <see cref="Mappa.Attributes"/>.
     /// </summary>
     /// <returns>The mapper model.</returns>
-    [Benchmark(Baseline = true)]
+    [Benchmark]
     public string Mappa()
         => this.mappaMapper.MapToString(Input);
 }

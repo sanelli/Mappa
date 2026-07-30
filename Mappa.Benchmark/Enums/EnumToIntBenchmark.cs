@@ -50,7 +50,7 @@ public class EnumToIntBenchmark
     /// Map using <see cref="AutoMapper"/>.
     /// </summary>
     /// <returns>The mapper model.</returns>
-    [Benchmark]
+    [Benchmark(Baseline = true)]
     public int Automapper()
         => this.automapperMapper.Map<int>(Input);
 
@@ -76,7 +76,7 @@ public class EnumToIntBenchmark
     /// Map using <see cref="Mappa.Attributes"/>.
     /// </summary>
     /// <returns>The mapper model.</returns>
-    [Benchmark(Baseline = true)]
+    [Benchmark]
     public int Mappa()
         => this.mappaMapper.MapToInt(Input);
 }

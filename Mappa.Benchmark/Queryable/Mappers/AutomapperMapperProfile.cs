@@ -4,12 +4,12 @@
 
 using AutoMapper;
 
-using Mappa.Benchmark.Enums.Models;
+using Mappa.Benchmark.Queryable.Models;
 
-namespace Mappa.Benchmark.Enums.Mappers;
+namespace Mappa.Benchmark.Queryable.Mappers;
 
 /// <summary>
-/// The mapper profile for <see cref="AutoMapper"/>.
+/// AutoMapper profile for IQueryable projection benchmarks.
 /// </summary>
 internal sealed class AutomapperMapperProfile
     : Profile
@@ -19,12 +19,7 @@ internal sealed class AutomapperMapperProfile
     /// </summary>
     public AutomapperMapperProfile()
     {
-        this.CreateMap<StringComparison, string>();
-        this.CreateMap<string, StringComparison>();
-
-        this.CreateMap<StringComparison, int>();
-        this.CreateMap<int, StringComparison>();
-
-        this.CreateMap<SourceStatus, TargetStatus>();
+        this.CreateMap<ProjectionOrder, ProjectionOrderDto>()
+            .ForMember(destination => destination.Title, options => options.MapFrom(source => source.Name));
     }
 }

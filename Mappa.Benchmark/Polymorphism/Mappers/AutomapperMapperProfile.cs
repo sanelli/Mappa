@@ -4,12 +4,12 @@
 
 using AutoMapper;
 
-using Mappa.Benchmark.Enums.Models;
+using Mappa.Benchmark.Polymorphism.Models;
 
-namespace Mappa.Benchmark.Enums.Mappers;
+namespace Mappa.Benchmark.Polymorphism.Mappers;
 
 /// <summary>
-/// The mapper profile for <see cref="AutoMapper"/>.
+/// AutoMapper profile for polymorphic benchmarks.
 /// </summary>
 internal sealed class AutomapperMapperProfile
     : Profile
@@ -19,12 +19,12 @@ internal sealed class AutomapperMapperProfile
     /// </summary>
     public AutomapperMapperProfile()
     {
-        this.CreateMap<StringComparison, string>();
-        this.CreateMap<string, StringComparison>();
-
-        this.CreateMap<StringComparison, int>();
-        this.CreateMap<int, StringComparison>();
-
-        this.CreateMap<SourceStatus, TargetStatus>();
+        this.CreateMap<AnimalDto, Animal>()
+            .Include<DogDto, Dog>()
+            .Include<CatDto, Cat>()
+            .Include<BirdDto, Bird>();
+        this.CreateMap<DogDto, Dog>();
+        this.CreateMap<CatDto, Cat>();
+        this.CreateMap<BirdDto, Bird>();
     }
 }

@@ -4,12 +4,10 @@
 
 using AutoMapper;
 
-using Mappa.Benchmark.Enums.Models;
-
-namespace Mappa.Benchmark.Enums.Mappers;
+namespace Mappa.Benchmark.Memory.Mappers;
 
 /// <summary>
-/// The mapper profile for <see cref="AutoMapper"/>.
+/// AutoMapper profile for memory/array benchmarks.
 /// </summary>
 internal sealed class AutomapperMapperProfile
     : Profile
@@ -19,12 +17,7 @@ internal sealed class AutomapperMapperProfile
     /// </summary>
     public AutomapperMapperProfile()
     {
-        this.CreateMap<StringComparison, string>();
-        this.CreateMap<string, StringComparison>();
-
-        this.CreateMap<StringComparison, int>();
-        this.CreateMap<int, StringComparison>();
-
-        this.CreateMap<SourceStatus, TargetStatus>();
+        this.CreateMap<Memory<int>, int[]>().ConvertUsing(memory => memory.ToArray());
+        this.CreateMap<int[], Memory<int>>().ConvertUsing(array => new Memory<int>(array));
     }
 }
