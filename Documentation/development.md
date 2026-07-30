@@ -39,6 +39,7 @@ Runs [BenchmarkDotNet](https://benchmarkdotnet.org/) in **Release** with job **S
 
 - `Benchmark.Summary.md` — mean time (ns) and allocated bytes for AutoMapper / Mapster / Mapperly / Mappa
 - `MAPPA-BENCHMARK-TIME.svg` / `MAPPA-BENCHMARK-MEMORY.svg` — grouped bar charts for the shared chart subset
+- `MAPPA-BENCHMARK-TIME-PERCENTAGES.svg` / `MAPPA-BENCHMARK-MEMORY-PERCENTAGES.svg` — competitor / Mappa percentage bar charts for the same subset
 - `history-table.md` — Mappa-only rows (`TIME_NS` / `ALLOC_B`) for gist history
 
 Useful switches:
@@ -57,6 +58,8 @@ That script downloads `MAPPA-BENCHMARK-HISTORY.md` from gist [`7f4a85bc809328b48
 - `MAPPA-BENCHMARK-HISTORY.md`
 - `MAPPA-BENCHMARK-TIME.svg`
 - `MAPPA-BENCHMARK-MEMORY.svg`
+- `MAPPA-BENCHMARK-TIME-PERCENTAGES.svg`
+- `MAPPA-BENCHMARK-MEMORY-PERCENTAGES.svg`
 - `MAPPA-BENCHMARK-TIME-HISTORY.svg`
 - `MAPPA-BENCHMARK-MEMORY-HISTORY.svg`
 

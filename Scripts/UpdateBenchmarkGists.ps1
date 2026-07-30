@@ -112,6 +112,8 @@ $timeHistorySvgPath = Join-Path $MappaBenchmarkPath "MAPPA-BENCHMARK-TIME-HISTOR
 $memoryHistorySvgPath = Join-Path $MappaBenchmarkPath "MAPPA-BENCHMARK-MEMORY-HISTORY.svg"
 $timeSummarySvgPath = Join-Path $MappaBenchmarkPath "MAPPA-BENCHMARK-TIME.svg"
 $memorySummarySvgPath = Join-Path $MappaBenchmarkPath "MAPPA-BENCHMARK-MEMORY.svg"
+$timePercentSvgPath = Join-Path $MappaBenchmarkPath "MAPPA-BENCHMARK-TIME-PERCENTAGES.svg"
+$memoryPercentSvgPath = Join-Path $MappaBenchmarkPath "MAPPA-BENCHMARK-MEMORY-PERCENTAGES.svg"
 
 New-BenchmarkHistorySvg `
     -HistoryMarkdownPath $fullHistoryPath `
@@ -181,6 +183,8 @@ try
 
     Publish-GistFile -GistId $GistId -RemoteFileName "MAPPA-BENCHMARK-TIME.svg" -LocalPath $timeSummarySvgPath
     Publish-GistFile -GistId $GistId -RemoteFileName "MAPPA-BENCHMARK-MEMORY.svg" -LocalPath $memorySummarySvgPath
+    Publish-GistFile -GistId $GistId -RemoteFileName "MAPPA-BENCHMARK-TIME-PERCENTAGES.svg" -LocalPath $timePercentSvgPath
+    Publish-GistFile -GistId $GistId -RemoteFileName "MAPPA-BENCHMARK-MEMORY-PERCENTAGES.svg" -LocalPath $memoryPercentSvgPath
     Publish-GistFile -GistId $GistId -RemoteFileName "MAPPA-BENCHMARK-TIME-HISTORY.svg" -LocalPath $timeHistorySvgPath
     Publish-GistFile -GistId $GistId -RemoteFileName "MAPPA-BENCHMARK-MEMORY-HISTORY.svg" -LocalPath $memoryHistorySvgPath
 }

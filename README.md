@@ -130,6 +130,12 @@ Mappa is compared with AutoMapper, Mapster, and Mapperly on a shared set of mapp
 ### Latest run — allocated memory
 <img alt="Benchmark allocated memory" src="https://gist.githubusercontent.com/sanelli/7f4a85bc809328b4821b03125f9190cb/raw/MAPPA-BENCHMARK-MEMORY.svg" width="800"/>
 
+### Latest run — mean time vs Mappa (%)
+<img alt="Benchmark mean time percentages" src="https://gist.githubusercontent.com/sanelli/7f4a85bc809328b4821b03125f9190cb/raw/MAPPA-BENCHMARK-TIME-PERCENTAGES.svg" width="800"/>
+
+### Latest run — allocated memory vs Mappa (%)
+<img alt="Benchmark allocated memory percentages" src="https://gist.githubusercontent.com/sanelli/7f4a85bc809328b4821b03125f9190cb/raw/MAPPA-BENCHMARK-MEMORY-PERCENTAGES.svg" width="800"/>
+
 ### History — mean time (Mappa)
 <img alt="Benchmark time history" src="https://gist.githubusercontent.com/sanelli/7f4a85bc809328b4821b03125f9190cb/raw/MAPPA-BENCHMARK-TIME-HISTORY.svg" width="800" height="500"/>
 

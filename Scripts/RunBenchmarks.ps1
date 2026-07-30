@@ -351,11 +351,15 @@ try
     $historyPath = Join-Path $MappaBenchmarkPath "history-table.md"
     $timeSvgPath = Join-Path $MappaBenchmarkPath "MAPPA-BENCHMARK-TIME.svg"
     $memorySvgPath = Join-Path $MappaBenchmarkPath "MAPPA-BENCHMARK-MEMORY.svg"
+    $timePercentSvgPath = Join-Path $MappaBenchmarkPath "MAPPA-BENCHMARK-TIME-PERCENTAGES.svg"
+    $memoryPercentSvgPath = Join-Path $MappaBenchmarkPath "MAPPA-BENCHMARK-MEMORY-PERCENTAGES.svg"
 
     Write-BenchmarkSummaryMarkdown -Benchmarks $benchmarks -OutputPath $summaryPath
     Write-BenchmarkHistoryTable -Benchmarks $benchmarks -MappaVersion $currentMappaVersion -OutputPath $historyPath
 
     $chartBenchmarks = [System.Collections.Generic.List[object]]::new()
+    $percentageChartBenchmarks = [System.Collections.Generic.List[object]]::new()
+    $percentageMappers = @("Automapper", "Mapster", "Mapperly")
     foreach ($name in $SvgBenchmarkNames)
     {
         $match = @($benchmarks | Where-Object { $_.Name -eq $name } | Select-Object -First 1)
@@ -385,6 +389,49 @@ try
                 Name = $source.Name
                 Mappers = $convertedMappers
             }) | Out-Null
+
+        $mappaEntry = $source.Mappers["Mappa"]
+        $percentageMappersMap = @{}
+        if ($null -ne $mappaEntry)
+        {
+            foreach ($mapper in $percentageMappers)
+            {
+                $entry = $source.Mappers[$mapper]
+                if ($null -eq $entry)
+                {
+                    continue
+                }
+
+                $timePercent = if ($mappaEntry.MeanNs -eq 0) {
+                    $null
+                } else {
+                    [Math]::Round(($entry.MeanNs / $mappaEntry.MeanNs) * 100.0, 3)
+                }
+                $allocPercent = if ($mappaEntry.AllocatedBytes -eq 0) {
+                    $null
+                } else {
+                    [Math]::Round(($entry.AllocatedBytes / $mappaEntry.AllocatedBytes) * 100.0, 3)
+                }
+
+                if (($null -eq $timePercent) -and ($null -eq $allocPercent))
+                {
+                    continue
+                }
+
+                $percentageMappersMap[$mapper] = [pscustomobject]@{
+                    TimePercent = $timePercent
+                    AllocPercent = $allocPercent
+                }
+            }
+        }
+
+        if ($percentageMappersMap.Count -gt 0)
+        {
+            $percentageChartBenchmarks.Add([pscustomobject]@{
+                    Name = $source.Name
+                    Mappers = $percentageMappersMap
+                }) | Out-Null
+        }
     }
 
     if ($chartBenchmarks.Count -eq 0)
@@ -410,11 +457,81 @@ try
         -YAxisTickStep 50 `
         -ValueLabelFormat "0.#"
 
+    if ($percentageChartBenchmarks.Count -gt 0)
+    {
+        # Filter out mappers with null for the selected metric so bars are skipped.
+        $timePercentBenchmarks = [System.Collections.Generic.List[object]]::new()
+        $allocPercentBenchmarks = [System.Collections.Generic.List[object]]::new()
+        foreach ($benchmark in $percentageChartBenchmarks)
+        {
+            $timeMappers = @{}
+            $allocMappers = @{}
+            foreach ($mapper in $percentageMappers)
+            {
+                $entry = $benchmark.Mappers[$mapper]
+                if ($null -eq $entry)
+                {
+                    continue
+                }
+
+                if ($null -ne $entry.TimePercent)
+                {
+                    $timeMappers[$mapper] = [pscustomobject]@{ TimePercent = [double]$entry.TimePercent }
+                }
+
+                if ($null -ne $entry.AllocPercent)
+                {
+                    $allocMappers[$mapper] = [pscustomobject]@{ AllocPercent = [double]$entry.AllocPercent }
+                }
+            }
+
+            if ($timeMappers.Count -gt 0)
+            {
+                $timePercentBenchmarks.Add([pscustomobject]@{ Name = $benchmark.Name; Mappers = $timeMappers }) | Out-Null
+            }
+
+            if ($allocMappers.Count -gt 0)
+            {
+                $allocPercentBenchmarks.Add([pscustomobject]@{ Name = $benchmark.Name; Mappers = $allocMappers }) | Out-Null
+            }
+        }
+
+        if ($timePercentBenchmarks.Count -gt 0)
+        {
+            New-BenchmarkGroupedBarSvg `
+                -Benchmarks $timePercentBenchmarks.ToArray() `
+                -MetricProperty "TimePercent" `
+                -YAxisLabel "Competitor / Mappa (%)" `
+                -Title "Benchmark mean time vs Mappa" `
+                -OutputPath $timePercentSvgPath `
+                -YAxisTickStep 100 `
+                -ValueLabelFormat "0.#" `
+                -ValueLabelSuffix "%" `
+                -MapperNames $percentageMappers
+        }
+
+        if ($allocPercentBenchmarks.Count -gt 0)
+        {
+            New-BenchmarkGroupedBarSvg `
+                -Benchmarks $allocPercentBenchmarks.ToArray() `
+                -MetricProperty "AllocPercent" `
+                -YAxisLabel "Competitor / Mappa (%)" `
+                -Title "Benchmark allocated memory vs Mappa" `
+                -OutputPath $memoryPercentSvgPath `
+                -YAxisTickStep 100 `
+                -ValueLabelFormat "0.#" `
+                -ValueLabelSuffix "%" `
+                -MapperNames $percentageMappers
+        }
+    }
+
     Write-Host "Wrote:"
     Write-Host " - $summaryPath"
     Write-Host " - $historyPath"
     Write-Host " - $timeSvgPath"
     Write-Host " - $memorySvgPath"
+    Write-Host " - $timePercentSvgPath"
+    Write-Host " - $memoryPercentSvgPath"
 }
 finally
 {

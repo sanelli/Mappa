@@ -42,7 +42,7 @@ Outputs are written under `.mappa-benchmark/` (gitignored). See [Documentation/d
 
 ### Chart / CI subset
 
-`MAPPA-BENCHMARK-TIME.svg` and `MAPPA-BENCHMARK-MEMORY.svg` (and CI `-ChartBenchmarksOnly`) include:
+`MAPPA-BENCHMARK-TIME.svg`, `MAPPA-BENCHMARK-MEMORY.svg`, `MAPPA-BENCHMARK-TIME-PERCENTAGES.svg`, and `MAPPA-BENCHMARK-MEMORY-PERCENTAGES.svg` (and CI `-ChartBenchmarksOnly`) include:
 
 - `ArrayToListBenchmark`
 - `DictionaryBenchmark`

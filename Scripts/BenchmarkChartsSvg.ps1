@@ -116,7 +116,11 @@ function New-BenchmarkGroupedBarSvg
         [Parameter(Mandatory = $true)]
         [double]$YAxisTickStep,
 
-        [string]$ValueLabelFormat = "0.##"
+        [string]$ValueLabelFormat = "0.##",
+
+        [string]$ValueLabelSuffix = "",
+
+        [string[]]$MapperNames = $script:BenchmarkMapperOrder
     )
 
     if ($Benchmarks.Count -eq 0)
@@ -129,7 +133,12 @@ function New-BenchmarkGroupedBarSvg
         throw "YAxisTickStep must be greater than zero."
     }
 
-    $mappers = $script:BenchmarkMapperOrder
+    $mappers = @($MapperNames)
+    if ($mappers.Count -lt 1)
+    {
+        throw "MapperNames must contain at least one mapper."
+    }
+
     $groupCount = $Benchmarks.Count
     $seriesCount = $mappers.Count
 
@@ -221,7 +230,7 @@ function New-BenchmarkGroupedBarSvg
             $color = $script:BenchmarkMapperColors[$mapper]
             [void]$builder.AppendLine("  <rect x=`"$([Math]::Round($x, 2))`" y=`"$([Math]::Round($y, 2))`" width=`"$barWidth`" height=`"$([Math]::Round($barHeight, 2))`" fill=`"$color`"/>")
 
-            $valueText = $metric.ToString($ValueLabelFormat, [System.Globalization.CultureInfo]::InvariantCulture)
+            $valueText = $metric.ToString($ValueLabelFormat, [System.Globalization.CultureInfo]::InvariantCulture) + $ValueLabelSuffix
             $textX = $x + ($barWidth / 2.0)
             $textY = $y - 4.0
             # Always place the value vertically above the bar, using the bar color.
