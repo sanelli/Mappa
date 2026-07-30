@@ -164,6 +164,29 @@ function Format-Metric
     return ("{0:0.###}" -f $Value)
 }
 
+function Format-BenchmarkRatio
+{
+    param(
+        $NumeratorEntry,
+        $DenominatorEntry,
+        [string]$MetricProperty
+    )
+
+    if (($null -eq $NumeratorEntry) -or ($null -eq $DenominatorEntry))
+    {
+        return "n/a"
+    }
+
+    $numerator = [double]$NumeratorEntry.$MetricProperty
+    $denominator = [double]$DenominatorEntry.$MetricProperty
+    if ($denominator -eq 0)
+    {
+        return "n/a"
+    }
+
+    return ("{0:0.#}%" -f (($numerator / $denominator) * 100.0))
+}
+
 function Write-BenchmarkSummaryMarkdown
 {
     param(
@@ -172,10 +195,12 @@ function Write-BenchmarkSummaryMarkdown
         [string]$OutputPath
     )
 
+    $ratioCompetitors = @("Automapper", "Mapperly", "Mapster")
+
     $builder = New-Object System.Text.StringBuilder
     [void]$builder.AppendLine("# Benchmark summary")
     [void]$builder.AppendLine()
-    [void]$builder.AppendLine("AutoMapper is the ratio baseline. Values are mean time in nanoseconds and allocated bytes.")
+    [void]$builder.AppendLine("AutoMapper is the BenchmarkDotNet ratio baseline. Absolute values are mean time in nanoseconds and allocated bytes. Ratio columns are competitor / Mappa as a percentage (n/a when either side is missing or Mappa is zero).")
     [void]$builder.AppendLine()
     [void]$builder.Append("| Benchmark |")
     foreach ($mapper in $MapperOrder)
@@ -183,9 +208,19 @@ function Write-BenchmarkSummaryMarkdown
         [void]$builder.Append(" $mapper Mean (ns) | $mapper Allocated (B) |")
     }
 
+    foreach ($competitor in $ratioCompetitors)
+    {
+        [void]$builder.Append(" $competitor/Mappa Time | $competitor/Mappa Alloc |")
+    }
+
     [void]$builder.AppendLine()
     [void]$builder.Append("| --- |")
     foreach ($mapper in $MapperOrder)
+    {
+        [void]$builder.Append(" --- | --- |")
+    }
+
+    foreach ($competitor in $ratioCompetitors)
     {
         [void]$builder.Append(" --- | --- |")
     }
@@ -206,6 +241,15 @@ function Write-BenchmarkSummaryMarkdown
             {
                 [void]$builder.Append(" $(Format-Metric -Value $entry.MeanNs) | $(Format-Metric -Value $entry.AllocatedBytes) |")
             }
+        }
+
+        $mappaEntry = $benchmark.Mappers["Mappa"]
+        foreach ($competitor in $ratioCompetitors)
+        {
+            $competitorEntry = $benchmark.Mappers[$competitor]
+            $timeRatio = Format-BenchmarkRatio -NumeratorEntry $competitorEntry -DenominatorEntry $mappaEntry -MetricProperty "MeanNs"
+            $allocRatio = Format-BenchmarkRatio -NumeratorEntry $competitorEntry -DenominatorEntry $mappaEntry -MetricProperty "AllocatedBytes"
+            [void]$builder.Append(" $timeRatio | $allocRatio |")
         }
 
         [void]$builder.AppendLine()

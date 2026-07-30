@@ -79,7 +79,7 @@ The development environment uses **PowerShell**. All commands run in the termina
 - Post the plan as an issue comment with `gh issue comment <number>` after the PR exists (so the comment can include the PR URL).
 - Include: a short heading (e.g. `## Implementation plan`), a link to the PR, and the full contents of the plan file under `.cursor/plans/` (e.g. `issue_<number>_*.plan.md`). Prefer `--body-file` with a temporary markdown file built in PowerShell rather than bash heredocs.
 - If no issue number is known when creating the PR, ask the user for one before posting the plan.
-- **Pre-PR dependency check:** before creating a pull request, check whether NuGet libraries used across solution projects have newer **stable** versions available. If updates are available, search open GitHub issues for an existing dependency-update task; if **none** exists, ask the user whether they want a new GitHub issue created to track updating those libraries. Do **not** silently open the issue.
+- **Pre-PR dependency check:** before creating a pull request, run `dotnet package list --outdated` (from the repository root, or per project as needed) and **report every package whose Latest version is greater than the Requested/Resolved version**. Search open GitHub issues for an existing dependency-update task. Then ask the user whether they want to **create a new GitHub issue** (if none is open) or **update the existing open issue** (if one already tracks dependency updates) with the outdated packages found. Do **not** silently open or edit the issue.
 
 ## Versioning
 

@@ -10,12 +10,10 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+. "$PSScriptRoot/BenchmarkChartsSvg.ps1"
 $CommentMarker = "<!-- mappa-pr-coverage -->"
-$BenchmarkTrendNames = @(
-    "SpotifyBenchmark",
-    "FastListToArrayBenchmark",
-    "IQueryableProjectionBenchmark"
-)
+# Same subset as MAPPA-BENCHMARK-TIME/MEMORY.svg and -ChartBenchmarksOnly.
+$BenchmarkTrendNames = $script:BenchmarkChartNames
 
 function Get-TrendSymbol
 {
