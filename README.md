@@ -120,3 +120,18 @@ You can also find many examples in the [Mappa.Samples](Mappa.Samples) project.
 - [Code Coverage history](https://gist.github.com/sanelli/7f4a85bc809328b4821b03125f9190cb#file-mappa-code-coverage-history-md)
 
 <img alt="Code coverage history" src="https://gist.githubusercontent.com/sanelli/7f4a85bc809328b4821b03125f9190cb/raw/MAPPA-CODE-COVERAGE-HISTORY.svg" width="800" height="500"/>
+
+# 🏎️ Benchmarks
+Mappa is compared with AutoMapper, Mapster, and Mapperly on a shared set of mapping scenarios (collections, nested DTOs, IQueryable projection, and related cases). AutoMapper is the ratio baseline; **lower time and lower memory are better**. Details live in [Mappa.Benchmark/README.md](Mappa.Benchmark/README.md).
+
+### Latest run — mean time
+<img alt="Benchmark mean time" src="https://gist.githubusercontent.com/sanelli/7f4a85bc809328b4821b03125f9190cb/raw/MAPPA-BENCHMARK-TIME.svg" width="800"/>
+
+### Latest run — allocated memory
+<img alt="Benchmark allocated memory" src="https://gist.githubusercontent.com/sanelli/7f4a85bc809328b4821b03125f9190cb/raw/MAPPA-BENCHMARK-MEMORY.svg" width="800"/>
+
+### History — mean time (Mappa)
+<img alt="Benchmark time history" src="https://gist.githubusercontent.com/sanelli/7f4a85bc809328b4821b03125f9190cb/raw/MAPPA-BENCHMARK-TIME-HISTORY.svg" width="800" height="500"/>
+
+### History — allocated memory (Mappa)
+<img alt="Benchmark memory history" src="https://gist.githubusercontent.com/sanelli/7f4a85bc809328b4821b03125f9190cb/raw/MAPPA-BENCHMARK-MEMORY-HISTORY.svg" width="800" height="500"/>
