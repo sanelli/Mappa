@@ -3,6 +3,7 @@
 // </copyright>
 
 using Mappa.Attributes;
+using Mappa.Benchmark.Enums.Models;
 
 namespace Mappa.Benchmark.Enums.Mappers;
 
@@ -27,6 +28,13 @@ internal sealed partial class MappaMapper
     /// <param name="stringComparison">The input object.</param>
     /// <returns>The output object.</returns>
     public partial StringComparison Map(int stringComparison);
+
+    /// <summary>
+    /// Map from <see cref="SourceStatus"/> to <see cref="TargetStatus"/>.
+    /// </summary>
+    /// <param name="status">The input enum.</param>
+    /// <returns>The output enum.</returns>
+    public partial TargetStatus Map(SourceStatus status);
 
     /// <summary>
     /// Map from <see cref="StringComparison"/>

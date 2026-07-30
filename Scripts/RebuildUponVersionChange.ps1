@@ -5,7 +5,7 @@ foreach ($project in $(
     "Mappa.Dependency.Bson", "Mappa.Dependency.Bson.DependencyInjection", "Mappa.Dependency.Bson.Tests", "Mappa.Dependency.Bson.DependencyInjection.Tests",
     "Mappa.Samples", "Mappa.Samples.Tests", "Mappa.Samples.Aot", "Mappa.Benchmark"))
 {
-    dotnet build $project
+    dotnet build $project -c Release
     if (-not $?)
     {
         exit 1

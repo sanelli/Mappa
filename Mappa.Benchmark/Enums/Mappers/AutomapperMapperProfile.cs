@@ -4,6 +4,8 @@
 
 using AutoMapper;
 
+using Mappa.Benchmark.Enums.Models;
+
 namespace Mappa.Benchmark.Enums.Mappers;
 
 /// <summary>
@@ -22,5 +24,7 @@ internal sealed class AutomapperMapperProfile
 
         this.CreateMap<StringComparison, int>();
         this.CreateMap<int, StringComparison>();
+
+        this.CreateMap<SourceStatus, TargetStatus>();
     }
 }

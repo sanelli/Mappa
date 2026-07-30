@@ -4,6 +4,9 @@
 
 using BenchmarkDotNet.Attributes;
 
+using Bogus;
+
+using Mappa.Benchmark.Common;
 using Mappa.Benchmark.Spotify.Mappers;
 using Mappa.Benchmark.Spotify.Models;
 
@@ -31,10 +34,14 @@ public class SpotifyBenchmark
     /// </summary>
     public SpotifyBenchmark()
     {
+#pragma warning disable S3010
+        Randomizer.Seed = new Random(BenchmarkConstants.RandomSeed);
+#pragma warning restore S3010
+
         this.automapperMapper = new AutoMapper.MapperConfiguration(
             cfg =>
                 {
-                    cfg.AddMaps(typeof(AutomapperMapperProfile));
+                    cfg.AddProfile(new AutomapperMapperProfile());
                 },
 #pragma warning disable CA2000
             new NullLoggerFactory()).CreateMapper();
@@ -46,7 +53,7 @@ public class SpotifyBenchmark
 
         this.spotifyAlbumDto = new AutoBogus
             .AutoFaker<SpotifyAlbumDto>()
-            .Configure(builder => builder.WithRepeatCount(300))
+            .Configure(builder => builder.WithRepeatCount(BenchmarkConstants.CollectionSize))
             .Generate();
     }
 
@@ -54,7 +61,7 @@ public class SpotifyBenchmark
     /// Map using <see cref="AutoMapper"/>.
     /// </summary>
     /// <returns>The mapper model.</returns>
-    [Benchmark]
+    [Benchmark(Baseline = true)]
     public SpotifyAlbum Automapper()
         => this.automapperMapper.Map<SpotifyAlbum>(this.spotifyAlbumDto);
 
@@ -78,7 +85,7 @@ public class SpotifyBenchmark
     /// Map using <see cref="Mappa.Attributes"/>.
     /// </summary>
     /// <returns>The mapper model.</returns>
-    [Benchmark(Baseline = true)]
+    [Benchmark]
     public SpotifyAlbum Mappa()
         => this.mappaMapper.Map(this.spotifyAlbumDto);
 }

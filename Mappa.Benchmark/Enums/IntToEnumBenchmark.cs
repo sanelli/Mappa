@@ -35,7 +35,7 @@ public class IntToEnumBenchmark
         this.automapperMapper = new AutoMapper.MapperConfiguration(
             cfg =>
                 {
-                    cfg.AddMaps(typeof(AutomapperMapperProfile));
+                    cfg.AddProfile(new AutomapperMapperProfile());
                 },
 #pragma warning disable CA2000
             new NullLoggerFactory()).CreateMapper();
@@ -50,7 +50,7 @@ public class IntToEnumBenchmark
     /// Map using <see cref="AutoMapper"/>.
     /// </summary>
     /// <returns>The mapper model.</returns>
-    [Benchmark]
+    [Benchmark(Baseline = true)]
     public StringComparison Automapper()
         => this.automapperMapper.Map<StringComparison>(Input);
 
@@ -76,7 +76,7 @@ public class IntToEnumBenchmark
     /// Map using <see cref="Mappa.Attributes"/>.
     /// </summary>
     /// <returns>The mapper model.</returns>
-    [Benchmark(Baseline = true)]
+    [Benchmark]
     public StringComparison Mappa()
         => this.mappaMapper.Map(Input);
 }

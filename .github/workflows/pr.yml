@@ -40,6 +40,9 @@ jobs:
       - name: Test and code coverage
         shell: pwsh
         run: ./Scripts/RunTestsAndReportCoverage.ps1
+      - name: Run benchmarks
+        shell: pwsh
+        run: ./Scripts/RunBenchmarks.ps1 -ChartBenchmarksOnly
       - name: Comment pull request coverage
         shell: pwsh
         env:
