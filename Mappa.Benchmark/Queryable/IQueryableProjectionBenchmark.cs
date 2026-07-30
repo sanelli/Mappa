@@ -38,7 +38,7 @@ public class IQueryableProjectionBenchmark
     public IQueryableProjectionBenchmark()
     {
         this.automapperMapper = new AutoMapper.MapperConfiguration(
-            cfg => cfg.AddMaps(typeof(AutomapperMapperProfile)),
+            cfg => cfg.AddProfile(new AutomapperMapperProfile()),
 #pragma warning disable CA2000
             new NullLoggerFactory()).CreateMapper();
 #pragma warning restore CA2000

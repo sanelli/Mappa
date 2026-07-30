@@ -23,6 +23,16 @@ internal sealed class AutomapperMapperProfile
         this.CreateMap<CollectionItemDto[], List<CollectionItem>>();
         this.CreateMap<List<CollectionItemDto>, CollectionItem[]>();
         this.CreateMap<List<int>, HashSet<int>>();
-        this.CreateMap<Dictionary<string, CollectionItemDto>, Dictionary<string, CollectionItem>>();
+        this.CreateMap<Dictionary<string, CollectionItemDto>, Dictionary<string, CollectionItem>>()
+            .ConvertUsing((source, _, context) =>
+            {
+                var result = new Dictionary<string, CollectionItem>(source.Count);
+                foreach (var pair in source)
+                {
+                    result[pair.Key] = context.Mapper.Map<CollectionItem>(pair.Value);
+                }
+
+                return result;
+            });
     }
 }
