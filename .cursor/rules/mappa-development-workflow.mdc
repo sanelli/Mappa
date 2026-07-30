@@ -1,5 +1,5 @@
 ---
-description: Mappa development workflow — planning, code, code coverage, git, pull requests, versioning, tests, and samples
+description: Mappa development workflow — planning, code, code coverage, git, pull requests, versioning, tests, samples, benchmarks, and documentation
 alwaysApply: true
 ---
 
@@ -79,6 +79,7 @@ The development environment uses **PowerShell**. All commands run in the termina
 - Post the plan as an issue comment with `gh issue comment <number>` after the PR exists (so the comment can include the PR URL).
 - Include: a short heading (e.g. `## Implementation plan`), a link to the PR, and the full contents of the plan file under `.cursor/plans/` (e.g. `issue_<number>_*.plan.md`). Prefer `--body-file` with a temporary markdown file built in PowerShell rather than bash heredocs.
 - If no issue number is known when creating the PR, ask the user for one before posting the plan.
+- **Pre-PR dependency check:** before creating a pull request, check whether NuGet libraries used across solution projects have newer **stable** versions available. If updates are available, search open GitHub issues for an existing dependency-update task; if **none** exists, ask the user whether they want a new GitHub issue created to track updating those libraries. Do **not** silently open the issue.
 
 ## Versioning
 
@@ -123,6 +124,11 @@ A single feature may require **two** bumps (e.g. one after **Mappa**, one after 
 - **Do not** add new samples for bug fixes alone.
 - Before adding samples, ensure the **Mappa.Generator** version bump and rebuild described in **Versioning** has already been done.
 - **Warning suppression:** when a sample intentionally triggers a Mappa analyzer warning (e.g. MP00013, MP00016, MP00039), suppress it with `#pragma warning disable` / `#pragma warning restore` at the method or file level, including a short explanatory comment. Do **not** suppress sample warnings via `WarningsNotAsErrors`, `NoWarn`, or global analyzer config in the `.csproj`. Exception: `MP00000` may remain in `WarningsNotAsErrors` (debug diagnostic infrastructure). See [`InvokeParseMapper.cs`](Mappa.Samples/InvokeParseMapper.cs), [`MappaIgnoreMappers.cs`](Mappa.Samples/MappaIgnoreMappers.cs), and [`EnumToEnumMapper.cs`](Mappa.Samples/EnumToEnumMapper.cs) for examples.
+
+## Benchmarks
+
+- For each new user-facing feature (mapping strategy, attribute, `MappaSettings` property, or other capability that can be exercised at runtime), investigate whether it is worth adding a scenario to [`Mappa.Benchmark`](Mappa.Benchmark/). If yes, include that work in the issue plan (or note an explicit deferral with rationale).
+- When a new benchmark **is** added, do **not** add it to the SVG / CI chart subset (`$script:BenchmarkChartNames` in [`Scripts/BenchmarkChartsSvg.ps1`](Scripts/BenchmarkChartsSvg.ps1), used by `-ChartBenchmarksOnly` and the TIME/MEMORY / history charts) unless the user **explicitly** asks to include it in those charts.
 
 ## Documentation
 
