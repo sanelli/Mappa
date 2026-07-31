@@ -399,7 +399,7 @@ public sealed class MappaAssignToContextAttributeTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
-            .HaveOnlyWarnings("MP00036")
+            .HaveDiagnostics(1)
             .HaveDiagnostic(
                 MappaDiagnosticDescriptors.CannotUseMappaAssignToContextAttributeWithoutContextParameter,
                 "Map",

@@ -1823,7 +1823,6 @@ public sealed partial class MappaInvokeMethodAttributeTests
         // Assert
         generatedResults.Should()
             .HaveDiagnostics(1)
-            .HaveOnlyWarnings("MP00014")
             .HaveDiagnostic(MappaDiagnosticDescriptors.PropertySetterIsNotAccessible, "Mappa.Generator.Tests.UnitTests.SourceCode.Target.PropertyB")
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()

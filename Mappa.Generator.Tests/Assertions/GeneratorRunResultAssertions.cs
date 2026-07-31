@@ -34,25 +34,6 @@ internal sealed class GeneratorRunResultAssertions
     }
 
     /// <summary>
-    /// Assert that the generator results have only warning messages.
-    /// </summary>
-    /// <param name="warningIds">The warning identifiers.</param>
-    /// <returns>The assertions itself.</returns>
-    public GeneratorRunResultAssertions HaveOnlyWarnings(params string[] warningIds)
-    {
-        ArgumentNullException.ThrowIfNull(warningIds);
-
-        this.Subject.Diagnostics.Should().HaveCount(warningIds.Length);
-        foreach (var diagnostic in this.Subject.Diagnostics)
-        {
-            diagnostic.Severity.Should().Be(DiagnosticSeverity.Warning);
-            warningIds.Should().Contain(diagnostic.Id);
-        }
-
-        return this;
-    }
-
-    /// <summary>
     /// Assert that the generator results have no sources.
     /// </summary>
     /// <returns>The assertions itself.</returns>

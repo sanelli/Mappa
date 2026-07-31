@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Tests.Assertions;
 using Mappa.Generator.Tests.Assertions.Extensions;
 
@@ -43,7 +44,12 @@ public sealed partial class StringToNumberMapStrategyIntegrationTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
-            .HaveOnlyWarnings("MP00038")
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(
+                MappaDiagnosticDescriptors.InvalidMappaSettingsStyleValue,
+                "IntStyle",
+                1048576,
+                "NumberStyles")
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .NotBeNull().And
@@ -101,7 +107,12 @@ public sealed partial class StringToNumberMapStrategyIntegrationTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
-            .HaveOnlyWarnings("MP00038")
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(
+                MappaDiagnosticDescriptors.InvalidMappaSettingsStyleValue,
+                "GlobalNumberStyle",
+                1048576,
+                "NumberStyles")
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .NotBeNull().And

@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Tests.Assertions;
 using Mappa.Generator.Tests.Assertions.Extensions;
 
@@ -42,7 +43,12 @@ public sealed partial class InvokeParseStringWithFormatMapStrategyIntegrationTes
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
-            .HaveOnlyWarnings("MP00038")
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(
+                MappaDiagnosticDescriptors.InvalidMappaSettingsStyleValue,
+                "DateTimeStyle",
+                256,
+                "DateTimeStyles")
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .NotBeNull().And
@@ -102,7 +108,12 @@ public sealed partial class InvokeParseStringWithFormatMapStrategyIntegrationTes
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
-            .HaveOnlyWarnings("MP00038")
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(
+                MappaDiagnosticDescriptors.InvalidMappaSettingsStyleValue,
+                "GlobalDateTimeStyle",
+                256,
+                "DateTimeStyles")
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .NotBeNull().And

@@ -43,7 +43,7 @@ public sealed partial class MappaBeforeAfterMapHookIntegrationTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
-            .HaveOnlyWarnings("MP00045")
+            .HaveDiagnostics(1)
             .HaveDiagnostic(
                 MappaDiagnosticDescriptors.HookMethodNotFound,
                 "Map",
@@ -107,14 +107,7 @@ public sealed partial class MappaBeforeAfterMapHookIntegrationTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
-            .HaveOnlyWarnings(
-                "MP00045",
-                "MP00045",
-                "MP00045",
-                "MP00045",
-                "MP00045",
-                "MP00045",
-                "MP00045")
+            .HaveDiagnostics(7)
             .HaveDiagnostic(MappaDiagnosticDescriptors.HookMethodNotFound, "Map", "before-map", "NonVoid")
             .HaveDiagnostic(MappaDiagnosticDescriptors.HookMethodNotFound, "Map", "before-map", "MissingRef")
             .HaveDiagnostic(MappaDiagnosticDescriptors.HookMethodNotFound, "Map", "before-map", "WrongType")
@@ -175,7 +168,7 @@ public sealed partial class MappaBeforeAfterMapHookIntegrationTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
-            .HaveOnlyWarnings("MP00046", "MP00046")
+            .HaveDiagnostics(2)
             .HaveDiagnostic(
                 MappaDiagnosticDescriptors.DuplicateMapHookRegistration,
                 "Map",
@@ -237,7 +230,7 @@ public sealed partial class MappaBeforeAfterMapHookIntegrationTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
-            .HaveOnlyWarnings("MP00045", "MP00045")
+            .HaveDiagnostics(2)
             .HaveDiagnostic(MappaDiagnosticDescriptors.HookMethodNotFound, "Map", "before-map", "MissingBefore")
             .HaveDiagnostic(MappaDiagnosticDescriptors.HookMethodNotFound, "Map", "after-map", "MissingAfter")
             .NotHaveCompilationErrors()
