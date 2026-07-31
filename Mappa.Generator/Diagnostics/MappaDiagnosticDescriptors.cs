@@ -1,4 +1,4 @@
-﻿// <copyright file="MappaDiagnosticDescriptors.cs" company="Stefano Anelli">
+// <copyright file="MappaDiagnosticDescriptors.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -75,6 +75,9 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? projectionNestedQueryableNotSupported;
     private static DiagnosticDescriptor? projectionEnumStrategyNotSupported;
     private static DiagnosticDescriptor? iQueryableMappedAsCollection;
+    private static DiagnosticDescriptor? duplicateObjectFactoryForTargetType;
+    private static DiagnosticDescriptor? objectFactoryMethodNotFound;
+    private static DiagnosticDescriptor? projectionMethodHasObjectFactory;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -563,6 +566,30 @@ internal static class MappaDiagnosticDescriptors
         => iQueryableMappedAsCollection ??= BuildWarning(
             MappaDiagnosticsKind.IQueryableMappedAsCollection,
             DiagnosticsResources.IQueryableMappedAsCollection);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.DuplicateObjectFactoryForTargetType"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor DuplicateObjectFactoryForTargetType
+        => duplicateObjectFactoryForTargetType ??= BuildError(
+            MappaDiagnosticsKind.DuplicateObjectFactoryForTargetType,
+            DiagnosticsResources.DuplicateObjectFactoryForTargetType);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.ObjectFactoryMethodNotFound"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor ObjectFactoryMethodNotFound
+        => objectFactoryMethodNotFound ??= BuildWarning(
+            MappaDiagnosticsKind.ObjectFactoryMethodNotFound,
+            DiagnosticsResources.ObjectFactoryMethodNotFound);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.ProjectionMethodHasObjectFactory"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor ProjectionMethodHasObjectFactory
+        => projectionMethodHasObjectFactory ??= BuildError(
+            MappaDiagnosticsKind.ProjectionMethodHasObjectFactory,
+            DiagnosticsResources.ProjectionMethodHasObjectFactory);
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(

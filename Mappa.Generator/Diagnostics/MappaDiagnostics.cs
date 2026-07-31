@@ -1,4 +1,4 @@
-﻿// <copyright file="MappaDiagnostics.cs" company="Stefano Anelli">
+// <copyright file="MappaDiagnostics.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -1076,5 +1076,56 @@ internal static class MappaDiagnostics
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.IQueryableMappedAsCollection,
             location,
+            methodName);
+
+    /// <summary>
+    /// Diagnostic to report that multiple object factories target the same type.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="methodName">The mapping method name.</param>
+    /// <param name="targetTypeName">The duplicated target type.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic DuplicateObjectFactoryForTargetType(
+        Location? location,
+        string methodName,
+        string targetTypeName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.DuplicateObjectFactoryForTargetType,
+            location,
+            methodName,
+            targetTypeName);
+
+    /// <summary>
+    /// Diagnostic to report that an object factory method cannot be identified.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="methodName">The mapping method name.</param>
+    /// <param name="targetTypeName">The factory target type.</param>
+    /// <param name="factoryMethodName">The factory method name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic ObjectFactoryMethodNotFound(
+        Location? location,
+        string methodName,
+        string targetTypeName,
+        string factoryMethodName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.ObjectFactoryMethodNotFound,
+            location,
+            methodName,
+            targetTypeName,
+            factoryMethodName);
+
+    /// <summary>
+    /// Diagnostic to report that a queryable projection map method declares object factories.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="methodName">The mapping method name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic ProjectionMethodHasObjectFactory(
+        MethodDeclarationSyntax? methodDeclarationSyntax,
+        string methodName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.ProjectionMethodHasObjectFactory,
+            methodDeclarationSyntax?.GetLocation(),
             methodName);
 }

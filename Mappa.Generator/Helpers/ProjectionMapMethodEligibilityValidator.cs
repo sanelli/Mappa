@@ -23,13 +23,17 @@ internal static class ProjectionMapMethodEligibilityValidator
     /// <param name="classContext">The class generator context.</param>
     /// <param name="classBeforeMapAttributes">The class-level before-map hook attributes.</param>
     /// <param name="classAfterMapAttributes">The class-level after-map hook attributes.</param>
+    /// <param name="classObjectFactoryAttributes">The class-level object factory attributes.</param>
+    /// <param name="methodObjectFactoryAttributes">The method-level object factory attributes.</param>
     /// <returns><c>true</c> when the method is eligible or not a projection method; otherwise <c>false</c>.</returns>
     internal static bool TryValidate(
         MapMethod mapMethod,
         Compilation compilation,
         MappaClassGeneratorContext classContext,
         MapHookAttributeData[] classBeforeMapAttributes,
-        MapHookAttributeData[] classAfterMapAttributes)
+        MapHookAttributeData[] classAfterMapAttributes,
+        MappaObjectFactoryAttributeData[] classObjectFactoryAttributes,
+        MappaObjectFactoryAttributeData[] methodObjectFactoryAttributes)
     {
         if (!mapMethod.MethodSymbol.IsQueryableProjectionMapMethod(compilation))
         {
@@ -57,6 +61,14 @@ internal static class ProjectionMapMethodEligibilityValidator
         {
             classContext.ReportDiagnostic(
                 MappaDiagnostics.ProjectionMethodHasBeforeOrAfterMapHooks(methodDeclarationSyntax, methodName));
+            return false;
+        }
+
+        if (classObjectFactoryAttributes.Length > 0
+            || methodObjectFactoryAttributes.Length > 0)
+        {
+            classContext.ReportDiagnostic(
+                MappaDiagnostics.ProjectionMethodHasObjectFactory(methodDeclarationSyntax, methodName));
             return false;
         }
 

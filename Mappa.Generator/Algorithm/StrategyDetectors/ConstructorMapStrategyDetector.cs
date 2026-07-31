@@ -49,8 +49,14 @@ internal sealed partial class ConstructorMapStrategyDetector
         this.context.ValidateTargetNamesExist(this.compilation);
         this.context.ValidateMappaIgnoreTargetPropertyAttributes();
 
+        // 00. Object factory registered for TargetType -> InvokeObjectFactoryMapStrategy
+        if (this.TryDetectObjectFactory(out var objectFactoryStrategy))
+        {
+            mapStrategy = objectFactoryStrategy;
+        }
+
         // 01. Constructor TargetType(SourceType input) exists -> InvokeMappingConstructorStrategy ( IMapStrategy(T.InputParameterType, S) )
-        if (this.CanInvokeMappingConstructor(out var invokeConstructor, out var argumentStrategy))
+        else if (this.CanInvokeMappingConstructor(out var invokeConstructor, out var argumentStrategy))
         {
             mapStrategy = new InvokeMappingConstructorMapStrategy(
                 this.context.TargetType,
@@ -74,6 +80,10 @@ internal sealed partial class ConstructorMapStrategyDetector
         if (mapStrategy is InvokeConstructorMapStrategy invokeConstructorMapStrategy)
         {
             mapStrategy = this.EnrichInvokeConstructorMapStrategyWithAssignToContext(invokeConstructorMapStrategy);
+        }
+        else if (mapStrategy is InvokeObjectFactoryMapStrategy invokeObjectFactoryMapStrategy)
+        {
+            mapStrategy = this.EnrichInvokeObjectFactoryMapStrategyWithAssignToContext(invokeObjectFactoryMapStrategy);
         }
 
         return mapStrategy is not NoMapStrategy;
@@ -360,361 +370,27 @@ internal sealed partial class ConstructorMapStrategyDetector
         if (constructors.Length == 0)
         {
             strategy = noMapStrategy;
+            return false;
         }
-        else
+
+        if (!this.TryBuildEmptyCtorLikePropertyInitializers(
+                requireAtLeastOneMappedProperty: true,
+                out var propertiesWithStrategies))
         {
-            // Gets all the properties
-            var allTargetProperties = this.context.TargetType.GetTypeProperties().ToArray();
-
-            // Gets the target properties
-            var ignoredTargetPropertyNames = this.GetIgnoredTargetPropertyNames();
-
-            var targetProperties = allTargetProperties
-
-                // Ignore indexer properties.
-                .Where(property => !property.IsIndexer)
-
-                // Ignore properties marked via MappaIgnoreTargetPropertyAttribute.
-                .Where(property => !ignoredTargetPropertyNames.Contains(property.Name))
-                .Where(property => !this.ShouldIgnoreTargetPropertyAtCurrentLevel(property.Name))
-                .ToArray();
-
-            // If no target properties exist, then there is no point in applying this strategy
-            // this way we can avoid using this strategy for basic types
-            // like string, int, etc...
-            if (targetProperties.Length > 0)
-            {
-                // Gets the source properties.
-                var sourceProperties = this.context.SourceType.GetTypeProperties()
-
-                    // Ignore indexer properties.
-                    // Ignore properties without a setter.
-                    .Where(property => !property.IsIndexer && property.IsGetterAccessible(this.compilation, this.context.GetRootMapMethod()))
-                    .ToArray();
-
-                // Match target property with a source property.
-                var initializerStrategies = targetProperties
-
-                    // Remove all the optional identifier properties from the list
-                    // when the optional setting is enabled.
-                    .Where(targetProperty => this.context.MappaUserSettings.ProtobufOptional is not BooleanSetting.Enable
-                                             || allTargetProperties.All(otherProperty => !targetProperty.Name.Equals($"Has{otherProperty.Name}", StringComparison.Ordinal)))
-
-                    // Look up for mapping
-                    .Select(
-                        targetProperty =>
-                        {
-                            // Try to get a matching property
-                            var usePropertyAttributes = this.GetMatchingUsePropertyAttributes(
-                                targetProperty.Name,
-                                StringComparison.Ordinal);
-
-                            string expectedSourcePropertyName;
-                            var useExactNameFromAttribute = false;
-                            PropertyPathContext? nestedPropertyPathContext = null;
-                            ChainedSourcePropertyPathInfo? chainedSourcePropertyPath = null;
-                            switch (usePropertyAttributes.Length)
-                            {
-                                case 0:
-                                    expectedSourcePropertyName = targetProperty.Name;
-                                    break;
-                                case 1:
-                                {
-                                    var usePropertyAttribute = usePropertyAttributes[0];
-                                    var isLeafTargetMapping = this.IsLeafTargetMappingForAttribute(usePropertyAttribute.TargetPropertyName);
-                                    if (this.TryResolveExpectedSourcePropertyName(
-                                            usePropertyAttribute,
-                                            isLeafTargetMapping,
-                                            out expectedSourcePropertyName,
-                                            out useExactNameFromAttribute,
-                                            out nestedPropertyPathContext,
-                                            out chainedSourcePropertyPath))
-                                    {
-                                        break;
-                                    }
-
-                                    useExactNameFromAttribute = true;
-                                    expectedSourcePropertyName = targetProperty.Name;
-                                    break;
-                                }
-
-                                default:
-                                {
-                                    var distinctTargetPaths = usePropertyAttributes
-                                        .Select(attribute => attribute.TargetPropertyName)
-                                        .Distinct(StringComparer.Ordinal)
-                                        .ToArray();
-                                    if (distinctTargetPaths.Length == 1)
-                                    {
-                                        this.context.ReportDiagnostic(MappaDiagnostics.TooManyUsePropertyAttributesForTheSameTargetProperty(this.context.GetRootMapMethod().MethodDeclarationSyntax, this.context.GetRootMapMethod().MethodName, targetProperty.Name));
-                                        return new PropertyMapStrategy(targetProperty, null, noMapStrategy, false);
-                                    }
-
-                                    var distinctSourceRoots = usePropertyAttributes
-                                        .Select(attribute => PropertyPath.Parse(attribute.SourcePropertyName).GetFirstSegment())
-                                        .Where(segment => segment is not null)
-                                        .Distinct(StringComparer.Ordinal)
-                                        .ToArray();
-                                    if (distinctSourceRoots.Length == 1)
-                                    {
-                                        expectedSourcePropertyName = distinctSourceRoots[0]!;
-                                        useExactNameFromAttribute = true;
-                                    }
-                                    else
-                                    {
-                                        expectedSourcePropertyName = targetProperty.Name;
-                                    }
-
-                                    nestedPropertyPathContext = PropertyPathContext.CreateNestedAttributeScope(targetProperty.Name);
-                                    break;
-                                }
-                            }
-
-                            if (this.context.PropertyPathContext is null
-                                && this.HasNestedPathAttributesForTargetMember(targetProperty.Name, StringComparison.Ordinal)
-                                && (nestedPropertyPathContext is null
-                                    || this.CountNestedPathAttributesForTargetMember(targetProperty.Name, StringComparison.Ordinal) > 1))
-                            {
-                                // Prefer nested attribute scope for a single nested ignore/constant/etc.,
-                                // or when multiple nested attributes share this root (e.g. UseProperty + Ignore).
-                                nestedPropertyPathContext = PropertyPathContext.CreateNestedAttributeScope(targetProperty.Name);
-                            }
-
-                            IPropertySymbol? sourceProperty = null;
-                            if (chainedSourcePropertyPath is null)
-                            {
-                                PropertyMapNameMatcher.TryFindSourceProperty(
-                                    sourceProperties,
-                                    expectedSourcePropertyName,
-                                    this.context.MappaUserSettings.CaseInsensitivePropertyMap,
-                                    this.context.MappaUserSettings.IgnoreUnderscoreForPropertyMap,
-                                    isConstructorParameterPath: false,
-                                    useExactNameFromAttribute,
-                                    out sourceProperty);
-                            }
-                            else if (this.TryResolveChainedSourceProperty(
-                                         chainedSourcePropertyPath,
-                                         out var resolvedSourceProperties,
-                                         out _))
-                            {
-                                sourceProperty = resolvedSourceProperties[0];
-                            }
-
-                            // Look for any attribute action that can be applied
-                            if ((this.context.MapMethod is not null || this.context.PropertyPathContext is not null)
-                                && this.TryGetStrategyForPropertyOrArgumentUsingAttributesOnMethod(
-                                    targetProperty.Name,
-                                    targetProperty.Type,
-                                    this.context.SourceType,
-                                    ref sourceProperty,
-                                    StringComparison.Ordinal,
-                                    isConstructorParameterPath: false,
-                                    out var propertyStrategyFromAttribute))
-                            {
-                                if (!targetProperty.IsSetterAccessible(this.compilation, this.context.GetRootMapMethod()))
-                                {
-                                    this.context.ReportDiagnostic(MappaDiagnostics.PropertySetterIsNotAccessible(this.context.GetRootMapMethod().MethodDeclarationSyntax, this.context.TargetType, targetProperty));
-                                    return new PropertyMapStrategy(targetProperty, null, noMapStrategy, false);
-                                }
-
-                                propertyStrategyFromAttribute = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, sourceProperties, propertyStrategyFromAttribute);
-                                propertyStrategyFromAttribute = this.EncapsulateMapStrategyForTargetOptional(targetProperty, allTargetProperties, propertyStrategyFromAttribute, out var postConstructorInitializer);
-                                return new PropertyMapStrategy(targetProperty, sourceProperty, propertyStrategyFromAttribute, postConstructorInitializer, chainedSourcePropertyPath);
-                            }
-
-                            if (chainedSourcePropertyPath is not null
-                                && this.TryResolveChainedSourceProperty(
-                                    chainedSourcePropertyPath,
-                                    out var chainedSourceProperties,
-                                    out _))
-                            {
-                                var innerSourceType = chainedSourceProperties[chainedSourceProperties.Length - 1].Type;
-                                MapStrategy chainedPropertyStrategy = new IdentityMapStrategy(targetProperty.Type, innerSourceType);
-                                chainedPropertyStrategy = this.EncapsulateMapStrategyForTargetOptional(targetProperty, allTargetProperties, chainedPropertyStrategy, out var chainedPostConstructorInitializer);
-                                return new PropertyMapStrategy(
-                                    targetProperty,
-                                    null,
-                                    chainedPropertyStrategy,
-                                    chainedPostConstructorInitializer,
-                                    chainedSourcePropertyPath);
-                            }
-
-                            // Look up for post initialization collection properties
-                            if (sourceProperty is not null &&
-                                (targetProperty.SetMethod is null || (this.context.MapMethod is not null && targetProperty.SetMethod is not null && !targetProperty.IsSetterAccessible(this.compilation, this.context.MapMethod))) &&
-                                targetProperty.GetMethod is not null)
-                            {
-                                // Check if it implements IDictionary<K, V>
-                                if (targetProperty.Type.IsOrImplementIDictionary(this.compilation)
-                                    && sourceProperty.Type.IsOrImplementIDictionary(this.compilation)
-                                    && this.context.TryGetKeyAndValueStrategy(
-                                        targetProperty.Type,
-                                        sourceProperty.Type,
-                                        this.compilation,
-                                        out var keyStrategy,
-                                        out var valueStrategy,
-                                        this.cancellationToken))
-                                {
-                                    var dictionaryPropertyStrategy = new ReadonlyDictionaryPropertyMapStrategy(
-                                        targetProperty,
-                                        sourceProperty,
-                                        keyStrategy,
-                                        valueStrategy,
-                                        DictionaryAssignmentSettingHelper.GetEffective(this.context.MappaUserSettings.DictionaryAssignment));
-                                    return new PropertyMapStrategy(targetProperty, sourceProperty, dictionaryPropertyStrategy, true);
-                                }
-
-                                // Check if it is or derives from Stack<T> or ConcurrentStack<T>
-                                else if ((targetProperty.Type.IsOrDerivedFromStack(this.compilation)
-                                          || targetProperty.Type.IsOrDerivedFromConcurrentStack(this.compilation))
-                                         && (sourceProperty.Type.IsArray() || sourceProperty.Type.IsOrImplementIEnumerable())
-                                         && this.context.TryGetElementStrategy(
-                                             targetProperty.Type,
-                                             sourceProperty.Type,
-                                             this.compilation,
-                                             out var stackElementStrategy,
-                                             this.cancellationToken))
-                                {
-                                    var stackPropertyStrategy = new ReadonlyStackPropertyMapStrategy(targetProperty, sourceProperty, stackElementStrategy);
-                                    return new PropertyMapStrategy(targetProperty, sourceProperty, stackPropertyStrategy, true);
-                                }
-
-                                // Check if it is or derives from Queue<T> or ConcurrentQueue<T>
-                                else if ((targetProperty.Type.IsOrDerivedFromQueue(this.compilation)
-                                          || targetProperty.Type.IsOrImplementConcurrentQueue(this.compilation))
-                                         && (sourceProperty.Type.IsArray() || sourceProperty.Type.IsOrImplementIEnumerable())
-                                         && this.context.TryGetElementStrategy(
-                                             targetProperty.Type,
-                                             sourceProperty.Type,
-                                             this.compilation,
-                                             out var queueElementStrategy,
-                                             this.cancellationToken))
-                                {
-                                    var queuePropertyStrategy = new ReadonlyQueuePropertyMapStrategy(targetProperty, sourceProperty, queueElementStrategy);
-                                    return new PropertyMapStrategy(targetProperty, sourceProperty, queuePropertyStrategy, true);
-                                }
-
-                                // Check if it is or derives from ConcurrentBag<T> or BlockingCollection<T>
-                                else if ((targetProperty.Type.IsOrDerivedFromConcurrentBag(this.compilation)
-                                          || targetProperty.Type.IsOrDerivedFromBlockingCollection(this.compilation))
-                                         && (sourceProperty.Type.IsArray() || sourceProperty.Type.IsOrImplementIEnumerable())
-                                         && this.context.TryGetElementStrategy(
-                                             targetProperty.Type,
-                                             sourceProperty.Type,
-                                             this.compilation,
-                                             out var addCollectionElementStrategy,
-                                             this.cancellationToken))
-                                {
-                                    var addCollectionPropertyStrategy = new ReadonlyAddCollectionPropertyMapStrategy(targetProperty, sourceProperty, addCollectionElementStrategy);
-                                    return new PropertyMapStrategy(targetProperty, sourceProperty, addCollectionPropertyStrategy, true);
-                                }
-
-                                // Check if it implements ICollection<T>
-                                else if (targetProperty.Type.IsOrImplementICollection()
-                                         && (sourceProperty.Type.IsArray() || sourceProperty.Type.IsOrImplementIEnumerable())
-                                         && this.context.TryGetElementStrategy(
-                                             targetProperty.Type,
-                                             sourceProperty.Type,
-                                             this.compilation,
-                                             out var elementStrategy,
-                                             this.cancellationToken))
-                                {
-                                    var collectionPropertyStrategy = new ReadonlyCollectionPropertyMapStrategy(targetProperty, sourceProperty, elementStrategy);
-                                    return new PropertyMapStrategy(targetProperty, sourceProperty, collectionPropertyStrategy, true);
-                                }
-
-                                return new PropertyMapStrategy(targetProperty, null, noMapStrategy, false);
-                            }
-
-                            // Look for a matching source property
-                            if (sourceProperty is null)
-                            {
-                                return new PropertyMapStrategy(targetProperty, sourceProperty, noMapStrategy, false);
-                            }
-
-                            if (targetProperty.SetMethod is null || !targetProperty.IsSetterAccessible(this.compilation, this.context.GetRootMapMethod()))
-                            {
-                                return new PropertyMapStrategy(targetProperty, sourceProperty, noMapStrategy, false);
-                            }
-
-                            var targetPropertyType = targetProperty.Type;
-                            var sourcePropertyType = sourceProperty.Type;
-
-                            if (this.TryGetStrategyBetweenTypes(
-                                    targetPropertyType,
-                                    sourcePropertyType,
-                                    true,
-                                    ConstructorMapStrategyDetector.GetNestedTypeMappingPropertyPathContext(targetProperty.Name, nestedPropertyPathContext),
-                                    out var propertyStrategy))
-                            {
-                                propertyStrategy = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, sourceProperties, propertyStrategy);
-                                propertyStrategy = this.EncapsulateMapStrategyForTargetOptional(targetProperty, allTargetProperties, propertyStrategy, out var postConstructorInitializer);
-                                return new PropertyMapStrategy(targetProperty, sourceProperty, propertyStrategy, postConstructorInitializer);
-                            }
-
-                            return new PropertyMapStrategy(targetProperty, null, noMapStrategy, false);
-                        })
-                    .ToArray();
-
-                // Check if any property strategy is required but no strategy has been found
-                if (Array.Exists(initializerStrategies, propertyStrategy => propertyStrategy.TargetProperty.IsRequired && propertyStrategy.PropertyStrategy is NoMapStrategy))
-                {
-                    strategy = noMapStrategy;
-                }
-                else
-                {
-                    // Filter out properties that have no mapping.
-                    // TODO [#20] Allow to prevent skipping some non required parameters.
-                    var propertiesWithStrategies = initializerStrategies
-                        .Where(propertyStrategy => propertyStrategy.PropertyStrategy is not NoMapStrategy)
-                        .ToArray();
-
-                    var propertiesWithoutStrategy = initializerStrategies
-                        .Where(propertyStrategy => propertyStrategy.PropertyStrategy is NoMapStrategy)
-                        .ToArray();
-
-                    // If no property can be mapped, then we should not be applying this.
-                    if (propertiesWithStrategies.Length > 0)
-                    {
-                        // Report a warning for every property that cannot be mapped.
-                        foreach (var propertyWithoutStrategy in propertiesWithoutStrategy.Select(propertyStrategy => propertyStrategy.TargetProperty))
-                        {
-                            // Check if targets a collections that could be filled even without a getter
-                            var targetCollections = propertyWithoutStrategy.Type.IsPostInitializationCollectionType(this.compilation);
-                            var hasSetter = propertyWithoutStrategy.SetMethod is not null && propertyWithoutStrategy.IsSetterAccessible(this.compilation, this.context.GetRootMapMethod());
-
-                            if (hasSetter || targetCollections)
-                            {
-                                // Report diagnostics
-                                this.context.ReportDiagnostic(MappaDiagnostics.CannotMapNonRequiredProperty(
-                                    this.context.GetRootMapMethod().MethodDeclarationSyntax,
-                                    this.context.TargetType,
-                                    propertyWithoutStrategy));
-                            }
-                        }
-
-                        strategy = new InvokeConstructorMapStrategy(
-                            this.context.TargetType,
-                            this.context.SourceType,
-                            constructors.Single(),
-                            [],
-                            propertiesWithStrategies,
-                            [],
-                            null);
-                    }
-                    else
-                    {
-                        strategy = noMapStrategy;
-                    }
-                }
-            }
-            else
-            {
-                strategy = noMapStrategy;
-            }
+            strategy = noMapStrategy;
+            return false;
         }
 
-        return strategy is not NoMapStrategy;
+        strategy = new InvokeConstructorMapStrategy(
+            this.context.TargetType,
+            this.context.SourceType,
+            constructors.Single(),
+            [],
+            propertiesWithStrategies,
+            [],
+            null);
+
+        return true;
     }
 
     private InvokeConstructorMapStrategy EnrichInvokeConstructorMapStrategyWithAssignToContext(

@@ -1,4 +1,4 @@
-﻿// <copyright file="MappaDiagnosticsKind.cs" company="Stefano Anelli">
+// <copyright file="MappaDiagnosticsKind.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -333,4 +333,19 @@ internal enum MappaDiagnosticsKind
     /// An <see cref="System.Linq.IQueryable{T}"/> source is mapped to a concrete collection instead of a queryable projection.
     /// </summary>
     IQueryableMappedAsCollection,
+
+    /// <summary>
+    /// Multiple <see cref="Mappa.Attributes.MappaObjectFactoryAttribute"/> declarations target the same type.
+    /// </summary>
+    DuplicateObjectFactoryForTargetType,
+
+    /// <summary>
+    /// A <see cref="Mappa.Attributes.MappaObjectFactoryAttribute"/> factory method cannot be identified.
+    /// </summary>
+    ObjectFactoryMethodNotFound,
+
+    /// <summary>
+    /// A queryable projection map method declares <see cref="Mappa.Attributes.MappaObjectFactoryAttribute"/>.
+    /// </summary>
+    ProjectionMethodHasObjectFactory,
 }
