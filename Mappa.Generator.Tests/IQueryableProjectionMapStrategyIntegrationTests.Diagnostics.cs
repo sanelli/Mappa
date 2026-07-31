@@ -6,6 +6,8 @@ using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Tests.Assertions;
 using Mappa.Generator.Tests.Assertions.Extensions;
 
+using Microsoft.CodeAnalysis.CSharp;
+
 namespace Mappa.Generator.Tests;
 
 /// <summary>
@@ -196,7 +198,27 @@ public sealed partial class IQueryableProjectionMapStrategyIntegrationTests
                 MappaDiagnosticDescriptors.CannotIdentifyStrategy,
                 QueryableProjectionMapAssertionExtensions.QueryableOf(lineItemType),
                 QueryableProjectionMapAssertionExtensions.QueryableOf(lineItemDtoType))
-            .HaveGeneratedSourceCode();
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveMapMethod(
+                "Mapper",
+                [SyntaxKind.PublicKeyword, SyntaxKind.StaticKeyword, SyntaxKind.PartialKeyword],
+                "ProjectToDto",
+                [SyntaxKind.PublicKeyword, SyntaxKind.StaticKeyword, SyntaxKind.PartialKeyword],
+                true,
+                QueryableProjectionMapAssertionExtensions.QueryableOf(OrderDtoType),
+                NullableAnnotation.NotAnnotated,
+                "query",
+                QueryableProjectionMapAssertionExtensions.QueryableOf(OrderType),
+                NullableAnnotation.NotAnnotated,
+                1,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(1)
+                        .HasNextSyntaxNode(node => node.BeReturnStatement());
+                });
     }
 
     /// <summary>
@@ -248,7 +270,27 @@ public sealed partial class IQueryableProjectionMapStrategyIntegrationTests
                 MappaDiagnosticDescriptors.CannotIdentifyStrategy,
                 $"{QueryableProjectionMapAssertionExtensions.TestNamespace}.Source",
                 $"{QueryableProjectionMapAssertionExtensions.TestNamespace}.Target")
-            .HaveGeneratedSourceCode();
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveMapMethod(
+                "Mapper",
+                [SyntaxKind.PublicKeyword, SyntaxKind.StaticKeyword, SyntaxKind.PartialKeyword],
+                "ProjectToDto",
+                [SyntaxKind.PublicKeyword, SyntaxKind.StaticKeyword, SyntaxKind.PartialKeyword],
+                true,
+                QueryableProjectionMapAssertionExtensions.QueryableOf($"{QueryableProjectionMapAssertionExtensions.TestNamespace}.Target"),
+                NullableAnnotation.NotAnnotated,
+                "query",
+                QueryableProjectionMapAssertionExtensions.QueryableOf($"{QueryableProjectionMapAssertionExtensions.TestNamespace}.Source"),
+                NullableAnnotation.NotAnnotated,
+                1,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(1)
+                        .HasNextSyntaxNode(node => node.BeReturnStatement());
+                });
     }
 
     /// <summary>
@@ -300,10 +342,139 @@ public sealed partial class IQueryableProjectionMapStrategyIntegrationTests
                                   #nullable restore
                                   """;
 
+        const string itemSourceType = $"{QueryableProjectionMapAssertionExtensions.TestNamespace}.ItemSource";
+        const string itemTargetType = $"{QueryableProjectionMapAssertionExtensions.TestNamespace}.ItemTarget";
+        const string projectionLambdaParameterName = "__mappa_tmp_3";
+
+        Action<ExpressionSyntaxAssertions> itemPropertyAssertions = property => property.BeObjectCreationExpressionSyntax(
+            itemTargetType,
+            ("Value", value => value.BeMemberAccessExpressionSyntax($"{projectionLambdaParameterName}.Item.Value")));
+
+        Action<ExpressionSyntaxAssertions> elementExpressionAssertions = elementExpression => elementExpression.BeObjectCreationExpressionSyntax(
+            OrderDtoType,
+            ("Item", itemPropertyAssertions));
+
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
             .NotHaveDiagnostics()
-            .HaveGeneratedSourceCode();
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveCommentHeader()
+            .HaveFileScopedNamespace(fileScopedNamespaceDeclarationSyntaxAssertions =>
+            {
+                fileScopedNamespaceDeclarationSyntaxAssertions
+                    .HaveClasses(1)
+                    .HaveClass(
+                        "Mapper",
+                        classDeclarationSyntaxAssertions =>
+                        {
+                            classDeclarationSyntaxAssertions
+                                .HaveModifiers(SyntaxKind.PublicKeyword, SyntaxKind.StaticKeyword, SyntaxKind.PartialKeyword)
+                                .HaveMethods(3)
+                                .HaveMethod(
+                                    itemTargetType,
+                                    NullableAnnotation.NotAnnotated,
+                                    "MapItem",
+                                    false,
+                                    [
+                                        (itemSourceType, NullableAnnotation.NotAnnotated, "input", RefKind.None, false),
+                                        (typeof(Mappa.MappaContext).FullName ?? string.Empty, NullableAnnotation.NotAnnotated, "context", RefKind.None, false),
+                                    ],
+                                    methodDeclarationSyntaxAssertions =>
+                                    {
+                                        methodDeclarationSyntaxAssertions
+                                            .HaveNullabilityAnnotation(NullableSetup.Enable)
+                                            .HaveGeneratedCodeAttribute(attributeSyntaxAssertions => attributeSyntaxAssertions.BeMappaGeneratedCodeAttribute())
+                                            .HaveDebuggerNonUserCodeAttribute()
+                                            .HaveModifiers(SyntaxKind.PublicKeyword, SyntaxKind.PartialKeyword)
+                                            .HaveBody(blockSyntaxAssertions =>
+                                            {
+                                                blockSyntaxAssertions
+                                                    .HasSyntaxNodesCount(3)
+                                                    .HasNextSyntaxNode(syntaxNodeAssertions =>
+                                                    {
+                                                        syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                                            typeof(int).ToString(),
+                                                            "__mappa_tmp_1",
+                                                            initializationAssertions => initializationAssertions.BeMemberAccessExpressionSyntax("input.Value"));
+                                                    })
+                                                    .HasNextSyntaxNode(syntaxNodeAssertions =>
+                                                    {
+                                                        syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                                            itemTargetType,
+                                                            "__mappa_tmp_2",
+                                                            initializationAssertions =>
+                                                            {
+                                                                initializationAssertions.BeObjectCreationExpressionSyntax(
+                                                                    itemTargetType,
+                                                                    ("Value", initAssertions => initAssertions.BeIdentifierNameSyntax("__mappa_tmp_1")));
+                                                            });
+                                                    })
+                                                    .HasNextSyntaxNode(syntaxNodeAssertions =>
+                                                    {
+                                                        syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_2"));
+                                                    });
+                                            });
+                                    })
+                                .HaveMethod(
+                                    QueryableProjectionMapAssertionExtensions.QueryableOf(OrderDtoType),
+                                    NullableAnnotation.NotAnnotated,
+                                    "ProjectToDto",
+                                    true,
+                                    [(QueryableProjectionMapAssertionExtensions.QueryableOf(OrderType), NullableAnnotation.NotAnnotated, "query", RefKind.None, false)],
+                                    methodDeclarationSyntaxAssertions =>
+                                    {
+                                        methodDeclarationSyntaxAssertions
+                                            .HaveNullabilityAnnotation(NullableSetup.Enable)
+                                            .HavePragmaWarningDisableAnnotation(PragmaWarning.NoBlock)
+                                            .HaveRequiresDynamicCodeAttribute(QueryableProjectionMapAssertionExtensions.RequiresDynamicCodeMessage)
+                                            .HaveGeneratedCodeAttribute(attributeSyntaxAssertions => attributeSyntaxAssertions.BeMappaGeneratedCodeAttribute())
+                                            .HaveDebuggerNonUserCodeAttribute()
+                                            .HaveModifiers(SyntaxKind.PublicKeyword, SyntaxKind.StaticKeyword, SyntaxKind.PartialKeyword)
+                                            .HaveBody(blockSyntaxAssertions =>
+                                            {
+                                                blockSyntaxAssertions
+                                                    .HasSyntaxNodesCount(1)
+                                                    .HasNextSyntaxNode(syntaxNodeAssertions =>
+                                                    {
+                                                        syntaxNodeAssertions.BeReturnStatement(returnExpressionAssertions =>
+                                                        {
+                                                            returnExpressionAssertions.BeInvocationExpressionSyntax(
+                                                                "global::System.Linq.Queryable.Select",
+                                                                queryArgumentAssertions => queryArgumentAssertions.BeIdentifierNameSyntax("query"),
+                                                                lambdaArgumentAssertions => lambdaArgumentAssertions.BeSimpleLambdaExpressionSyntax(
+                                                                    projectionLambdaParameterName,
+                                                                    elementExpressionAssertions));
+                                                        });
+                                                    });
+                                            });
+                                    })
+                                .HaveMethod(
+                                    OrderDtoType,
+                                    NullableAnnotation.NotAnnotated,
+                                    "ProjectToDtoElement",
+                                    false,
+                                    [(OrderType, NullableAnnotation.NotAnnotated, projectionLambdaParameterName, RefKind.None, false)],
+                                    methodDeclarationSyntaxAssertions =>
+                                    {
+                                        methodDeclarationSyntaxAssertions
+                                            .HaveNullabilityAnnotation(NullableSetup.Enable)
+                                            .HaveGeneratedCodeAttribute(attributeSyntaxAssertions => attributeSyntaxAssertions.BeMappaGeneratedCodeAttribute())
+                                            .HaveDebuggerNonUserCodeAttribute()
+                                            .HaveModifiers(SyntaxKind.PrivateKeyword, SyntaxKind.StaticKeyword)
+                                            .HaveBody(blockSyntaxAssertions =>
+                                            {
+                                                blockSyntaxAssertions
+                                                    .HasSyntaxNodesCount(1)
+                                                    .HasNextSyntaxNode(syntaxNodeAssertions =>
+                                                    {
+                                                        syntaxNodeAssertions.BeReturnStatement(elementExpressionAssertions);
+                                                    });
+                                            });
+                                    });
+                        });
+            });
     }
 }

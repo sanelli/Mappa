@@ -5,6 +5,9 @@
 using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Tests.Abstractions;
 using Mappa.Generator.Tests.Assertions;
+using Mappa.Generator.Tests.Assertions.Extensions;
+
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Mappa.Generator.Tests;
 
@@ -348,6 +351,7 @@ public sealed class MappaGeneratorClassAlgorithmIntegrationTests
     {
         // Arrange
         const string sourceCode = """
+                                  #nullable enable
                                   using Mappa.Attributes;
 
                                   namespace Mappa.Generator.Tests.UnitTests.SourceCode;
@@ -369,15 +373,151 @@ public sealed class MappaGeneratorClassAlgorithmIntegrationTests
                                   {
                                       public partial Target Map(Source input);
                                   }
+                                  #nullable restore
                                   """;
 
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
-        generatedResults.Should()
+        const string innerSourceType = "Mappa.Generator.Tests.UnitTests.SourceCode.InnerSource";
+        const string innerTargetType = "Mappa.Generator.Tests.UnitTests.SourceCode.InnerTarget";
+        const string sourceType = "Mappa.Generator.Tests.UnitTests.SourceCode.Source";
+        const string targetType = "Mappa.Generator.Tests.UnitTests.SourceCode.Target";
+
+        var compilationUnits = generatedResults.Should()
             .NotHaveDiagnostics()
             .HaveGeneratedSourceCode(howMany: 2)
-            .WithCompilationUnits(2)
-            .Should().HaveCount(2);
+            .WithCompilationUnits(2);
+        compilationUnits.Should().HaveCount(2);
+
+        foreach (var compilationUnit in compilationUnits)
+        {
+            var className = compilationUnit.Subject.DescendantNodes()
+                .OfType<ClassDeclarationSyntax>()
+                .Single()
+                .Identifier
+                .Text;
+
+            if (className.Equals("Mapper", StringComparison.Ordinal))
+            {
+                compilationUnit
+                    .HaveMapMethod(
+                        "Mapper",
+                        [SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword],
+                        "Map",
+                        [SyntaxKind.PublicKeyword, SyntaxKind.PartialKeyword],
+                        false,
+                        innerTargetType,
+                        NullableAnnotation.NotAnnotated,
+                        "input",
+                        innerSourceType,
+                        null,
+                        NullableAnnotation.NotAnnotated,
+                        RefKind.None,
+                        false,
+                        RefKind.None,
+                        1,
+                        NullableSetup.Enable,
+                        PragmaWarning.NoBlock,
+                        blockSyntaxAssertions =>
+                        {
+                            blockSyntaxAssertions
+                                .HasSyntaxNodesCount(3)
+                                .HasNextSyntaxNode(syntaxNodeAssertions =>
+                                {
+                                    syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                        typeof(int).ToString(),
+                                        "__mappa_tmp_1",
+                                        initializationAssertions => initializationAssertions.BeMemberAccessExpressionSyntax("input.A"));
+                                })
+                                .HasNextSyntaxNode(syntaxNodeAssertions =>
+                                {
+                                    syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                        innerTargetType,
+                                        "__mappa_tmp_2",
+                                        initializationAssertions =>
+                                        {
+                                            initializationAssertions.BeObjectCreationExpressionSyntax(
+                                                innerTargetType,
+                                                ("A", initAssertions => initAssertions.BeIdentifierNameSyntax("__mappa_tmp_1")));
+                                        });
+                                })
+                                .HasNextSyntaxNode(syntaxNodeAssertions =>
+                                {
+                                    syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_2"));
+                                });
+                        });
+            }
+            else
+            {
+                className.Should().Be("AnotherMapper");
+                compilationUnit
+                    .HaveMapMethod(
+                        "AnotherMapper",
+                        [SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword],
+                        "Map",
+                        [SyntaxKind.PublicKeyword, SyntaxKind.PartialKeyword],
+                        false,
+                        targetType,
+                        NullableAnnotation.NotAnnotated,
+                        "input",
+                        sourceType,
+                        null,
+                        NullableAnnotation.NotAnnotated,
+                        RefKind.None,
+                        false,
+                        RefKind.None,
+                        1,
+                        NullableSetup.Enable,
+                        PragmaWarning.NoBlock,
+                        blockSyntaxAssertions =>
+                        {
+                            blockSyntaxAssertions
+                                .HasSyntaxNodesCount(5)
+                                .HasNextSyntaxNode(syntaxNodeAssertions =>
+                                {
+                                    syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                        innerSourceType,
+                                        "__mappa_tmp_1",
+                                        initializationAssertions => initializationAssertions.BeMemberAccessExpressionSyntax("input.Property"));
+                                })
+                                .HasNextSyntaxNode(syntaxNodeAssertions =>
+                                {
+                                    syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                        typeof(int).ToString(),
+                                        "__mappa_tmp_2",
+                                        initializationAssertions => initializationAssertions.BeMemberAccessExpressionSyntax("__mappa_tmp_1.A"));
+                                })
+                                .HasNextSyntaxNode(syntaxNodeAssertions =>
+                                {
+                                    syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                        innerTargetType,
+                                        "__mappa_tmp_3",
+                                        initializationAssertions =>
+                                        {
+                                            initializationAssertions.BeObjectCreationExpressionSyntax(
+                                                innerTargetType,
+                                                ("A", initAssertions => initAssertions.BeIdentifierNameSyntax("__mappa_tmp_2")));
+                                        });
+                                })
+                                .HasNextSyntaxNode(syntaxNodeAssertions =>
+                                {
+                                    syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                        targetType,
+                                        "__mappa_tmp_4",
+                                        initializationAssertions =>
+                                        {
+                                            initializationAssertions.BeObjectCreationExpressionSyntax(
+                                                targetType,
+                                                ("Property", initAssertions => initAssertions.BeIdentifierNameSyntax("__mappa_tmp_3")));
+                                        });
+                                })
+                                .HasNextSyntaxNode(syntaxNodeAssertions =>
+                                {
+                                    syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_4"));
+                                });
+                        });
+            }
+        }
     }
 }

@@ -451,7 +451,27 @@ public sealed partial class IQueryableProjectionMapStrategyIntegrationTests
                 Mappa.Generator.Diagnostics.MappaDiagnosticDescriptors.CannotIdentifyStrategy,
                 QueryableProjectionMapAssertionExtensions.QueryableOf(OrderType),
                 "System.Collections.Generic.List<Mappa.Generator.Tests.UnitTests.SourceCode.OrderDto>")
-            .HaveGeneratedSourceCode();
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveMapMethod(
+                "Mapper",
+                [SyntaxKind.PublicKeyword, SyntaxKind.StaticKeyword, SyntaxKind.PartialKeyword],
+                "Map",
+                [SyntaxKind.PublicKeyword, SyntaxKind.StaticKeyword, SyntaxKind.PartialKeyword],
+                false,
+                "System.Collections.Generic.List<Mappa.Generator.Tests.UnitTests.SourceCode.OrderDto>",
+                NullableAnnotation.NotAnnotated,
+                "query",
+                QueryableProjectionMapAssertionExtensions.QueryableOf(OrderType),
+                NullableAnnotation.NotAnnotated,
+                1,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(1)
+                        .HasNextSyntaxNode(node => node.BeReturnStatement());
+                });
     }
 
     /// <summary>
@@ -495,7 +515,27 @@ public sealed partial class IQueryableProjectionMapStrategyIntegrationTests
                 Mappa.Generator.Diagnostics.MappaDiagnosticDescriptors.CannotIdentifyStrategy,
                 "System.Collections.Generic.List<Mappa.Generator.Tests.UnitTests.SourceCode.Order>",
                 QueryableProjectionMapAssertionExtensions.QueryableOf(OrderDtoType))
-            .HaveGeneratedSourceCode();
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveMapMethod(
+                "Mapper",
+                [SyntaxKind.PublicKeyword, SyntaxKind.StaticKeyword, SyntaxKind.PartialKeyword],
+                "Map",
+                [SyntaxKind.PublicKeyword, SyntaxKind.StaticKeyword, SyntaxKind.PartialKeyword],
+                false,
+                QueryableProjectionMapAssertionExtensions.QueryableOf(OrderDtoType),
+                NullableAnnotation.NotAnnotated,
+                "source",
+                "System.Collections.Generic.List<Mappa.Generator.Tests.UnitTests.SourceCode.Order>",
+                NullableAnnotation.NotAnnotated,
+                1,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(1)
+                        .HasNextSyntaxNode(node => node.BeReturnStatement());
+                });
     }
 
     /// <summary>
@@ -530,7 +570,27 @@ public sealed partial class IQueryableProjectionMapStrategyIntegrationTests
 
         generatedResults.Should()
             .NotHaveDiagnostics()
-            .HaveGeneratedSourceCode();
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveMapMethod(
+                "Mapper",
+                [SyntaxKind.PublicKeyword, SyntaxKind.StaticKeyword, SyntaxKind.PartialKeyword],
+                "Project",
+                [SyntaxKind.PublicKeyword, SyntaxKind.StaticKeyword, SyntaxKind.PartialKeyword],
+                true,
+                QueryableProjectionMapAssertionExtensions.QueryableOf(OrderType),
+                NullableAnnotation.NotAnnotated,
+                "query",
+                QueryableProjectionMapAssertionExtensions.QueryableOf(OrderType),
+                NullableAnnotation.NotAnnotated,
+                1,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(1)
+                        .HasNextSyntaxNode(node => node.BeReturnStatement("query"));
+                });
     }
 
     /// <summary>
@@ -585,6 +645,26 @@ public sealed partial class IQueryableProjectionMapStrategyIntegrationTests
                 Mappa.Generator.Diagnostics.MappaDiagnosticDescriptors.CannotIdentifyStrategy,
                 QueryableProjectionMapAssertionExtensions.QueryableOf(OrderType),
                 targetTypeFullName)
-            .HaveGeneratedSourceCode();
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveMapMethod(
+                "Mapper",
+                [SyntaxKind.PublicKeyword, SyntaxKind.StaticKeyword, SyntaxKind.PartialKeyword],
+                "Map",
+                [SyntaxKind.PublicKeyword, SyntaxKind.StaticKeyword, SyntaxKind.PartialKeyword],
+                false,
+                targetTypeFullName,
+                NullableAnnotation.NotAnnotated,
+                "query",
+                QueryableProjectionMapAssertionExtensions.QueryableOf(OrderType),
+                NullableAnnotation.NotAnnotated,
+                1,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(1)
+                        .HasNextSyntaxNode(node => node.BeReturnStatement());
+                });
     }
 }

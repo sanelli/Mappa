@@ -81,6 +81,8 @@ public sealed partial class StringToNumberMapStrategyIntegrationTests
     [IntegrationTest]
     public async Task EmitsWarningWhenInvalidGlobalNumberStyleIsDefinedOnClass()
     {
+        const string identifierName = "__mappa_tmp_1";
+
         const string sourceCode = """
                                   #nullable enable
                                   using System.Globalization;
@@ -100,6 +102,32 @@ public sealed partial class StringToNumberMapStrategyIntegrationTests
 
         generatedResults.Should()
             .HaveOnlyWarnings("MP00038")
-            .HaveGeneratedSourceCode();
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                typeof(int).ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(string).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(2)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(int).ToString(),
+                                identifierName,
+                                expressionSyntaxAssertions => expressionSyntaxAssertions.BeInvocationExpressionSyntax(
+                                    "int.Parse",
+                                    firstParameter => firstParameter.BeIdentifierNameSyntax("input"),
+                                    secondParameter => secondParameter.BeMemberAccessExpressionSyntax("System.Globalization.NumberStyles.None")));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax(identifierName));
+                        });
+                });
     }
 }

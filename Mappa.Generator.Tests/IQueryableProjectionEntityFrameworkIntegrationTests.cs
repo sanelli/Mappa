@@ -8,6 +8,7 @@ using System.Reflection;
 
 using Mappa.Generator.Tests.Abstractions;
 using Mappa.Generator.Tests.Assertions;
+using Mappa.Generator.Tests.Assertions.Extensions;
 using Mappa.Generator.Tests.Models;
 
 namespace Mappa.Generator.Tests;
@@ -19,6 +20,9 @@ public sealed class IQueryableProjectionEntityFrameworkIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {
     private const string EntityFrameworkNamespace = "Mappa.Generator.Tests.UnitTests.EntityFramework";
+    private const string OrderType = $"{EntityFrameworkNamespace}.Order";
+    private const string OrderDtoType = $"{EntityFrameworkNamespace}.OrderDto";
+    private const string LambdaParameterName = "__mappa_tmp_1";
 
     /// <summary>
     /// Test a generated projection can be executed against an <see cref="IQueryable{T}"/> data source.
@@ -59,7 +63,24 @@ public sealed class IQueryableProjectionEntityFrameworkIntegrationTests
         generatedResults.Should()
             .NotHaveDiagnostics()
             .HaveGeneratedSourceCode()
-            .NotHaveCompilationErrors();
+            .NotHaveCompilationErrors()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveQueryableProjectionMapMethod(
+                "Mapper",
+                [SyntaxKind.PublicKeyword, SyntaxKind.StaticKeyword, SyntaxKind.PartialKeyword],
+                "ProjectToDto",
+                [SyntaxKind.PublicKeyword, SyntaxKind.StaticKeyword, SyntaxKind.PartialKeyword],
+                true,
+                true,
+                "query",
+                OrderType,
+                OrderDtoType,
+                LambdaParameterName,
+                elementExpression => elementExpression.BeObjectCreationExpressionSyntax(
+                    OrderDtoType,
+                    ("Id", property => property.BeMemberAccessExpressionSyntax($"{LambdaParameterName}.Id")),
+                    ("Name", property => property.BeMemberAccessExpressionSyntax($"{LambdaParameterName}.Name"))));
 
         var assembly = CompileToAssembly(generatedResults.OutputCompilation);
         var mapperType = assembly.GetType($"{EntityFrameworkNamespace}.Mapper")
