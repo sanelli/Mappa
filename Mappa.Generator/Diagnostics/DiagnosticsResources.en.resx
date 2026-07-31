@@ -194,4 +194,13 @@
     <data name="IQueryableMappedAsCollection" xml:space="preserve">
         <value>Method '{0}' maps IQueryable to a concrete collection; use an IQueryable return type for deferred ORM projection.</value>
     </data>
+    <data name="DuplicateObjectFactoryForTargetType" xml:space="preserve">
+        <value>Method '{0}' declares multiple MappaObjectFactory attributes for target type '{1}'.</value>
+    </data>
+    <data name="ObjectFactoryMethodNotFound" xml:space="preserve">
+        <value>Method '{0}' declares MappaObjectFactory for target type '{1}' but factory method '{2}' cannot be identified; falling back to constructor mapping.</value>
+    </data>
+    <data name="ProjectionMethodHasObjectFactory" xml:space="preserve">
+        <value>Method '{0}' projects IQueryable but declares MappaObjectFactory which is not supported for queryable projections.</value>
+    </data>
 </root>

@@ -93,6 +93,11 @@ internal static class ProjectionCapabilityAnalyzer
             case InvokeConstructorMapStrategy invokeConstructorMapStrategy:
                 return TryAnalyzeConstructor(invokeConstructorMapStrategy, analysisContext, out normalizedStrategy, out failureKind, out failureMember);
 
+            case InvokeObjectFactoryMapStrategy invokeObjectFactoryMapStrategy:
+                failureKind = AnalysisFailureKind.InvokeMethodNotInlinable;
+                failureMember = invokeObjectFactoryMapStrategy.ObjectFactory.Method.Name;
+                return false;
+
             case ParameterMapStrategy parameterMapStrategy:
                 if (!TryAnalyzeCore(
                         parameterMapStrategy.ParameterStrategy,

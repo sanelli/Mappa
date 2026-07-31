@@ -15,13 +15,14 @@ This is the list of attributes provided:
 - `MappaAssignFromConstant`: When mapping structured types, allows specifying a constant value for a target property or constructor parameter; `TargetPropertyName` may be a single name or a [dot-separated nested property path](#nested-property-paths);
 - `MappaBeforeMap`: Invokes a named hook immediately before the generated root mapping body (see [MappaBeforeMap and MappaAfterMap](#mappabeforemap-and-mappaaftermap));
 - `MappaAfterMap`: Invokes a named hook immediately after the generated root mapping body and before returning the target (see [MappaBeforeMap and MappaAfterMap](#mappabeforemap-and-mappaaftermap));
+- `MappaObjectFactory`: Forces construction of a target type via a named factory method instead of `new` (see [MappaObjectFactory](#mappaobjectfactory));
 - `MappaTypeMapping`: When mapping structured types or interfaces, allows defining the target type depending on the source type;
 - `MappaTypeMappingDefault`: Describes the default behaviour for polymorphic methods defined via `MappaTypeMapping`.
 - `MappaMapEnumMember`: Configures explicit enum↔integral, enum↔string, or enum↔enum member pairings (see [MappaMapEnumMember, MappaMapEnumIgnore, and MappaMapEnumDefault](#mappamapenummember-mappamapenumignore-and-mappamapenumdefault));
 - `MappaMapEnumIgnore`: Excludes a specific enum member from mapping;
 - `MappaMapEnumDefault`: Configures fallback behaviour when an enum value cannot be mapped;
 
-The [Mappa](https://www.nuget.org/packages/Mappa/) package also provides the `MappaContext` class that can be used to pass contextual values to mappers via the `MappaAssignFromContext` attribute, store mapped values via the `MappaAssignToContext` attribute, supply context to methods invoked via the `MappaInvokeMethodAttribute` attribute, or supply context to before/after map hooks.
+The [Mappa](https://www.nuget.org/packages/Mappa/) package also provides the `MappaContext` class that can be used to pass contextual values to mappers via the `MappaAssignFromContext` attribute, store mapped values via the `MappaAssignToContext` attribute, supply context to methods invoked via the `MappaInvokeMethodAttribute` attribute, supply context to before/after map hooks, or supply context to object factory methods.
 
 ## MappaDependency and MappaStaticDependency
 
@@ -181,6 +182,43 @@ Because `ref` is invariant, the `ref` parameter type must match the mapping sour
 - If a hook cannot be resolved with a supported signature, the generator reports warning **MP00045**, skips that hook, and still generates the core mapping.
 
 See also: [tutorial](./tutorial.md#mappabeforemap-and-mappaaftermap-attributes), [algorithm](./mappa-generator-algorithm.md#before-and-after-map-hooks), and [MappaBeforeAfterMapHooksAttributeMapper.cs](../Mappa.Samples/MappaBeforeAfterMapHooksAttributeMapper.cs).
+
+## MappaObjectFactory
+
+`[MappaObjectFactory]` forces Mappa to create a target instance by invoking a named factory method instead of calling a constructor with `new`. The attribute may be applied to the mapper class and/or to individual mapping methods, and allows multiple instances. Class-scope and method-scope registrations are unioned for each map method.
+
+Each registration identifies the **target type** that should be produced by the factory. When mapping that target type (including nested property or constructor-parameter mappings whose exact target type matches), the generator prefers the factory over mapping constructors, empty constructors, and parameterized constructors. Factories are not used for `IQueryable` projection element construction; combining a projection map with an object factory for the element target reports error **MP00064**.
+
+### Factory location
+
+Depending on which constructor overload is used, the factory is resolved as follows (same location rules as `[MappaInvokeMethod]` / before/after hooks):
+
+- `(targetType, methodName)`: a `static` or instance method declared on the mapper class or an accessible base class. When the root map method is `static`, only `static` factories are considered.
+- `(targetType, classType, methodName)`: a `static` method declared on the specified type or one of its base classes.
+- `(targetType, fieldName, methodName)`: a method declared on the type of the field or property identified by `fieldName`. Instance factories are invoked through the field or property; static factories are invoked through the member's declared type.
+
+When multiple methods with the same name exist in a type hierarchy, methods declared on the most derived type are preferred.
+
+### Supported signatures
+
+The factory must return a type assignable to the registered target type. Signature tiers are tried in this order:
+
+| Tier | Signature | Behaviour |
+|------|-----------|-----------|
+| 1 | `(TSource, MappaContext)` | Fully produced — factory return value is used as-is (no property assignment) |
+| 2 | `(TSource)` | Fully produced — factory return value is used as-is |
+| 3 | `(MappaContext)` | Empty-constructor-like — matching settable properties are filled from the source after the call |
+| 4 | `()` | Empty-constructor-like — matching settable properties are filled from the source after the call |
+| 5 | Other parameters | Parameterized-constructor-like — each parameter is mapped from source properties like a non-empty constructor |
+
+Context-aware signatures (tiers 1 and 3) are considered only when the map method (or nested mapping context) provides a `MappaContext`. Within a winning tier, the same most-derived / unique-candidate rules used by `[MappaInvokeMethod]` apply; an ambiguous winning tier reports error **MP00042**.
+
+### Duplicates and unresolved factories
+
+- If more than one factory is registered for the same target type after unioning class and method attributes, the generator reports error **MP00062**.
+- If a factory cannot be resolved to an accessible method with a supported signature, the generator reports warning **MP00063** and falls back to the normal constructor strategies.
+
+See also: [tutorial](./tutorial.md#mappaobjectfactory-attribute), [algorithm](./mappa-generator-algorithm.md#10-constructor-strategy), and [MappaObjectFactoryMapper.cs](../Mappa.Samples/MappaObjectFactoryMapper.cs).
 
 ## MappaSettings
 

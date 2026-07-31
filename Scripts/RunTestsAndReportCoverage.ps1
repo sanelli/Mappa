@@ -44,7 +44,7 @@ $publishDir = Get-Item $publishRoot | Select-Object -First 1
 $exe = Get-ChildItem $publishDir.FullName -File |
     Where-Object { $_.Name -like "Mappa.Samples.Aot*" -and $_.Extension -ne ".pdb" } |
     Select-Object -First 1
-& $exe.FullName
+& $exe.FullName *>$null
 if (-not $?)
 {
     Write-Host "AOT executable failed" -ForegroundColor Red

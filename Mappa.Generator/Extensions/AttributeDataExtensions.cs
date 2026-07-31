@@ -19,6 +19,7 @@ internal static class AttributeDataExtensions
 {
     private const string MappaAfterMapAttributeFullName = "Mappa.Attributes.MappaAfterMapAttribute";
     private const string MappaBeforeMapAttributeFullName = "Mappa.Attributes.MappaBeforeMapAttribute";
+    private const string MappaObjectFactoryAttributeFullName = "Mappa.Attributes.MappaObjectFactoryAttribute";
     private const string MappaInvokeMethodAttributeFullName = "Mappa.Attributes.MappaInvokeMethodAttribute";
     private const string MappaIgnoreAttributeFullName = "Mappa.Attributes.MappaIgnoreAttribute";
     private const string MappaAssignFromContextAttributeFullName = "Mappa.Attributes.MappaAssignFromContextAttribute";
@@ -328,6 +329,64 @@ internal static class AttributeDataExtensions
             attributes,
             compilation,
             MappaAfterMapAttributeFullName);
+
+    /// <summary>
+    /// Gets the <see cref="MappaObjectFactoryAttribute"/>s applied to a mapper class or mapping method.
+    /// </summary>
+    /// <param name="attributes">The attributes.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The parsed attributes in declaration order.</returns>
+    internal static MappaObjectFactoryAttributeData[] GetMappaObjectFactoryAttributes(
+        this ImmutableArray<AttributeData> attributes,
+        Compilation compilation)
+    {
+        var attributeSymbol = compilation.GetTypeByMetadataName(MappaObjectFactoryAttributeFullName);
+        var results = new List<MappaObjectFactoryAttributeData>();
+
+        foreach (var attributeData in attributes
+                     .Where(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, attributeSymbol)))
+        {
+            var constructorArguments = attributeData.ConstructorArguments;
+            var location = attributeData.ApplicationSyntaxReference?.GetSyntax().GetLocation();
+            if (constructorArguments.Length == 2 &&
+                constructorArguments[0].Value is INamedTypeSymbol targetType &&
+                constructorArguments[1].Value is string methodName)
+            {
+                results.Add(new MappaObjectFactoryAttributeData(
+                    targetType,
+                    methodName,
+                    null,
+                    null,
+                    location));
+            }
+            else if (constructorArguments.Length == 3 &&
+                     constructorArguments[0].Value is INamedTypeSymbol factoryTargetType &&
+                     constructorArguments[2].Value is string factoryMethodName)
+            {
+                switch (constructorArguments[1].Value)
+                {
+                    case string fieldName:
+                        results.Add(new MappaObjectFactoryAttributeData(
+                            factoryTargetType,
+                            factoryMethodName,
+                            null,
+                            fieldName,
+                            location));
+                        break;
+                    case INamedTypeSymbol classType:
+                        results.Add(new MappaObjectFactoryAttributeData(
+                            factoryTargetType,
+                            factoryMethodName,
+                            new FakeType(classType.ToDisplayString()),
+                            null,
+                            location));
+                        break;
+                }
+            }
+        }
+
+        return [.. results];
+    }
 
     /// <summary>
     /// Gets the <see cref="MappaAssignFromContextAttribute"/>s applied.

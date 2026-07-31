@@ -99,6 +99,7 @@ internal sealed class MappaGeneratorClassAlgorithm
         MappaUserSettings mappaUserSettings,
         MapHookAttributeData[] classBeforeMapAttributes,
         MapHookAttributeData[] classAfterMapAttributes,
+        MappaObjectFactoryAttributeData[] classObjectFactoryAttributes,
         CancellationToken cancellationToken)
     {
         foreach (var mapMethod in classContext.MapMethods)
@@ -110,12 +111,27 @@ internal sealed class MappaGeneratorClassAlgorithm
                 continue;
             }
 
+            var methodAttributes = mapMethod.MethodSymbol.GetAttributes();
+            var methodObjectFactoryAttributes = methodAttributes.GetMappaObjectFactoryAttributes(this.Compilation);
+
             if (!ProjectionMapMethodEligibilityValidator.TryValidate(
                     mapMethod,
                     this.Compilation,
                     classContext,
                     classBeforeMapAttributes,
-                    classAfterMapAttributes))
+                    classAfterMapAttributes,
+                    classObjectFactoryAttributes,
+                    methodObjectFactoryAttributes))
+            {
+                mapMethod.MarkMapped();
+                continue;
+            }
+
+            if (!ObjectFactoryDuplicateValidator.TryValidate(
+                    mapMethod,
+                    classObjectFactoryAttributes,
+                    methodObjectFactoryAttributes,
+                    classContext))
             {
                 mapMethod.MarkMapped();
                 continue;
@@ -132,7 +148,6 @@ internal sealed class MappaGeneratorClassAlgorithm
                     cancellationToken);
                 var strategy = typeIdentifierAlgorithm.GetStrategy();
                 var mapHookResolver = new MapHookResolver(this.Compilation, classContext, mapMethod);
-                var methodAttributes = mapMethod.MethodSymbol.GetAttributes();
                 var beforeMapHooks = mapHookResolver.ResolveBeforeMapHooks(
                     classBeforeMapAttributes,
                     methodAttributes.GetMappaBeforeMapAttributes(this.Compilation));
@@ -319,6 +334,7 @@ internal sealed class MappaGeneratorClassAlgorithm
         var classAttributes = classContext.ClassSymbol.GetAttributes();
         var classBeforeMapAttributes = classAttributes.GetMappaBeforeMapAttributes(this.Compilation);
         var classAfterMapAttributes = classAttributes.GetMappaAfterMapAttributes(this.Compilation);
+        var classObjectFactoryAttributes = classAttributes.GetMappaObjectFactoryAttributes(this.Compilation);
         var mappaUserSettings = new MappaUserSettings(options);
         var mappaSettingsAttribute = classAttributes.GetMappaSettingsAttribute(this.Compilation);
 
@@ -333,6 +349,7 @@ internal sealed class MappaGeneratorClassAlgorithm
                     mappaUserSettings,
                     classBeforeMapAttributes,
                     classAfterMapAttributes,
+                    classObjectFactoryAttributes,
                     cancellationToken);
             }
         }

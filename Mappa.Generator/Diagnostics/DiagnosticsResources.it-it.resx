@@ -194,4 +194,13 @@
     <data name="IQueryableMappedAsCollection" xml:space="preserve">
         <value>Il metodo '{0}' mappa IQueryable in una collezione concreta; usare un tipo di ritorno IQueryable per la proiezione ORM differita.</value>
     </data>
+    <data name="DuplicateObjectFactoryForTargetType" xml:space="preserve">
+        <value>Il metodo '{0}' dichiara più attributi MappaObjectFactory per il tipo di destinazione '{1}'.</value>
+    </data>
+    <data name="ObjectFactoryMethodNotFound" xml:space="preserve">
+        <value>Il metodo '{0}' dichiara MappaObjectFactory per il tipo di destinazione '{1}' ma il metodo factory '{2}' non può essere identificato; si usa la mappatura tramite costruttore.</value>
+    </data>
+    <data name="ProjectionMethodHasObjectFactory" xml:space="preserve">
+        <value>Il metodo '{0}' proietta IQueryable ma dichiara MappaObjectFactory che non è supportato per le proiezioni queryable.</value>
+    </data>
 </root>

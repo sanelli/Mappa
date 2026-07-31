@@ -478,6 +478,24 @@ Hooks must return `void` and may accept no parameters, `MappaContext`, `ref T` (
 
 See also: [MappaBeforeAfterMapHooksAttributeMapper.cs](../Mappa.Samples/MappaBeforeAfterMapHooksAttributeMapper.cs) and [Mappa attributes](./mappa-attributes.md#mappabeforemap-and-mappaaftermap).
 
+### MappaObjectFactory attribute
+`[MappaObjectFactory]` creates a target instance by invoking a named factory instead of `new`. Register factories on the mapper class and/or map method (class and method registrations are unioned). Location overloads match before/after hooks: mapper-local method, static type, or field/property member type.
+
+```csharp
+[Mappa]
+public sealed partial class Mapper
+{
+    [MappaObjectFactory(typeof(Target), nameof(Create))]
+    public partial Target Map(Source input);
+
+    private static Target Create() => new Target { Tag = "factory" };
+}
+```
+
+Signature tiers (first match wins): `(Source, MappaContext)` or `(Source)` return a fully produced target; `(MappaContext)` or `()` behave like an empty constructor (properties are filled afterward); any other parameter list behaves like a parameterized constructor. Duplicate target-type registrations report **MP00062**; unresolved factories warn with **MP00063** and fall back to constructors; factories are incompatible with `IQueryable` projection (**MP00064**).
+
+See also: [MappaObjectFactoryMapper.cs](../Mappa.Samples/MappaObjectFactoryMapper.cs) and [Mappa attributes](./mappa-attributes.md#mappaobjectfactory).
+
 ### MappaUseProperty attribute
 When source and target property names differ, `[MappaUseProperty]` selects which source property supplies a target member:
 

@@ -197,6 +197,7 @@ When no existing method applies (or for root methods), `TypeMapIdentifierAlgorit
     - Projection is **signature-driven**; no dedicated projection attribute is required,
     - Mapping attributes such as `[MappaUseProperty]` on the projection method participate in element construction,
     - Nested `IQueryable` properties, polymorphic root element maps, non-inlinable invoke methods, and before/after hooks are rejected with dedicated diagnostics (MP00055–MP00060),
+    - `[MappaObjectFactory]` on a projection map for the element target is rejected with **MP00064**,
     - Mapping `IQueryable<TSource>` to a concrete collection (for example `List<TTarget>`) is not a projection: the container path applies and may emit warning MP00061,
     - Prefer numeric or description enum mappings over case-insensitive member-name matching for ORM providers (warning MP00060),
     - Generated projection methods are annotated with `[RequiresDynamicCode]` and are **not compatible with Native AOT** deployment.
@@ -257,25 +258,30 @@ When no existing method applies (or for root methods), `TypeMapIdentifierAlgorit
 
 ### 10. Constructor strategy
 
-The constructor strategy has three sub-strategies, tried in order:
+The constructor strategy has four sub-strategies, tried in order:
 
 | Sub-strategy | When |
 |--------------|------|
+| **Object factory** | A `[MappaObjectFactory]` registration on the root map method (class ∪ method attributes) resolves to an accessible factory for the exact target type |
 | **Mapping constructor** | An accessible constructor `TTarget(TSource input)` exists where the single parameter type matches the source type |
 | **Empty constructor + property init** | An accessible zero-argument constructor exists; settable properties (and get-only collections per the notes below) can be mapped from the source |
 | **Parameterized constructor** | No suitable empty-constructor path; the accessible constructor with the **most** mappable parameters is chosen (parameter names are matched to source properties case-insensitively by default) |
 
 - _What_:
-    - Each property, constructor argument, or mapping-constructor parameter is mapped and a new instance of `TTarget` is generated;
+    - **Object factory**: invoke the resolved factory; depending on signature tier, either return the factory result as-is, fill properties like the empty-constructor path after the call, or map factory parameters like the parameterized-constructor path;
+    - Otherwise each property, constructor argument, or mapping-constructor parameter is mapped and a new instance of `TTarget` is generated with `new`;
     - Get-only dictionary or collection properties for which a mapper exists are filled with mapped values from the corresponding source;
 - _Notes_:
+    - Object factories are keyed by exact target type and apply to nested mappings whose target type matches a registration on the **root** map method;
+    - Duplicate factories for the same target type report error **MP00062**; unresolved factories warn with **MP00063** and fall through to constructor strategies; factories on `IQueryable` projection maps report error **MP00064**;
+    - Factory location and signature tiers are documented in [Mappa attributes — MappaObjectFactory](../Documentation/mappa-attributes.md#mappaobjectfactory);
     - **Empty-constructor path**: property name matching is case-sensitive by default, configurable via `CaseInsensitivePropertyMap` and `IgnoreUnderscoreForPropertyMap` in `MappaSettings`;
     - **Parameterized-constructor path**: constructor parameter names are matched to source properties case-insensitively by default, with optional underscore-insensitive matching via `IgnoreUnderscoreForPropertyMap`;
     - Explicit interface implementation is supported for get-only dictionary and collection properties;
     - Get-only `Stack<T>`, `Queue<T>`, `ConcurrentStack<T>`, `ConcurrentQueue<T>`, `ConcurrentBag<T>`, and `BlockingCollection<T>` properties are filled post-construction using `Push`, `Enqueue`, or `Add` respectively;
     - The following attributes on the map **method** can override mapping behaviour (see [`Documentation/mappa-attributes.md`](../Documentation/mappa-attributes.md) for details):
         - `[MappaUseProperty]`
-        - `[MappaIgnoreTargetProperty]` *(empty-constructor path only)*
+        - `[MappaIgnoreTargetProperty]` *(empty-constructor / empty-ctor-like factory path only)*
         - `[MappaAssignFromContext]`
         - `[MappaAssignFromConstant]`
         - `[MappaInvokeMethod]` — optionally accepts `SourcePropertyName` to select the source property passed to the invoked method
