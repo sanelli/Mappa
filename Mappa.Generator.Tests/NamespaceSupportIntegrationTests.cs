@@ -46,8 +46,21 @@ public sealed class NamespaceSupportIntegrationTests
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .NotBeNull().And
-            .HaveCommentHeader()
-            .HaveFileScopedNamespace();
+            .HaveDefaultMapMethod(
+                typeof(string).ToString(),
+                NullableAnnotation.None,
+                typeof(string).ToString(),
+                NullableAnnotation.None,
+                NullableSetup.Disable,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(1)
+                        .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
+                        {
+                            expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
+                        }));
+                });
     }
 
     /// <summary>
@@ -85,7 +98,12 @@ public sealed class NamespaceSupportIntegrationTests
             .WithCompilationUnit()
             .NotBeNull().And
             .HaveCommentHeader()
-            .HaveNamespaceDeclarationSyntax();
+            .HaveNamespaceDeclarationSyntax(namespaceDeclarationSyntaxAssertions =>
+            {
+                namespaceDeclarationSyntaxAssertions
+                    .HaveClasses(1)
+                    .HaveClass("Mapper", AssertIdentityMapOnClass);
+            });
     }
 
     /// <summary>
@@ -120,6 +138,39 @@ public sealed class NamespaceSupportIntegrationTests
             .WithCompilationUnit()
             .NotBeNull().And
             .HaveCommentHeader()
-            .HaveNoNamespaceDeclarationSyntax();
+            .HaveNoNamespaceDeclarationSyntax()
+            .HaveClasses(1)
+            .HaveClass("Mapper", AssertIdentityMapOnClass);
+    }
+
+    private static void AssertIdentityMapOnClass(ClassDeclarationSyntaxAssertions classDeclarationSyntaxAssertions)
+    {
+        classDeclarationSyntaxAssertions
+            .HaveModifiers(SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword)
+            .HaveMethods(1)
+            .HaveMethod(
+                typeof(string).ToString(),
+                NullableAnnotation.None,
+                "Map",
+                false,
+                [(typeof(string).ToString(), NullableAnnotation.None, "input", RefKind.None, false)],
+                methodDeclarationSyntaxAssertions =>
+                {
+                    methodDeclarationSyntaxAssertions
+                        .HaveNullabilityAnnotation(NullableSetup.Disable)
+                        .HavePragmaWarningDisableAnnotation(PragmaWarning.NoBlock)
+                        .HaveGeneratedCodeAttribute(attributeSyntaxAssertions => attributeSyntaxAssertions.BeMappaGeneratedCodeAttribute())
+                        .HaveDebuggerNonUserCodeAttribute()
+                        .HaveModifiers(SyntaxKind.PublicKeyword, SyntaxKind.PartialKeyword)
+                        .HaveBody(blockSyntaxAssertions =>
+                        {
+                            blockSyntaxAssertions
+                                .HasSyntaxNodesCount(1)
+                                .HasNextSyntaxNode(nodeAssertions => nodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
+                                {
+                                    expressionSyntaxAssertions.BeIdentifierNameSyntax("input");
+                                }));
+                        });
+                });
     }
 }

@@ -2,7 +2,9 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Tests.Assertions;
+using Mappa.Generator.Tests.Assertions.Extensions;
 
 namespace Mappa.Generator.Tests;
 
@@ -20,6 +22,8 @@ public sealed partial class InvokeParseStringWithFormatMapStrategyIntegrationTes
     [IntegrationTest]
     public async Task EmitsWarningAndGeneratesCodeWhenInvalidDateTimeStyleIsDefinedOnMethod()
     {
+        const string identifierName = "__mappa_tmp_1";
+
         const string sourceCode = """
                                   #nullable enable
                                   using System;
@@ -31,7 +35,7 @@ public sealed partial class InvokeParseStringWithFormatMapStrategyIntegrationTes
                                   [Mappa]
                                   public sealed partial class Mapper
                                   {
-                                      [MappaSettings(DateTimeStyle = (DateTimeStyles)999)]
+                                      [MappaSettings(DateTimeStyle = (DateTimeStyles)256)]
                                       public partial DateTime Map(string input);
                                   }
                                   """;
@@ -39,8 +43,40 @@ public sealed partial class InvokeParseStringWithFormatMapStrategyIntegrationTes
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
-            .HaveOnlyWarnings("MP00038")
-            .HaveGeneratedSourceCode();
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(
+                MappaDiagnosticDescriptors.InvalidMappaSettingsStyleValue,
+                "DateTimeStyle",
+                256,
+                "DateTimeStyles")
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                typeof(DateTime).ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(string).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(2)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(DateTime).ToString(),
+                                identifierName,
+                                expressionSyntaxAssertions => expressionSyntaxAssertions.BeInvocationExpressionSyntax(
+                                    $"{typeof(DateTime).FullName}.Parse",
+                                    firstParameter => firstParameter.BeIdentifierNameSyntax("input"),
+                                    secondParameter => secondParameter.BeLiteralExpressionSyntax(null),
+                                    thirdParameter => thirdParameter.BeMemberAccessExpressionSyntax("System.Globalization.DateTimeStyles.None")));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax(identifierName));
+                        });
+                });
     }
 
     /// <summary>
@@ -51,6 +87,8 @@ public sealed partial class InvokeParseStringWithFormatMapStrategyIntegrationTes
     [IntegrationTest]
     public async Task EmitsWarningWhenInvalidGlobalDateTimeStyleIsDefinedOnClass()
     {
+        const string identifierName = "__mappa_tmp_1";
+
         const string sourceCode = """
                                   #nullable enable
                                   using System;
@@ -59,7 +97,7 @@ public sealed partial class InvokeParseStringWithFormatMapStrategyIntegrationTes
 
                                   namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
-                                  [MappaSettings(GlobalDateTimeStyle = (DateTimeStyles)999)]
+                                  [MappaSettings(GlobalDateTimeStyle = (DateTimeStyles)256)]
                                   [Mappa]
                                   public sealed partial class Mapper
                                   {
@@ -70,7 +108,39 @@ public sealed partial class InvokeParseStringWithFormatMapStrategyIntegrationTes
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
-            .HaveOnlyWarnings("MP00038")
-            .HaveGeneratedSourceCode();
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(
+                MappaDiagnosticDescriptors.InvalidMappaSettingsStyleValue,
+                "GlobalDateTimeStyle",
+                256,
+                "DateTimeStyles")
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                typeof(DateTime).ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(string).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(2)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(DateTime).ToString(),
+                                identifierName,
+                                expressionSyntaxAssertions => expressionSyntaxAssertions.BeInvocationExpressionSyntax(
+                                    $"{typeof(DateTime).FullName}.Parse",
+                                    firstParameter => firstParameter.BeIdentifierNameSyntax("input"),
+                                    secondParameter => secondParameter.BeLiteralExpressionSyntax(null),
+                                    thirdParameter => thirdParameter.BeMemberAccessExpressionSyntax("System.Globalization.DateTimeStyles.None")));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax(identifierName));
+                        });
+                });
     }
 }

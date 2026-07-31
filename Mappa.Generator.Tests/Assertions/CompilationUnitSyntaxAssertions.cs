@@ -63,28 +63,74 @@ internal sealed class CompilationUnitSyntaxAssertions
         => this.HaveFileScopedNamespace(_ => { /* Nothing else to test */ });
 
     /// <summary>
-    /// Assert the compilation unit contains a namespace (non file scoped).
+    /// Assert the compilation unit contains a non file-scoped namespace declaration.
     /// </summary>
-    /// <returns>The namespace declaration syntax assertions.</returns>
+    /// <returns>The compilation unit syntax assertions.</returns>
     public CompilationUnitSyntaxAssertions HaveNamespaceDeclarationSyntax()
+        => this.HaveNamespaceDeclarationSyntax(_ => { /* Nothing else to test */ });
+
+    /// <summary>
+    /// Assert the compilation unit contains a non file-scoped namespace and apply nested assertions.
+    /// </summary>
+    /// <param name="assert">Assertions on the namespace declaration.</param>
+    /// <returns>The compilation unit syntax assertions.</returns>
+    public CompilationUnitSyntaxAssertions HaveNamespaceDeclarationSyntax(Action<NamespaceDeclarationSyntaxAssertions> assert)
     {
+        ArgumentNullException.ThrowIfNull(assert);
+
         var namespaceDeclarationSyntaxes =
             this.Subject.ChildNodes().OfType<NamespaceDeclarationSyntax>().ToArray();
         namespaceDeclarationSyntaxes.Should().HaveCount(1);
+
+        assert(new NamespaceDeclarationSyntaxAssertions(
+            namespaceDeclarationSyntaxes.Single(),
+            this.semanticModel,
+            this.compilation));
 
         return this;
     }
 
     /// <summary>
-    /// Assert the compilation unit contains a namespace (non file scoped).
+    /// Assert the compilation unit contains no namespace declaration.
     /// </summary>
-    /// <returns>The namespace declaration syntax assertions.</returns>
+    /// <returns>The compilation unit syntax assertions.</returns>
     public CompilationUnitSyntaxAssertions HaveNoNamespaceDeclarationSyntax()
     {
         var namespaceDeclarationSyntaxes =
             this.Subject.ChildNodes().OfType<BaseNamespaceDeclarationSyntax>().ToArray();
         namespaceDeclarationSyntaxes.Should().BeEmpty();
 
+        return this;
+    }
+
+    /// <summary>
+    /// Assert that the compilation unit contains <paramref name="count"/> classes.
+    /// </summary>
+    /// <param name="count">The number of expected classes.</param>
+    /// <returns>The compilation unit syntax assertions.</returns>
+    public CompilationUnitSyntaxAssertions HaveClasses(int count)
+    {
+        var classDeclarationSyntaxes = this.Subject.ChildNodes().OfType<ClassDeclarationSyntax>().ToArray();
+        classDeclarationSyntaxes.Should().HaveCount(count);
+        return this;
+    }
+
+    /// <summary>
+    /// Assert that the compilation unit contains a class named <paramref name="identifier"/>.
+    /// </summary>
+    /// <param name="identifier">The identifier of the class.</param>
+    /// <param name="assert">The assertions on the class declaration.</param>
+    /// <returns>The compilation unit syntax assertions.</returns>
+    public CompilationUnitSyntaxAssertions HaveClass(string identifier, Action<ClassDeclarationSyntaxAssertions> assert)
+    {
+        ArgumentNullException.ThrowIfNull(assert);
+
+        var classDeclarationSyntaxes = this.Subject.ChildNodes().OfType<ClassDeclarationSyntax>().ToArray();
+        classDeclarationSyntaxes.Should().Contain(classDeclarationSyntax =>
+            classDeclarationSyntax.Identifier.ToString().Equals(identifier, StringComparison.Ordinal));
+        var classDeclarationSyntax = classDeclarationSyntaxes.Single(classDeclarationSyntax =>
+            classDeclarationSyntax.Identifier.ToString().Equals(identifier, StringComparison.Ordinal));
+        assert(new ClassDeclarationSyntaxAssertions(classDeclarationSyntax, this.semanticModel, this.compilation));
         return this;
     }
 }

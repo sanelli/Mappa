@@ -6,6 +6,8 @@ using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Tests.Assertions;
 using Mappa.Generator.Tests.Assertions.Extensions;
 
+using Microsoft.CodeAnalysis.CSharp;
+
 namespace Mappa.Generator.Tests;
 
 /// <summary>
@@ -41,7 +43,7 @@ public sealed partial class MappaBeforeAfterMapHookIntegrationTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
-            .HaveOnlyWarnings("MP00045")
+            .HaveDiagnostics(1)
             .HaveDiagnostic(
                 MappaDiagnosticDescriptors.HookMethodNotFound,
                 "Map",
@@ -105,14 +107,7 @@ public sealed partial class MappaBeforeAfterMapHookIntegrationTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
-            .HaveOnlyWarnings(
-                "MP00045",
-                "MP00045",
-                "MP00045",
-                "MP00045",
-                "MP00045",
-                "MP00045",
-                "MP00045")
+            .HaveDiagnostics(7)
             .HaveDiagnostic(MappaDiagnosticDescriptors.HookMethodNotFound, "Map", "before-map", "NonVoid")
             .HaveDiagnostic(MappaDiagnosticDescriptors.HookMethodNotFound, "Map", "before-map", "MissingRef")
             .HaveDiagnostic(MappaDiagnosticDescriptors.HookMethodNotFound, "Map", "before-map", "WrongType")
@@ -173,7 +168,7 @@ public sealed partial class MappaBeforeAfterMapHookIntegrationTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
-            .HaveOnlyWarnings("MP00046", "MP00046")
+            .HaveDiagnostics(2)
             .HaveDiagnostic(
                 MappaDiagnosticDescriptors.DuplicateMapHookRegistration,
                 "Map",
@@ -235,7 +230,7 @@ public sealed partial class MappaBeforeAfterMapHookIntegrationTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
-            .HaveOnlyWarnings("MP00045", "MP00045")
+            .HaveDiagnostics(2)
             .HaveDiagnostic(MappaDiagnosticDescriptors.HookMethodNotFound, "Map", "before-map", "MissingBefore")
             .HaveDiagnostic(MappaDiagnosticDescriptors.HookMethodNotFound, "Map", "after-map", "MissingAfter")
             .NotHaveCompilationErrors()
@@ -360,7 +355,62 @@ public sealed partial class MappaBeforeAfterMapHookIntegrationTests
             .HaveDiagnostic(MappaDiagnosticDescriptors.FieldOrPropertyMustBeStatic, "hooks")
             .HaveDiagnostic(MappaDiagnosticDescriptors.HookMethodNotFound, "MapExplicit", "before-map", "Instance")
             .NotHaveCompilationErrors()
-            .HaveGeneratedSourceCode();
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .HaveMapMethod(
+                "Mapper",
+                [SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword],
+                "MapLocal",
+                [SyntaxKind.PublicKeyword, SyntaxKind.StaticKeyword, SyntaxKind.PartialKeyword],
+                false,
+                typeof(int).ToString(),
+                NullableAnnotation.NotAnnotated,
+                "input",
+                typeof(int).ToString(),
+                NullableAnnotation.NotAnnotated,
+                3,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(1)
+                        .HasNextSyntaxNode(node => node.BeReturnStatement("input"));
+                })
+            .HaveMapMethod(
+                "Mapper",
+                [SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword],
+                "MapMember",
+                [SyntaxKind.PublicKeyword, SyntaxKind.StaticKeyword, SyntaxKind.PartialKeyword],
+                false,
+                typeof(long).ToString(),
+                NullableAnnotation.NotAnnotated,
+                "input",
+                typeof(long).ToString(),
+                NullableAnnotation.NotAnnotated,
+                3,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(1)
+                        .HasNextSyntaxNode(node => node.BeReturnStatement("input"));
+                })
+            .HaveMapMethod(
+                "Mapper",
+                [SyntaxKind.PublicKeyword, SyntaxKind.SealedKeyword, SyntaxKind.PartialKeyword],
+                "MapExplicit",
+                [SyntaxKind.PublicKeyword, SyntaxKind.PartialKeyword],
+                false,
+                typeof(string).ToString(),
+                NullableAnnotation.NotAnnotated,
+                "input",
+                typeof(string).ToString(),
+                NullableAnnotation.NotAnnotated,
+                3,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(1)
+                        .HasNextSyntaxNode(node => node.BeReturnStatement("input"));
+                });
     }
 
     /// <summary>

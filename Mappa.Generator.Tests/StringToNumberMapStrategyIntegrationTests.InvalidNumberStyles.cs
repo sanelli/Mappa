@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Tests.Assertions;
 using Mappa.Generator.Tests.Assertions.Extensions;
 
@@ -43,7 +44,12 @@ public sealed partial class StringToNumberMapStrategyIntegrationTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
-            .HaveOnlyWarnings("MP00038")
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(
+                MappaDiagnosticDescriptors.InvalidMappaSettingsStyleValue,
+                "IntStyle",
+                1048576,
+                "NumberStyles")
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .NotBeNull().And
@@ -81,6 +87,8 @@ public sealed partial class StringToNumberMapStrategyIntegrationTests
     [IntegrationTest]
     public async Task EmitsWarningWhenInvalidGlobalNumberStyleIsDefinedOnClass()
     {
+        const string identifierName = "__mappa_tmp_1";
+
         const string sourceCode = """
                                   #nullable enable
                                   using System.Globalization;
@@ -99,7 +107,38 @@ public sealed partial class StringToNumberMapStrategyIntegrationTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
-            .HaveOnlyWarnings("MP00038")
-            .HaveGeneratedSourceCode();
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(
+                MappaDiagnosticDescriptors.InvalidMappaSettingsStyleValue,
+                "GlobalNumberStyle",
+                1048576,
+                "NumberStyles")
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                typeof(int).ToString(),
+                NullableAnnotation.NotAnnotated,
+                typeof(string).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(2)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(int).ToString(),
+                                identifierName,
+                                expressionSyntaxAssertions => expressionSyntaxAssertions.BeInvocationExpressionSyntax(
+                                    "int.Parse",
+                                    firstParameter => firstParameter.BeIdentifierNameSyntax("input"),
+                                    secondParameter => secondParameter.BeMemberAccessExpressionSyntax("System.Globalization.NumberStyles.None")));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax(identifierName));
+                        });
+                });
     }
 }

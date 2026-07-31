@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Models.Strategies;
 using Mappa.Generator.Tests.Abstractions;
 using Mappa.Generator.Tests.Assertions;
@@ -553,7 +554,8 @@ public sealed class StringToGuidMapStrategyIntegrationTests
 
         // Assert
         generatedResults.Should()
-            .HaveOnlyWarnings("MP00012")
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.UserDefinedCultureIsMissingCultureName, "Map")
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .NotBeNull().And

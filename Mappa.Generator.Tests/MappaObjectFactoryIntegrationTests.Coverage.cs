@@ -429,7 +429,7 @@ public sealed partial class MappaObjectFactoryIntegrationTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
-            .HaveOnlyWarnings("MP00063")
+            .HaveDiagnostics(1)
             .HaveDiagnostic(MappaDiagnosticDescriptors.ObjectFactoryMethodNotFound, "Map", TargetType, "CreateTarget")
             .NotHaveCompilationErrors()
             .HaveGeneratedSourceCode()
@@ -507,7 +507,7 @@ public sealed partial class MappaObjectFactoryIntegrationTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
-            .HaveOnlyWarnings("MP00063")
+            .HaveDiagnostics(1)
             .HaveDiagnostic(MappaDiagnosticDescriptors.ObjectFactoryMethodNotFound, "Map", TargetType, "CreateTarget")
             .NotHaveCompilationErrors()
             .HaveGeneratedSourceCode()
@@ -660,7 +660,7 @@ public sealed partial class MappaObjectFactoryIntegrationTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
-            .HaveOnlyWarnings("MP00036")
+            .HaveDiagnostics(1)
             .HaveDiagnostic(
                 MappaDiagnosticDescriptors.CannotUseMappaAssignToContextAttributeWithoutContextParameter,
                 "Map",
@@ -876,7 +876,7 @@ public sealed partial class MappaObjectFactoryIntegrationTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
-            .HaveOnlyWarnings("MP00063")
+            .HaveDiagnostics(1)
             .HaveDiagnostic(MappaDiagnosticDescriptors.ObjectFactoryMethodNotFound, "Map", TargetType, "Create")
             .NotHaveCompilationErrors()
             .HaveGeneratedSourceCode()

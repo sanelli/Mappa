@@ -4,6 +4,7 @@
 
 using System.Globalization;
 
+using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Models.Strategies;
 using Mappa.Generator.Tests.Abstractions;
 using Mappa.Generator.Tests.Assertions;
@@ -439,7 +440,8 @@ public sealed partial class InvokeToStringMapStrategyIntegrationTests
 
         // Assert
         generatedResults.Should()
-            .HaveOnlyWarnings("MP00012")
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.UserDefinedCultureIsMissingCultureName, "Map")
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .NotBeNull().And

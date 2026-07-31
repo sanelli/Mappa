@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Models.Strategies;
 using Mappa.Generator.Tests.Abstractions;
 using Mappa.Generator.Tests.Assertions;
@@ -196,11 +197,20 @@ public sealed partial class InvokeParseStringWithFormatMapStrategyIntegrationTes
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
-        var warnings = parseExact ? Array.Empty<string>() : new[] { "MP00013" };
-
         // Assert
-        generatedResults.Should()
-            .HaveOnlyWarnings(warnings)
+        var assertions = generatedResults.Should();
+        if (parseExact)
+        {
+            assertions.NotHaveDiagnostics();
+        }
+        else
+        {
+            assertions
+                .HaveDiagnostics(1)
+                .HaveDiagnostic(MappaDiagnosticDescriptors.ParseExactDoesNotAcceptOnlyFormat, targetType.ToString());
+        }
+
+        assertions
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .NotBeNull().And
@@ -286,11 +296,20 @@ public sealed partial class InvokeParseStringWithFormatMapStrategyIntegrationTes
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
-        var warnings = parseExact ? Array.Empty<string>() : new[] { "MP00013" };
-
         // Assert
-        generatedResults.Should()
-            .HaveOnlyWarnings(warnings)
+        var assertions = generatedResults.Should();
+        if (parseExact)
+        {
+            assertions.NotHaveDiagnostics();
+        }
+        else
+        {
+            assertions
+                .HaveDiagnostics(1)
+                .HaveDiagnostic(MappaDiagnosticDescriptors.ParseExactDoesNotAcceptOnlyFormat, targetType.ToString());
+        }
+
+        assertions
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .NotBeNull().And
@@ -742,11 +761,23 @@ public sealed partial class InvokeParseStringWithFormatMapStrategyIntegrationTes
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
-        var warnings = parseExact ? new[] { "MP00012" } : new[] { "MP00012", "MP00013" };
-
         // Assert
-        generatedResults.Should()
-            .HaveOnlyWarnings(warnings)
+        var assertions = generatedResults.Should();
+        if (parseExact)
+        {
+            assertions
+                .HaveDiagnostics(1)
+                .HaveDiagnostic(MappaDiagnosticDescriptors.UserDefinedCultureIsMissingCultureName, "Map");
+        }
+        else
+        {
+            assertions
+                .HaveDiagnostics(2)
+                .HaveDiagnostic(MappaDiagnosticDescriptors.UserDefinedCultureIsMissingCultureName, "Map")
+                .HaveDiagnostic(MappaDiagnosticDescriptors.ParseExactDoesNotAcceptOnlyFormat, targetType.ToString());
+        }
+
+        assertions
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .NotBeNull().And
@@ -992,11 +1023,20 @@ public sealed partial class InvokeParseStringWithFormatMapStrategyIntegrationTes
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, editorConfig, CancellationToken.None).ConfigureAwait(true);
 
-        var warnings = parseExact ? Array.Empty<string>() : new[] { "MP00013" };
-
         // Assert
-        generatedResults.Should()
-            .HaveOnlyWarnings(warnings)
+        var assertions = generatedResults.Should();
+        if (parseExact)
+        {
+            assertions.NotHaveDiagnostics();
+        }
+        else
+        {
+            assertions
+                .HaveDiagnostics(1)
+                .HaveDiagnostic(MappaDiagnosticDescriptors.ParseExactDoesNotAcceptOnlyFormat, targetType.ToString());
+        }
+
+        assertions
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .NotBeNull().And
