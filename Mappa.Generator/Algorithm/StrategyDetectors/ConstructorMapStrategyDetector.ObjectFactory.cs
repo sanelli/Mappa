@@ -193,9 +193,8 @@ internal sealed partial class ConstructorMapStrategyDetector
     private InvokeObjectFactoryMapStrategy EnrichInvokeObjectFactoryMapStrategyWithAssignToContext(
         InvokeObjectFactoryMapStrategy strategy)
     {
-        if (this.context.AlgorithmSettings.UseAttributesForConstructorDetectorSettings
-                .Equals(MappaMapAlgorithmContextSettings.MappaAttributesForConstructorDetectorSettings.Disable)
-            || this.context.MapMethod is null)
+        // Nested (derived) contexts do not expose a MapMethod; attribute enrichment is root-only.
+        if (this.context.MapMethod is null)
         {
             return strategy;
         }
