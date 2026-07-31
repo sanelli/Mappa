@@ -57,6 +57,7 @@ internal static class Program
         MappaBeforeAfterMapHooksAttributeMapperRunner.Run(report);
         MappaDependencyProtobufMapperRunner.Run(report);
         MappaIgnoreMappersRunner.Run(report);
+        MappaObjectFactoryMapperRunner.Run(report);
         MappaIgnoreTargetPropertyAttributeMapperRunner.Run(report);
         MappaInvokeMethodAttributeMappersRunner.Run(report);
         MappaUsePropertyAttributeMapperRunner.Run(report);

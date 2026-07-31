@@ -14,13 +14,14 @@ This is the list of attributes provided:
 - `MappaAssignFromConstant`: When mapping structured types, allows specifying a constant value for a target property or constructor parameter; `TargetPropertyName` may be a single name or a dot-separated chain of nested property names;
 - `MappaBeforeMap`: Invokes a named hook immediately before the generated root mapping body; applies to mapper classes and mapping methods;
 - `MappaAfterMap`: Invokes a named hook immediately after the generated root mapping body and before returning the target; applies to mapper classes and mapping methods;
+- `MappaObjectFactory`: Forces construction of a target type via a named factory method instead of `new`; applies to mapper classes and mapping methods;
 - `MappaTypeMapping`: When mapping structured types or interfaces, allows defining the target type depending on the source type;
 - `MappaTypeMappingDefault`: Describes the default behaviour for polymorphic methods defined via `MappaTypeMapping`.
 - `MappaMapEnumMember`: Configures explicit enum↔integral, enum↔string, or enum↔enum member pairings;
 - `MappaMapEnumIgnore`: Excludes a specific enum member from mapping;
 - `MappaMapEnumDefault`: Configures fallback behaviour when an enum value cannot be mapped;
 
-This package also provides the `MappaContext` class that can be used to pass contextual values to mappers via the `MappaAssignFromContext` attribute, store mapped values via the `MappaAssignToContext` attribute, supply context to methods invoked via the `MappaInvokeMethodAttribute` attribute, or supply context to before/after map hooks.
+This package also provides the `MappaContext` class that can be used to pass contextual values to mappers via the `MappaAssignFromContext` attribute, store mapped values via the `MappaAssignToContext` attribute, supply context to methods invoked via the `MappaInvokeMethodAttribute` attribute, supply context to before/after map hooks, or supply context to object factory methods.
 
 **Queryable projection:** map methods with signature `IQueryable<TSource>` → `IQueryable<TTarget>` are handled by the generator as deferred `Select` projections for ORM providers. This is signature-driven and does not require a new attribute in this package. Generated projection methods are annotated with `[RequiresDynamicCode]` and are not compatible with Native AOT. See the [tutorial](../Documentation/tutorial.md#iqueryable-projection) and [IQueryableProjectionMapper.cs](../Mappa.Samples/IQueryableProjectionMapper.cs).
 
