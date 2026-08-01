@@ -1,4 +1,4 @@
-﻿// <copyright file="MappaFileBuilder.cs" company="Stefano Anelli">
+// <copyright file="MappaFileBuilder.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -53,6 +53,13 @@ internal sealed class MappaFileBuilder
             .AppendLine("// </auto-generated>");
         builder.AppendEmptyLine();
         builder.AppendLine(classSourceCodeWithNamespace);
+
+        var inaccessibleAccessorsSource = context.InaccessibleAccessors.BuildSource();
+        if (!string.IsNullOrWhiteSpace(inaccessibleAccessorsSource))
+        {
+            builder.AppendEmptyLine();
+            builder.AppendLine(inaccessibleAccessorsSource);
+        }
 
         return builder.ToString();
     }

@@ -49,6 +49,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         this.context.ValidateTargetNamesExist(this.compilation);
         this.context.ValidateMappaIgnoreTargetPropertyAttributes();
         this.context.ValidateMappaMustMapTargetPropertyAttributes();
+        this.context.ValidateMappaAllowInaccessibleMembersAttributes(this.compilation);
 
         // 00. Object factory registered for TargetType -> InvokeObjectFactoryMapStrategy
         if (this.TryDetectObjectFactory(out var objectFactoryStrategy))

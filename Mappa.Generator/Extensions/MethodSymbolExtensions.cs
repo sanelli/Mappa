@@ -79,6 +79,17 @@ internal static class MethodSymbolExtensions
             result.Add(mustMapTargetPropertyAttribute);
         }
 
+        // Mappa Allow Inaccessible Source/Target Members Attributes
+        if (attributes.GetMappaAllowInaccessibleSourceMembersAttribute(compilation) is { } allowInaccessibleSourceMembersAttribute)
+        {
+            result.Add(allowInaccessibleSourceMembersAttribute);
+        }
+
+        if (attributes.GetMappaAllowInaccessibleTargetMembersAttribute(compilation) is { } allowInaccessibleTargetMembersAttribute)
+        {
+            result.Add(allowInaccessibleTargetMembersAttribute);
+        }
+
         // Mappa type mapping attributes
         var typeMappingAttributes = attributes.GetTypeMappingAttributes(compilation);
         result.AddRange(typeMappingAttributes);

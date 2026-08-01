@@ -80,6 +80,9 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? projectionMethodHasObjectFactory;
     private static DiagnosticDescriptor? mustMapTargetPropertyWasNotMapped;
     private static DiagnosticDescriptor? mappaMustMapTargetPropertyListsRequiredProperty;
+    private static DiagnosticDescriptor? unsafeAccessorNotSupported;
+    private static DiagnosticDescriptor? allowInaccessibleTargetMembersDisabledAll;
+    private static DiagnosticDescriptor? projectionMethodHasAllowInaccessibleMembers;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -608,6 +611,30 @@ internal static class MappaDiagnosticDescriptors
         => mappaMustMapTargetPropertyListsRequiredProperty ??= BuildWarning(
             MappaDiagnosticsKind.MappaMustMapTargetPropertyListsRequiredProperty,
             DiagnosticsResources.MappaMustMapTargetPropertyListsRequiredProperty);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.UnsafeAccessorNotSupported"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor UnsafeAccessorNotSupported
+        => unsafeAccessorNotSupported ??= BuildError(
+            MappaDiagnosticsKind.UnsafeAccessorNotSupported,
+            DiagnosticsResources.UnsafeAccessorNotSupported);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.AllowInaccessibleTargetMembersDisabledAll"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor AllowInaccessibleTargetMembersDisabledAll
+        => allowInaccessibleTargetMembersDisabledAll ??= BuildError(
+            MappaDiagnosticsKind.AllowInaccessibleTargetMembersDisabledAll,
+            DiagnosticsResources.AllowInaccessibleTargetMembersDisabledAll);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.ProjectionMethodHasAllowInaccessibleMembers"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor ProjectionMethodHasAllowInaccessibleMembers
+        => projectionMethodHasAllowInaccessibleMembers ??= BuildError(
+            MappaDiagnosticsKind.ProjectionMethodHasAllowInaccessibleMembers,
+            DiagnosticsResources.ProjectionMethodHasAllowInaccessibleMembers);
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(

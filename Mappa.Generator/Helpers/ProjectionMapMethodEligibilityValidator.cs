@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Attributes;
 using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Extensions;
 using Mappa.Generator.Models;
@@ -69,6 +70,14 @@ internal static class ProjectionMapMethodEligibilityValidator
         {
             classContext.ReportDiagnostic(
                 MappaDiagnostics.ProjectionMethodHasObjectFactory(methodDeclarationSyntax, methodName));
+            return false;
+        }
+
+        if (mapMethod.GetAttribute<MappaAllowInaccessibleSourceMembersAttribute>() is not null
+            || mapMethod.GetAttribute<MappaAllowInaccessibleTargetMembersAttribute>() is not null)
+        {
+            classContext.ReportDiagnostic(
+                MappaDiagnostics.ProjectionMethodHasAllowInaccessibleMembers(methodDeclarationSyntax, methodName));
             return false;
         }
 

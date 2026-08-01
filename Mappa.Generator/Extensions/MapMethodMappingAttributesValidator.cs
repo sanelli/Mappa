@@ -308,6 +308,74 @@ internal static class MapMethodMappingAttributesValidator
     }
 
     /// <summary>
+    /// Reports diagnostics for inaccessible-member attribute declarations
+    /// (missing whitelist names, disabled target flags, unsupported TFM).
+    /// </summary>
+    /// <param name="context">The mapping algorithm context.</param>
+    /// <param name="compilation">The compilation.</param>
+    internal static void ValidateMappaAllowInaccessibleMembersAttributes(
+        this MappaMapAlgorithmContext context,
+        Compilation compilation)
+    {
+        if (context.MapMethod is null)
+        {
+            return;
+        }
+
+        var mapMethod = context.MapMethod;
+        var methodDeclarationSyntax = mapMethod.MethodDeclarationSyntax;
+        if (methodDeclarationSyntax is null)
+        {
+            return;
+        }
+
+        var sourceAttribute = mapMethod.GetAttribute<MappaAllowInaccessibleSourceMembersAttribute>();
+        var targetAttribute = mapMethod.GetAttribute<MappaAllowInaccessibleTargetMembersAttribute>();
+        if (sourceAttribute is null && targetAttribute is null)
+        {
+            return;
+        }
+
+        var methodName = context.GetRootMapMethod().MethodName;
+
+        if (!compilation.IsUnsafeAccessorSupported())
+        {
+            context.ReportDiagnostic(MappaDiagnostics.UnsafeAccessorNotSupported(
+                methodDeclarationSyntax,
+                methodName));
+        }
+
+        if (targetAttribute is { AllowProperties: false, AllowConstructors: false })
+        {
+            context.ReportDiagnostic(MappaDiagnostics.AllowInaccessibleTargetMembersDisabledAll(
+                methodDeclarationSyntax,
+                methodName));
+        }
+
+        if (sourceAttribute is not null)
+        {
+            ValidateMemberNamesExist(
+                context,
+                methodDeclarationSyntax,
+                methodName,
+                nameof(MappaAllowInaccessibleSourceMembersAttribute),
+                sourceAttribute.MemberNames,
+                context.SourceType);
+        }
+
+        if (targetAttribute is not null)
+        {
+            ValidateMemberNamesExist(
+                context,
+                methodDeclarationSyntax,
+                methodName,
+                nameof(MappaAllowInaccessibleTargetMembersAttribute),
+                targetAttribute.MemberNames,
+                context.TargetType);
+        }
+    }
+
+    /// <summary>
     /// Validates that each segment in <paramref name="segmentsToValidate"/> exists when resolved from <paramref name="targetType"/>.
     /// </summary>
     /// <param name="context">The mapping algorithm context.</param>
@@ -516,5 +584,31 @@ internal static class MapMethodMappingAttributesValidator
 
         return constructorParameterNames.Any(
             parameterName => parameterName.Equals(targetName, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static void ValidateMemberNamesExist(
+        MappaMapAlgorithmContext context,
+        MethodDeclarationSyntax methodDeclarationSyntax,
+        string methodName,
+        string attributeName,
+        string[] memberNames,
+        ITypeSymbol type)
+    {
+        var typeName = type.ToDisplayString();
+        var propertyNames = new HashSet<string>(
+            type.GetTypeProperties().Select(property => property.Name),
+            StringComparer.Ordinal);
+
+        foreach (var memberName in memberNames
+                     .Distinct(StringComparer.Ordinal)
+                     .Where(name => !propertyNames.Contains(name)))
+        {
+            context.ReportDiagnostic(MappaDiagnostics.MappingAttributeTargetPropertyOrParameterDoesNotExist(
+                methodDeclarationSyntax,
+                methodName,
+                attributeName,
+                memberName,
+                typeName));
+        }
     }
 }

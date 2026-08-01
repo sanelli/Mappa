@@ -44,6 +44,11 @@ internal sealed class MappaBuilderContext
     internal List<ProjectionElementMethodDefinition> ProjectionElementMethods { get; } = [];
 
     /// <summary>
+    /// Gets the inaccessible-member accessor registry for the current generated file.
+    /// </summary>
+    internal InaccessibleAccessorRegistry InaccessibleAccessors { get; } = new();
+
+    /// <summary>
     /// Gets a new unique temporary value.
     /// </summary>
     /// <returns>A new temporary value.</returns>

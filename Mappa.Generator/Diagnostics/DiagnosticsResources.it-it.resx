@@ -209,4 +209,13 @@
     <data name="MappaMustMapTargetPropertyListsRequiredProperty" xml:space="preserve">
         <value>Il metodo '{0}' elenca la proprietà '{1}' in MappaMustMapTargetProperty, ma la proprietà è già required sul tipo '{2}' e la voce dell'attributo verrà ignorata.</value>
     </data>
+    <data name="UnsafeAccessorNotSupported" xml:space="preserve">
+        <value>Il metodo '{0}' consente membri inaccessibili, ma UnsafeAccessor non è disponibile in questa compilazione; usare .NET 8 o successivo (o un runtime equivalente che fornisca System.Runtime.CompilerServices.UnsafeAccessorAttribute) e C# 12+.</value>
+    </data>
+    <data name="AllowInaccessibleTargetMembersDisabledAll" xml:space="preserve">
+        <value>Il metodo '{0}' dichiara MappaAllowInaccessibleTargetMembers con AllowProperties e AllowConstructors entrambi impostati a false.</value>
+    </data>
+    <data name="ProjectionMethodHasAllowInaccessibleMembers" xml:space="preserve">
+        <value>Il metodo '{0}' proietta IQueryable ma dichiara attributi per membri inaccessibili che non sono supportati per le proiezioni queryable.</value>
+    </data>
 </root>

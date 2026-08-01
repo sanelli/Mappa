@@ -31,6 +31,8 @@ internal static class AttributeDataExtensions
     private const string MappaAssignFromConstantAttributeFullName = "Mappa.Attributes.MappaAssignFromConstantAttribute";
     private const string MappaIgnoreTargetPropertyAttributeFullName = "Mappa.Attributes.MappaIgnoreTargetPropertyAttribute";
     private const string MappaMustMapTargetPropertyAttributeFullName = "Mappa.Attributes.MappaMustMapTargetPropertyAttribute";
+    private const string MappaAllowInaccessibleSourceMembersAttributeFullName = "Mappa.Attributes.MappaAllowInaccessibleSourceMembersAttribute";
+    private const string MappaAllowInaccessibleTargetMembersAttributeFullName = "Mappa.Attributes.MappaAllowInaccessibleTargetMembersAttribute";
     private const string MappaTypeMappingAttributeFullName = "Mappa.Attributes.MappaTypeMappingAttribute";
     private const string MappaTypeMappingDefaultAttributeFullName = "Mappa.Attributes.MappaTypeMappingDefaultAttribute";
     private const string MappaMapEnumMemberAttributeFullName = "Mappa.Attributes.MappaMapEnumMemberAttribute`1";
@@ -826,6 +828,63 @@ internal static class AttributeDataExtensions
     }
 
     /// <summary>
+    /// Gets the <see cref="MappaAllowInaccessibleSourceMembersAttribute"/> applied, if any.
+    /// </summary>
+    /// <param name="attributes">The attributes.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The <see cref="MappaAllowInaccessibleSourceMembersAttribute"/> applied, or <c>null</c>.</returns>
+    internal static MappaAllowInaccessibleSourceMembersAttribute? GetMappaAllowInaccessibleSourceMembersAttribute(
+        this ImmutableArray<AttributeData> attributes,
+        Compilation compilation)
+    {
+        var attributeSymbol = compilation.GetTypeByMetadataName(MappaAllowInaccessibleSourceMembersAttributeFullName);
+        var attributeData = attributes
+            .FirstOrDefault(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, attributeSymbol));
+        if (attributeData is null)
+        {
+            return null;
+        }
+
+        return new MappaAllowInaccessibleSourceMembersAttribute(ParseMemberNames(attributeData));
+    }
+
+    /// <summary>
+    /// Gets the <see cref="MappaAllowInaccessibleTargetMembersAttribute"/> applied, if any.
+    /// </summary>
+    /// <param name="attributes">The attributes.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The <see cref="MappaAllowInaccessibleTargetMembersAttribute"/> applied, or <c>null</c>.</returns>
+    internal static MappaAllowInaccessibleTargetMembersAttribute? GetMappaAllowInaccessibleTargetMembersAttribute(
+        this ImmutableArray<AttributeData> attributes,
+        Compilation compilation)
+    {
+        var attributeSymbol = compilation.GetTypeByMetadataName(MappaAllowInaccessibleTargetMembersAttributeFullName);
+        var attributeData = attributes
+            .FirstOrDefault(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, attributeSymbol));
+        if (attributeData is null)
+        {
+            return null;
+        }
+
+        var attribute = new MappaAllowInaccessibleTargetMembersAttribute(ParseMemberNames(attributeData));
+        foreach (var namedArgument in attributeData.NamedArguments)
+        {
+            if (namedArgument.Key == nameof(MappaAllowInaccessibleTargetMembersAttribute.AllowProperties)
+                && namedArgument.Value.Value is bool allowProperties)
+            {
+                attribute.AllowProperties = allowProperties;
+            }
+            else if (namedArgument.Key == nameof(MappaAllowInaccessibleTargetMembersAttribute.AllowConstructors)
+                     && namedArgument.Value.Value is bool allowConstructors)
+            {
+                attribute.AllowConstructors = allowConstructors;
+            }
+        }
+
+        return attribute;
+    }
+
+    /// <summary>
     /// Gets the <see cref="INamedTypeSymbol"/> representing the static dependencies
     /// for this class that have been applied via the <see cref="MappaStaticDependencyAttribute"/>.
     /// </summary>
@@ -927,5 +986,26 @@ internal static class AttributeDataExtensions
         }
 
         return null;
+    }
+
+    private static string[] ParseMemberNames(AttributeData attributeData)
+    {
+        var constructorArguments = attributeData.ConstructorArguments;
+        if (constructorArguments.Length == 0
+            || constructorArguments[0].Kind != TypedConstantKind.Array)
+        {
+            return [];
+        }
+
+        List<string> memberNames = new();
+        foreach (var value in constructorArguments[0].Values)
+        {
+            if (value.Value is string { Length: > 0 } name)
+            {
+                memberNames.Add(name);
+            }
+        }
+
+        return [.. memberNames];
     }
 }
