@@ -428,5 +428,17 @@ namespace Mappa.Generator.Diagnostics {
                 return ResourceManager.GetString("ProjectionMethodHasObjectFactory", resourceCulture);
             }
         }
+
+        internal static string MustMapTargetPropertyWasNotMapped {
+            get {
+                return ResourceManager.GetString("MustMapTargetPropertyWasNotMapped", resourceCulture);
+            }
+        }
+
+        internal static string MappaMustMapTargetPropertyListsRequiredProperty {
+            get {
+                return ResourceManager.GetString("MappaMustMapTargetPropertyListsRequiredProperty", resourceCulture);
+            }
+        }
     }
 }

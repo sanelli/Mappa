@@ -348,4 +348,14 @@ internal enum MappaDiagnosticsKind
     /// A queryable projection map method declares <see cref="Mappa.Attributes.MappaObjectFactoryAttribute"/>.
     /// </summary>
     ProjectionMethodHasObjectFactory,
+
+    /// <summary>
+    /// A non-required target property required by <see cref="Mappa.Attributes.MappaMustMapTargetPropertyAttribute"/> cannot be mapped.
+    /// </summary>
+    MustMapTargetPropertyWasNotMapped,
+
+    /// <summary>
+    /// <see cref="Mappa.Attributes.MappaMustMapTargetPropertyAttribute"/> lists a property that is already required.
+    /// </summary>
+    MappaMustMapTargetPropertyListsRequiredProperty,
 }

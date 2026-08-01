@@ -1128,4 +1128,41 @@ internal static class MappaDiagnostics
             MappaDiagnosticDescriptors.ProjectionMethodHasObjectFactory,
             methodDeclarationSyntax?.GetLocation(),
             methodName);
+
+    /// <summary>
+    /// Diagnostic to report that a property required by <see cref="MappaMustMapTargetPropertyAttribute"/> cannot be mapped.
+    /// </summary>
+    /// <param name="syntaxNode">The syntax element.</param>
+    /// <param name="parentType">The type the property lives on.</param>
+    /// <param name="property">The property that cannot be mapped.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MustMapTargetPropertyWasNotMapped(
+        SyntaxNode? syntaxNode,
+        ITypeSymbol parentType,
+        IPropertySymbol property)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MustMapTargetPropertyWasNotMapped,
+            syntaxNode?.GetLocation(),
+            parentType.ToDisplayString(),
+            property.Name);
+
+    /// <summary>
+    /// Diagnostic to report that <see cref="MappaMustMapTargetPropertyAttribute"/> lists a required property.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="methodName">The name of the method.</param>
+    /// <param name="propertyName">The required property name listed in the attribute.</param>
+    /// <param name="targetTypeName">The display name of the target type.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappaMustMapTargetPropertyListsRequiredProperty(
+        MethodDeclarationSyntax methodDeclarationSyntax,
+        string methodName,
+        string propertyName,
+        string targetTypeName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappaMustMapTargetPropertyListsRequiredProperty,
+            methodDeclarationSyntax.GetLocation(),
+            methodName,
+            propertyName,
+            targetTypeName);
 }
