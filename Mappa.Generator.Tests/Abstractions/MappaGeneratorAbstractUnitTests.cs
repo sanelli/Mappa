@@ -1,4 +1,4 @@
-﻿// <copyright file="MappaGeneratorAbstractUnitTests.cs" company="Stefano Anelli">
+// <copyright file="MappaGeneratorAbstractUnitTests.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -10,6 +10,7 @@ using Mappa.Generator.Tests.Helpers;
 using Mappa.Generator.Tests.Models;
 
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Mappa.Generator.Tests.Abstractions;
 
@@ -126,6 +127,7 @@ public abstract class MappaGeneratorAbstractUnitTests
             MetadataReference.CreateFromFile(Path.Combine(frameworkPath, "System.Collections.Concurrent.dll")),
             MetadataReference.CreateFromFile(typeof(System.Linq.Enumerable).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(System.Linq.Expressions.Expression).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IServiceCollection).Assembly.Location),
         };
 
         var compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);

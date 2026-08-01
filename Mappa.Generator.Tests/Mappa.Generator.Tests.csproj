@@ -33,6 +33,7 @@
 		<PackageReference Include="AwesomeAssertions" Version="9.4.0" />
 		<PackageReference Include="Xunit.OpenCategories.V3" Version="2.4.1.19" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.10" />
 		<PackageReference Include="PrettyCode.StringBuilder" Version="1.0.0" />
         <PackageReference Include="Comment.Todo.Analyzer" Version="1.2.0">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
