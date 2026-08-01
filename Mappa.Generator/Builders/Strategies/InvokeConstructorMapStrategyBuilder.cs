@@ -48,15 +48,26 @@ internal sealed class InvokeConstructorMapStrategyBuilder
                 parametersVariableNames.Add(parameterTargetTemporary);
             }
 
-            // Object initializers cannot target inaccessible setters; those are assigned after construction.
-            var objectInitializerStrategies = this.strategy.InitializerStrategies
-                .Where(propertyMapStrategy => !propertyMapStrategy.PostConstructorInitializer
-                                              && !propertyMapStrategy.RequiresUnsafeAccessorOnTarget)
-                .ToArray();
-            var postConstructorStrategies = this.strategy.InitializerStrategies
-                .Where(propertyMapStrategy => propertyMapStrategy.PostConstructorInitializer
-                                              || propertyMapStrategy.RequiresUnsafeAccessorOnTarget)
-                .ToArray();
+            // Object initializers are only valid on object-creation expressions. Inaccessible
+            // setters and unsafe-accessor constructor invocations assign after construction.
+            PropertyMapStrategy[] objectInitializerStrategies;
+            PropertyMapStrategy[] postConstructorStrategies;
+            if (this.strategy.RequiresUnsafeAccessorOnConstructor)
+            {
+                objectInitializerStrategies = [];
+                postConstructorStrategies = [.. this.strategy.InitializerStrategies];
+            }
+            else
+            {
+                objectInitializerStrategies = this.strategy.InitializerStrategies
+                    .Where(propertyMapStrategy => !propertyMapStrategy.PostConstructorInitializer
+                                                  && !propertyMapStrategy.RequiresUnsafeAccessorOnTarget)
+                    .ToArray();
+                postConstructorStrategies = this.strategy.InitializerStrategies
+                    .Where(propertyMapStrategy => propertyMapStrategy.PostConstructorInitializer
+                                                  || propertyMapStrategy.RequiresUnsafeAccessorOnTarget)
+                    .ToArray();
+            }
 
             var propertyInitializersMappings = new List<(IPropertySymbol TargetProperty, string TemporaryName, bool RequiresUnsafeAccessorOnTarget)>();
             foreach (var propertyMapStrategy in objectInitializerStrategies)
@@ -107,15 +118,14 @@ internal sealed class InvokeConstructorMapStrategyBuilder
                         builder.AppendLine(initializerPropertyCode);
                     }
 
-                    // Normal setter mappings moved out of the object initializer need an explicit assignment.
-                    if (!propertyMapStrategy.PostConstructorInitializer
-                        && propertyMapStrategy.RequiresUnsafeAccessorOnTarget)
+                    // Setter mappings moved out of the object initializer need an explicit assignment.
+                    if (!propertyMapStrategy.PostConstructorInitializer)
                     {
                         builder.AppendLine(InaccessibleMemberAccessHelper.BuildPropertyAssignmentStatement(
                             resultTemporary,
                             propertyMapStrategy.TargetProperty,
                             initializerPropertyTargetTemporary,
-                            requiresUnsafeAccessor: true,
+                            propertyMapStrategy.RequiresUnsafeAccessorOnTarget,
                             context));
                     }
                 }

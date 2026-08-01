@@ -214,4 +214,34 @@ internal sealed class ClassDeclarationSyntaxAssertions
         assert(new MethodDeclarationSyntaxAssertions(methods.Single(), this.semanticModel, this.compilation));
         return this;
     }
+
+    /// <summary>
+    /// Assert that the class has an <c>extern static</c> method with a
+    /// <c>UnsafeAccessor</c> attribute, identified by method name only (syntax-based).
+    /// </summary>
+    /// <param name="methodName">The generated method identifier.</param>
+    /// <param name="unsafeAccessorKind">The expected <c>UnsafeAccessorKind</c> name.</param>
+    /// <param name="runtimeName">The expected <c>Name</c> attribute argument.</param>
+    /// <returns>The assertions.</returns>
+    public ClassDeclarationSyntaxAssertions HaveExternUnsafeAccessorMethod(
+        string methodName,
+        string unsafeAccessorKind,
+        string runtimeName)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(methodName);
+
+        var methods = this.Subject.ChildNodes()
+            .OfType<MethodDeclarationSyntax>()
+            .Where(methodDeclarationSyntax =>
+                methodDeclarationSyntax.Identifier.ToString().Equals(methodName, StringComparison.Ordinal))
+            .ToArray();
+        methods.Should().HaveCount(1);
+
+        new MethodDeclarationSyntaxAssertions(methods.Single(), this.semanticModel, this.compilation)
+            .HaveModifiers(SyntaxKind.ExternKeyword, SyntaxKind.StaticKeyword)
+            .HaveUnsafeAccessorAttribute(unsafeAccessorKind, runtimeName)
+            .HaveNoBody();
+
+        return this;
+    }
 }

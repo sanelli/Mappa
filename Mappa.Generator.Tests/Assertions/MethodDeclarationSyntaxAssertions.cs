@@ -123,6 +123,51 @@ internal sealed class MethodDeclarationSyntaxAssertions
     }
 
     /// <summary>
+    /// Check that the method has a <see cref="System.Runtime.CompilerServices.UnsafeAccessorAttribute"/>.
+    /// </summary>
+    /// <param name="unsafeAccessorKind">The expected <c>UnsafeAccessorKind</c> name (<c>Method</c> or <c>Constructor</c>).</param>
+    /// <param name="runtimeName">The expected <c>Name</c> attribute argument value.</param>
+    /// <returns>The assertions.</returns>
+    internal MethodDeclarationSyntaxAssertions HaveUnsafeAccessorAttribute(string unsafeAccessorKind, string runtimeName)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(unsafeAccessorKind);
+        ArgumentException.ThrowIfNullOrWhiteSpace(runtimeName);
+
+        const string attributeFullName = "global::System.Runtime.CompilerServices.UnsafeAccessor";
+        var attributes = this.Subject.AttributeLists.SelectMany(attributeList => attributeList.Attributes);
+        var unsafeAccessorAttributes = attributes.Where(attributeSyntax =>
+                attributeSyntax.Name.ToString().Equals(attributeFullName, StringComparison.Ordinal))
+            .ToArray();
+        unsafeAccessorAttributes.Should().HaveCount(1);
+        var unsafeAccessorAttribute = unsafeAccessorAttributes.Single();
+        unsafeAccessorAttribute.ArgumentList.Should().NotBeNull();
+        unsafeAccessorAttribute.ArgumentList!.Arguments.Should().HaveCount(2);
+
+        var kindArgument = unsafeAccessorAttribute.ArgumentList.Arguments[0].Expression.ToString();
+        kindArgument.Should().Be($"global::System.Runtime.CompilerServices.UnsafeAccessorKind.{unsafeAccessorKind}");
+
+        var nameArgument = unsafeAccessorAttribute.ArgumentList.Arguments[1];
+        nameArgument.NameEquals.Should().NotBeNull();
+        nameArgument.NameEquals!.Name.Identifier.Text.Should().Be("Name");
+        nameArgument.Expression.Should().BeOfType<LiteralExpressionSyntax>();
+        var nameLiteral = (LiteralExpressionSyntax)nameArgument.Expression;
+        nameLiteral.Token.ValueText.Should().Be(runtimeName);
+
+        return this;
+    }
+
+    /// <summary>
+    /// Assert that the method is declared without a body (for example an <c>extern</c> method).
+    /// </summary>
+    /// <returns>The assertions.</returns>
+    internal MethodDeclarationSyntaxAssertions HaveNoBody()
+    {
+        this.Subject.Body.Should().BeNull();
+        this.Subject.ExpressionBody.Should().BeNull();
+        return this;
+    }
+
+    /// <summary>
     /// Check that the method has a nullability annotation.
     /// </summary>
     /// <param name="nullableSetup">Define the required nullability.</param>
