@@ -334,7 +334,6 @@ internal static class CompilationUnitSyntaxAssertionsExtensions
 
         return @this.HaveCommentHeader()
             .HaveNamespaceWithClass(
-                1,
                 className,
                 classDeclarationSyntaxAssertions =>
                 {

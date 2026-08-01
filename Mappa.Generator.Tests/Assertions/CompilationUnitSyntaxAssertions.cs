@@ -117,15 +117,12 @@ internal sealed class CompilationUnitSyntaxAssertions
 
     /// <summary>
     /// Assert the compilation unit contains exactly one namespace (file-scoped or block-scoped)
-    /// with <paramref name="classCount"/> classes, and assert on the class named
-    /// <paramref name="className"/>.
+    /// and assert on the class named <paramref name="className"/>.
     /// </summary>
-    /// <param name="classCount">The expected number of classes in the namespace.</param>
     /// <param name="className">The mapper class identifier.</param>
     /// <param name="assert">Assertions on the mapper class.</param>
     /// <returns>The compilation unit syntax assertions.</returns>
     public CompilationUnitSyntaxAssertions HaveNamespaceWithClass(
-        int classCount,
         string className,
         Action<ClassDeclarationSyntaxAssertions> assert)
     {
@@ -155,7 +152,6 @@ internal sealed class CompilationUnitSyntaxAssertions
         }
 
         var classDeclarationSyntaxes = namespaceDeclarationSyntax.ChildNodes().OfType<ClassDeclarationSyntax>().ToArray();
-        classDeclarationSyntaxes.Should().HaveCount(classCount);
         classDeclarationSyntaxes.Should().Contain(classDeclarationSyntax =>
             classDeclarationSyntax.Identifier.ToString().Equals(className, StringComparison.Ordinal));
         var classDeclarationSyntax = classDeclarationSyntaxes.Single(classDeclarationSyntax =>
@@ -165,7 +161,8 @@ internal sealed class CompilationUnitSyntaxAssertions
     }
 
     /// <summary>
-    /// Assert that the compilation unit contains a class named <paramref name="identifier"/>.
+    /// Assert that the compilation unit contains a class named <paramref name="identifier"/>
+    /// either at the top level or inside the file namespace.
     /// </summary>
     /// <param name="identifier">The identifier of the class.</param>
     /// <param name="assert">The assertions on the class declaration.</param>
@@ -174,7 +171,12 @@ internal sealed class CompilationUnitSyntaxAssertions
     {
         ArgumentNullException.ThrowIfNull(assert);
 
-        var classDeclarationSyntaxes = this.Subject.ChildNodes().OfType<ClassDeclarationSyntax>().ToArray();
+        var classDeclarationSyntaxes = this.Subject.ChildNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Concat(this.Subject.ChildNodes()
+                .OfType<BaseNamespaceDeclarationSyntax>()
+                .SelectMany(namespaceDeclarationSyntax => namespaceDeclarationSyntax.ChildNodes().OfType<ClassDeclarationSyntax>()))
+            .ToArray();
         classDeclarationSyntaxes.Should().Contain(classDeclarationSyntax =>
             classDeclarationSyntax.Identifier.ToString().Equals(identifier, StringComparison.Ordinal));
         var classDeclarationSyntax = classDeclarationSyntaxes.Single(classDeclarationSyntax =>

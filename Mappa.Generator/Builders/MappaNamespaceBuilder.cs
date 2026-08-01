@@ -19,18 +19,18 @@ internal sealed class MappaNamespaceBuilder
     /// </summary>
     /// <param name="classContext">The class generator context.</param>
     /// <param name="classSourceCode">The source code of the class.</param>
-    /// <param name="forceBlockScopedNamespace">
-    /// When <see langword="true"/>, emit a block-scoped namespace even if the user type
-    /// uses a file-scoped namespace (required when file-local members must precede the namespace).
+    /// <param name="preambleSourceCode">
+    /// Optional source emitted inside the namespace before the class
+    /// (for example file-local inaccessible accessors).
     /// </param>
     public MappaNamespaceBuilder(
         MappaClassGeneratorContext classContext,
         string classSourceCode,
-        bool forceBlockScopedNamespace = false)
+        string? preambleSourceCode = null)
     {
         this.ClassContext = classContext;
         this.ClassSourceCode = classSourceCode;
-        this.ForceBlockScopedNamespace = forceBlockScopedNamespace;
+        this.PreambleSourceCode = preambleSourceCode;
     }
 
     /// <summary>
@@ -44,9 +44,9 @@ internal sealed class MappaNamespaceBuilder
     private string ClassSourceCode { get; }
 
     /// <summary>
-    /// Gets a value indicating whether a block-scoped namespace must be emitted.
+    /// Gets optional source emitted inside the namespace before the class.
     /// </summary>
-    private bool ForceBlockScopedNamespace { get; }
+    private string? PreambleSourceCode { get; }
 
     /// <inheritdoc/>
     public string BuildSource(MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
@@ -54,23 +54,22 @@ internal sealed class MappaNamespaceBuilder
         var builder = new PrettyCode.StringBuilder();
         var @namespace = this.ClassContext.ClassSymbol.ContainingNamespace.ToDisplayString();
 
-        var isFileScoped = this.ClassContext.ClassDeclarationSyntax.Parent is FileScopedNamespaceDeclarationSyntax;
-        var isBlockScoped = this.ClassContext.ClassDeclarationSyntax.Parent is NamespaceDeclarationSyntax;
-
-        // File scoped namespace (unless forced to a block so preceding file-local members are valid).
-        if (isFileScoped && !this.ForceBlockScopedNamespace)
+        // File scoped namespace
+        if (this.ClassContext.ClassDeclarationSyntax.Parent is FileScopedNamespaceDeclarationSyntax)
         {
             builder.AppendLine($"namespace {@namespace};");
             builder.AppendEmptyLine();
+            this.AppendPreamble(builder);
             builder.AppendLine(this.ClassSourceCode);
         }
 
-        // Standard namespace block (including file-scoped types forced to block form).
-        else if (isBlockScoped || (isFileScoped && this.ForceBlockScopedNamespace))
+        // Standard namespace block
+        else if (this.ClassContext.ClassDeclarationSyntax.Parent is NamespaceDeclarationSyntax)
         {
             builder.AppendLine($"namespace {@namespace}");
             using (builder.CurlyBracesBlock())
             {
+                this.AppendPreamble(builder);
                 builder.AppendLine(this.ClassSourceCode);
             }
         }
@@ -78,9 +77,21 @@ internal sealed class MappaNamespaceBuilder
         // No namespace at all
         else
         {
+            this.AppendPreamble(builder);
             builder.AppendLine(this.ClassSourceCode);
         }
 
         return builder.ToString();
+    }
+
+    private void AppendPreamble(PrettyCode.StringBuilder builder)
+    {
+        if (this.PreambleSourceCode is not { Length: > 0 } preambleSourceCode)
+        {
+            return;
+        }
+
+        builder.AppendLine(preambleSourceCode);
+        builder.AppendEmptyLine();
     }
 }
