@@ -10,9 +10,14 @@ namespace Mappa.Benchmark.Common;
 internal static class BenchmarkConstants
 {
     /// <summary>
-    /// Number of entries used when building collection inputs (a few hundred).
+    /// Number of entries used when building collection inputs.
     /// </summary>
-    public const int CollectionSize = 300;
+    public const int CollectionSize = 1000;
+
+    /// <summary>
+    /// Number of entries used by the nested DTO kitchen-sink graph.
+    /// </summary>
+    public const int NestedCollectionSize = 1000;
 
     /// <summary>
     /// Number of dictionary entries attached to each collection element.

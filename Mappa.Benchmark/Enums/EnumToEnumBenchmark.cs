@@ -21,8 +21,7 @@ namespace Mappa.Benchmark.Enums;
 public class EnumToEnumBenchmark
 #pragma warning restore CA1515
 {
-    private const SourceStatus Input = SourceStatus.Active;
-
+    private readonly SourceStatus input;
     private readonly AutoMapper.IMapper automapperMapper;
     private readonly MapperlyMapper mapperlyMapper;
     private readonly MappaMapper mappaMapper;
@@ -39,6 +38,7 @@ public class EnumToEnumBenchmark
 #pragma warning restore CA2000
         this.mapperlyMapper = new();
         this.mappaMapper = new();
+        this.input = EnumDataFactory.CreateSourceStatus();
     }
 
     /// <summary>
@@ -47,7 +47,7 @@ public class EnumToEnumBenchmark
     /// <returns>The mapped enum.</returns>
     [Benchmark(Baseline = true)]
     public TargetStatus Automapper()
-        => this.automapperMapper.Map<TargetStatus>(Input);
+        => this.automapperMapper.Map<TargetStatus>(this.input);
 
     /// <summary>
     /// Map using Mapperly.
@@ -55,17 +55,15 @@ public class EnumToEnumBenchmark
     /// <returns>The mapped enum.</returns>
     [Benchmark]
     public TargetStatus Mapperly()
-        => this.mapperlyMapper.Map(Input);
+        => this.mapperlyMapper.Map(this.input);
 
     /// <summary>
     /// Map using Mapster.
     /// </summary>
     /// <returns>The mapped enum.</returns>
     [Benchmark]
-#pragma warning disable CA1822
     public TargetStatus Mapster()
-#pragma warning restore CA1822
-        => Input.Adapt<TargetStatus>();
+        => this.input.Adapt<TargetStatus>();
 
     /// <summary>
     /// Map using Mappa.
@@ -73,5 +71,5 @@ public class EnumToEnumBenchmark
     /// <returns>The mapped enum.</returns>
     [Benchmark]
     public TargetStatus Mappa()
-        => this.mappaMapper.Map(Input);
+        => this.mappaMapper.Map(this.input);
 }

@@ -19,4 +19,22 @@ internal sealed partial class MappaMapper
     /// <param name="source">The source.</param>
     /// <returns>The target.</returns>
     public partial NestedOrder Map(NestedOrderDto source);
+
+    /// <summary>
+    /// Maps a polymorphic party DTO.
+    /// </summary>
+    /// <param name="source">The source.</param>
+    /// <returns>The target.</returns>
+    [MappaTypeMapping(typeof(PersonParty), typeof(PersonPartyDto))]
+    [MappaTypeMapping(typeof(OrganizationParty), typeof(OrganizationPartyDto))]
+    public partial Party MapParty(PartyDto source);
+
+    /// <summary>
+    /// Maps a polymorphic line-item DTO.
+    /// </summary>
+    /// <param name="source">The source.</param>
+    /// <returns>The target.</returns>
+    [MappaTypeMapping(typeof(PhysicalLineItem), typeof(PhysicalLineItemDto))]
+    [MappaTypeMapping(typeof(DigitalLineItem), typeof(DigitalLineItemDto))]
+    public partial LineItemBase MapLineItem(LineItemBaseDto source);
 }

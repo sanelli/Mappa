@@ -21,8 +21,7 @@ namespace Mappa.Benchmark.Enums;
 public class EnumToIntBenchmark
 #pragma warning restore CA1515
 {
-    private const StringComparison Input = StringComparison.InvariantCulture;
-
+    private readonly StringComparison input;
     private readonly AutoMapper.IMapper automapperMapper;
     private readonly MapperlyMapper mapperlyMapper;
     private readonly MappaMapper mappaMapper;
@@ -37,13 +36,13 @@ public class EnumToIntBenchmark
             {
                 cfg.AddProfile(new AutomapperMapperProfile());
             },
-            #pragma warning disable CA2000
+#pragma warning disable CA2000
             new NullLoggerFactory()).CreateMapper();
-            #pragma warning restore CA2000
+#pragma warning restore CA2000
 
         this.mapperlyMapper = new();
-
         this.mappaMapper = new();
+        this.input = EnumDataFactory.CreateStringComparison();
     }
 
     /// <summary>
@@ -52,7 +51,7 @@ public class EnumToIntBenchmark
     /// <returns>The mapper model.</returns>
     [Benchmark(Baseline = true)]
     public int Automapper()
-        => this.automapperMapper.Map<int>(Input);
+        => this.automapperMapper.Map<int>(this.input);
 
     /// <summary>
     /// Map using <see cref="Riok.Mapperly"/>.
@@ -60,17 +59,15 @@ public class EnumToIntBenchmark
     /// <returns>The mapper model.</returns>
     [Benchmark]
     public int Mapperly()
-        => this.mapperlyMapper.MapToInt(Input);
+        => this.mapperlyMapper.MapToInt(this.input);
 
     /// <summary>
     /// Map using <see cref="Mapster"/>.
     /// </summary>
     /// <returns>The mapper model.</returns>
     [Benchmark]
-#pragma warning disable CA1822 // Member 'Mapster' does not access instance data and can be marked as static
     public int Mapster()
-#pragma warning restore CA1822
-        => Input.Adapt<int>();
+        => this.input.Adapt<int>();
 
     /// <summary>
     /// Map using <see cref="Mappa.Attributes"/>.
@@ -78,5 +75,5 @@ public class EnumToIntBenchmark
     /// <returns>The mapper model.</returns>
     [Benchmark]
     public int Mappa()
-        => this.mappaMapper.MapToInt(Input);
+        => this.mappaMapper.MapToInt(this.input);
 }

@@ -21,8 +21,7 @@ namespace Mappa.Benchmark.Enums;
 public class StringToEnumBenchmark
 #pragma warning restore CA1515
 {
-    private const string Input = nameof(StringComparison.InvariantCulture);
-
+    private readonly string input;
     private readonly AutoMapper.IMapper automapperMapper;
     private readonly MapperlyMapper mapperlyMapper;
     private readonly MappaMapper mappaMapper;
@@ -42,8 +41,8 @@ public class StringToEnumBenchmark
 #pragma warning restore CA2000
 
         this.mapperlyMapper = new();
-
         this.mappaMapper = new();
+        this.input = EnumDataFactory.CreateStringComparisonName();
     }
 
     /// <summary>
@@ -52,7 +51,7 @@ public class StringToEnumBenchmark
     /// <returns>The mapper model.</returns>
     [Benchmark(Baseline = true)]
     public StringComparison Automapper()
-        => this.automapperMapper.Map<StringComparison>(Input);
+        => this.automapperMapper.Map<StringComparison>(this.input);
 
     /// <summary>
     /// Map using <see cref="Riok.Mapperly"/>.
@@ -60,17 +59,15 @@ public class StringToEnumBenchmark
     /// <returns>The mapper model.</returns>
     [Benchmark]
     public StringComparison Mapperly()
-        => this.mapperlyMapper.Map(Input);
+        => this.mapperlyMapper.Map(this.input);
 
     /// <summary>
     /// Map using <see cref="Mapster"/>.
     /// </summary>
     /// <returns>The mapper model.</returns>
     [Benchmark]
-#pragma warning disable CA1822 // Member 'Mapster' does not access instance data and can be marked as static
     public StringComparison Mapster()
-#pragma warning restore CA1822
-        => Input.Adapt<StringComparison>();
+        => this.input.Adapt<StringComparison>();
 
     /// <summary>
     /// Map using <see cref="Mappa.Attributes"/>.
@@ -78,5 +75,5 @@ public class StringToEnumBenchmark
     /// <returns>The mapper model.</returns>
     [Benchmark]
     public StringComparison Mappa()
-        => this.mappaMapper.Map(Input);
+        => this.mappaMapper.Map(this.input);
 }

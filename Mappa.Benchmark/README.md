@@ -24,33 +24,32 @@ Outputs are written under `.mappa-benchmark/` (gitignored). See [Documentation/d
 
 - **AutoMapper is the ratio baseline** (`[Benchmark(Baseline = true)]`) on every scenario.
 - **Lower mean time and lower allocated bytes are better.**
-- Summary tables report nanoseconds and bytes; the TIME/MEMORY bar charts plot **microseconds** and **kilobytes** with a **50** unit Y-axis tick.
+- Summary tables report nanoseconds and bytes; the TIME bar chart uses a **25** unit Y-axis tick and the MEMORY bar chart a **100** unit tick (µs / KB). Percentage charts emphasize the **100%** guide in red (dashed) and bold value labels **above** 100%.
 
 ## Scenario suite
 
 | Area | Benchmark | Notes |
 |------|-----------|--------|
 | Object graph | `SpotifyBenchmark` | Nested album/artist/tracks; fixed Bogus seed |
-| Objects | `ClassToClassBenchmark`, `RecordToRecordBenchmark`, `StructToStructBenchmark` | Same property shape across kinds |
-| Enums | `EnumToIntBenchmark`, `IntToEnumBenchmark`, `EnumToStringBenchmark`, `StringToEnumBenchmark`, `EnumToEnumBenchmark` | |
-| Collections | `ArrayToListBenchmark`, `ListToArrayBenchmark`, `ListToHashSetBenchmark`, `DictionaryBenchmark` | |
-| Fast collections | `FastListToArrayBenchmark` | Mappa with `FastCollections`; others use their default path |
-| Memory | `MemoryToArrayBenchmark`, `ArrayToMemoryBenchmark` | |
-| Polymorphism | `PolymorphicBenchmark` | Derived-type maps |
-| IQueryable | `IQueryableProjectionBenchmark` | In-memory `AsQueryable()` + `.ToList()` |
-| Nested DTO | `NestedDtoBenchmark` | Multi-level parent/child |
+| Objects | `ClassToClassBenchmark`, `RecordToRecordBenchmark`, `StructToStructBenchmark` | Same property shape across kinds; fixed Bogus seed |
+| Enums | `EnumToIntBenchmark`, `IntToEnumBenchmark`, `EnumToStringBenchmark`, `StringToEnumBenchmark`, `EnumToEnumBenchmark` | Fixed Bogus seed |
+| Collections | `ArrayToListBenchmark`, `ListToArrayBenchmark`, `ListToHashSetBenchmark`, `DictionaryBenchmark` | Fixed Bogus seed |
+| Fast collections | `FastListToArrayBenchmark` | Mappa with `FastCollections`; others use their default path; fixed Bogus seed |
+| Memory | `MemoryToArrayBenchmark`, `ArrayToMemoryBenchmark` | Fixed Bogus seed |
+| Polymorphism | `PolymorphicBenchmark` | Derived-type maps; fixed Bogus seed |
+| IQueryable | `IQueryableProjectionBenchmark` | In-memory `AsQueryable()` + `.ToList()`; fixed Bogus seed |
+| Nested DTO | `NestedDtoBenchmark` | 5-level graph, polymorphic parties/line items, arrays/lists/sets/dicts/queues/stacks/Memory, get-only notes list, enum↔enum/string/int (~1000 elements); fixed Bogus seed |
 
 ### Chart / CI subset
 
 `MAPPA-BENCHMARK-TIME.svg`, `MAPPA-BENCHMARK-MEMORY.svg`, `MAPPA-BENCHMARK-TIME-PERCENTAGES.svg`, and `MAPPA-BENCHMARK-MEMORY-PERCENTAGES.svg` (and CI `-ChartBenchmarksOnly`) include:
 
 - `ArrayToListBenchmark`
-- `DictionaryBenchmark`
 - `ListToArrayBenchmark`
 - `FastListToArrayBenchmark`
-- `IQueryableProjectionBenchmark`
+- `DictionaryBenchmark`
 - `NestedDtoBenchmark`
-- `ListToHashSetBenchmark`
+- `IQueryableProjectionBenchmark`
 
 ## Spotify attribution
 

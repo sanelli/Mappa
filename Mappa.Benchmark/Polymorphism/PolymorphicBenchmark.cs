@@ -38,11 +38,7 @@ public class PolymorphicBenchmark
 #pragma warning restore CA2000
         this.mapperlyMapper = new();
         this.mappaMapper = new();
-        this.input = new DogDto { Name = "Rex", Trained = true };
-        TypeAdapterConfig<AnimalDto, Animal>.NewConfig()
-            .Include<DogDto, Dog>()
-            .Include<CatDto, Cat>()
-            .Include<BirdDto, Bird>();
+        this.input = PolymorphicDataFactory.CreateAnimalDto();
     }
 
     /// <summary>
@@ -67,7 +63,13 @@ public class PolymorphicBenchmark
     /// <returns>The mapped animal.</returns>
     [Benchmark]
     public Animal Mapster()
-        => this.input.Adapt<Animal>();
+        => this.input switch
+        {
+            DogDto dog => dog.Adapt<Dog>(),
+            CatDto cat => cat.Adapt<Cat>(),
+            BirdDto bird => bird.Adapt<Bird>(),
+            _ => throw new InvalidOperationException($"Unsupported animal type: {this.input.GetType().FullName}"),
+        };
 
     /// <summary>
     /// Map using Mappa.

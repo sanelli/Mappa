@@ -445,7 +445,7 @@ try
         -YAxisLabel "Mean time (us)" `
         -Title "Benchmark mean time" `
         -OutputPath $timeSvgPath `
-        -YAxisTickStep 50 `
+        -YAxisTickStep 25 `
         -ValueLabelFormat "0.###"
 
     New-BenchmarkGroupedBarSvg `
@@ -454,7 +454,7 @@ try
         -YAxisLabel "Allocated (KB)" `
         -Title "Benchmark allocated memory" `
         -OutputPath $memorySvgPath `
-        -YAxisTickStep 50 `
+        -YAxisTickStep 100 `
         -ValueLabelFormat "0.#"
 
     if ($percentageChartBenchmarks.Count -gt 0)
@@ -507,7 +507,9 @@ try
                 -YAxisTickStep 100 `
                 -ValueLabelFormat "0.#" `
                 -ValueLabelSuffix "%" `
-                -MapperNames $percentageMappers
+                -MapperNames $percentageMappers `
+                -EmphasizeGuideAt 100 `
+                -BoldValueLabelsAboveGuide
         }
 
         if ($allocPercentBenchmarks.Count -gt 0)
@@ -521,7 +523,9 @@ try
                 -YAxisTickStep 100 `
                 -ValueLabelFormat "0.#" `
                 -ValueLabelSuffix "%" `
-                -MapperNames $percentageMappers
+                -MapperNames $percentageMappers `
+                -EmphasizeGuideAt 100 `
+                -BoldValueLabelsAboveGuide
         }
     }
 

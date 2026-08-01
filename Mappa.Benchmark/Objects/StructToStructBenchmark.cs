@@ -38,15 +38,7 @@ public class StructToStructBenchmark
 #pragma warning restore CA2000
         this.mapperlyMapper = new();
         this.mappaMapper = new();
-        this.input = new PersonStructDto
-        {
-            Id = 1,
-            Name = "Ada Lovelace",
-            Age = 36,
-            Street = "Analytical Engine Way",
-            City = "London",
-            Zip = "SW1A",
-        };
+        this.input = ObjectDataFactory.CreatePersonStructDto();
     }
 
     /// <summary>
