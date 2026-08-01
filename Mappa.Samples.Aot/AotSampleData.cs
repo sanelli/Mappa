@@ -171,6 +171,15 @@ internal static class AotSampleData
     public static InaccessibleMembersSourceModel InaccessibleMembersSourceModelAdaThirtySix { get; } = new("Ada", 36);
 
     /// <summary>
+    /// Gets an <see cref="InaccessibleMembersParameterizedCtorSourceModel"/> with name Ada and age 36.
+    /// </summary>
+    public static InaccessibleMembersParameterizedCtorSourceModel InaccessibleMembersParameterizedCtorSourceModelAdaThirtySix { get; } = new()
+    {
+        Name = "Ada",
+        Age = 36,
+    };
+
+    /// <summary>
     /// Gets a <see cref="PropertyMapNameSettingsSourceModel"/> with user_name 42 and PropertyB 7.
     /// </summary>
     public static PropertyMapNameSettingsSourceModel PropertyMapNameSettingsSourceModel42Seven { get; } = new()

@@ -120,8 +120,15 @@ internal sealed class InaccessibleAccessorRegistry
         builder.AppendLine($"file static class {this.ContainerTypeName}");
         using (builder.CurlyBracesBlock())
         {
+            var isFirstAccessor = true;
             foreach (var accessor in this.Accessors)
             {
+                if (!isFirstAccessor)
+                {
+                    builder.AppendEmptyLine();
+                }
+
+                isFirstAccessor = false;
                 builder.AppendLine(accessor.BuildSource());
             }
         }

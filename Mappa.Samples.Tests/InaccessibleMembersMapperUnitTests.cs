@@ -84,4 +84,27 @@ public sealed class InaccessibleMembersMapperUnitTests
         actual.Name.Should().Be("Ada");
         actual.Age.Should().Be(0);
     }
+
+    /// <summary>
+    /// Test mapping via a private parameterized target constructor.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapUsingPrivateParameterizedConstructor()
+    {
+        // Arrange
+        var source = new InaccessibleMembersParameterizedCtorSourceModel
+        {
+            Name = "Ada",
+            Age = 36,
+        };
+        var mapper = new InaccessibleMembersParameterizedConstructorMapper();
+
+        // Act
+        var actual = mapper.Map(source);
+
+        // Assert
+        actual.Name.Should().Be("Ada");
+        actual.Age.Should().Be(36);
+    }
 }

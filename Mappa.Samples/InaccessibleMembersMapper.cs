@@ -77,3 +77,18 @@ public sealed partial class InaccessibleMembersNamedPropertiesOnlyMapper
     [MappaAllowInaccessibleTargetMembers("Name", AllowConstructors = false)]
     public partial InaccessibleMembersPublicCtorTargetModel Map(InaccessibleMembersSourceModel source);
 }
+
+/// <summary>
+/// Mapper demonstrating a private target constructor with parameters.
+/// </summary>
+[Mappa]
+public sealed partial class InaccessibleMembersParameterizedConstructorMapper
+{
+    /// <summary>
+    /// Map using a private target constructor that accepts <c>name</c> and <c>age</c>.
+    /// </summary>
+    /// <param name="source">The source model.</param>
+    /// <returns>The target model.</returns>
+    [MappaAllowInaccessibleTargetMembers(AllowProperties = false)]
+    public partial InaccessibleMembersParameterizedCtorTargetModel Map(InaccessibleMembersParameterizedCtorSourceModel source);
+}

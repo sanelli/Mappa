@@ -55,5 +55,15 @@ internal static class InaccessibleMembersMapperRunner
             nameof(InaccessibleMembersPublicCtorTargetModel),
             source,
             namedPropertiesOnlyMapper.Map(source));
+
+        var parameterizedCtorSource = AotSampleData.InaccessibleMembersParameterizedCtorSourceModelAdaThirtySix;
+        report.BeginMapper(nameof(InaccessibleMembersParameterizedConstructorMapper));
+        var parameterizedConstructorMapper = new InaccessibleMembersParameterizedConstructorMapper();
+        report.RecordInvocation(
+            nameof(InaccessibleMembersParameterizedConstructorMapper.Map),
+            nameof(InaccessibleMembersParameterizedCtorSourceModel),
+            nameof(InaccessibleMembersParameterizedCtorTargetModel),
+            parameterizedCtorSource,
+            parameterizedConstructorMapper.Map(parameterizedCtorSource));
     }
 }
