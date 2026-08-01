@@ -83,6 +83,10 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? unsafeAccessorNotSupported;
     private static DiagnosticDescriptor? allowInaccessibleTargetMembersDisabledAll;
     private static DiagnosticDescriptor? projectionMethodHasAllowInaccessibleMembers;
+    private static DiagnosticDescriptor? mappaDependencyInjectionClassIsNotPartial;
+    private static DiagnosticDescriptor? mappaAndMappaDependencyInjectionBothApplied;
+    private static DiagnosticDescriptor? mappaDependencyInjectionMapperHasNoEligibleInterfaces;
+    private static DiagnosticDescriptor? mappaDependencyInjectionStaticMapperSkipped;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -635,6 +639,38 @@ internal static class MappaDiagnosticDescriptors
         => projectionMethodHasAllowInaccessibleMembers ??= BuildError(
             MappaDiagnosticsKind.ProjectionMethodHasAllowInaccessibleMembers,
             DiagnosticsResources.ProjectionMethodHasAllowInaccessibleMembers);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MappaDependencyInjectionClassIsNotPartial"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MappaDependencyInjectionClassIsNotPartial
+        => mappaDependencyInjectionClassIsNotPartial ??= BuildWarning(
+            MappaDiagnosticsKind.MappaDependencyInjectionClassIsNotPartial,
+            DiagnosticsResources.MappaDependencyInjectionClassIsNotPartial);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MappaAndMappaDependencyInjectionBothApplied"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MappaAndMappaDependencyInjectionBothApplied
+        => mappaAndMappaDependencyInjectionBothApplied ??= BuildError(
+            MappaDiagnosticsKind.MappaAndMappaDependencyInjectionBothApplied,
+            DiagnosticsResources.MappaAndMappaDependencyInjectionBothApplied);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MappaDependencyInjectionMapperHasNoEligibleInterfaces"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MappaDependencyInjectionMapperHasNoEligibleInterfaces
+        => mappaDependencyInjectionMapperHasNoEligibleInterfaces ??= BuildWarning(
+            MappaDiagnosticsKind.MappaDependencyInjectionMapperHasNoEligibleInterfaces,
+            DiagnosticsResources.MappaDependencyInjectionMapperHasNoEligibleInterfaces);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MappaDependencyInjectionStaticMapperSkipped"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MappaDependencyInjectionStaticMapperSkipped
+        => mappaDependencyInjectionStaticMapperSkipped ??= BuildWarning(
+            MappaDiagnosticsKind.MappaDependencyInjectionStaticMapperSkipped,
+            DiagnosticsResources.MappaDependencyInjectionStaticMapperSkipped);
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(

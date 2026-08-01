@@ -1207,4 +1207,62 @@ internal static class MappaDiagnostics
             MappaDiagnosticDescriptors.ProjectionMethodHasAllowInaccessibleMembers,
             methodDeclarationSyntax?.GetLocation(),
             methodName);
+
+    /// <summary>
+    /// Diagnostic to report that <see cref="Mappa.Attributes.MappaDependencyInjectionAttribute"/>
+    /// is applied to a non-<c>partial</c> class.
+    /// </summary>
+    /// <param name="classDeclarationSyntax">The class declaration syntax.</param>
+    /// <param name="className">The class name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappaDependencyInjectionClassIsNotPartial(
+        ClassDeclarationSyntax? classDeclarationSyntax,
+        string className)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappaDependencyInjectionClassIsNotPartial,
+            classDeclarationSyntax?.GetLocation(),
+            className);
+
+    /// <summary>
+    /// Diagnostic to report that both <see cref="Mappa.Attributes.MappaAttribute"/> and
+    /// <see cref="Mappa.Attributes.MappaDependencyInjectionAttribute"/> are applied to the same class.
+    /// </summary>
+    /// <param name="classDeclarationSyntax">The class declaration syntax.</param>
+    /// <param name="className">The class name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappaAndMappaDependencyInjectionBothApplied(
+        ClassDeclarationSyntax? classDeclarationSyntax,
+        string className)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappaAndMappaDependencyInjectionBothApplied,
+            classDeclarationSyntax?.GetLocation(),
+            className);
+
+    /// <summary>
+    /// Diagnostic to report that a mapper has no eligible interfaces for DI registration.
+    /// </summary>
+    /// <param name="classDeclarationSyntax">The registrar class declaration syntax.</param>
+    /// <param name="mapperTypeName">The mapper type name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappaDependencyInjectionMapperHasNoEligibleInterfaces(
+        ClassDeclarationSyntax? classDeclarationSyntax,
+        string mapperTypeName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappaDependencyInjectionMapperHasNoEligibleInterfaces,
+            classDeclarationSyntax?.GetLocation(),
+            mapperTypeName);
+
+    /// <summary>
+    /// Diagnostic to report that a static mapper cannot be registered with dependency injection.
+    /// </summary>
+    /// <param name="classDeclarationSyntax">The registrar class declaration syntax.</param>
+    /// <param name="mapperTypeName">The static mapper type name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappaDependencyInjectionStaticMapperSkipped(
+        ClassDeclarationSyntax? classDeclarationSyntax,
+        string mapperTypeName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappaDependencyInjectionStaticMapperSkipped,
+            classDeclarationSyntax?.GetLocation(),
+            mapperTypeName);
 }

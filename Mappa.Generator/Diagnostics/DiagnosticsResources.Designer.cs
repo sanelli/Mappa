@@ -458,5 +458,29 @@ namespace Mappa.Generator.Diagnostics {
                 return ResourceManager.GetString("ProjectionMethodHasAllowInaccessibleMembers", resourceCulture);
             }
         }
+
+        internal static string MappaDependencyInjectionClassIsNotPartial {
+            get {
+                return ResourceManager.GetString("MappaDependencyInjectionClassIsNotPartial", resourceCulture);
+            }
+        }
+
+        internal static string MappaAndMappaDependencyInjectionBothApplied {
+            get {
+                return ResourceManager.GetString("MappaAndMappaDependencyInjectionBothApplied", resourceCulture);
+            }
+        }
+
+        internal static string MappaDependencyInjectionMapperHasNoEligibleInterfaces {
+            get {
+                return ResourceManager.GetString("MappaDependencyInjectionMapperHasNoEligibleInterfaces", resourceCulture);
+            }
+        }
+
+        internal static string MappaDependencyInjectionStaticMapperSkipped {
+            get {
+                return ResourceManager.GetString("MappaDependencyInjectionStaticMapperSkipped", resourceCulture);
+            }
+        }
     }
 }

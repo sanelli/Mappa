@@ -25,6 +25,17 @@ public partial class Mapper
 
 the source generator attempts to identify a mapping from `TSource` to `TTarget`.
 
+## Dependency injection registration
+
+Separately from mapper generation, classes marked with `[MappaDependencyInjection]` are processed by a second incremental pipeline:
+
+1. Validate the registrar (must be `partial`; must not also have `[Mappa]`).
+2. Parse attribute properties (method name, lifetime, interface injection mode, `IgnoreType`, accessibility, extension-method flag).
+3. Walk all named types in the current assembly; collect `[Mappa]` mapper types (skip the registrar, ignored types, and static mappers).
+4. Emit `{FullTypeName}.DependencyInjection.g.cs` with a registration method that calls `AddSingleton` / `AddScoped` / `AddTransient` according to the attribute configuration.
+
+Details and diagnostics (**MP00070**–**MP00073**): [Mappa attributes — MappaDependencyInjection](./mappa-attributes.md#mappadependencyinjection).
+
 ## Strategy resolution overview
 
 Resolution follows one of two paths depending on whether the mapping is the **root** partial method or a **nested** type mapping (collection elements, dictionary keys/values, tuple items, constructor parameters, or property initializers).

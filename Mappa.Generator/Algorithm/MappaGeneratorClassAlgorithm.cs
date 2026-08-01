@@ -178,6 +178,13 @@ internal sealed class MappaGeneratorClassAlgorithm
         var classContext =
             new MappaClassGeneratorContext(options, mappaDebug, this.Compilation, classDeclarationSyntax);
 
+        // [Mappa] and [MappaDependencyInjection] cannot be applied to the same class.
+        // The DI pipeline reports MP00071; skip mapper generation here without a duplicate diagnostic.
+        if (classContext.ClassSymbol.GetAttributes().HasMappaDependencyInjectionAttribute(this.Compilation))
+        {
+            return;
+        }
+
         // Gather all the methods that require a mapping.
         foreach (var methodDeclarationSyntax in classDeclarationSyntax.ChildNodes().OfType<MethodDeclarationSyntax>())
         {

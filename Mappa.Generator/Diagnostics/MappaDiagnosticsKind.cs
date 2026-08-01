@@ -375,4 +375,27 @@ internal enum MappaDiagnosticsKind
     /// A queryable projection map method declares inaccessible-member attributes.
     /// </summary>
     ProjectionMethodHasAllowInaccessibleMembers,
+
+    /// <summary>
+    /// <see cref="Mappa.Attributes.MappaDependencyInjectionAttribute"/> is applied to a class that is not <c>partial</c>.
+    /// </summary>
+    MappaDependencyInjectionClassIsNotPartial,
+
+    /// <summary>
+    /// Both <see cref="Mappa.Attributes.MappaAttribute"/> and
+    /// <see cref="Mappa.Attributes.MappaDependencyInjectionAttribute"/> are applied to the same class.
+    /// </summary>
+    MappaAndMappaDependencyInjectionBothApplied,
+
+    /// <summary>
+    /// A mapper has no eligible interfaces for dependency injection registration after applying
+    /// <see cref="Mappa.Attributes.MappaDependencyInjectionAttribute.IgnoreType"/>.
+    /// </summary>
+    MappaDependencyInjectionMapperHasNoEligibleInterfaces,
+
+    /// <summary>
+    /// A <see cref="Mappa.Attributes.MappaAttribute"/> mapper is a static class and cannot be
+    /// registered with dependency injection.
+    /// </summary>
+    MappaDependencyInjectionStaticMapperSkipped,
 }

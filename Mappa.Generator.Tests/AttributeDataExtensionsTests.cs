@@ -281,4 +281,53 @@ public sealed class AttributeDataExtensionsTests
         dependencies[0].ToDisplayString().Should().Be("Mappa.Generator.Tests.UnitTests.SourceCode.FirstDependency");
         dependencies[1].ToDisplayString().Should().Be("Mappa.Generator.Tests.UnitTests.SourceCode.SecondDependency");
     }
+
+    /// <summary>
+    /// Test <see cref="AttributeDataExtensions.GetMappaDependencyInjectionAttributeData"/> reads ctor and named arguments.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetMappaDependencyInjectionAttributeDataReadsCtorAndNamedArguments()
+    {
+        const string source = """
+                              using Mappa;
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public interface IIgnored
+                              {
+                              }
+
+                              [MappaDependencyInjection(
+                                  "RegisterFromCtor",
+                                  MethodName = "RegisterFromProperty",
+                                  ExtensionMethod = false,
+                                  Accessibility = MappaDependencyInjectionMethodAccessibility.Internal,
+                                  ServiceLifetime = MappaDependencyInjectionServiceLifetime.Scoped,
+                                  InjectInterfaces = MappaDependencyInjectionInjectInterfaces.InterfaceAndClass,
+                                  IgnoreType = new[] { typeof(IIgnored) })]
+                              public static partial class TestRegistrar
+                              {
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetTypeAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.NamespaceName + ".TestRegistrar");
+
+        var attribute = attributes.GetMappaDependencyInjectionAttributeData(compilation);
+
+        attribute.Should().NotBeNull();
+        attribute!.ConstructorMethodName.Should().Be("RegisterFromCtor");
+        attribute.MethodName.Should().Be("RegisterFromProperty");
+        attribute.ExtensionMethod.Should().BeFalse();
+        attribute.Accessibility.Should().Be(MappaDependencyInjectionMethodAccessibility.Internal);
+        attribute.ServiceLifetime.Should().Be(MappaDependencyInjectionServiceLifetime.Scoped);
+        attribute.InjectInterfaces.Should().Be(MappaDependencyInjectionInjectInterfaces.InterfaceAndClass);
+        attribute.IgnoreTypes.Should().HaveCount(1);
+        attribute.IgnoreTypes[0].ToDisplayString().Should().Be(AttributeDataExtensionsTestHelper.NamespaceName + ".IIgnored");
+        attribute.ResolveMethodName("TestRegistrar").Should().Be("RegisterFromProperty");
+    }
 }

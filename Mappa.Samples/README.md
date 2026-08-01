@@ -62,6 +62,7 @@ See the [tutorial](../Documentation/tutorial.md) for a guided introduction, or b
 | [`MapMethodStrategyWithUserCustomInstanceMethodMapper.cs`](MapMethodStrategyWithUserCustomInstanceMethodMapper.cs) | Custom instance mapping methods |
 | [`MapMethodStrategyWithUserCustomStaticMethodMapper.cs`](MapMethodStrategyWithUserCustomStaticMethodMapper.cs) | Custom static mapping methods |
 | [`MappaDependencyProtobufMapper.cs`](MappaDependencyProtobufMapper.cs) | `[MappaDependency]` with Protobuf mapper |
+| [`MappaDependencyInjectionRegistrar.cs`](MappaDependencyInjectionRegistrar.cs) / [`MappaDependencyInjectionMapper.cs`](MappaDependencyInjectionMapper.cs) | `[MappaDependencyInjection]` registers all `[Mappa]` mappers in the assembly |
 
 ## Protobuf and collections
 | Sample | Demonstrates |
