@@ -210,6 +210,21 @@ internal sealed class MapMethod
     }
 
     /// <summary>
+    /// Check if the method can map from <paramref name="sourceType"/> to
+    /// <paramref name="targetType"/> using compatible (assignable) types:
+    /// the required source is implicitly convertible to the method parameter type,
+    /// and the method return type is implicitly convertible to the required target.
+    /// </summary>
+    /// <param name="targetType">The required target type.</param>
+    /// <param name="sourceType">The required source type.</param>
+    /// <param name="compilation">The compilation used to resolve implicit conversions.</param>
+    /// <returns><c>true</c> if the method is a compatible map from
+    /// <paramref name="sourceType"/> to <paramref name="targetType"/>.</returns>
+    internal bool IsCompatibleMapFor(ITypeSymbol targetType, ITypeSymbol sourceType, Compilation compilation)
+        => compilation.HasImplicitConversion(sourceType, this.SourceType)
+           && compilation.HasImplicitConversion(this.TargetType, targetType);
+
+    /// <summary>
     /// Gets all the attributes of type <typeparamref name="TAttribute"/>
     /// applied to the method.
     /// </summary>

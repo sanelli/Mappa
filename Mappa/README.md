@@ -50,6 +50,7 @@ Via `MappaSettings` the following settings can be tweaked:
 - `EnumerableConcreteType`: selects whether mappings to sequence-like collection interfaces (for example `IEnumerable<T>`) use `List<T>` (default) or `T[]` as the concrete buffer;
 - `DictionaryAssignment`: selects whether dictionary mappings insert entries via the indexer (`Indexer`, default) or `IDictionary<TKey,TValue>.Add` (`Add`);
 - `PolymorphicMapMethodWithMatchingDefaultAttribute`: when enabled, `MappaTypeMappingDefault` can be used to locate an appropriate polymorphic method when looking for the mapping between two types;
+- `CompatibleMapMethod`: when enabled, nested existing-method reuse may invoke a map method whose parameter is a base type or interface of the required source and whose return type is a derived type of the required target (disabled by default);
 - `CaseInsensitivePropertyMap`: when enabled, source property names are matched case-insensitively when pairing a target property or constructor parameter with a source property by name;
 - `IgnoreUnderscoreForPropertyMap`: when enabled, underscore characters are stripped from names before comparing a target property or constructor parameter with a source property by name;
 - `CaseInsensitiveEnumMap`: when enabled, enum member names or `[Description]` values are matched case-insensitively when mapping between enums or from `string` to an enum;

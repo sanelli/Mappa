@@ -422,6 +422,23 @@ public sealed partial class PreventEnumerableCountMapper
 
 See also: [PreventEnumerableCountMapper.cs](../Mappa.Samples/PreventEnumerableCountMapper.cs).
 
+#### Compatible map method settings
+
+`CompatibleMapMethod` controls whether nested existing-method reuse may invoke a map method whose parameter type is a base type or interface of the required source and whose return type is a derived type of the required target. The setting is disabled by default so that only exact (or nullability-relaxed) matches are reused:
+
+```csharp
+[Mappa]
+[MappaSettings(CompatibleMapMethod = BooleanSetting.Enable)]
+public sealed partial class CompatibleMapMethodMapper
+{
+    public DerivedTarget MapInner(BaseSource input) => new DerivedTarget { Value = input.Value + 100 };
+
+    public partial WrapperTarget Map(WrapperSource input);
+}
+```
+
+See also: [CompatibleMapMethodMapper.cs](../Mappa.Samples/CompatibleMapMethodMapper.cs).
+
 #### Dictionary assignment settings
 
 `DictionaryAssignment` controls how entries are inserted when mapping between dictionaries. The default is `Indexer` (`target[key] = value`). Set `Add` to call `IDictionary<TKey, TValue>.Add(key, value)` instead. Both modes produce equivalent results for unique keys. The setting applies to dictionary return types and get-only dictionary properties:

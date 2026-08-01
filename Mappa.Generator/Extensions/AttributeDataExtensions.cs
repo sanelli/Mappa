@@ -677,6 +677,10 @@ internal static class AttributeDataExtensions
                     attribute.PolymorphicMapMethodWithMatchingDefaultAttribute = (BooleanSetting)value;
                     break;
 
+                case nameof(MappaSettingsAttribute.CompatibleMapMethod) when namedArgument.Value.Value is int value:
+                    attribute.CompatibleMapMethod = (BooleanSetting)value;
+                    break;
+
                 case nameof(MappaSettingsAttribute.CaseInsensitivePropertyMap) when namedArgument.Value.Value is int value:
                     attribute.CaseInsensitivePropertyMap = (BooleanSetting)value;
                     break;

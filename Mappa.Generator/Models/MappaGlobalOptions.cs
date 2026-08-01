@@ -192,6 +192,10 @@ namespace Mappa.Generator.Models;
 ///         <description>Set the default value to enable or disable the support for <see cref="MappaTypeMappingDefaultBehavior.MapSourceType"/> when picking up a polymorphic method.</description>
 ///     </item>
 ///     <item>
+///         <term><c>mappa.compatiblemapmethod</c></term>
+///         <description>Set the default value to enable or disable compatible map-method reuse for base/interface source parameters and derived return types.</description>
+///     </item>
+///     <item>
 ///         <term><c>mappa.caseinsensitivepropertymap</c></term>
 ///         <description>Set the default value to enable or disable case-insensitive matching when pairing a target property or constructor parameter with a source property by name.</description>
 ///     </item>
@@ -273,6 +277,7 @@ internal sealed class MappaGlobalOptions
     private const string MappaSettingsContainerCapacityConstructors = "containercapacityconstructors";
     private const string MappaSettingsPreventEnumerableCount = "preventenumerablecount";
     private const string MappaSettingsPolymorphicMapMethodWithMatchingDefaultAttribute = "polymorphicmapmethodwithmatchingdefaultattribute";
+    private const string MappaSettingsCompatibleMapMethod = "compatiblemapmethod";
     private const string MappaSettingsCaseInsensitivePropertyMap = "caseinsensitivepropertymap";
     private const string MappaSettingsIgnoreUnderscoreForPropertyMap = "ignoreunderscoreforpropertymap";
     private const string MappaSettingsCaseInsensitiveEnumMap = "caseinsensitiveenummap";
@@ -415,6 +420,10 @@ internal sealed class MappaGlobalOptions
 
         this.PolymorphicMapMethodWithMatchingDefaultAttribute = options.TryGetValue(GetOptionName(MappaSettingsPolymorphicMapMethodWithMatchingDefaultAttribute), out var polymorphicMapMethodWithMatchingDefaultAttribute)
             ? GetBooleanSettingFromString(polymorphicMapMethodWithMatchingDefaultAttribute)
+            : BooleanSetting.Undefined;
+
+        this.CompatibleMapMethod = options.TryGetValue(GetOptionName(MappaSettingsCompatibleMapMethod), out var compatibleMapMethod)
+            ? GetBooleanSettingFromString(compatibleMapMethod)
             : BooleanSetting.Undefined;
 
         this.CaseInsensitivePropertyMap = options.TryGetValue(GetOptionName(MappaSettingsCaseInsensitivePropertyMap), out var caseInsensitivePropertyMap)
@@ -736,6 +745,9 @@ internal sealed class MappaGlobalOptions
 
     /// <inheritdoc/>
     public BooleanSetting PolymorphicMapMethodWithMatchingDefaultAttribute { get; }
+
+    /// <inheritdoc/>
+    public BooleanSetting CompatibleMapMethod { get; }
 
     /// <inheritdoc/>
     public BooleanSetting CaseInsensitivePropertyMap { get; }

@@ -290,6 +290,15 @@ public sealed class MappaSettingsAttribute
     public BooleanSetting PolymorphicMapMethodWithMatchingDefaultAttribute { get; set; } = BooleanSetting.Undefined;
 
     /// <summary>
+    /// Gets or sets a value indicating whether nested existing-method reuse may
+    /// invoke a map method whose parameter type is a base type or interface of the
+    /// required source type and whose return type is a derived type of the required
+    /// target type. By default this behavior is disabled so that only exact (or
+    /// nullability-relaxed) type matches are reused.
+    /// </summary>
+    public BooleanSetting CompatibleMapMethod { get; set; } = BooleanSetting.Undefined;
+
+    /// <summary>
     /// Gets or sets a value indicating whether source property names are matched
     /// case-insensitively when pairing a target property or constructor parameter
     /// with a source property by name.
