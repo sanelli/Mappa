@@ -45,8 +45,9 @@ Before the detector chain, nested mappings may invoke an existing map method on 
 
 | Feature | Sample |
 |---------|--------|
-| Hand-written map methods on the mapper | [MapMethodStrategyMapper.cs](../Mappa.Samples/MapMethodStrategyMapper.cs), [MapMethodStrategyWithUserCustomInstanceMethodMapper.cs](../Mappa.Samples/MapMethodStrategyWithUserCustomInstanceMethodMapper.cs), [MapMethodStrategyWithUserCustomStaticMethodMapper.cs](../Mappa.Samples/MapMethodStrategyWithUserCustomStaticMethodMapper.cs), [RelaxedNullabilityMethodMapMapper.cs](../Mappa.Samples/RelaxedNullabilityMethodMapMapper.cs) |
+| Hand-written map methods on the mapper | [MapMethodStrategyMapper.cs](../Mappa.Samples/MapMethodStrategyMapper.cs), [MapMethodStrategyWithUserCustomInstanceMethodMapper.cs](../Mappa.Samples/MapMethodStrategyWithUserCustomInstanceMethodMapper.cs), [MapMethodStrategyWithUserCustomStaticMethodMapper.cs](../Mappa.Samples/MapMethodStrategyWithUserCustomStaticMethodMapper.cs), [RelaxedNullabilityMethodMapMapper.cs](../Mappa.Samples/RelaxedNullabilityMethodMapMapper.cs), [CompatibleMapMethodMapper.cs](../Mappa.Samples/CompatibleMapMethodMapper.cs) |
 | Polymorphic method resolution for nested properties | [PolymorphicMethodMapMapper.cs](../Mappa.Samples/PolymorphicMethodMapMapper.cs) |
+| Compatible map-method reuse (base/interface source, derived return) | [CompatibleMapMethodMapper.cs](../Mappa.Samples/CompatibleMapMethodMapper.cs) |
 | Relaxed nullability when reusing existing map methods | [Algorithm — existing-method pre-step](./mappa-generator-algorithm.md#existing-method-pre-step-nested-mappings-only), [RelaxedNullabilityMethodMapMapper.cs](../Mappa.Samples/RelaxedNullabilityMethodMapMapper.cs) |
 
 ## Attributes
@@ -96,6 +97,7 @@ Settings may be applied at the mapper class level or overridden on individual ma
 | Custom container construction | `ContainerCapacityConstructors` | [ContainersWithCapacityConstructorMapper.cs](../Mappa.Samples/ContainersWithCapacityConstructorMapper.cs) |
 | Fixed-size target without `Enumerable.Count` | `PreventEnumerableCount` | [PreventEnumerableCountMapper.cs](../Mappa.Samples/PreventEnumerableCountMapper.cs) |
 | Polymorphic method resolution | `PolymorphicMapMethodWithMatchingDefaultAttribute` | [PolymorphicMethodMapMapper.cs](../Mappa.Samples/PolymorphicMethodMapMapper.cs) |
+| Compatible map-method reuse | `CompatibleMapMethod` | [CompatibleMapMethodMapper.cs](../Mappa.Samples/CompatibleMapMethodMapper.cs) |
 | Protobuf optional fields | `ProtobufOptional` | [ProtobufOptionalMapper.cs](../Mappa.Samples/ProtobufOptionalMapper.cs) |
 | Generated code warnings | `PragmaWarning` | [PragmaWarningSettingMapper.cs](../Mappa.Samples/PragmaWarningSettingMapper.cs) |
 

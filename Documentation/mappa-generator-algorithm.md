@@ -46,7 +46,8 @@ Before the detector chain, `TypeMapIdentifierWithMapMethodAlgorithm` checks whet
     - A method from a property or field marked with the `[MappaDependency]` **on the mapper or an accessible base class of the mapper**, or from a base class of the dependency type from `TSource` to `TTarget` exists OR,
     - A method from a type defined via the `[MappaStaticDependency]` attribute exists OR,
     - A polymorphic method where one of the `[MappaTypeMapping]` attributes matches `TSource` and `TTarget` OR,
-    - Setting `PolymorphicMapMethodWithMatchingDefaultAttribute` is `Enable` and a polymorphic method with attribute `[MappaTypeMappingDefault]` and behaviour `MappaTypeMappingDefaultBehavior.MapSourceType`, where `TTarget` matches the target type defined by the attribute and `TSource` matches the source type of the method, exists;
+    - Setting `PolymorphicMapMethodWithMatchingDefaultAttribute` is `Enable` and a polymorphic method with attribute `[MappaTypeMappingDefault]` and behaviour `MappaTypeMappingDefaultBehavior.MapSourceType`, where `TTarget` matches the target type defined by the attribute and `TSource` matches the source type of the method, exists OR,
+    - Setting `CompatibleMapMethod` is `Enable` and a method exists whose parameter type is a base type or interface of `TSource` and whose return type is a derived type of `TTarget` (selected after exact and nullability-relaxed matches fail);
 - _What_:
     - The existing method is invoked;
 - _Notes_:

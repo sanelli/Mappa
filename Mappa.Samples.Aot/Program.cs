@@ -20,6 +20,7 @@ internal static class Program
         CollectionToCollectionMapperRunner.Run(report);
         CaseInsensitiveEnumMapperRunner.Run(report);
         CaseInsensitiveEnumToEnumMapperRunner.Run(report);
+        CompatibleMapMethodMapperRunner.Run(report);
         ContainersWithCapacityConstructorMapperRunner.Run(report);
         DateAndTimeMapperRunner.Run(report);
         DescriptionEnumToEnumMapperRunner.Run(report);
