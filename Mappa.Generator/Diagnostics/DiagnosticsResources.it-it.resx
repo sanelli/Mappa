@@ -218,4 +218,13 @@
     <data name="ProjectionMethodHasAllowInaccessibleMembers" xml:space="preserve">
         <value>Il metodo '{0}' proietta IQueryable ma dichiara attributi per membri inaccessibili che non sono supportati per le proiezioni queryable.</value>
     </data>
+    <data name="MappaDependencyInjectionClassIsNotPartial" xml:space="preserve">
+        <value>La classe '{0}' dichiara MappaDependencyInjection ma non è partial; non verrà generato alcun metodo di registrazione per la dependency injection.</value>
+    </data>
+    <data name="MappaAndMappaDependencyInjectionBothApplied" xml:space="preserve">
+        <value>La classe '{0}' dichiara sia Mappa sia MappaDependencyInjection; questi attributi non possono essere applicati alla stessa classe.</value>
+    </data>
+    <data name="MappaDependencyInjectionMapperHasNoEligibleInterfaces" xml:space="preserve">
+        <value>Il mapper '{0}' non ha interfacce idonee per la registrazione nella dependency injection dopo l'applicazione di IgnoreType e verrà ignorato.</value>
+    </data>
 </root>

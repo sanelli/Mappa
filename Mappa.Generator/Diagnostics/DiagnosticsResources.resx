@@ -225,4 +225,13 @@
     <data name="ProjectionMethodHasAllowInaccessibleMembers" xml:space="preserve">
         <value>Method '{0}' projects IQueryable but declares inaccessible-member attributes which are not supported for queryable projections.</value>
     </data>
+    <data name="MappaDependencyInjectionClassIsNotPartial" xml:space="preserve">
+        <value>Class '{0}' declares MappaDependencyInjection but is not partial; no dependency injection registration method will be generated.</value>
+    </data>
+    <data name="MappaAndMappaDependencyInjectionBothApplied" xml:space="preserve">
+        <value>Class '{0}' declares both Mappa and MappaDependencyInjection; these attributes cannot be applied to the same class.</value>
+    </data>
+    <data name="MappaDependencyInjectionMapperHasNoEligibleInterfaces" xml:space="preserve">
+        <value>Mapper '{0}' has no eligible interfaces for dependency injection registration after applying IgnoreType and will be skipped.</value>
+    </data>
 </root>

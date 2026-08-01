@@ -1,4 +1,4 @@
-﻿// <copyright file="MappaGenerator.cs" company="Stefano Anelli">
+// <copyright file="MappaGenerator.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -38,6 +38,18 @@ public sealed class MappaGenerator
 
         // Step 3. Register the source output to generate the code.
         context.RegisterSourceOutput(analyzerConfigOptionsCompilationAndClasses, Execute);
+
+        // Step 4. Identify classes exposing [MappaDependencyInjection] (partial not required for diagnostics).
+        var dependencyInjectionClassDeclarations = context.SyntaxProvider.CreateSyntaxProvider(
+                IsClassDeclarationWithAttributes,
+                GetDependencyInjectionSemanticTargetForGeneration)
+            .Where(CommonExtensions.IsNotNull);
+
+        // Step 5. Register the source output for dependency injection registration methods.
+        var compilationAndDependencyInjectionClasses = context
+            .CompilationProvider
+            .Combine(dependencyInjectionClassDeclarations.Collect());
+        context.RegisterSourceOutput(compilationAndDependencyInjectionClasses, ExecuteDependencyInjection);
     }
 
     private static bool IsPartialClassDeclarationWithAttributes(SyntaxNode syntaxNode, CancellationToken cancellationToken)
@@ -45,9 +57,21 @@ public sealed class MappaGenerator
             classDeclarationSyntax.AttributeLists.Any() &&
             classDeclarationSyntax.IsPartial();
 
+    private static bool IsClassDeclarationWithAttributes(SyntaxNode syntaxNode, CancellationToken cancellationToken)
+        => syntaxNode is ClassDeclarationSyntax classDeclarationSyntax &&
+            classDeclarationSyntax.AttributeLists.Any();
+
     private static ClassDeclarationSyntax? GetSemanticTargetForGeneration(GeneratorSyntaxContext context, CancellationToken cancellationToken)
         => context.Node is ClassDeclarationSyntax classDeclarationSyntax &&
             classDeclarationSyntax.HasMappaAttribute(context.SemanticModel, cancellationToken)
+                ? classDeclarationSyntax
+                : null;
+
+    private static ClassDeclarationSyntax? GetDependencyInjectionSemanticTargetForGeneration(
+        GeneratorSyntaxContext context,
+        CancellationToken cancellationToken)
+        => context.Node is ClassDeclarationSyntax classDeclarationSyntax &&
+            classDeclarationSyntax.HasMappaDependencyInjectionAttribute(context.SemanticModel, cancellationToken)
                 ? classDeclarationSyntax
                 : null;
 
@@ -56,5 +80,11 @@ public sealed class MappaGenerator
 
     private static void Execute(SourceProductionContext context, AnalyzerConfigOptionsProvider analyzerConfigOptionsProvider, Compilation compilation, ImmutableArray<ClassDeclarationSyntax?> classDeclarationSyntaxes)
         => new MappaGeneratorClassAlgorithm(context, analyzerConfigOptionsProvider, compilation, classDeclarationSyntaxes)
+            .Execute();
+
+    private static void ExecuteDependencyInjection(
+        SourceProductionContext context,
+        (Compilation Compilation, ImmutableArray<ClassDeclarationSyntax?> ClassDeclarationSyntaxes) settings)
+        => new MappaDependencyInjectionGeneratorAlgorithm(context, settings.Compilation, settings.ClassDeclarationSyntaxes)
             .Execute();
 }

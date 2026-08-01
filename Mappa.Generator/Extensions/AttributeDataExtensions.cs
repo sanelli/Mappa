@@ -39,6 +39,8 @@ internal static class AttributeDataExtensions
     private const string MappaMapEnumMemberToEnumAttributeFullName = "Mappa.Attributes.MappaMapEnumMemberAttribute`2";
     private const string MappaMapEnumIgnoreAttributeFullName = "Mappa.Attributes.MappaMapEnumIgnoreAttribute`1";
     private const string MappaMapEnumDefaultAttributeFullName = "Mappa.Attributes.MappaMapEnumDefaultAttribute`1";
+    private const string MappaAttributeFullName = "Mappa.Attributes.MappaAttribute";
+    private const string MappaDependencyInjectionAttributeFullName = "Mappa.Attributes.MappaDependencyInjectionAttribute";
 
     /// <summary>
     /// Gets the <see cref="MappaMapEnumMemberAttribute{TEnum}"/> and
@@ -909,6 +911,114 @@ internal static class AttributeDataExtensions
         return [.. results];
     }
 
+    /// <summary>
+    /// Returns <c>true</c> when <paramref name="attributes"/> contains <see cref="MappaAttribute"/>.
+    /// </summary>
+    /// <param name="attributes">The attributes.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> when <see cref="MappaAttribute"/> is present; otherwise <c>false</c>.</returns>
+    internal static bool HasMappaAttribute(this ImmutableArray<AttributeData> attributes, Compilation compilation)
+    {
+        var attributeSymbol = compilation.GetTypeByMetadataName(MappaAttributeFullName);
+        return attributes
+            .Any(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, attributeSymbol));
+    }
+
+    /// <summary>
+    /// Returns <c>true</c> when <paramref name="attributes"/> contains
+    /// <see cref="MappaDependencyInjectionAttribute"/>.
+    /// </summary>
+    /// <param name="attributes">The attributes.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>
+    /// <c>true</c> when <see cref="MappaDependencyInjectionAttribute"/> is present; otherwise <c>false</c>.
+    /// </returns>
+    internal static bool HasMappaDependencyInjectionAttribute(this ImmutableArray<AttributeData> attributes, Compilation compilation)
+    {
+        var attributeSymbol = compilation.GetTypeByMetadataName(MappaDependencyInjectionAttributeFullName);
+        return attributes
+            .Any(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, attributeSymbol));
+    }
+
+    /// <summary>
+    /// Gets the parsed <see cref="MappaDependencyInjectionAttribute"/> data, if any.
+    /// </summary>
+    /// <param name="attributes">The attributes.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The parsed attribute data, or <c>null</c> if the attribute is not present.</returns>
+    internal static MappaDependencyInjectionAttributeData? GetMappaDependencyInjectionAttributeData(
+        this ImmutableArray<AttributeData> attributes,
+        Compilation compilation)
+    {
+        var attributeSymbol = compilation.GetTypeByMetadataName(MappaDependencyInjectionAttributeFullName);
+        var attributeData = attributes
+            .FirstOrDefault(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, attributeSymbol));
+        if (attributeData is null)
+        {
+            return null;
+        }
+
+        string? constructorMethodName = null;
+        if (attributeData.ConstructorArguments.Length == 1
+            && attributeData.ConstructorArguments[0].Value is string constructorName)
+        {
+            constructorMethodName = constructorName;
+        }
+
+        var extensionMethod = true;
+        string? methodName = null;
+        var accessibility = MappaDependencyInjectionMethodAccessibility.Public;
+        var serviceLifetime = MappaDependencyInjectionServiceLifetime.Singleton;
+        var injectInterfaces = MappaDependencyInjectionInjectInterfaces.ClassOnly;
+        var ignoreTypes = ImmutableArray<INamedTypeSymbol>.Empty;
+
+        foreach (var namedArgument in attributeData.NamedArguments)
+        {
+            switch (namedArgument.Key)
+            {
+                case nameof(MappaDependencyInjectionAttribute.ExtensionMethod)
+                    when namedArgument.Value.Value is bool extensionMethodValue:
+                    extensionMethod = extensionMethodValue;
+                    break;
+
+                case nameof(MappaDependencyInjectionAttribute.MethodName)
+                    when namedArgument.Value.Value is string methodNameValue:
+                    methodName = methodNameValue;
+                    break;
+
+                case nameof(MappaDependencyInjectionAttribute.Accessibility)
+                    when TryReadEnum(namedArgument.Value, out MappaDependencyInjectionMethodAccessibility accessibilityValue):
+                    accessibility = accessibilityValue;
+                    break;
+
+                case nameof(MappaDependencyInjectionAttribute.ServiceLifetime)
+                    when TryReadEnum(namedArgument.Value, out MappaDependencyInjectionServiceLifetime serviceLifetimeValue):
+                    serviceLifetime = serviceLifetimeValue;
+                    break;
+
+                case nameof(MappaDependencyInjectionAttribute.InjectInterfaces)
+                    when TryReadEnum(namedArgument.Value, out MappaDependencyInjectionInjectInterfaces injectInterfacesValue):
+                    injectInterfaces = injectInterfacesValue;
+                    break;
+
+                case nameof(MappaDependencyInjectionAttribute.IgnoreType):
+                    ignoreTypes = ReadNamedTypeArray(namedArgument.Value);
+                    break;
+            }
+        }
+
+        var location = attributeData.ApplicationSyntaxReference?.GetSyntax().GetLocation();
+        return new MappaDependencyInjectionAttributeData(
+            constructorMethodName,
+            methodName,
+            extensionMethod,
+            accessibility,
+            serviceLifetime,
+            injectInterfaces,
+            ignoreTypes,
+            location);
+    }
+
     private static MapHookAttributeData[] GetMapHookAttributes(
         ImmutableArray<AttributeData> attributes,
         Compilation compilation,
@@ -1011,5 +1121,41 @@ internal static class AttributeDataExtensions
             .OfType<string>()
             .Where(name => name.Length > 0)
             .ToArray();
+    }
+
+    private static bool TryReadEnum<TEnum>(TypedConstant typedConstant, out TEnum value)
+        where TEnum : struct
+    {
+        if (typedConstant.Value is TEnum enumValue)
+        {
+            value = enumValue;
+            return true;
+        }
+
+        if (typedConstant.Value is int intValue)
+        {
+            value = (TEnum)(object)intValue;
+            return true;
+        }
+
+        value = default;
+        return false;
+    }
+
+    private static ImmutableArray<INamedTypeSymbol> ReadNamedTypeArray(TypedConstant typedConstant)
+    {
+        if (typedConstant.Kind != TypedConstantKind.Array)
+        {
+            return typedConstant.Value is INamedTypeSymbol singleType
+                ? [singleType]
+                : ImmutableArray<INamedTypeSymbol>.Empty;
+        }
+
+        return
+        [
+            .. typedConstant.Values
+                .Select(value => value.Value)
+                .OfType<INamedTypeSymbol>(),
+        ];
     }
 }
