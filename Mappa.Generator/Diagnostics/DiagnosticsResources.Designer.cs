@@ -440,5 +440,23 @@ namespace Mappa.Generator.Diagnostics {
                 return ResourceManager.GetString("MappaMustMapTargetPropertyListsRequiredProperty", resourceCulture);
             }
         }
+
+        internal static string UnsafeAccessorNotSupported {
+            get {
+                return ResourceManager.GetString("UnsafeAccessorNotSupported", resourceCulture);
+            }
+        }
+
+        internal static string AllowInaccessibleTargetMembersDisabledAll {
+            get {
+                return ResourceManager.GetString("AllowInaccessibleTargetMembersDisabledAll", resourceCulture);
+            }
+        }
+
+        internal static string ProjectionMethodHasAllowInaccessibleMembers {
+            get {
+                return ResourceManager.GetString("ProjectionMethodHasAllowInaccessibleMembers", resourceCulture);
+            }
+        }
     }
 }

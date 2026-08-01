@@ -1165,4 +1165,46 @@ internal static class MappaDiagnostics
             methodName,
             propertyName,
             targetTypeName);
+
+    /// <summary>
+    /// Diagnostic to report that inaccessible-member attributes require <c>UnsafeAccessor</c> support.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="methodName">The mapping method name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic UnsafeAccessorNotSupported(
+        MethodDeclarationSyntax? methodDeclarationSyntax,
+        string methodName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.UnsafeAccessorNotSupported,
+            methodDeclarationSyntax?.GetLocation(),
+            methodName);
+
+    /// <summary>
+    /// Diagnostic to report that both allow flags on the target inaccessible-member attribute are <c>false</c>.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="methodName">The mapping method name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic AllowInaccessibleTargetMembersDisabledAll(
+        MethodDeclarationSyntax? methodDeclarationSyntax,
+        string methodName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.AllowInaccessibleTargetMembersDisabledAll,
+            methodDeclarationSyntax?.GetLocation(),
+            methodName);
+
+    /// <summary>
+    /// Diagnostic to report that a queryable projection map method declares inaccessible-member attributes.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <param name="methodName">The mapping method name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic ProjectionMethodHasAllowInaccessibleMembers(
+        MethodDeclarationSyntax? methodDeclarationSyntax,
+        string methodName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.ProjectionMethodHasAllowInaccessibleMembers,
+            methodDeclarationSyntax?.GetLocation(),
+            methodName);
 }

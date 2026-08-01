@@ -4,6 +4,7 @@
 
 using Mappa.Generator.Exceptions;
 using Mappa.Generator.Extensions;
+using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -104,7 +105,10 @@ internal static class ReadonlyCollectionPropertyLoopBuilder
         string targetElementTemporary,
         InsertionMethod insertionMethod)
     {
-        var targetPropertyAccess = $"{context.GetCompositeTypeTargetName()}.{targetProperty.Name}";
+        var targetPropertyAccess = InaccessibleMemberAccessHelper.BuildTargetPropertyReadExpression(
+            context.GetCompositeTypeTargetName(),
+            targetProperty,
+            context);
 
         switch (insertionMethod)
         {
@@ -115,7 +119,7 @@ internal static class ReadonlyCollectionPropertyLoopBuilder
                 stringBuilder.AppendLine($"{targetPropertyAccess}.Enqueue({targetElementTemporary});");
                 break;
             case InsertionMethod.Add:
-                AppendAdd(stringBuilder, context, targetType, targetProperty, targetElementTemporary);
+                AppendAdd(stringBuilder, context, targetType, targetElementTemporary, targetPropertyAccess);
                 break;
             default:
                 throw new MappaGeneratorException($"Unexpected insertion method {insertionMethod}.");
@@ -126,8 +130,8 @@ internal static class ReadonlyCollectionPropertyLoopBuilder
         PrettyCode.StringBuilder stringBuilder,
         MappaBuilderContext context,
         ITypeSymbol targetType,
-        IPropertySymbol targetProperty,
-        string targetElementTemporary)
+        string targetElementTemporary,
+        string targetPropertyAccess)
     {
         var elementType = targetType.GetElementType();
         var methodAccessMode = targetType.GetInterfaceMethodAccessMode(
@@ -140,12 +144,12 @@ internal static class ReadonlyCollectionPropertyLoopBuilder
         if (methodAccessMode == InterfaceMethodAccessMode.InterfaceExplicit)
         {
             var interfaceTemporary = context.NextTemporary();
-            stringBuilder.AppendLine($"System.Collections.Generic.ICollection<{elementType}> {interfaceTemporary} = {context.GetCompositeTypeTargetName()}.{targetProperty.Name};");
+            stringBuilder.AppendLine($"System.Collections.Generic.ICollection<{elementType}> {interfaceTemporary} = {targetPropertyAccess};");
             stringBuilder.AppendLine($"{interfaceTemporary}.Add({targetElementTemporary});");
         }
         else
         {
-            stringBuilder.AppendLine($"{context.GetCompositeTypeTargetName()}.{targetProperty.Name}.Add({targetElementTemporary});");
+            stringBuilder.AppendLine($"{targetPropertyAccess}.Add({targetElementTemporary});");
         }
     }
 

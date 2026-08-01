@@ -94,9 +94,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         parametersMapStrategies = [];
         var noMapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
 
-        var sourceProperties = this.context.SourceType.GetTypeProperties()
-            .Where(property => !property.IsIndexer && property.IsGetterAccessible(this.compilation, this.context.GetRootMapMethod()))
-            .ToArray();
+        var sourceProperties = this.GetReadableSourceProperties(this.context.SourceType);
 
         var strategiesForEachParameter = factoryMethod.Parameters
             .Select(targetParameter =>
@@ -151,7 +149,8 @@ internal sealed partial class ConstructorMapStrategyDetector
                         return (Parameter: targetParameter, Strategy: (MapStrategy)noMapStrategy);
                     }
 
-                    var strategy = new ParameterMapStrategy(targetParameter, sourceProperty, propertyStrategyFromAttribute);
+                    this.TryIsSourcePropertyReadable(sourceProperty, out var requiresUnsafeAccessorOnSourceFromAttribute);
+                    var strategy = new ParameterMapStrategy(targetParameter, sourceProperty, propertyStrategyFromAttribute, requiresUnsafeAccessorOnSourceFromAttribute);
                     return (Parameter: targetParameter, Strategy: (MapStrategy)strategy);
                 }
 
@@ -171,7 +170,8 @@ internal sealed partial class ConstructorMapStrategyDetector
                 if (this.TryGetStrategyBetweenTypes(targetParameterType, sourcePropertyType, true, out var propertyStrategy))
                 {
                     propertyStrategy = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, sourceProperties, propertyStrategy);
-                    var parameterMapStrategy = new ParameterMapStrategy(targetParameter, sourceProperty, propertyStrategy);
+                    this.TryIsSourcePropertyReadable(sourceProperty, out var requiresUnsafeAccessorOnSource);
+                    var parameterMapStrategy = new ParameterMapStrategy(targetParameter, sourceProperty, propertyStrategy, requiresUnsafeAccessorOnSource);
                     return (Parameter: targetParameter, Strategy: (MapStrategy)parameterMapStrategy);
                 }
 
@@ -297,9 +297,7 @@ internal sealed partial class ConstructorMapStrategyDetector
             return !requireAtLeastOneMappedProperty;
         }
 
-        var sourceProperties = this.context.SourceType.GetTypeProperties()
-            .Where(property => !property.IsIndexer && property.IsGetterAccessible(this.compilation, this.context.GetRootMapMethod()))
-            .ToArray();
+        var sourceProperties = this.GetReadableSourceProperties(this.context.SourceType);
 
         var mappedInitializerStrategies = targetProperties
             .Where(targetProperty => this.context.MappaUserSettings.ProtobufOptional is not BooleanSetting.Enable
@@ -418,7 +416,7 @@ internal sealed partial class ConstructorMapStrategyDetector
                             isConstructorParameterPath: false,
                             out var propertyStrategyFromAttribute))
                     {
-                        if (!targetProperty.IsSetterAccessible(this.compilation, this.context.GetRootMapMethod()))
+                        if (!this.TryIsTargetPropertyWritable(targetProperty, out var requiresUnsafeAccessorOnTargetFromAttribute))
                         {
                             this.context.ReportDiagnostic(MappaDiagnostics.PropertySetterIsNotAccessible(this.context.GetRootMapMethod().MethodDeclarationSyntax, this.context.TargetType, targetProperty));
                             return new PropertyMapStrategy(targetProperty, null, noMapStrategy, false);
@@ -426,7 +424,17 @@ internal sealed partial class ConstructorMapStrategyDetector
 
                         propertyStrategyFromAttribute = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, sourceProperties, propertyStrategyFromAttribute);
                         propertyStrategyFromAttribute = this.EncapsulateMapStrategyForTargetOptional(targetProperty, allTargetProperties, propertyStrategyFromAttribute, out var postConstructorInitializer);
-                        return new PropertyMapStrategy(targetProperty, sourceProperty, propertyStrategyFromAttribute, postConstructorInitializer, chainedSourcePropertyPath);
+                        var requiresUnsafeAccessorOnSourceFromAttribute = sourceProperty is not null
+                            && this.TryIsSourcePropertyReadable(sourceProperty, out var sourceRequiresUnsafeFromAttribute)
+                            && sourceRequiresUnsafeFromAttribute;
+                        return new PropertyMapStrategy(
+                            targetProperty,
+                            sourceProperty,
+                            propertyStrategyFromAttribute,
+                            postConstructorInitializer,
+                            chainedSourcePropertyPath,
+                            requiresUnsafeAccessorOnSourceFromAttribute,
+                            requiresUnsafeAccessorOnTargetFromAttribute);
                     }
 
                     if (chainedSourcePropertyPath is not null
@@ -438,17 +446,21 @@ internal sealed partial class ConstructorMapStrategyDetector
                         var innerSourceType = chainedSourceProperties[chainedSourceProperties.Length - 1].Type;
                         MapStrategy chainedPropertyStrategy = new IdentityMapStrategy(targetProperty.Type, innerSourceType);
                         chainedPropertyStrategy = this.EncapsulateMapStrategyForTargetOptional(targetProperty, allTargetProperties, chainedPropertyStrategy, out var chainedPostConstructorInitializer);
+                        this.TryIsTargetPropertyWritable(targetProperty, out var requiresUnsafeAccessorOnTargetFromChain);
                         return new PropertyMapStrategy(
                             targetProperty,
                             null,
                             chainedPropertyStrategy,
                             chainedPostConstructorInitializer,
-                            chainedSourcePropertyPath);
+                            chainedSourcePropertyPath,
+                            requiresUnsafeAccessorOnSource: false,
+                            requiresUnsafeAccessorOnTarget: requiresUnsafeAccessorOnTargetFromChain);
                     }
 
+                    var canWriteTargetProperty = this.TryIsTargetPropertyWritable(targetProperty, out var requiresUnsafeAccessorOnTargetSetter);
                     if (sourceProperty is not null &&
-                        (targetProperty.SetMethod is null || (this.context.MapMethod is not null && targetProperty.SetMethod is not null && !targetProperty.IsSetterAccessible(this.compilation, this.context.MapMethod))) &&
-                        targetProperty.GetMethod is not null)
+                        !canWriteTargetProperty &&
+                        this.TryIsTargetPropertyGetterReadable(targetProperty, out var requiresUnsafeAccessorOnTargetGetter))
                     {
                         if (targetProperty.Type.IsOrImplementIDictionary(this.compilation)
                             && sourceProperty.Type.IsOrImplementIDictionary(this.compilation)
@@ -466,7 +478,14 @@ internal sealed partial class ConstructorMapStrategyDetector
                                 keyStrategy,
                                 valueStrategy,
                                 DictionaryAssignmentSettingHelper.GetEffective(this.context.MappaUserSettings.DictionaryAssignment));
-                            return new PropertyMapStrategy(targetProperty, sourceProperty, dictionaryPropertyStrategy, true);
+                            this.TryIsSourcePropertyReadable(sourceProperty, out var requiresUnsafeAccessorOnSourceDictionary);
+                            return new PropertyMapStrategy(
+                                targetProperty,
+                                sourceProperty,
+                                dictionaryPropertyStrategy,
+                                true,
+                                requiresUnsafeAccessorOnSource: requiresUnsafeAccessorOnSourceDictionary,
+                                requiresUnsafeAccessorOnTarget: requiresUnsafeAccessorOnTargetGetter);
                         }
                         else if ((targetProperty.Type.IsOrDerivedFromStack(this.compilation)
                                   || targetProperty.Type.IsOrDerivedFromConcurrentStack(this.compilation))
@@ -479,7 +498,14 @@ internal sealed partial class ConstructorMapStrategyDetector
                                      this.cancellationToken))
                         {
                             var stackPropertyStrategy = new ReadonlyStackPropertyMapStrategy(targetProperty, sourceProperty, stackElementStrategy);
-                            return new PropertyMapStrategy(targetProperty, sourceProperty, stackPropertyStrategy, true);
+                            this.TryIsSourcePropertyReadable(sourceProperty, out var requiresUnsafeAccessorOnSourceStack);
+                            return new PropertyMapStrategy(
+                                targetProperty,
+                                sourceProperty,
+                                stackPropertyStrategy,
+                                true,
+                                requiresUnsafeAccessorOnSource: requiresUnsafeAccessorOnSourceStack,
+                                requiresUnsafeAccessorOnTarget: requiresUnsafeAccessorOnTargetGetter);
                         }
                         else if ((targetProperty.Type.IsOrDerivedFromQueue(this.compilation)
                                   || targetProperty.Type.IsOrImplementConcurrentQueue(this.compilation))
@@ -492,7 +518,14 @@ internal sealed partial class ConstructorMapStrategyDetector
                                      this.cancellationToken))
                         {
                             var queuePropertyStrategy = new ReadonlyQueuePropertyMapStrategy(targetProperty, sourceProperty, queueElementStrategy);
-                            return new PropertyMapStrategy(targetProperty, sourceProperty, queuePropertyStrategy, true);
+                            this.TryIsSourcePropertyReadable(sourceProperty, out var requiresUnsafeAccessorOnSourceQueue);
+                            return new PropertyMapStrategy(
+                                targetProperty,
+                                sourceProperty,
+                                queuePropertyStrategy,
+                                true,
+                                requiresUnsafeAccessorOnSource: requiresUnsafeAccessorOnSourceQueue,
+                                requiresUnsafeAccessorOnTarget: requiresUnsafeAccessorOnTargetGetter);
                         }
                         else if ((targetProperty.Type.IsOrDerivedFromConcurrentBag(this.compilation)
                                   || targetProperty.Type.IsOrDerivedFromBlockingCollection(this.compilation))
@@ -505,7 +538,14 @@ internal sealed partial class ConstructorMapStrategyDetector
                                      this.cancellationToken))
                         {
                             var addCollectionPropertyStrategy = new ReadonlyAddCollectionPropertyMapStrategy(targetProperty, sourceProperty, addCollectionElementStrategy);
-                            return new PropertyMapStrategy(targetProperty, sourceProperty, addCollectionPropertyStrategy, true);
+                            this.TryIsSourcePropertyReadable(sourceProperty, out var requiresUnsafeAccessorOnSourceAddCollection);
+                            return new PropertyMapStrategy(
+                                targetProperty,
+                                sourceProperty,
+                                addCollectionPropertyStrategy,
+                                true,
+                                requiresUnsafeAccessorOnSource: requiresUnsafeAccessorOnSourceAddCollection,
+                                requiresUnsafeAccessorOnTarget: requiresUnsafeAccessorOnTargetGetter);
                         }
                         else if (targetProperty.Type.IsOrImplementICollection()
                                  && (sourceProperty.Type.IsArray() || sourceProperty.Type.IsOrImplementIEnumerable())
@@ -517,7 +557,14 @@ internal sealed partial class ConstructorMapStrategyDetector
                                      this.cancellationToken))
                         {
                             var collectionPropertyStrategy = new ReadonlyCollectionPropertyMapStrategy(targetProperty, sourceProperty, elementStrategy);
-                            return new PropertyMapStrategy(targetProperty, sourceProperty, collectionPropertyStrategy, true);
+                            this.TryIsSourcePropertyReadable(sourceProperty, out var requiresUnsafeAccessorOnSourceCollection);
+                            return new PropertyMapStrategy(
+                                targetProperty,
+                                sourceProperty,
+                                collectionPropertyStrategy,
+                                true,
+                                requiresUnsafeAccessorOnSource: requiresUnsafeAccessorOnSourceCollection,
+                                requiresUnsafeAccessorOnTarget: requiresUnsafeAccessorOnTargetGetter);
                         }
 
                         return new PropertyMapStrategy(targetProperty, null, noMapStrategy, false);
@@ -528,7 +575,7 @@ internal sealed partial class ConstructorMapStrategyDetector
                         return new PropertyMapStrategy(targetProperty, sourceProperty, noMapStrategy, false);
                     }
 
-                    if (targetProperty.SetMethod is null || !targetProperty.IsSetterAccessible(this.compilation, this.context.GetRootMapMethod()))
+                    if (!canWriteTargetProperty)
                     {
                         return new PropertyMapStrategy(targetProperty, sourceProperty, noMapStrategy, false);
                     }
@@ -545,7 +592,14 @@ internal sealed partial class ConstructorMapStrategyDetector
                     {
                         propertyStrategy = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, sourceProperties, propertyStrategy);
                         propertyStrategy = this.EncapsulateMapStrategyForTargetOptional(targetProperty, allTargetProperties, propertyStrategy, out var postConstructorInitializer);
-                        return new PropertyMapStrategy(targetProperty, sourceProperty, propertyStrategy, postConstructorInitializer);
+                        this.TryIsSourcePropertyReadable(sourceProperty, out var requiresUnsafeAccessorOnSource);
+                        return new PropertyMapStrategy(
+                            targetProperty,
+                            sourceProperty,
+                            propertyStrategy,
+                            postConstructorInitializer,
+                            requiresUnsafeAccessorOnSource: requiresUnsafeAccessorOnSource,
+                            requiresUnsafeAccessorOnTarget: requiresUnsafeAccessorOnTargetSetter);
                     }
 
                     return new PropertyMapStrategy(targetProperty, null, noMapStrategy, false);
@@ -571,7 +625,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         foreach (var propertyWithoutStrategy in propertiesWithoutStrategy.Select(propertyStrategy => propertyStrategy.TargetProperty))
         {
             var targetCollections = propertyWithoutStrategy.Type.IsPostInitializationCollectionType(this.compilation);
-            var hasSetter = propertyWithoutStrategy.SetMethod is not null && propertyWithoutStrategy.IsSetterAccessible(this.compilation, this.context.GetRootMapMethod());
+            var hasSetter = this.TryIsTargetPropertyWritable(propertyWithoutStrategy, out _);
 
             if (!hasSetter && !targetCollections)
             {

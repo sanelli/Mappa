@@ -358,4 +358,21 @@ internal enum MappaDiagnosticsKind
     /// <see cref="Mappa.Attributes.MappaMustMapTargetPropertyAttribute"/> lists a property that is already required.
     /// </summary>
     MappaMustMapTargetPropertyListsRequiredProperty,
+
+    /// <summary>
+    /// Inaccessible-member attributes are used but <c>UnsafeAccessor</c> is not available in the compilation.
+    /// </summary>
+    UnsafeAccessorNotSupported,
+
+    /// <summary>
+    /// <see cref="Mappa.Attributes.MappaAllowInaccessibleTargetMembersAttribute"/> has both
+    /// <see cref="Mappa.Attributes.MappaAllowInaccessibleTargetMembersAttribute.AllowProperties"/> and
+    /// <see cref="Mappa.Attributes.MappaAllowInaccessibleTargetMembersAttribute.AllowConstructors"/> set to <c>false</c>.
+    /// </summary>
+    AllowInaccessibleTargetMembersDisabledAll,
+
+    /// <summary>
+    /// A queryable projection map method declares inaccessible-member attributes.
+    /// </summary>
+    ProjectionMethodHasAllowInaccessibleMembers,
 }

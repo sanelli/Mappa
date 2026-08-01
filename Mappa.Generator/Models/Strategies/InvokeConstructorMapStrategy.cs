@@ -18,6 +18,7 @@ namespace Mappa.Generator.Models.Strategies;
 /// <param name="initializerStrategies">The strategies to be applied via initializers.</param>
 /// <param name="assignToContextEntries">The context entries to assign after target construction.</param>
 /// <param name="contextParameterName">The name of the context parameter, if any.</param>
+/// <param name="requiresUnsafeAccessorOnConstructor"><c>true</c> when the constructor must be invoked via an unsafe accessor.</param>
 internal sealed class InvokeConstructorMapStrategy(
     ITypeSymbol targetType,
     ITypeSymbol sourceType,
@@ -25,7 +26,8 @@ internal sealed class InvokeConstructorMapStrategy(
     ParameterMapStrategy[] parametersMapStrategies,
     PropertyMapStrategy[] initializerStrategies,
     MappaAssignToContextEntry[] assignToContextEntries,
-    string? contextParameterName)
+    string? contextParameterName,
+    bool requiresUnsafeAccessorOnConstructor = false)
         : MapStrategy(targetType, sourceType)
 {
     /// <summary>
@@ -52,6 +54,11 @@ internal sealed class InvokeConstructorMapStrategy(
     /// Gets the name of the context parameter, if any.
     /// </summary>
     public string? ContextParameterName { get; } = contextParameterName;
+
+    /// <summary>
+    /// Gets a value indicating whether the constructor must be invoked via an unsafe accessor.
+    /// </summary>
+    public bool RequiresUnsafeAccessorOnConstructor { get; } = requiresUnsafeAccessorOnConstructor;
 
     /// <inheritdoc/>
     internal override IMappaStrategyBuilder GetBuilder() => new InvokeConstructorMapStrategyBuilder(this);

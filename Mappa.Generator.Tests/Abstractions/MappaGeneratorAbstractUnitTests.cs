@@ -9,6 +9,8 @@ using Mappa.Dependency.Protobuf;
 using Mappa.Generator.Tests.Helpers;
 using Mappa.Generator.Tests.Models;
 
+using Microsoft.CodeAnalysis.Diagnostics;
+
 namespace Mappa.Generator.Tests.Abstractions;
 
 /// <summary>
@@ -28,7 +30,7 @@ public abstract class MappaGeneratorAbstractUnitTests
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The driver, the cancellation output and the diagnostics.</returns>
     protected static Task<GeneratedResults> RunMappaGeneratorAsync(string source, CancellationToken cancellationToken)
-        => RunMappaGeneratorAsync(source, null, cancellationToken);
+        => RunMappaGeneratorAsync(source, null, LanguageVersion.Default, cancellationToken);
 
     /// <summary>
     /// Run the generator on the input source with an optional <c>.editorconfig</c>.
@@ -38,16 +40,47 @@ public abstract class MappaGeneratorAbstractUnitTests
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The driver, the cancellation output and the diagnostics.</returns>
     protected static Task<GeneratedResults> RunMappaGeneratorAsync(string source, string? editorConfig, CancellationToken cancellationToken)
+        => RunMappaGeneratorAsync(source, editorConfig, LanguageVersion.Default, cancellationToken);
+
+    /// <summary>
+    /// Run the generator on the input source with a specific language version.
+    /// </summary>
+    /// <param name="source">The input source code.</param>
+    /// <param name="languageVersion">The C# language version for the compilation.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The driver, the cancellation output and the diagnostics.</returns>
+    protected static Task<GeneratedResults> RunMappaGeneratorAsync(
+        string source,
+        LanguageVersion languageVersion,
+        CancellationToken cancellationToken)
+        => RunMappaGeneratorAsync(source, null, languageVersion, cancellationToken);
+
+    /// <summary>
+    /// Run the generator on the input source with an optional <c>.editorconfig</c>
+    /// and a specific language version.
+    /// </summary>
+    /// <param name="source">The input source code.</param>
+    /// <param name="editorConfig">The optional <c>.editorconfig</c> content.</param>
+    /// <param name="languageVersion">The C# language version for the compilation.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The driver, the cancellation output and the diagnostics.</returns>
+    protected static Task<GeneratedResults> RunMappaGeneratorAsync(
+        string source,
+        string? editorConfig,
+        LanguageVersion languageVersion,
+        CancellationToken cancellationToken)
     {
         var generator = new MappaGenerator();
-        var compilation = BuildCompilation(source);
-        GeneratorDriver driver = editorConfig is null
-            ? CSharpGeneratorDriver.Create(generator)
-            : CSharpGeneratorDriver.Create(
-                [generator.AsSourceGenerator()],
-                additionalTexts: null,
-                parseOptions: null,
-                optionsProvider: TestAnalyzerConfigOptionsProvider.FromEditorConfig(editorConfig));
+        var parseOptions = CSharpParseOptions.Default.WithLanguageVersion(languageVersion);
+        var compilation = BuildCompilation(source, parseOptions);
+        AnalyzerConfigOptionsProvider? optionsProvider = editorConfig is null
+            ? null
+            : TestAnalyzerConfigOptionsProvider.FromEditorConfig(editorConfig);
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(
+            [generator.AsSourceGenerator()],
+            additionalTexts: null,
+            parseOptions: parseOptions,
+            optionsProvider: optionsProvider);
 
         driver = driver.RunGeneratorsAndUpdateCompilation(
             compilation,
@@ -63,6 +96,15 @@ public abstract class MappaGeneratorAbstractUnitTests
     /// <param name="source">The input source code.</param>
     /// <returns>The compilation.</returns>
     protected static CSharpCompilation BuildCompilation(string source)
+        => BuildCompilation(source, CSharpParseOptions.Default);
+
+    /// <summary>
+    /// Create a new compilation for the source generator.
+    /// </summary>
+    /// <param name="source">The input source code.</param>
+    /// <param name="parseOptions">The parse options.</param>
+    /// <returns>The compilation.</returns>
+    protected static CSharpCompilation BuildCompilation(string source, CSharpParseOptions parseOptions)
     {
         var frameworkPath = Path.GetDirectoryName(typeof(Attribute).GetTypeInfo().Assembly.Location)!;
         var dateTimeStylesAssembly = typeof(MappaSettingsAttribute).GetProperty(nameof(MappaSettingsAttribute.DateTimeStyle))!.PropertyType.Assembly;
@@ -86,7 +128,6 @@ public abstract class MappaGeneratorAbstractUnitTests
             MetadataReference.CreateFromFile(typeof(System.Linq.Expressions.Expression).Assembly.Location),
         };
 
-        var parseOptions = CSharpParseOptions.Default;
         var compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
 
         return CSharpCompilation.Create(

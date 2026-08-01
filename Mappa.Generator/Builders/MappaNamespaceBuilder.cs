@@ -19,10 +19,18 @@ internal sealed class MappaNamespaceBuilder
     /// </summary>
     /// <param name="classContext">The class generator context.</param>
     /// <param name="classSourceCode">The source code of the class.</param>
-    public MappaNamespaceBuilder(MappaClassGeneratorContext classContext, string classSourceCode)
+    /// <param name="preambleSourceCode">
+    /// Optional source emitted inside the namespace before the class
+    /// (for example file-local inaccessible accessors).
+    /// </param>
+    public MappaNamespaceBuilder(
+        MappaClassGeneratorContext classContext,
+        string classSourceCode,
+        string? preambleSourceCode = null)
     {
         this.ClassContext = classContext;
         this.ClassSourceCode = classSourceCode;
+        this.PreambleSourceCode = preambleSourceCode;
     }
 
     /// <summary>
@@ -35,6 +43,11 @@ internal sealed class MappaNamespaceBuilder
     /// </summary>
     private string ClassSourceCode { get; }
 
+    /// <summary>
+    /// Gets optional source emitted inside the namespace before the class.
+    /// </summary>
+    private string? PreambleSourceCode { get; }
+
     /// <inheritdoc/>
     public string BuildSource(MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
@@ -46,6 +59,7 @@ internal sealed class MappaNamespaceBuilder
         {
             builder.AppendLine($"namespace {@namespace};");
             builder.AppendEmptyLine();
+            this.AppendPreamble(builder);
             builder.AppendLine(this.ClassSourceCode);
         }
 
@@ -55,6 +69,7 @@ internal sealed class MappaNamespaceBuilder
             builder.AppendLine($"namespace {@namespace}");
             using (builder.CurlyBracesBlock())
             {
+                this.AppendPreamble(builder);
                 builder.AppendLine(this.ClassSourceCode);
             }
         }
@@ -62,9 +77,21 @@ internal sealed class MappaNamespaceBuilder
         // No namespace at all
         else
         {
+            this.AppendPreamble(builder);
             builder.AppendLine(this.ClassSourceCode);
         }
 
         return builder.ToString();
+    }
+
+    private void AppendPreamble(PrettyCode.StringBuilder builder)
+    {
+        if (this.PreambleSourceCode is not { Length: > 0 } preambleSourceCode)
+        {
+            return;
+        }
+
+        builder.AppendLine(preambleSourceCode);
+        builder.AppendEmptyLine();
     }
 }

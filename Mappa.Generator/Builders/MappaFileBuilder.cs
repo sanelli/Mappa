@@ -1,4 +1,4 @@
-﻿// <copyright file="MappaFileBuilder.cs" company="Stefano Anelli">
+// <copyright file="MappaFileBuilder.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -35,11 +35,21 @@ internal sealed class MappaFileBuilder
     /// <inheritdoc/>
     public string BuildSource(MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
-        // Build the source for the class.
+        // Build the source for the class (also registers any inaccessible accessors).
         var classSourceCode = new MappaClassBuilder(this.ClassContext).BuildSource(context, mappaGlobalOptions);
 
-        // Add the namespace to the class code.
-        var classSourceCodeWithNamespace = new MappaNamespaceBuilder(this.ClassContext, classSourceCode).BuildSource(context, mappaGlobalOptions);
+        // Emit file-local accessors inside the same namespace as the mapper (after a
+        // file-scoped namespace declaration, or inside a block-scoped namespace).
+        var inaccessibleAccessorsSource = context.InaccessibleAccessors.BuildSource();
+        var preamble = string.IsNullOrWhiteSpace(inaccessibleAccessorsSource)
+            ? null
+            : inaccessibleAccessorsSource;
+
+        var classSourceCodeWithNamespace = new MappaNamespaceBuilder(
+                this.ClassContext,
+                classSourceCode,
+                preamble)
+            .BuildSource(context, mappaGlobalOptions);
 
         var builder = new PrettyCode.StringBuilder();
 

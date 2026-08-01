@@ -651,6 +651,37 @@ public sealed partial class AllPropertiesMapper
 
 See also: [MappaMustMapTargetPropertyAttributeMapper.cs](../Mappa.Samples/MappaMustMapTargetPropertyAttributeMapper.cs).
 
+### MappaAllowInaccessibleSourceMembers / TargetMembers
+Opt in to private or protected members via generated `UnsafeAccessor` helpers (.NET 8+ / C# 12+):
+
+```csharp
+[Mappa]
+public sealed partial class Mapper
+{
+    // All eligible inaccessible source and target members, including a private constructor.
+    [MappaAllowInaccessibleSourceMembers]
+    [MappaAllowInaccessibleTargetMembers]
+    public partial Target MapAll(Source source);
+
+    // Named properties plus private constructor access.
+    [MappaAllowInaccessibleSourceMembers("Name")]
+    [MappaAllowInaccessibleTargetMembers("Name", "Age")]
+    public partial Target MapNamed(Source source);
+
+    // Private constructor only (public setters).
+    [MappaAllowInaccessibleSourceMembers("Name")]
+    [MappaAllowInaccessibleTargetMembers(AllowProperties = false)]
+    public partial TargetWithPublicSetters MapCtorOnly(Source source);
+
+    // Named inaccessible setters only; Age is not opted in.
+    [MappaAllowInaccessibleSourceMembers("Name")]
+    [MappaAllowInaccessibleTargetMembers("Name", AllowConstructors = false)]
+    public partial TargetWithPublicCtor MapPropertiesOnly(Source source);
+}
+```
+
+See also: [InaccessibleMembersMapper.cs](../Mappa.Samples/InaccessibleMembersMapper.cs).
+
 ### MappaDependency and MappaStaticDependency
 Register external mapping methods via `[MappaDependency]` on a field or property, or via `[MappaStaticDependency]` on a static helper class:
 

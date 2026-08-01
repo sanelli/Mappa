@@ -3,6 +3,7 @@
 // </copyright>
 
 using Mappa.Generator.Extensions;
+using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -56,7 +57,10 @@ internal sealed class ReadonlyDictionaryPropertyMapStrategyBuilder
                 context.Compilation,
                 this.strategy.TargetType,
                 this.strategy.DictionaryAssignment,
-                $"{context.GetCompositeTypeTargetName()}.{this.strategy.TargetProperty.Name}",
+                InaccessibleMemberAccessHelper.BuildTargetPropertyReadExpression(
+                    context.GetCompositeTypeTargetName(),
+                    this.strategy.TargetProperty,
+                    context),
                 targetKeyTemporary,
                 targetValueTemporary);
         }

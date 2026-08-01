@@ -333,45 +333,40 @@ internal static class CompilationUnitSyntaxAssertionsExtensions
         ArgumentNullException.ThrowIfNull(@this);
 
         return @this.HaveCommentHeader()
-            .HaveFileScopedNamespace(fileScopedNamespaceDeclarationSyntaxAssertions =>
-            {
-                fileScopedNamespaceDeclarationSyntaxAssertions
-                    .HaveClasses(1)
-                    .HaveClass(
-                        className,
-                        classDeclarationSyntaxAssertions =>
-                        {
-                            var parameters = new List<(string Type, NullableAnnotation NullableAnnotation, string Name, RefKind RefKind, bool IsParms)>
-                            {
-                                (parameterType, parameterNullableAnnotation, parameterName, parameterRefKind, isParameterParams),
-                            };
+            .HaveNamespaceWithClass(
+                className,
+                classDeclarationSyntaxAssertions =>
+                {
+                    var parameters = new List<(string Type, NullableAnnotation NullableAnnotation, string Name, RefKind RefKind, bool IsParms)>
+                    {
+                        (parameterType, parameterNullableAnnotation, parameterName, parameterRefKind, isParameterParams),
+                    };
 
-                            if (contextName is not null)
-                            {
-                                parameters.Add((typeof(MappaContext).FullName ?? string.Empty, NullableAnnotation.NotAnnotated, contextName, contextRefKind, false));
-                            }
+                    if (contextName is not null)
+                    {
+                        parameters.Add((typeof(MappaContext).FullName ?? string.Empty, NullableAnnotation.NotAnnotated, contextName, contextRefKind, false));
+                    }
 
-                            classDeclarationSyntaxAssertions
-                                .HaveModifiers(classModifiers)
-                                .HaveMethods(expectedGeneratedCount)
-                                .HaveMethod(
-                                    returnType,
-                                    returnTypeNullableAnnotation,
-                                    methodName,
-                                    isExtensionMethod,
-                                    parameters.ToArray(),
-                                    methodDeclarationSyntaxAssertions =>
-                                    {
-                                        methodDeclarationSyntaxAssertions
-                                            .HaveNullabilityAnnotation(nullableSetup)
-                                            .HavePragmaWarningDisableAnnotation(pragmaWarningSetting)
-                                            .HaveGeneratedCodeAttribute(attributeSyntaxAssertions => attributeSyntaxAssertions.BeMappaGeneratedCodeAttribute())
-                                            .HaveDebuggerNonUserCodeAttribute()
-                                            .HaveModifiers(methodModifiers)
-                                            .HaveBody(bodyAssertion);
-                                    });
-                        });
-            });
+                    classDeclarationSyntaxAssertions
+                        .HaveModifiers(classModifiers)
+                        .HaveMethods(expectedGeneratedCount)
+                        .HaveMethod(
+                            returnType,
+                            returnTypeNullableAnnotation,
+                            methodName,
+                            isExtensionMethod,
+                            parameters.ToArray(),
+                            methodDeclarationSyntaxAssertions =>
+                            {
+                                methodDeclarationSyntaxAssertions
+                                    .HaveNullabilityAnnotation(nullableSetup)
+                                    .HavePragmaWarningDisableAnnotation(pragmaWarningSetting)
+                                    .HaveGeneratedCodeAttribute(attributeSyntaxAssertions => attributeSyntaxAssertions.BeMappaGeneratedCodeAttribute())
+                                    .HaveDebuggerNonUserCodeAttribute()
+                                    .HaveModifiers(methodModifiers)
+                                    .HaveBody(bodyAssertion);
+                            });
+                });
     }
 
     /// <summary>

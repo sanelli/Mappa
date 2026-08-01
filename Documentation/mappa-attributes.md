@@ -10,6 +10,8 @@ This is the list of attributes provided:
 - `MappaUseProperty`: When mapping structured types (`class`, `struct`, and records) allows specifying which source property to use for a target property or constructor parameter; `TargetPropertyName` and `SourcePropertyName` may be a single name or a [dot-separated nested property path](#nested-property-paths);
 - `MappaIgnoreTargetProperty`: When mapping structured types via an empty constructor, excludes a target property from property-initializer mapping; has no effect when mapping uses a constructor with parameters; `TargetPropertyName` may be a single name or a [dot-separated nested property path](#nested-property-paths);
 - `MappaMustMapTargetProperty`: When mapping structured types via an empty constructor (or empty-constructor-like factory), requires that listed non-required target properties—or all of them when no names are provided—are mapped; otherwise generation fails with **MP00065** (see [MappaMustMapTargetProperty](#mappamustmaptargetproperty));
+- `MappaAllowInaccessibleSourceMembers`: Opt-in to read private/protected source properties via generated `UnsafeAccessor` methods (see [MappaAllowInaccessibleSourceMembers](#mappaallowinaccessiblesourcemembers));
+- `MappaAllowInaccessibleTargetMembers`: Opt-in to write private/protected target properties and/or invoke inaccessible target constructors via generated `UnsafeAccessor` methods (see [MappaAllowInaccessibleTargetMembers](#mappaallowinaccessibletargetmembers));
 - `MappaAssignFromContext`: When mapping structured types, allows specifying which value from a `MappaContext` to use for a target property or constructor parameter; `TargetPropertyName` may be a single name or a [dot-separated nested property path](#nested-property-paths);
 - `MappaAssignToContext`: When mapping structured types via the constructor-map strategy, stores the value of a target property or field in `MappaContext` after the target object has been fully constructed; `TargetPropertyName` may be a single name or a [dot-separated nested property path](#nested-property-paths);
 - `MappaInvokeMethodAttribute`: When mapping structured types via the constructor-map strategy, forces a target property or constructor parameter to be mapped by invoking a named method; supports an optional `SourcePropertyName` named parameter (see [MappaInvokeMethodAttribute](#mappainvokemethodattribute)); `TargetPropertyName` and optional `SourcePropertyName` may be a single name or a [dot-separated nested property path](#nested-property-paths);
@@ -85,6 +87,35 @@ When mapping via an empty constructor (or an empty-constructor-like object facto
 If a required must-map property cannot be mapped, the generator reports error **MP00065** and does not generate a usable mapping. Listing a property that is already `required` reports warning **MP00066** and continues. Listing a name that does not exist on the target reports warning **MP00033** and continues. Combining the same property name with `[MappaIgnoreTargetProperty]` reports error **MP00007**. Property names are flat (single-segment) only; nested paths are not supported.
 
 See also: [MappaMustMapTargetPropertyAttributeMapper.cs](../Mappa.Samples/MappaMustMapTargetPropertyAttributeMapper.cs).
+
+## MappaAllowInaccessibleSourceMembers
+
+By default Mappa only reads **accessible** source properties. `[MappaAllowInaccessibleSourceMembers]` on a map method opts in to reading private or protected source properties through generated [`UnsafeAccessor`](https://learn.microsoft.com/dotnet/api/system.runtime.compilerservices.unsafeaccessorattribute) helpers:
+
+- `[MappaAllowInaccessibleSourceMembers]`: every eligible inaccessible source property may be read;
+- `[MappaAllowInaccessibleSourceMembers("Name", "Id")]`: only the listed flat property names may be read when inaccessible.
+
+Set-only source properties remain ignored. Member names are flat (single-segment) only; nested paths are not supported. Unknown names report warning **MP00033**. The compilation must provide `UnsafeAccessorAttribute` (typically .NET 8+) and C# 12+; otherwise the generator reports error **MP00067**. Queryable projection map methods cannot use this attribute (**MP00069**).
+
+See also: [InaccessibleMembersMapper.cs](../Mappa.Samples/InaccessibleMembersMapper.cs).
+
+## MappaAllowInaccessibleTargetMembers
+
+By default Mappa only writes **accessible** target setters and only invokes **accessible** constructors. `[MappaAllowInaccessibleTargetMembers]` on a map method opts in to inaccessible target members via generated `UnsafeAccessor` helpers:
+
+- `[MappaAllowInaccessibleTargetMembers]`: every eligible inaccessible target property may be written and inaccessible constructors may be invoked (subject to the flags below);
+- `[MappaAllowInaccessibleTargetMembers("Name", "Age")]`: only the listed flat property names may be written when inaccessible; constructor access is independent of the name list.
+
+Named parameters:
+
+- `AllowProperties` (default `true`): whether inaccessible target properties may be written;
+- `AllowConstructors` (default `true`): whether inaccessible target constructors (parameterless or parameterized) may be invoked.
+
+Setting both flags to `false` reports error **MP00068**. Get-only non-collection target properties remain unmappable; get-only collection / dictionary / queue / stack properties continue to use the existing post-construction fill rules when their getters can be accessed (including via UnsafeAccessor when opted in). Member names are flat only; unknown names report **MP00033**. Requires `UnsafeAccessor` / C# 12+ (**MP00067**). Not allowed on queryable projection methods (**MP00069**).
+
+When inaccessible setters or unsafe-accessor constructors are used, assignments that would normally appear in an object initializer are emitted **after** construction. Generated helpers live in a file-local `__MappaInaccessibleAccessors` type in the same namespace as the mapper.
+
+See also: [InaccessibleMembersMapper.cs](../Mappa.Samples/InaccessibleMembersMapper.cs).
 
 ## MappaAssignFromConstant
 

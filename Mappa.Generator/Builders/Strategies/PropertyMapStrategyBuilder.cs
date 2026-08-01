@@ -83,10 +83,23 @@ internal sealed class PropertyMapStrategyBuilder
         else if (this.strategy.SourceProperty is not null)
         {
             sourcePropertyTemporary = context.NextTemporary();
-            builder.AppendLine($"{this.strategy.SourceProperty.Type.ToDisplayString()} {sourcePropertyTemporary} = {source}.{this.strategy.SourceProperty.Name};");
+            var sourceReadExpression = InaccessibleMemberAccessHelper.BuildPropertyReadExpression(
+                source,
+                this.strategy.SourceProperty,
+                this.strategy.RequiresUnsafeAccessorOnSource,
+                context);
+            builder.AppendLine($"{this.strategy.SourceProperty.Type.ToDisplayString()} {sourcePropertyTemporary} = {sourceReadExpression};");
         }
 
-        (string targetTemporary, string code) = this.strategy.PropertyStrategy.GetBuilder().BuildSource(sourcePropertyTemporary, context, mappaGlobalOptions);
+        string targetTemporary;
+        string code;
+        using (context.PushCurrentTargetPropertyUnsafeAccess(
+                   this.strategy.TargetProperty,
+                   this.strategy.RequiresUnsafeAccessorOnTarget))
+        {
+            (targetTemporary, code) = this.strategy.PropertyStrategy.GetBuilder().BuildSource(sourcePropertyTemporary, context, mappaGlobalOptions);
+        }
+
         if (!string.IsNullOrWhiteSpace(code))
         {
             builder.AppendLine(code);

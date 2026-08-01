@@ -6,6 +6,7 @@ using Mappa.Attributes;
 using Mappa.Generator.Exceptions;
 
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Mappa.Generator.Extensions;
 
@@ -199,5 +200,22 @@ internal static class CompilationExtensions
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Checks whether the compilation supports <c>System.Runtime.CompilerServices.UnsafeAccessorAttribute</c>
+    /// with a language version that can emit the related accessors (C# 12 or later).
+    /// </summary>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> when unsafe accessors can be generated; otherwise <c>false</c>.</returns>
+    internal static bool IsUnsafeAccessorSupported(this Compilation compilation)
+    {
+        if (compilation.GetTypeByMetadataName("System.Runtime.CompilerServices.UnsafeAccessorAttribute") is null)
+        {
+            return false;
+        }
+
+        return compilation is not CSharpCompilation csharpCompilation
+               || csharpCompilation.LanguageVersion >= LanguageVersion.CSharp12;
     }
 }

@@ -15,11 +15,13 @@ namespace Mappa.Generator.Models.Strategies;
 /// <param name="sourceType">The source type.</param>
 /// <param name="constructor">The constructor.</param>
 /// <param name="argumentStrategy">The argument strategy.</param>
+/// <param name="requiresUnsafeAccessorOnConstructor"><c>true</c> when the constructor must be invoked via an unsafe accessor.</param>
 internal sealed class InvokeMappingConstructorMapStrategy(
     ITypeSymbol targetType,
     ITypeSymbol sourceType,
     IMethodSymbol constructor,
-    MapStrategy argumentStrategy)
+    MapStrategy argumentStrategy,
+    bool requiresUnsafeAccessorOnConstructor = false)
         : MapStrategy(targetType, sourceType)
 {
     /// <summary>
@@ -31,6 +33,11 @@ internal sealed class InvokeMappingConstructorMapStrategy(
     /// Gets the strategy for the parameter.
     /// </summary>
     public MapStrategy ArgumentStrategy { get; } = argumentStrategy;
+
+    /// <summary>
+    /// Gets a value indicating whether the constructor must be invoked via an unsafe accessor.
+    /// </summary>
+    public bool RequiresUnsafeAccessorOnConstructor { get; } = requiresUnsafeAccessorOnConstructor;
 
     /// <inheritdoc/>
     internal override IMappaStrategyBuilder GetBuilder() => new InvokeMappingConstructorMapStrategyBuilder(this);

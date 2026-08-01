@@ -49,11 +49,14 @@ internal sealed class InvokeObjectFactoryMapStrategyBuilder
                 parametersVariableNames.Add(parameterTargetTemporary);
             }
 
-            var propertyInitializersMappings = new List<(string TargetPropertyName, string TemporaryName)>();
+            var propertyInitializersMappings = new List<(IPropertySymbol TargetProperty, string TemporaryName, bool RequiresUnsafeAccessorOnTarget)>();
             foreach (var propertyMapStrategy in this.strategy.InitializerStrategies.Where(propertyMapStrategy => !propertyMapStrategy.PostConstructorInitializer))
             {
                 var (initializerPropertyTargetTemporary, initializerPropertyCode) = propertyMapStrategy.GetBuilder().BuildSource(source, context, mappaGlobalOptions);
-                propertyInitializersMappings.Add((propertyMapStrategy.TargetProperty.Name, initializerPropertyTargetTemporary));
+                propertyInitializersMappings.Add((
+                    propertyMapStrategy.TargetProperty,
+                    initializerPropertyTargetTemporary,
+                    propertyMapStrategy.RequiresUnsafeAccessorOnTarget));
                 if (!string.IsNullOrWhiteSpace(initializerPropertyCode))
                 {
                     builder.AppendLine(initializerPropertyCode);
@@ -72,7 +75,12 @@ internal sealed class InvokeObjectFactoryMapStrategyBuilder
             {
                 foreach (var propertyInitializersMapping in propertyInitializersMappings)
                 {
-                    builder.AppendLine($"{resultTemporary}.{propertyInitializersMapping.TargetPropertyName} = {propertyInitializersMapping.TemporaryName};");
+                    builder.AppendLine(InaccessibleMemberAccessHelper.BuildPropertyAssignmentStatement(
+                        resultTemporary,
+                        propertyInitializersMapping.TargetProperty,
+                        propertyInitializersMapping.TemporaryName,
+                        propertyInitializersMapping.RequiresUnsafeAccessorOnTarget,
+                        context));
                 }
             }
 

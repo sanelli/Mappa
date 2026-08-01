@@ -49,6 +49,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         this.context.ValidateTargetNamesExist(this.compilation);
         this.context.ValidateMappaIgnoreTargetPropertyAttributes();
         this.context.ValidateMappaMustMapTargetPropertyAttributes();
+        this.context.ValidateMappaAllowInaccessibleMembersAttributes(this.compilation);
 
         // 00. Object factory registered for TargetType -> InvokeObjectFactoryMapStrategy
         if (this.TryDetectObjectFactory(out var objectFactoryStrategy))
@@ -63,7 +64,8 @@ internal sealed partial class ConstructorMapStrategyDetector
                 this.context.TargetType,
                 this.context.SourceType,
                 invokeConstructor,
-                argumentStrategy);
+                argumentStrategy,
+                this.RequiresUnsafeAccessorForConstructor(invokeConstructor));
         }
 
         // 02. Can map individual properties using an empty parameter constructor. -> InvokeConstructorMapStrategy( IMapStrategy[] parameters, IMapStrategy[] initProperties )
@@ -105,10 +107,10 @@ internal sealed partial class ConstructorMapStrategyDetector
 
         // Detect all constructors that:
         // - Have at least one argument
-        // - Are accessible
+        // - Are accessible (or inaccessible constructors are opted in)
         // - Have a mapping for all parameters
         // We sort them in ascending order by number of parameters.
-        var constructors = this.context.TargetType.GetAccessibleConstructors(this.compilation, this.context.ParentSymbol)
+        var constructors = this.GetInvokableConstructors()
             .Where(constructor => constructor.Parameters.Length >= 1)
             .OrderByDescending(constructor => constructor.Parameters.Length)
             .ToArray();
@@ -117,12 +119,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         if (constructors.Length > 0)
         {
             // Gets the source properties.
-            var sourceProperties = this.context.SourceType.GetTypeProperties()
-
-                // Ignore indexer properties.
-                // Ignore properties without a setter.
-                .Where(property => !property.IsIndexer && property.IsGetterAccessible(this.compilation, this.context.GetRootMapMethod()))
-                .ToArray();
+            var sourceProperties = this.GetReadableSourceProperties(this.context.SourceType);
 
             // For each constructor identifier we get all the arguments,
             // and we try to match with a property of the source.
@@ -174,7 +171,10 @@ internal sealed partial class ConstructorMapStrategyDetector
                                         out var propertyStrategyFromAttribute))
                                 {
                                     propertyStrategyFromAttribute = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, sourceProperties, propertyStrategyFromAttribute);
-                                    var strategy = new ParameterMapStrategy(targetParameter, sourceProperty!, propertyStrategyFromAttribute);
+                                    var requiresUnsafeAccessorOnSource = sourceProperty is not null
+                                        && this.TryIsSourcePropertyReadable(sourceProperty, out var sourceRequiresUnsafe)
+                                        && sourceRequiresUnsafe;
+                                    var strategy = new ParameterMapStrategy(targetParameter, sourceProperty!, propertyStrategyFromAttribute, requiresUnsafeAccessorOnSource);
                                     return (targetParameter, sourceProperty!, strategy);
                                 }
 
@@ -197,7 +197,8 @@ internal sealed partial class ConstructorMapStrategyDetector
                                 if (this.TryGetStrategyBetweenTypes(targetParameterType, sourcePropertyType, true, out var propertyStrategy))
                                 {
                                     propertyStrategy = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, sourceProperties, propertyStrategy);
-                                    var parameterMapStrategy = new ParameterMapStrategy(targetParameter, sourceProperty, propertyStrategy);
+                                    this.TryIsSourcePropertyReadable(sourceProperty, out var requiresUnsafeAccessorOnSource);
+                                    var parameterMapStrategy = new ParameterMapStrategy(targetParameter, sourceProperty, propertyStrategy, requiresUnsafeAccessorOnSource);
                                     return (targetParameter, sourceProperty, parameterMapStrategy);
                                 }
 
@@ -218,16 +219,18 @@ internal sealed partial class ConstructorMapStrategyDetector
             // so we can pick up the one with the highest number of parameters.
             if (constructorsWithMappings.Length > 0)
             {
+                var selectedConstructor = constructorsWithMappings[0].methodSymbol;
                 strategy = new InvokeConstructorMapStrategy(
                     this.context.TargetType,
                     this.context.SourceType,
-                    constructorsWithMappings[0].methodSymbol,
+                    selectedConstructor,
                     constructorsWithMappings[0].strategiesForEachParameter
                         .Select(parameterAndStrategy => (ParameterMapStrategy)parameterAndStrategy.Strategy)
                         .ToArray(),
                     [],
                     [],
-                    null);
+                    null,
+                    this.RequiresUnsafeAccessorForConstructor(selectedConstructor));
             }
         }
 
@@ -307,9 +310,9 @@ internal sealed partial class ConstructorMapStrategyDetector
 
         // Detect all constructors that:
         // - Have 1 argument
-        // - Are accessible
+        // - Are accessible (or inaccessible constructors are opted in)
         // - Have a mapping from source to the type of the parameter
-        var constructors = this.context.TargetType.GetAccessibleConstructors(this.compilation, this.context.ParentSymbol, 1);
+        var constructors = this.GetInvokableConstructors(1);
         var constructorsWithStrategy = constructors
             .Select<IMethodSymbol, (IMethodSymbol Constructor, MapStrategy Strategy)>(constructor =>
             {
@@ -364,8 +367,8 @@ internal sealed partial class ConstructorMapStrategyDetector
 
         // Detect all constructors that:
         // - Have 0 parameter
-        // - Is accessible
-        var constructors = this.context.TargetType.GetAccessibleConstructors(this.compilation, this.context.ParentSymbol, 0);
+        // - Are accessible (or inaccessible constructors are opted in)
+        var constructors = this.GetInvokableConstructors(0);
 
         // If there is no constructor with zero parameters cannot apply this strategy.
         if (constructors.Length == 0)
@@ -382,14 +385,16 @@ internal sealed partial class ConstructorMapStrategyDetector
             return false;
         }
 
+        var selectedConstructor = constructors[0];
         strategy = new InvokeConstructorMapStrategy(
             this.context.TargetType,
             this.context.SourceType,
-            constructors.Single(),
+            selectedConstructor,
             [],
             propertiesWithStrategies,
             [],
-            null);
+            null,
+            this.RequiresUnsafeAccessorForConstructor(selectedConstructor));
 
         return true;
     }
@@ -478,7 +483,8 @@ internal sealed partial class ConstructorMapStrategyDetector
             strategy.ParametersMapStrategies,
             strategy.InitializerStrategies,
             [.. assignToContextEntries],
-            contextParameterName);
+            contextParameterName,
+            strategy.RequiresUnsafeAccessorOnConstructor);
     }
 
     private bool TryResolveAssignToContextTargetMember(string memberName)
@@ -502,7 +508,7 @@ internal sealed partial class ConstructorMapStrategyDetector
 
         if (property is not null)
         {
-            return property.IsGetterAccessible(this.compilation, rootMapMethod);
+            return this.TryIsTargetPropertyGetterReadable(property, out _);
         }
 
         return this.TryFindAccessibleTargetField(memberName, rootMapMethod) is not null;
@@ -722,9 +728,7 @@ internal sealed partial class ConstructorMapStrategyDetector
             return;
         }
 
-        var sourceProperties = sourceClassType.GetTypeProperties()
-            .Where(property => !property.IsIndexer && property.IsGetterAccessible(this.compilation, this.context.GetRootMapMethod()))
-            .ToArray();
+        var sourceProperties = this.GetReadableSourceProperties(sourceClassType);
 
         PropertyMapNameMatcher.TryFindSourceProperty(
             sourceProperties,
