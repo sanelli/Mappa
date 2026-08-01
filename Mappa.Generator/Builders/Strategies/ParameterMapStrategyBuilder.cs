@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -33,7 +34,12 @@ internal sealed class ParameterMapStrategyBuilder
         if (this.strategy.SourceProperty is not null)
         {
             sourcePropertyTemporary = context.NextTemporary();
-            builder.AppendLine($"{this.strategy.SourceProperty.Type.ToDisplayString()} {sourcePropertyTemporary} = {source}.{this.strategy.SourceProperty.Name};");
+            var sourceReadExpression = InaccessibleMemberAccessHelper.BuildPropertyReadExpression(
+                source,
+                this.strategy.SourceProperty,
+                this.strategy.RequiresUnsafeAccessorOnSource,
+                context);
+            builder.AppendLine($"{this.strategy.SourceProperty.Type.ToDisplayString()} {sourcePropertyTemporary} = {sourceReadExpression};");
         }
 
         (string targetTemporary, string code) = this.strategy.ParameterStrategy.GetBuilder().BuildSource(sourcePropertyTemporary, context, mappaGlobalOptions);

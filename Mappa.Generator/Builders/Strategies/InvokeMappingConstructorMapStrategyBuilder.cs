@@ -2,7 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using Mappa.Generator.Extensions;
+using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -30,7 +30,6 @@ internal sealed class InvokeMappingConstructorMapStrategyBuilder
     {
         var targetTypeName = this.strategy.TargetType.ToDisplayString();
         var sourceTypeName = this.strategy.SourceType.ToDisplayString();
-        var targetTypeWithoutNullableAnnotation = this.strategy.TargetType.ToDisplayNameWithoutNullableAnnotation();
 
         var stringBuilder = new PrettyCode.StringBuilder();
 
@@ -42,7 +41,12 @@ internal sealed class InvokeMappingConstructorMapStrategyBuilder
         stringBuilder.AppendEmptyLine();
 
         var targetTemporary = context.NextTemporary();
-        stringBuilder.AppendLine($"{targetTypeName} {targetTemporary} = new {targetTypeWithoutNullableAnnotation}({parameterTemporary});");
+        var constructionExpression = InaccessibleMemberAccessHelper.BuildConstructorInvocationExpression(
+            this.strategy.Constructor,
+            [parameterTemporary],
+            this.strategy.RequiresUnsafeAccessorOnConstructor,
+            context);
+        stringBuilder.AppendLine($"{targetTypeName} {targetTemporary} = {constructionExpression};");
 
         return (targetTemporary, stringBuilder.ToString());
     }

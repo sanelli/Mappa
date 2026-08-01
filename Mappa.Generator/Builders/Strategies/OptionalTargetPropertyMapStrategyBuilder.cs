@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -45,7 +46,12 @@ internal sealed class OptionalTargetPropertyMapStrategyBuilder
             builder.AppendLine($"if ({innerStrategyVariableName} != default)");
             using (builder.CurlyBracesBlock())
             {
-                builder.AppendLine($"{context.GetCompositeTypeTargetName()}.{this.strategy.TargetProperty.Name} = {innerStrategyVariableName};");
+                builder.AppendLine(InaccessibleMemberAccessHelper.BuildPropertyAssignmentStatement(
+                    context.GetCompositeTypeTargetName(),
+                    this.strategy.TargetProperty,
+                    innerStrategyVariableName,
+                    context.RequiresUnsafeAccessorOnCurrentTargetProperty,
+                    context));
             }
         }
 
@@ -64,7 +70,12 @@ internal sealed class OptionalTargetPropertyMapStrategyBuilder
                     builder.AppendEmptyLine();
                 }
 
-                builder.AppendLine($"{context.GetCompositeTypeTargetName()}.{this.strategy.TargetProperty.Name} = {innerStrategyVariableName};");
+                builder.AppendLine(InaccessibleMemberAccessHelper.BuildPropertyAssignmentStatement(
+                    context.GetCompositeTypeTargetName(),
+                    this.strategy.TargetProperty,
+                    innerStrategyVariableName,
+                    context.RequiresUnsafeAccessorOnCurrentTargetProperty,
+                    context));
             }
         }
 

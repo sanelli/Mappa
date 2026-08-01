@@ -2,10 +2,11 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using Mappa.Generator.Extensions;
 using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
+
+using Microsoft.CodeAnalysis;
 
 namespace Mappa.Generator.Builders.Strategies;
 
@@ -47,12 +48,24 @@ internal sealed class InvokeConstructorMapStrategyBuilder
                 parametersVariableNames.Add(parameterTargetTemporary);
             }
 
-            // Handle initializer properties
-            var propertyInitializersMappings = new List<(string TargetPropertyName, string TemporaryName)>();
-            foreach (var propertyMapStrategy in this.strategy.InitializerStrategies.Where(propertyMapStrategy => !propertyMapStrategy.PostConstructorInitializer))
+            // Object initializers cannot target inaccessible setters; those are assigned after construction.
+            var objectInitializerStrategies = this.strategy.InitializerStrategies
+                .Where(propertyMapStrategy => !propertyMapStrategy.PostConstructorInitializer
+                                              && !propertyMapStrategy.RequiresUnsafeAccessorOnTarget)
+                .ToArray();
+            var postConstructorStrategies = this.strategy.InitializerStrategies
+                .Where(propertyMapStrategy => propertyMapStrategy.PostConstructorInitializer
+                                              || propertyMapStrategy.RequiresUnsafeAccessorOnTarget)
+                .ToArray();
+
+            var propertyInitializersMappings = new List<(IPropertySymbol TargetProperty, string TemporaryName, bool RequiresUnsafeAccessorOnTarget)>();
+            foreach (var propertyMapStrategy in objectInitializerStrategies)
             {
                 var (initializerPropertyTargetTemporary, initializerPropertyCode) = propertyMapStrategy.GetBuilder().BuildSource(source, context, mappaGlobalOptions);
-                propertyInitializersMappings.Add((propertyMapStrategy.TargetProperty.Name, initializerPropertyTargetTemporary));
+                propertyInitializersMappings.Add((
+                    propertyMapStrategy.TargetProperty,
+                    initializerPropertyTargetTemporary,
+                    propertyMapStrategy.RequiresUnsafeAccessorOnTarget));
                 if (!string.IsNullOrWhiteSpace(initializerPropertyCode))
                 {
                     builder.AppendLine(initializerPropertyCode);
@@ -60,28 +73,51 @@ internal sealed class InvokeConstructorMapStrategyBuilder
             }
 
             var hasPropertyInitializers = propertyInitializersMappings.Count > 0;
+            var constructionExpression = InaccessibleMemberAccessHelper.BuildConstructorInvocationExpression(
+                this.strategy.Constructor,
+                parametersVariableNames,
+                this.strategy.RequiresUnsafeAccessorOnConstructor,
+                context);
 
             resultTemporary = context.NextTemporary();
-            var initializerCodeLine = $"{this.strategy.TargetType.ToDisplayString()} {resultTemporary} = new {this.strategy.TargetType.ToDisplayNameWithoutNullableAnnotation()}({string.Join(", ", parametersVariableNames)}){(hasPropertyInitializers ? string.Empty : ";")}";
-            builder.AppendLine(initializerCodeLine);
             if (hasPropertyInitializers)
             {
+                builder.AppendLine($"{this.strategy.TargetType.ToDisplayString()} {resultTemporary} = {constructionExpression}");
                 using (builder.CurlyBracesBlock(trailingSemicolon: true))
                 {
                     foreach (var propertyInitializersMapping in propertyInitializersMappings)
                     {
-                        builder.AppendLine($"{propertyInitializersMapping.TargetPropertyName} = {propertyInitializersMapping.TemporaryName},");
+                        builder.AppendLine($"{propertyInitializersMapping.TargetProperty.Name} = {propertyInitializersMapping.TemporaryName},");
                     }
                 }
+            }
+            else
+            {
+                builder.AppendLine($"{this.strategy.TargetType.ToDisplayString()} {resultTemporary} = {constructionExpression};");
             }
 
             // Initialise properties after the constructor has been created.
             using (context.PushCurrentCompositeTypeTargetName(resultTemporary))
             {
-                foreach (var propertyMapStrategy in this.strategy.InitializerStrategies.Where(propertyMapStrategy => propertyMapStrategy.PostConstructorInitializer))
+                foreach (var propertyMapStrategy in postConstructorStrategies)
                 {
-                    var (_, initializerPropertyCode) = propertyMapStrategy.GetBuilder().BuildSource(source, context, mappaGlobalOptions);
-                    builder.AppendLine(initializerPropertyCode);
+                    var (initializerPropertyTargetTemporary, initializerPropertyCode) = propertyMapStrategy.GetBuilder().BuildSource(source, context, mappaGlobalOptions);
+                    if (!string.IsNullOrWhiteSpace(initializerPropertyCode))
+                    {
+                        builder.AppendLine(initializerPropertyCode);
+                    }
+
+                    // Normal setter mappings moved out of the object initializer need an explicit assignment.
+                    if (!propertyMapStrategy.PostConstructorInitializer
+                        && propertyMapStrategy.RequiresUnsafeAccessorOnTarget)
+                    {
+                        builder.AppendLine(InaccessibleMemberAccessHelper.BuildPropertyAssignmentStatement(
+                            resultTemporary,
+                            propertyMapStrategy.TargetProperty,
+                            initializerPropertyTargetTemporary,
+                            requiresUnsafeAccessor: true,
+                            context));
+                    }
                 }
             }
 
