@@ -129,6 +129,16 @@ internal sealed class MappaDependencyInjectionGeneratorAlgorithm
                 continue;
             }
 
+            // Static mapper classes cannot be registered with Microsoft.Extensions.DependencyInjection.
+            if (type.IsStatic)
+            {
+                this.Context.ReportDiagnostic(
+                    MappaDiagnostics.MappaDependencyInjectionStaticMapperSkipped(
+                        classDeclarationSyntax,
+                        type.ToDisplayString()));
+                continue;
+            }
+
             var interfaces = GetEligibleInterfaces(type, attributeData);
             switch (attributeData.InjectInterfaces)
             {

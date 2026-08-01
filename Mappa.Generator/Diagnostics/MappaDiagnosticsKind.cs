@@ -392,4 +392,10 @@ internal enum MappaDiagnosticsKind
     /// <see cref="Mappa.Attributes.MappaDependencyInjectionAttribute.IgnoreType"/>.
     /// </summary>
     MappaDependencyInjectionMapperHasNoEligibleInterfaces,
+
+    /// <summary>
+    /// A <see cref="Mappa.Attributes.MappaAttribute"/> mapper is a static class and cannot be
+    /// registered with dependency injection.
+    /// </summary>
+    MappaDependencyInjectionStaticMapperSkipped,
 }

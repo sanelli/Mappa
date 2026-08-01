@@ -227,4 +227,7 @@
     <data name="MappaDependencyInjectionMapperHasNoEligibleInterfaces" xml:space="preserve">
         <value>Mapper '{0}' has no eligible interfaces for dependency injection registration after applying IgnoreType and will be skipped.</value>
     </data>
+    <data name="MappaDependencyInjectionStaticMapperSkipped" xml:space="preserve">
+        <value>Mapper '{0}' is a static class and cannot be registered with dependency injection; it will be skipped.</value>
+    </data>
 </root>

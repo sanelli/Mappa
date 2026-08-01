@@ -476,5 +476,11 @@ namespace Mappa.Generator.Diagnostics {
                 return ResourceManager.GetString("MappaDependencyInjectionMapperHasNoEligibleInterfaces", resourceCulture);
             }
         }
+
+        internal static string MappaDependencyInjectionStaticMapperSkipped {
+            get {
+                return ResourceManager.GetString("MappaDependencyInjectionStaticMapperSkipped", resourceCulture);
+            }
+        }
     }
 }

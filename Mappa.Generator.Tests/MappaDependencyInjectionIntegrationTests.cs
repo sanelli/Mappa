@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Tests.Abstractions;
 using Mappa.Generator.Tests.Assertions;
 using Mappa.Generator.Tests.Assertions.Extensions;
@@ -1090,6 +1091,77 @@ public sealed partial class MappaDependencyInjectionIntegrationTests
                                     nodeAssertions.BeReturnStatement("services"));
                         });
                     });
+            });
+    }
+
+    /// <summary>
+    /// Static <c>[Mappa]</c> mapper classes are skipped because they cannot be DI type arguments.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task StaticMappaMapperTypesAreSkipped()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  [Mappa]
+                                  public sealed partial class MapperA
+                                  {
+                                  }
+
+                                  [Mappa]
+                                  public static partial class StaticMapper
+                                  {
+                                  }
+
+                                  [MappaDependencyInjection]
+                                  public static partial class Registrar
+                                  {
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(
+                MappaDiagnosticDescriptors.MappaDependencyInjectionStaticMapperSkipped,
+                $"{SourceNamespace}.StaticMapper")
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveFileScopedNamespace(fileScopedNamespace =>
+            {
+                fileScopedNamespace.HaveClass("Registrar", classAssertions =>
+                {
+                    classAssertions.HaveMethod(
+                        ServiceCollectionTypeName,
+                        NullableAnnotation.None,
+                        "RegisterRegistrar",
+                        true,
+                        [
+                            (ServiceCollectionTypeName, NullableAnnotation.None, "services", RefKind.None, false),
+                        ],
+                        methodAssertions =>
+                        {
+                            methodAssertions.HaveBody(blockSyntaxAssertions =>
+                            {
+                                blockSyntaxAssertions
+                                    .HasSyntaxNodesCount(2)
+                                    .HasNextSyntaxNode(nodeAssertions =>
+                                        nodeAssertions.BeInvocationExpressionSyntaxStatement(
+                                            $"services.AddSingleton<{GlobalMapperA}>"))
+                                    .HasNextSyntaxNode(nodeAssertions =>
+                                        nodeAssertions.BeReturnStatement("services"));
+                            });
+                        });
+                });
             });
     }
 

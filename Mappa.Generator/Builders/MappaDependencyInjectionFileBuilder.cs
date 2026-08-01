@@ -148,6 +148,11 @@ internal sealed class MappaDependencyInjectionFileBuilder
             ? "this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services"
             : "global::Microsoft.Extensions.DependencyInjection.IServiceCollection services";
 
+        builder.AppendLine("/// <summary>");
+        builder.AppendLine("/// Registers all <c>[Mappa]</c> mapper types from this assembly into <paramref name=\"services\"/>.");
+        builder.AppendLine("/// </summary>");
+        builder.AppendLine("/// <param name=\"services\">The service collection to register mappers into.</param>");
+        builder.AppendLine("/// <returns>The same <paramref name=\"services\"/> instance for chaining.</returns>");
         builder.AppendLine($"{modifiers} global::Microsoft.Extensions.DependencyInjection.IServiceCollection {methodName}({parameter})");
         using (builder.CurlyBracesBlock())
         {

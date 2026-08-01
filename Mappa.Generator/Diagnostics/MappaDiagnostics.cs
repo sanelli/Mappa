@@ -1251,4 +1251,18 @@ internal static class MappaDiagnostics
             MappaDiagnosticDescriptors.MappaDependencyInjectionMapperHasNoEligibleInterfaces,
             classDeclarationSyntax?.GetLocation(),
             mapperTypeName);
+
+    /// <summary>
+    /// Diagnostic to report that a static mapper cannot be registered with dependency injection.
+    /// </summary>
+    /// <param name="classDeclarationSyntax">The registrar class declaration syntax.</param>
+    /// <param name="mapperTypeName">The static mapper type name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappaDependencyInjectionStaticMapperSkipped(
+        ClassDeclarationSyntax? classDeclarationSyntax,
+        string mapperTypeName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappaDependencyInjectionStaticMapperSkipped,
+            classDeclarationSyntax?.GetLocation(),
+            mapperTypeName);
 }
