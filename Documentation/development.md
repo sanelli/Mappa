@@ -53,7 +53,7 @@ After a local run (or on `main` CI), publish history + SVGs to the shared gist w
 
 `./Scripts/UpdateBenchmarkGists.ps1`
 
-That script downloads `MAPPA-BENCHMARK-HISTORY.md` from gist [`7f4a85bc809328b4821b03125f9190cb`](https://gist.github.com/sanelli/7f4a85bc809328b4821b03125f9190cb), appends `history-table.md`, regenerates the TIME/MEMORY history SVGs, and uploads:
+That script downloads `MAPPA-BENCHMARK-HISTORY.md` from gist [`7f4a85bc809328b4821b03125f9190cb`](https://gist.github.com/sanelli/7f4a85bc809328b4821b03125f9190cb), merges `history-table.md` by **replacing any existing rows for the same Mappa version** (so re-running main-merge is idempotent), regenerates the TIME/MEMORY history SVGs, and uploads:
 
 - `MAPPA-BENCHMARK-HISTORY.md`
 - `MAPPA-BENCHMARK-TIME.svg`
@@ -62,6 +62,10 @@ That script downloads `MAPPA-BENCHMARK-HISTORY.md` from gist [`7f4a85bc809328b48
 - `MAPPA-BENCHMARK-MEMORY-PERCENTAGES.svg`
 - `MAPPA-BENCHMARK-TIME-HISTORY.svg`
 - `MAPPA-BENCHMARK-MEMORY-HISTORY.svg`
+
+Gist uploads (including coverage badges/history via `./Scripts/UpdateCodeCoverageGists.ps1`) retry up to **5** times with a random **2–10 second** delay between attempts on transient API errors (for example HTTP 409).
+
+Code coverage history uses the same version-override merge when publishing `MAPPA-CODE-COVERAGE-HISTORY.MD`.
 
 See [`Mappa.Benchmark/README.md`](../Mappa.Benchmark/README.md) for the scenario suite and how to read results.
 
