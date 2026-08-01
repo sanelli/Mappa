@@ -31,13 +31,13 @@ Outputs are written under `.mappa-benchmark/` (gitignored). See [Documentation/d
 | Area | Benchmark | Notes |
 |------|-----------|--------|
 | Object graph | `SpotifyBenchmark` | Nested album/artist/tracks; fixed Bogus seed |
-| Objects | `ClassToClassBenchmark`, `RecordToRecordBenchmark`, `StructToStructBenchmark` | Same property shape across kinds |
-| Enums | `EnumToIntBenchmark`, `IntToEnumBenchmark`, `EnumToStringBenchmark`, `StringToEnumBenchmark`, `EnumToEnumBenchmark` | |
-| Collections | `ArrayToListBenchmark`, `ListToArrayBenchmark`, `ListToHashSetBenchmark`, `DictionaryBenchmark` | |
-| Fast collections | `FastListToArrayBenchmark` | Mappa with `FastCollections`; others use their default path |
-| Memory | `MemoryToArrayBenchmark`, `ArrayToMemoryBenchmark` | |
-| Polymorphism | `PolymorphicBenchmark` | Derived-type maps |
-| IQueryable | `IQueryableProjectionBenchmark` | In-memory `AsQueryable()` + `.ToList()` |
+| Objects | `ClassToClassBenchmark`, `RecordToRecordBenchmark`, `StructToStructBenchmark` | Same property shape across kinds; fixed Bogus seed |
+| Enums | `EnumToIntBenchmark`, `IntToEnumBenchmark`, `EnumToStringBenchmark`, `StringToEnumBenchmark`, `EnumToEnumBenchmark` | Fixed Bogus seed |
+| Collections | `ArrayToListBenchmark`, `ListToArrayBenchmark`, `ListToHashSetBenchmark`, `DictionaryBenchmark` | Fixed Bogus seed |
+| Fast collections | `FastListToArrayBenchmark` | Mappa with `FastCollections`; others use their default path; fixed Bogus seed |
+| Memory | `MemoryToArrayBenchmark`, `ArrayToMemoryBenchmark` | Fixed Bogus seed |
+| Polymorphism | `PolymorphicBenchmark` | Derived-type maps; fixed Bogus seed |
+| IQueryable | `IQueryableProjectionBenchmark` | In-memory `AsQueryable()` + `.ToList()`; fixed Bogus seed |
 | Nested DTO | `NestedDtoBenchmark` | 5-level graph, polymorphic parties/line items, arrays/lists/sets/dicts/queues/stacks/Memory, get-only notes list, enum→enum/string/int (~100 elements); fixed Bogus seed |
 
 ### Chart / CI subset

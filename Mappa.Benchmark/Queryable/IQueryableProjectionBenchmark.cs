@@ -6,7 +6,6 @@ using AutoMapper.QueryableExtensions;
 
 using BenchmarkDotNet.Attributes;
 
-using Mappa.Benchmark.Common;
 using Mappa.Benchmark.Queryable.Mappers;
 using Mappa.Benchmark.Queryable.Models;
 
@@ -45,18 +44,7 @@ public class IQueryableProjectionBenchmark
         this.mapperlyMapper = new();
         this.mappaMapper = new();
 
-        var orders = new List<ProjectionOrder>(BenchmarkConstants.CollectionSize);
-        for (var index = 0; index < BenchmarkConstants.CollectionSize; index++)
-        {
-            orders.Add(new ProjectionOrder
-            {
-                Id = index,
-                Name = $"Order-{index}",
-                CustomerName = $"Customer-{index}",
-            });
-        }
-
-        this.input = orders.AsQueryable();
+        this.input = QueryableDataFactory.CreateOrders().AsQueryable();
         TypeAdapterConfig<ProjectionOrder, ProjectionOrderDto>.NewConfig()
             .Map(destination => destination.Title, source => source.Name);
     }

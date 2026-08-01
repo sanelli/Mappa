@@ -38,13 +38,7 @@ public class ClassToClassBenchmark
 #pragma warning restore CA2000
         this.mapperlyMapper = new();
         this.mappaMapper = new();
-        this.input = new PersonClassDto
-        {
-            Id = 1,
-            Name = "Ada Lovelace",
-            Age = 36,
-            Address = new AddressDto { Street = "Analytical Engine Way", City = "London", Zip = "SW1A" },
-        };
+        this.input = ObjectDataFactory.CreatePersonClassDto();
     }
 
     /// <summary>

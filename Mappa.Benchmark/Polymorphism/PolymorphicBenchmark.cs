@@ -38,7 +38,7 @@ public class PolymorphicBenchmark
 #pragma warning restore CA2000
         this.mapperlyMapper = new();
         this.mappaMapper = new();
-        this.input = new DogDto { Name = "Rex", Trained = true };
+        this.input = PolymorphicDataFactory.CreateAnimalDto();
         TypeAdapterConfig<AnimalDto, Animal>.NewConfig()
             .Include<DogDto, Dog>()
             .Include<CatDto, Cat>()

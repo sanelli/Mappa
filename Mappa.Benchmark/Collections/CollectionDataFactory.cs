@@ -2,13 +2,15 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Bogus;
+
 using Mappa.Benchmark.Collections.Models;
 using Mappa.Benchmark.Common;
 
 namespace Mappa.Benchmark.Collections;
 
 /// <summary>
-/// Builds deterministic collection inputs with a few hundred entries.
+/// Builds deterministic collection inputs with Bogus (fixed seed).
 /// </summary>
 internal static class CollectionDataFactory
 {
@@ -18,13 +20,8 @@ internal static class CollectionDataFactory
     /// <returns>The list.</returns>
     public static List<CollectionItemDto> CreateList()
     {
-        var list = new List<CollectionItemDto>(BenchmarkConstants.CollectionSize);
-        for (var index = 0; index < BenchmarkConstants.CollectionSize; index++)
-        {
-            list.Add(CreateItem(index));
-        }
-
-        return list;
+        BenchmarkSeed.Apply();
+        return CreateItemFaker().Generate(BenchmarkConstants.CollectionSize);
     }
 
     /// <summary>
@@ -33,13 +30,8 @@ internal static class CollectionDataFactory
     /// <returns>The array.</returns>
     public static CollectionItemDto[] CreateArray()
     {
-        var array = new CollectionItemDto[BenchmarkConstants.CollectionSize];
-        for (var index = 0; index < BenchmarkConstants.CollectionSize; index++)
-        {
-            array[index] = CreateItem(index);
-        }
-
-        return array;
+        BenchmarkSeed.Apply();
+        return CreateItemFaker().Generate(BenchmarkConstants.CollectionSize).ToArray();
     }
 
     /// <summary>
@@ -48,10 +40,13 @@ internal static class CollectionDataFactory
     /// <returns>The dictionary.</returns>
     public static Dictionary<string, CollectionItemDto> CreateDictionary()
     {
+        BenchmarkSeed.Apply();
+        var faker = new Faker();
+        var itemFaker = CreateItemFaker();
         var dictionary = new Dictionary<string, CollectionItemDto>(BenchmarkConstants.CollectionSize);
         for (var index = 0; index < BenchmarkConstants.CollectionSize; index++)
         {
-            dictionary[$"key-{index}"] = CreateItem(index);
+            dictionary[$"{faker.Random.AlphaNumeric(8)}-{index}"] = itemFaker.Generate();
         }
 
         return dictionary;
@@ -63,13 +58,9 @@ internal static class CollectionDataFactory
     /// <returns>The list.</returns>
     public static List<int> CreateIntList()
     {
-        var list = new List<int>(BenchmarkConstants.CollectionSize);
-        for (var index = 0; index < BenchmarkConstants.CollectionSize; index++)
-        {
-            list.Add(index);
-        }
-
-        return list;
+        BenchmarkSeed.Apply();
+        var faker = new Faker();
+        return faker.Make(BenchmarkConstants.CollectionSize, () => faker.Random.Int(0, 10_000)).ToList();
     }
 
     /// <summary>
@@ -78,28 +69,28 @@ internal static class CollectionDataFactory
     /// <returns>The array.</returns>
     public static int[] CreateIntArray()
     {
-        var array = new int[BenchmarkConstants.CollectionSize];
-        for (var index = 0; index < BenchmarkConstants.CollectionSize; index++)
-        {
-            array[index] = index;
-        }
-
-        return array;
+        BenchmarkSeed.Apply();
+        var faker = new Faker();
+        return faker.Make(BenchmarkConstants.CollectionSize, () => faker.Random.Int(0, 10_000)).ToArray();
     }
 
-    private static CollectionItemDto CreateItem(int index)
+    private static Faker<CollectionItemDto> CreateItemFaker()
+    {
+        return new Faker<CollectionItemDto>()
+            .StrictMode(true)
+            .RuleFor(item => item.Id, faker => faker.Random.Int(1, 1_000_000))
+            .RuleFor(item => item.Name, faker => faker.Commerce.ProductName())
+            .RuleFor(item => item.Attributes, faker => CreateAttributes(faker));
+    }
+
+    private static Dictionary<string, string> CreateAttributes(Faker faker)
     {
         var attributes = new Dictionary<string, string>(BenchmarkConstants.AttributesPerItem);
         for (var attributeIndex = 0; attributeIndex < BenchmarkConstants.AttributesPerItem; attributeIndex++)
         {
-            attributes[$"attr-{attributeIndex}"] = $"value-{index}-{attributeIndex}";
+            attributes[$"{faker.Database.Column()}-{attributeIndex}"] = faker.Lorem.Word();
         }
 
-        return new CollectionItemDto
-        {
-            Id = index,
-            Name = $"item-{index}",
-            Attributes = attributes,
-        };
+        return attributes;
     }
 }

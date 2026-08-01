@@ -38,11 +38,7 @@ public class RecordToRecordBenchmark
 #pragma warning restore CA2000
         this.mapperlyMapper = new();
         this.mappaMapper = new();
-        this.input = new PersonRecordDto(
-            1,
-            "Ada Lovelace",
-            36,
-            new AddressDto { Street = "Analytical Engine Way", City = "London", Zip = "SW1A" });
+        this.input = ObjectDataFactory.CreatePersonRecordDto();
     }
 
     /// <summary>

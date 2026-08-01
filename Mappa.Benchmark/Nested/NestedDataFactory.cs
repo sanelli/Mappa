@@ -20,9 +20,7 @@ internal static class NestedDataFactory
     /// <returns>The order DTO.</returns>
     public static NestedOrderDto CreateNestedOrder()
     {
-#pragma warning disable S3010
-        Randomizer.Seed = new Random(BenchmarkConstants.RandomSeed);
-#pragma warning restore S3010
+        BenchmarkSeed.Apply();
 
         var size = BenchmarkConstants.NestedCollectionSize;
         var attributeCount = BenchmarkConstants.AttributesPerItem;

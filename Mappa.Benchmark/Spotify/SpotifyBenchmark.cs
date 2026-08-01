@@ -2,9 +2,9 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using BenchmarkDotNet.Attributes;
+using AutoBogus;
 
-using Bogus;
+using BenchmarkDotNet.Attributes;
 
 using Mappa.Benchmark.Common;
 using Mappa.Benchmark.Spotify.Mappers;
@@ -34,9 +34,7 @@ public class SpotifyBenchmark
     /// </summary>
     public SpotifyBenchmark()
     {
-#pragma warning disable S3010
-        Randomizer.Seed = new Random(BenchmarkConstants.RandomSeed);
-#pragma warning restore S3010
+        BenchmarkSeed.Apply();
 
         this.automapperMapper = new AutoMapper.MapperConfiguration(
             cfg =>
@@ -51,8 +49,7 @@ public class SpotifyBenchmark
 
         this.mappaMapper = new();
 
-        this.spotifyAlbumDto = new AutoBogus
-            .AutoFaker<SpotifyAlbumDto>()
+        this.spotifyAlbumDto = new AutoFaker<SpotifyAlbumDto>()
             .Configure(builder => builder.WithRepeatCount(BenchmarkConstants.CollectionSize))
             .Generate();
     }
