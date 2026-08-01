@@ -30,6 +30,7 @@ internal static class AttributeDataExtensions
     private const string MappaStaticDependencyAttributeFullName = "Mappa.Attributes.MappaStaticDependencyAttribute";
     private const string MappaAssignFromConstantAttributeFullName = "Mappa.Attributes.MappaAssignFromConstantAttribute";
     private const string MappaIgnoreTargetPropertyAttributeFullName = "Mappa.Attributes.MappaIgnoreTargetPropertyAttribute";
+    private const string MappaMustMapTargetPropertyAttributeFullName = "Mappa.Attributes.MappaMustMapTargetPropertyAttribute";
     private const string MappaTypeMappingAttributeFullName = "Mappa.Attributes.MappaTypeMappingAttribute";
     private const string MappaTypeMappingDefaultAttributeFullName = "Mappa.Attributes.MappaTypeMappingDefaultAttribute";
     private const string MappaMapEnumMemberAttributeFullName = "Mappa.Attributes.MappaMapEnumMemberAttribute`1";
@@ -787,6 +788,41 @@ internal static class AttributeDataExtensions
         }
 
         return [.. results];
+    }
+
+    /// <summary>
+    /// Gets the <see cref="MappaMustMapTargetPropertyAttribute"/> applied, if any.
+    /// </summary>
+    /// <param name="attributes">The attributes.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The <see cref="MappaMustMapTargetPropertyAttribute"/> applied, or <c>null</c>.</returns>
+    internal static MappaMustMapTargetPropertyAttribute? GetMappaMustMapTargetPropertyAttribute(this ImmutableArray<AttributeData> attributes, Compilation compilation)
+    {
+        var mappaMustMapTargetPropertyAttributeSymbol = compilation.GetTypeByMetadataName(MappaMustMapTargetPropertyAttributeFullName);
+        var attributeData = attributes
+            .FirstOrDefault(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, mappaMustMapTargetPropertyAttributeSymbol));
+        if (attributeData is null)
+        {
+            return null;
+        }
+
+        var constructorArguments = attributeData.ConstructorArguments;
+        if (constructorArguments.Length == 0
+            || constructorArguments[0].Kind != TypedConstantKind.Array)
+        {
+            return new MappaMustMapTargetPropertyAttribute();
+        }
+
+        List<string> targetPropertyNames = new();
+        foreach (var value in constructorArguments[0].Values)
+        {
+            if (value.Value is string { Length: > 0 } name)
+            {
+                targetPropertyNames.Add(name);
+            }
+        }
+
+        return new MappaMustMapTargetPropertyAttribute([.. targetPropertyNames]);
     }
 
     /// <summary>

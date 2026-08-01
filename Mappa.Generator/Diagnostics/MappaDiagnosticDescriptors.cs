@@ -78,6 +78,8 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? duplicateObjectFactoryForTargetType;
     private static DiagnosticDescriptor? objectFactoryMethodNotFound;
     private static DiagnosticDescriptor? projectionMethodHasObjectFactory;
+    private static DiagnosticDescriptor? mustMapTargetPropertyWasNotMapped;
+    private static DiagnosticDescriptor? mappaMustMapTargetPropertyListsRequiredProperty;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -590,6 +592,22 @@ internal static class MappaDiagnosticDescriptors
         => projectionMethodHasObjectFactory ??= BuildError(
             MappaDiagnosticsKind.ProjectionMethodHasObjectFactory,
             DiagnosticsResources.ProjectionMethodHasObjectFactory);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MustMapTargetPropertyWasNotMapped"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MustMapTargetPropertyWasNotMapped
+        => mustMapTargetPropertyWasNotMapped ??= BuildError(
+            MappaDiagnosticsKind.MustMapTargetPropertyWasNotMapped,
+            DiagnosticsResources.MustMapTargetPropertyWasNotMapped);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MappaMustMapTargetPropertyListsRequiredProperty"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MappaMustMapTargetPropertyListsRequiredProperty
+        => mappaMustMapTargetPropertyListsRequiredProperty ??= BuildWarning(
+            MappaDiagnosticsKind.MappaMustMapTargetPropertyListsRequiredProperty,
+            DiagnosticsResources.MappaMustMapTargetPropertyListsRequiredProperty);
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(

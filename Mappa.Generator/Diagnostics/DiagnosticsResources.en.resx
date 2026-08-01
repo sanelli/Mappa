@@ -203,4 +203,10 @@
     <data name="ProjectionMethodHasObjectFactory" xml:space="preserve">
         <value>Method '{0}' projects IQueryable but declares MappaObjectFactory which is not supported for queryable projections.</value>
     </data>
+    <data name="MustMapTargetPropertyWasNotMapped" xml:space="preserve">
+        <value>Cannot find a suitable mapping for property '{0}.{1}' required by MappaMustMapTargetProperty.</value>
+    </data>
+    <data name="MappaMustMapTargetPropertyListsRequiredProperty" xml:space="preserve">
+        <value>Method '{0}' lists property '{1}' in MappaMustMapTargetProperty, but the property is already required on type '{2}' and the attribute entry will be ignored.</value>
+    </data>
 </root>

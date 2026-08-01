@@ -234,6 +234,80 @@ internal static class MapMethodMappingAttributesValidator
     }
 
     /// <summary>
+    /// Reports diagnostics for <see cref="MappaMustMapTargetPropertyAttribute"/> declarations
+    /// that list missing or required properties, or conflict with ignore attributes.
+    /// </summary>
+    /// <param name="context">The mapping algorithm context.</param>
+    internal static void ValidateMappaMustMapTargetPropertyAttributes(this MappaMapAlgorithmContext context)
+    {
+        if (context.MapMethod is null)
+        {
+            return;
+        }
+
+        if (context.AlgorithmSettings.UseAttributesForConstructorDetectorSettings
+            .Equals(MappaMapAlgorithmContextSettings.MappaAttributesForConstructorDetectorSettings.Disable))
+        {
+            return;
+        }
+
+        var mapMethod = context.MapMethod;
+        var methodDeclarationSyntax = mapMethod.MethodDeclarationSyntax;
+        if (methodDeclarationSyntax is null)
+        {
+            return;
+        }
+
+        var mustMapAttribute = mapMethod.GetAttribute<MappaMustMapTargetPropertyAttribute>();
+        if (mustMapAttribute is null)
+        {
+            return;
+        }
+
+        var methodName = context.GetRootMapMethod().MethodName;
+        var targetType = context.TargetType;
+        var targetTypeName = targetType.ToDisplayString();
+        var targetProperties = targetType.GetTypeProperties().ToArray();
+        var ignoredPropertyNames = new HashSet<string>(
+            mapMethod.GetAttributes<MappaIgnoreTargetPropertyAttribute>()
+                .Select(attribute => attribute.TargetPropertyName),
+            StringComparer.Ordinal);
+
+        foreach (var propertyName in mustMapAttribute.TargetPropertyNames.Distinct(StringComparer.Ordinal))
+        {
+            if (ignoredPropertyNames.Contains(propertyName))
+            {
+                context.ReportDiagnostic(MappaDiagnostics.MultipleAttributesTargetTheSamePropertyOrParameter(
+                    methodDeclarationSyntax,
+                    propertyName));
+            }
+
+            var targetProperty = Array.Find(
+                targetProperties,
+                property => property.Name.Equals(propertyName, StringComparison.Ordinal));
+            if (targetProperty is null)
+            {
+                context.ReportDiagnostic(MappaDiagnostics.MappingAttributeTargetPropertyOrParameterDoesNotExist(
+                    methodDeclarationSyntax,
+                    methodName,
+                    nameof(MappaMustMapTargetPropertyAttribute),
+                    propertyName,
+                    targetTypeName));
+                continue;
+            }
+
+            if (targetProperty.IsRequired)
+            {
+                context.ReportDiagnostic(MappaDiagnostics.MappaMustMapTargetPropertyListsRequiredProperty(
+                    methodDeclarationSyntax,
+                    methodName,
+                    propertyName,
+                    targetTypeName));
+            }
+        }
+    }
+
+    /// <summary>
     /// Validates that each segment in <paramref name="segmentsToValidate"/> exists when resolved from <paramref name="targetType"/>.
     /// </summary>
     /// <param name="context">The mapping algorithm context.</param>

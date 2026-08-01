@@ -630,6 +630,27 @@ public sealed partial class Mapper
 
 See also: [MappaIgnoreTargetPropertyAttributeMapper.cs](../Mappa.Samples/MappaIgnoreTargetPropertyAttributeMapper.cs).
 
+### MappaMustMapTargetProperty attribute
+When mapping via an empty constructor, require that listed (or all) non-required target properties are mapped:
+
+```csharp
+[Mappa]
+public sealed partial class Mapper
+{
+    [MappaMustMapTargetProperty(nameof(Target.PropertyA), nameof(Target.PropertyB))]
+    public partial Target MapListed(Source source);
+}
+
+[Mappa]
+public sealed partial class AllPropertiesMapper
+{
+    [MappaMustMapTargetProperty]
+    public partial Target MapAll(Source source);
+}
+```
+
+See also: [MappaMustMapTargetPropertyAttributeMapper.cs](../Mappa.Samples/MappaMustMapTargetPropertyAttributeMapper.cs).
+
 ### MappaDependency and MappaStaticDependency
 Register external mapping methods via `[MappaDependency]` on a field or property, or via `[MappaStaticDependency]` on a static helper class:
 

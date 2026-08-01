@@ -157,6 +157,15 @@ internal static class AotSampleData
     };
 
     /// <summary>
+    /// Gets a <see cref="MappaMustMapTargetPropertySourceModel"/> with PropertyA 17 and PropertyB 42.
+    /// </summary>
+    public static MappaMustMapTargetPropertySourceModel MappaMustMapTargetPropertySourceModel17FortyTwo { get; } = new()
+    {
+        PropertyA = 17,
+        PropertyB = 42,
+    };
+
+    /// <summary>
     /// Gets a <see cref="PropertyMapNameSettingsSourceModel"/> with user_name 42 and PropertyB 7.
     /// </summary>
     public static PropertyMapNameSettingsSourceModel PropertyMapNameSettingsSourceModel42Seven { get; } = new()

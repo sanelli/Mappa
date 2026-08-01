@@ -565,29 +565,68 @@ internal sealed partial class ConstructorMapStrategyDetector
             .Where(propertyStrategy => propertyStrategy.PropertyStrategy is NoMapStrategy)
             .ToArray();
 
+        var mustMapAttribute = this.GetMustMapTargetPropertyAttribute();
+        var mustMapFailed = false;
+
+        foreach (var propertyWithoutStrategy in propertiesWithoutStrategy.Select(propertyStrategy => propertyStrategy.TargetProperty))
+        {
+            var targetCollections = propertyWithoutStrategy.Type.IsPostInitializationCollectionType(this.compilation);
+            var hasSetter = propertyWithoutStrategy.SetMethod is not null && propertyWithoutStrategy.IsSetterAccessible(this.compilation, this.context.GetRootMapMethod());
+
+            if (!hasSetter && !targetCollections)
+            {
+                continue;
+            }
+
+            var isMustMapCandidate = mustMapAttribute is not null
+                                     && !propertyWithoutStrategy.IsRequired
+                                     && (mustMapAttribute.TargetPropertyNames.Length == 0
+                                         || mustMapAttribute.TargetPropertyNames.Contains(propertyWithoutStrategy.Name, StringComparer.Ordinal));
+
+            if (isMustMapCandidate)
+            {
+                this.context.ReportDiagnostic(MappaDiagnostics.MustMapTargetPropertyWasNotMapped(
+                    this.context.GetRootMapMethod().MethodDeclarationSyntax,
+                    this.context.TargetType,
+                    propertyWithoutStrategy));
+                mustMapFailed = true;
+            }
+            else if (propertiesWithStrategies.Length > 0)
+            {
+                this.context.ReportDiagnostic(MappaDiagnostics.CannotMapNonRequiredProperty(
+                    this.context.GetRootMapMethod().MethodDeclarationSyntax,
+                    this.context.TargetType,
+                    propertyWithoutStrategy));
+            }
+        }
+
+        if (mustMapFailed)
+        {
+            return false;
+        }
+
         if (requireAtLeastOneMappedProperty && propertiesWithStrategies.Length == 0)
         {
             return false;
         }
 
-        if (propertiesWithStrategies.Length > 0)
-        {
-            foreach (var propertyWithoutStrategy in propertiesWithoutStrategy.Select(propertyStrategy => propertyStrategy.TargetProperty))
-            {
-                var targetCollections = propertyWithoutStrategy.Type.IsPostInitializationCollectionType(this.compilation);
-                var hasSetter = propertyWithoutStrategy.SetMethod is not null && propertyWithoutStrategy.IsSetterAccessible(this.compilation, this.context.GetRootMapMethod());
-
-                if (hasSetter || targetCollections)
-                {
-                    this.context.ReportDiagnostic(MappaDiagnostics.CannotMapNonRequiredProperty(
-                        this.context.GetRootMapMethod().MethodDeclarationSyntax,
-                        this.context.TargetType,
-                        propertyWithoutStrategy));
-                }
-            }
-        }
-
         initializerStrategies = propertiesWithStrategies;
         return true;
+    }
+
+    private MappaMustMapTargetPropertyAttribute? GetMustMapTargetPropertyAttribute()
+    {
+        if (this.context.AlgorithmSettings.UseAttributesForConstructorDetectorSettings
+                .Equals(MappaMapAlgorithmContextSettings.MappaAttributesForConstructorDetectorSettings.Disable))
+        {
+            return null;
+        }
+
+        if (this.context.MapMethod is null && this.context.PropertyPathContext is null)
+        {
+            return null;
+        }
+
+        return this.GetAttributeMapMethod().GetAttribute<MappaMustMapTargetPropertyAttribute>();
     }
 }
