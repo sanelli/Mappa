@@ -4,6 +4,7 @@
 
 using Mappa.Generator.Tests.Abstractions;
 using Mappa.Generator.Tests.Assertions;
+using Mappa.Generator.Tests.Assertions.Extensions;
 
 namespace Mappa.Generator.Tests;
 
@@ -794,6 +795,366 @@ public sealed partial class MappaDependencyInjectionIntegrationTests
                         methodAssertions =>
                         {
                             methodAssertions.HaveModifiers(SyntaxKind.InternalKeyword, SyntaxKind.StaticKeyword);
+                        });
+                });
+            });
+    }
+
+    /// <summary>
+    /// Private accessibility emits a private method.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task PrivateAccessibilityEmitsPrivateMethod()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  using Mappa;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  [Mappa]
+                                  public sealed partial class MapperA
+                                  {
+                                  }
+
+                                  [MappaDependencyInjection(Accessibility = MappaDependencyInjectionMethodAccessibility.Private)]
+                                  public static partial class Registrar
+                                  {
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveFileScopedNamespace(fileScopedNamespace =>
+            {
+                fileScopedNamespace.HaveClass("Registrar", classAssertions =>
+                {
+                    classAssertions.HaveMethod(
+                        ServiceCollectionTypeName,
+                        NullableAnnotation.None,
+                        "RegisterRegistrar",
+                        true,
+                        [
+                            (ServiceCollectionTypeName, NullableAnnotation.None, "services", RefKind.None, false),
+                        ],
+                        methodAssertions =>
+                        {
+                            methodAssertions.HaveModifiers(SyntaxKind.PrivateKeyword, SyntaxKind.StaticKeyword);
+                        });
+                });
+            });
+    }
+
+    /// <summary>
+    /// Protected accessibility on a non-static registrar emits a protected instance method.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task ProtectedAccessibilityEmitsProtectedMethod()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  using Mappa;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  [Mappa]
+                                  public sealed partial class MapperA
+                                  {
+                                  }
+
+                                  [MappaDependencyInjection(Accessibility = MappaDependencyInjectionMethodAccessibility.Protected)]
+                                  public partial class Registrar
+                                  {
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveFileScopedNamespace(fileScopedNamespace =>
+            {
+                fileScopedNamespace.HaveClass("Registrar", classAssertions =>
+                {
+                    classAssertions.HaveMethod(
+                        ServiceCollectionTypeName,
+                        NullableAnnotation.None,
+                        "RegisterRegistrar",
+                        false,
+                        [
+                            (ServiceCollectionTypeName, NullableAnnotation.None, "services", RefKind.None, false),
+                        ],
+                        methodAssertions =>
+                        {
+                            methodAssertions.HaveModifiers(SyntaxKind.ProtectedKeyword);
+                        });
+                });
+            });
+    }
+
+    /// <summary>
+    /// ProtectedInternal accessibility emits a protected internal instance method.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task ProtectedInternalAccessibilityEmitsProtectedInternalMethod()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  using Mappa;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  [Mappa]
+                                  public sealed partial class MapperA
+                                  {
+                                  }
+
+                                  [MappaDependencyInjection(Accessibility = MappaDependencyInjectionMethodAccessibility.ProtectedInternal)]
+                                  public partial class Registrar
+                                  {
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveFileScopedNamespace(fileScopedNamespace =>
+            {
+                fileScopedNamespace.HaveClass("Registrar", classAssertions =>
+                {
+                    classAssertions.HaveMethod(
+                        ServiceCollectionTypeName,
+                        NullableAnnotation.None,
+                        "RegisterRegistrar",
+                        false,
+                        [
+                            (ServiceCollectionTypeName, NullableAnnotation.None, "services", RefKind.None, false),
+                        ],
+                        methodAssertions =>
+                        {
+                            methodAssertions.HaveModifiers(SyntaxKind.ProtectedKeyword, SyntaxKind.InternalKeyword);
+                        });
+                });
+            });
+    }
+
+    /// <summary>
+    /// Block-scoped namespace registrar emits a block namespace in generated source.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task BlockScopedNamespaceRegistrarEmitsBlockNamespace()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode
+                                  {
+                                      [Mappa]
+                                      public sealed partial class MapperA
+                                      {
+                                      }
+
+                                      [MappaDependencyInjection]
+                                      public static partial class Registrar
+                                      {
+                                      }
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveCommentHeader()
+            .HaveNamespaceDeclarationSyntax(namespaceDeclaration =>
+            {
+                namespaceDeclaration
+                    .HaveNamespaceIdentifier(SourceNamespace)
+                    .HaveClass("Registrar", classAssertions =>
+                    {
+                        classAssertions.HaveMethod(
+                            ServiceCollectionTypeName,
+                            NullableAnnotation.None,
+                            "RegisterRegistrar",
+                            true,
+                            [
+                                (ServiceCollectionTypeName, NullableAnnotation.None, "services", RefKind.None, false),
+                            ],
+                            methodAssertions =>
+                            {
+                                methodAssertions.HaveBody(blockSyntaxAssertions =>
+                                {
+                                    blockSyntaxAssertions
+                                        .HasSyntaxNodesCount(2)
+                                        .HasNextSyntaxNode(nodeAssertions =>
+                                            nodeAssertions.BeInvocationExpressionSyntaxStatement(
+                                                $"services.AddSingleton<{GlobalMapperA}>"))
+                                        .HasNextSyntaxNode(nodeAssertions =>
+                                            nodeAssertions.BeReturnStatement("services"));
+                                });
+                            });
+                    });
+            });
+    }
+
+    /// <summary>
+    /// Global-namespace registrar emits registration code with no namespace declaration.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task GlobalNamespaceRegistrarEmitsNoNamespace()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  using Mappa.Attributes;
+
+                                  [Mappa]
+                                  public sealed partial class MapperA
+                                  {
+                                  }
+
+                                  [MappaDependencyInjection]
+                                  public static partial class Registrar
+                                  {
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveCommentHeader()
+            .HaveNoNamespaceDeclarationSyntax()
+            .HaveClasses(1)
+            .HaveClass("Registrar", classAssertions =>
+            {
+                classAssertions.HaveMethod(
+                    ServiceCollectionTypeName,
+                    NullableAnnotation.None,
+                    "RegisterRegistrar",
+                    true,
+                    [
+                        (ServiceCollectionTypeName, NullableAnnotation.None, "services", RefKind.None, false),
+                    ],
+                    methodAssertions =>
+                    {
+                        methodAssertions.HaveBody(blockSyntaxAssertions =>
+                        {
+                            blockSyntaxAssertions
+                                .HasSyntaxNodesCount(2)
+                                .HasNextSyntaxNode(nodeAssertions =>
+                                    nodeAssertions.BeInvocationExpressionSyntaxStatement(
+                                        "services.AddSingleton<global::MapperA>"))
+                                .HasNextSyntaxNode(nodeAssertions =>
+                                    nodeAssertions.BeReturnStatement("services"));
+                        });
+                    });
+            });
+    }
+
+    /// <summary>
+    /// Nested <c>[Mappa]</c> mapper types in the same assembly are discovered and registered.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task NestedMappaMapperTypeIsRegistered()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public partial class Outer
+                                  {
+                                      [Mappa]
+                                      public sealed partial class NestedMapper
+                                      {
+                                      }
+                                  }
+
+                                  [MappaDependencyInjection]
+                                  public static partial class Registrar
+                                  {
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        const string globalNestedMapper = $"global::{SourceNamespace}.Outer.NestedMapper";
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveFileScopedNamespace(fileScopedNamespace =>
+            {
+                fileScopedNamespace.HaveClass("Registrar", classAssertions =>
+                {
+                    classAssertions.HaveMethod(
+                        ServiceCollectionTypeName,
+                        NullableAnnotation.None,
+                        "RegisterRegistrar",
+                        true,
+                        [
+                            (ServiceCollectionTypeName, NullableAnnotation.None, "services", RefKind.None, false),
+                        ],
+                        methodAssertions =>
+                        {
+                            methodAssertions.HaveBody(blockSyntaxAssertions =>
+                            {
+                                blockSyntaxAssertions
+                                    .HasSyntaxNodesCount(2)
+                                    .HasNextSyntaxNode(nodeAssertions =>
+                                        nodeAssertions.BeInvocationExpressionSyntaxStatement(
+                                            $"services.AddSingleton<{globalNestedMapper}>"))
+                                    .HasNextSyntaxNode(nodeAssertions =>
+                                        nodeAssertions.BeReturnStatement("services"));
+                            });
                         });
                 });
             });
