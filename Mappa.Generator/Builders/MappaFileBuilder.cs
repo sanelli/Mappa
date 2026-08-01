@@ -35,11 +35,19 @@ internal sealed class MappaFileBuilder
     /// <inheritdoc/>
     public string BuildSource(MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
-        // Build the source for the class.
+        // Build the source for the class (also registers any inaccessible accessors).
         var classSourceCode = new MappaClassBuilder(this.ClassContext).BuildSource(context, mappaGlobalOptions);
 
-        // Add the namespace to the class code.
-        var classSourceCodeWithNamespace = new MappaNamespaceBuilder(this.ClassContext, classSourceCode).BuildSource(context, mappaGlobalOptions);
+        var inaccessibleAccessorsSource = context.InaccessibleAccessors.BuildSource();
+        var hasInaccessibleAccessors = !string.IsNullOrWhiteSpace(inaccessibleAccessorsSource);
+
+        // File-local accessors must stay in the global namespace. A file-scoped `namespace X;`
+        // cannot appear after them (CS8956), so force a block-scoped namespace in that case.
+        var classSourceCodeWithNamespace = new MappaNamespaceBuilder(
+                this.ClassContext,
+                classSourceCode,
+                forceBlockScopedNamespace: hasInaccessibleAccessors)
+            .BuildSource(context, mappaGlobalOptions);
 
         var builder = new PrettyCode.StringBuilder();
 
@@ -53,10 +61,7 @@ internal sealed class MappaFileBuilder
             .AppendLine("// </auto-generated>");
         builder.AppendEmptyLine();
 
-        // Emit file-local accessors before the file-scoped namespace so they remain in the
-        // global namespace (everything after `namespace X;` belongs to that namespace).
-        var inaccessibleAccessorsSource = context.InaccessibleAccessors.BuildSource();
-        if (!string.IsNullOrWhiteSpace(inaccessibleAccessorsSource))
+        if (hasInaccessibleAccessors)
         {
             builder.AppendLine(inaccessibleAccessorsSource);
             builder.AppendEmptyLine();

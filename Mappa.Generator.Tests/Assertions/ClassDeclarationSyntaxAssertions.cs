@@ -221,12 +221,15 @@ internal sealed class ClassDeclarationSyntaxAssertions
     /// </summary>
     /// <param name="methodName">The generated method identifier.</param>
     /// <param name="unsafeAccessorKind">The expected <c>UnsafeAccessorKind</c> name.</param>
-    /// <param name="runtimeName">The expected <c>Name</c> attribute argument.</param>
+    /// <param name="runtimeName">
+    /// The expected <c>Name</c> attribute argument, or <see langword="null"/> when the
+    /// attribute must omit <c>Name</c> (constructor accessors).
+    /// </param>
     /// <returns>The assertions.</returns>
     public ClassDeclarationSyntaxAssertions HaveExternUnsafeAccessorMethod(
         string methodName,
         string unsafeAccessorKind,
-        string runtimeName)
+        string? runtimeName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(methodName);
 
@@ -238,7 +241,7 @@ internal sealed class ClassDeclarationSyntaxAssertions
         methods.Should().HaveCount(1);
 
         new MethodDeclarationSyntaxAssertions(methods.Single(), this.semanticModel, this.compilation)
-            .HaveModifiers(SyntaxKind.ExternKeyword, SyntaxKind.StaticKeyword)
+            .HaveModifiers(SyntaxKind.PublicKeyword, SyntaxKind.StaticKeyword, SyntaxKind.ExternKeyword)
             .HaveUnsafeAccessorAttribute(unsafeAccessorKind, runtimeName)
             .HaveNoBody();
 

@@ -116,6 +116,55 @@ internal sealed class CompilationUnitSyntaxAssertions
     }
 
     /// <summary>
+    /// Assert the compilation unit contains exactly one namespace (file-scoped or block-scoped)
+    /// with <paramref name="classCount"/> classes, and assert on the class named
+    /// <paramref name="className"/>.
+    /// </summary>
+    /// <param name="classCount">The expected number of classes in the namespace.</param>
+    /// <param name="className">The mapper class identifier.</param>
+    /// <param name="assert">Assertions on the mapper class.</param>
+    /// <returns>The compilation unit syntax assertions.</returns>
+    public CompilationUnitSyntaxAssertions HaveNamespaceWithClass(
+        int classCount,
+        string className,
+        Action<ClassDeclarationSyntaxAssertions> assert)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(className);
+        ArgumentNullException.ThrowIfNull(assert);
+
+        var fileScopedNamespaces = this.Subject.ChildNodes().OfType<FileScopedNamespaceDeclarationSyntax>().ToArray();
+        var blockNamespaces = this.Subject.ChildNodes().OfType<NamespaceDeclarationSyntax>().ToArray();
+
+        BaseNamespaceDeclarationSyntax namespaceDeclarationSyntax;
+        if (fileScopedNamespaces.Length == 1 && blockNamespaces.Length == 0)
+        {
+            namespaceDeclarationSyntax = fileScopedNamespaces[0];
+        }
+        else if (blockNamespaces.Length == 1 && fileScopedNamespaces.Length == 0)
+        {
+            namespaceDeclarationSyntax = blockNamespaces[0];
+        }
+        else
+        {
+            (fileScopedNamespaces.Length + blockNamespaces.Length).Should().Be(
+                1,
+                "exactly one file-scoped or block-scoped namespace is expected");
+            namespaceDeclarationSyntax = fileScopedNamespaces.Length == 1
+                ? fileScopedNamespaces[0]
+                : blockNamespaces[0];
+        }
+
+        var classDeclarationSyntaxes = namespaceDeclarationSyntax.ChildNodes().OfType<ClassDeclarationSyntax>().ToArray();
+        classDeclarationSyntaxes.Should().HaveCount(classCount);
+        classDeclarationSyntaxes.Should().Contain(classDeclarationSyntax =>
+            classDeclarationSyntax.Identifier.ToString().Equals(className, StringComparison.Ordinal));
+        var classDeclarationSyntax = classDeclarationSyntaxes.Single(classDeclarationSyntax =>
+            classDeclarationSyntax.Identifier.ToString().Equals(className, StringComparison.Ordinal));
+        assert(new ClassDeclarationSyntaxAssertions(classDeclarationSyntax, this.semanticModel, this.compilation));
+        return this;
+    }
+
+    /// <summary>
     /// Assert that the compilation unit contains a class named <paramref name="identifier"/>.
     /// </summary>
     /// <param name="identifier">The identifier of the class.</param>

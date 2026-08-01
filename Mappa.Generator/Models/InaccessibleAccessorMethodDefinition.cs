@@ -131,14 +131,24 @@ internal sealed class InaccessibleAccessorMethodDefinition
             _ => "Method",
         };
 
-        builder.AppendLine(
-            $"[global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.{unsafeKindLiteral}, Name = \"{this.RuntimeName}\")]");
+        if (this.UnsafeKind is InaccessibleAccessorUnsafeKind.Constructor)
+        {
+            // Constructor accessors must not set Name; a non-empty Name is invalid usage
+            // and throws BadImageFormatException at runtime.
+            builder.AppendLine(
+                "[global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Constructor)]");
+        }
+        else
+        {
+            builder.AppendLine(
+                $"[global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.{unsafeKindLiteral}, Name = \"{this.RuntimeName}\")]");
+        }
 
         var parameterList = string.Join(
             ", ",
             this.Parameters.Select(parameter => $"{parameter.Type.ToDisplayString()} {parameter.Name}"));
         builder.AppendLine(
-            $"extern static {this.ReturnTypeDisplay} {this.MethodName}({parameterList});");
+            $"public static extern {this.ReturnTypeDisplay} {this.MethodName}({parameterList});");
 
         return builder.ToString();
     }

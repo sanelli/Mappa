@@ -39,6 +39,7 @@ internal static class Program
         IdentityMapDeepCopyMapperRunner.Run(report);
         IdentityStrategyMapperDupRunner.Run(report);
         IdentityStrategyMapperRunner.Run(report);
+        InaccessibleMembersMapperRunner.Run(report);
         IntegralToEnumMapperRunner.Run(report);
         InvokeConstructorStrategyMapperRunner.Run(report);
         InvokeEmptyConstructorOnPropertyMapperRunner.Run(report);

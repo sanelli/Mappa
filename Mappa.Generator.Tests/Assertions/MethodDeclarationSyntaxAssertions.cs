@@ -126,12 +126,14 @@ internal sealed class MethodDeclarationSyntaxAssertions
     /// Check that the method has a <see cref="System.Runtime.CompilerServices.UnsafeAccessorAttribute"/>.
     /// </summary>
     /// <param name="unsafeAccessorKind">The expected <c>UnsafeAccessorKind</c> name (<c>Method</c> or <c>Constructor</c>).</param>
-    /// <param name="runtimeName">The expected <c>Name</c> attribute argument value.</param>
+    /// <param name="runtimeName">
+    /// The expected <c>Name</c> attribute argument value, or <see langword="null"/> when
+    /// <c>Name</c> must be omitted (constructor accessors).
+    /// </param>
     /// <returns>The assertions.</returns>
-    internal MethodDeclarationSyntaxAssertions HaveUnsafeAccessorAttribute(string unsafeAccessorKind, string runtimeName)
+    internal MethodDeclarationSyntaxAssertions HaveUnsafeAccessorAttribute(string unsafeAccessorKind, string? runtimeName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(unsafeAccessorKind);
-        ArgumentException.ThrowIfNullOrWhiteSpace(runtimeName);
 
         const string attributeFullName = "global::System.Runtime.CompilerServices.UnsafeAccessor";
         var attributes = this.Subject.AttributeLists.SelectMany(attributeList => attributeList.Attributes);
@@ -141,6 +143,15 @@ internal sealed class MethodDeclarationSyntaxAssertions
         unsafeAccessorAttributes.Should().HaveCount(1);
         var unsafeAccessorAttribute = unsafeAccessorAttributes.Single();
         unsafeAccessorAttribute.ArgumentList.Should().NotBeNull();
+
+        if (runtimeName is null)
+        {
+            unsafeAccessorAttribute.ArgumentList!.Arguments.Should().HaveCount(1);
+            var kindOnlyArgument = unsafeAccessorAttribute.ArgumentList.Arguments[0].Expression.ToString();
+            kindOnlyArgument.Should().Be($"global::System.Runtime.CompilerServices.UnsafeAccessorKind.{unsafeAccessorKind}");
+            return this;
+        }
+
         unsafeAccessorAttribute.ArgumentList!.Arguments.Should().HaveCount(2);
 
         var kindArgument = unsafeAccessorAttribute.ArgumentList.Arguments[0].Expression.ToString();

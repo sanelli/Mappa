@@ -274,7 +274,7 @@ public sealed class MappaAllowInaccessibleMembersIntegrationTests
                 classAssertions
                     .HaveModifiers(SyntaxKind.FileKeyword, SyntaxKind.StaticKeyword)
                     .HaveMethods(1)
-                    .HaveExternUnsafeAccessorMethod("__mappa_tmp_1", "Constructor", ".ctor");
+                    .HaveExternUnsafeAccessorMethod("__mappa_tmp_1", "Constructor", null);
             });
     }
 

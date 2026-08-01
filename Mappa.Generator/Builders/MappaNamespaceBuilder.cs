@@ -19,10 +19,18 @@ internal sealed class MappaNamespaceBuilder
     /// </summary>
     /// <param name="classContext">The class generator context.</param>
     /// <param name="classSourceCode">The source code of the class.</param>
-    public MappaNamespaceBuilder(MappaClassGeneratorContext classContext, string classSourceCode)
+    /// <param name="forceBlockScopedNamespace">
+    /// When <see langword="true"/>, emit a block-scoped namespace even if the user type
+    /// uses a file-scoped namespace (required when file-local members must precede the namespace).
+    /// </param>
+    public MappaNamespaceBuilder(
+        MappaClassGeneratorContext classContext,
+        string classSourceCode,
+        bool forceBlockScopedNamespace = false)
     {
         this.ClassContext = classContext;
         this.ClassSourceCode = classSourceCode;
+        this.ForceBlockScopedNamespace = forceBlockScopedNamespace;
     }
 
     /// <summary>
@@ -35,22 +43,30 @@ internal sealed class MappaNamespaceBuilder
     /// </summary>
     private string ClassSourceCode { get; }
 
+    /// <summary>
+    /// Gets a value indicating whether a block-scoped namespace must be emitted.
+    /// </summary>
+    private bool ForceBlockScopedNamespace { get; }
+
     /// <inheritdoc/>
     public string BuildSource(MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
         var builder = new PrettyCode.StringBuilder();
         var @namespace = this.ClassContext.ClassSymbol.ContainingNamespace.ToDisplayString();
 
-        // File scoped namespace
-        if (this.ClassContext.ClassDeclarationSyntax.Parent is FileScopedNamespaceDeclarationSyntax)
+        var isFileScoped = this.ClassContext.ClassDeclarationSyntax.Parent is FileScopedNamespaceDeclarationSyntax;
+        var isBlockScoped = this.ClassContext.ClassDeclarationSyntax.Parent is NamespaceDeclarationSyntax;
+
+        // File scoped namespace (unless forced to a block so preceding file-local members are valid).
+        if (isFileScoped && !this.ForceBlockScopedNamespace)
         {
             builder.AppendLine($"namespace {@namespace};");
             builder.AppendEmptyLine();
             builder.AppendLine(this.ClassSourceCode);
         }
 
-        // Standard namespace block
-        else if (this.ClassContext.ClassDeclarationSyntax.Parent is NamespaceDeclarationSyntax)
+        // Standard namespace block (including file-scoped types forced to block form).
+        else if (isBlockScoped || (isFileScoped && this.ForceBlockScopedNamespace))
         {
             builder.AppendLine($"namespace {@namespace}");
             using (builder.CurlyBracesBlock())
