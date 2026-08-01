@@ -48,7 +48,7 @@ internal class TypeMapIdentifierAlgorithm
     /// <summary>
     /// Gets the compilation.
     /// </summary>
-    private Compilation Compilation { get; }
+    protected Compilation Compilation { get; }
 
     /// <summary>
     /// Compute a suitable strategy from type <see cref="MappaMapAlgorithmContext.SourceType"/> to

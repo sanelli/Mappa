@@ -194,6 +194,38 @@ internal sealed class MappaClassGeneratorContext
     }
 
     /// <summary>
+    /// Try getting a compatible method for mapping from <paramref name="sourceType"/> to
+    /// <paramref name="targetType"/> (base/interface parameter and/or derived return type).
+    /// </summary>
+    /// <param name="targetType">The target type.</param>
+    /// <param name="sourceType">The source type.</param>
+    /// <param name="requireStaticContext"><c>true</c> if the invocation require only method that can invoked in a static context,<c>false</c> otherwise.</param>
+    /// <param name="compilation">The compilation used to resolve implicit conversions.</param>
+    /// <param name="mapMethod">The map method, if it exists.</param>
+    /// <returns><c>true</c> if a compatible method to map from <paramref name="sourceType"/> to
+    /// <paramref name="targetType"/> exists, <c>false</c> otherwise.</returns>
+    internal bool TryGetCompatibleMethod(
+        ITypeSymbol targetType,
+        ITypeSymbol sourceType,
+        bool requireStaticContext,
+        Compilation compilation,
+        out MapMethod mapMethod)
+    {
+        var foundMethod = this.mapMethods.Find(method =>
+        {
+            if (requireStaticContext && !method.CanBeUsedByStaticMethod)
+            {
+                return false;
+            }
+
+            return method.IsCompatibleMapFor(targetType, sourceType, compilation);
+        });
+
+        mapMethod = foundMethod!;
+        return foundMethod is not null;
+    }
+
+    /// <summary>
     /// Adds the map method to the list of methods.
     /// Method is added only if no other method with the same mapping exists.
     /// </summary>

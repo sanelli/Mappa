@@ -211,6 +211,12 @@ public sealed class MapMethodMappingAttributesValidatorNestedPathTests
             return false;
         }
 
+        internal override bool TryGetCompatibleMethod(ITypeSymbol targetType, ITypeSymbol sourceType, Compilation compilation, out MapMethod mapMethod)
+        {
+            mapMethod = null!;
+            return false;
+        }
+
         internal override void ReportDiagnostic(Diagnostic diagnostic)
             => this.Diagnostics.Add(diagnostic);
 

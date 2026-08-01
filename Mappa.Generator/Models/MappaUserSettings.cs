@@ -59,6 +59,7 @@ internal sealed class MappaUserSettings
     private readonly StackSetting<EnumerableConcreteTypeSetting> enumerableConcreteType;
     private readonly StackSetting<DictionaryAssignmentSetting> dictionaryAssignment;
     private readonly StackSetting<BooleanSetting> polymorphicMapMethodWithMatchingDefaultAttribute;
+    private readonly StackSetting<BooleanSetting> compatibleMapMethod;
     private readonly StackSetting<BooleanSetting> caseInsensitivePropertyMap;
     private readonly StackSetting<BooleanSetting> ignoreUnderscoreForPropertyMap;
     private readonly StackSetting<BooleanSetting> caseInsensitiveEnumMap;
@@ -116,6 +117,7 @@ internal sealed class MappaUserSettings
             otherSettings.EnumerableConcreteType,
             otherSettings.DictionaryAssignment,
             otherSettings.PolymorphicMapMethodWithMatchingDefaultAttribute,
+            otherSettings.CompatibleMapMethod,
             otherSettings.CaseInsensitivePropertyMap,
             otherSettings.IgnoreUnderscoreForPropertyMap,
             otherSettings.CaseInsensitiveEnumMap,
@@ -172,6 +174,7 @@ internal sealed class MappaUserSettings
     /// <param name="enumerableConcreteType">Defines the concrete type used for sequence-like collection interface targets.</param>
     /// <param name="dictionaryAssignment">Defines how entries are inserted when mapping between dictionaries.</param>
     /// <param name="polymorphicMapMethodWithMatchingDefaultAttribute">Enable or disable the support for <see cref="MappaTypeMappingDefaultBehavior.MapSourceType"/> when picking up a polymorphic method.</param>
+    /// <param name="compatibleMapMethod">Enable or disable compatible map-method reuse for base/interface source parameters and derived return types.</param>
     /// <param name="caseInsensitivePropertyMap">Enable or disable case-insensitive matching when pairing a target member with a source property by name.</param>
     /// <param name="ignoreUnderscoreForPropertyMap">Enable or disable ignoring underscore characters when pairing a target member with a source property by name.</param>
     /// <param name="caseInsensitiveEnumMap">Enable or disable case-insensitive matching when mapping enum members or string values to enums.</param>
@@ -223,6 +226,7 @@ internal sealed class MappaUserSettings
         EnumerableConcreteTypeSetting enumerableConcreteType,
         DictionaryAssignmentSetting dictionaryAssignment,
         BooleanSetting polymorphicMapMethodWithMatchingDefaultAttribute,
+        BooleanSetting compatibleMapMethod,
         BooleanSetting caseInsensitivePropertyMap,
         BooleanSetting ignoreUnderscoreForPropertyMap,
         BooleanSetting caseInsensitiveEnumMap,
@@ -274,6 +278,7 @@ internal sealed class MappaUserSettings
         this.enumerableConcreteType = new(enumerableConcreteType);
         this.dictionaryAssignment = new(dictionaryAssignment);
         this.polymorphicMapMethodWithMatchingDefaultAttribute = new(polymorphicMapMethodWithMatchingDefaultAttribute);
+        this.compatibleMapMethod = new(compatibleMapMethod);
         this.caseInsensitivePropertyMap = new(caseInsensitivePropertyMap);
         this.ignoreUnderscoreForPropertyMap = new(ignoreUnderscoreForPropertyMap);
         this.caseInsensitiveEnumMap = new(caseInsensitiveEnumMap);
@@ -415,6 +420,9 @@ internal sealed class MappaUserSettings
     public BooleanSetting PolymorphicMapMethodWithMatchingDefaultAttribute => this.polymorphicMapMethodWithMatchingDefaultAttribute;
 
     /// <inheritdoc/>
+    public BooleanSetting CompatibleMapMethod => this.compatibleMapMethod;
+
+    /// <inheritdoc/>
     public BooleanSetting CaseInsensitivePropertyMap => this.caseInsensitivePropertyMap;
 
     /// <inheritdoc/>
@@ -493,6 +501,7 @@ internal sealed class MappaUserSettings
             this.enumerableConcreteType.Apply(mappaSettingsAttribute.EnumerableConcreteType is not EnumerableConcreteTypeSetting.Undefined ? mappaSettingsAttribute.EnumerableConcreteType : this.enumerableConcreteType),
             this.dictionaryAssignment.Apply(mappaSettingsAttribute.DictionaryAssignment is not DictionaryAssignmentSetting.Undefined ? mappaSettingsAttribute.DictionaryAssignment : this.dictionaryAssignment),
             this.polymorphicMapMethodWithMatchingDefaultAttribute.Apply(mappaSettingsAttribute.PolymorphicMapMethodWithMatchingDefaultAttribute is not BooleanSetting.Undefined ? mappaSettingsAttribute.PolymorphicMapMethodWithMatchingDefaultAttribute : this.polymorphicMapMethodWithMatchingDefaultAttribute),
+            this.compatibleMapMethod.Apply(mappaSettingsAttribute.CompatibleMapMethod is not BooleanSetting.Undefined ? mappaSettingsAttribute.CompatibleMapMethod : this.compatibleMapMethod),
             this.caseInsensitivePropertyMap.Apply(mappaSettingsAttribute.CaseInsensitivePropertyMap is not BooleanSetting.Undefined ? mappaSettingsAttribute.CaseInsensitivePropertyMap : this.caseInsensitivePropertyMap),
             this.ignoreUnderscoreForPropertyMap.Apply(mappaSettingsAttribute.IgnoreUnderscoreForPropertyMap is not BooleanSetting.Undefined ? mappaSettingsAttribute.IgnoreUnderscoreForPropertyMap : this.ignoreUnderscoreForPropertyMap),
             this.caseInsensitiveEnumMap.Apply(mappaSettingsAttribute.CaseInsensitiveEnumMap is not BooleanSetting.Undefined ? mappaSettingsAttribute.CaseInsensitiveEnumMap : this.caseInsensitiveEnumMap),

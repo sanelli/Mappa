@@ -261,9 +261,122 @@ public sealed class MapMethodTests
         mapMethod.IsRelaxedMapFor(targetType, sourceType, includeNullability: false).Should().BeFalse();
     }
 
+    /// <summary>
+    /// Test <see cref="MapMethod.IsCompatibleMapFor"/> matches when the required source is derived
+    /// from the method parameter type and the method return type is derived from the required target.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void IsCompatibleMapForReturnsTrueForBaseParameterAndDerivedReturn()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class BaseSource { }
+
+                              public class DerivedSource : BaseSource { }
+
+                              public class BaseTarget { }
+
+                              public class DerivedTarget : BaseTarget { }
+
+                              [Mappa]
+                              public sealed partial class Mapper
+                              {
+                                  public DerivedTarget Map(BaseSource input) => new DerivedTarget();
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var mapMethod = CreateMapMethodFromCompilation(compilation, "Map");
+        var requiredSource = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.DerivedSource")!;
+        var requiredTarget = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.BaseTarget")!;
+
+        mapMethod.IsCompatibleMapFor(requiredTarget, requiredSource, compilation).Should().BeTrue();
+        mapMethod.IsMapFor(requiredTarget, requiredSource, includeNullability: false).Should().BeFalse();
+    }
+
+    /// <summary>
+    /// Test <see cref="MapMethod.IsCompatibleMapFor"/> matches when the method parameter is an interface
+    /// implemented by the required source.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void IsCompatibleMapForReturnsTrueForInterfaceParameter()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public interface ISource { }
+
+                              public class DerivedSource : ISource { }
+
+                              public class BaseTarget { }
+
+                              public class DerivedTarget : BaseTarget { }
+
+                              [Mappa]
+                              public sealed partial class Mapper
+                              {
+                                  public DerivedTarget Map(ISource input) => new DerivedTarget();
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var mapMethod = CreateMapMethodFromCompilation(compilation, "Map");
+        var requiredSource = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.DerivedSource")!;
+        var requiredTarget = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.BaseTarget")!;
+
+        mapMethod.IsCompatibleMapFor(requiredTarget, requiredSource, compilation).Should().BeTrue();
+    }
+
+    /// <summary>
+    /// Test <see cref="MapMethod.IsCompatibleMapFor"/> rejects incompatible types.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void IsCompatibleMapForReturnsFalseForIncompatibleTypes()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class BaseSource { }
+
+                              public class UnrelatedSource { }
+
+                              public class BaseTarget { }
+
+                              public class UnrelatedTarget { }
+
+                              [Mappa]
+                              public sealed partial class Mapper
+                              {
+                                  public BaseTarget Map(BaseSource input) => new BaseTarget();
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var mapMethod = CreateMapMethodFromCompilation(compilation, "Map");
+        var requiredSource = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.UnrelatedSource")!;
+        var requiredTarget = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.UnrelatedTarget")!;
+
+        mapMethod.IsCompatibleMapFor(requiredTarget, requiredSource, compilation).Should().BeFalse();
+    }
+
     private static MapMethod CreateMapMethodFromSyntax(string source, string methodName, bool nullableEnabled = false)
     {
         var compilation = BuildCompilation(source);
+        return CreateMapMethodFromCompilation(compilation, methodName, nullableEnabled);
+    }
+
+    private static MapMethod CreateMapMethodFromCompilation(CSharpCompilation compilation, string methodName, bool nullableEnabled = false)
+    {
         var syntaxTree = compilation.SyntaxTrees[0];
         var methodDeclarationSyntax = syntaxTree.GetRoot()
             .DescendantNodes()

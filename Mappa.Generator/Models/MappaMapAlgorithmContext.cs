@@ -88,6 +88,22 @@ internal abstract class MappaMapAlgorithmContext
         out MapMethod mapMethod);
 
     /// <summary>
+    /// Try to obtain a compatible map method with the given <paramref name="targetType"/> and <paramref name="sourceType"/>.
+    /// A method is compatible when the required source is implicitly convertible to the method parameter
+    /// and the method return type is implicitly convertible to the required target.
+    /// </summary>
+    /// <param name="targetType">The target type.</param>
+    /// <param name="sourceType">The source type.</param>
+    /// <param name="compilation">The compilation used to resolve implicit conversions.</param>
+    /// <param name="mapMethod">The map method (if it exists).</param>
+    /// <returns><c>true</c> if a compatible map method exists, <c>false</c> otherwise.</returns>
+    internal abstract bool TryGetCompatibleMethod(
+        ITypeSymbol targetType,
+        ITypeSymbol sourceType,
+        Compilation compilation,
+        out MapMethod mapMethod);
+
+    /// <summary>
     /// Report a diagnostic.
     /// </summary>
     /// <param name="diagnostic">The diagnostic to report.</param>
