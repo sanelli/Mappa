@@ -148,7 +148,13 @@ function New-BenchmarkGroupedBarSvg
 
         [string]$ValueLabelSuffix = "",
 
-        [string[]]$MapperNames = $script:BenchmarkMapperOrder
+        [string[]]$MapperNames = $script:BenchmarkMapperOrder,
+
+        # When set (e.g. 100 for percentage charts), draw that Y guide in red dashed style.
+        [Nullable[double]]$EmphasizeGuideAt = $null,
+
+        # When EmphasizeGuideAt is set, bold bar value labels strictly greater than that guide.
+        [switch]$BoldValueLabelsAboveGuide
     )
 
     if ($Benchmarks.Count -eq 0)
@@ -230,8 +236,17 @@ function New-BenchmarkGroupedBarSvg
             $label = "{0:0.##}" -f $value
         }
 
-        [void]$builder.AppendLine("  <line x1=`"$leftMargin`" y1=`"$([Math]::Round($y, 2))`" x2=`"$([Math]::Round($leftMargin + $plotWidth, 2))`" y2=`"$([Math]::Round($y, 2))`" stroke=`"#dddddd`" stroke-width=`"1`"/>")
-        [void]$builder.AppendLine("  <text x=`"$([Math]::Round($leftMargin - 8, 2))`" y=`"$([Math]::Round($y + 4, 2))`" text-anchor=`"end`" font-family=`"Segoe UI, Arial, sans-serif`" font-size=`"11`" fill=`"#555555`">$label</text>")
+        $isEmphasizedGuide = ($null -ne $EmphasizeGuideAt) -and ([Math]::Abs($value - [double]$EmphasizeGuideAt) -lt 1e-9)
+        if ($isEmphasizedGuide)
+        {
+            [void]$builder.AppendLine("  <line x1=`"$leftMargin`" y1=`"$([Math]::Round($y, 2))`" x2=`"$([Math]::Round($leftMargin + $plotWidth, 2))`" y2=`"$([Math]::Round($y, 2))`" stroke=`"#cc0000`" stroke-width=`"1.5`" stroke-dasharray=`"6 4`"/>")
+            [void]$builder.AppendLine("  <text x=`"$([Math]::Round($leftMargin - 8, 2))`" y=`"$([Math]::Round($y + 4, 2))`" text-anchor=`"end`" font-family=`"Segoe UI, Arial, sans-serif`" font-size=`"11`" fill=`"#cc0000`">$label</text>")
+        }
+        else
+        {
+            [void]$builder.AppendLine("  <line x1=`"$leftMargin`" y1=`"$([Math]::Round($y, 2))`" x2=`"$([Math]::Round($leftMargin + $plotWidth, 2))`" y2=`"$([Math]::Round($y, 2))`" stroke=`"#dddddd`" stroke-width=`"1`"/>")
+            [void]$builder.AppendLine("  <text x=`"$([Math]::Round($leftMargin - 8, 2))`" y=`"$([Math]::Round($y + 4, 2))`" text-anchor=`"end`" font-family=`"Segoe UI, Arial, sans-serif`" font-size=`"11`" fill=`"#555555`">$label</text>")
+        }
     }
 
     [void]$builder.AppendLine("  <line x1=`"$leftMargin`" y1=`"$topMargin`" x2=`"$leftMargin`" y2=`"$([Math]::Round($topMargin + $plotHeight, 2))`" stroke=`"#333333`" stroke-width=`"1.5`"/>")
@@ -261,8 +276,14 @@ function New-BenchmarkGroupedBarSvg
             $valueText = $metric.ToString($ValueLabelFormat, [System.Globalization.CultureInfo]::InvariantCulture) + $ValueLabelSuffix
             $textX = $x + ($barWidth / 2.0)
             $textY = $y - 4.0
+            $fontWeightAttr = ""
+            if ($BoldValueLabelsAboveGuide -and ($null -ne $EmphasizeGuideAt) -and ($metric -gt [double]$EmphasizeGuideAt))
+            {
+                $fontWeightAttr = " font-weight=`"bold`""
+            }
+
             # Always place the value vertically above the bar, using the bar color.
-            [void]$builder.AppendLine("  <text x=`"$([Math]::Round($textX, 2))`" y=`"$([Math]::Round($textY, 2))`" text-anchor=`"start`" dominant-baseline=`"middle`" transform=`"rotate(-90 $([Math]::Round($textX, 2)) $([Math]::Round($textY, 2)))`" font-family=`"Segoe UI, Arial, sans-serif`" font-size=`"9`" fill=`"$color`">$valueText</text>")
+            [void]$builder.AppendLine("  <text x=`"$([Math]::Round($textX, 2))`" y=`"$([Math]::Round($textY, 2))`" text-anchor=`"start`" dominant-baseline=`"middle`" transform=`"rotate(-90 $([Math]::Round($textX, 2)) $([Math]::Round($textY, 2)))`" font-family=`"Segoe UI, Arial, sans-serif`" font-size=`"9`"$fontWeightAttr fill=`"$color`">$valueText</text>")
         }
 
         $labelX = $groupStartX + ($groupWidth / 2.0)

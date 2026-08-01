@@ -86,6 +86,8 @@ internal static class NestedDataFactory
             .RuleFor(order => order.Status, faker => faker.PickRandom<NestedSourceStatus>())
             .RuleFor(order => order.ShippingMode, faker => faker.PickRandom<NestedShippingMode>())
             .RuleFor(order => order.Priority, faker => faker.PickRandom<NestedPriority>())
+            .RuleFor(order => order.BillingStatus, faker => faker.PickRandom<NestedTargetStatus>().ToString())
+            .RuleFor(order => order.ArchiveStatus, faker => (int)faker.PickRandom<NestedTargetStatus>())
             .RuleFor(order => order.Customer, _ => customerFaker.Generate())
             .RuleFor(order => order.LineItems, faker => CreateLineItems(faker, size, physicalLineItemFaker, digitalLineItemFaker))
             .RuleFor(order => order.Coupons, faker => faker.Make(size, () => faker.Commerce.Ean8()).ToArray())

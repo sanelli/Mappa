@@ -471,6 +471,16 @@ public sealed class NestedOrderDto
     public NestedPriority Priority { get; set; }
 
     /// <summary>
+    /// Gets or sets the billing status name (string → enum).
+    /// </summary>
+    public string BillingStatus { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the archive status code (int → enum).
+    /// </summary>
+    public int ArchiveStatus { get; set; }
+
+    /// <summary>
     /// Gets or sets the customer.
     /// </summary>
     public CustomerDto Customer { get; set; } = new();
@@ -550,6 +560,16 @@ public sealed class NestedOrder
     /// Gets or sets the priority as an integer.
     /// </summary>
     public int Priority { get; set; }
+
+    /// <summary>
+    /// Gets or sets the billing status (from string).
+    /// </summary>
+    public NestedTargetStatus BillingStatus { get; set; }
+
+    /// <summary>
+    /// Gets or sets the archive status (from int).
+    /// </summary>
+    public NestedTargetStatus ArchiveStatus { get; set; }
 
     /// <summary>
     /// Gets or sets the customer.

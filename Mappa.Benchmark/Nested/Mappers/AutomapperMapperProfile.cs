@@ -39,6 +39,8 @@ internal sealed class AutomapperMapperProfile
 
         this.CreateMap<Memory<int>, int[]>().ConvertUsing(memory => memory.ToArray());
         this.CreateMap<ReadOnlyMemory<int>, ReadOnlyMemory<int>>().ConvertUsing(memory => memory);
+        this.CreateMap<string, NestedTargetStatus>().ConvertUsing(value => Enum.Parse<NestedTargetStatus>(value));
+        this.CreateMap<int, NestedTargetStatus>().ConvertUsing(value => (NestedTargetStatus)value);
 
         this.CreateMap<NestedOrderDto, NestedOrder>()
             .ForMember(destination => destination.Notes, options => options.Ignore())
