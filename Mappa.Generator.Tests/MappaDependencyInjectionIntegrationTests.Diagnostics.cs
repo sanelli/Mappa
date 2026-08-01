@@ -146,4 +146,80 @@ public sealed partial class MappaDependencyInjectionIntegrationTests
                 });
             });
     }
+
+    /// <summary>
+    /// A static <c>[Mappa]</c> mapper reports MP00073 and is omitted from registration.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task StaticMapperReportsWarningAndIsSkippedFromRegistration()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  [Mappa]
+                                  public sealed partial class MapperA
+                                  {
+                                  }
+
+                                  [Mappa]
+                                  public static partial class StaticMapper
+                                  {
+                                  }
+
+                                  [MappaDependencyInjection]
+                                  public static partial class Registrar
+                                  {
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(
+                MappaDiagnosticDescriptors.MappaDependencyInjectionStaticMapperSkipped,
+                $"{SourceNamespace}.StaticMapper")
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveFileScopedNamespace(fileScopedNamespace =>
+            {
+                fileScopedNamespace.HaveClass("Registrar", classAssertions =>
+                {
+                    classAssertions
+                        .HaveModifiers(SyntaxKind.PublicKeyword, SyntaxKind.StaticKeyword, SyntaxKind.PartialKeyword)
+                        .HaveMethods(1)
+                        .HaveMethod(
+                            ServiceCollectionTypeName,
+                            NullableAnnotation.None,
+                            "RegisterRegistrar",
+                            true,
+                            [
+                                (ServiceCollectionTypeName, NullableAnnotation.None, "services", RefKind.None, false),
+                            ],
+                            methodAssertions =>
+                            {
+                                methodAssertions
+                                    .HaveModifiers(SyntaxKind.PublicKeyword, SyntaxKind.StaticKeyword)
+                                    .HaveBody(blockSyntaxAssertions =>
+                                    {
+                                        blockSyntaxAssertions
+                                            .HasSyntaxNodesCount(2)
+                                            .HasNextSyntaxNode(nodeAssertions =>
+                                                nodeAssertions.BeInvocationExpressionSyntaxStatement(
+                                                    $"services.AddSingleton<{GlobalMapperA}>"))
+                                            .HasNextSyntaxNode(nodeAssertions =>
+                                                nodeAssertions.BeReturnStatement("services"));
+                                    });
+                            });
+                });
+            });
+    }
 }
