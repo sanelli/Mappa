@@ -18,19 +18,21 @@ The development environment uses **PowerShell**. All commands run in the termina
 - **Always** create a plan with numbered steps before starting implementation.
 - **Always** save the plan file under `.cursor/plans/` in the repository.
 - **Always** name the plan file `issue_<number>_<short-description>.plan.md` when the work is tied to a GitHub issue (e.g. `.cursor/plans/issue_214_datetimestyle_mappasettings.plan.md`). If no issue number is provided, ask the user for one before creating the plan.
-- **Step 1 must always compute the code coverage baseline** (see **Code Coverage** below): run `.\Scripts\RunTestsAndReportCoverage.ps1` and record **line**, **branch**, and **method** coverage from [`.mappa-tests-and-coverage/Summary.xml`](.mappa-tests-and-coverage/Summary.xml), plus coverage for any assembly expected to change. No code changes before step 1 is complete.
+- **Coverage baseline (when required):** if the issue changes **code** (C# in any project listed under **Code** below), step 1 must compute the code coverage baseline (see **Code Coverage** below): run `.\Scripts\RunTestsAndReportCoverage.ps1` and record **line**, **branch**, and **method** coverage from [`.mappa-tests-and-coverage/Summary.xml`](.mappa-tests-and-coverage/Summary.xml), plus coverage for any assembly expected to change. No code changes before that baseline step is complete.
+- **Coverage baseline (when omitted):** issues that touch **only** Scripts, Documentation, and/or `.cursor` rules (no C# project changes) may omit the coverage baseline and the final coverage non-decrease check. In that case plan steps start at `1` with the first real work item; TODOs remain 1:1 with plan steps. Version bump + `.\Scripts\RebuildUponVersionChange.ps1` remain required for every issue (see **Versioning**).
 - **TODOs MUST ALWAYS match plan steps 1:1.** Create exactly one numbered TODO for each numbered plan step, and exactly one numbered plan step for each TODO — no extras, no omissions, no combined or split items.
 - **Step numbers must match TODO numbers** (e.g. plan step `3.` ↔ TODO `3`); TODO content must describe the same work as its corresponding step.
 - **TODO content must be prefixed with the step number** (e.g. `1. Run .\Scripts\RunTestsAndReportCoverage.ps1 …`, `2. Mappa — …`, `3. Bump MappaVersion.targets …`). The `id` field and the leading number in `content` must both match the plan step number.
 - **Plan frontmatter format:** each TODO entry uses `id: "<n>"` and `content: <n>. <description>` where `<n>` is the same integer as the corresponding `### <n>.` heading in the plan body.
-- Plan steps **2 onward** must follow the **Code** project order below, but only include projects that require changes — do **not** add empty steps for unchanged projects.
-- Step numbers are **sequential** (1, 2, 3, …) across all steps; step `1` is always the coverage baseline. Project work starts at step `2` (e.g. if **Mappa** and **Mappa.Tests** need no changes, the first project step may be **Mappa.Generator** numbered as step `2`).
+- Plan steps after any coverage baseline must follow the **Code** project order below, but only include projects that require changes — do **not** add empty steps for unchanged projects.
+- Step numbers are **sequential** (1, 2, 3, …) across all steps. When a coverage baseline is required, it is step `1` and project work starts at step `2` (e.g. if **Mappa** and **Mappa.Tests** need no changes, the first project step may be **Mappa.Generator** numbered as step `2`). When the baseline is omitted, step `1` is the first real work item.
 - Generated code **must compile** and **all tests must pass** before finishing.
 
 ## Code Coverage
 
-- **Step 1 of every plan** runs `.\Scripts\RunTestsAndReportCoverage.ps1` and records the baseline from [`.mappa-tests-and-coverage/Summary.xml`](.mappa-tests-and-coverage/Summary.xml): **line**, **branch**, and **method** coverage. Also note coverage for any assembly expected to change (especially **Mappa.Generator**).
-- **Coverage must not decrease** relative to that baseline when the issue is finished. Compare the final run using the same metrics.
+- **When the issue changes code** (C# in any project listed under **Code**), step 1 of the plan runs `.\Scripts\RunTestsAndReportCoverage.ps1` and records the baseline from [`.mappa-tests-and-coverage/Summary.xml`](.mappa-tests-and-coverage/Summary.xml): **line**, **branch**, and **method** coverage. Also note coverage for any assembly expected to change (especially **Mappa.Generator**).
+- **When the issue does not change code** (Scripts, Documentation, and/or `.cursor` rules only), skip the coverage baseline and the final coverage comparison.
+- **Coverage must not decrease** relative to that baseline when the issue is finished (code-change issues only). Compare the final run using the same metrics.
 - If coverage decreases — including after adding new production code with uncovered paths — **add or extend tests** until coverage is restored. Prefer targeted unit and integration tests for new branches, edge cases, and negative paths.
 - When analyzing gaps, use [`.mappa-tests-and-coverage/Summary.xml`](.mappa-tests-and-coverage/Summary.xml) and the HTML report under [`.mappa-tests-and-coverage/`](.mappa-tests-and-coverage/) to find uncovered lines and branches.
 
@@ -110,7 +112,7 @@ A single feature may require **two** bumps (e.g. one after **Mappa**, one after 
 
 - Update tests after changing a project.
 - Cover **happy path and negative paths** where possible.
-- Maintain or improve **code coverage** relative to the baseline recorded in plan step 1 (see **Code Coverage**).
+- When a coverage baseline was recorded (code-change issues), maintain or improve **code coverage** relative to that baseline (see **Code Coverage**).
 - For **Mappa.Generator**, test error/warning messages and corner cases.
 - **`HaveGeneratedSourceCode()` is not validation:** it only asserts that generated sources exist (count). Any test that calls `HaveGeneratedSourceCode()` **must** continue with `WithCompilationUnit()` (or `WithCompilationUnits`) plus a map-method helper (`HaveDefaultMapMethod` / `HaveMapMethod` / `HaveDefaultMapMethodWithContext` / `HaveQueryableProjectionMapMethod`, etc.) and a full `HasNextSyntaxNode` walk. When generation must fail, use `NotHaveGeneratedAnySourceCode()` instead of claiming sources without validating them.
 - **Mappa.Generator.Tests integration tests — generated syntax (mandatory):** when asserting that generated mapping code is correct, **always** walk the syntax tree with the `HasNextSyntaxNode` pattern (typically after `HaveDefaultMapMethod` / `blockSyntaxAssertions`, using helpers such as `BeLocalDeclarationStatementSyntax`, `BeReturnStatement`, `BeObjectCreationExpressionSyntax`, nested `HasSyntaxNodesCount` / `HasNextSyntaxNode` chains, etc.). See existing tests such as [`InvokeConstructorMapStrategyIntegrationTests.cs`](Mappa.Generator.Tests/InvokeConstructorMapStrategyIntegrationTests.cs) for the required style.
@@ -142,10 +144,12 @@ A single feature may require **two** bumps (e.g. one after **Mappa**, one after 
 
 ## Final Step
 
-Always end with:
+**When the issue changes code**, end with:
 
 ```powershell
 .\Scripts\RunTestsAndReportCoverage.ps1
 ```
 
-Confirm that **line**, **branch**, and **method** coverage in [`.mappa-tests-and-coverage/Summary.xml`](.mappa-tests-and-coverage/Summary.xml) are **greater than or equal to** the baseline recorded in **step 1**. If any metric decreased, add tests and re-run until coverage is restored.
+Confirm that **line**, **branch**, and **method** coverage in [`.mappa-tests-and-coverage/Summary.xml`](.mappa-tests-and-coverage/Summary.xml) are **greater than or equal to** the baseline recorded in the coverage baseline step. If any metric decreased, add tests and re-run until coverage is restored.
+
+**When the issue does not change code** (Scripts, Documentation, and/or `.cursor` rules only), skip this coverage final step; still finish with the required version bump and `.\Scripts\RebuildUponVersionChange.ps1` (see **Versioning**).

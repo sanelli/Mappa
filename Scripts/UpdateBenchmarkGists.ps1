@@ -7,6 +7,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+. "$PSScriptRoot/GistHelpers.ps1"
 . "$PSScriptRoot/BenchmarkChartsSvg.ps1"
 
 $HistoryTableHeader = @"
@@ -62,21 +63,12 @@ function Publish-GistFile
     param(
         [string]$GistId,
         [string]$RemoteFileName,
-        [string]$LocalPath
+        [string]$LocalPath,
+        [ValidateSet("Update", "Add")]
+        [string]$Mode = "Update"
     )
 
-    if (-not (Test-Path -LiteralPath $LocalPath))
-    {
-        throw "Cannot publish missing local file: $LocalPath"
-    }
-
-    gh gist edit $GistId -f $RemoteFileName $LocalPath
-    if (-not $?)
-    {
-        throw "Failed to update gist $GistId file $RemoteFileName from $LocalPath."
-    }
-
-    Write-Host "Updated gist $GistId ($RemoteFileName)."
+    Invoke-GhGistEdit -GistId $GistId -RemoteFileName $RemoteFileName -LocalPath $LocalPath -Mode $Mode
 }
 
 $historyRowsPath = Join-Path $MappaBenchmarkPath "history-table.md"
@@ -91,18 +83,29 @@ if ([string]::IsNullOrWhiteSpace($newRows))
     throw "Benchmark history rows file is empty: $historyRowsPath."
 }
 
-$gistHistory = Get-BenchmarkHistoryFromGist -GistId $GistId -HistoryFileName $HistoryFileName
-$fileExists = [bool]$gistHistory.Exists
-$existingContent = $gistHistory.Content
-
-if ([string]::IsNullOrWhiteSpace($existingContent))
+if ($DryRun)
 {
-    $fullHistory = $HistoryTableHeader.TrimEnd() + "`n" + $newRows + "`n"
+    $existingContent = $null
+    $fullHistoryLocalPath = Join-Path $MappaBenchmarkPath "full-history-table.md"
+    if (Test-Path -LiteralPath $fullHistoryLocalPath)
+    {
+        $existingContent = Get-Content -Raw -LiteralPath $fullHistoryLocalPath
+    }
+
+    $fileExists = -not [string]::IsNullOrWhiteSpace($existingContent)
 }
 else
 {
-    $fullHistory = $existingContent.TrimEnd() + "`n" + $newRows + "`n"
+    $gistHistory = Get-BenchmarkHistoryFromGist -GistId $GistId -HistoryFileName $HistoryFileName
+    $fileExists = [bool]$gistHistory.Exists
+    $existingContent = $gistHistory.Content
 }
+
+$fullHistory = Merge-MarkdownHistoryByVersion `
+    -ExistingMarkdown $existingContent `
+    -NewMarkdown $newRows `
+    -DefaultHeader $HistoryTableHeader `
+    -MinimumCellCount 5
 
 $fullHistoryPath = Join-Path $MappaBenchmarkPath "full-history-table.md"
 [System.IO.File]::WriteAllText($fullHistoryPath, $fullHistory)
@@ -168,17 +171,11 @@ try
 
     if ($fileExists)
     {
-        Publish-GistFile -GistId $GistId -RemoteFileName $HistoryFileName -LocalPath $fullHistoryPath
+        Publish-GistFile -GistId $GistId -RemoteFileName $HistoryFileName -LocalPath $fullHistoryPath -Mode Update
     }
     else
     {
-        gh gist edit $GistId -a $HistoryFileName $fullHistoryPath
-        if (-not $?)
-        {
-            throw "Failed to add gist $GistId file $HistoryFileName."
-        }
-
-        Write-Host "Added gist $GistId ($HistoryFileName)."
+        Publish-GistFile -GistId $GistId -RemoteFileName $HistoryFileName -LocalPath $fullHistoryPath -Mode Add
     }
 
     Publish-GistFile -GistId $GistId -RemoteFileName "MAPPA-BENCHMARK-TIME.svg" -LocalPath $timeSummarySvgPath
