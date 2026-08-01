@@ -198,6 +198,7 @@ When no existing method applies (or for root methods), `TypeMapIdentifierAlgorit
     - Mapping attributes such as `[MappaUseProperty]` on the projection method participate in element construction,
     - Nested `IQueryable` properties, polymorphic root element maps, non-inlinable invoke methods, and before/after hooks are rejected with dedicated diagnostics (MP00055–MP00060),
     - `[MappaObjectFactory]` on a projection map for the element target is rejected with **MP00064**,
+    - `[MappaAllowInaccessibleSourceMembers]` / `[MappaAllowInaccessibleTargetMembers]` on a projection map are rejected with **MP00069**,
     - Mapping `IQueryable<TSource>` to a concrete collection (for example `List<TTarget>`) is not a projection: the container path applies and may emit warning MP00061,
     - Prefer numeric or description enum mappings over case-insensitive member-name matching for ORM providers (warning MP00060),
     - Generated projection methods are annotated with `[RequiresDynamicCode]` and are **not compatible with Native AOT** deployment.
@@ -263,13 +264,13 @@ The constructor strategy has four sub-strategies, tried in order:
 | Sub-strategy | When |
 |--------------|------|
 | **Object factory** | A `[MappaObjectFactory]` registration on the root map method (class ∪ method attributes) resolves to an accessible factory for the exact target type |
-| **Mapping constructor** | An accessible constructor `TTarget(TSource input)` exists where the single parameter type matches the source type |
-| **Empty constructor + property init** | An accessible zero-argument constructor exists; settable properties (and get-only collections per the notes below) can be mapped from the source |
-| **Parameterized constructor** | No suitable empty-constructor path; the accessible constructor with the **most** mappable parameters is chosen (parameter names are matched to source properties case-insensitively by default) |
+| **Mapping constructor** | An accessible constructor `TTarget(TSource input)` exists where the single parameter type matches the source type *(or an inaccessible matching constructor when `[MappaAllowInaccessibleTargetMembers]` allows constructors)* |
+| **Empty constructor + property init** | An accessible zero-argument constructor exists; settable properties (and get-only collections per the notes below) can be mapped from the source *(or an inaccessible empty constructor when allowed)* |
+| **Parameterized constructor** | No suitable empty-constructor path; the accessible constructor with the **most** mappable parameters is chosen (parameter names are matched to source properties case-insensitively by default) *(inaccessible parameterized constructors participate when allowed)* |
 
 - _What_:
     - **Object factory**: invoke the resolved factory; depending on signature tier, either return the factory result as-is, fill properties like the empty-constructor path after the call, or map factory parameters like the parameterized-constructor path;
-    - Otherwise each property, constructor argument, or mapping-constructor parameter is mapped and a new instance of `TTarget` is generated with `new`;
+    - Otherwise each property, constructor argument, or mapping-constructor parameter is mapped and a new instance of `TTarget` is generated with `new` *(or via a generated `UnsafeAccessor` constructor helper when the selected constructor is inaccessible)*;
     - Get-only dictionary or collection properties for which a mapper exists are filled with mapped values from the corresponding source;
 - _Notes_:
     - Object factories are keyed by exact target type and apply to nested mappings whose target type matches a registration on the **root** map method;
@@ -283,11 +284,14 @@ The constructor strategy has four sub-strategies, tried in order:
         - `[MappaUseProperty]`
         - `[MappaIgnoreTargetProperty]` *(empty-constructor / empty-ctor-like factory path only)*
         - `[MappaMustMapTargetProperty]` *(empty-constructor / empty-ctor-like factory path only; flat property names; unmapped must-map properties report **MP00065**)*
+        - `[MappaAllowInaccessibleSourceMembers]` *(opt-in private/protected source property reads via `UnsafeAccessor`; flat names or all; **MP00067** / **MP00069**)*
+        - `[MappaAllowInaccessibleTargetMembers]` *(opt-in private/protected target property writes and/or inaccessible constructors via `UnsafeAccessor`; `AllowProperties` / `AllowConstructors`; **MP00067**–**MP00069**)*
         - `[MappaAssignFromContext]`
         - `[MappaAssignFromConstant]`
         - `[MappaInvokeMethod]` — optionally accepts `SourcePropertyName` to select the source property passed to the invoked method
         - `[MappaAssignToContext]` *(post-construction context writes; requires the caller to provide `MappaContext`)*
-    - Those attributes accept flat names or [dot-separated nested property paths](#nested-property-paths);
+    - Those attributes accept flat names or [dot-separated nested property paths](#nested-property-paths) *(except the inaccessible-member attributes, which accept flat names only)*;
+    - When inaccessible setters or unsafe-accessor constructors are used, property assignments that would normally use an object initializer are emitted **after** construction; helpers are generated in a file-local `__MappaInaccessibleAccessors` type in the mapper's namespace;
     - When `MappaSettings.ProtobufOptional` is enabled, optional protobuf members are handled via companion `Has*` properties on the source and target types.
 
 ### Nested property paths
