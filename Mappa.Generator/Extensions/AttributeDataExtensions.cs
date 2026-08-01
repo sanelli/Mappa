@@ -807,27 +807,22 @@ internal static class AttributeDataExtensions
         }
 
         var constructorArguments = attributeData.ConstructorArguments;
-        if (constructorArguments.Length == 0)
+        if (constructorArguments.Length == 0
+            || constructorArguments[0].Kind != TypedConstantKind.Array)
         {
             return new MappaMustMapTargetPropertyAttribute();
         }
 
-        if (constructorArguments.Length == 1 &&
-            constructorArguments[0].Kind == TypedConstantKind.Array)
+        List<string> targetPropertyNames = new();
+        foreach (var value in constructorArguments[0].Values)
         {
-            List<string> targetPropertyNames = new();
-            foreach (var value in constructorArguments[0].Values)
+            if (value.Value is string { Length: > 0 } name)
             {
-                if (value.Value is string name && name.Length > 0)
-                {
-                    targetPropertyNames.Add(name);
-                }
+                targetPropertyNames.Add(name);
             }
-
-            return new MappaMustMapTargetPropertyAttribute([.. targetPropertyNames]);
         }
 
-        return new MappaMustMapTargetPropertyAttribute();
+        return new MappaMustMapTargetPropertyAttribute([.. targetPropertyNames]);
     }
 
     /// <summary>
