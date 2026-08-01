@@ -9,6 +9,7 @@ This is the list of attributes provided:
 - `MappaSettings`: Allows specifying mapping behaviour (for example, culture when parsing or formatting date/time, `Guid`, and numeric types, and format when converting numeric types to `string`);
 - `MappaUseProperty`: When mapping structured types (`class`, `struct`, and records) allows specifying which source property to use for a target property or constructor parameter; `TargetPropertyName` and `SourcePropertyName` may be a single name or a [dot-separated nested property path](#nested-property-paths);
 - `MappaIgnoreTargetProperty`: When mapping structured types via an empty constructor, excludes a target property from property-initializer mapping; has no effect when mapping uses a constructor with parameters; `TargetPropertyName` may be a single name or a [dot-separated nested property path](#nested-property-paths);
+- `MappaMustMapTargetProperty`: When mapping structured types via an empty constructor (or empty-constructor-like factory), requires that listed non-required target properties—or all of them when no names are provided—are mapped; otherwise generation fails with **MP00065** (see [MappaMustMapTargetProperty](#mappamustmaptargetproperty));
 - `MappaAssignFromContext`: When mapping structured types, allows specifying which value from a `MappaContext` to use for a target property or constructor parameter; `TargetPropertyName` may be a single name or a [dot-separated nested property path](#nested-property-paths);
 - `MappaAssignToContext`: When mapping structured types via the constructor-map strategy, stores the value of a target property or field in `MappaContext` after the target object has been fully constructed; `TargetPropertyName` may be a single name or a [dot-separated nested property path](#nested-property-paths);
 - `MappaInvokeMethodAttribute`: When mapping structured types via the constructor-map strategy, forces a target property or constructor parameter to be mapped by invoking a named method; supports an optional `SourcePropertyName` named parameter (see [MappaInvokeMethodAttribute](#mappainvokemethodattribute)); `TargetPropertyName` and optional `SourcePropertyName` may be a single name or a [dot-separated nested property path](#nested-property-paths);
@@ -73,6 +74,17 @@ When mapping structured types, Mappa pairs source and target members by name. `[
 ## MappaIgnoreTargetProperty
 
 When mapping via an empty constructor, Mappa assigns each target property with an accessible setter from the corresponding source property. `[MappaIgnoreTargetProperty]` excludes a target property from this mapping. It has no effect when the target is constructed via a constructor with parameters. `TargetPropertyName` supports [nested property paths](#nested-property-paths). A nested ignore under the same root as a nested `[MappaUseProperty]` (for example ignore `Address.ZipCode` while mapping `Address.City`) is applied to that sibling member.
+
+## MappaMustMapTargetProperty
+
+When mapping via an empty constructor (or an empty-constructor-like object factory), unmapped non-required target properties normally produce warning **MP00017** and are skipped. `[MappaMustMapTargetProperty]` elevates selected (or all) of those properties to a hard requirement:
+
+- `[MappaMustMapTargetProperty]` with no property names: every non-required mappable target property must be mapped;
+- `[MappaMustMapTargetProperty("PropertyA", "PropertyB")]`: only the listed non-required properties must be mapped; other unmapped non-required properties still produce **MP00017**.
+
+If a required must-map property cannot be mapped, the generator reports error **MP00065** and does not generate a usable mapping. Listing a property that is already `required` reports warning **MP00066** and continues. Listing a name that does not exist on the target reports warning **MP00033** and continues. Combining the same property name with `[MappaIgnoreTargetProperty]` reports error **MP00007**. Property names are flat (single-segment) only; nested paths are not supported.
+
+See also: [MappaMustMapTargetPropertyAttributeMapper.cs](../Mappa.Samples/MappaMustMapTargetPropertyAttributeMapper.cs).
 
 ## MappaAssignFromConstant
 

@@ -24,6 +24,7 @@ See the [tutorial](../Documentation/tutorial.md) for a guided introduction, or b
 | [`MappaAssignFromContextAttributeMapper.cs`](MappaAssignFromContextAttributeMapper.cs) | `[MappaAssignFromContext]` with `MappaContext` |
 | [`MappaAssignToContextAttributeMapper.cs`](MappaAssignToContextAttributeMapper.cs) | `[MappaAssignToContext]` with `MappaContext` |
 | [`MappaIgnoreTargetPropertyAttributeMapper.cs`](MappaIgnoreTargetPropertyAttributeMapper.cs) | `[MappaIgnoreTargetProperty]` |
+| [`MappaMustMapTargetPropertyAttributeMapper.cs`](MappaMustMapTargetPropertyAttributeMapper.cs) | `[MappaMustMapTargetProperty]` (listed and all-properties forms) |
 | [`MappaIgnoreMappers.cs`](MappaIgnoreMappers.cs) | `[MappaIgnore]` |
 | [`EnumMappingConfigurationMappers.cs`](EnumMappingConfigurationMappers.cs) | `[MappaMapEnumMember]`, `[MappaMapEnumIgnore]`, `[MappaMapEnumDefault]` |
 | [`MappaInvokeMethodAttributeMappers.cs`](MappaInvokeMethodAttributeMappers.cs) | `[MappaInvokeMethod]` |

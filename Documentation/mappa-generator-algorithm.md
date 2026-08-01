@@ -282,6 +282,7 @@ The constructor strategy has four sub-strategies, tried in order:
     - The following attributes on the map **method** can override mapping behaviour (see [`Documentation/mappa-attributes.md`](mappa-attributes.md) for details):
         - `[MappaUseProperty]`
         - `[MappaIgnoreTargetProperty]` *(empty-constructor / empty-ctor-like factory path only)*
+        - `[MappaMustMapTargetProperty]` *(empty-constructor / empty-ctor-like factory path only; flat property names; unmapped must-map properties report **MP00065**)*
         - `[MappaAssignFromContext]`
         - `[MappaAssignFromConstant]`
         - `[MappaInvokeMethod]` — optionally accepts `SourcePropertyName` to select the source property passed to the invoked method
