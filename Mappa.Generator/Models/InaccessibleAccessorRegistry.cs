@@ -120,7 +120,7 @@ internal sealed class InaccessibleAccessorRegistry
         builder.AppendLine($"file static class {this.ContainerTypeName}");
         using (builder.CurlyBracesBlock())
         {
-            foreach (var accessor in this.accessors.Values)
+            foreach (var accessor in this.Accessors)
             {
                 builder.AppendLine(accessor.BuildSource());
             }
@@ -129,7 +129,13 @@ internal sealed class InaccessibleAccessorRegistry
         return builder.ToString();
     }
 
-    private readonly struct AccessorKey(
+    /// <summary>
+    /// Dictionary key for an inaccessible accessor entry.
+    /// </summary>
+    /// <param name="containingType">The declaring type.</param>
+    /// <param name="unsafeKind">The unsafe accessor kind.</param>
+    /// <param name="runtimeName">The runtime member name used for deduplication.</param>
+    internal readonly struct AccessorKey(
         ITypeSymbol containingType,
         InaccessibleAccessorUnsafeKind unsafeKind,
         string runtimeName)
@@ -139,14 +145,17 @@ internal sealed class InaccessibleAccessorRegistry
         private readonly InaccessibleAccessorUnsafeKind unsafeKind = unsafeKind;
         private readonly string runtimeName = runtimeName;
 
+        /// <inheritdoc/>
         public bool Equals(AccessorKey other)
             => this.unsafeKind == other.unsafeKind
                && this.runtimeName.Equals(other.runtimeName, StringComparison.Ordinal)
                && SymbolEqualityComparer.Default.Equals(this.containingType, other.containingType);
 
+        /// <inheritdoc/>
         public override bool Equals(object? obj)
             => obj is AccessorKey other && this.Equals(other);
 
+        /// <inheritdoc/>
         public override int GetHashCode()
         {
             unchecked

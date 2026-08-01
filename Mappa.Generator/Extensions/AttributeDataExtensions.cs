@@ -991,21 +991,25 @@ internal static class AttributeDataExtensions
     private static string[] ParseMemberNames(AttributeData attributeData)
     {
         var constructorArguments = attributeData.ConstructorArguments;
-        if (constructorArguments.Length == 0
-            || constructorArguments[0].Kind != TypedConstantKind.Array)
+        if (constructorArguments.Length == 0)
         {
             return [];
         }
 
-        List<string> memberNames = new();
-        foreach (var value in constructorArguments[0].Values)
+        if (constructorArguments.Length == 1 && constructorArguments[0].Kind == TypedConstantKind.Array)
         {
-            if (value.Value is string { Length: > 0 } name)
-            {
-                memberNames.Add(name);
-            }
+            return constructorArguments[0].Values
+                .Select(value => value.Value)
+                .OfType<string>()
+                .Where(name => name.Length > 0)
+                .ToArray();
         }
 
-        return [.. memberNames];
+        // A single params argument may be represented as a primitive string rather than an array.
+        return constructorArguments
+            .Select(argument => argument.Value)
+            .OfType<string>()
+            .Where(name => name.Length > 0)
+            .ToArray();
     }
 }
