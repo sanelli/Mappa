@@ -112,7 +112,8 @@ internal static class ProjectionCapabilityAnalyzer
                 normalizedStrategy = new ParameterMapStrategy(
                     parameterMapStrategy.TargetParameter,
                     parameterMapStrategy.SourceProperty,
-                    normalizedParameterStrategy);
+                    normalizedParameterStrategy,
+                    parameterMapStrategy.RequiresUnsafeAccessorOnSource);
                 return true;
 
             case PropertyMapStrategy propertyMapStrategy:
@@ -221,7 +222,8 @@ internal static class ProjectionCapabilityAnalyzer
             normalizedParameters[index] = new ParameterMapStrategy(
                 parameterMapStrategy.TargetParameter,
                 parameterMapStrategy.SourceProperty,
-                normalizedParameterStrategy);
+                normalizedParameterStrategy,
+                parameterMapStrategy.RequiresUnsafeAccessorOnSource);
         }
 
         PropertyMapStrategy[] normalizedInitializers = new PropertyMapStrategy[invokeConstructorMapStrategy.InitializerStrategies.Length];
@@ -247,7 +249,8 @@ internal static class ProjectionCapabilityAnalyzer
             normalizedParameters,
             normalizedInitializers,
             invokeConstructorMapStrategy.AssignToContextEntries,
-            invokeConstructorMapStrategy.ContextParameterName);
+            invokeConstructorMapStrategy.ContextParameterName,
+            invokeConstructorMapStrategy.RequiresUnsafeAccessorOnConstructor);
         return true;
     }
 
@@ -294,7 +297,9 @@ internal static class ProjectionCapabilityAnalyzer
             propertyMapStrategy.SourceProperty,
             normalizedPropertyStrategy,
             propertyMapStrategy.PostConstructorInitializer,
-            propertyMapStrategy.ChainedSourcePropertyPath);
+            propertyMapStrategy.ChainedSourcePropertyPath,
+            propertyMapStrategy.RequiresUnsafeAccessorOnSource,
+            propertyMapStrategy.RequiresUnsafeAccessorOnTarget);
         return true;
     }
 

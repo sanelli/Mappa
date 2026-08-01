@@ -16,12 +16,16 @@ namespace Mappa.Generator.Models.Strategies;
 /// <param name="propertyStrategy">The strategy between these properties.</param>
 /// <param name="postConstructorInitializer"><c>true</c> if this property initializer must happen after the constructor invocation.</param>
 /// <param name="chainedSourcePropertyPath">The chained source property path to read before mapping, if any.</param>
+/// <param name="requiresUnsafeAccessorOnSource"><c>true</c> when the source property must be read via an unsafe accessor.</param>
+/// <param name="requiresUnsafeAccessorOnTarget"><c>true</c> when the target property must be accessed via an unsafe accessor.</param>
 internal sealed class PropertyMapStrategy(
     IPropertySymbol targetProperty,
     IPropertySymbol? sourceProperty,
     MapStrategy propertyStrategy,
     bool postConstructorInitializer,
-    ChainedSourcePropertyPathInfo? chainedSourcePropertyPath = null)
+    ChainedSourcePropertyPathInfo? chainedSourcePropertyPath = null,
+    bool requiresUnsafeAccessorOnSource = false,
+    bool requiresUnsafeAccessorOnTarget = false)
     : MapStrategy(targetProperty.Type, sourceProperty?.Type ?? chainedSourcePropertyPath?.StartingSourceType ?? null!)
 {
     /// <summary>
@@ -48,6 +52,16 @@ internal sealed class PropertyMapStrategy(
     /// Gets the chained source property path to read before mapping, if any.
     /// </summary>
     public ChainedSourcePropertyPathInfo? ChainedSourcePropertyPath { get; } = chainedSourcePropertyPath;
+
+    /// <summary>
+    /// Gets a value indicating whether the source property must be read via an unsafe accessor.
+    /// </summary>
+    public bool RequiresUnsafeAccessorOnSource { get; } = requiresUnsafeAccessorOnSource;
+
+    /// <summary>
+    /// Gets a value indicating whether the target property must be accessed via an unsafe accessor.
+    /// </summary>
+    public bool RequiresUnsafeAccessorOnTarget { get; } = requiresUnsafeAccessorOnTarget;
 
     /// <inheritdoc/>
     internal override IMappaStrategyBuilder GetBuilder() => new PropertyMapStrategyBuilder(this);
