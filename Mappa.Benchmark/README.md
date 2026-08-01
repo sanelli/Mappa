@@ -45,12 +45,11 @@ Outputs are written under `.mappa-benchmark/` (gitignored). See [Documentation/d
 `MAPPA-BENCHMARK-TIME.svg`, `MAPPA-BENCHMARK-MEMORY.svg`, `MAPPA-BENCHMARK-TIME-PERCENTAGES.svg`, and `MAPPA-BENCHMARK-MEMORY-PERCENTAGES.svg` (and CI `-ChartBenchmarksOnly`) include:
 
 - `ArrayToListBenchmark`
-- `DictionaryBenchmark`
 - `ListToArrayBenchmark`
 - `FastListToArrayBenchmark`
-- `IQueryableProjectionBenchmark`
+- `DictionaryBenchmark`
 - `NestedDtoBenchmark`
-- `ListToHashSetBenchmark`
+- `IQueryableProjectionBenchmark`
 
 ## Spotify attribution
 

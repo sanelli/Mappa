@@ -11,23 +11,21 @@ $script:BenchmarkMapperColors = @{
 # Same subset used by MAPPA-BENCHMARK-TIME.svg / MAPPA-BENCHMARK-MEMORY.svg.
 $script:BenchmarkChartNames = @(
     "ArrayToListBenchmark",
-    "DictionaryBenchmark",
     "ListToArrayBenchmark",
     "FastListToArrayBenchmark",
-    "IQueryableProjectionBenchmark",
+    "DictionaryBenchmark",
     "NestedDtoBenchmark",
-    "ListToHashSetBenchmark"
+    "IQueryableProjectionBenchmark"
 )
 
 # Pretty labels for grouped-bar SVG X-axis (history/PR keys keep type names).
 $script:BenchmarkChartDisplayNames = @{
     "ArrayToListBenchmark"           = "Array To List"
-    "DictionaryBenchmark"            = "Dictionary"
     "ListToArrayBenchmark"           = "List To Array"
     "FastListToArrayBenchmark"       = "Fast List To Array"
+    "DictionaryBenchmark"            = "Dictionary"
+    "NestedDtoBenchmark"             = "Objects mapping"
     "IQueryableProjectionBenchmark"  = "IQueryable Projection"
-    "NestedDtoBenchmark"             = "NestedDto"
-    "ListToHashSetBenchmark"         = "List To HashSet"
 }
 
 function Get-BenchmarkChartDisplayName

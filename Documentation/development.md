@@ -40,7 +40,6 @@ Runs [BenchmarkDotNet](https://benchmarkdotnet.org/) in **Release** with job **S
 - `Benchmark.Summary.md` — mean time (ns) and allocated bytes for AutoMapper / Mapster / Mapperly / Mappa
 - `MAPPA-BENCHMARK-TIME.svg` / `MAPPA-BENCHMARK-MEMORY.svg` — grouped bar charts for the shared chart subset
 - `MAPPA-BENCHMARK-TIME-PERCENTAGES.svg` / `MAPPA-BENCHMARK-MEMORY-PERCENTAGES.svg` — competitor / Mappa percentage bar charts for the same subset
-- `history-table.md` — Mappa-only rows (`TIME_NS` / `ALLOC_B`) for gist history
 
 Useful switches:
 
@@ -49,23 +48,20 @@ Useful switches:
 - `-Filter "<pattern>"` — custom BenchmarkDotNet filter (default `*`)
 - `-ListAvailable` — list matching benchmarks without running them
 
-After a local run (or on `main` CI), publish history + SVGs to the shared gist with:
+After a local run (or on `main` CI), publish the latest-run SVGs to the shared gist with:
 
 `./Scripts/UpdateBenchmarkGists.ps1`
 
-That script downloads `MAPPA-BENCHMARK-HISTORY.md` from gist [`7f4a85bc809328b4821b03125f9190cb`](https://gist.github.com/sanelli/7f4a85bc809328b4821b03125f9190cb), merges `history-table.md` by **replacing any existing rows for the same Mappa version** (so re-running main-merge is idempotent), regenerates the TIME/MEMORY history SVGs, and uploads:
+That script uploads to gist [`7f4a85bc809328b4821b03125f9190cb`](https://gist.github.com/sanelli/7f4a85bc809328b4821b03125f9190cb):
 
-- `MAPPA-BENCHMARK-HISTORY.md`
 - `MAPPA-BENCHMARK-TIME.svg`
 - `MAPPA-BENCHMARK-MEMORY.svg`
 - `MAPPA-BENCHMARK-TIME-PERCENTAGES.svg`
 - `MAPPA-BENCHMARK-MEMORY-PERCENTAGES.svg`
-- `MAPPA-BENCHMARK-TIME-HISTORY.svg`
-- `MAPPA-BENCHMARK-MEMORY-HISTORY.svg`
 
 Gist uploads (including coverage badges/history via `./Scripts/UpdateCodeCoverageGists.ps1`) retry up to **5** times with a random **2–10 second** delay between attempts on transient API errors (for example HTTP 409).
 
-Code coverage history uses the same version-override merge when publishing `MAPPA-CODE-COVERAGE-HISTORY.MD`.
+Code coverage history uses version-override merge when publishing `MAPPA-CODE-COVERAGE-HISTORY.MD`.
 
 See [`Mappa.Benchmark/README.md`](../Mappa.Benchmark/README.md) for the scenario suite and how to read results.
 
