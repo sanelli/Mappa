@@ -701,6 +701,34 @@ Mappa searches dependency types (and their base classes) for suitable mapping me
 
 See also: [MapMethodStrategyWithDependencyMapper.cs](../Mappa.Samples/MapMethodStrategyWithDependencyMapper.cs).
 
+### MappaDependencyInjection attribute
+Use `[MappaDependencyInjection]` on a **separate** partial registrar class to generate a method that registers every `[Mappa]` mapper in the same assembly with `Microsoft.Extensions.DependencyInjection`:
+
+```csharp
+using Mappa.Attributes;
+using Microsoft.Extensions.DependencyInjection;
+
+[Mappa]
+public sealed partial class PersonMapper
+{
+    public partial PersonDto Map(Person source);
+}
+
+[MappaDependencyInjection("RegisterMappers")]
+public static partial class MapperRegistrar
+{
+}
+
+// Usage:
+var services = new ServiceCollection();
+services.RegisterMappers();
+var mapper = services.BuildServiceProvider().GetRequiredService<PersonMapper>();
+```
+
+Reference `Microsoft.Extensions.DependencyInjection` in the project. Configure lifetime, interface injection, method name, accessibility, and exclusions via attribute properties. See [Mappa attributes — MappaDependencyInjection](./mappa-attributes.md#mappadependencyinjection) for defaults and diagnostics **MP00070**–**MP00073**.
+
+See also: [MappaDependencyInjectionRegistrar.cs](../Mappa.Samples/MappaDependencyInjectionRegistrar.cs) and [MappaDependencyInjectionMapper.cs](../Mappa.Samples/MappaDependencyInjectionMapper.cs).
+
 ### Polymorphism support
 Use `[MappaTypeMapping]` to map different concrete source types to different target types. Use `[MappaTypeMappingDefault]` to define the fallback behaviour:
 
