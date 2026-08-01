@@ -12,12 +12,14 @@ The development environment uses **PowerShell**. All commands run in the termina
 - Invoke scripts with `.\Scripts\ScriptName.ps1` (e.g. `.\Scripts\RunTestsAndReportCoverage.ps1`).
 - Use PowerShell path separators (`\`) and quoting rules.
 - Prefer PowerShell cmdlets and syntax over bash/sh equivalents.
+- **Internet-requiring commands:** before running any command that needs network access (e.g. `gh`, `dotnet restore` against remote feeds, `git fetch`/`push`, NuGet/gist uploads), request the appropriate permissions (`full_network` or `all` as needed), clear proxy-related environment variables (`HTTP_PROXY`, `HTTPS_PROXY`, `http_proxy`, `https_proxy`, `ALL_PROXY`, `all_proxy` set to `$null`), and set `NO_PROXY` / `no_proxy` to `*`.
 
 ## Planning
 
 - **Always** create a plan with numbered steps before starting implementation.
 - **Always** save the plan file under `.cursor/plans/` in the repository.
 - **Always** name the plan file `issue_<number>_<short-description>.plan.md` when the work is tied to a GitHub issue (e.g. `.cursor/plans/issue_214_datetimestyle_mappasettings.plan.md`). If no issue number is provided, ask the user for one before creating the plan.
+- **Branch check:** before implementing a GitHub issue, verify the current branch name **starts with the issue number** (e.g. `13-...` for issue `#13`). If it does not, stop and ask the user to switch to or create the correct branch (still never create a branch unless instructed).
 - **Coverage baseline (when required):** if the issue changes **code** (C# in any project listed under **Code** below), step 1 must compute the code coverage baseline (see **Code Coverage** below): run `.\Scripts\RunTestsAndReportCoverage.ps1` and record **line**, **branch**, and **method** coverage from [`.mappa-tests-and-coverage/Summary.xml`](.mappa-tests-and-coverage/Summary.xml), plus coverage for any assembly expected to change. No code changes before that baseline step is complete.
 - **Coverage baseline (when omitted):** issues that touch **only** Scripts, Documentation, and/or `.cursor` rules (no C# project changes) may omit the coverage baseline and the final coverage non-decrease check. In that case plan steps start at `1` with the first real work item; TODOs remain 1:1 with plan steps. Version bump + `.\Scripts\RebuildUponVersionChange.ps1` remain required for every issue (see **Versioning**).
 - **TODOs MUST ALWAYS match plan steps 1:1.** Create exactly one numbered TODO for each numbered plan step, and exactly one numbered plan step for each TODO — no extras, no omissions, no combined or split items.
@@ -70,6 +72,7 @@ The development environment uses **PowerShell**. All commands run in the termina
 - **Never** create a branch unless instructed. When asked to create one, branch from `main`.
 - **Never** commit unless instructed.
 - **Never** push unless instructed.
+- **Issue branch prefix:** when working on a GitHub issue, the current branch name must start with that issue number (e.g. `13-typemapidentifier...` for `#13`). Check with `git branch --show-current` before implementation; if the prefix does not match, stop and ask the user to switch or create the correct branch.
 - When asked to commit, the message **must start with the GitHub issue** (e.g. `#123 ...`). If no issue is provided, ask the user for one.
 - When committing, do **not** use `cat` or heredoc syntax (PowerShell does not support bash heredocs). Use `git commit -m` for the subject and body, and `--trailer` for any trailers (e.g. `git commit -m "#123 Subject." -m "Body paragraph." --trailer "Co-authored-by: Name <email@example.com>"`).
 - Do not query GitHub to read the issue provided, unless instructed.
