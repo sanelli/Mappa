@@ -24,7 +24,7 @@ Outputs are written under `.mappa-benchmark/` (gitignored). See [Documentation/d
 
 - **AutoMapper is the ratio baseline** (`[Benchmark(Baseline = true)]`) on every scenario.
 - **Lower mean time and lower allocated bytes are better.**
-- Summary tables report nanoseconds and bytes; the TIME/MEMORY bar charts plot **microseconds** and **kilobytes** with a **50** unit Y-axis tick.
+- Summary tables report nanoseconds and bytes; the TIME/MEMORY bar charts plot **microseconds** and **kilobytes** with a **25** unit Y-axis tick.
 
 ## Scenario suite
 
