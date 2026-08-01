@@ -135,7 +135,7 @@ A single feature may require **two** bumps (e.g. one after **Mappa**, one after 
 ## Benchmarks
 
 - For each new user-facing feature (mapping strategy, attribute, `MappaSettings` property, or other capability that can be exercised at runtime), investigate whether it is worth adding a scenario to [`Mappa.Benchmark`](Mappa.Benchmark/). If yes, include that work in the issue plan (or note an explicit deferral with rationale).
-- When a new benchmark **is** added, do **not** add it to the SVG / CI chart subset (`$script:BenchmarkChartNames` in [`Scripts/BenchmarkChartsSvg.ps1`](Scripts/BenchmarkChartsSvg.ps1), used by `-ChartBenchmarksOnly` and the TIME/MEMORY / history charts) unless the user **explicitly** asks to include it in those charts.
+- When a new benchmark **is** added, do **not** add it to the SVG / CI chart subset (`$script:BenchmarkChartNames` in [`Scripts/BenchmarkChartsSvg.ps1`](Scripts/BenchmarkChartsSvg.ps1), used by `-ChartBenchmarksOnly` and the TIME/MEMORY charts) unless the user **explicitly** asks to include it in those charts.
 
 ## Documentation
 

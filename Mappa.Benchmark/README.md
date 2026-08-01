@@ -38,7 +38,7 @@ Outputs are written under `.mappa-benchmark/` (gitignored). See [Documentation/d
 | Memory | `MemoryToArrayBenchmark`, `ArrayToMemoryBenchmark` | |
 | Polymorphism | `PolymorphicBenchmark` | Derived-type maps |
 | IQueryable | `IQueryableProjectionBenchmark` | In-memory `AsQueryable()` + `.ToList()` |
-| Nested DTO | `NestedDtoBenchmark` | Multi-level parent/child |
+| Nested DTO | `NestedDtoBenchmark` | 5-level graph, polymorphic parties/line items, arrays/lists/sets/dicts/queues/stacks/Memory, get-only notes list, enum→enum/string/int (~100 elements) |
 
 ### Chart / CI subset
 

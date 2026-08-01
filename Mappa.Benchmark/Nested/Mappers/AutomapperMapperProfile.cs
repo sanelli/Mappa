@@ -19,8 +19,36 @@ internal sealed class AutomapperMapperProfile
     /// </summary>
     public AutomapperMapperProfile()
     {
-        this.CreateMap<LineItemDto, LineItem>();
+        this.CreateMap<CoordinateDto, Coordinate>();
+        this.CreateMap<GeoRegionDto, GeoRegion>();
+        this.CreateMap<AddressDto, Address>();
+
+        this.CreateMap<PartyDto, Party>()
+            .Include<PersonPartyDto, PersonParty>()
+            .Include<OrganizationPartyDto, OrganizationParty>();
+        this.CreateMap<PersonPartyDto, PersonParty>();
+        this.CreateMap<OrganizationPartyDto, OrganizationParty>();
+
         this.CreateMap<CustomerDto, Customer>();
-        this.CreateMap<NestedOrderDto, NestedOrder>();
+
+        this.CreateMap<LineItemBaseDto, LineItemBase>()
+            .Include<PhysicalLineItemDto, PhysicalLineItem>()
+            .Include<DigitalLineItemDto, DigitalLineItem>();
+        this.CreateMap<PhysicalLineItemDto, PhysicalLineItem>();
+        this.CreateMap<DigitalLineItemDto, DigitalLineItem>();
+
+        this.CreateMap<Memory<int>, int[]>().ConvertUsing(memory => memory.ToArray());
+        this.CreateMap<ReadOnlyMemory<int>, ReadOnlyMemory<int>>().ConvertUsing(memory => memory);
+
+        this.CreateMap<NestedOrderDto, NestedOrder>()
+            .ForMember(destination => destination.Notes, options => options.Ignore())
+            .AfterMap((source, destination) =>
+            {
+                destination.Notes.Clear();
+                foreach (var note in source.Notes)
+                {
+                    destination.Notes.Add(note);
+                }
+            });
     }
 }

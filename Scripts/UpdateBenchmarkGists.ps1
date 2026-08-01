@@ -8,7 +8,6 @@ param(
 $ErrorActionPreference = "Stop"
 
 . "$PSScriptRoot/GistHelpers.ps1"
-. "$PSScriptRoot/BenchmarkChartsSvg.ps1"
 
 $HistoryTableHeader = @"
 | Timestamp | Version | Benchmark | Measure | Value |
@@ -111,29 +110,10 @@ $fullHistoryPath = Join-Path $MappaBenchmarkPath "full-history-table.md"
 [System.IO.File]::WriteAllText($fullHistoryPath, $fullHistory)
 Write-Host "Wrote $fullHistoryPath"
 
-$timeHistorySvgPath = Join-Path $MappaBenchmarkPath "MAPPA-BENCHMARK-TIME-HISTORY.svg"
-$memoryHistorySvgPath = Join-Path $MappaBenchmarkPath "MAPPA-BENCHMARK-MEMORY-HISTORY.svg"
 $timeSummarySvgPath = Join-Path $MappaBenchmarkPath "MAPPA-BENCHMARK-TIME.svg"
 $memorySummarySvgPath = Join-Path $MappaBenchmarkPath "MAPPA-BENCHMARK-MEMORY.svg"
 $timePercentSvgPath = Join-Path $MappaBenchmarkPath "MAPPA-BENCHMARK-TIME-PERCENTAGES.svg"
 $memoryPercentSvgPath = Join-Path $MappaBenchmarkPath "MAPPA-BENCHMARK-MEMORY-PERCENTAGES.svg"
-
-New-BenchmarkHistorySvg `
-    -HistoryMarkdownPath $fullHistoryPath `
-    -Measure "TIME_NS" `
-    -OutputPath $timeHistorySvgPath `
-    -Title "Mappa benchmark time history" `
-    -YAxisUnitLabel "us"
-
-New-BenchmarkHistorySvg `
-    -HistoryMarkdownPath $fullHistoryPath `
-    -Measure "ALLOC_B" `
-    -OutputPath $memoryHistorySvgPath `
-    -Title "Mappa benchmark memory history" `
-    -YAxisUnitLabel "KB"
-
-Write-Host "Wrote $timeHistorySvgPath"
-Write-Host "Wrote $memoryHistorySvgPath"
 
 if (-not (Test-Path -LiteralPath $timeSummarySvgPath))
 {
@@ -182,8 +162,6 @@ try
     Publish-GistFile -GistId $GistId -RemoteFileName "MAPPA-BENCHMARK-MEMORY.svg" -LocalPath $memorySummarySvgPath
     Publish-GistFile -GistId $GistId -RemoteFileName "MAPPA-BENCHMARK-TIME-PERCENTAGES.svg" -LocalPath $timePercentSvgPath
     Publish-GistFile -GistId $GistId -RemoteFileName "MAPPA-BENCHMARK-MEMORY-PERCENTAGES.svg" -LocalPath $memoryPercentSvgPath
-    Publish-GistFile -GistId $GistId -RemoteFileName "MAPPA-BENCHMARK-TIME-HISTORY.svg" -LocalPath $timeHistorySvgPath
-    Publish-GistFile -GistId $GistId -RemoteFileName "MAPPA-BENCHMARK-MEMORY-HISTORY.svg" -LocalPath $memoryHistorySvgPath
 }
 finally
 {

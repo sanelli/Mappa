@@ -20,4 +20,22 @@ internal sealed partial class MapperlyMapper
     /// <param name="source">The source.</param>
     /// <returns>The target.</returns>
     public partial NestedOrder Map(NestedOrderDto source);
+
+    /// <summary>
+    /// Maps a polymorphic party DTO.
+    /// </summary>
+    /// <param name="source">The source.</param>
+    /// <returns>The target.</returns>
+    [MapDerivedType(typeof(PersonPartyDto), typeof(PersonParty))]
+    [MapDerivedType(typeof(OrganizationPartyDto), typeof(OrganizationParty))]
+    private partial Party MapParty(PartyDto source);
+
+    /// <summary>
+    /// Maps a polymorphic line-item DTO.
+    /// </summary>
+    /// <param name="source">The source.</param>
+    /// <returns>The target.</returns>
+    [MapDerivedType(typeof(PhysicalLineItemDto), typeof(PhysicalLineItem))]
+    [MapDerivedType(typeof(DigitalLineItemDto), typeof(DigitalLineItem))]
+    private partial LineItemBase MapLineItem(LineItemBaseDto source);
 }

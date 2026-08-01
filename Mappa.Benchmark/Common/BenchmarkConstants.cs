@@ -15,6 +15,11 @@ internal static class BenchmarkConstants
     public const int CollectionSize = 300;
 
     /// <summary>
+    /// Number of entries used by the nested DTO kitchen-sink graph.
+    /// </summary>
+    public const int NestedCollectionSize = 100;
+
+    /// <summary>
     /// Number of dictionary entries attached to each collection element.
     /// </summary>
     public const int AttributesPerItem = 5;

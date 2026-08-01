@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 namespace Mappa.Benchmark.Nested;
 
 /// <summary>
-/// Benchmark mapping nested DTOs that contain lists, arrays, hash sets, and dictionaries.
+/// Benchmark mapping a deep nested DTO graph with polymorphism and mixed collections.
 /// </summary>
 [MemoryDiagnoser]
 #pragma warning disable CA1515
@@ -39,6 +39,24 @@ public class NestedDtoBenchmark
         this.mapperlyMapper = new();
         this.mappaMapper = new();
         this.input = NestedDataFactory.CreateNestedOrder();
+
+        TypeAdapterConfig<PartyDto, Party>.NewConfig()
+            .Include<PersonPartyDto, PersonParty>()
+            .Include<OrganizationPartyDto, OrganizationParty>();
+        TypeAdapterConfig<LineItemBaseDto, LineItemBase>.NewConfig()
+            .Include<PhysicalLineItemDto, PhysicalLineItem>()
+            .Include<DigitalLineItemDto, DigitalLineItem>();
+        TypeAdapterConfig<Memory<int>, int[]>.NewConfig().MapWith(memory => memory.ToArray());
+        TypeAdapterConfig<NestedOrderDto, NestedOrder>.NewConfig()
+            .Ignore(destination => destination.Notes)
+            .AfterMapping((source, destination) =>
+            {
+                destination.Notes.Clear();
+                foreach (var note in source.Notes)
+                {
+                    destination.Notes.Add(note);
+                }
+            });
     }
 
     /// <summary>
