@@ -372,7 +372,7 @@ public sealed partial class IQueryableProjectionMapStrategyIntegrationTests
                         {
                             classDeclarationSyntaxAssertions
                                 .HaveModifiers(SyntaxKind.PublicKeyword, SyntaxKind.StaticKeyword, SyntaxKind.PartialKeyword)
-                                .HaveMethods(3)
+                                .HaveMethods(2)
                                 .HaveMethod(
                                     itemTargetType,
                                     NullableAnnotation.NotAnnotated,
@@ -448,29 +448,6 @@ public sealed partial class IQueryableProjectionMapStrategyIntegrationTests
                                                                     projectionLambdaParameterName,
                                                                     elementExpressionAssertions));
                                                         });
-                                                    });
-                                            });
-                                    })
-                                .HaveMethod(
-                                    OrderDtoType,
-                                    NullableAnnotation.NotAnnotated,
-                                    "ProjectToDtoElement",
-                                    false,
-                                    [(OrderType, NullableAnnotation.NotAnnotated, projectionLambdaParameterName, RefKind.None, false)],
-                                    methodDeclarationSyntaxAssertions =>
-                                    {
-                                        methodDeclarationSyntaxAssertions
-                                            .HaveNullabilityAnnotation(NullableSetup.Enable)
-                                            .HaveGeneratedCodeAttribute(attributeSyntaxAssertions => attributeSyntaxAssertions.BeMappaGeneratedCodeAttribute())
-                                            .HaveDebuggerNonUserCodeAttribute()
-                                            .HaveModifiers(SyntaxKind.PrivateKeyword, SyntaxKind.StaticKeyword)
-                                            .HaveBody(blockSyntaxAssertions =>
-                                            {
-                                                blockSyntaxAssertions
-                                                    .HasSyntaxNodesCount(1)
-                                                    .HasNextSyntaxNode(syntaxNodeAssertions =>
-                                                    {
-                                                        syntaxNodeAssertions.BeReturnStatement(elementExpressionAssertions);
                                                     });
                                             });
                                     });

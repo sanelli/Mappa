@@ -203,7 +203,6 @@ When no existing method applies (or for root methods), `TypeMapIdentifierAlgorit
 - _What_:
     - The generator emits `return source.Select(element => /* projection expression */);`,
     - Element mapping is validated by `ProjectionCapabilityAnalyzer` and built by `ProjectionExpressionBuilder` (expression-tree-compatible code, not imperative statements),
-    - A private companion element map method may also be generated for the `TSource` → `TTarget` pair;
 - _Notes_:
     - Projection is **signature-driven**; no dedicated projection attribute is required,
     - Mapping attributes such as `[MappaUseProperty]` on the projection method participate in element construction,

@@ -72,7 +72,6 @@ public sealed class IQueryableProjectionEntityFrameworkIntegrationTests
                 "ProjectToDto",
                 [SyntaxKind.PublicKeyword, SyntaxKind.StaticKeyword, SyntaxKind.PartialKeyword],
                 true,
-                true,
                 "query",
                 OrderType,
                 OrderDtoType,

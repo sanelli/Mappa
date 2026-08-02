@@ -29,7 +29,7 @@ internal static class QueryableProjectionMapAssertionExtensions
         => $"System.Linq.IQueryable<{elementType}>";
 
     /// <summary>
-    /// Assert that the compilation unit contains a queryable projection map method and its element method.
+    /// Assert that the compilation unit contains a queryable projection map method.
     /// </summary>
     /// <param name="this">The compilation unit syntax assertions.</param>
     /// <param name="className">The mapper class name.</param>
@@ -37,7 +37,6 @@ internal static class QueryableProjectionMapAssertionExtensions
     /// <param name="methodName">The projection method name.</param>
     /// <param name="methodModifiers">The projection method modifiers.</param>
     /// <param name="isExtensionMethod">Whether the projection method is an extension method.</param>
-    /// <param name="isStaticMapper">Whether the mapper class is static.</param>
     /// <param name="parameterName">The query parameter name.</param>
     /// <param name="sourceElementType">The source element type display string.</param>
     /// <param name="targetElementType">The target element type display string.</param>
@@ -51,7 +50,6 @@ internal static class QueryableProjectionMapAssertionExtensions
         string methodName,
         SyntaxKind[] methodModifiers,
         bool isExtensionMethod,
-        bool isStaticMapper,
         string parameterName,
         string sourceElementType,
         string targetElementType,
@@ -63,9 +61,6 @@ internal static class QueryableProjectionMapAssertionExtensions
 
         var queryableSourceType = QueryableOf(sourceElementType);
         var queryableTargetType = QueryableOf(targetElementType);
-        var elementMethodModifiers = isStaticMapper
-            ? new[] { SyntaxKind.PrivateKeyword, SyntaxKind.StaticKeyword }
-            : new[] { SyntaxKind.PrivateKeyword };
 
         return @this.HaveCommentHeader()
             .HaveFileScopedNamespace(fileScopedNamespaceDeclarationSyntaxAssertions =>
@@ -78,7 +73,7 @@ internal static class QueryableProjectionMapAssertionExtensions
                         {
                             classDeclarationSyntaxAssertions
                                 .HaveModifiers(classModifiers)
-                                .HaveMethods(2)
+                                .HaveMethods(1)
                                 .HaveMethod(
                                     queryableTargetType,
                                     NullableAnnotation.NotAnnotated,
@@ -109,29 +104,6 @@ internal static class QueryableProjectionMapAssertionExtensions
                                                                     lambdaParameterName,
                                                                     elementExpressionAssertions));
                                                         });
-                                                    });
-                                            });
-                                    })
-                                .HaveMethod(
-                                    targetElementType,
-                                    NullableAnnotation.NotAnnotated,
-                                    $"{methodName}Element",
-                                    false,
-                                    [(sourceElementType, NullableAnnotation.NotAnnotated, lambdaParameterName, RefKind.None, false)],
-                                    methodDeclarationSyntaxAssertions =>
-                                    {
-                                        methodDeclarationSyntaxAssertions
-                                            .HaveNullabilityAnnotation(NullableSetup.Enable)
-                                            .HaveGeneratedCodeAttribute(attributeSyntaxAssertions => attributeSyntaxAssertions.BeMappaGeneratedCodeAttribute())
-                                            .HaveDebuggerNonUserCodeAttribute()
-                                            .HaveModifiers(elementMethodModifiers)
-                                            .HaveBody(blockSyntaxAssertions =>
-                                            {
-                                                blockSyntaxAssertions
-                                                    .HasSyntaxNodesCount(1)
-                                                    .HasNextSyntaxNode(syntaxNodeAssertions =>
-                                                    {
-                                                        syntaxNodeAssertions.BeReturnStatement(elementExpressionAssertions);
                                                     });
                                             });
                                     });
