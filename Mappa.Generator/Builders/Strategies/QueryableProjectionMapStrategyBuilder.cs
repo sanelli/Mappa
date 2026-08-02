@@ -31,17 +31,6 @@ internal sealed class QueryableProjectionMapStrategyBuilder(QueryableProjectionM
             throw new MappaGeneratorException("Queryable projection element strategy is not supported.");
         }
 
-        var mapMethod = context.GetMapMethod();
-        var elementMethodName = $"{this.strategy.MethodSymbol.Name}Element";
-        context.ProjectionElementMethods.Add(new ProjectionElementMethodDefinition(
-            elementMethodName,
-            this.strategy.SourceElementType,
-            this.strategy.TargetElementType,
-            lambdaParameter,
-            elementExpression,
-            this.strategy.MethodSymbol.IsStatic,
-            mapMethod.NullableEnabled));
-
         var selectExpression =
             $"global::System.Linq.Queryable.Select({source}, {lambdaParameter} => {elementExpression})";
         return (selectExpression, string.Empty);

@@ -51,11 +51,6 @@ internal sealed class MappaClassBuilder
                     builder.AppendLine(methodSourceCode);
                 }
             }
-
-            foreach (var projectionElementMethod in context.ProjectionElementMethods)
-            {
-                builder.AppendLine(projectionElementMethod.BuildSource());
-            }
         }
 
         return builder.ToString();
