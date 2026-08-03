@@ -19,6 +19,7 @@ public sealed class MappaContext
     public MappaContext(IDictionary<string, object> items)
     {
         this.items = new Dictionary<string, object>(items);
+        this.ReferenceManager = new MappaReferenceManager();
     }
 
     /// <summary>
@@ -28,6 +29,7 @@ public sealed class MappaContext
     public MappaContext(KeyValuePair<string, object>[] items)
     {
         this.items = items.ToDictionary(item => item.Key, item => item.Value);
+        this.ReferenceManager = new MappaReferenceManager();
     }
 
     /// <summary>
@@ -36,12 +38,18 @@ public sealed class MappaContext
     public MappaContext()
     {
         this.items = [];
+        this.ReferenceManager = new MappaReferenceManager();
     }
 
     /// <summary>
     /// Gets the keys.
     /// </summary>
     public IReadOnlyCollection<string> Keys => new List<string>(this.items.Keys);
+
+    /// <summary>
+    /// Gets the reference manager used for reference reuse and runtime depth tracking.
+    /// </summary>
+    private MappaReferenceManager ReferenceManager { get; }
 
     /// <summary>
     /// Get the value for <paramref name="key"/>.
