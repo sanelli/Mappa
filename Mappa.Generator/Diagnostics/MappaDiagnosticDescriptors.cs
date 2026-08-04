@@ -87,6 +87,10 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? mappaAndMappaDependencyInjectionBothApplied;
     private static DiagnosticDescriptor? mappaDependencyInjectionMapperHasNoEligibleInterfaces;
     private static DiagnosticDescriptor? mappaDependencyInjectionStaticMapperSkipped;
+    private static DiagnosticDescriptor? referenceHandlingRootMapWithoutMappaContext;
+    private static DiagnosticDescriptor? referenceHandlingNestedMapWithoutMappaContext;
+    private static DiagnosticDescriptor? maxCompileTimeDepthReached;
+    private static DiagnosticDescriptor? mappingCycleDetected;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -671,6 +675,38 @@ internal static class MappaDiagnosticDescriptors
         => mappaDependencyInjectionStaticMapperSkipped ??= BuildWarning(
             MappaDiagnosticsKind.MappaDependencyInjectionStaticMapperSkipped,
             DiagnosticsResources.MappaDependencyInjectionStaticMapperSkipped);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.ReferenceHandlingRootMapWithoutMappaContext"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor ReferenceHandlingRootMapWithoutMappaContext
+        => referenceHandlingRootMapWithoutMappaContext ??= BuildWarning(
+            MappaDiagnosticsKind.ReferenceHandlingRootMapWithoutMappaContext,
+            DiagnosticsResources.ReferenceHandlingRootMapWithoutMappaContext);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.ReferenceHandlingNestedMapWithoutMappaContext"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor ReferenceHandlingNestedMapWithoutMappaContext
+        => referenceHandlingNestedMapWithoutMappaContext ??= BuildWarning(
+            MappaDiagnosticsKind.ReferenceHandlingNestedMapWithoutMappaContext,
+            DiagnosticsResources.ReferenceHandlingNestedMapWithoutMappaContext);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MaxCompileTimeDepthReached"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MaxCompileTimeDepthReached
+        => maxCompileTimeDepthReached ??= BuildError(
+            MappaDiagnosticsKind.MaxCompileTimeDepthReached,
+            DiagnosticsResources.MaxCompileTimeDepthReached);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MappingCycleDetected"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MappingCycleDetected
+        => mappingCycleDetected ??= BuildError(
+            MappaDiagnosticsKind.MappingCycleDetected,
+            DiagnosticsResources.MappingCycleDetected);
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(

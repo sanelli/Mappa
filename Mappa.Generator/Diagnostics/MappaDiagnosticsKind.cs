@@ -398,4 +398,29 @@ internal enum MappaDiagnosticsKind
     /// registered with dependency injection.
     /// </summary>
     MappaDependencyInjectionStaticMapperSkipped,
+
+    /// <summary>
+    /// Reference handling (<see cref="Mappa.Attributes.MappaSettingsAttribute.ReferenceReusing"/>
+    /// or <see cref="Mappa.Attributes.MappaSettingsAttribute.MaxRuntimeDepth"/>) is requested
+    /// on a root map method that does not declare a <see cref="MappaContext"/> parameter.
+    /// </summary>
+    ReferenceHandlingRootMapWithoutMappaContext,
+
+    /// <summary>
+    /// Reference handling is active, but an invoked map method does not declare a
+    /// <see cref="MappaContext"/> parameter.
+    /// </summary>
+    ReferenceHandlingNestedMapWithoutMappaContext,
+
+    /// <summary>
+    /// Strategy discovery exceeded the effective
+    /// <see cref="Mappa.Attributes.MappaSettingsAttribute.MaxCompileTimeDepth"/>.
+    /// </summary>
+    MaxCompileTimeDepthReached,
+
+    /// <summary>
+    /// Strategy discovery re-entered the same source/target type pair before the outer
+    /// discovery for that pair completed (compile-time mapping cycle).
+    /// </summary>
+    MappingCycleDetected,
 }

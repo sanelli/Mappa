@@ -482,5 +482,29 @@ namespace Mappa.Generator.Diagnostics {
                 return ResourceManager.GetString("MappaDependencyInjectionStaticMapperSkipped", resourceCulture);
             }
         }
+
+        internal static string ReferenceHandlingRootMapWithoutMappaContext {
+            get {
+                return ResourceManager.GetString("ReferenceHandlingRootMapWithoutMappaContext", resourceCulture);
+            }
+        }
+
+        internal static string ReferenceHandlingNestedMapWithoutMappaContext {
+            get {
+                return ResourceManager.GetString("ReferenceHandlingNestedMapWithoutMappaContext", resourceCulture);
+            }
+        }
+
+        internal static string MaxCompileTimeDepthReached {
+            get {
+                return ResourceManager.GetString("MaxCompileTimeDepthReached", resourceCulture);
+            }
+        }
+
+        internal static string MappingCycleDetected {
+            get {
+                return ResourceManager.GetString("MappingCycleDetected", resourceCulture);
+            }
+        }
     }
 }

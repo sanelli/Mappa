@@ -1265,4 +1265,69 @@ internal static class MappaDiagnostics
             MappaDiagnosticDescriptors.MappaDependencyInjectionStaticMapperSkipped,
             classDeclarationSyntax?.GetLocation(),
             mapperTypeName);
+
+    /// <summary>
+    /// Diagnostic to report that reference handling is requested on a root map method
+    /// that does not declare a <see cref="MappaContext"/> parameter.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic ReferenceHandlingRootMapWithoutMappaContext(
+        MethodDeclarationSyntax methodDeclarationSyntax)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.ReferenceHandlingRootMapWithoutMappaContext,
+            methodDeclarationSyntax.GetLocation(),
+            methodDeclarationSyntax.Identifier.ToFullString());
+
+    /// <summary>
+    /// Diagnostic to report that an invoked map method does not declare a
+    /// <see cref="MappaContext"/> parameter while reference handling is active.
+    /// </summary>
+    /// <param name="location">The location of the mapping that invokes the method.</param>
+    /// <param name="methodName">The name of the invoked map method.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic ReferenceHandlingNestedMapWithoutMappaContext(
+        Location? location,
+        string methodName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.ReferenceHandlingNestedMapWithoutMappaContext,
+            location,
+            methodName);
+
+    /// <summary>
+    /// Diagnostic to report that strategy discovery exceeded the maximum compile-time depth.
+    /// </summary>
+    /// <param name="location">The location associated with the mapping.</param>
+    /// <param name="sourceType">The source type being mapped.</param>
+    /// <param name="targetType">The target type being mapped.</param>
+    /// <param name="maxCompileTimeDepth">The effective maximum compile-time depth.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MaxCompileTimeDepthReached(
+        Location? location,
+        ITypeSymbol sourceType,
+        ITypeSymbol targetType,
+        short maxCompileTimeDepth)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MaxCompileTimeDepthReached,
+            location,
+            sourceType.ToDisplayString(),
+            targetType.ToDisplayString(),
+            maxCompileTimeDepth);
+
+    /// <summary>
+    /// Diagnostic to report that strategy discovery detected a compile-time mapping cycle.
+    /// </summary>
+    /// <param name="location">The location associated with the mapping.</param>
+    /// <param name="sourceType">The source type being mapped.</param>
+    /// <param name="targetType">The target type being mapped.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappingCycleDetected(
+        Location? location,
+        ITypeSymbol sourceType,
+        ITypeSymbol targetType)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappingCycleDetected,
+            location,
+            sourceType.ToDisplayString(),
+            targetType.ToDisplayString());
 }
