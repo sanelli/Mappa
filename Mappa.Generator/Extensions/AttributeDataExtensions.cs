@@ -717,6 +717,18 @@ internal static class AttributeDataExtensions
                 case nameof(MappaSettingsAttribute.DictionaryAssignment) when namedArgument.Value.Value is int value:
                     attribute.DictionaryAssignment = (DictionaryAssignmentSetting)value;
                     break;
+
+                case nameof(MappaSettingsAttribute.ReferenceReusing) when namedArgument.Value.Value is int value:
+                    attribute.ReferenceReusing = (BooleanSetting)value;
+                    break;
+
+                case nameof(MappaSettingsAttribute.MaxRuntimeDepth):
+                    attribute.MaxRuntimeDepth = ReadDepth(namedArgument.Value);
+                    break;
+
+                case nameof(MappaSettingsAttribute.MaxCompileTimeDepth):
+                    attribute.MaxCompileTimeDepth = ReadDepth(namedArgument.Value);
+                    break;
             }
         }
 
@@ -741,6 +753,18 @@ internal static class AttributeDataExtensions
                 int intValue => (NumberStyles)intValue,
                 NumberStyles numberStyles => numberStyles,
                 _ => MappaSettingsAttribute.UndefinedNumberStyle,
+            };
+        }
+
+        static short ReadDepth(TypedConstant typedConstant)
+        {
+            return typedConstant.Value switch
+            {
+                null => MappaSettingsAttribute.UndefinedDepth,
+                short shortValue => shortValue,
+                int intValue => (short)intValue,
+                long longValue => (short)longValue,
+                _ => MappaSettingsAttribute.UndefinedDepth,
             };
         }
     }

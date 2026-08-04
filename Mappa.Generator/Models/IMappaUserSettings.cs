@@ -291,4 +291,23 @@ internal interface IMappaUserSettings
     /// Gets how identity mappings copy a type to itself.
     /// </summary>
     IdentityMapDeepCopySetting IdentityMapDeepCopy { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether already-mapped reference-type instances
+    /// are reused when the same source instance appears again in the object graph.
+    /// </summary>
+    BooleanSetting ReferenceReusing { get; }
+
+    /// <summary>
+    /// Gets the maximum nesting depth allowed while executing a mapping.
+    /// The effective default when fully unset is <c>0</c> (no maximum depth).
+    /// </summary>
+    short MaxRuntimeDepth { get; }
+
+    /// <summary>
+    /// Gets the maximum nesting depth allowed while the source generator discovers mapping strategies.
+    /// The effective default when fully unset is <c>50</c>.
+    /// When the value is <c>0</c>, no compile-time depth limit is applied.
+    /// </summary>
+    short MaxCompileTimeDepth { get; }
 }

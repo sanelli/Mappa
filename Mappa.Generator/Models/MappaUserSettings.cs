@@ -66,6 +66,9 @@ internal sealed class MappaUserSettings
     private readonly StackSetting<EnumStringMapSetting> enumStringMapSetting;
     private readonly StackSetting<EnumToEnumMapSetting> enumToEnumMapSetting;
     private readonly StackSetting<IdentityMapDeepCopySetting> identityMapDeepCopy;
+    private readonly StackSetting<BooleanSetting> referenceReusing;
+    private readonly StackSetting<short> maxRuntimeDepth;
+    private readonly StackSetting<short> maxCompileTimeDepth;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaUserSettings"/> class.
@@ -123,7 +126,10 @@ internal sealed class MappaUserSettings
             otherSettings.CaseInsensitiveEnumMap,
             otherSettings.EnumStringMapSetting,
             otherSettings.EnumToEnumMapSetting,
-            otherSettings.IdentityMapDeepCopy)
+            otherSettings.IdentityMapDeepCopy,
+            otherSettings.ReferenceReusing,
+            otherSettings.MaxRuntimeDepth,
+            otherSettings.MaxCompileTimeDepth)
     {
     }
 
@@ -181,6 +187,9 @@ internal sealed class MappaUserSettings
     /// <param name="enumStringMapSetting">Defines how enum members are paired with string values.</param>
     /// <param name="enumToEnumMapSetting">Defines how enum members are paired when mapping from one enum to another enum.</param>
     /// <param name="identityMapDeepCopy">Defines how identity mappings copy a type to itself.</param>
+    /// <param name="referenceReusing">Enable or disable reusing already-mapped reference-type instances.</param>
+    /// <param name="maxRuntimeDepth">The maximum nesting depth allowed while executing a mapping.</param>
+    /// <param name="maxCompileTimeDepth">The maximum nesting depth allowed while discovering mapping strategies.</param>
     private MappaUserSettings(
         string? dateTimeFormat,
         string? dateTimeOffsetFormat,
@@ -232,7 +241,10 @@ internal sealed class MappaUserSettings
         BooleanSetting caseInsensitiveEnumMap,
         EnumStringMapSetting enumStringMapSetting,
         EnumToEnumMapSetting enumToEnumMapSetting,
-        IdentityMapDeepCopySetting identityMapDeepCopy)
+        IdentityMapDeepCopySetting identityMapDeepCopy,
+        BooleanSetting referenceReusing,
+        short maxRuntimeDepth,
+        short maxCompileTimeDepth)
     {
         this.dateTimeFormat = new(dateTimeFormat);
         this.dateTimeOffsetFormat = new(dateTimeOffsetFormat);
@@ -285,6 +297,9 @@ internal sealed class MappaUserSettings
         this.enumStringMapSetting = new(enumStringMapSetting);
         this.enumToEnumMapSetting = new(enumToEnumMapSetting);
         this.identityMapDeepCopy = new(identityMapDeepCopy);
+        this.referenceReusing = new(referenceReusing);
+        this.maxRuntimeDepth = new(maxRuntimeDepth);
+        this.maxCompileTimeDepth = new(maxCompileTimeDepth);
     }
 
     /// <inheritdoc />
@@ -440,6 +455,15 @@ internal sealed class MappaUserSettings
     /// <inheritdoc/>
     public IdentityMapDeepCopySetting IdentityMapDeepCopy => this.identityMapDeepCopy;
 
+    /// <inheritdoc/>
+    public BooleanSetting ReferenceReusing => this.referenceReusing;
+
+    /// <inheritdoc/>
+    public short MaxRuntimeDepth => this.maxRuntimeDepth;
+
+    /// <inheritdoc/>
+    public short MaxCompileTimeDepth => this.maxCompileTimeDepth;
+
     /// <summary>
     /// Push the changes required by the <paramref name="mappaSettingsAttribute"/> on the stack.
     /// If <paramref name="mappaSettingsAttribute"/> is <c>null</c>
@@ -508,6 +532,9 @@ internal sealed class MappaUserSettings
             this.enumStringMapSetting.Apply(mappaSettingsAttribute.EnumStringMapSetting is not EnumStringMapSetting.Undefined ? mappaSettingsAttribute.EnumStringMapSetting : this.enumStringMapSetting),
             this.enumToEnumMapSetting.Apply(mappaSettingsAttribute.EnumToEnumMapSetting is not EnumToEnumMapSetting.Undefined ? mappaSettingsAttribute.EnumToEnumMapSetting : this.enumToEnumMapSetting),
             this.identityMapDeepCopy.Apply(mappaSettingsAttribute.IdentityMapDeepCopy is not IdentityMapDeepCopySetting.Undefined ? mappaSettingsAttribute.IdentityMapDeepCopy : this.identityMapDeepCopy),
+            this.referenceReusing.Apply(mappaSettingsAttribute.ReferenceReusing is not BooleanSetting.Undefined ? mappaSettingsAttribute.ReferenceReusing : this.referenceReusing),
+            this.maxRuntimeDepth.Apply(GetDepth(mappaSettingsAttribute.MaxRuntimeDepth, this.maxRuntimeDepth)),
+            this.maxCompileTimeDepth.Apply(GetDepth(mappaSettingsAttribute.MaxCompileTimeDepth, this.maxCompileTimeDepth)),
  #pragma warning restore CA2000
         ]);
     }
@@ -517,6 +544,9 @@ internal sealed class MappaUserSettings
 
     private static NumberStyles? GetNumberStyle(NumberStyles style, StackSetting<NumberStyles?> currentStyle)
         => style != MappaSettingsAttribute.UndefinedNumberStyle ? style : currentStyle;
+
+    private static short GetDepth(short depth, StackSetting<short> currentDepth)
+        => depth >= 0 ? depth : currentDepth;
 
     private sealed class PopActionDisposable
         : IDisposable

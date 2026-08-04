@@ -220,6 +220,18 @@ namespace Mappa.Generator.Models;
 ///         <description>Set the default identity deep copy mode. Valid values are the values of the <see cref="IdentityMapDeepCopySetting"/> <c>enum</c>.</description>
 ///     </item>
 ///     <item>
+///         <term><c>mappa.referencereusing</c></term>
+///         <description>Set the default value to enable or disable reusing already-mapped reference-type instances. Valid values are the values from the <see cref="BooleanSetting"/> <c>enum</c>.</description>
+///     </item>
+///     <item>
+///         <term><c>mappa.maxruntimedepth</c></term>
+///         <description>Set the default maximum nesting depth while executing a mapping. Non-negative <see cref="short"/> values apply; negative values are treated as unset. When fully unset the effective default is <c>0</c> (unlimited).</description>
+///     </item>
+///     <item>
+///         <term><c>mappa.maxcompiletimedepth</c></term>
+///         <description>Set the default maximum nesting depth while discovering mapping strategies. Non-negative <see cref="short"/> values apply; negative values are treated as unset. When fully unset the effective default is <c>50</c>.</description>
+///     </item>
+///     <item>
 ///         <term><c>mappa.enumerableconcretetype</c></term>
 ///         <description>Set the default concrete type for sequence-like collection interface targets. Valid values are the values of the <see cref="EnumerableConcreteTypeSetting"/> <c>enum</c>.</description>
 ///     </item>
@@ -284,8 +296,14 @@ internal sealed class MappaGlobalOptions
     private const string MappaSettingsEnumStringMapSetting = "enumstringmapsetting";
     private const string MappaSettingsEnumToEnumMapSetting = "enumtoenummapsetting";
     private const string MappaSettingsIdentityMapDeepCopy = "identitymapdeepcopy";
+    private const string MappaSettingsReferenceReusing = "referencereusing";
+    private const string MappaSettingsMaxRuntimeDepth = "maxruntimedepth";
+    private const string MappaSettingsMaxCompileTimeDepth = "maxcompiletimedepth";
     private const string MappaSettingsEnumerableConcreteType = "enumerableconcretetype";
     private const string MappaSettingsDictionaryAssignment = "dictionaryassignment";
+
+    private const short DefaultMaxRuntimeDepth = 0;
+    private const short DefaultMaxCompileTimeDepth = 50;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaGlobalOptions"/> class.
@@ -449,6 +467,14 @@ internal sealed class MappaGlobalOptions
         this.IdentityMapDeepCopy = options.TryGetValue(GetOptionName(MappaSettingsIdentityMapDeepCopy), out var identityMapDeepCopy)
             ? GetIdentityMapDeepCopySettingFromString(identityMapDeepCopy)
             : IdentityMapDeepCopySetting.ShallowCopy;
+
+        this.ReferenceReusing = options.TryGetValue(GetOptionName(MappaSettingsReferenceReusing), out var referenceReusing)
+            ? GetBooleanSettingFromString(referenceReusing)
+            : BooleanSetting.Undefined;
+
+        this.MaxRuntimeDepth = ReadDepthOption(options, MappaSettingsMaxRuntimeDepth, DefaultMaxRuntimeDepth);
+
+        this.MaxCompileTimeDepth = ReadDepthOption(options, MappaSettingsMaxCompileTimeDepth, DefaultMaxCompileTimeDepth);
 
         this.EnumerableConcreteType = options.TryGetValue(GetOptionName(MappaSettingsEnumerableConcreteType), out var enumerableConcreteType)
             ? GetEnumerableConcreteTypeSettingFromString(enumerableConcreteType)
@@ -618,6 +644,19 @@ internal sealed class MappaGlobalOptions
             => options.TryGetValue(GetOptionName(optionName), out var numberStyles)
                 ? ParseNumberStylesCodeHelper.TryParseFromString(numberStyles)
                 : null;
+
+        static short ReadDepthOption(AnalyzerConfigOptions options, string optionName, short defaultValue)
+        {
+            if (!options.TryGetValue(GetOptionName(optionName), out var depthValue)
+                || string.IsNullOrWhiteSpace(depthValue)
+                || !short.TryParse(depthValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed)
+                || parsed < 0)
+            {
+                return defaultValue;
+            }
+
+            return parsed;
+        }
     }
 
     /// <inheritdoc />
@@ -766,6 +805,15 @@ internal sealed class MappaGlobalOptions
 
     /// <inheritdoc/>
     public IdentityMapDeepCopySetting IdentityMapDeepCopy { get; }
+
+    /// <inheritdoc/>
+    public BooleanSetting ReferenceReusing { get; }
+
+    /// <inheritdoc/>
+    public short MaxRuntimeDepth { get; }
+
+    /// <inheritdoc/>
+    public short MaxCompileTimeDepth { get; }
 
     /// <inheritdoc/>
     public EnumerableConcreteTypeSetting EnumerableConcreteType { get; }

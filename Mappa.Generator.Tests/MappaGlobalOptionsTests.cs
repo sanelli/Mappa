@@ -123,5 +123,8 @@ public sealed class MappaGlobalOptionsTests
         options.MappaDebug.Should().BeFalse();
         options.MappaDebugComments.Should().BeFalse();
         options.DictionaryAssignment.Should().Be(DictionaryAssignmentSetting.Indexer);
+        options.ReferenceReusing.Should().Be(BooleanSetting.Undefined);
+        options.MaxRuntimeDepth.Should().Be((short)0);
+        options.MaxCompileTimeDepth.Should().Be((short)50);
     }
 }
