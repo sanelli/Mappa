@@ -14,6 +14,7 @@ namespace Mappa.Generator.Models;
 /// </summary>
 internal abstract class MappaMapAlgorithmContext
 {
+    private readonly Stack<(ITypeSymbol TargetType, ITypeSymbol SourceType)> inFlightTypePairs = new();
     private short currentDepth = -1;
 
     /// <summary>
@@ -137,6 +138,32 @@ internal abstract class MappaMapAlgorithmContext
     }
 
     /// <summary>
+    /// Pushes an in-flight <paramref name="targetType"/>/<paramref name="sourceType"/> pair onto the
+    /// compile-time mapping-cycle stack when the pair is not already present.
+    /// </summary>
+    /// <param name="targetType">The target type being mapped.</param>
+    /// <param name="sourceType">The source type being mapped.</param>
+    /// <returns>
+    /// An <see cref="IDisposable"/> that pops the pair when disposed, or <c>null</c> when the same
+    /// pair is already in flight (cycle).
+    /// </returns>
+    internal IDisposable? TryPushMappingTypePair(ITypeSymbol targetType, ITypeSymbol sourceType)
+    {
+        var root = this.GetRootAlgorithmContext();
+        foreach (var (inFlightTargetType, inFlightSourceType) in root.inFlightTypePairs)
+        {
+            if (SymbolEqualityComparer.Default.Equals(inFlightTargetType, targetType)
+                && SymbolEqualityComparer.Default.Equals(inFlightSourceType, sourceType))
+            {
+                return null;
+            }
+        }
+
+        root.inFlightTypePairs.Push((targetType, sourceType));
+        return new MappingTypePairScope(root);
+    }
+
+    /// <summary>
     /// Gets the map method.
     /// </summary>
     /// <returns>The map method <see cref="MapMethod"/>.</returns>
@@ -186,6 +213,11 @@ internal abstract class MappaMapAlgorithmContext
         this.currentDepth--;
     }
 
+    private void PopMappingTypePair()
+    {
+        this.inFlightTypePairs.Pop();
+    }
+
     private sealed class CompileTimeDepthScope
         : IDisposable
     {
@@ -205,6 +237,29 @@ internal abstract class MappaMapAlgorithmContext
             }
 
             this.context.DecreaseCompileTimeDepth();
+            this.disposed = true;
+        }
+    }
+
+    private sealed class MappingTypePairScope
+        : IDisposable
+    {
+        private readonly MappaMapAlgorithmContext context;
+        private bool disposed;
+
+        public MappingTypePairScope(MappaMapAlgorithmContext context)
+        {
+            this.context = context;
+        }
+
+        public void Dispose()
+        {
+            if (this.disposed)
+            {
+                return;
+            }
+
+            this.context.PopMappingTypePair();
             this.disposed = true;
         }
     }

@@ -33,7 +33,7 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
 
     /// <inheritdoc/>
     internal override MapStrategy GetStrategy()
-        => this.WithCompileTimeDepthGuard(this.ComputeStrategyWithMapMethod);
+        => this.WithGetStrategyGuards(this.ComputeStrategyWithMapMethod);
 
     private MapStrategy ComputeStrategyWithMapMethod()
     {

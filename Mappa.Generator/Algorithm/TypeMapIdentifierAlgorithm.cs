@@ -56,35 +56,39 @@ internal class TypeMapIdentifierAlgorithm
     /// </summary>
     /// <returns>The strategy computed.</returns>
     internal virtual MapStrategy GetStrategy()
-        => this.WithCompileTimeDepthGuard(this.ComputeStrategy);
+        => this.WithGetStrategyGuards(this.ComputeStrategy);
 
     /// <summary>
-    /// Runs <paramref name="computeStrategy"/> under the compile-time depth guard when
-    /// <see cref="IMappaUserSettings.MaxCompileTimeDepth"/> is greater than zero.
+    /// Runs <paramref name="computeStrategy"/> under the compile-time mapping-cycle stack and
+    /// depth guards shared by all <see cref="GetStrategy"/> entry points.
     /// </summary>
     /// <param name="computeStrategy">The strategy identification callback.</param>
-    /// <returns>The strategy computed, or <see cref="NoMapStrategy"/> when the depth limit is exceeded.</returns>
-    protected MapStrategy WithCompileTimeDepthGuard(Func<MapStrategy> computeStrategy)
+    /// <returns>
+    /// The strategy computed, or <see cref="NoMapStrategy"/> when a mapping cycle is detected
+    /// or the compile-time depth limit is exceeded.
+    /// </returns>
+    protected MapStrategy WithGetStrategyGuards(Func<MapStrategy> computeStrategy)
     {
-        var maxCompileTimeDepth = this.Context.MappaUserSettings.MaxCompileTimeDepth;
-        if (maxCompileTimeDepth == 0)
+        IDisposable? typePairScope = null;
+        try
         {
-            return computeStrategy();
-        }
-
-        using (this.Context.IncreaseCompileTimeDepth())
-        {
-            if (this.Context.CurrentDepth > maxCompileTimeDepth)
+            typePairScope = this.Context.TryPushMappingTypePair(
+                this.Context.TargetType,
+                this.Context.SourceType);
+            if (typePairScope is null)
             {
-                this.Context.ReportDiagnostic(MappaDiagnostics.MaxCompileTimeDepthReached(
+                this.Context.ReportDiagnostic(MappaDiagnostics.MappingCycleDetected(
                     this.Context.GetLocation(),
                     this.Context.SourceType,
-                    this.Context.TargetType,
-                    maxCompileTimeDepth));
+                    this.Context.TargetType));
                 return new NoMapStrategy(this.Context.TargetType, this.Context.SourceType);
             }
 
-            return computeStrategy();
+            return this.WithCompileTimeDepthGuard(computeStrategy);
+        }
+        finally
+        {
+            typePairScope?.Dispose();
         }
     }
 
@@ -222,5 +226,35 @@ internal class TypeMapIdentifierAlgorithm
                 // cannot be used.
                 _ => false,
             };
+    }
+
+    /// <summary>
+    /// Runs <paramref name="computeStrategy"/> under the compile-time depth guard when
+    /// <see cref="IMappaUserSettings.MaxCompileTimeDepth"/> is greater than zero.
+    /// </summary>
+    /// <param name="computeStrategy">The strategy identification callback.</param>
+    /// <returns>The strategy computed, or <see cref="NoMapStrategy"/> when the depth limit is exceeded.</returns>
+    private MapStrategy WithCompileTimeDepthGuard(Func<MapStrategy> computeStrategy)
+    {
+        var maxCompileTimeDepth = this.Context.MappaUserSettings.MaxCompileTimeDepth;
+        if (maxCompileTimeDepth == 0)
+        {
+            return computeStrategy();
+        }
+
+        using (this.Context.IncreaseCompileTimeDepth())
+        {
+            if (this.Context.CurrentDepth > maxCompileTimeDepth)
+            {
+                this.Context.ReportDiagnostic(MappaDiagnostics.MaxCompileTimeDepthReached(
+                    this.Context.GetLocation(),
+                    this.Context.SourceType,
+                    this.Context.TargetType,
+                    maxCompileTimeDepth));
+                return new NoMapStrategy(this.Context.TargetType, this.Context.SourceType);
+            }
+
+            return computeStrategy();
+        }
     }
 }
