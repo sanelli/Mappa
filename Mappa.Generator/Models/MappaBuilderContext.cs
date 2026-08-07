@@ -1,7 +1,9 @@
 // <copyright file="MappaBuilderContext.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
+using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Exceptions;
+using Mappa.Generator.Extensions;
 using Mappa.Generator.Helpers;
 
 using Microsoft.CodeAnalysis;
@@ -18,8 +20,11 @@ internal sealed class MappaBuilderContext
     private readonly StackSetting<MapMethod> mapMethodBeingBuilt = new(null!);
     private readonly StackSetting<IPropertySymbol?> currentTargetPropertyForUnsafeAccess = new(null);
     private readonly StackSetting<bool> requiresUnsafeAccessorOnCurrentTargetProperty = new(false);
+    private readonly StackSetting<bool> maxRuntimeDepthActive = new(false);
+    private readonly StackSetting<short> effectiveMaxRuntimeDepth = new(0);
     private readonly List<Diagnostic> diagnostics = new();
     private uint temporaryCounter;
+    private bool referenceManagerAccessorRequired;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaBuilderContext"/> class.
@@ -44,6 +49,21 @@ internal sealed class MappaBuilderContext
     /// Gets the inaccessible-member accessor registry for the current generated file.
     /// </summary>
     internal InaccessibleAccessorRegistry InaccessibleAccessors { get; } = new();
+
+    /// <summary>
+    /// Gets a value indicating whether the file-local reference-manager accessor must be emitted.
+    /// </summary>
+    internal bool ReferenceManagerAccessorRequired => this.referenceManagerAccessorRequired;
+
+    /// <summary>
+    /// Gets a value indicating whether MaxRuntimeDepth wrapping is active for the current map method.
+    /// </summary>
+    internal bool IsMaxRuntimeDepthActive => this.maxRuntimeDepthActive.CurrentValue;
+
+    /// <summary>
+    /// Gets the effective MaxRuntimeDepth for the current map method when active; otherwise <c>0</c>.
+    /// </summary>
+    internal short EffectiveMaxRuntimeDepth => this.effectiveMaxRuntimeDepth.CurrentValue;
 
     /// <summary>
     /// Gets the target property currently being accessed via an optional unsafe accessor, if any.
@@ -87,12 +107,40 @@ internal sealed class MappaBuilderContext
         => this.compositeTypeTargetName.Apply(sourceName);
 
     /// <summary>
-    /// Select which method is being built.
+    /// Select which method is being built and configure MaxRuntimeDepth state for that method.
     /// </summary>
     /// <param name="mapMethod">The map method.</param>
     /// <returns>Disposable value used to remove the method from the stack.</returns>
     internal IDisposable PushMapMethod(MapMethod mapMethod)
-        => this.mapMethodBeingBuilt.Apply(mapMethod);
+    {
+        var mapMethodScope = this.mapMethodBeingBuilt.Apply(mapMethod);
+        var activateMaxRuntimeDepth = false;
+        var effectiveDepth = (short)0;
+
+        if (mapMethod.MaxRuntimeDepth > 0 && mapMethod.ProvideMappaContextWhenInvoked())
+        {
+            if (this.Compilation.IsUnsafeAccessorSupported())
+            {
+                activateMaxRuntimeDepth = true;
+                effectiveDepth = mapMethod.MaxRuntimeDepth;
+                this.referenceManagerAccessorRequired = true;
+            }
+            else
+            {
+                this.ReportDiagnostic(MappaDiagnostics.UnsafeAccessorNotSupported(
+                    mapMethod.MethodDeclarationSyntax,
+                    mapMethod.MethodName));
+            }
+        }
+
+#pragma warning disable CA2000 // Disposable scopes are owned by CombinedDisposable.
+        var maxRuntimeDepthActiveScope = this.maxRuntimeDepthActive.Apply(activateMaxRuntimeDepth);
+        var effectiveMaxRuntimeDepthScope = this.effectiveMaxRuntimeDepth.Apply(effectiveDepth);
+#pragma warning restore CA2000
+        return new CombinedDisposable(
+            mapMethodScope,
+            new CombinedDisposable(maxRuntimeDepthActiveScope, effectiveMaxRuntimeDepthScope));
+    }
 
     /// <summary>
     /// Gets the current value of the target pushed.

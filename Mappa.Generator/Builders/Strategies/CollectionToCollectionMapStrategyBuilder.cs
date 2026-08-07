@@ -4,6 +4,7 @@
 
 using Mappa.Generator.Exceptions;
 using Mappa.Generator.Extensions;
+using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -59,8 +60,11 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
                    out var loopVariableName,
                    out var loopCounterTemporary))
         {
-            var elementStrategyBuilder = this.strategy.ElementStrategy.GetBuilder();
-            var (targetElementVariable, targetElementCode) = elementStrategyBuilder.BuildSource(loopVariableName, context, mappaGlobalOptions);
+            var (targetElementVariable, targetElementCode) = ReferenceHandlingCodeGenerator.BuildNestedSource(
+                this.strategy.ElementStrategy,
+                loopVariableName,
+                context,
+                mappaGlobalOptions);
             if (!string.IsNullOrWhiteSpace(targetElementCode))
             {
                 stringBuilder.AppendLine(targetElementCode);

@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 
 namespace Mappa.Generator.Builders;
@@ -41,9 +42,21 @@ internal sealed class MappaFileBuilder
         // Emit file-local accessors inside the same namespace as the mapper (after a
         // file-scoped namespace declaration, or inside a block-scoped namespace).
         var inaccessibleAccessorsSource = context.InaccessibleAccessors.BuildSource();
-        var preamble = string.IsNullOrWhiteSpace(inaccessibleAccessorsSource)
+        var referenceManagerAccessorSource = ReferenceHandlingCodeGenerator.BuildAccessorSource(context);
+        var preambleParts = new List<string>();
+        if (!string.IsNullOrWhiteSpace(inaccessibleAccessorsSource))
+        {
+            preambleParts.Add(inaccessibleAccessorsSource);
+        }
+
+        if (!string.IsNullOrWhiteSpace(referenceManagerAccessorSource))
+        {
+            preambleParts.Add(referenceManagerAccessorSource);
+        }
+
+        var preamble = preambleParts.Count == 0
             ? null
-            : inaccessibleAccessorsSource;
+            : string.Join("\n", preambleParts);
 
         var classSourceCodeWithNamespace = new MappaNamespaceBuilder(
                 this.ClassContext,

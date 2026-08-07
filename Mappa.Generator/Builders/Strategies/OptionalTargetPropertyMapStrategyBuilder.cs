@@ -36,7 +36,11 @@ internal sealed class OptionalTargetPropertyMapStrategyBuilder
         // in that case we check that  the generated value is not default
         if (string.IsNullOrWhiteSpace(source))
         {
-            var (innerStrategyVariableName, innerStrategyCode) = this.strategy.InnerStrategy.GetBuilder().BuildSource(source, context, mappaGlobalOptions);
+            var (innerStrategyVariableName, innerStrategyCode) = ReferenceHandlingCodeGenerator.BuildNestedSource(
+                this.strategy.InnerStrategy,
+                source,
+                context,
+                mappaGlobalOptions);
             if (!string.IsNullOrWhiteSpace(innerStrategyCode))
             {
                 builder.AppendLine(innerStrategyCode);
@@ -63,7 +67,11 @@ internal sealed class OptionalTargetPropertyMapStrategyBuilder
             builder.AppendLine($"if ({this.GetCondition(source, context)})");
             using (builder.CurlyBracesBlock())
             {
-                var (innerStrategyVariableName, innerStrategyCode) = this.GetStrategy().GetBuilder().BuildSource(source, context, mappaGlobalOptions);
+                var (innerStrategyVariableName, innerStrategyCode) = ReferenceHandlingCodeGenerator.BuildNestedSource(
+                    this.GetStrategy(),
+                    source,
+                    context,
+                    mappaGlobalOptions);
                 if (!string.IsNullOrWhiteSpace(innerStrategyCode))
                 {
                     builder.AppendLine(innerStrategyCode);

@@ -77,11 +77,20 @@ internal class TypeMapIdentifierAlgorithm
                 this.Context.SourceType);
             if (typePairScope is null)
             {
-                this.Context.ReportDiagnostic(MappaDiagnostics.MappingCycleDetected(
-                    this.Context.GetLocation(),
-                    this.Context.SourceType,
-                    this.Context.TargetType));
-                return new NoMapStrategy(this.Context.TargetType, this.Context.SourceType);
+                // Detectors may intentionally re-enter GetStrategy for the same type pair while one of
+                // the recursive-guard settings is disabled (nullable unwrap, constructor single-arg,
+                // identity nested fields) or while DetectMappingCycles is disabled (e.g. polymorphism
+                // MapSourceType defaults). Those paths already prevent unbounded recursion.
+                if (this.ShouldReportMappingCycle())
+                {
+                    this.Context.ReportDiagnostic(MappaDiagnostics.MappingCycleDetected(
+                        this.Context.GetLocation(),
+                        this.Context.SourceType,
+                        this.Context.TargetType));
+                    return new NoMapStrategy(this.Context.TargetType, this.Context.SourceType);
+                }
+
+                return this.WithCompileTimeDepthGuard(computeStrategy);
             }
 
             return this.WithCompileTimeDepthGuard(computeStrategy);
@@ -227,6 +236,12 @@ internal class TypeMapIdentifierAlgorithm
                 _ => false,
             };
     }
+
+    private bool ShouldReportMappingCycle()
+        => this.Context.AlgorithmSettings.DetectMappingCycles.CurrentValue
+           && this.Context.AlgorithmSettings.UseNullableMapStrategyDetector.CurrentValue
+           && this.Context.AlgorithmSettings.UseConstructorMapStrategyDetector.CurrentValue
+           && this.Context.AlgorithmSettings.UseIdentityMapStrategyDetector.CurrentValue;
 
     /// <summary>
     /// Runs <paramref name="computeStrategy"/> under the compile-time depth guard when

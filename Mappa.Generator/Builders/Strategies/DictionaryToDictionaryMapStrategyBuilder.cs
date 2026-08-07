@@ -3,6 +3,7 @@
 // </copyright>
 
 using Mappa.Generator.Extensions;
+using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -44,14 +45,22 @@ internal sealed class DictionaryToDictionaryMapStrategyBuilder
             var sourceKeyTemporary = context.NextTemporary();
             builder.AppendLine($"{sourceKeyType.ToDisplayString()} {sourceKeyTemporary} = {loopTemporary}.Key;");
 
-            var (targetKeyTemporary, targetKeyStrategyCode) = this.strategy.KeyStrategy.GetBuilder().BuildSource(sourceKeyTemporary, context, mappaGlobalOptions);
+            var (targetKeyTemporary, targetKeyStrategyCode) = ReferenceHandlingCodeGenerator.BuildNestedSource(
+                this.strategy.KeyStrategy,
+                sourceKeyTemporary,
+                context,
+                mappaGlobalOptions);
             builder.AppendLine(targetKeyStrategyCode);
             builder.AppendEmptyLine();
 
             // Process the target.
             var valueTemporary = context.NextTemporary();
             builder.AppendLine($"{sourceValueType.ToDisplayString()} {valueTemporary} = {loopTemporary}.Value;");
-            var (targetValueTemporary, targetValueStrategyCode) = this.strategy.ValueStrategy.GetBuilder().BuildSource(valueTemporary, context, mappaGlobalOptions);
+            var (targetValueTemporary, targetValueStrategyCode) = ReferenceHandlingCodeGenerator.BuildNestedSource(
+                this.strategy.ValueStrategy,
+                valueTemporary,
+                context,
+                mappaGlobalOptions);
             builder.AppendLine(targetValueStrategyCode);
             builder.AppendEmptyLine();
 

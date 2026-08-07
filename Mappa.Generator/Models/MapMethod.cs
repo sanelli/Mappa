@@ -20,6 +20,7 @@ internal sealed class MapMethod
     private readonly Attribute[] attributes;
     private MethodParameterMapStrategy? methodParameterMapStrategy;
     private bool pragmaWarningHasBeenSet;
+    private bool maxRuntimeDepthHasBeenSet;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MapMethod"/> class.
@@ -94,6 +95,11 @@ internal sealed class MapMethod
     /// Gets the pragma warning settings specific for the method being mapped.
     /// </summary>
     internal PragmaWarningSetting PragmaWarning { get; private set; }
+
+    /// <summary>
+    /// Gets the effective maximum runtime mapping depth for the method being mapped.
+    /// </summary>
+    internal short MaxRuntimeDepth { get; private set; }
 
     /// <summary>
     /// Gets the field name to access method.
@@ -314,5 +320,21 @@ internal sealed class MapMethod
 
         this.pragmaWarningHasBeenSet = true;
         this.PragmaWarning = pragmaWarning;
+    }
+
+    /// <summary>
+    /// Set the <see cref="MaxRuntimeDepth"/> field.
+    /// </summary>
+    /// <param name="maxRuntimeDepth">The value to apply to <see cref="MaxRuntimeDepth"/>.</param>
+    /// <exception cref="MappaGeneratorException">When the field has been set already.</exception>
+    internal void SetMaxRuntimeDepth(short maxRuntimeDepth)
+    {
+        if (this.maxRuntimeDepthHasBeenSet)
+        {
+            throw new MappaGeneratorException("You are trying to set max runtime depth multiple times.");
+        }
+
+        this.maxRuntimeDepthHasBeenSet = true;
+        this.MaxRuntimeDepth = maxRuntimeDepth;
     }
 }

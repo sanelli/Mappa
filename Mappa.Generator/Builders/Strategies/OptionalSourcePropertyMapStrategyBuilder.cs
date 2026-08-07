@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -34,7 +35,11 @@ internal sealed class OptionalSourcePropertyMapStrategyBuilder
         builder.AppendLine($"if ({context.GetCompositeTypeSourceName()}.Has{this.strategy.SourceProperty.Name})");
         using (builder.CurlyBracesBlock())
         {
-            var (innerVariable, innerCode) = this.strategy.InnerStrategy.GetBuilder().BuildSource(source, context, mappaGlobalOptions);
+            var (innerVariable, innerCode) = ReferenceHandlingCodeGenerator.BuildNestedSource(
+                this.strategy.InnerStrategy,
+                source,
+                context,
+                mappaGlobalOptions);
             builder.AppendLine(innerCode);
             builder.AppendLine($"{targetVariable} = {innerVariable};");
         }

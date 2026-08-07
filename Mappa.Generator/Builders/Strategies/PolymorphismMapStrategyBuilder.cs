@@ -5,6 +5,7 @@
 using Mappa.Attributes;
 using Mappa.Generator.Exceptions;
 using Mappa.Generator.Extensions;
+using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -37,8 +38,11 @@ internal sealed class PolymorphismMapStrategyBuilder(PolymorphismMapStrategy str
                 builder.AppendLine($"case {subtypeStrategy.SourceType.ToDisplayString()} {subtypeStrategyTemporary}:");
                 using (builder.CurlyBracesBlock())
                 {
-                    var subtypeStrategyBuilder = subtypeStrategy.GetBuilder();
-                    var (subtypeStrategyTargetVariable, subtypeStrategyCode) = subtypeStrategyBuilder.BuildSource(subtypeStrategyTemporary, context, mappaGlobalOptions);
+                    var (subtypeStrategyTargetVariable, subtypeStrategyCode) = ReferenceHandlingCodeGenerator.BuildNestedSource(
+                        subtypeStrategy,
+                        subtypeStrategyTemporary,
+                        context,
+                        mappaGlobalOptions);
                     builder.AppendLine(subtypeStrategyCode);
                     builder.AppendLine($"{targetTemporary} = {subtypeStrategyTargetVariable};");
                     builder.AppendLine("break;");
@@ -111,8 +115,11 @@ internal sealed class PolymorphismMapStrategyBuilder(PolymorphismMapStrategy str
                 builder.AppendLine("break;");
                 break;
             case MappaTypeMappingDefaultBehavior.MapSourceType:
-                var defaultStrategyBuilder = defaultBehaviorStrategy.GetBuilder();
-                var (defaultVariable, defaultCode) = defaultStrategyBuilder.BuildSource(source, context, mappaGlobalOptions);
+                var (defaultVariable, defaultCode) = ReferenceHandlingCodeGenerator.BuildNestedSource(
+                    defaultBehaviorStrategy,
+                    source,
+                    context,
+                    mappaGlobalOptions);
                 if (!string.IsNullOrWhiteSpace(defaultCode))
                 {
                     builder.AppendLine(defaultCode);

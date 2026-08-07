@@ -171,7 +171,10 @@ internal sealed class PolymorphismMapStrategyDetector(MappaMapAlgorithmContext c
 
             var derivedContext = new DerivedMappaMapAlgorithmContext(this.context, targetSymbol, this.context.SourceType);
             var algorithm = new TypeMapIdentifierAlgorithm(derivedContext, this.compilation, this.cancellationToken);
-            defaultMappingStrategy = algorithm.GetStrategy();
+            using (this.context.AlgorithmSettings.DetectMappingCycles.Apply(false))
+            {
+                defaultMappingStrategy = algorithm.GetStrategy();
+            }
 
             if (defaultMappingStrategy is NoMapStrategy)
             {

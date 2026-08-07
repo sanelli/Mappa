@@ -4,6 +4,7 @@
 
 using Mappa.Generator.Exceptions;
 using Mappa.Generator.Extensions;
+using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -34,15 +35,21 @@ internal sealed class MethodParameterMapStrategyBuilder
     /// <inheritdoc/>
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
+        var maxRuntimeDepthInitialization = ReferenceHandlingCodeGenerator.BuildMaxRuntimeDepthInitialization(context);
         var beforeMapHooks = this.MethodParameterMapStrategy.BeforeMapHooks;
         var afterMapHooks = this.MethodParameterMapStrategy.AfterMapHooks;
         if (beforeMapHooks.Count == 0 && afterMapHooks.Count == 0)
         {
             var (strategySource, header) = this.MethodParameterMapStrategy.Strategy.GetBuilder().BuildSource(source, context, mappaGlobalOptions);
-            return ($"return {strategySource};", header);
+            return ($"return {strategySource};", JoinHeader(maxRuntimeDepthInitialization, header));
         }
 
         var code = new List<string>();
+        if (maxRuntimeDepthInitialization is not null)
+        {
+            code.Add(maxRuntimeDepthInitialization);
+        }
+
         var strategyInput = source;
         if (beforeMapHooks.Any(hook => RequiresMappedValue(hook, context.Compilation)) &&
             context.GetMapMethod().MethodSymbol.Parameters[0].RefKind is RefKind.In)
@@ -75,6 +82,21 @@ internal sealed class MethodParameterMapStrategyBuilder
         }
 
         return ($"return {targetTemporary};", string.Join("\n", code));
+    }
+
+    private static string JoinHeader(string? maxRuntimeDepthInitialization, string header)
+    {
+        if (maxRuntimeDepthInitialization is null)
+        {
+            return header;
+        }
+
+        if (string.IsNullOrWhiteSpace(header))
+        {
+            return maxRuntimeDepthInitialization;
+        }
+
+        return $"{maxRuntimeDepthInitialization}\n{header}";
     }
 
     private static bool RequiresMappedValue(MapHook hook, Compilation compilation)

@@ -70,7 +70,11 @@ internal static class ReadonlyCollectionPropertyLoopBuilder
             {
                 var elementTemporary = context.NextTemporary();
                 stringBuilder.AppendLine($"{sourceType.GetElementType().ToDisplayString()} {elementTemporary} = {source}[{counterTemporary}];");
-                var (targetElementTemporary, targetElementCode) = elementStrategy.GetBuilder().BuildSource(elementTemporary, context, mappaGlobalOptions);
+                var (targetElementTemporary, targetElementCode) = ReferenceHandlingCodeGenerator.BuildNestedSource(
+                    elementStrategy,
+                    elementTemporary,
+                    context,
+                    mappaGlobalOptions);
                 if (!string.IsNullOrWhiteSpace(targetElementCode))
                 {
                     stringBuilder.AppendLine(targetElementCode);
@@ -84,7 +88,11 @@ internal static class ReadonlyCollectionPropertyLoopBuilder
             stringBuilder.AppendLine($"foreach ({sourceType.GetElementType().ToDisplayString()} {counterTemporary} in {source})");
             using (stringBuilder.CurlyBracesBlock())
             {
-                var (targetElementTemporary, targetElementCode) = elementStrategy.GetBuilder().BuildSource(counterTemporary, context, mappaGlobalOptions);
+                var (targetElementTemporary, targetElementCode) = ReferenceHandlingCodeGenerator.BuildNestedSource(
+                    elementStrategy,
+                    counterTemporary,
+                    context,
+                    mappaGlobalOptions);
                 if (!string.IsNullOrWhiteSpace(targetElementCode))
                 {
                     stringBuilder.AppendLine(targetElementCode);

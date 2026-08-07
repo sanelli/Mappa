@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -35,7 +36,11 @@ internal sealed class TupleToTupleMapStrategyBuilder
             var sourceTemporary = context.NextTemporary();
             builder.AppendLine($"{elementStrategy.SourceType.ToDisplayString()} {sourceTemporary} = {source}.Item{index + 1};");
 
-            var (targetTemporary, targetCode) = elementStrategy.GetBuilder().BuildSource(sourceTemporary, context, mappaGlobalOptions);
+            var (targetTemporary, targetCode) = ReferenceHandlingCodeGenerator.BuildNestedSource(
+                elementStrategy,
+                sourceTemporary,
+                context,
+                mappaGlobalOptions);
             if (!string.IsNullOrEmpty(targetCode))
             {
                 builder.AppendLine(targetCode);

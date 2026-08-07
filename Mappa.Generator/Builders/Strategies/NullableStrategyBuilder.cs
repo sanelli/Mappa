@@ -3,6 +3,7 @@
 // </copyright>
 
 using Mappa.Generator.Extensions;
+using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -68,7 +69,11 @@ internal sealed class NullableStrategyBuilder
                 stringBuilder.AppendLine($"{type} {source} = {originalSourceTemporary};");
             }
 
-            var (elementTemporary, elementCode) = this.strategy.ElementStrategy.GetBuilder().BuildSource(source, context, mappaGlobalOptions);
+            var (elementTemporary, elementCode) = ReferenceHandlingCodeGenerator.BuildNestedSource(
+                this.strategy.ElementStrategy,
+                source,
+                context,
+                mappaGlobalOptions);
             if (!string.IsNullOrEmpty(elementCode))
             {
                 stringBuilder.AppendEmptyLine();
