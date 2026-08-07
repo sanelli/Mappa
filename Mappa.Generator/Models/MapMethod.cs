@@ -1,4 +1,4 @@
-﻿// <copyright file="MapMethod.cs" company="Stefano Anelli">
+// <copyright file="MapMethod.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -21,6 +21,7 @@ internal sealed class MapMethod
     private MethodParameterMapStrategy? methodParameterMapStrategy;
     private bool pragmaWarningHasBeenSet;
     private bool maxRuntimeDepthHasBeenSet;
+    private bool referenceReusingHasBeenSet;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MapMethod"/> class.
@@ -52,6 +53,7 @@ internal sealed class MapMethod
         this.PragmaWarning = PragmaWarningSetting.Undefined;
         this.attributes = this.MethodSymbol.GetMethodMappaAttributes(semanticModel.Compilation);
         this.CanBeUsedByStaticMethod = this.MethodSymbol.IsStatic;
+        this.ReferenceReusing = BooleanSetting.Undefined;
     }
 
     /// <summary>
@@ -84,6 +86,7 @@ internal sealed class MapMethod
         this.attributes = attributes;
         this.PragmaWarning = PragmaWarningSetting.Undefined;
         this.CanBeUsedByStaticMethod = canBeUsedByStaticMethod;
+        this.ReferenceReusing = BooleanSetting.Undefined;
     }
 
     /// <summary>
@@ -100,6 +103,11 @@ internal sealed class MapMethod
     /// Gets the effective maximum runtime mapping depth for the method being mapped.
     /// </summary>
     internal short MaxRuntimeDepth { get; private set; }
+
+    /// <summary>
+    /// Gets the reference-reusing setting specific for the method being mapped.
+    /// </summary>
+    internal BooleanSetting ReferenceReusing { get; private set; }
 
     /// <summary>
     /// Gets the field name to access method.
@@ -336,5 +344,21 @@ internal sealed class MapMethod
 
         this.maxRuntimeDepthHasBeenSet = true;
         this.MaxRuntimeDepth = maxRuntimeDepth;
+    }
+
+    /// <summary>
+    /// Set the <see cref="ReferenceReusing"/> field.
+    /// </summary>
+    /// <param name="referenceReusing">The value to apply to <see cref="ReferenceReusing"/>.</param>
+    /// <exception cref="MappaGeneratorException">When the field has been set already.</exception>
+    internal void SetReferenceReusing(BooleanSetting referenceReusing)
+    {
+        if (this.referenceReusingHasBeenSet)
+        {
+            throw new MappaGeneratorException("You are trying to set reference reusing multiple times.");
+        }
+
+        this.referenceReusingHasBeenSet = true;
+        this.ReferenceReusing = referenceReusing;
     }
 }

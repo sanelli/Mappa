@@ -50,9 +50,16 @@ internal sealed class InvokeConstructorMapStrategyBuilder
 
             // Object initializers are only valid on object-creation expressions. Inaccessible
             // setters and unsafe-accessor constructor invocations assign after construction.
+            // When reference reusing is active, map all initializers after construction so the
+            // target can be registered before nested mappings (including cycles) run.
             PropertyMapStrategy[] objectInitializerStrategies;
             PropertyMapStrategy[] postConstructorStrategies;
-            if (this.strategy.RequiresUnsafeAccessorOnConstructor)
+            var deferInitializersForReferenceReusing = ReferenceHandlingCodeGenerator.ShouldRegisterReferencePairEarly(
+                context,
+                source,
+                this.strategy.TargetType,
+                this.strategy.SourceType);
+            if (this.strategy.RequiresUnsafeAccessorOnConstructor || deferInitializersForReferenceReusing)
             {
                 objectInitializerStrategies = [];
                 postConstructorStrategies = [.. this.strategy.InitializerStrategies];
@@ -105,6 +112,17 @@ internal sealed class InvokeConstructorMapStrategyBuilder
             else
             {
                 builder.AppendLine($"{this.strategy.TargetType.ToDisplayString()} {resultTemporary} = {constructionExpression};");
+            }
+
+            var earlyAddReferencePair = ReferenceHandlingCodeGenerator.BuildEarlyAddReferencePairStatement(
+                context,
+                resultTemporary,
+                source,
+                this.strategy.TargetType,
+                this.strategy.SourceType);
+            if (earlyAddReferencePair is not null)
+            {
+                builder.AppendLine(earlyAddReferencePair);
             }
 
             // Initialise properties after the constructor has been created.

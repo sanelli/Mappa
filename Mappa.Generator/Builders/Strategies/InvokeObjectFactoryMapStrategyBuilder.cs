@@ -50,7 +50,18 @@ internal sealed class InvokeObjectFactoryMapStrategyBuilder
             }
 
             var propertyInitializersMappings = new List<(IPropertySymbol TargetProperty, string TemporaryName, bool RequiresUnsafeAccessorOnTarget)>();
-            foreach (var propertyMapStrategy in this.strategy.InitializerStrategies.Where(propertyMapStrategy => !propertyMapStrategy.PostConstructorInitializer))
+            var deferInitializersForReferenceReusing = ReferenceHandlingCodeGenerator.ShouldRegisterReferencePairEarly(
+                context,
+                source,
+                this.strategy.TargetType,
+                this.strategy.SourceType);
+            var preConstructionInitializers = deferInitializersForReferenceReusing
+                ? Array.Empty<PropertyMapStrategy>()
+                : this.strategy.InitializerStrategies.Where(propertyMapStrategy => !propertyMapStrategy.PostConstructorInitializer).ToArray();
+            var postConstructionInitializers = deferInitializersForReferenceReusing
+                ? this.strategy.InitializerStrategies
+                : this.strategy.InitializerStrategies.Where(propertyMapStrategy => propertyMapStrategy.PostConstructorInitializer).ToArray();
+            foreach (var propertyMapStrategy in preConstructionInitializers)
             {
                 var (initializerPropertyTargetTemporary, initializerPropertyCode) = propertyMapStrategy.GetBuilder().BuildSource(source, context, mappaGlobalOptions);
                 propertyInitializersMappings.Add((
@@ -71,6 +82,18 @@ internal sealed class InvokeObjectFactoryMapStrategyBuilder
             // Object initializers are only valid on object-creation expressions. Factory
             // invocations therefore assign properties with post-call statements instead.
             builder.AppendLine($"{this.strategy.TargetType.ToDisplayString()} {resultTemporary} = {accessor}{this.strategy.ObjectFactory.Method.Name}({invocationArguments});");
+
+            var earlyAddReferencePair = ReferenceHandlingCodeGenerator.BuildEarlyAddReferencePairStatement(
+                context,
+                resultTemporary,
+                source,
+                this.strategy.TargetType,
+                this.strategy.SourceType);
+            if (earlyAddReferencePair is not null)
+            {
+                builder.AppendLine(earlyAddReferencePair);
+            }
+
             if (hasPropertyInitializers)
             {
                 foreach (var propertyInitializersMapping in propertyInitializersMappings)
@@ -86,10 +109,23 @@ internal sealed class InvokeObjectFactoryMapStrategyBuilder
 
             using (context.PushCurrentCompositeTypeTargetName(resultTemporary))
             {
-                foreach (var propertyMapStrategy in this.strategy.InitializerStrategies.Where(propertyMapStrategy => propertyMapStrategy.PostConstructorInitializer))
+                foreach (var propertyMapStrategy in postConstructionInitializers)
                 {
-                    var (_, initializerPropertyCode) = propertyMapStrategy.GetBuilder().BuildSource(source, context, mappaGlobalOptions);
-                    builder.AppendLine(initializerPropertyCode);
+                    var (initializerPropertyTargetTemporary, initializerPropertyCode) = propertyMapStrategy.GetBuilder().BuildSource(source, context, mappaGlobalOptions);
+                    if (!string.IsNullOrWhiteSpace(initializerPropertyCode))
+                    {
+                        builder.AppendLine(initializerPropertyCode);
+                    }
+
+                    if (deferInitializersForReferenceReusing && !propertyMapStrategy.PostConstructorInitializer)
+                    {
+                        builder.AppendLine(InaccessibleMemberAccessHelper.BuildPropertyAssignmentStatement(
+                            resultTemporary,
+                            propertyMapStrategy.TargetProperty,
+                            initializerPropertyTargetTemporary,
+                            propertyMapStrategy.RequiresUnsafeAccessorOnTarget,
+                            context));
+                    }
                 }
             }
 

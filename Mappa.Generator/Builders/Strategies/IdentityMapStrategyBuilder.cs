@@ -65,6 +65,16 @@ internal sealed class IdentityMapStrategyBuilder(IdentityMapStrategy strategy)
         else
         {
             builder.AppendLine($"{typeDisplayString} {cloneTemporary} = ({typeDisplayString})global::Mappa.MappaCloning.MemberwiseClone({source});");
+            var earlyAddReferencePair = ReferenceHandlingCodeGenerator.BuildEarlyAddReferencePairStatement(
+                context,
+                cloneTemporary,
+                source,
+                this.strategy.TargetType,
+                this.strategy.SourceType);
+            if (earlyAddReferencePair is not null)
+            {
+                builder.AppendLine(earlyAddReferencePair);
+            }
         }
 
         foreach (var nestedFieldStrategy in this.strategy.NestedFieldStrategies)

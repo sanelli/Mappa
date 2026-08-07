@@ -40,7 +40,11 @@ internal sealed class MethodParameterMapStrategyBuilder
         var afterMapHooks = this.MethodParameterMapStrategy.AfterMapHooks;
         if (beforeMapHooks.Count == 0 && afterMapHooks.Count == 0)
         {
-            var (strategySource, header) = this.MethodParameterMapStrategy.Strategy.GetBuilder().BuildSource(source, context, mappaGlobalOptions);
+            var (strategySource, header) = ReferenceHandlingCodeGenerator.BuildRootSource(
+                this.MethodParameterMapStrategy.Strategy,
+                source,
+                context,
+                mappaGlobalOptions);
             return ($"return {strategySource};", JoinHeader(maxRuntimeDepthInitialization, header));
         }
 
@@ -63,7 +67,11 @@ internal sealed class MethodParameterMapStrategyBuilder
             code.Add(BuildHookInvocation(hook, strategyInput, context));
         }
 
-        var (mappedValue, mappingCode) = this.MethodParameterMapStrategy.Strategy.GetBuilder().BuildSource(strategyInput, context, mappaGlobalOptions);
+        var (mappedValue, mappingCode) = ReferenceHandlingCodeGenerator.BuildRootSource(
+            this.MethodParameterMapStrategy.Strategy,
+            strategyInput,
+            context,
+            mappaGlobalOptions);
         if (!string.IsNullOrWhiteSpace(mappingCode))
         {
             code.Add(mappingCode);

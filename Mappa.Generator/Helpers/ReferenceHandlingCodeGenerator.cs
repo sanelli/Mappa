@@ -6,10 +6,12 @@ using Mappa.Generator.Extensions;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
+using Microsoft.CodeAnalysis;
+
 namespace Mappa.Generator.Helpers;
 
 /// <summary>
-/// Helpers for emitting runtime reference-handling code (MaxRuntimeDepth and later ReferenceReusing).
+/// Helpers for emitting runtime reference-handling code (MaxRuntimeDepth and ReferenceReusing).
 /// </summary>
 internal static class ReferenceHandlingCodeGenerator
 {
@@ -73,8 +75,49 @@ internal static class ReferenceHandlingCodeGenerator
     }
 
     /// <summary>
-    /// Builds nested mapping source, wrapping with <c>using (IncreaseDepth())</c> when MaxRuntimeDepth is active
-    /// and the strategy represents a nested reference-type mapping.
+    /// Returns <c>true</c> when an early <c>AddReferencePair</c> should be emitted after constructing a target.
+    /// </summary>
+    /// <param name="context">The builder context.</param>
+    /// <param name="source">The source expression.</param>
+    /// <param name="targetType">The target type.</param>
+    /// <param name="sourceType">The source type.</param>
+    /// <returns><c>true</c> when the pair should be registered early.</returns>
+    internal static bool ShouldRegisterReferencePairEarly(
+        MappaBuilderContext context,
+        string source,
+        ITypeSymbol targetType,
+        ITypeSymbol sourceType)
+        => context.IsReferenceReusingActive
+           && !string.IsNullOrWhiteSpace(source)
+           && AreReferenceTypesEligibleForReuse(targetType, sourceType);
+
+    /// <summary>
+    /// Builds the statement that registers a source/target pair after the target instance exists
+    /// (used early after construction so cycles can resolve).
+    /// </summary>
+    /// <param name="context">The builder context.</param>
+    /// <param name="targetTemporary">The target temporary variable.</param>
+    /// <param name="source">The source expression.</param>
+    /// <param name="targetType">The target type.</param>
+    /// <param name="sourceType">The source type.</param>
+    /// <returns>The AddReferencePair statement, or <c>null</c> when reusing does not apply.</returns>
+    internal static string? BuildEarlyAddReferencePairStatement(
+        MappaBuilderContext context,
+        string targetTemporary,
+        string source,
+        ITypeSymbol targetType,
+        ITypeSymbol sourceType)
+    {
+        if (!ShouldRegisterReferencePairEarly(context, source, targetType, sourceType))
+        {
+            return null;
+        }
+
+        return $"{GetReferenceManagerExpression(context)}.AddReferencePair({targetTemporary}, {source});";
+    }
+
+    /// <summary>
+    /// Builds nested mapping source with optional ReferenceReusing and MaxRuntimeDepth wraps.
     /// </summary>
     /// <param name="strategy">The nested strategy.</param>
     /// <param name="source">The source expression.</param>
@@ -86,28 +129,125 @@ internal static class ReferenceHandlingCodeGenerator
         string source,
         MappaBuilderContext context,
         MappaGlobalOptions mappaGlobalOptions)
+        => BuildWithReferenceHandling(
+            strategy,
+            source,
+            context,
+            mappaGlobalOptions,
+            increaseDepth: ShouldIncreaseDepth(strategy, context));
+
+    /// <summary>
+    /// Builds root mapping source with optional ReferenceReusing (never increases runtime depth).
+    /// </summary>
+    /// <param name="strategy">The root strategy.</param>
+    /// <param name="source">The source expression.</param>
+    /// <param name="context">The builder context.</param>
+    /// <param name="mappaGlobalOptions">The global options.</param>
+    /// <returns>The mapped variable name and supporting code.</returns>
+    internal static (string VariableName, string Code) BuildRootSource(
+        MapStrategy strategy,
+        string source,
+        MappaBuilderContext context,
+        MappaGlobalOptions mappaGlobalOptions)
+        => BuildWithReferenceHandling(
+            strategy,
+            source,
+            context,
+            mappaGlobalOptions,
+            increaseDepth: false);
+
+    private static (string VariableName, string Code) BuildWithReferenceHandling(
+        MapStrategy strategy,
+        string source,
+        MappaBuilderContext context,
+        MappaGlobalOptions mappaGlobalOptions,
+        bool increaseDepth)
     {
-        var (innerVariableName, innerCode) = strategy.GetBuilder().BuildSource(source, context, mappaGlobalOptions);
-        if (!ShouldIncreaseDepth(strategy, context))
+        var reuse = ShouldReuseReferences(strategy, context, source);
+        if (!reuse && !increaseDepth)
         {
-            return (innerVariableName, innerCode);
+            return strategy.GetBuilder().BuildSource(source, context, mappaGlobalOptions);
         }
 
+        var (innerVariableName, innerCode) = strategy.GetBuilder().BuildSource(source, context, mappaGlobalOptions);
         var builder = new PrettyCode.StringBuilder();
         var resultTemporary = context.NextTemporary();
-        builder.AppendLine($"{strategy.TargetType.ToDisplayString()} {resultTemporary};");
-        builder.AppendLine($"using ({GetReferenceManagerExpression(context)}.IncreaseDepth())");
-        using (builder.CurlyBracesBlock())
-        {
-            if (!string.IsNullOrWhiteSpace(innerCode))
-            {
-                builder.AppendLine(innerCode);
-            }
+        var targetTypeDisplay = strategy.TargetType.ToDisplayString();
+        var referenceManagerExpression = GetReferenceManagerExpression(context);
 
-            builder.AppendLine($"{resultTemporary} = {innerVariableName};");
+        builder.AppendLine($"{targetTypeDisplay} {resultTemporary};");
+        if (reuse)
+        {
+            builder.AppendLine($"if (!{referenceManagerExpression}.TryGetReference<{targetTypeDisplay}>({source}, out {resultTemporary}))");
+            using (builder.CurlyBracesBlock())
+            {
+                AppendInnerMapping(builder, innerCode, resultTemporary, innerVariableName, increaseDepth, referenceManagerExpression);
+                builder.AppendLine($"{referenceManagerExpression}.AddReferencePair({resultTemporary}, {source});");
+            }
+        }
+        else
+        {
+            AppendInnerMapping(builder, innerCode, resultTemporary, innerVariableName, increaseDepth, referenceManagerExpression);
         }
 
         return (resultTemporary, builder.ToString());
+    }
+
+    private static void AppendInnerMapping(
+        PrettyCode.StringBuilder builder,
+        string innerCode,
+        string resultTemporary,
+        string innerVariableName,
+        bool increaseDepth,
+        string referenceManagerExpression)
+    {
+        if (increaseDepth)
+        {
+            builder.AppendLine($"using ({referenceManagerExpression}.IncreaseDepth())");
+            using (builder.CurlyBracesBlock())
+            {
+                AppendInnerCode(builder, innerCode, resultTemporary, innerVariableName);
+            }
+        }
+        else
+        {
+            AppendInnerCode(builder, innerCode, resultTemporary, innerVariableName);
+        }
+    }
+
+    private static void AppendInnerCode(
+        PrettyCode.StringBuilder builder,
+        string innerCode,
+        string resultTemporary,
+        string innerVariableName)
+    {
+        if (!string.IsNullOrWhiteSpace(innerCode))
+        {
+            builder.AppendLine(innerCode);
+        }
+
+        builder.AppendLine($"{resultTemporary} = {innerVariableName};");
+    }
+
+    private static bool ShouldReuseReferences(MapStrategy strategy, MappaBuilderContext context, string source)
+    {
+        if (!context.IsReferenceReusingActive || string.IsNullOrWhiteSpace(source))
+        {
+            return false;
+        }
+
+        if (IsContainerOrWrapperStrategy(strategy))
+        {
+            return false;
+        }
+
+        if (strategy is IdentityMapStrategy identity
+            && (identity.NestedFieldStrategies.Count > 0 || !identity.RequiresMemberwiseClone))
+        {
+            return false;
+        }
+
+        return AreReferenceTypesEligibleForReuse(strategy.TargetType, strategy.SourceType);
     }
 
     private static bool ShouldIncreaseDepth(MapStrategy strategy, MappaBuilderContext context)
@@ -117,20 +257,7 @@ internal static class ReferenceHandlingCodeGenerator
             return false;
         }
 
-        // Container / wrapper strategies wrap their elements/cases themselves.
-        if (strategy is CollectionToCollectionMapStrategy
-            or DictionaryToDictionaryMapStrategy
-            or NullableStrategy
-            or TupleToTupleMapStrategy
-            or PolymorphismMapStrategy
-            or OptionalTargetPropertyMapStrategy
-            or OptionalSourcePropertyMapStrategy
-            or ReadonlyDictionaryPropertyMapStrategy
-            or ReadonlyCollectionPropertyMapStrategy
-            or ReadonlyAddCollectionPropertyMapStrategy
-            or ReadonlyQueuePropertyMapStrategy
-            or ReadonlyStackPropertyMapStrategy
-            or QueryableProjectionMapStrategy)
+        if (IsContainerOrWrapperStrategy(strategy))
         {
             return false;
         }
@@ -158,5 +285,42 @@ internal static class ReferenceHandlingCodeGenerator
         }
 
         return true;
+    }
+
+    private static bool IsContainerOrWrapperStrategy(MapStrategy strategy)
+        => strategy is CollectionToCollectionMapStrategy
+            or DictionaryToDictionaryMapStrategy
+            or NullableStrategy
+            or TupleToTupleMapStrategy
+            or PolymorphismMapStrategy
+            or OptionalTargetPropertyMapStrategy
+            or OptionalSourcePropertyMapStrategy
+            or ReadonlyDictionaryPropertyMapStrategy
+            or ReadonlyCollectionPropertyMapStrategy
+            or ReadonlyAddCollectionPropertyMapStrategy
+            or ReadonlyQueuePropertyMapStrategy
+            or ReadonlyStackPropertyMapStrategy
+            or QueryableProjectionMapStrategy;
+
+    private static bool AreReferenceTypesEligibleForReuse(ITypeSymbol targetType, ITypeSymbol sourceType)
+    {
+        if (targetType.IsString() || sourceType.IsString()
+            || targetType.IsEnum() || sourceType.IsEnum())
+        {
+            return false;
+        }
+
+        if (targetType.IsValueTypeNullable() || sourceType.IsValueTypeNullable())
+        {
+            return false;
+        }
+
+        if ((targetType.IsValueType && !targetType.IsReferenceType)
+            || (sourceType.IsValueType && !sourceType.IsReferenceType))
+        {
+            return false;
+        }
+
+        return targetType.IsReferenceType && sourceType.IsReferenceType;
     }
 }

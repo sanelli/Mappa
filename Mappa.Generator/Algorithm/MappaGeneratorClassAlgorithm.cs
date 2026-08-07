@@ -142,6 +142,7 @@ internal sealed class MappaGeneratorClassAlgorithm
             {
                 mapMethod.SetPragmaWarning(mappaUserSettings.PragmaWarning);
                 mapMethod.SetMaxRuntimeDepth(mappaUserSettings.MaxRuntimeDepth);
+                mapMethod.SetReferenceReusing(mappaUserSettings.ReferenceReusing);
                 var methodContext = new MappaMethodGeneratorContext(classContext, mappaUserSettings, mapMethod);
                 var typeIdentifierAlgorithm = new TypeMapIdentifierAlgorithm(
                     methodContext,

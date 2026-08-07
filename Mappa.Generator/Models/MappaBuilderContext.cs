@@ -22,6 +22,7 @@ internal sealed class MappaBuilderContext
     private readonly StackSetting<bool> requiresUnsafeAccessorOnCurrentTargetProperty = new(false);
     private readonly StackSetting<bool> maxRuntimeDepthActive = new(false);
     private readonly StackSetting<short> effectiveMaxRuntimeDepth = new(0);
+    private readonly StackSetting<bool> referenceReusingActive = new(false);
     private readonly List<Diagnostic> diagnostics = new();
     private uint temporaryCounter;
     private bool referenceManagerAccessorRequired;
@@ -66,6 +67,11 @@ internal sealed class MappaBuilderContext
     internal short EffectiveMaxRuntimeDepth => this.effectiveMaxRuntimeDepth.CurrentValue;
 
     /// <summary>
+    /// Gets a value indicating whether ReferenceReusing wrapping is active for the current map method.
+    /// </summary>
+    internal bool IsReferenceReusingActive => this.referenceReusingActive.CurrentValue;
+
+    /// <summary>
     /// Gets the target property currently being accessed via an optional unsafe accessor, if any.
     /// </summary>
     internal IPropertySymbol? CurrentTargetPropertyForUnsafeAccess
@@ -107,7 +113,7 @@ internal sealed class MappaBuilderContext
         => this.compositeTypeTargetName.Apply(sourceName);
 
     /// <summary>
-    /// Select which method is being built and configure MaxRuntimeDepth state for that method.
+    /// Select which method is being built and configure reference-handling state for that method.
     /// </summary>
     /// <param name="mapMethod">The map method.</param>
     /// <returns>Disposable value used to remove the method from the stack.</returns>
@@ -116,14 +122,35 @@ internal sealed class MappaBuilderContext
         var mapMethodScope = this.mapMethodBeingBuilt.Apply(mapMethod);
         var activateMaxRuntimeDepth = false;
         var effectiveDepth = (short)0;
+        var activateReferenceReusing = false;
 
-        if (mapMethod.MaxRuntimeDepth > 0 && mapMethod.ProvideMappaContextWhenInvoked())
+        var maxRuntimeDepthRequested = mapMethod.MaxRuntimeDepth > 0;
+        var referenceReusingRequested = mapMethod.ReferenceReusing is BooleanSetting.Enable;
+        var hasMappaContext = mapMethod.ProvideMappaContextWhenInvoked();
+
+        if ((maxRuntimeDepthRequested || referenceReusingRequested) && !hasMappaContext)
+        {
+            if (mapMethod.MethodDeclarationSyntax is not null)
+            {
+                this.ReportDiagnostic(MappaDiagnostics.ReferenceHandlingRootMapWithoutMappaContext(
+                    mapMethod.MethodDeclarationSyntax));
+            }
+        }
+        else if ((maxRuntimeDepthRequested || referenceReusingRequested) && hasMappaContext)
         {
             if (this.Compilation.IsUnsafeAccessorSupported())
             {
-                activateMaxRuntimeDepth = true;
-                effectiveDepth = mapMethod.MaxRuntimeDepth;
                 this.referenceManagerAccessorRequired = true;
+                if (maxRuntimeDepthRequested)
+                {
+                    activateMaxRuntimeDepth = true;
+                    effectiveDepth = mapMethod.MaxRuntimeDepth;
+                }
+
+                if (referenceReusingRequested)
+                {
+                    activateReferenceReusing = true;
+                }
             }
             else
             {
@@ -136,10 +163,13 @@ internal sealed class MappaBuilderContext
 #pragma warning disable CA2000 // Disposable scopes are owned by CombinedDisposable.
         var maxRuntimeDepthActiveScope = this.maxRuntimeDepthActive.Apply(activateMaxRuntimeDepth);
         var effectiveMaxRuntimeDepthScope = this.effectiveMaxRuntimeDepth.Apply(effectiveDepth);
+        var referenceReusingActiveScope = this.referenceReusingActive.Apply(activateReferenceReusing);
 #pragma warning restore CA2000
         return new CombinedDisposable(
             mapMethodScope,
-            new CombinedDisposable(maxRuntimeDepthActiveScope, effectiveMaxRuntimeDepthScope));
+            new CombinedDisposable(
+                maxRuntimeDepthActiveScope,
+                new CombinedDisposable(effectiveMaxRuntimeDepthScope, referenceReusingActiveScope)));
     }
 
     /// <summary>
