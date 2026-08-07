@@ -1,4 +1,4 @@
-﻿// <copyright file="TypeMapIdentifierWithMapMethodAlgorithm.cs" company="Stefano Anelli">
+// <copyright file="TypeMapIdentifierWithMapMethodAlgorithm.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -33,6 +33,9 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
 
     /// <inheritdoc/>
     internal override MapStrategy GetStrategy()
+        => this.WithCompileTimeDepthGuard(this.ComputeStrategyWithMapMethod);
+
+    private MapStrategy ComputeStrategyWithMapMethod()
     {
         this.CancellationToken.ThrowIfCancellationRequested();
 
@@ -86,6 +89,6 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
             }
         }
 
-        return base.GetStrategy();
+        return this.ComputeStrategy();
     }
 }

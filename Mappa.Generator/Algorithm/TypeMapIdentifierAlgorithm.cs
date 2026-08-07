@@ -1,4 +1,4 @@
-﻿// <copyright file="TypeMapIdentifierAlgorithm.cs" company="Stefano Anelli">
+// <copyright file="TypeMapIdentifierAlgorithm.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -56,6 +56,43 @@ internal class TypeMapIdentifierAlgorithm
     /// </summary>
     /// <returns>The strategy computed.</returns>
     internal virtual MapStrategy GetStrategy()
+        => this.WithCompileTimeDepthGuard(this.ComputeStrategy);
+
+    /// <summary>
+    /// Runs <paramref name="computeStrategy"/> under the compile-time depth guard when
+    /// <see cref="IMappaUserSettings.MaxCompileTimeDepth"/> is greater than zero.
+    /// </summary>
+    /// <param name="computeStrategy">The strategy identification callback.</param>
+    /// <returns>The strategy computed, or <see cref="NoMapStrategy"/> when the depth limit is exceeded.</returns>
+    protected MapStrategy WithCompileTimeDepthGuard(Func<MapStrategy> computeStrategy)
+    {
+        var maxCompileTimeDepth = this.Context.MappaUserSettings.MaxCompileTimeDepth;
+        if (maxCompileTimeDepth == 0)
+        {
+            return computeStrategy();
+        }
+
+        using (this.Context.IncreaseCompileTimeDepth())
+        {
+            if (this.Context.CurrentDepth > maxCompileTimeDepth)
+            {
+                this.Context.ReportDiagnostic(MappaDiagnostics.MaxCompileTimeDepthReached(
+                    this.Context.GetLocation(),
+                    this.Context.SourceType,
+                    this.Context.TargetType,
+                    maxCompileTimeDepth));
+                return new NoMapStrategy(this.Context.TargetType, this.Context.SourceType);
+            }
+
+            return computeStrategy();
+        }
+    }
+
+    /// <summary>
+    /// Identify a strategy by running the detector pipeline without looking up existing map methods first.
+    /// </summary>
+    /// <returns>The strategy computed.</returns>
+    protected MapStrategy ComputeStrategy()
     {
         IMapStrategyDetector[] detectors = [
 

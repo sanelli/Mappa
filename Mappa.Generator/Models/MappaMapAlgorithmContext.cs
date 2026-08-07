@@ -1,4 +1,4 @@
-﻿// <copyright file="MappaMapAlgorithmContext.cs" company="Stefano Anelli">
+// <copyright file="MappaMapAlgorithmContext.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -14,6 +14,8 @@ namespace Mappa.Generator.Models;
 /// </summary>
 internal abstract class MappaMapAlgorithmContext
 {
+    private short currentDepth = -1;
+
     /// <summary>
     /// Gets the parent symbol.
     /// </summary>
@@ -53,6 +55,13 @@ internal abstract class MappaMapAlgorithmContext
     /// Gets a value indicating whether a diagnostic with severity error has been reported.
     /// </summary>
     internal abstract bool HasErrorDiagnostics { get; }
+
+    /// <summary>
+    /// Gets the current compile-time strategy-discovery nesting depth.
+    /// Starts at <c>-1</c> and increases for each nested <c>GetStrategy</c> call when
+    /// <see cref="IMappaUserSettings.MaxCompileTimeDepth"/> is greater than zero.
+    /// </summary>
+    internal short CurrentDepth => this.GetRootAlgorithmContext().currentDepth;
 
     /// <summary>
     /// Gets a value indicating whether the nullable flag
@@ -116,6 +125,18 @@ internal abstract class MappaMapAlgorithmContext
     internal abstract Location? GetLocation();
 
     /// <summary>
+    /// Increases the compile-time strategy-discovery depth by one for the lifetime of the returned disposable.
+    /// Depth is tracked on the root algorithm context so nested derived contexts share the same counter.
+    /// </summary>
+    /// <returns>An <see cref="IDisposable"/> that decreases the depth when disposed.</returns>
+    internal IDisposable IncreaseCompileTimeDepth()
+    {
+        var root = this.GetRootAlgorithmContext();
+        root.currentDepth++;
+        return new CompileTimeDepthScope(root);
+    }
+
+    /// <summary>
     /// Gets the map method.
     /// </summary>
     /// <returns>The map method <see cref="MapMethod"/>.</returns>
@@ -137,13 +158,7 @@ internal abstract class MappaMapAlgorithmContext
     /// <exception cref="MappaGeneratorException">When the map method cannot be obtained.</exception>
     internal MapMethod GetRootMapMethod()
     {
-        MappaMapAlgorithmContext context = this;
-        while (context is DerivedMappaMapAlgorithmContext algorithmContext)
-        {
-            context = algorithmContext.ParentContext;
-        }
-
-        return context.GetMapMethod();
+        return this.GetRootAlgorithmContext().GetMapMethod();
     }
 
     /// <summary>
@@ -152,12 +167,45 @@ internal abstract class MappaMapAlgorithmContext
     /// <returns>The root source type.</returns>
     internal ITypeSymbol GetRootSourceType()
     {
+        return this.GetRootAlgorithmContext().SourceType;
+    }
+
+    private MappaMapAlgorithmContext GetRootAlgorithmContext()
+    {
         MappaMapAlgorithmContext context = this;
         while (context is DerivedMappaMapAlgorithmContext algorithmContext)
         {
             context = algorithmContext.ParentContext;
         }
 
-        return context.SourceType;
+        return context;
+    }
+
+    private void DecreaseCompileTimeDepth()
+    {
+        this.currentDepth--;
+    }
+
+    private sealed class CompileTimeDepthScope
+        : IDisposable
+    {
+        private readonly MappaMapAlgorithmContext context;
+        private bool disposed;
+
+        public CompileTimeDepthScope(MappaMapAlgorithmContext context)
+        {
+            this.context = context;
+        }
+
+        public void Dispose()
+        {
+            if (this.disposed)
+            {
+                return;
+            }
+
+            this.context.DecreaseCompileTimeDepth();
+            this.disposed = true;
+        }
     }
 }
