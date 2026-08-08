@@ -1,4 +1,4 @@
-﻿// <copyright file="TypeMapIdentifierAlgorithm.cs" company="Stefano Anelli">
+// <copyright file="TypeMapIdentifierAlgorithm.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
@@ -56,6 +56,56 @@ internal class TypeMapIdentifierAlgorithm
     /// </summary>
     /// <returns>The strategy computed.</returns>
     internal virtual MapStrategy GetStrategy()
+        => this.WithGetStrategyGuards(this.ComputeStrategy);
+
+    /// <summary>
+    /// Runs <paramref name="computeStrategy"/> under the compile-time mapping-cycle stack and
+    /// depth guards shared by all <see cref="GetStrategy"/> entry points.
+    /// </summary>
+    /// <param name="computeStrategy">The strategy identification callback.</param>
+    /// <returns>
+    /// The strategy computed, or <see cref="NoMapStrategy"/> when a mapping cycle is detected
+    /// or the compile-time depth limit is exceeded.
+    /// </returns>
+    protected MapStrategy WithGetStrategyGuards(Func<MapStrategy> computeStrategy)
+    {
+        IDisposable? typePairScope = null;
+        try
+        {
+            typePairScope = this.Context.TryPushMappingTypePair(
+                this.Context.TargetType,
+                this.Context.SourceType);
+            if (typePairScope is null)
+            {
+                // Detectors may intentionally re-enter GetStrategy for the same type pair while one of
+                // the recursive-guard settings is disabled (nullable unwrap, constructor single-arg,
+                // identity nested fields) or while DetectMappingCycles is disabled (e.g. polymorphism
+                // MapSourceType defaults). Those paths already prevent unbounded recursion.
+                if (this.ShouldReportMappingCycle())
+                {
+                    this.Context.ReportDiagnostic(MappaDiagnostics.MappingCycleDetected(
+                        this.Context.GetLocation(),
+                        this.Context.SourceType,
+                        this.Context.TargetType));
+                    return new NoMapStrategy(this.Context.TargetType, this.Context.SourceType);
+                }
+
+                return this.WithCompileTimeDepthGuard(computeStrategy);
+            }
+
+            return this.WithCompileTimeDepthGuard(computeStrategy);
+        }
+        finally
+        {
+            typePairScope?.Dispose();
+        }
+    }
+
+    /// <summary>
+    /// Identify a strategy by running the detector pipeline without looking up existing map methods first.
+    /// </summary>
+    /// <returns>The strategy computed.</returns>
+    protected MapStrategy ComputeStrategy()
     {
         IMapStrategyDetector[] detectors = [
 
@@ -185,5 +235,41 @@ internal class TypeMapIdentifierAlgorithm
                 // cannot be used.
                 _ => false,
             };
+    }
+
+    private bool ShouldReportMappingCycle()
+        => this.Context.AlgorithmSettings.DetectMappingCycles.CurrentValue
+           && this.Context.AlgorithmSettings.UseNullableMapStrategyDetector.CurrentValue
+           && this.Context.AlgorithmSettings.UseConstructorMapStrategyDetector.CurrentValue
+           && this.Context.AlgorithmSettings.UseIdentityMapStrategyDetector.CurrentValue;
+
+    /// <summary>
+    /// Runs <paramref name="computeStrategy"/> under the compile-time depth guard when
+    /// <see cref="IMappaUserSettings.MaxCompileTimeDepth"/> is greater than zero.
+    /// </summary>
+    /// <param name="computeStrategy">The strategy identification callback.</param>
+    /// <returns>The strategy computed, or <see cref="NoMapStrategy"/> when the depth limit is exceeded.</returns>
+    private MapStrategy WithCompileTimeDepthGuard(Func<MapStrategy> computeStrategy)
+    {
+        var maxCompileTimeDepth = this.Context.MappaUserSettings.MaxCompileTimeDepth;
+        if (maxCompileTimeDepth == 0)
+        {
+            return computeStrategy();
+        }
+
+        using (this.Context.IncreaseCompileTimeDepth())
+        {
+            if (this.Context.CurrentDepth > maxCompileTimeDepth)
+            {
+                this.Context.ReportDiagnostic(MappaDiagnostics.MaxCompileTimeDepthReached(
+                    this.Context.GetLocation(),
+                    this.Context.SourceType,
+                    this.Context.TargetType,
+                    maxCompileTimeDepth));
+                return new NoMapStrategy(this.Context.TargetType, this.Context.SourceType);
+            }
+
+            return computeStrategy();
+        }
     }
 }

@@ -58,6 +58,16 @@ internal sealed class MappaMapAlgorithmContextSettings
     internal StackSetting<bool> UseIdentityMapStrategyDetector { get; } = new(true);
 
     /// <summary>
+    /// Gets the stack settings that enable or disable reporting mapping-cycle errors on
+    /// <c>GetStrategy</c> re-entry for the same type pair.
+    /// </summary>
+    /// <remarks>
+    /// Detectors that intentionally re-enter <c>GetStrategy</c> for the same types
+    /// (for example polymorphism <c>MapSourceType</c> defaults) disable this setting.
+    /// </remarks>
+    internal StackSetting<bool> DetectMappingCycles { get; } = new(true);
+
+    /// <summary>
     /// Gets the stack settings that enable or disable the usage
     /// of mappa attributes when performing a constructor mapping.
     /// </summary>

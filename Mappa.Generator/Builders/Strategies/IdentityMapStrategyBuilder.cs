@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -64,14 +65,27 @@ internal sealed class IdentityMapStrategyBuilder(IdentityMapStrategy strategy)
         else
         {
             builder.AppendLine($"{typeDisplayString} {cloneTemporary} = ({typeDisplayString})global::Mappa.MappaCloning.MemberwiseClone({source});");
+            var earlyAddReferencePair = ReferenceHandlingCodeGenerator.BuildEarlyAddReferencePairStatement(
+                context,
+                cloneTemporary,
+                source,
+                this.strategy.TargetType,
+                this.strategy.SourceType);
+            if (earlyAddReferencePair is not null)
+            {
+                builder.AppendLine(earlyAddReferencePair);
+            }
         }
 
         foreach (var nestedFieldStrategy in this.strategy.NestedFieldStrategies)
         {
             var fieldSourceTemporary = context.NextTemporary();
             builder.AppendLine($"{nestedFieldStrategy.Field.Type.ToDisplayString()} {fieldSourceTemporary} = {source}.{nestedFieldStrategy.Field.Name};");
-            var (mappedTemporary, mappedCode) = nestedFieldStrategy.FieldStrategy.GetBuilder()
-                .BuildSource(fieldSourceTemporary, context, mappaGlobalOptions);
+            var (mappedTemporary, mappedCode) = ReferenceHandlingCodeGenerator.BuildNestedSource(
+                nestedFieldStrategy.FieldStrategy,
+                fieldSourceTemporary,
+                context,
+                mappaGlobalOptions);
             if (!string.IsNullOrWhiteSpace(mappedCode))
             {
                 builder.AppendLine(mappedCode);

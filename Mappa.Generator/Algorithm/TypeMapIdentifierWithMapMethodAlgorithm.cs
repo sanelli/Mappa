@@ -1,7 +1,9 @@
-﻿// <copyright file="TypeMapIdentifierWithMapMethodAlgorithm.cs" company="Stefano Anelli">
+// <copyright file="TypeMapIdentifierWithMapMethodAlgorithm.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Diagnostics;
+using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -33,6 +35,9 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
 
     /// <inheritdoc/>
     internal override MapStrategy GetStrategy()
+        => this.WithGetStrategyGuards(this.ComputeStrategyWithMapMethod);
+
+    private MapStrategy ComputeStrategyWithMapMethod()
     {
         this.CancellationToken.ThrowIfCancellationRequested();
 
@@ -46,7 +51,9 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
 
                 if (!mapMethodRequireMappaContext || /* mapMethodRequireMappaContext && */ callerMethodProvideMappaContext)
                 {
-                    return new MethodMapStrategy(mapMethod, rootMapMethod.MaybeGetMappaContextParameterName());
+                    this.MaybeReportNestedMapWithoutMappaContext(mapMethod, mapMethodRequireMappaContext);
+                    return this.WrapIfNullableReferenceSource(
+                        new MethodMapStrategy(mapMethod, rootMapMethod.MaybeGetMappaContextParameterName()));
                 }
             }
 
@@ -60,11 +67,13 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
 
                 if (!mapMethodRequireMappaContext || /* mapMethodRequireMappaContext && */ callerMethodProvideMappaContext)
                 {
-                    return new CompatibleMethodMapStrategy(
-                        this.Context.TargetType,
-                        this.Context.SourceType,
-                        mapMethod,
-                        rootMapMethod.MaybeGetMappaContextParameterName());
+                    this.MaybeReportNestedMapWithoutMappaContext(mapMethod, mapMethodRequireMappaContext);
+                    return this.WrapIfNullableReferenceSource(
+                        new CompatibleMethodMapStrategy(
+                            this.Context.TargetType,
+                            this.Context.SourceType,
+                            mapMethod,
+                            rootMapMethod.MaybeGetMappaContextParameterName()));
                 }
             }
 
@@ -77,15 +86,63 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
 
                 if (!mapMethodRequireMappaContext || /* mapMethodRequireMappaContext && */ callerMethodProvideMappaContext)
                 {
-                    return new PolymorphicMethodMapStrategy(
-                        this.Context.TargetType,
-                        this.Context.SourceType,
-                        mapMethod,
-                        rootMapMethod.MaybeGetMappaContextParameterName());
+                    this.MaybeReportNestedMapWithoutMappaContext(mapMethod, mapMethodRequireMappaContext);
+                    return this.WrapIfNullableReferenceSource(
+                        new PolymorphicMethodMapStrategy(
+                            this.Context.TargetType,
+                            this.Context.SourceType,
+                            mapMethod,
+                            rootMapMethod.MaybeGetMappaContextParameterName()));
                 }
             }
         }
 
-        return base.GetStrategy();
+        return this.ComputeStrategy();
+    }
+
+    /// <summary>
+    /// Wraps a map-method strategy in <see cref="NullableStrategy"/> when the source is a nullable
+    /// reference type, so <c>null</c> edges short-circuit before invoking the nested map method
+    /// (required for ReferenceReusing cycle edges).
+    /// </summary>
+    /// <param name="strategy">The strategy that maps the non-null source.</param>
+    /// <returns>The original strategy, or a nullable wrapper around it.</returns>
+    private MapStrategy WrapIfNullableReferenceSource(MapStrategy strategy)
+    {
+        var sourceType = this.Context.SourceType;
+        if (sourceType is { IsReferenceType: true, NullableAnnotation: NullableAnnotation.Annotated })
+        {
+            return new NullableStrategy(this.Context.TargetType, sourceType, strategy);
+        }
+
+        return strategy;
+    }
+
+    private void MaybeReportNestedMapWithoutMappaContext(MapMethod mapMethod, bool mapMethodRequireMappaContext)
+    {
+        if (mapMethodRequireMappaContext)
+        {
+            return;
+        }
+
+        if (!ReferenceHandlingCodeGenerator.IsReferenceHandlingRequested(this.Context.MappaUserSettings))
+        {
+            return;
+        }
+
+        var rootMapMethod = this.Context.GetRootMapMethod();
+        if (!rootMapMethod.ProvideMappaContextWhenInvoked())
+        {
+            return;
+        }
+
+        if (ReferenceEquals(mapMethod.MethodSymbol, rootMapMethod.MethodSymbol))
+        {
+            return;
+        }
+
+        this.Context.ReportDiagnostic(MappaDiagnostics.ReferenceHandlingNestedMapWithoutMappaContext(
+            this.Context.GetLocation(),
+            mapMethod.MethodName));
     }
 }

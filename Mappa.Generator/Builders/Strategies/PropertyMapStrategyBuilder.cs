@@ -97,7 +97,11 @@ internal sealed class PropertyMapStrategyBuilder
                    this.strategy.TargetProperty,
                    this.strategy.RequiresUnsafeAccessorOnTarget))
         {
-            (targetTemporary, code) = this.strategy.PropertyStrategy.GetBuilder().BuildSource(sourcePropertyTemporary, context, mappaGlobalOptions);
+            (targetTemporary, code) = ReferenceHandlingCodeGenerator.BuildNestedSource(
+                this.strategy.PropertyStrategy,
+                sourcePropertyTemporary,
+                context,
+                mappaGlobalOptions);
         }
 
         if (!string.IsNullOrWhiteSpace(code))

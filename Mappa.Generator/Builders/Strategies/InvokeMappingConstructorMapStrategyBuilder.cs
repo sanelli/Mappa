@@ -36,7 +36,11 @@ internal sealed class InvokeMappingConstructorMapStrategyBuilder
         var sourceTemporary = context.NextTemporary();
         stringBuilder.AppendLine($"{sourceTypeName} {sourceTemporary} = {source};");
 
-        var (parameterTemporary, parameterCode) = this.strategy.ArgumentStrategy.GetBuilder().BuildSource(sourceTemporary, context, mappaGlobalOptions);
+        var (parameterTemporary, parameterCode) = ReferenceHandlingCodeGenerator.BuildNestedSource(
+            this.strategy.ArgumentStrategy,
+            sourceTemporary,
+            context,
+            mappaGlobalOptions);
         stringBuilder.AppendLine(parameterCode);
         stringBuilder.AppendEmptyLine();
 

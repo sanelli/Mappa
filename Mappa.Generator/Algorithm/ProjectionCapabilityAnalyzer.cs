@@ -4,6 +4,7 @@
 
 using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Extensions;
+using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -67,6 +68,14 @@ internal static class ProjectionCapabilityAnalyzer
         failureKind = null;
         failureMember = null;
         normalizedStrategy = strategy;
+
+        if (analysisContext is not null
+            && ReferenceHandlingCodeGenerator.IsReferenceHandlingRequested(analysisContext.AlgorithmContext.MappaUserSettings))
+        {
+            failureKind = AnalysisFailureKind.UnsupportedConstruct;
+            failureMember = "reference handling";
+            return false;
+        }
 
         switch (strategy)
         {

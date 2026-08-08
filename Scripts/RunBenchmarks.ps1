@@ -439,6 +439,11 @@ try
         throw "No SVG chart benchmarks were found in CSV results."
     }
 
+    $memoryChartBenchmarks = @(
+        $chartBenchmarks |
+            Where-Object { $script:BenchmarkMemoryChartExcludedNames -notcontains $_.Name }
+    )
+
     New-BenchmarkGroupedBarSvg `
         -Benchmarks $chartBenchmarks.ToArray() `
         -MetricProperty "MeanUs" `
@@ -448,14 +453,17 @@ try
         -YAxisTickStep 25 `
         -ValueLabelFormat "0.###"
 
-    New-BenchmarkGroupedBarSvg `
-        -Benchmarks $chartBenchmarks.ToArray() `
-        -MetricProperty "AllocatedKb" `
-        -YAxisLabel "Allocated (KB)" `
-        -Title "Benchmark allocated memory" `
-        -OutputPath $memorySvgPath `
-        -YAxisTickStep 100 `
-        -ValueLabelFormat "0.#"
+    if ($memoryChartBenchmarks.Count -gt 0)
+    {
+        New-BenchmarkGroupedBarSvg `
+            -Benchmarks $memoryChartBenchmarks `
+            -MetricProperty "AllocatedKb" `
+            -YAxisLabel "Allocated (KB)" `
+            -Title "Benchmark allocated memory" `
+            -OutputPath $memorySvgPath `
+            -YAxisTickStep 100 `
+            -ValueLabelFormat "0.#"
+    }
 
     if ($percentageChartBenchmarks.Count -gt 0)
     {
@@ -490,7 +498,7 @@ try
                 $timePercentBenchmarks.Add([pscustomobject]@{ Name = $benchmark.Name; Mappers = $timeMappers }) | Out-Null
             }
 
-            if ($allocMappers.Count -gt 0)
+            if (($allocMappers.Count -gt 0) -and ($script:BenchmarkMemoryChartExcludedNames -notcontains $benchmark.Name))
             {
                 $allocPercentBenchmarks.Add([pscustomobject]@{ Name = $benchmark.Name; Mappers = $allocMappers }) | Out-Null
             }
@@ -504,12 +512,16 @@ try
                 -YAxisLabel "Competitor / Mappa (%)" `
                 -Title "Benchmark mean time vs Mappa" `
                 -OutputPath $timePercentSvgPath `
-                -YAxisTickStep 100 `
+                -YAxisTickStep 500 `
+                -YAxisMax 2500 `
                 -ValueLabelFormat "0.#" `
                 -ValueLabelSuffix "%" `
                 -MapperNames $percentageMappers `
                 -EmphasizeGuideAt 100 `
-                -BoldValueLabelsAboveGuide
+                -BoldValueLabelsAboveGuide `
+                -ProportionalOverflowStubs `
+                -BreakLineStyle RoundedWave `
+                -DrawMinorYAxisGuides
         }
 
         if ($allocPercentBenchmarks.Count -gt 0)
@@ -525,7 +537,8 @@ try
                 -ValueLabelSuffix "%" `
                 -MapperNames $percentageMappers `
                 -EmphasizeGuideAt 100 `
-                -BoldValueLabelsAboveGuide
+                -BoldValueLabelsAboveGuide `
+                -DrawMinorYAxisGuides
         }
     }
 

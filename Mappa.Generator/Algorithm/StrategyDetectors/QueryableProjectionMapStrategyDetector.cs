@@ -3,6 +3,7 @@
 // </copyright>
 
 using Mappa.Generator.Extensions;
+using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -42,6 +43,11 @@ internal sealed class QueryableProjectionMapStrategyDetector
         mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
 
         if (this.context.MapMethod is null)
+        {
+            return false;
+        }
+
+        if (ReferenceHandlingCodeGenerator.IsReferenceHandlingRequested(this.context.MappaUserSettings))
         {
             return false;
         }

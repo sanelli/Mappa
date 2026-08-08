@@ -42,7 +42,11 @@ internal sealed class ParameterMapStrategyBuilder
             builder.AppendLine($"{this.strategy.SourceProperty.Type.ToDisplayString()} {sourcePropertyTemporary} = {sourceReadExpression};");
         }
 
-        (string targetTemporary, string code) = this.strategy.ParameterStrategy.GetBuilder().BuildSource(sourcePropertyTemporary, context, mappaGlobalOptions);
+        (string targetTemporary, string code) = ReferenceHandlingCodeGenerator.BuildNestedSource(
+            this.strategy.ParameterStrategy,
+            sourcePropertyTemporary,
+            context,
+            mappaGlobalOptions);
         if (!string.IsNullOrWhiteSpace(code))
         {
             builder.AppendLine(code);

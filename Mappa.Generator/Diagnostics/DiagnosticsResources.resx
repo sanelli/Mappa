@@ -237,4 +237,16 @@
     <data name="MappaDependencyInjectionStaticMapperSkipped" xml:space="preserve">
         <value>Mapper '{0}' is a static class and cannot be registered with dependency injection; it will be skipped.</value>
     </data>
+    <data name="ReferenceHandlingRootMapWithoutMappaContext" xml:space="preserve">
+        <value>Method '{0}' enables ReferenceReusing or MaxRuntimeDepth but does not declare a MappaContext parameter; reference handling will not be applied.</value>
+    </data>
+    <data name="ReferenceHandlingNestedMapWithoutMappaContext" xml:space="preserve">
+        <value>Invoked map method '{0}' does not declare a MappaContext parameter while ReferenceReusing or MaxRuntimeDepth is active; reference handling will not apply for this invocation.</value>
+    </data>
+    <data name="MaxCompileTimeDepthReached" xml:space="preserve">
+        <value>Cannot continue discovering a mapping strategy from '{0}' to '{1}' because the maximum compile-time depth of {2} was exceeded.</value>
+    </data>
+    <data name="MappingCycleDetected" xml:space="preserve">
+        <value>A mapping cycle was detected while discovering a strategy from '{0}' to '{1}'. Add an explicit mapping method from '{0}' to '{1}' to break the cycle.</value>
+    </data>
 </root>

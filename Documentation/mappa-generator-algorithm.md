@@ -82,6 +82,42 @@ When no existing method applies (or for root methods), `TypeMapIdentifierAlgorit
 9. Guid
 10. Constructor
 
+Every call into strategy discovery (`GetStrategy`) is wrapped with compile-time depth tracking and mapping-cycle detection (see [Reference handling and compile-time guards](#reference-handling-and-compile-time-guards)).
+
+## Reference handling and compile-time guards
+
+### Runtime reference reuse (`ReferenceReusing`)
+
+When `ReferenceReusing` is `Enable` and the map method declares `MappaContext`:
+
+- Generated code obtains the private `MappaReferenceManager` on the context via an `UnsafeAccessor` getter.
+- For reference-type maps, the mapper tries `TryGetReference` before constructing a new target; on a hit it returns the stored instance.
+- After a new target is created (constructor / factory), the mapper registers the source→target pair with `AddReferencePair` early enough that nested cycles can resolve the in-progress instance.
+- Without `MappaContext`, the generator warns (**MP00074** for the root, **MP00075** for nested invocations lacking context) and does not emit reuse/depth logic for that method.
+
+### Runtime depth (`MaxRuntimeDepth`)
+
+- Setting type is `short`. Negative values (including `-1` / `UndefinedDepth`) mean unset and inherit from parent settings / `.editorconfig`.
+- Effective default is `0` (unlimited). A positive value is assigned to `MappaReferenceManager.MaxDepth` at the start of the root map.
+- Nested reference-type maps call `IncreaseDepth` (via generated wraps); the root map does not increase depth.
+- Exceeding `MaxDepth` throws `MappaException` at runtime.
+
+### Compile-time depth (`MaxCompileTimeDepth`)
+
+- Generator-only; not emitted into generated mapping code.
+- Effective default is `50`. An effective value of `0` disables compile-time depth tracking.
+- `CurrentDepth` starts at `-1` and is increased around each `GetStrategy` discovery. When depth would exceed the limit, the generator reports **MP00076** and stops.
+
+### Compile-time mapping cycle detection
+
+- Independently of depth limits, discovery maintains a stack of `(source, target)` type pairs.
+- Re-entering the same pair before the outer discovery completes reports **MP00077** and suggests adding an explicit map method for that pair.
+- Distinct from runtime object-reference cycles handled by `ReferenceReusing`.
+
+### IQueryable / projection
+
+`ReferenceReusing` and `MaxRuntimeDepth` are incompatible with `IQueryable` projection methods and are rejected with **MP00057** (`ProjectionMappingNotSupported` with reason `reference handling`). Projection methods also cannot declare `MappaContext` (**MP00056**).
+
 ## Strategy details
 
 ### 1. Identity strategy
@@ -209,6 +245,7 @@ When no existing method applies (or for root methods), `TypeMapIdentifierAlgorit
     - Nested `IQueryable` properties, polymorphic root element maps, non-inlinable invoke methods, and before/after hooks are rejected with dedicated diagnostics (MP00055–MP00060),
     - `[MappaObjectFactory]` on a projection map for the element target is rejected with **MP00064**,
     - `[MappaAllowInaccessibleSourceMembers]` / `[MappaAllowInaccessibleTargetMembers]` on a projection map are rejected with **MP00069**,
+    - `ReferenceReusing` / `MaxRuntimeDepth` on a projection map are rejected with **MP00057**,
     - Mapping `IQueryable<TSource>` to a concrete collection (for example `List<TTarget>`) is not a projection: the container path applies and may emit warning MP00061,
     - Prefer numeric or description enum mappings over case-insensitive member-name matching for ORM providers (warning MP00060),
     - Generated projection methods are annotated with `[RequiresDynamicCode]` and are **not compatible with Native AOT** deployment.
@@ -371,3 +408,4 @@ Currently unsupported features include:
 - Nested `IQueryable` / collection projections inside member initializers (for example projecting `source.Children` as `IQueryable` inside a parent projection).
 - Tuple and `Guid` expression builders inside queryable projections.
 - Provider-specific expression shapes that compile but are not translated by a given LINQ provider at runtime.
+- `ReferenceReusing` / `MaxRuntimeDepth` (and `MappaContext`) on `IQueryable` projection map methods.

@@ -26,6 +26,12 @@ public sealed class MappaSettingsAttribute
     public static NumberStyles UndefinedNumberStyle => (NumberStyles)(-1);
 
     /// <summary>
+    /// Gets the sentinel value for unset depth settings.
+    /// When used (or any negative value), the setting is ignored and previous values (if any) are used.
+    /// </summary>
+    public static short UndefinedDepth => -1;
+
+    /// <summary>
     /// Gets or sets the format when using <see cref="DateTime.ToString(string,System.IFormatProvider)"/> or <see cref="DateTime.ParseExact(string,string,System.IFormatProvider)"/>.
     /// </summary>
     public string? DateTimeFormat { get; set; }
@@ -336,4 +342,30 @@ public sealed class MappaSettingsAttribute
     /// When unset, the original reference is returned.
     /// </summary>
     public IdentityMapDeepCopySetting IdentityMapDeepCopy { get; set; } = IdentityMapDeepCopySetting.Undefined;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether already-mapped reference-type instances
+    /// are reused when the same source instance appears again in the object graph.
+    /// Requires a <see cref="MappaContext"/> parameter on the map method.
+    /// It is not enabled by default.
+    /// </summary>
+    public BooleanSetting ReferenceReusing { get; set; } = BooleanSetting.Undefined;
+
+    /// <summary>
+    /// Gets or sets the maximum nesting depth allowed while executing a mapping.
+    /// Use <see cref="UndefinedDepth"/> (or any negative value) to ignore this setting and use previous values (if any).
+    /// When fully unset, the effective default is <c>0</c> (no maximum depth).
+    /// A positive value limits nested object mapping depth (<c>1</c> means root plus one nested level).
+    /// Requires a <see cref="MappaContext"/> parameter on the map method.
+    /// </summary>
+    public short MaxRuntimeDepth { get; set; } = UndefinedDepth;
+
+    /// <summary>
+    /// Gets or sets the maximum nesting depth allowed while the source generator discovers mapping strategies.
+    /// This setting is used only by the generator and is not emitted into generated mapping code.
+    /// Use <see cref="UndefinedDepth"/> (or any negative value) to ignore this setting and use previous values (if any).
+    /// When fully unset, the effective default is <c>50</c>.
+    /// When the effective value is <c>0</c>, no compile-time depth limit is applied.
+    /// </summary>
+    public short MaxCompileTimeDepth { get; set; } = UndefinedDepth;
 }
