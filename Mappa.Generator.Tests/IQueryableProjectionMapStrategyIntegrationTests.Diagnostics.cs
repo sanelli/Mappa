@@ -55,6 +55,7 @@ public sealed partial class IQueryableProjectionMapStrategyIntegrationTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
+            .HaveDiagnostics(1)
             .HaveDiagnostic(MappaDiagnosticDescriptors.ProjectionMethodHasBeforeOrAfterMapHooks, "ProjectToDto")
             .NotHaveGeneratedAnySourceCode();
     }
@@ -99,6 +100,7 @@ public sealed partial class IQueryableProjectionMapStrategyIntegrationTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
+            .HaveDiagnostics(1)
             .HaveDiagnostic(MappaDiagnosticDescriptors.ProjectionMethodHasBeforeOrAfterMapHooks, "ProjectToDto")
             .NotHaveGeneratedAnySourceCode();
     }
@@ -143,6 +145,7 @@ public sealed partial class IQueryableProjectionMapStrategyIntegrationTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
+            .HaveDiagnostics(1)
             .HaveDiagnostic(MappaDiagnosticDescriptors.ProjectionMethodHasBeforeOrAfterMapHooks, "ProjectToDto")
             .NotHaveGeneratedAnySourceCode();
     }
@@ -187,6 +190,7 @@ public sealed partial class IQueryableProjectionMapStrategyIntegrationTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
+            .HaveDiagnostics(1)
             .HaveDiagnostic(MappaDiagnosticDescriptors.ProjectionMethodHasBeforeOrAfterMapHooks, "ProjectToDto")
             .NotHaveGeneratedAnySourceCode();
     }
@@ -228,6 +232,7 @@ public sealed partial class IQueryableProjectionMapStrategyIntegrationTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
+            .HaveDiagnostics(1)
             .HaveDiagnostic(MappaDiagnosticDescriptors.ProjectionMethodHasMappaContextParameter, "ProjectToDto")
             .NotHaveGeneratedAnySourceCode();
     }
@@ -282,6 +287,7 @@ public sealed partial class IQueryableProjectionMapStrategyIntegrationTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
+            .HaveDiagnostics(1)
             .HaveDiagnostic(
                 MappaDiagnosticDescriptors.CannotIdentifyStrategy,
                 QueryableProjectionMapAssertionExtensions.QueryableOf(lineItemType),
@@ -354,6 +360,7 @@ public sealed partial class IQueryableProjectionMapStrategyIntegrationTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
+            .HaveDiagnostics(1)
             .HaveDiagnostic(
                 MappaDiagnosticDescriptors.CannotIdentifyStrategy,
                 $"{QueryableProjectionMapAssertionExtensions.TestNamespace}.Source",

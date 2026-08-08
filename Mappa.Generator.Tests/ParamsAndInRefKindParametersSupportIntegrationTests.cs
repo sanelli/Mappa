@@ -1134,6 +1134,7 @@ public sealed class ParamsAndInRefKindParametersSupportIntegrationTests
 
         // Assert
         generatedResults.Should()
+            .HaveDiagnostics(1)
             .HaveDiagnostic(MappaDiagnosticDescriptors.DependencyDoesNotProvideAnyViableMethod, "dependency")
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
@@ -1208,6 +1209,7 @@ public sealed class ParamsAndInRefKindParametersSupportIntegrationTests
 
         // Assert
         generatedResults.Should()
+            .HaveDiagnostics(1)
             .HaveDiagnostic(MappaDiagnosticDescriptors.DependencyDoesNotProvideAnyViableMethod, "dependency")
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
@@ -1279,6 +1281,7 @@ public sealed class ParamsAndInRefKindParametersSupportIntegrationTests
 
         // Assert
         generatedResults.Should()
+            .HaveDiagnostics(1)
             .HaveDiagnostic(MappaDiagnosticDescriptors.DependencyDoesNotProvideAnyViableMethod, "Mappa.Generator.Tests.UnitTests.SourceCode.Dependency")
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
@@ -1351,6 +1354,7 @@ public sealed class ParamsAndInRefKindParametersSupportIntegrationTests
 
         // Assert
         generatedResults.Should()
+            .HaveDiagnostics(1)
             .HaveDiagnostic(MappaDiagnosticDescriptors.DependencyDoesNotProvideAnyViableMethod, "Mappa.Generator.Tests.UnitTests.SourceCode.Dependency")
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()

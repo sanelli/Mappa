@@ -380,6 +380,7 @@ public sealed class ReferenceHandlingDiagnosticsIntegrationTests
 
         // Assert
         generatedResults.Should()
+            .HaveDiagnostics(1)
             .HaveDiagnostic(
                 MappaDiagnosticDescriptors.MaxCompileTimeDepthReached,
                 Level2SourceType,
@@ -605,6 +606,7 @@ public sealed class ReferenceHandlingDiagnosticsIntegrationTests
 
         // Assert
         generatedResults.Should()
+            .HaveDiagnostics(1)
             .HaveDiagnostic(MappaDiagnosticDescriptors.ProjectionMappingNotSupported, "ProjectToDto", "reference handling")
             .NotHaveGeneratedAnySourceCode();
     }

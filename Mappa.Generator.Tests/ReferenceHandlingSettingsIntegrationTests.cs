@@ -584,6 +584,7 @@ public sealed class ReferenceHandlingSettingsIntegrationTests
     private static void AssertMaxCompileTimeDepthExceeded(GeneratedResults generatedResults, short expectedDepth)
     {
         generatedResults.Should()
+            .HaveDiagnostics(1)
             .HaveDiagnostic(
                 MappaDiagnosticDescriptors.MaxCompileTimeDepthReached,
                 Level2SourceType,

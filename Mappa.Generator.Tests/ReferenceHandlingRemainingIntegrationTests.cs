@@ -192,6 +192,7 @@ public sealed class ReferenceHandlingRemainingIntegrationTests
 
         // Assert
         generatedResults.Should()
+            .HaveDiagnostics(1)
             .HaveDiagnostic(MappaDiagnosticDescriptors.ProjectionMappingNotSupported, "ProjectToDto", "reference handling")
             .NotHaveGeneratedAnySourceCode();
     }
