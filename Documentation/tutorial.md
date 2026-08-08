@@ -789,16 +789,23 @@ Reference `Microsoft.Extensions.DependencyInjection` in the project. Configure l
 See also: [MappaDependencyInjectionRegistrar.cs](../Mappa.Samples/MappaDependencyInjectionRegistrar.cs) and [MappaDependencyInjectionMapper.cs](../Mappa.Samples/MappaDependencyInjectionMapper.cs).
 
 ### Polymorphism support
-Use `[MappaTypeMapping]` to map different concrete source types to different target types. Use `[MappaTypeMappingDefault]` to define the fallback behaviour:
+Use `[MappaTypeMapping]` to map different concrete source types to different target types. Use `[MappaTypeMappingDefault]` to define the fallback behaviour. The generic helpers `[MappaTypeMapping<TTarget, TSource>]` and `[MappaTypeMappingDefault<TDefault>]` (for `MapSourceType` with an explicit target) are equivalent to the `typeof` forms:
 
 ```csharp
 [Mappa]
 public sealed partial class Mapper
 {
-    [MappaTypeMapping(typeof(TargetFirst), typeof(SourceFirst))]
-    [MappaTypeMapping(typeof(TargetSecond), typeof(SourceSecond))]
+    [MappaTypeMapping<TargetFirst, SourceFirst>]
+    [MappaTypeMapping<TargetSecond, SourceSecond>]
     public partial TargetBase Map(SourceBase source);
 }
+```
+
+The non-generic form remains supported:
+
+```csharp
+[MappaTypeMapping(typeof(TargetFirst), typeof(SourceFirst))]
+[MappaTypeMapping(typeof(TargetSecond), typeof(SourceSecond))]
 ```
 
 See also: [PolymorphismMappers.cs](../Mappa.Samples/PolymorphismMappers.cs) and [Mappa attributes](./mappa-attributes.md#mappatypemapping-and-mappatypemappingdefault).

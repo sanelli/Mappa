@@ -24,9 +24,9 @@ public sealed partial class PolymorphismMapper
     /// </summary>
     /// <param name="source">The source model.</param>
     /// <returns>The target model.</returns>
-    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetFirstClass), typeof(Models.Polymorphism.One.SourceFirstClass))]
-    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetThirdClass), typeof(Models.Polymorphism.One.SourceThirdClass))]
-    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetSecondClass), typeof(Models.Polymorphism.One.SourceSecondClass))]
+    [MappaTypeMapping<Models.Polymorphism.One.TargetFirstClass, Models.Polymorphism.One.SourceFirstClass>]
+    [MappaTypeMapping<Models.Polymorphism.One.TargetThirdClass, Models.Polymorphism.One.SourceThirdClass>]
+    [MappaTypeMapping<Models.Polymorphism.One.TargetSecondClass, Models.Polymorphism.One.SourceSecondClass>]
     public partial Models.Polymorphism.One.TargetBaseClass Map(Models.Polymorphism.One.SourceBaseClass source);
 }
 
@@ -195,8 +195,8 @@ public sealed partial class PolymorphismMapperWithMapDefaultWithoutExplicitType
 
 /// <summary>
 /// Mapper to showcase the usage of <see cref="MappaUsePropertyAttribute"/> with
-/// <see cref="MappaTypeMappingDefaultAttribute"/> and behavior
-/// <see cref="MappaTypeMappingDefaultBehavior.MapSourceType"/> with
+/// <see cref="MappaTypeMappingDefaultAttribute{TDefault}"/> (generic
+/// <see cref="MappaTypeMappingDefaultBehavior.MapSourceType"/> form) with
 /// specific target type.
 /// </summary>
 [Mappa]
@@ -210,10 +210,10 @@ public sealed partial class PolymorphismMapperWithMapDefaultWithExplicitType
     /// </summary>
     /// <param name="source">The source model.</param>
     /// <returns>The target model.</returns>
-    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetFirstClass), typeof(Models.Polymorphism.One.SourceFirstClass))]
-    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetThirdClass), typeof(Models.Polymorphism.One.SourceThirdClass))]
-    [MappaTypeMapping(typeof(Models.Polymorphism.One.TargetSecondClass), typeof(Models.Polymorphism.One.SourceSecondClass))]
-    [MappaTypeMappingDefault(MappaTypeMappingDefaultBehavior.MapSourceType, typeof(Models.Polymorphism.One.TargetUnmappedBaseClass))]
+    [MappaTypeMapping<Models.Polymorphism.One.TargetFirstClass, Models.Polymorphism.One.SourceFirstClass>]
+    [MappaTypeMapping<Models.Polymorphism.One.TargetThirdClass, Models.Polymorphism.One.SourceThirdClass>]
+    [MappaTypeMapping<Models.Polymorphism.One.TargetSecondClass, Models.Polymorphism.One.SourceSecondClass>]
+    [MappaTypeMappingDefault<Models.Polymorphism.One.TargetUnmappedBaseClass>]
     public partial Models.Polymorphism.One.TargetBaseClass Map(Models.Polymorphism.One.SourceBaseClass source);
 }
 

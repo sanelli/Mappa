@@ -2,6 +2,9 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+#pragma warning disable SA1402 // File may only contain a single type. Non-generic and generic overloads share this file by design.
+#pragma warning disable CA1813 // Unsealed so MappaTypeMappingDefaultAttribute<TDefault> can derive from this attribute.
+
 namespace Mappa.Attributes;
 
 /// <summary>
@@ -11,7 +14,7 @@ namespace Mappa.Attributes;
 /// decided to throw an exception.
 /// </summary>
 [AttributeUsage(AttributeTargets.Method)]
-public sealed class MappaTypeMappingDefaultAttribute
+public class MappaTypeMappingDefaultAttribute
     : Attribute
 {
     /// <summary>
@@ -84,3 +87,15 @@ public sealed class MappaTypeMappingDefaultAttribute
     /// </summary>
     public string? MethodName { get; }
 }
+
+/// <summary>
+/// Generic form of <see cref="MappaTypeMappingDefaultAttribute"/> that maps unmatched sources to
+/// <typeparamref name="TDefault"/> using <see cref="MappaTypeMappingDefaultBehavior.MapSourceType"/>.
+/// Equivalent to
+/// <c>[MappaTypeMappingDefault(MappaTypeMappingDefaultBehavior.MapSourceType, typeof(TDefault))]</c>.
+/// </summary>
+/// <typeparam name="TDefault">The target type used when mapping an unmatched source type.</typeparam>
+[AttributeUsage(AttributeTargets.Method)]
+[CLSCompliant(false)]
+public sealed class MappaTypeMappingDefaultAttribute<TDefault>()
+    : MappaTypeMappingDefaultAttribute(MappaTypeMappingDefaultBehavior.MapSourceType, typeof(TDefault));

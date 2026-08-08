@@ -174,6 +174,246 @@ public sealed class AttributeDataExtensionsTests
     }
 
     /// <summary>
+    /// Test <see cref="AttributeDataExtensions.GetTypeMappingAttributes"/> reads the generic type-mapping attribute.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetTypeMappingAttributesReadsGenericAttribute()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { }
+
+                              public class Target { }
+
+                              public class SourceDerived : Source { }
+
+                              public class TargetDerived : Target { }
+
+                              [Mappa]
+                              public sealed partial class TestMapper
+                              {
+                                  [MappaTypeMapping<TargetDerived, SourceDerived>]
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetMethodAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.MapperMetadataName,
+            "Map");
+
+        var typeMappings = attributes.GetTypeMappingAttributes(compilation);
+
+        typeMappings.Should().HaveCount(1);
+        typeMappings[0].TargetType.Should().NotBeNull();
+        typeMappings[0].TargetType.FullName.Should().Be("Mappa.Generator.Tests.UnitTests.SourceCode.TargetDerived");
+        typeMappings[0].SourceType.Should().NotBeNull();
+        typeMappings[0].SourceType.FullName.Should().Be("Mappa.Generator.Tests.UnitTests.SourceCode.SourceDerived");
+    }
+
+    /// <summary>
+    /// Test <see cref="AttributeDataExtensions.GetTypeMappingAttributes"/> reads non-generic and generic attributes together.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetTypeMappingAttributesReadsNonGenericAndGenericAttributesTogether()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { }
+
+                              public class Target { }
+
+                              public class SourceFirst : Source { }
+
+                              public class TargetFirst : Target { }
+
+                              public class SourceSecond : Source { }
+
+                              public class TargetSecond : Target { }
+
+                              [Mappa]
+                              public sealed partial class TestMapper
+                              {
+                                  [MappaTypeMapping(typeof(TargetFirst), typeof(SourceFirst))]
+                                  [MappaTypeMapping<TargetSecond, SourceSecond>]
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetMethodAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.MapperMetadataName,
+            "Map");
+
+        var typeMappings = attributes.GetTypeMappingAttributes(compilation);
+
+        typeMappings.Should().HaveCount(2);
+        typeMappings[0].TargetType.FullName.Should().Be("Mappa.Generator.Tests.UnitTests.SourceCode.TargetFirst");
+        typeMappings[0].SourceType.FullName.Should().Be("Mappa.Generator.Tests.UnitTests.SourceCode.SourceFirst");
+        typeMappings[1].TargetType.FullName.Should().Be("Mappa.Generator.Tests.UnitTests.SourceCode.TargetSecond");
+        typeMappings[1].SourceType.FullName.Should().Be("Mappa.Generator.Tests.UnitTests.SourceCode.SourceSecond");
+    }
+
+    /// <summary>
+    /// Test <see cref="AttributeDataExtensions.GetTypeMappingAttributes"/> ignores type-mapping attributes whose
+    /// constructor type arguments are not named types (for example arrays).
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetTypeMappingAttributesIgnoresNonNamedConstructorTypeArguments()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { }
+
+                              public class Target { }
+
+                              [Mappa]
+                              public sealed partial class TestMapper
+                              {
+                                  [MappaTypeMapping(typeof(string[]), typeof(Source))]
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetMethodAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.MapperMetadataName,
+            "Map");
+
+        var typeMappings = attributes.GetTypeMappingAttributes(compilation);
+
+        typeMappings.Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// Test <see cref="AttributeDataExtensions.GetMappaTypeMappingDefaultAttribute"/> reads the generic default attribute.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetMappaTypeMappingDefaultAttributeReadsGenericAttribute()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { }
+
+                              public class Target { }
+
+                              public class DefaultTarget : Target { }
+
+                              [Mappa]
+                              public sealed partial class TestMapper
+                              {
+                                  [MappaTypeMappingDefault<DefaultTarget>]
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetMethodAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.MapperMetadataName,
+            "Map");
+
+        var attribute = attributes.GetMappaTypeMappingDefaultAttribute(compilation);
+
+        attribute.Should().NotBeNull();
+        attribute!.Behavior.Should().Be(MappaTypeMappingDefaultBehavior.MapSourceType);
+        attribute.Type.Should().NotBeNull();
+        attribute.Type!.FullName.Should().Be("Mappa.Generator.Tests.UnitTests.SourceCode.DefaultTarget");
+        attribute.MethodName.Should().BeNull();
+    }
+
+    /// <summary>
+    /// Test <see cref="AttributeDataExtensions.GetTypeMappingAttributes"/> ignores generic attributes whose
+    /// type arguments are not named types (for example arrays).
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetTypeMappingAttributesIgnoresGenericAttributesWithNonNamedTypeArguments()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { }
+
+                              public class Target { }
+
+                              [Mappa]
+                              public sealed partial class TestMapper
+                              {
+                                  [MappaTypeMapping<string[], Source>]
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetMethodAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.MapperMetadataName,
+            "Map");
+
+        var typeMappings = attributes.GetTypeMappingAttributes(compilation);
+
+        typeMappings.Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// Test <see cref="AttributeDataExtensions.GetMappaTypeMappingDefaultAttribute"/> returns <see langword="null"/>
+    /// when the type argument is not a named type (for example an array).
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetMappaTypeMappingDefaultAttributeReturnsNullForNonNamedTypeArgument()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { }
+
+                              public class Target { }
+
+                              [Mappa]
+                              public sealed partial class TestMapper
+                              {
+                                  [MappaTypeMappingDefault(MappaTypeMappingDefaultBehavior.MapSourceType, typeof(int[]))]
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetMethodAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.MapperMetadataName,
+            "Map");
+
+        var attribute = attributes.GetMappaTypeMappingDefaultAttribute(compilation);
+
+        attribute.Should().BeNull();
+    }
+
+    /// <summary>
     /// Test <see cref="AttributeDataExtensions.GetInvokeMethodAttributes"/> reads valid attribute constructors.
     /// </summary>
     [Fact]

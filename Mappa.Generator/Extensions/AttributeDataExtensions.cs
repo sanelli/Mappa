@@ -34,7 +34,9 @@ internal static class AttributeDataExtensions
     private const string MappaAllowInaccessibleSourceMembersAttributeFullName = "Mappa.Attributes.MappaAllowInaccessibleSourceMembersAttribute";
     private const string MappaAllowInaccessibleTargetMembersAttributeFullName = "Mappa.Attributes.MappaAllowInaccessibleTargetMembersAttribute";
     private const string MappaTypeMappingAttributeFullName = "Mappa.Attributes.MappaTypeMappingAttribute";
+    private const string MappaTypeMappingAttributeOfTFullName = "Mappa.Attributes.MappaTypeMappingAttribute`2";
     private const string MappaTypeMappingDefaultAttributeFullName = "Mappa.Attributes.MappaTypeMappingDefaultAttribute";
+    private const string MappaTypeMappingDefaultAttributeOfTFullName = "Mappa.Attributes.MappaTypeMappingDefaultAttribute`1";
     private const string MappaMapEnumMemberAttributeFullName = "Mappa.Attributes.MappaMapEnumMemberAttribute`1";
     private const string MappaMapEnumMemberToEnumAttributeFullName = "Mappa.Attributes.MappaMapEnumMemberAttribute`2";
     private const string MappaMapEnumIgnoreAttributeFullName = "Mappa.Attributes.MappaMapEnumIgnoreAttribute`1";
@@ -197,13 +199,32 @@ internal static class AttributeDataExtensions
     /// <returns>The <see cref="MappaTypeMappingDefaultAttribute"/> (if any).</returns>
     internal static MappaTypeMappingDefaultAttribute? GetMappaTypeMappingDefaultAttribute(this ImmutableArray<AttributeData> attributes, Compilation compilation)
     {
-        var mappaTypeMappingAttributeSymbol = compilation.GetTypeByMetadataName(MappaTypeMappingDefaultAttributeFullName);
+        var mappaTypeMappingDefaultAttributeSymbol = compilation.GetTypeByMetadataName(MappaTypeMappingDefaultAttributeFullName);
+        var mappaTypeMappingDefaultAttributeOfTSymbol = compilation.GetTypeByMetadataName(MappaTypeMappingDefaultAttributeOfTFullName);
         MappaTypeMappingDefaultAttribute? attribute = null;
 
-        foreach (var constructorArguments in attributes
-                     .Where(attributeData => SymbolEqualityComparer.Default.Equals(attributeData.AttributeClass, mappaTypeMappingAttributeSymbol))
-                     .Select(attributeData => attributeData.ConstructorArguments))
+        foreach (var attributeData in attributes)
         {
+            if (attributeData.AttributeClass is not { } attributeClass)
+            {
+                continue;
+            }
+
+            if (IsAttribute(attributeClass, mappaTypeMappingDefaultAttributeOfTSymbol)
+                && GetEnumTypeArgument(attributeClass, 1, 0) is { } defaultType)
+            {
+                attribute = new MappaTypeMappingDefaultAttribute(
+                    MappaTypeMappingDefaultBehavior.MapSourceType,
+                    new FakeType(defaultType.ToDisplayString()));
+                continue;
+            }
+
+            if (!SymbolEqualityComparer.Default.Equals(attributeClass, mappaTypeMappingDefaultAttributeSymbol))
+            {
+                continue;
+            }
+
+            var constructorArguments = attributeData.ConstructorArguments;
             attribute = constructorArguments.Length switch
             {
                 1 when constructorArguments[0].Value is string methodName
@@ -230,14 +251,35 @@ internal static class AttributeDataExtensions
     internal static MappaTypeMappingAttribute[] GetTypeMappingAttributes(this ImmutableArray<AttributeData> attributes, Compilation compilation)
     {
         var mappaTypeMappingAttributeSymbol = compilation.GetTypeByMetadataName(MappaTypeMappingAttributeFullName);
+        var mappaTypeMappingAttributeOfTSymbol = compilation.GetTypeByMetadataName(MappaTypeMappingAttributeOfTFullName);
         List<MappaTypeMappingAttribute> results = new();
 
-        foreach (var constructorArguments in attributes
-                     .Where(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, mappaTypeMappingAttributeSymbol))
-                     .Select(attributeData => attributeData.ConstructorArguments))
+        foreach (var attributeData in attributes)
         {
-            if (constructorArguments[0].Value is INamedTypeSymbol targetType &&
-                constructorArguments[1].Value is INamedTypeSymbol sourceType)
+            if (attributeData.AttributeClass is not { } attributeClass)
+            {
+                continue;
+            }
+
+            if (IsAttribute(attributeClass, mappaTypeMappingAttributeOfTSymbol)
+                && GetEnumTypeArgument(attributeClass, 2, 0) is { } genericTargetType
+                && GetEnumTypeArgument(attributeClass, 2, 1) is { } genericSourceType)
+            {
+                results.Add(new MappaTypeMappingAttribute(
+                    new FakeType(genericTargetType.ToDisplayString()),
+                    new FakeType(genericSourceType.ToDisplayString())));
+                continue;
+            }
+
+            if (!SymbolEqualityComparer.Default.Equals(attributeClass, mappaTypeMappingAttributeSymbol))
+            {
+                continue;
+            }
+
+            var constructorArguments = attributeData.ConstructorArguments;
+            if (constructorArguments.Length == 2
+                && constructorArguments[0].Value is INamedTypeSymbol targetType
+                && constructorArguments[1].Value is INamedTypeSymbol sourceType)
             {
                 results.Add(new MappaTypeMappingAttribute(new FakeType(targetType.ToDisplayString()), new FakeType(sourceType.ToDisplayString())));
             }

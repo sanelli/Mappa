@@ -19,8 +19,8 @@ This is the list of attributes provided:
 - `MappaBeforeMap`: Invokes a named hook immediately before the generated root mapping body; applies to mapper classes and mapping methods;
 - `MappaAfterMap`: Invokes a named hook immediately after the generated root mapping body and before returning the target; applies to mapper classes and mapping methods;
 - `MappaObjectFactory`: Forces construction of a target type via a named factory method instead of `new`; applies to mapper classes and mapping methods;
-- `MappaTypeMapping`: When mapping structured types or interfaces, allows defining the target type depending on the source type;
-- `MappaTypeMappingDefault`: Describes the default behaviour for polymorphic methods defined via `MappaTypeMapping`.
+- `MappaTypeMapping`: When mapping structured types or interfaces, allows defining the target type depending on the source type; also available as `MappaTypeMapping<TTarget, TSource>`;
+- `MappaTypeMappingDefault`: Describes the default behaviour for polymorphic methods defined via `MappaTypeMapping`; also available as `MappaTypeMappingDefault<TDefault>` for `MapSourceType` with an explicit target type.
 - `MappaMapEnumMember`: Configures explicit enum↔integral, enum↔string, or enum↔enum member pairings;
 - `MappaMapEnumIgnore`: Excludes a specific enum member from mapping;
 - `MappaMapEnumDefault`: Configures fallback behaviour when an enum value cannot be mapped;
