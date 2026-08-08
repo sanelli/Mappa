@@ -35,7 +35,7 @@ Reports are:
 ### Run benchmarks
 `./Scripts/RunBenchmarks.ps1`
 
-Runs [BenchmarkDotNet](https://benchmarkdotnet.org/) in **Release** with job **Default** (same job used by CI). Default uses more iterations/warmups than Short, so wall-clock time is longer but results are less noisy. Outputs land under the gitignored `.mappa-benchmark/` folder:
+Runs [BenchmarkDotNet](https://benchmarkdotnet.org/) in **Release** with job **Default** (same job used on `main` merge CI). Default uses more iterations/warmups than Short, so wall-clock time is longer but results are less noisy. Pull requests do not run benchmarks. Outputs land under the gitignored `.mappa-benchmark/` folder:
 
 - `Benchmark.Summary.md` — mean time (ns) and allocated bytes for AutoMapper / Mapster / Mapperly / Mappa
 - `Benchmark.Comparison.md` — winner table for the chart subset (best time / best memory; ties listed; non-Mappa winners include % delta vs Mappa)
@@ -45,7 +45,7 @@ Runs [BenchmarkDotNet](https://benchmarkdotnet.org/) in **Release** with job **D
 
 Useful switches:
 
-- `-ChartBenchmarksOnly` — run only the benchmarks used by the TIME/MEMORY/comparison SVGs (what CI uses)
+- `-ChartBenchmarksOnly` — run only the benchmarks used by the TIME/MEMORY/comparison SVGs (what `main` merge CI uses)
 - `-SkipRun` — regenerate markdown/SVG outputs from existing `BenchmarkDotNet.Artifacts/results`
 - `-Filter "<pattern>"` — custom BenchmarkDotNet filter (default `*`)
 - `-ListAvailable` — list matching benchmarks without running them

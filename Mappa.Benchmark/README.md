@@ -10,7 +10,7 @@ From the repository root (PowerShell):
 .\Scripts\RunBenchmarks.ps1
 ```
 
-CI uses the chart subset only:
+`main` merge CI uses the chart subset only (pull requests do not run benchmarks):
 
 ```powershell
 .\Scripts\RunBenchmarks.ps1 -ChartBenchmarksOnly
