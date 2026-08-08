@@ -1,14 +1,19 @@
-﻿// <copyright file="MappaProtobufMapper.cs" company="Stefano Anelli">
+// <copyright file="MappaProtobufMapper.cs" company="Stefano Anelli">
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
 using Google.Protobuf.WellKnownTypes;
 
+using Mappa.Attributes;
+
 namespace Mappa.Dependency.Protobuf;
 
 /// <summary>
 /// Implementation of <see cref="IMappaProtobufMapper"/>.
+/// Marked with <see cref="MappaAttribute"/> so dependency-injection discovery
+/// (including <c>InjectFromAssemblies</c>) can find this hand-written mapper.
 /// </summary>
+[Mappa]
 public sealed class MappaProtobufMapper
     : IMappaProtobufMapper
 {

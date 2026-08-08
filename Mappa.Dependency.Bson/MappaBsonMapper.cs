@@ -2,13 +2,18 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Attributes;
+
 using MongoDB.Bson;
 
 namespace Mappa.Dependency.Bson;
 
 /// <summary>
 /// Implementation of <see cref="IMappaBsonMapper"/>.
+/// Marked with <see cref="MappaAttribute"/> so dependency-injection discovery
+/// (including <c>InjectFromAssemblies</c>) can find this hand-written mapper.
 /// </summary>
+[Mappa]
 public sealed class MappaBsonMapper
     : IMappaBsonMapper
 {

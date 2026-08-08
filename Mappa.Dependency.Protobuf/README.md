@@ -30,6 +30,8 @@ public sealed partial class MyMapper
 
 Mappa will invoke the dependency mapper methods when mapping between protobuf well-known types and .NET date/time types.
 
+`MappaProtobufMapper` is marked with `[Mappa]` so `[MappaDependencyInjection]` registrars can discover it via `InjectFromAssemblies` (for example `typeof(MappaProtobufMapper)`), including from other assemblies. The mapping methods remain hand-written; this package does not run the Mappa source generator.
+
 Relevant packages:
 - [Mappa](https://www.nuget.org/packages/Mappa/): attributes and `MappaContext` used to drive the source generator;
 - [Mappa source generator](https://www.nuget.org/packages/Mappa.Generator/): source generator that automatically generates mappings between classes and value types;
