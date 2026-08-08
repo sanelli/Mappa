@@ -57,6 +57,54 @@ function Get-BenchmarkChartDisplayName
     return $BenchmarkName
 }
 
+function Format-BenchmarkChartNumber
+{
+    param(
+        [double]$Value,
+        [string]$Format = "0.##"
+    )
+
+    $formatted = $Value.ToString($Format, [System.Globalization.CultureInfo]::InvariantCulture)
+    if ([Math]::Abs($Value) -lt 1000.0)
+    {
+        return $formatted
+    }
+
+    $sign = ""
+    $body = $formatted
+    if ($body.StartsWith("-"))
+    {
+        $sign = "-"
+        $body = $body.Substring(1)
+    }
+
+    $integerPart = $body
+    $fractionPart = ""
+    $dotIndex = $body.IndexOf('.')
+    if ($dotIndex -ge 0)
+    {
+        $integerPart = $body.Substring(0, $dotIndex)
+        $fractionPart = $body.Substring($dotIndex)
+    }
+
+    # Insert a comma as thousands separator (e.g. 11566.8 -> 11,566.8).
+    $chars = $integerPart.ToCharArray()
+    $grouped = New-Object System.Text.StringBuilder
+    $digitCount = 0
+    for ($i = $chars.Length - 1; $i -ge 0; $i--)
+    {
+        if ($digitCount -gt 0 -and (($digitCount % 3) -eq 0))
+        {
+            [void]$grouped.Insert(0, ',')
+        }
+
+        [void]$grouped.Insert(0, $chars[$i])
+        $digitCount++
+    }
+
+    return $sign + $grouped.ToString() + $fractionPart
+}
+
 function ConvertTo-InvariantDouble
 {
     param([string]$Text)
@@ -174,7 +222,10 @@ function New-BenchmarkGroupedBarSvg
 
         # Squiggle style for broken bars: sharp zigzag (default) or rounded waves.
         [ValidateSet("Zigzag", "RoundedWave")]
-        [string]$BreakLineStyle = "Zigzag"
+        [string]$BreakLineStyle = "Zigzag",
+
+        # Draw unlabeled lighter dashed guides halfway between each major Y tick.
+        [switch]$DrawMinorYAxisGuides
     )
 
     if ($Benchmarks.Count -eq 0)
@@ -273,18 +324,36 @@ function New-BenchmarkGroupedBarSvg
     [void]$builder.AppendLine("  <text x=`"$([Math]::Round($svgWidth / 2, 1))`" y=`"28`" text-anchor=`"middle`" font-family=`"Segoe UI, Arial, sans-serif`" font-size=`"18`" fill=`"#222222`">$Title</text>")
     [void]$builder.AppendLine("  <text x=`"20`" y=`"$([Math]::Round($topMargin + ($plotHeight / 2), 1))`" text-anchor=`"middle`" transform=`"rotate(-90 20 $([Math]::Round($topMargin + ($plotHeight / 2), 1)))`" font-family=`"Segoe UI, Arial, sans-serif`" font-size=`"12`" fill=`"#444444`">$YAxisLabel</text>")
 
+    $overflowYOffset = if ($hasOverflow) { $overflowStubMaxHeight + $breakGap } else { 0.0 }
+
+    if ($DrawMinorYAxisGuides)
+    {
+        for ($tickIndex = 0; $tickIndex -lt $tickCount; $tickIndex++)
+        {
+            $minorValue = ($tickIndex + 0.5) * $YAxisTickStep
+            if (($null -ne $EmphasizeGuideAt) -and ([Math]::Abs($minorValue - [double]$EmphasizeGuideAt) -lt 1e-9))
+            {
+                continue
+            }
+
+            $minorRatio = 1.0 - ($minorValue / $axisMax)
+            $minorY = $topMargin + ($scaleHeight * $minorRatio) + $overflowYOffset
+            [void]$builder.AppendLine("  <line x1=`"$leftMargin`" y1=`"$([Math]::Round($minorY, 2))`" x2=`"$([Math]::Round($leftMargin + $plotWidth, 2))`" y2=`"$([Math]::Round($minorY, 2))`" stroke=`"#eeeeee`" stroke-width=`"1`" stroke-dasharray=`"4 4`"/>")
+        }
+    }
+
     for ($tickIndex = 0; $tickIndex -le $tickCount; $tickIndex++)
     {
         $value = $tickIndex * $YAxisTickStep
         $ratio = 1.0 - ($value / $axisMax)
-        $y = $topMargin + ($scaleHeight * $ratio) + ($(if ($hasOverflow) { $overflowStubMaxHeight + $breakGap } else { 0.0 }))
+        $y = $topMargin + ($scaleHeight * $ratio) + $overflowYOffset
         if ($YAxisTickStep -ge 1.0)
         {
-            $label = "{0:0}" -f $value
+            $label = Format-BenchmarkChartNumber -Value $value -Format "0"
         }
         else
         {
-            $label = "{0:0.##}" -f $value
+            $label = Format-BenchmarkChartNumber -Value $value -Format "0.##"
         }
 
         $isEmphasizedGuide = ($null -ne $EmphasizeGuideAt) -and ([Math]::Abs($value - [double]$EmphasizeGuideAt) -lt 1e-9)
@@ -316,8 +385,12 @@ function New-BenchmarkGroupedBarSvg
         if (-not $guideOnTick)
         {
             $guideRatio = 1.0 - ([double]$EmphasizeGuideAt / $axisMax)
-            $guideY = $topMargin + ($scaleHeight * $guideRatio) + ($(if ($hasOverflow) { $overflowStubMaxHeight + $breakGap } else { 0.0 }))
-            $guideLabel = if ($YAxisTickStep -ge 1.0) { "{0:0}" -f [double]$EmphasizeGuideAt } else { "{0:0.##}" -f [double]$EmphasizeGuideAt }
+            $guideY = $topMargin + ($scaleHeight * $guideRatio) + $overflowYOffset
+            $guideLabel = if ($YAxisTickStep -ge 1.0) {
+                Format-BenchmarkChartNumber -Value ([double]$EmphasizeGuideAt) -Format "0"
+            } else {
+                Format-BenchmarkChartNumber -Value ([double]$EmphasizeGuideAt) -Format "0.##"
+            }
             [void]$builder.AppendLine("  <line x1=`"$leftMargin`" y1=`"$([Math]::Round($guideY, 2))`" x2=`"$([Math]::Round($leftMargin + $plotWidth, 2))`" y2=`"$([Math]::Round($guideY, 2))`" stroke=`"#cc0000`" stroke-width=`"1.5`" stroke-dasharray=`"6 4`"/>")
             [void]$builder.AppendLine("  <text x=`"$([Math]::Round($leftMargin - 8, 2))`" y=`"$([Math]::Round($guideY + 4, 2))`" text-anchor=`"end`" font-family=`"Segoe UI, Arial, sans-serif`" font-size=`"11`" fill=`"#cc0000`">$guideLabel</text>")
         }
@@ -402,7 +475,7 @@ function New-BenchmarkGroupedBarSvg
                 $labelAnchorY = $y
             }
 
-            $valueText = $metric.ToString($ValueLabelFormat, [System.Globalization.CultureInfo]::InvariantCulture) + $ValueLabelSuffix
+            $valueText = (Format-BenchmarkChartNumber -Value $metric -Format $ValueLabelFormat) + $ValueLabelSuffix
             $textX = $x + ($barWidth / 2.0)
             $fontWeightAttr = ""
             if ($BoldValueLabelsAboveGuide -and ($null -ne $EmphasizeGuideAt) -and ($metric -gt [double]$EmphasizeGuideAt))

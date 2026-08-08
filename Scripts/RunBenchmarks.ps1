@@ -520,7 +520,8 @@ try
                 -EmphasizeGuideAt 100 `
                 -BoldValueLabelsAboveGuide `
                 -ProportionalOverflowStubs `
-                -BreakLineStyle RoundedWave
+                -BreakLineStyle RoundedWave `
+                -DrawMinorYAxisGuides
         }
 
         if ($allocPercentBenchmarks.Count -gt 0)
@@ -536,7 +537,8 @@ try
                 -ValueLabelSuffix "%" `
                 -MapperNames $percentageMappers `
                 -EmphasizeGuideAt 100 `
-                -BoldValueLabelsAboveGuide
+                -BoldValueLabelsAboveGuide `
+                -DrawMinorYAxisGuides
         }
     }
 
