@@ -17,11 +17,11 @@ namespace Mappa.Dependency.Bson.DependencyInjection.Tests;
 public sealed class DependencyInjectionTests
 {
     /// <summary>
-    /// That that is possible inject the Bson mappers as singletons.
+    /// Tests that it is possible to inject the Bson mapper as a singleton.
     /// </summary>
     [Fact]
     [UnitTest]
-    public void CanInjectProtobufMapperAsSingleton()
+    public void CanInjectBsonMapperAsSingleton()
     {
         // Arrange
         var serviceCollection = new ServiceCollection();
@@ -36,11 +36,11 @@ public sealed class DependencyInjectionTests
     }
 
     /// <summary>
-    /// That that is possible inject the Bson mappers interface as singletons.
+    /// Tests that it is possible to inject the Bson mapper interface as a singleton.
     /// </summary>
     [Fact]
     [UnitTest]
-    public void CanInjectProtobufMapperInterfaceAsSingleton()
+    public void CanInjectBsonMapperInterfaceAsSingleton()
     {
         // Arrange
         var serviceCollection = new ServiceCollection();
@@ -52,5 +52,25 @@ public sealed class DependencyInjectionTests
 
         // Assert
         service.Should().NotBeNull();
+    }
+
+    /// <summary>
+    /// Tests that the concrete and interface registrations share the same singleton instance.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void ConcreteAndInterfaceResolveToSameSingletonInstance()
+    {
+        // Arrange
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.RegisterMappaBson();
+        var serviceProvider = serviceCollection.BuildServiceProvider();
+
+        // Act
+        var concrete = serviceProvider.GetRequiredService<MappaBsonMapper>();
+        var asInterface = serviceProvider.GetRequiredService<IMappaBsonMapper>();
+
+        // Assert
+        asInterface.Should().BeSameAs(concrete);
     }
 }

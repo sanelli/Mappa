@@ -44,7 +44,12 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
+        <PackageReference Include="Mappa" Version="$(MappaVersion)" />
         <PackageReference Include="Mappa.Dependency.Protobuf" Version="$(MappaVersion)" />
+        <PackageReference Include="Mappa.Generator" Version="$(MappaVersion)">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
     </ItemGroup>
     <ItemGroup>
         <None Include="README.md" Pack="true" PackagePath="\" />
