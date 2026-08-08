@@ -83,7 +83,7 @@ internal sealed class MappaGeneratorClassAlgorithm
             // Skip null class declaration syntaxes.
             if (classDeclarationSyntax is null)
             {
-                return;
+                continue;
             }
 
             // Rebuild options

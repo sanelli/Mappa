@@ -102,7 +102,7 @@ public sealed class ParseNumberStylesCodeHelperTests
 
         act.Should()
             .Throw<MappaGeneratorException>()
-            .WithMessage("Unexpected scenario when building GeyCultureInfo without culture name");
+            .WithMessage("Unexpected scenario when building GetCultureInfo without culture name");
     }
 
     /// <summary>

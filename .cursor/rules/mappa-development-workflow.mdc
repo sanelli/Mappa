@@ -12,7 +12,7 @@ The development environment uses **PowerShell**. All commands run in the termina
 - Invoke scripts with `.\Scripts\ScriptName.ps1` (e.g. `.\Scripts\RunTestsAndReportCoverage.ps1`).
 - Use PowerShell path separators (`\`) and quoting rules.
 - Prefer PowerShell cmdlets and syntax over bash/sh equivalents.
-- **Internet-requiring commands:** before running any command that needs network access (e.g. `gh`, `dotnet restore` against remote feeds, `git fetch`/`push`, NuGet/gist uploads), request the appropriate permissions (`full_network` or `all` as needed), clear proxy-related environment variables (`HTTP_PROXY`, `HTTPS_PROXY`, `http_proxy`, `https_proxy`, `ALL_PROXY`, `all_proxy` set to `$null`), and set `NO_PROXY` / `no_proxy` to `*`.
+- **Internet-requiring commands:** before running any command that needs network access (e.g. `gh`, any `dotnet` command such as `dotnet restore`, `dotnet build`, `dotnet test`, `dotnet run`, `git fetch`/`push`, NuGet/gist uploads), request the appropriate permissions (`full_network` or `all` as needed), clear proxy-related environment variables (`HTTP_PROXY`, `HTTPS_PROXY`, `http_proxy`, `https_proxy`, `ALL_PROXY`, `all_proxy` set to `$null`), and set `NO_PROXY` / `no_proxy` to `*`.
 
 ## Planning
 

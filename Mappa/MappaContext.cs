@@ -8,6 +8,12 @@ namespace Mappa;
 /// Describe a context that can be forwarded
 /// across mapper methods.
 /// </summary>
+/// <remarks>
+/// <see cref="MappaContext"/> is not thread-safe. Use one context instance per logical mapping
+/// operation and do not share a single instance across concurrent mappings without external
+/// synchronization. This matters especially when <c>ReferenceReusing</c> or <c>MaxRuntimeDepth</c>
+/// is enabled, because the private reference manager mutates reference tables and nesting depth.
+/// </remarks>
 public sealed class MappaContext
 {
     private readonly Dictionary<string, object> items;
