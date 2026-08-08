@@ -355,5 +355,6 @@ MigrationBackup/
 .package/
 nuget.config
 .mappa-tests-and-coverage
+.mappa-generator-tests-dump
 .idea
 .cursor/plans/*
