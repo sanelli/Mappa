@@ -15,6 +15,8 @@ namespace Mappa.Generator.Tests;
 
 /// <summary>
 /// Integration tests for compile-time mapping-cycle detection on <c>GetStrategy</c>.
+/// Covers default / <c>BreakCompileTimeCycles</c> Disable regressions (MP00077) as well as
+/// sibling and distinct type-pair non-cycle cases.
 /// </summary>
 public sealed class MappingCycleDetectionIntegrationTests
     : MappaGeneratorAbstractUnitTests
@@ -77,7 +79,8 @@ public sealed class MappingCycleDetectionIntegrationTests
         => $"{ReferenceHandlingCodeGenerator.AccessorTypeName}.{ReferenceHandlingCodeGenerator.AccessorMethodName}(context)";
 
     /// <summary>
-    /// Mutual A↔B nesting without a map method for the cycling pair reports MP00077.
+    /// Mutual A↔B nesting without a map method for the cycling pair reports MP00077
+    /// when <c>BreakCompileTimeCycles</c> is unset (effective off).
     /// Nested discovery uses <c>TypeMapIdentifierWithMapMethodAlgorithm</c> under the root map.
     /// </summary>
     /// <returns>The async task.</returns>
@@ -94,6 +97,36 @@ public sealed class MappingCycleDetectionIntegrationTests
                            {{MutualCycleTypes}}
 
                            [Mappa]
+                           public sealed partial class Mapper
+                           {
+                               public partial RootTarget Map(RootSource input);
+                           }
+                           #nullable restore
+                           """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        AssertMappingCycle(generatedResults, ASourceType, ATargetType, RootTargetType, RootSourceType);
+    }
+
+    /// <summary>
+    /// Explicit <c>BreakCompileTimeCycles = Disable</c> keeps reporting MP00077 and does not synthesize a map method.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task MutualNestingWithBreakCompileTimeCyclesDisableReportsMappingCycle()
+    {
+        var sourceCode = $$"""
+                           #nullable enable
+                           using Mappa.Attributes;
+
+                           namespace {{Ns}};
+
+                           {{MutualCycleTypes}}
+
+                           [Mappa]
+                           [MappaSettings(BreakCompileTimeCycles = BooleanSetting.Disable)]
                            public sealed partial class Mapper
                            {
                                public partial RootTarget Map(RootSource input);
@@ -284,7 +317,8 @@ public sealed class MappingCycleDetectionIntegrationTests
 
     /// <summary>
     /// ReferenceReusing + MappaContext does not suppress compile-time cycle detection when
-    /// the generator would still recurse forever building an inline strategy.
+    /// <c>BreakCompileTimeCycles</c> is unset (effective off) and the generator would still
+    /// recurse forever building an inline strategy.
     /// </summary>
     /// <returns>The async task.</returns>
     [Fact]
@@ -311,17 +345,40 @@ public sealed class MappingCycleDetectionIntegrationTests
 
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
-        generatedResults.Should()
-            .HaveDiagnostic(MappaDiagnosticDescriptors.MappingCycleDetected, ASourceType, ATargetType)
-            .HaveGeneratedSourceCode()
-            .WithCompilationUnit()
-            .NotBeNull().And
-            .HaveDefaultMapMethodWithContext(
-                RootTargetType,
-                NullableAnnotation.NotAnnotated,
-                RootSourceType,
-                NullableAnnotation.NotAnnotated,
-                AssertRootReferenceReusingOmittingCyclicBackEdge);
+        AssertReferenceReusingMappingCycle(generatedResults);
+    }
+
+    /// <summary>
+    /// ReferenceReusing with explicit <c>BreakCompileTimeCycles = Disable</c> still reports MP00077.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task ReferenceReusingWithBreakCompileTimeCyclesDisableStillReportsCompileTimeCycle()
+    {
+        var sourceCode = $$"""
+                           #nullable enable
+                           using Mappa;
+                           using Mappa.Attributes;
+
+                           namespace {{Ns}};
+
+                           {{MutualCycleTypes}}
+
+                           [Mappa]
+                           public sealed partial class Mapper
+                           {
+                               [MappaSettings(
+                                   ReferenceReusing = BooleanSetting.Enable,
+                                   BreakCompileTimeCycles = BooleanSetting.Disable)]
+                               public partial RootTarget Map(RootSource input, MappaContext context);
+                           }
+                           #nullable restore
+                           """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        AssertReferenceReusingMappingCycle(generatedResults);
     }
 
     private static void AssertMappingCycle(
@@ -332,7 +389,9 @@ public sealed class MappingCycleDetectionIntegrationTests
         string mapParameterType)
     {
         generatedResults.Should()
+            .HaveDiagnostics(2)
             .HaveDiagnostic(MappaDiagnosticDescriptors.MappingCycleDetected, cycleSourceType, cycleTargetType)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.CannotMapNonRequiredProperty, BTargetType, "Child")
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .NotBeNull().And
@@ -342,6 +401,23 @@ public sealed class MappingCycleDetectionIntegrationTests
                 mapParameterType,
                 NullableAnnotation.NotAnnotated,
                 AssertRootMapOmittingCyclicBackEdge);
+    }
+
+    private static void AssertReferenceReusingMappingCycle(GeneratedResults generatedResults)
+    {
+        generatedResults.Should()
+            .HaveDiagnostics(2)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.MappingCycleDetected, ASourceType, ATargetType)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.CannotMapNonRequiredProperty, BTargetType, "Child")
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethodWithContext(
+                RootTargetType,
+                NullableAnnotation.NotAnnotated,
+                RootSourceType,
+                NullableAnnotation.NotAnnotated,
+                AssertRootReferenceReusingOmittingCyclicBackEdge);
     }
 
     private static void AssertMapAInvokesMapB(BlockSyntaxAssertions blockSyntaxAssertions)
