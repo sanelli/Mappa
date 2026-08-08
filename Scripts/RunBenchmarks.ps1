@@ -325,7 +325,8 @@ try
         $filterArgs = Get-BenchmarkDotNetFilterArgs
         Write-Host "Running benchmarks (filter: $filterDescription)..."
         # Pass filters as separate args so PowerShell does not glob-expand "*".
-        dotnet run -c Release --project ./Mappa.Benchmark/ -- -j Short -e "Csv" "Html" "GitHub" @filterArgs
+        # Default job uses more iterations/warmups than Short (longer wall-clock, lower noise).
+        dotnet run -c Release --project ./Mappa.Benchmark/ -- -j Default -e "Csv" "Html" "GitHub" @filterArgs
         if (-not $?)
         {
             Write-Host "Benchmark run failed." -ForegroundColor Red

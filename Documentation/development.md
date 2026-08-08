@@ -35,7 +35,7 @@ Reports are:
 ### Run benchmarks
 `./Scripts/RunBenchmarks.ps1`
 
-Runs [BenchmarkDotNet](https://benchmarkdotnet.org/) in **Release** with job **Short** (same job used by CI). Outputs land under the gitignored `.mappa-benchmark/` folder:
+Runs [BenchmarkDotNet](https://benchmarkdotnet.org/) in **Release** with job **Default** (same job used by CI). Default uses more iterations/warmups than Short, so wall-clock time is longer but results are less noisy. Outputs land under the gitignored `.mappa-benchmark/` folder:
 
 - `Benchmark.Summary.md` — mean time (ns) and allocated bytes for AutoMapper / Mapster / Mapperly / Mappa
 - `Benchmark.Comparison.md` — winner table for the chart subset (best time / best memory; ties listed; non-Mappa winners include % delta vs Mappa)
