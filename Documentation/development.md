@@ -38,12 +38,14 @@ Reports are:
 Runs [BenchmarkDotNet](https://benchmarkdotnet.org/) in **Release** with job **Short** (same job used by CI). Outputs land under the gitignored `.mappa-benchmark/` folder:
 
 - `Benchmark.Summary.md` — mean time (ns) and allocated bytes for AutoMapper / Mapster / Mapperly / Mappa
+- `Benchmark.Comparison.md` — winner table for the chart subset (best time / best memory; ties listed; non-Mappa winners include % delta vs Mappa)
+- `MAPPA-BENCHMARK-COMPARISON.svg` — SVG winner table for the same chart subset (memory winners are `n/a` for `StringToEnumBenchmark` / `EnumToStringBenchmark`, matching the memory charts)
 - `MAPPA-BENCHMARK-TIME.svg` / `MAPPA-BENCHMARK-MEMORY.svg` — grouped bar charts for the shared chart subset
 - `MAPPA-BENCHMARK-TIME-PERCENTAGES.svg` / `MAPPA-BENCHMARK-MEMORY-PERCENTAGES.svg` — competitor / Mappa percentage bar charts for the same subset
 
 Useful switches:
 
-- `-ChartBenchmarksOnly` — run only the benchmarks used by the TIME/MEMORY SVGs (what CI uses)
+- `-ChartBenchmarksOnly` — run only the benchmarks used by the TIME/MEMORY/comparison SVGs (what CI uses)
 - `-SkipRun` — regenerate markdown/SVG outputs from existing `BenchmarkDotNet.Artifacts/results`
 - `-Filter "<pattern>"` — custom BenchmarkDotNet filter (default `*`)
 - `-ListAvailable` — list matching benchmarks without running them
@@ -54,6 +56,7 @@ After a local run (or on `main` CI), publish the latest-run SVGs to the shared g
 
 That script uploads to gist [`7f4a85bc809328b4821b03125f9190cb`](https://gist.github.com/sanelli/7f4a85bc809328b4821b03125f9190cb):
 
+- `MAPPA-BENCHMARK-COMPARISON.svg`
 - `MAPPA-BENCHMARK-TIME.svg`
 - `MAPPA-BENCHMARK-MEMORY.svg`
 - `MAPPA-BENCHMARK-TIME-PERCENTAGES.svg`

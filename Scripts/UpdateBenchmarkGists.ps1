@@ -21,12 +21,32 @@ function Publish-GistFile
     Invoke-GhGistEdit -GistId $GistId -RemoteFileName $RemoteFileName -LocalPath $LocalPath -Mode $Mode
 }
 
+function Publish-GistFileWithAddFallback
+{
+    param(
+        [string]$GistId,
+        [string]$RemoteFileName,
+        [string]$LocalPath
+    )
+
+    try
+    {
+        Publish-GistFile -GistId $GistId -RemoteFileName $RemoteFileName -LocalPath $LocalPath -Mode Update
+    }
+    catch
+    {
+        Write-Host "Update failed for $RemoteFileName; trying Add (first publish)..."
+        Publish-GistFile -GistId $GistId -RemoteFileName $RemoteFileName -LocalPath $LocalPath -Mode Add
+    }
+}
+
+$comparisonSvgPath = Join-Path $MappaBenchmarkPath "MAPPA-BENCHMARK-COMPARISON.svg"
 $timeSummarySvgPath = Join-Path $MappaBenchmarkPath "MAPPA-BENCHMARK-TIME.svg"
 $memorySummarySvgPath = Join-Path $MappaBenchmarkPath "MAPPA-BENCHMARK-MEMORY.svg"
 $timePercentSvgPath = Join-Path $MappaBenchmarkPath "MAPPA-BENCHMARK-TIME-PERCENTAGES.svg"
 $memoryPercentSvgPath = Join-Path $MappaBenchmarkPath "MAPPA-BENCHMARK-MEMORY-PERCENTAGES.svg"
 
-foreach ($svgPath in @($timeSummarySvgPath, $memorySummarySvgPath, $timePercentSvgPath, $memoryPercentSvgPath))
+foreach ($svgPath in @($comparisonSvgPath, $timeSummarySvgPath, $memorySummarySvgPath, $timePercentSvgPath, $memoryPercentSvgPath))
 {
     if (-not (Test-Path -LiteralPath $svgPath))
     {
@@ -48,6 +68,7 @@ try
         $env:GH_TOKEN = $env:GH_PAT
     }
 
+    Publish-GistFileWithAddFallback -GistId $GistId -RemoteFileName "MAPPA-BENCHMARK-COMPARISON.svg" -LocalPath $comparisonSvgPath
     Publish-GistFile -GistId $GistId -RemoteFileName "MAPPA-BENCHMARK-TIME.svg" -LocalPath $timeSummarySvgPath
     Publish-GistFile -GistId $GistId -RemoteFileName "MAPPA-BENCHMARK-MEMORY.svg" -LocalPath $memorySummarySvgPath
     Publish-GistFile -GistId $GistId -RemoteFileName "MAPPA-BENCHMARK-TIME-PERCENTAGES.svg" -LocalPath $timePercentSvgPath
