@@ -22,6 +22,7 @@
         </PackageReference>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.10" />
         <PackageReference Include="Mappa" Version="$(MappaVersion)" />
+        <PackageReference Include="Mappa.Dependency.Bson" Version="$(MappaVersion)" />
         <PackageReference Include="Mappa.Dependency.Protobuf" Version="$(MappaVersion)" />
         <PackageReference Include="Mappa.Generator" Version="$(MappaVersion)">
             <PrivateAssets>all</PrivateAssets>
