@@ -27,49 +27,62 @@ internal static class InvokeMethodSourcePropertyUsage
         IPropertySymbol? sourceProperty,
         ITypeSymbol sourceClassType,
         bool nullableEnabled)
-    {
-        switch (method.Parameters.Length)
+        => method.Parameters.Length switch
         {
-            case 0:
-                return false;
+            0 => false,
+            1 => UsesSourcePropertyForSingleParameter(method, compilation, sourceProperty, sourceClassType, nullableEnabled),
+            2 => UsesSourcePropertyForTwoParameters(method, compilation, sourceProperty, sourceClassType, nullableEnabled),
+            3 => sourceProperty is not null,
+            _ => false,
+        };
 
-            case 1:
-                if (method.ParameterIsMappaContext(compilation, 0))
-                {
-                    return false;
-                }
-
-                if (method.Parameters[0].Type.IsEqualTo(sourceClassType, nullableEnabled) ||
-                    compilation.HasImplicitConversion(sourceClassType, method.Parameters[0].Type))
-                {
-                    return false;
-                }
-
-                return sourceProperty is not null &&
-                       (method.Parameters[0].Type.IsEqualTo(sourceProperty.Type, nullableEnabled) ||
-                        compilation.HasImplicitConversion(sourceProperty.Type, method.Parameters[0].Type));
-
-            case 2:
-                if (method.ParameterIsMappaContext(compilation, 1))
-                {
-                    if (method.Parameters[0].Type.IsEqualTo(sourceClassType, nullableEnabled) ||
-                        compilation.HasImplicitConversion(sourceClassType, method.Parameters[0].Type))
-                    {
-                        return false;
-                    }
-
-                    return sourceProperty is not null &&
-                           (method.Parameters[0].Type.IsEqualTo(sourceProperty.Type, nullableEnabled) ||
-                            compilation.HasImplicitConversion(sourceProperty.Type, method.Parameters[0].Type));
-                }
-
-                return sourceProperty is not null;
-
-            case 3:
-                return sourceProperty is not null;
-
-            default:
-                return false;
+    private static bool UsesSourcePropertyForSingleParameter(
+        IMethodSymbol method,
+        Compilation compilation,
+        IPropertySymbol? sourceProperty,
+        ITypeSymbol sourceClassType,
+        bool nullableEnabled)
+    {
+        if (method.ParameterIsMappaContext(compilation, 0))
+        {
+            return false;
         }
+
+        if (ParameterAcceptsSourceType(method.Parameters[0].Type, compilation, sourceClassType, nullableEnabled))
+        {
+            return false;
+        }
+
+        return sourceProperty is not null &&
+               ParameterAcceptsSourceType(method.Parameters[0].Type, compilation, sourceProperty.Type, nullableEnabled);
     }
+
+    private static bool UsesSourcePropertyForTwoParameters(
+        IMethodSymbol method,
+        Compilation compilation,
+        IPropertySymbol? sourceProperty,
+        ITypeSymbol sourceClassType,
+        bool nullableEnabled)
+    {
+        if (method.ParameterIsMappaContext(compilation, 1))
+        {
+            if (ParameterAcceptsSourceType(method.Parameters[0].Type, compilation, sourceClassType, nullableEnabled))
+            {
+                return false;
+            }
+
+            return sourceProperty is not null &&
+                   ParameterAcceptsSourceType(method.Parameters[0].Type, compilation, sourceProperty.Type, nullableEnabled);
+        }
+
+        return sourceProperty is not null;
+    }
+
+    private static bool ParameterAcceptsSourceType(
+        ITypeSymbol parameterType,
+        Compilation compilation,
+        ITypeSymbol sourceType,
+        bool nullableEnabled)
+        => parameterType.IsEqualTo(sourceType, nullableEnabled) ||
+           compilation.HasImplicitConversion(sourceType, parameterType);
 }

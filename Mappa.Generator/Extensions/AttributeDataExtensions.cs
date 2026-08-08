@@ -44,6 +44,346 @@ internal static class AttributeDataExtensions
     private const string MappaAttributeFullName = "Mappa.Attributes.MappaAttribute";
     private const string MappaDependencyInjectionAttributeFullName = "Mappa.Attributes.MappaDependencyInjectionAttribute";
 
+    private static readonly Dictionary<string, Action<MappaSettingsAttribute, TypedConstant>> MappaSettingsNamedArgumentApplicators =
+        new(StringComparer.Ordinal)
+        {
+            [nameof(MappaSettingsAttribute.DateTimeFormat)] = static (attribute, constant) =>
+            {
+                if (constant.Value is string value)
+                {
+                    attribute.DateTimeFormat = value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.DateTimeOffsetFormat)] = static (attribute, constant) =>
+            {
+                if (constant.Value is string value)
+                {
+                    attribute.DateTimeOffsetFormat = value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.DateOnlyFormat)] = static (attribute, constant) =>
+            {
+                if (constant.Value is string value)
+                {
+                    attribute.DateOnlyFormat = value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.TimeOnlyFormat)] = static (attribute, constant) =>
+            {
+                if (constant.Value is string value)
+                {
+                    attribute.TimeOnlyFormat = value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.DateTimeStyle)] = static (attribute, constant) =>
+                attribute.DateTimeStyle = ReadDateTimeStyles(constant),
+            [nameof(MappaSettingsAttribute.DateTimeOffsetStyle)] = static (attribute, constant) =>
+                attribute.DateTimeOffsetStyle = ReadDateTimeStyles(constant),
+            [nameof(MappaSettingsAttribute.DateOnlyStyle)] = static (attribute, constant) =>
+                attribute.DateOnlyStyle = ReadDateTimeStyles(constant),
+            [nameof(MappaSettingsAttribute.TimeOnlyStyle)] = static (attribute, constant) =>
+                attribute.TimeOnlyStyle = ReadDateTimeStyles(constant),
+            [nameof(MappaSettingsAttribute.GlobalDateTimeStyle)] = static (attribute, constant) =>
+                attribute.GlobalDateTimeStyle = ReadDateTimeStyles(constant),
+            [nameof(MappaSettingsAttribute.TimeSpanFormat)] = static (attribute, constant) =>
+            {
+                if (constant.Value is string value)
+                {
+                    attribute.TimeSpanFormat = value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.GuidFormat)] = static (attribute, constant) =>
+            {
+                if (constant.Value is string value)
+                {
+                    attribute.GuidFormat = value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.ByteFormat)] = static (attribute, constant) =>
+            {
+                if (constant.Value is string value)
+                {
+                    attribute.ByteFormat = value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.SByteFormat)] = static (attribute, constant) =>
+            {
+                if (constant.Value is string value)
+                {
+                    attribute.SByteFormat = value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.ShortFormat)] = static (attribute, constant) =>
+            {
+                if (constant.Value is string value)
+                {
+                    attribute.ShortFormat = value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.UShortFormat)] = static (attribute, constant) =>
+            {
+                if (constant.Value is string value)
+                {
+                    attribute.UShortFormat = value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.IntFormat)] = static (attribute, constant) =>
+            {
+                if (constant.Value is string value)
+                {
+                    attribute.IntFormat = value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.UIntFormat)] = static (attribute, constant) =>
+            {
+                if (constant.Value is string value)
+                {
+                    attribute.UIntFormat = value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.LongFormat)] = static (attribute, constant) =>
+            {
+                if (constant.Value is string value)
+                {
+                    attribute.LongFormat = value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.ULongFormat)] = static (attribute, constant) =>
+            {
+                if (constant.Value is string value)
+                {
+                    attribute.ULongFormat = value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.DecimalFormat)] = static (attribute, constant) =>
+            {
+                if (constant.Value is string value)
+                {
+                    attribute.DecimalFormat = value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.FloatFormat)] = static (attribute, constant) =>
+            {
+                if (constant.Value is string value)
+                {
+                    attribute.FloatFormat = value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.DoubleFormat)] = static (attribute, constant) =>
+            {
+                if (constant.Value is string value)
+                {
+                    attribute.DoubleFormat = value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.ByteStyle)] = static (attribute, constant) =>
+                attribute.ByteStyle = ReadNumberStyles(constant),
+            [nameof(MappaSettingsAttribute.SByteStyle)] = static (attribute, constant) =>
+                attribute.SByteStyle = ReadNumberStyles(constant),
+            [nameof(MappaSettingsAttribute.ShortStyle)] = static (attribute, constant) =>
+                attribute.ShortStyle = ReadNumberStyles(constant),
+            [nameof(MappaSettingsAttribute.UShortStyle)] = static (attribute, constant) =>
+                attribute.UShortStyle = ReadNumberStyles(constant),
+            [nameof(MappaSettingsAttribute.IntStyle)] = static (attribute, constant) =>
+                attribute.IntStyle = ReadNumberStyles(constant),
+            [nameof(MappaSettingsAttribute.UIntStyle)] = static (attribute, constant) =>
+                attribute.UIntStyle = ReadNumberStyles(constant),
+            [nameof(MappaSettingsAttribute.LongStyle)] = static (attribute, constant) =>
+                attribute.LongStyle = ReadNumberStyles(constant),
+            [nameof(MappaSettingsAttribute.ULongStyle)] = static (attribute, constant) =>
+                attribute.ULongStyle = ReadNumberStyles(constant),
+            [nameof(MappaSettingsAttribute.DecimalStyle)] = static (attribute, constant) =>
+                attribute.DecimalStyle = ReadNumberStyles(constant),
+            [nameof(MappaSettingsAttribute.FloatStyle)] = static (attribute, constant) =>
+                attribute.FloatStyle = ReadNumberStyles(constant),
+            [nameof(MappaSettingsAttribute.DoubleStyle)] = static (attribute, constant) =>
+                attribute.DoubleStyle = ReadNumberStyles(constant),
+            [nameof(MappaSettingsAttribute.GlobalNumberStyle)] = static (attribute, constant) =>
+                attribute.GlobalNumberStyle = ReadNumberStyles(constant),
+            [nameof(MappaSettingsAttribute.CultureName)] = static (attribute, constant) =>
+            {
+                if (constant.Value is string value)
+                {
+                    attribute.CultureName = value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.CultureInfoSetting)] = static (attribute, constant) =>
+            {
+                if (constant.Value is int value)
+                {
+                    attribute.CultureInfoSetting = (CultureInfoSetting)value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.ProtobufOptional)] = static (attribute, constant) =>
+            {
+                if (constant.Value is int value)
+                {
+                    attribute.ProtobufOptional = (BooleanSetting)value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.PragmaWarning)] = static (attribute, constant) =>
+            {
+                if (constant.Value is int value)
+                {
+                    attribute.PragmaWarning = (PragmaWarningSetting)value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.FastCollections)] = static (attribute, constant) =>
+            {
+                if (constant.Value is int value)
+                {
+                    attribute.FastCollections = (BooleanSetting)value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.ContainerCapacityConstructors)] = static (attribute, constant) =>
+            {
+                if (constant.Value is int value)
+                {
+                    attribute.ContainerCapacityConstructors = (BooleanSetting)value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.PreventEnumerableCount)] = static (attribute, constant) =>
+            {
+                if (constant.Value is int value)
+                {
+                    attribute.PreventEnumerableCount = (BooleanSetting)value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.PolymorphicMapMethodWithMatchingDefaultAttribute)] = static (attribute, constant) =>
+            {
+                if (constant.Value is int value)
+                {
+                    attribute.PolymorphicMapMethodWithMatchingDefaultAttribute = (BooleanSetting)value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.CompatibleMapMethod)] = static (attribute, constant) =>
+            {
+                if (constant.Value is int value)
+                {
+                    attribute.CompatibleMapMethod = (BooleanSetting)value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.CaseInsensitivePropertyMap)] = static (attribute, constant) =>
+            {
+                if (constant.Value is int value)
+                {
+                    attribute.CaseInsensitivePropertyMap = (BooleanSetting)value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.IgnoreUnderscoreForPropertyMap)] = static (attribute, constant) =>
+            {
+                if (constant.Value is int value)
+                {
+                    attribute.IgnoreUnderscoreForPropertyMap = (BooleanSetting)value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.CaseInsensitiveEnumMap)] = static (attribute, constant) =>
+            {
+                if (constant.Value is int value)
+                {
+                    attribute.CaseInsensitiveEnumMap = (BooleanSetting)value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.EnumStringMapSetting)] = static (attribute, constant) =>
+            {
+                if (constant.Value is int value)
+                {
+                    attribute.EnumStringMapSetting = (EnumStringMapSetting)value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.EnumToEnumMapSetting)] = static (attribute, constant) =>
+            {
+                if (constant.Value is int value)
+                {
+                    attribute.EnumToEnumMapSetting = (EnumToEnumMapSetting)value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.IdentityMapDeepCopy)] = static (attribute, constant) =>
+            {
+                if (constant.Value is int value)
+                {
+                    attribute.IdentityMapDeepCopy = (IdentityMapDeepCopySetting)value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.EnumerableConcreteType)] = static (attribute, constant) =>
+            {
+                if (constant.Value is int value)
+                {
+                    attribute.EnumerableConcreteType = (EnumerableConcreteTypeSetting)value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.DictionaryAssignment)] = static (attribute, constant) =>
+            {
+                if (constant.Value is int value)
+                {
+                    attribute.DictionaryAssignment = (DictionaryAssignmentSetting)value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.ReferenceReusing)] = static (attribute, constant) =>
+            {
+                if (constant.Value is int value)
+                {
+                    attribute.ReferenceReusing = (BooleanSetting)value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.MaxRuntimeDepth)] = static (attribute, constant) =>
+                attribute.MaxRuntimeDepth = ReadDepth(constant),
+            [nameof(MappaSettingsAttribute.MaxCompileTimeDepth)] = static (attribute, constant) =>
+                attribute.MaxCompileTimeDepth = ReadDepth(constant),
+            [nameof(MappaSettingsAttribute.BreakCompileTimeCycles)] = static (attribute, constant) =>
+            {
+                if (constant.Value is int value)
+                {
+                    attribute.BreakCompileTimeCycles = (BooleanSetting)value;
+                }
+            },
+        };
+
+    private static readonly Dictionary<string, Action<MappaDependencyInjectionNamedArgumentValues, TypedConstant>>
+        MappaDependencyInjectionNamedArgumentApplicators =
+            new(StringComparer.Ordinal)
+            {
+                [nameof(MappaDependencyInjectionAttribute.ExtensionMethod)] = static (values, constant) =>
+                {
+                    if (constant.Value is bool extensionMethodValue)
+                    {
+                        values.ExtensionMethod = extensionMethodValue;
+                    }
+                },
+                [nameof(MappaDependencyInjectionAttribute.MethodName)] = static (values, constant) =>
+                {
+                    if (constant.Value is string methodNameValue)
+                    {
+                        values.MethodName = methodNameValue;
+                    }
+                },
+                [nameof(MappaDependencyInjectionAttribute.Accessibility)] = static (values, constant) =>
+                {
+                    if (TryReadEnum(constant, out MappaDependencyInjectionMethodAccessibility accessibilityValue))
+                    {
+                        values.Accessibility = accessibilityValue;
+                    }
+                },
+                [nameof(MappaDependencyInjectionAttribute.ServiceLifetime)] = static (values, constant) =>
+                {
+                    if (TryReadEnum(constant, out MappaDependencyInjectionServiceLifetime serviceLifetimeValue))
+                    {
+                        values.ServiceLifetime = serviceLifetimeValue;
+                    }
+                },
+                [nameof(MappaDependencyInjectionAttribute.InjectInterfaces)] = static (values, constant) =>
+                {
+                    if (TryReadEnum(constant, out MappaDependencyInjectionInjectInterfaces injectInterfacesValue))
+                    {
+                        values.InjectInterfaces = injectInterfacesValue;
+                    }
+                },
+                [nameof(MappaDependencyInjectionAttribute.IgnoreType)] = static (values, constant) =>
+                    values.IgnoreTypes = ReadNamedTypeArray(constant),
+                [nameof(MappaDependencyInjectionAttribute.InjectFromAssemblies)] = static (values, constant) =>
+                    values.InjectFromAssemblies = ReadNamedTypeArray(constant),
+            };
+
     /// <summary>
     /// Gets the <see cref="MappaMapEnumMemberAttribute{TEnum}"/> and
     /// <see cref="MappaMapEnumMemberAttribute{TEnum, TOtherEnum}"/> declarations applied to the method.
@@ -59,44 +399,12 @@ internal static class AttributeDataExtensions
 
         foreach (var attributeData in attributes)
         {
-            if (attributeData.AttributeClass is not { } attributeClass
-                || attributeData.ConstructorArguments.Length != 2)
+            if (TryParseEnumMapMemberAttribute(
+                    attributeData,
+                    enumMemberAttributeSymbol,
+                    enumMemberToEnumAttributeSymbol) is { } enumMapMember)
             {
-                continue;
-            }
-
-            var constructorArguments = attributeData.ConstructorArguments;
-            if (IsAttribute(attributeClass, enumMemberAttributeSymbol)
-                && GetEnumTypeArgument(attributeClass, 1, 0) is { } enumType
-                && GetEnumMemberName(constructorArguments[0]) is { } enumMemberName)
-            {
-                switch (constructorArguments[1].Value)
-                {
-                    case string stringValue:
-                        results.Add(new EnumMapMemberInfoAttribute(enumType, enumMemberName, null, stringValue, null, null));
-                        break;
-
-                    case int integerValue:
-                        results.Add(new EnumMapMemberInfoAttribute(enumType, enumMemberName, integerValue, null, null, null));
-                        break;
-                }
-
-                continue;
-            }
-
-            if (IsAttribute(attributeClass, enumMemberToEnumAttributeSymbol)
-                && GetEnumTypeArgument(attributeClass, 2, 0) is { } firstEnumType
-                && GetEnumTypeArgument(attributeClass, 2, 1) is { } secondEnumType
-                && GetEnumMemberName(constructorArguments[0]) is { } firstEnumMemberName
-                && GetEnumMemberName(constructorArguments[1]) is { } secondEnumMemberName)
-            {
-                results.Add(new EnumMapMemberInfoAttribute(
-                    firstEnumType,
-                    firstEnumMemberName,
-                    null,
-                    null,
-                    secondEnumType,
-                    secondEnumMemberName));
+                results.Add(enumMapMember);
             }
         }
 
@@ -144,47 +452,9 @@ internal static class AttributeDataExtensions
 
         foreach (var attributeData in attributes)
         {
-            if (attributeData.AttributeClass is not { } attributeClass
-                || !IsAttribute(attributeClass, enumDefaultAttributeSymbol)
-                || GetEnumTypeArgument(attributeClass, 1, 0) is not { } enumType)
+            if (TryParseEnumMapDefaultAttribute(attributeData, enumDefaultAttributeSymbol) is { } enumMapDefault)
             {
-                continue;
-            }
-
-            var constructorArguments = attributeData.ConstructorArguments;
-            if (constructorArguments.Length == 0
-                || constructorArguments[0].Value is not int behaviorValue)
-            {
-                continue;
-            }
-
-            var behavior = (MappaMapEnumDefaultBehavior)behaviorValue;
-            if (constructorArguments.Length == 1)
-            {
-                results.Add(new EnumMapDefaultInfoAttribute(enumType, behavior, null, null, null));
-                continue;
-            }
-
-            var defaultValue = constructorArguments[1];
-            if (defaultValue.Type is INamedTypeSymbol { TypeKind: TypeKind.Enum })
-            {
-                if (GetEnumMemberName(defaultValue) is { } enumDefaultMemberName)
-                {
-                    results.Add(new EnumMapDefaultInfoAttribute(enumType, behavior, enumDefaultMemberName, null, null));
-                }
-
-                continue;
-            }
-
-            switch (defaultValue.Value)
-            {
-                case string stringDefaultValue:
-                    results.Add(new EnumMapDefaultInfoAttribute(enumType, behavior, null, null, stringDefaultValue));
-                    break;
-
-                case int integerDefaultValue:
-                    results.Add(new EnumMapDefaultInfoAttribute(enumType, behavior, null, integerDefaultValue, null));
-                    break;
+                results.Add(enumMapDefault);
             }
         }
 
@@ -224,19 +494,7 @@ internal static class AttributeDataExtensions
                 continue;
             }
 
-            var constructorArguments = attributeData.ConstructorArguments;
-            attribute = constructorArguments.Length switch
-            {
-                1 when constructorArguments[0].Value is string methodName
-                    => new MappaTypeMappingDefaultAttribute(methodName),
-                1 when constructorArguments[0].Value is int behavior
-                    => new MappaTypeMappingDefaultAttribute((MappaTypeMappingDefaultBehavior)behavior),
-                2 when constructorArguments[0].Value is INamedTypeSymbol invokeType && constructorArguments[1].Value is string methodName
-                    => new MappaTypeMappingDefaultAttribute(new FakeType(invokeType.ToDisplayString()), methodName),
-                2 when constructorArguments[0].Value is int behavior && constructorArguments[1].Value is INamedTypeSymbol type
-                    => new MappaTypeMappingDefaultAttribute((MappaTypeMappingDefaultBehavior)behavior, new FakeType(type.ToDisplayString())),
-                _ => null,
-            };
+            attribute = CreateMappaTypeMappingDefaultFromConstructorArguments(attributeData.ConstructorArguments);
         }
 
         return attribute;
@@ -256,32 +514,12 @@ internal static class AttributeDataExtensions
 
         foreach (var attributeData in attributes)
         {
-            if (attributeData.AttributeClass is not { } attributeClass)
+            if (TryParseTypeMappingAttribute(
+                    attributeData,
+                    mappaTypeMappingAttributeSymbol,
+                    mappaTypeMappingAttributeOfTSymbol) is { } typeMapping)
             {
-                continue;
-            }
-
-            if (IsAttribute(attributeClass, mappaTypeMappingAttributeOfTSymbol)
-                && GetEnumTypeArgument(attributeClass, 2, 0) is { } genericTargetType
-                && GetEnumTypeArgument(attributeClass, 2, 1) is { } genericSourceType)
-            {
-                results.Add(new MappaTypeMappingAttribute(
-                    new FakeType(genericTargetType.ToDisplayString()),
-                    new FakeType(genericSourceType.ToDisplayString())));
-                continue;
-            }
-
-            if (!SymbolEqualityComparer.Default.Equals(attributeClass, mappaTypeMappingAttributeSymbol))
-            {
-                continue;
-            }
-
-            var constructorArguments = attributeData.ConstructorArguments;
-            if (constructorArguments.Length == 2
-                && constructorArguments[0].Value is INamedTypeSymbol targetType
-                && constructorArguments[1].Value is INamedTypeSymbol sourceType)
-            {
-                results.Add(new MappaTypeMappingAttribute(new FakeType(targetType.ToDisplayString()), new FakeType(sourceType.ToDisplayString())));
+                results.Add(typeMapping);
             }
         }
 
@@ -301,50 +539,9 @@ internal static class AttributeDataExtensions
         foreach (var attributeData in attributes
                      .Where(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, mappaInvokeMethodAttributeSymbol)))
         {
-            MappaInvokeMethodAttribute? attribute = null;
-            var constructorArguments = attributeData.ConstructorArguments;
-            switch (constructorArguments.Length)
-            {
-                case 2: // (targetPropertyName, methodName)
-                    {
-                        if (constructorArguments[0].Value is string targetParameterName &&
-                            constructorArguments[1].Value is string methodName)
-                        {
-                            attribute = new MappaInvokeMethodAttribute(targetParameterName, methodName);
-                        }
-                    }
-
-                    break;
-
-                case 3: // (targetPropertyName, classType, methodName) or (targetPropertyName, fieldName, methodName)
-                    {
-                        if (constructorArguments[0].Value is string targetParameterName &&
-                            constructorArguments[2].Value is string methodName)
-                        {
-                            attribute = constructorArguments[1].Value switch
-                            {
-                                string fieldName => new MappaInvokeMethodAttribute(targetParameterName, fieldName, methodName),
-                                INamedTypeSymbol classType => new MappaInvokeMethodAttribute(targetParameterName, new FakeType(classType.ToDisplayString()), methodName),
-                                _ => null,
-                            };
-                        }
-                    }
-
-                    break;
-            }
-
-            if (attribute is null)
+            if (TryCreateInvokeMethodAttribute(attributeData) is not { } attribute)
             {
                 continue;
-            }
-
-            foreach (var namedArgument in attributeData.NamedArguments)
-            {
-                if (namedArgument.Key == nameof(MappaInvokeMethodAttribute.SourcePropertyName) &&
-                    namedArgument.Value.Value is string sourcePropertyName)
-                {
-                    attribute.SourcePropertyName = sourcePropertyName;
-                }
             }
 
             results.Add(attribute);
@@ -393,42 +590,9 @@ internal static class AttributeDataExtensions
         foreach (var attributeData in attributes
                      .Where(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, attributeSymbol)))
         {
-            var constructorArguments = attributeData.ConstructorArguments;
-            var location = attributeData.ApplicationSyntaxReference?.GetSyntax().GetLocation();
-            if (constructorArguments.Length == 2 &&
-                constructorArguments[0].Value is INamedTypeSymbol targetType &&
-                constructorArguments[1].Value is string methodName)
+            if (TryCreateMappaObjectFactoryAttributeData(attributeData) is { } factoryAttribute)
             {
-                results.Add(new MappaObjectFactoryAttributeData(
-                    targetType,
-                    methodName,
-                    null,
-                    null,
-                    location));
-            }
-            else if (constructorArguments.Length == 3 &&
-                     constructorArguments[0].Value is INamedTypeSymbol factoryTargetType &&
-                     constructorArguments[2].Value is string factoryMethodName)
-            {
-                switch (constructorArguments[1].Value)
-                {
-                    case string fieldName:
-                        results.Add(new MappaObjectFactoryAttributeData(
-                            factoryTargetType,
-                            factoryMethodName,
-                            null,
-                            fieldName,
-                            location));
-                        break;
-                    case INamedTypeSymbol classType:
-                        results.Add(new MappaObjectFactoryAttributeData(
-                            factoryTargetType,
-                            factoryMethodName,
-                            new FakeType(classType.ToDisplayString()),
-                            null,
-                            location));
-                        break;
-                }
+                results.Add(factoryAttribute);
             }
         }
 
@@ -554,265 +718,10 @@ internal static class AttributeDataExtensions
         var attribute = new MappaSettingsAttribute();
         foreach (var namedArgument in attributeData.NamedArguments)
         {
-            switch (namedArgument.Key)
-            {
-                case nameof(MappaSettingsAttribute.DateTimeFormat) when namedArgument.Value.Value is string value:
-                    attribute.DateTimeFormat = value;
-                    break;
-
-                case nameof(MappaSettingsAttribute.DateTimeOffsetFormat) when namedArgument.Value.Value is string value:
-                    attribute.DateTimeOffsetFormat = value;
-                    break;
-
-                case nameof(MappaSettingsAttribute.DateOnlyFormat) when namedArgument.Value.Value is string value:
-                    attribute.DateOnlyFormat = value;
-                    break;
-
-                case nameof(MappaSettingsAttribute.TimeOnlyFormat) when namedArgument.Value.Value is string value:
-                    attribute.TimeOnlyFormat = value;
-                    break;
-
-                case nameof(MappaSettingsAttribute.DateTimeStyle):
-                    attribute.DateTimeStyle = ReadDateTimeStyles(namedArgument.Value);
-                    break;
-
-                case nameof(MappaSettingsAttribute.DateTimeOffsetStyle):
-                    attribute.DateTimeOffsetStyle = ReadDateTimeStyles(namedArgument.Value);
-                    break;
-
-                case nameof(MappaSettingsAttribute.DateOnlyStyle):
-                    attribute.DateOnlyStyle = ReadDateTimeStyles(namedArgument.Value);
-                    break;
-
-                case nameof(MappaSettingsAttribute.TimeOnlyStyle):
-                    attribute.TimeOnlyStyle = ReadDateTimeStyles(namedArgument.Value);
-                    break;
-
-                case nameof(MappaSettingsAttribute.GlobalDateTimeStyle):
-                    attribute.GlobalDateTimeStyle = ReadDateTimeStyles(namedArgument.Value);
-                    break;
-
-                case nameof(MappaSettingsAttribute.TimeSpanFormat) when namedArgument.Value.Value is string value:
-                    attribute.TimeSpanFormat = value;
-                    break;
-
-                case nameof(MappaSettingsAttribute.GuidFormat) when namedArgument.Value.Value is string value:
-                    attribute.GuidFormat = value;
-                    break;
-
-                case nameof(MappaSettingsAttribute.ByteFormat) when namedArgument.Value.Value is string value:
-                    attribute.ByteFormat = value;
-                    break;
-
-                case nameof(MappaSettingsAttribute.SByteFormat) when namedArgument.Value.Value is string value:
-                    attribute.SByteFormat = value;
-                    break;
-
-                case nameof(MappaSettingsAttribute.ShortFormat) when namedArgument.Value.Value is string value:
-                    attribute.ShortFormat = value;
-                    break;
-
-                case nameof(MappaSettingsAttribute.UShortFormat) when namedArgument.Value.Value is string value:
-                    attribute.UShortFormat = value;
-                    break;
-
-                case nameof(MappaSettingsAttribute.IntFormat) when namedArgument.Value.Value is string value:
-                    attribute.IntFormat = value;
-                    break;
-
-                case nameof(MappaSettingsAttribute.UIntFormat) when namedArgument.Value.Value is string value:
-                    attribute.UIntFormat = value;
-                    break;
-
-                case nameof(MappaSettingsAttribute.LongFormat) when namedArgument.Value.Value is string value:
-                    attribute.LongFormat = value;
-                    break;
-
-                case nameof(MappaSettingsAttribute.ULongFormat) when namedArgument.Value.Value is string value:
-                    attribute.ULongFormat = value;
-                    break;
-
-                case nameof(MappaSettingsAttribute.DecimalFormat) when namedArgument.Value.Value is string value:
-                    attribute.DecimalFormat = value;
-                    break;
-
-                case nameof(MappaSettingsAttribute.FloatFormat) when namedArgument.Value.Value is string value:
-                    attribute.FloatFormat = value;
-                    break;
-
-                case nameof(MappaSettingsAttribute.DoubleFormat) when namedArgument.Value.Value is string value:
-                    attribute.DoubleFormat = value;
-                    break;
-
-                case nameof(MappaSettingsAttribute.ByteStyle):
-                    attribute.ByteStyle = ReadNumberStyles(namedArgument.Value);
-                    break;
-
-                case nameof(MappaSettingsAttribute.SByteStyle):
-                    attribute.SByteStyle = ReadNumberStyles(namedArgument.Value);
-                    break;
-
-                case nameof(MappaSettingsAttribute.ShortStyle):
-                    attribute.ShortStyle = ReadNumberStyles(namedArgument.Value);
-                    break;
-
-                case nameof(MappaSettingsAttribute.UShortStyle):
-                    attribute.UShortStyle = ReadNumberStyles(namedArgument.Value);
-                    break;
-
-                case nameof(MappaSettingsAttribute.IntStyle):
-                    attribute.IntStyle = ReadNumberStyles(namedArgument.Value);
-                    break;
-
-                case nameof(MappaSettingsAttribute.UIntStyle):
-                    attribute.UIntStyle = ReadNumberStyles(namedArgument.Value);
-                    break;
-
-                case nameof(MappaSettingsAttribute.LongStyle):
-                    attribute.LongStyle = ReadNumberStyles(namedArgument.Value);
-                    break;
-
-                case nameof(MappaSettingsAttribute.ULongStyle):
-                    attribute.ULongStyle = ReadNumberStyles(namedArgument.Value);
-                    break;
-
-                case nameof(MappaSettingsAttribute.DecimalStyle):
-                    attribute.DecimalStyle = ReadNumberStyles(namedArgument.Value);
-                    break;
-
-                case nameof(MappaSettingsAttribute.FloatStyle):
-                    attribute.FloatStyle = ReadNumberStyles(namedArgument.Value);
-                    break;
-
-                case nameof(MappaSettingsAttribute.DoubleStyle):
-                    attribute.DoubleStyle = ReadNumberStyles(namedArgument.Value);
-                    break;
-
-                case nameof(MappaSettingsAttribute.GlobalNumberStyle):
-                    attribute.GlobalNumberStyle = ReadNumberStyles(namedArgument.Value);
-                    break;
-
-                case nameof(MappaSettingsAttribute.CultureName) when namedArgument.Value.Value is string value:
-                    attribute.CultureName = value;
-                    break;
-
-                case nameof(MappaSettingsAttribute.CultureInfoSetting) when namedArgument.Value.Value is int value:
-                    attribute.CultureInfoSetting = (CultureInfoSetting)value;
-                    break;
-
-                case nameof(MappaSettingsAttribute.ProtobufOptional) when namedArgument.Value.Value is int value:
-                    attribute.ProtobufOptional = (BooleanSetting)value;
-                    break;
-
-                case nameof(MappaSettingsAttribute.PragmaWarning) when namedArgument.Value.Value is int value:
-                    attribute.PragmaWarning = (PragmaWarningSetting)value;
-                    break;
-
-                case nameof(MappaSettingsAttribute.FastCollections) when namedArgument.Value.Value is int value:
-                    attribute.FastCollections = (BooleanSetting)value;
-                    break;
-
-                case nameof(MappaSettingsAttribute.ContainerCapacityConstructors) when namedArgument.Value.Value is int value:
-                    attribute.ContainerCapacityConstructors = (BooleanSetting)value;
-                    break;
-
-                case nameof(MappaSettingsAttribute.PreventEnumerableCount) when namedArgument.Value.Value is int value:
-                    attribute.PreventEnumerableCount = (BooleanSetting)value;
-                    break;
-
-                case nameof(MappaSettingsAttribute.PolymorphicMapMethodWithMatchingDefaultAttribute) when namedArgument.Value.Value is int value:
-                    attribute.PolymorphicMapMethodWithMatchingDefaultAttribute = (BooleanSetting)value;
-                    break;
-
-                case nameof(MappaSettingsAttribute.CompatibleMapMethod) when namedArgument.Value.Value is int value:
-                    attribute.CompatibleMapMethod = (BooleanSetting)value;
-                    break;
-
-                case nameof(MappaSettingsAttribute.CaseInsensitivePropertyMap) when namedArgument.Value.Value is int value:
-                    attribute.CaseInsensitivePropertyMap = (BooleanSetting)value;
-                    break;
-
-                case nameof(MappaSettingsAttribute.IgnoreUnderscoreForPropertyMap) when namedArgument.Value.Value is int value:
-                    attribute.IgnoreUnderscoreForPropertyMap = (BooleanSetting)value;
-                    break;
-
-                case nameof(MappaSettingsAttribute.CaseInsensitiveEnumMap) when namedArgument.Value.Value is int value:
-                    attribute.CaseInsensitiveEnumMap = (BooleanSetting)value;
-                    break;
-
-                case nameof(MappaSettingsAttribute.EnumStringMapSetting) when namedArgument.Value.Value is int value:
-                    attribute.EnumStringMapSetting = (EnumStringMapSetting)value;
-                    break;
-
-                case nameof(MappaSettingsAttribute.EnumToEnumMapSetting) when namedArgument.Value.Value is int value:
-                    attribute.EnumToEnumMapSetting = (EnumToEnumMapSetting)value;
-                    break;
-
-                case nameof(MappaSettingsAttribute.IdentityMapDeepCopy) when namedArgument.Value.Value is int value:
-                    attribute.IdentityMapDeepCopy = (IdentityMapDeepCopySetting)value;
-                    break;
-
-                case nameof(MappaSettingsAttribute.EnumerableConcreteType) when namedArgument.Value.Value is int value:
-                    attribute.EnumerableConcreteType = (EnumerableConcreteTypeSetting)value;
-                    break;
-
-                case nameof(MappaSettingsAttribute.DictionaryAssignment) when namedArgument.Value.Value is int value:
-                    attribute.DictionaryAssignment = (DictionaryAssignmentSetting)value;
-                    break;
-
-                case nameof(MappaSettingsAttribute.ReferenceReusing) when namedArgument.Value.Value is int value:
-                    attribute.ReferenceReusing = (BooleanSetting)value;
-                    break;
-
-                case nameof(MappaSettingsAttribute.MaxRuntimeDepth):
-                    attribute.MaxRuntimeDepth = ReadDepth(namedArgument.Value);
-                    break;
-
-                case nameof(MappaSettingsAttribute.MaxCompileTimeDepth):
-                    attribute.MaxCompileTimeDepth = ReadDepth(namedArgument.Value);
-                    break;
-
-                case nameof(MappaSettingsAttribute.BreakCompileTimeCycles) when namedArgument.Value.Value is int value:
-                    attribute.BreakCompileTimeCycles = (BooleanSetting)value;
-                    break;
-            }
+            ApplyMappaSettingsNamedArgument(attribute, namedArgument);
         }
 
         return attribute;
-
-        static DateTimeStyles ReadDateTimeStyles(TypedConstant typedConstant)
-        {
-            return typedConstant.Value switch
-            {
-                null => MappaSettingsAttribute.UndefinedDateTimeStyle,
-                int intValue => (DateTimeStyles)intValue,
-                DateTimeStyles dateTimeStyles => dateTimeStyles,
-                _ => MappaSettingsAttribute.UndefinedDateTimeStyle,
-            };
-        }
-
-        static NumberStyles ReadNumberStyles(TypedConstant typedConstant)
-        {
-            return typedConstant.Value switch
-            {
-                null => MappaSettingsAttribute.UndefinedNumberStyle,
-                int intValue => (NumberStyles)intValue,
-                NumberStyles numberStyles => numberStyles,
-                _ => MappaSettingsAttribute.UndefinedNumberStyle,
-            };
-        }
-
-        static short ReadDepth(TypedConstant typedConstant)
-        {
-            return typedConstant.Value switch
-            {
-                null => MappaSettingsAttribute.UndefinedDepth,
-                short shortValue => shortValue,
-                int intValue => (short)intValue,
-                long longValue => (short)longValue,
-                _ => MappaSettingsAttribute.UndefinedDepth,
-            };
-        }
     }
 
     /// <summary>
@@ -1035,64 +944,434 @@ internal static class AttributeDataExtensions
             constructorMethodName = constructorName;
         }
 
-        var extensionMethod = true;
-        string? methodName = null;
-        var accessibility = MappaDependencyInjectionMethodAccessibility.Public;
-        var serviceLifetime = MappaDependencyInjectionServiceLifetime.Singleton;
-        var injectInterfaces = MappaDependencyInjectionInjectInterfaces.ClassOnly;
-        var ignoreTypes = ImmutableArray<INamedTypeSymbol>.Empty;
-        var injectFromAssemblies = ImmutableArray<INamedTypeSymbol>.Empty;
-
+        var namedArgumentValues = new MappaDependencyInjectionNamedArgumentValues();
         foreach (var namedArgument in attributeData.NamedArguments)
         {
-            switch (namedArgument.Key)
-            {
-                case nameof(MappaDependencyInjectionAttribute.ExtensionMethod)
-                    when namedArgument.Value.Value is bool extensionMethodValue:
-                    extensionMethod = extensionMethodValue;
-                    break;
-
-                case nameof(MappaDependencyInjectionAttribute.MethodName)
-                    when namedArgument.Value.Value is string methodNameValue:
-                    methodName = methodNameValue;
-                    break;
-
-                case nameof(MappaDependencyInjectionAttribute.Accessibility)
-                    when TryReadEnum(namedArgument.Value, out MappaDependencyInjectionMethodAccessibility accessibilityValue):
-                    accessibility = accessibilityValue;
-                    break;
-
-                case nameof(MappaDependencyInjectionAttribute.ServiceLifetime)
-                    when TryReadEnum(namedArgument.Value, out MappaDependencyInjectionServiceLifetime serviceLifetimeValue):
-                    serviceLifetime = serviceLifetimeValue;
-                    break;
-
-                case nameof(MappaDependencyInjectionAttribute.InjectInterfaces)
-                    when TryReadEnum(namedArgument.Value, out MappaDependencyInjectionInjectInterfaces injectInterfacesValue):
-                    injectInterfaces = injectInterfacesValue;
-                    break;
-
-                case nameof(MappaDependencyInjectionAttribute.IgnoreType):
-                    ignoreTypes = ReadNamedTypeArray(namedArgument.Value);
-                    break;
-
-                case nameof(MappaDependencyInjectionAttribute.InjectFromAssemblies):
-                    injectFromAssemblies = ReadNamedTypeArray(namedArgument.Value);
-                    break;
-            }
+            ApplyMappaDependencyInjectionNamedArgument(namedArgumentValues, namedArgument);
         }
 
         var location = attributeData.ApplicationSyntaxReference?.GetSyntax().GetLocation();
         return new MappaDependencyInjectionAttributeData(
             constructorMethodName,
-            methodName,
-            extensionMethod,
-            accessibility,
-            serviceLifetime,
-            injectInterfaces,
-            ignoreTypes,
-            injectFromAssemblies,
+            namedArgumentValues.MethodName,
+            namedArgumentValues.ExtensionMethod,
+            namedArgumentValues.Accessibility,
+            namedArgumentValues.ServiceLifetime,
+            namedArgumentValues.InjectInterfaces,
+            namedArgumentValues.IgnoreTypes,
+            namedArgumentValues.InjectFromAssemblies,
             location);
+    }
+
+    private static void ApplyMappaSettingsNamedArgument(
+        MappaSettingsAttribute attribute,
+        KeyValuePair<string, TypedConstant> namedArgument)
+    {
+        if (MappaSettingsNamedArgumentApplicators.TryGetValue(namedArgument.Key, out var apply))
+        {
+            apply(attribute, namedArgument.Value);
+        }
+    }
+
+    private static void ApplyMappaDependencyInjectionNamedArgument(
+        MappaDependencyInjectionNamedArgumentValues values,
+        KeyValuePair<string, TypedConstant> namedArgument)
+    {
+        if (MappaDependencyInjectionNamedArgumentApplicators.TryGetValue(namedArgument.Key, out var apply))
+        {
+            apply(values, namedArgument.Value);
+        }
+    }
+
+    private static EnumMapMemberInfoAttribute? TryParseEnumMapMemberAttribute(
+        AttributeData attributeData,
+        INamedTypeSymbol? enumMemberAttributeSymbol,
+        INamedTypeSymbol? enumMemberToEnumAttributeSymbol)
+    {
+        if (attributeData.AttributeClass is not { } attributeClass
+            || attributeData.ConstructorArguments.Length != 2)
+        {
+            return null;
+        }
+
+        var constructorArguments = attributeData.ConstructorArguments;
+        var singleEnumResult = TryParseSingleEnumMapMemberAttribute(
+            attributeClass,
+            enumMemberAttributeSymbol,
+            constructorArguments);
+        if (singleEnumResult is not null)
+        {
+            return singleEnumResult;
+        }
+
+        return TryParseEnumToEnumMapMemberAttribute(
+            attributeClass,
+            enumMemberToEnumAttributeSymbol,
+            constructorArguments);
+    }
+
+    private static EnumMapMemberInfoAttribute? TryParseSingleEnumMapMemberAttribute(
+        INamedTypeSymbol attributeClass,
+        INamedTypeSymbol? enumMemberAttributeSymbol,
+        ImmutableArray<TypedConstant> constructorArguments)
+    {
+        if (!IsAttribute(attributeClass, enumMemberAttributeSymbol)
+            || GetEnumTypeArgument(attributeClass, 1, 0) is not { } enumType
+            || GetEnumMemberName(constructorArguments[0]) is not { } enumMemberName)
+        {
+            return null;
+        }
+
+        return CreateSingleEnumMapMemberAttribute(enumType, enumMemberName, constructorArguments[1]);
+    }
+
+    private static EnumMapMemberInfoAttribute? TryParseEnumToEnumMapMemberAttribute(
+        INamedTypeSymbol attributeClass,
+        INamedTypeSymbol? enumMemberToEnumAttributeSymbol,
+        ImmutableArray<TypedConstant> constructorArguments)
+    {
+        if (!IsAttribute(attributeClass, enumMemberToEnumAttributeSymbol)
+            || GetEnumTypeArgument(attributeClass, 2, 0) is not { } firstEnumType
+            || GetEnumTypeArgument(attributeClass, 2, 1) is not { } secondEnumType
+            || GetEnumMemberName(constructorArguments[0]) is not { } firstEnumMemberName
+            || GetEnumMemberName(constructorArguments[1]) is not { } secondEnumMemberName)
+        {
+            return null;
+        }
+
+        return new EnumMapMemberInfoAttribute(
+            firstEnumType,
+            firstEnumMemberName,
+            null,
+            null,
+            secondEnumType,
+            secondEnumMemberName);
+    }
+
+    private static EnumMapMemberInfoAttribute? CreateSingleEnumMapMemberAttribute(
+        INamedTypeSymbol enumType,
+        string enumMemberName,
+        TypedConstant secondArgument)
+    {
+        return secondArgument.Value switch
+        {
+            string stringValue => new EnumMapMemberInfoAttribute(enumType, enumMemberName, null, stringValue, null, null),
+            int integerValue => new EnumMapMemberInfoAttribute(enumType, enumMemberName, integerValue, null, null, null),
+            _ => null,
+        };
+    }
+
+    private static EnumMapDefaultInfoAttribute? TryParseEnumMapDefaultAttribute(
+        AttributeData attributeData,
+        INamedTypeSymbol? enumDefaultAttributeSymbol)
+    {
+        if (attributeData.AttributeClass is not { } attributeClass
+            || !IsAttribute(attributeClass, enumDefaultAttributeSymbol)
+            || GetEnumTypeArgument(attributeClass, 1, 0) is not { } enumType)
+        {
+            return null;
+        }
+
+        var constructorArguments = attributeData.ConstructorArguments;
+        if (constructorArguments.Length == 0
+            || constructorArguments[0].Value is not int behaviorValue)
+        {
+            return null;
+        }
+
+        var behavior = (MappaMapEnumDefaultBehavior)behaviorValue;
+        if (constructorArguments.Length == 1)
+        {
+            return new EnumMapDefaultInfoAttribute(enumType, behavior, null, null, null);
+        }
+
+        return CreateEnumMapDefaultWithExplicitDefault(enumType, behavior, constructorArguments[1]);
+    }
+
+    private static EnumMapDefaultInfoAttribute? CreateEnumMapDefaultWithExplicitDefault(
+        INamedTypeSymbol enumType,
+        MappaMapEnumDefaultBehavior behavior,
+        TypedConstant defaultValue)
+    {
+        if (defaultValue.Type is INamedTypeSymbol { TypeKind: TypeKind.Enum }
+            && GetEnumMemberName(defaultValue) is { } enumDefaultMemberName)
+        {
+            return new EnumMapDefaultInfoAttribute(enumType, behavior, enumDefaultMemberName, null, null);
+        }
+
+        return defaultValue.Value switch
+        {
+            string stringDefaultValue => new EnumMapDefaultInfoAttribute(enumType, behavior, null, null, stringDefaultValue),
+            int integerDefaultValue => new EnumMapDefaultInfoAttribute(enumType, behavior, null, integerDefaultValue, null),
+            _ => null,
+        };
+    }
+
+    private static MappaTypeMappingDefaultAttribute? CreateMappaTypeMappingDefaultFromConstructorArguments(
+        ImmutableArray<TypedConstant> constructorArguments)
+    {
+        return constructorArguments.Length switch
+        {
+            1 => CreateMappaTypeMappingDefaultFromSingleConstructorArgument(constructorArguments[0]),
+            2 => CreateMappaTypeMappingDefaultFromTwoConstructorArguments(constructorArguments[0], constructorArguments[1]),
+            _ => null,
+        };
+    }
+
+    private static MappaTypeMappingDefaultAttribute? CreateMappaTypeMappingDefaultFromSingleConstructorArgument(
+        TypedConstant argument)
+    {
+        return argument.Value switch
+        {
+            string methodName => new MappaTypeMappingDefaultAttribute(methodName),
+            int behavior => new MappaTypeMappingDefaultAttribute((MappaTypeMappingDefaultBehavior)behavior),
+            _ => null,
+        };
+    }
+
+    private static MappaTypeMappingDefaultAttribute? CreateMappaTypeMappingDefaultFromTwoConstructorArguments(
+        TypedConstant firstArgument,
+        TypedConstant secondArgument)
+    {
+        if (firstArgument.Value is INamedTypeSymbol invokeType && secondArgument.Value is string methodName)
+        {
+            return new MappaTypeMappingDefaultAttribute(new FakeType(invokeType.ToDisplayString()), methodName);
+        }
+
+        if (firstArgument.Value is int behavior && secondArgument.Value is INamedTypeSymbol type)
+        {
+            return new MappaTypeMappingDefaultAttribute((MappaTypeMappingDefaultBehavior)behavior, new FakeType(type.ToDisplayString()));
+        }
+
+        return null;
+    }
+
+    private static MappaTypeMappingAttribute? TryParseTypeMappingAttribute(
+        AttributeData attributeData,
+        INamedTypeSymbol? mappaTypeMappingAttributeSymbol,
+        INamedTypeSymbol? mappaTypeMappingAttributeOfTSymbol)
+    {
+        if (attributeData.AttributeClass is not { } attributeClass)
+        {
+            return null;
+        }
+
+        var genericResult = TryParseGenericTypeMappingAttribute(attributeClass, mappaTypeMappingAttributeOfTSymbol);
+        if (genericResult is not null)
+        {
+            return genericResult;
+        }
+
+        return TryParseNonGenericTypeMappingAttribute(attributeClass, mappaTypeMappingAttributeSymbol, attributeData.ConstructorArguments);
+    }
+
+    private static MappaTypeMappingAttribute? TryParseGenericTypeMappingAttribute(
+        INamedTypeSymbol attributeClass,
+        INamedTypeSymbol? mappaTypeMappingAttributeOfTSymbol)
+    {
+        if (!IsAttribute(attributeClass, mappaTypeMappingAttributeOfTSymbol)
+            || GetEnumTypeArgument(attributeClass, 2, 0) is not { } genericTargetType
+            || GetEnumTypeArgument(attributeClass, 2, 1) is not { } genericSourceType)
+        {
+            return null;
+        }
+
+        return new MappaTypeMappingAttribute(
+            new FakeType(genericTargetType.ToDisplayString()),
+            new FakeType(genericSourceType.ToDisplayString()));
+    }
+
+    private static MappaTypeMappingAttribute? TryParseNonGenericTypeMappingAttribute(
+        INamedTypeSymbol attributeClass,
+        INamedTypeSymbol? mappaTypeMappingAttributeSymbol,
+        ImmutableArray<TypedConstant> constructorArguments)
+    {
+        if (!SymbolEqualityComparer.Default.Equals(attributeClass, mappaTypeMappingAttributeSymbol)
+            || constructorArguments.Length != 2
+            || constructorArguments[0].Value is not INamedTypeSymbol targetType
+            || constructorArguments[1].Value is not INamedTypeSymbol sourceType)
+        {
+            return null;
+        }
+
+        return new MappaTypeMappingAttribute(
+            new FakeType(targetType.ToDisplayString()),
+            new FakeType(sourceType.ToDisplayString()));
+    }
+
+    private static MappaInvokeMethodAttribute? TryCreateInvokeMethodAttribute(AttributeData attributeData)
+    {
+        var constructorArguments = attributeData.ConstructorArguments;
+        MappaInvokeMethodAttribute? attribute = constructorArguments.Length switch
+        {
+            2 when constructorArguments[0].Value is string targetParameterNameTwo
+                 && constructorArguments[1].Value is string methodNameTwo
+                => new MappaInvokeMethodAttribute(targetParameterNameTwo, methodNameTwo),
+            3 when constructorArguments[0].Value is string targetParameterNameThree
+                 && constructorArguments[2].Value is string methodNameThree
+                => CreateInvokeMethodAttributeWithMiddleArgument(
+                    targetParameterNameThree,
+                    constructorArguments[1],
+                    methodNameThree),
+            _ => null,
+        };
+
+        if (attribute is null)
+        {
+            return null;
+        }
+
+        ApplyInvokeMethodNamedArguments(attribute, attributeData.NamedArguments);
+        return attribute;
+    }
+
+    private static MappaInvokeMethodAttribute? CreateInvokeMethodAttributeWithMiddleArgument(
+        string targetParameterName,
+        TypedConstant middleArgument,
+        string methodName)
+    {
+        return middleArgument.Value switch
+        {
+            string fieldName => new MappaInvokeMethodAttribute(targetParameterName, fieldName, methodName),
+            INamedTypeSymbol classType => new MappaInvokeMethodAttribute(
+                targetParameterName,
+                new FakeType(classType.ToDisplayString()),
+                methodName),
+            _ => null,
+        };
+    }
+
+    private static void ApplyInvokeMethodNamedArguments(
+        MappaInvokeMethodAttribute attribute,
+        ImmutableArray<KeyValuePair<string, TypedConstant>> namedArguments)
+    {
+        foreach (var namedArgument in namedArguments)
+        {
+            if (namedArgument.Key == nameof(MappaInvokeMethodAttribute.SourcePropertyName)
+                && namedArgument.Value.Value is string sourcePropertyName)
+            {
+                attribute.SourcePropertyName = sourcePropertyName;
+            }
+        }
+    }
+
+    private static MappaObjectFactoryAttributeData? TryCreateMappaObjectFactoryAttributeData(AttributeData attributeData)
+    {
+        var constructorArguments = attributeData.ConstructorArguments;
+        var location = attributeData.ApplicationSyntaxReference?.GetSyntax().GetLocation();
+        if (constructorArguments.Length == 2
+            && constructorArguments[0].Value is INamedTypeSymbol targetType
+            && constructorArguments[1].Value is string methodName)
+        {
+            return new MappaObjectFactoryAttributeData(targetType, methodName, null, null, location);
+        }
+
+        if (constructorArguments.Length != 3
+            || constructorArguments[0].Value is not INamedTypeSymbol factoryTargetType
+            || constructorArguments[2].Value is not string factoryMethodName)
+        {
+            return null;
+        }
+
+        return CreateMappaObjectFactoryWithMiddleArgument(
+            factoryTargetType,
+            factoryMethodName,
+            constructorArguments[1],
+            location);
+    }
+
+    private static MappaObjectFactoryAttributeData? CreateMappaObjectFactoryWithMiddleArgument(
+        INamedTypeSymbol factoryTargetType,
+        string factoryMethodName,
+        TypedConstant middleArgument,
+        Location? location)
+    {
+        return middleArgument.Value switch
+        {
+            string fieldName => new MappaObjectFactoryAttributeData(
+                factoryTargetType,
+                factoryMethodName,
+                null,
+                fieldName,
+                location),
+            INamedTypeSymbol classType => new MappaObjectFactoryAttributeData(
+                factoryTargetType,
+                factoryMethodName,
+                new FakeType(classType.ToDisplayString()),
+                null,
+                location),
+            _ => null,
+        };
+    }
+
+    private static MapHookAttributeData? TryCreateMapHookAttributeData(AttributeData attributeData)
+    {
+        var constructorArguments = attributeData.ConstructorArguments;
+        var location = attributeData.ApplicationSyntaxReference?.GetSyntax().GetLocation();
+        if (constructorArguments.Length == 1
+            && constructorArguments[0].Value is string mapperMethodName)
+        {
+            return new MapHookAttributeData(mapperMethodName, null, null, location);
+        }
+
+        if (constructorArguments.Length != 2
+            || constructorArguments[1].Value is not string locatedMethodName)
+        {
+            return null;
+        }
+
+        return CreateMapHookWithLocationArgument(locatedMethodName, constructorArguments[0], location);
+    }
+
+    private static MapHookAttributeData? CreateMapHookWithLocationArgument(
+        string locatedMethodName,
+        TypedConstant locationArgument,
+        Location? location)
+    {
+        return locationArgument.Value switch
+        {
+            string fieldName => new MapHookAttributeData(locatedMethodName, null, fieldName, location),
+            INamedTypeSymbol classType => new MapHookAttributeData(
+                locatedMethodName,
+                new FakeType(classType.ToDisplayString()),
+                null,
+                location),
+            _ => null,
+        };
+    }
+
+    private static DateTimeStyles ReadDateTimeStyles(TypedConstant typedConstant)
+    {
+        return typedConstant.Value switch
+        {
+            null => MappaSettingsAttribute.UndefinedDateTimeStyle,
+            int intValue => (DateTimeStyles)intValue,
+            DateTimeStyles dateTimeStyles => dateTimeStyles,
+            _ => MappaSettingsAttribute.UndefinedDateTimeStyle,
+        };
+    }
+
+    private static NumberStyles ReadNumberStyles(TypedConstant typedConstant)
+    {
+        return typedConstant.Value switch
+        {
+            null => MappaSettingsAttribute.UndefinedNumberStyle,
+            int intValue => (NumberStyles)intValue,
+            NumberStyles numberStyles => numberStyles,
+            _ => MappaSettingsAttribute.UndefinedNumberStyle,
+        };
+    }
+
+    private static short ReadDepth(TypedConstant typedConstant)
+    {
+        return typedConstant.Value switch
+        {
+            null => MappaSettingsAttribute.UndefinedDepth,
+            short shortValue => shortValue,
+            int intValue => (short)intValue,
+            long longValue => (short)longValue,
+            _ => MappaSettingsAttribute.UndefinedDepth,
+        };
     }
 
     private static MapHookAttributeData[] GetMapHookAttributes(
@@ -1106,37 +1385,9 @@ internal static class AttributeDataExtensions
         foreach (var attributeData in attributes
                      .Where(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, attributeSymbol)))
         {
-            var constructorArguments = attributeData.ConstructorArguments;
-            var location = attributeData.ApplicationSyntaxReference?.GetSyntax().GetLocation();
-            if (constructorArguments.Length == 1 &&
-                constructorArguments[0].Value is string mapperMethodName)
+            if (TryCreateMapHookAttributeData(attributeData) is { } mapHook)
             {
-                results.Add(new MapHookAttributeData(
-                    mapperMethodName,
-                    null,
-                    null,
-                    location));
-            }
-            else if (constructorArguments.Length == 2 &&
-                     constructorArguments[1].Value is string locatedMethodName)
-            {
-                switch (constructorArguments[0].Value)
-                {
-                    case string fieldName:
-                        results.Add(new MapHookAttributeData(
-                            locatedMethodName,
-                            null,
-                            fieldName,
-                            location));
-                        break;
-                    case INamedTypeSymbol classType:
-                        results.Add(new MapHookAttributeData(
-                            locatedMethodName,
-                            new FakeType(classType.ToDisplayString()),
-                            null,
-                            location));
-                        break;
-                }
+                results.Add(mapHook);
             }
         }
 
@@ -1233,5 +1484,27 @@ internal static class AttributeDataExtensions
                 .Select(value => value.Value)
                 .OfType<INamedTypeSymbol>(),
         ];
+    }
+
+    private sealed class MappaDependencyInjectionNamedArgumentValues
+    {
+        internal bool ExtensionMethod { get; set; } = true;
+
+        internal string? MethodName { get; set; }
+
+        internal MappaDependencyInjectionMethodAccessibility Accessibility { get; set; } =
+            MappaDependencyInjectionMethodAccessibility.Public;
+
+        internal MappaDependencyInjectionServiceLifetime ServiceLifetime { get; set; } =
+            MappaDependencyInjectionServiceLifetime.Singleton;
+
+        internal MappaDependencyInjectionInjectInterfaces InjectInterfaces { get; set; } =
+            MappaDependencyInjectionInjectInterfaces.ClassOnly;
+
+        internal ImmutableArray<INamedTypeSymbol> IgnoreTypes { get; set; } =
+            ImmutableArray<INamedTypeSymbol>.Empty;
+
+        internal ImmutableArray<INamedTypeSymbol> InjectFromAssemblies { get; set; } =
+            ImmutableArray<INamedTypeSymbol>.Empty;
     }
 }

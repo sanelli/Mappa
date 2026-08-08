@@ -25,6 +25,23 @@ internal static class ReferenceHandlingCodeGenerator
     /// </summary>
     internal const string AccessorMethodName = "GetReferenceManager";
 
+    private static readonly Type[] ContainerOrWrapperStrategyTypes =
+    [
+        typeof(CollectionToCollectionMapStrategy),
+        typeof(DictionaryToDictionaryMapStrategy),
+        typeof(NullableStrategy),
+        typeof(TupleToTupleMapStrategy),
+        typeof(PolymorphismMapStrategy),
+        typeof(OptionalTargetPropertyMapStrategy),
+        typeof(OptionalSourcePropertyMapStrategy),
+        typeof(ReadonlyDictionaryPropertyMapStrategy),
+        typeof(ReadonlyCollectionPropertyMapStrategy),
+        typeof(ReadonlyAddCollectionPropertyMapStrategy),
+        typeof(ReadonlyQueuePropertyMapStrategy),
+        typeof(ReadonlyStackPropertyMapStrategy),
+        typeof(QueryableProjectionMapStrategy),
+    ];
+
     /// <summary>
     /// Returns <c>true</c> when ReferenceReusing or MaxRuntimeDepth is requested on <paramref name="settings"/>.
     /// </summary>
@@ -252,19 +269,16 @@ internal static class ReferenceHandlingCodeGenerator
             return false;
         }
 
-        if (IsContainerOrWrapperStrategy(strategy))
-        {
-            return false;
-        }
-
-        if (strategy is IdentityMapStrategy identity
-            && (identity.NestedFieldStrategies.Count > 0 || !identity.RequiresMemberwiseClone))
+        if (IsContainerOrWrapperStrategy(strategy) || IsIdentityStrategyIneligibleForReferenceHandling(strategy))
         {
             return false;
         }
 
         return AreReferenceTypesEligibleForReuse(strategy.TargetType, strategy.SourceType);
     }
+
+    private static bool IsContainerOrWrapperStrategy(MapStrategy strategy)
+        => ContainerOrWrapperStrategyTypes.Any(strategyType => strategyType.IsInstanceOfType(strategy));
 
     private static bool ShouldIncreaseDepth(MapStrategy strategy, MappaBuilderContext context)
     {
@@ -273,24 +287,21 @@ internal static class ReferenceHandlingCodeGenerator
             return false;
         }
 
-        if (IsContainerOrWrapperStrategy(strategy))
+        if (IsContainerOrWrapperStrategy(strategy) || IsIdentityStrategyIneligibleForReferenceHandling(strategy))
         {
             return false;
         }
 
-        if (strategy is IdentityMapStrategy identity
-            && (identity.NestedFieldStrategies.Count > 0 || !identity.RequiresMemberwiseClone))
-        {
-            return false;
-        }
+        return IsReferenceTypeEligibleForRuntimeDepth(strategy.TargetType);
+    }
 
-        var targetType = strategy.TargetType;
-        if (targetType.IsString() || targetType.IsEnum())
-        {
-            return false;
-        }
+    private static bool IsIdentityStrategyIneligibleForReferenceHandling(MapStrategy strategy)
+        => strategy is IdentityMapStrategy identity
+           && (identity.NestedFieldStrategies.Count > 0 || !identity.RequiresMemberwiseClone);
 
-        if (targetType.IsValueTypeNullable())
+    private static bool IsReferenceTypeEligibleForRuntimeDepth(ITypeSymbol targetType)
+    {
+        if (IsIneligiblePrimitiveOrNullableReferenceType(targetType))
         {
             return false;
         }
@@ -303,40 +314,25 @@ internal static class ReferenceHandlingCodeGenerator
         return true;
     }
 
-    private static bool IsContainerOrWrapperStrategy(MapStrategy strategy)
-        => strategy is CollectionToCollectionMapStrategy
-            or DictionaryToDictionaryMapStrategy
-            or NullableStrategy
-            or TupleToTupleMapStrategy
-            or PolymorphismMapStrategy
-            or OptionalTargetPropertyMapStrategy
-            or OptionalSourcePropertyMapStrategy
-            or ReadonlyDictionaryPropertyMapStrategy
-            or ReadonlyCollectionPropertyMapStrategy
-            or ReadonlyAddCollectionPropertyMapStrategy
-            or ReadonlyQueuePropertyMapStrategy
-            or ReadonlyStackPropertyMapStrategy
-            or QueryableProjectionMapStrategy;
+    private static bool IsIneligiblePrimitiveOrNullableReferenceType(ITypeSymbol type)
+        => type.IsString() || type.IsEnum() || type.IsValueTypeNullable();
 
     private static bool AreReferenceTypesEligibleForReuse(ITypeSymbol targetType, ITypeSymbol sourceType)
     {
-        if (targetType.IsString() || sourceType.IsString()
-            || targetType.IsEnum() || sourceType.IsEnum())
+        if (IsIneligiblePrimitiveOrNullableReferenceType(targetType)
+            || IsIneligiblePrimitiveOrNullableReferenceType(sourceType))
         {
             return false;
         }
 
-        if (targetType.IsValueTypeNullable() || sourceType.IsValueTypeNullable())
-        {
-            return false;
-        }
-
-        if ((targetType.IsValueType && !targetType.IsReferenceType)
-            || (sourceType.IsValueType && !sourceType.IsReferenceType))
+        if (IsNonReferenceValueType(targetType) || IsNonReferenceValueType(sourceType))
         {
             return false;
         }
 
         return targetType.IsReferenceType && sourceType.IsReferenceType;
     }
+
+    private static bool IsNonReferenceValueType(ITypeSymbol type)
+        => type.IsValueType && !type.IsReferenceType;
 }

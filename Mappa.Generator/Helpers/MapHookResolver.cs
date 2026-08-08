@@ -119,90 +119,31 @@ internal sealed class MapHookResolver
         ITypeSymbol mappedValueType,
         string hookKind)
     {
-        ISymbol? fieldOrProperty = null;
-        ITypeSymbol? explicitType = null;
-        ITypeSymbol lookupType;
-        InvokeMethodStaticRequirement staticRequirement;
-
-        if (attribute.FieldName is not null)
+        if (!this.TryBuildHookLookup(attribute, out var lookup))
         {
-            fieldOrProperty = this.compilation.LocateAccessibleFieldOrPropertyInTypeHierarchy(
-                this.mapClass,
-                attribute.FieldName,
-                this.mapClass);
-            if (fieldOrProperty is null)
-            {
-                this.context.ReportDiagnostic(MappaDiagnostics.CannotFindFieldOrProperty(
-                    attribute.Location,
-                    attribute.FieldName));
-                return null;
-            }
-
-            lookupType = GetFieldOrPropertyType(fieldOrProperty);
-            staticRequirement = this.mapMethod.CanBeUsedByStaticMethod && !fieldOrProperty.IsStatic
-                ? InvokeMethodStaticRequirement.Static
-                : InvokeMethodStaticRequirement.StaticOrNotStatic;
-        }
-        else if (attribute.ClassType is not null)
-        {
-            var classTypeFullName = attribute.ClassType.FullName;
-            if (string.IsNullOrWhiteSpace(classTypeFullName))
-            {
-                throw new MappaGeneratorException($"Cannot detect the full name for hook type '{attribute.ClassType}'.");
-            }
-
-            explicitType = this.compilation.GetTypeByMetadataName(classTypeFullName);
-            if (explicitType is null)
-            {
-                this.context.ReportDiagnostic(MappaDiagnostics.CannotDetectType(
-                    attribute.Location,
-                    classTypeFullName));
-                return null;
-            }
-
-            lookupType = explicitType;
-            staticRequirement = InvokeMethodStaticRequirement.Static;
-        }
-        else
-        {
-            lookupType = this.mapClass;
-            staticRequirement = this.mapMethod.CanBeUsedByStaticMethod
-                ? InvokeMethodStaticRequirement.Static
-                : InvokeMethodStaticRequirement.StaticOrNotStatic;
+            return null;
         }
 
-        var methods = lookupType.LocateMethodsIncludingInheritedInterfaces(attribute.MethodName);
+        var methods = lookup.LookupType.LocateMethodsIncludingInheritedInterfaces(attribute.MethodName);
         var resolutionResult = this.TryResolveHook(
-            lookupType,
+            lookup.LookupType,
             methods,
             attribute.MethodName,
             mappedValueType,
-            staticRequirement,
+            lookup.StaticRequirement,
             attribute.Location,
             reportAmbiguity: true,
             out var method);
 
-        if (resolutionResult is InvokeMethodResolutionResult.NotFound &&
-            fieldOrProperty is not null &&
-            this.mapMethod.CanBeUsedByStaticMethod &&
-            !fieldOrProperty.IsStatic)
-        {
-            var instanceResolutionResult = this.TryResolveHook(
-                lookupType,
+        if (this.ShouldReportFieldMustBeStatic(
+                resolutionResult,
+                lookup.FieldOrProperty,
+                lookup.LookupType,
                 methods,
-                attribute.MethodName,
-                mappedValueType,
-                InvokeMethodStaticRequirement.NotStatic,
-                attribute.Location,
-                reportAmbiguity: false,
-                out _);
-            if (instanceResolutionResult is not InvokeMethodResolutionResult.NotFound)
-            {
-                this.context.ReportDiagnostic(MappaDiagnostics.FieldOrPropertyMustBeStatic(
-                    fieldOrProperty.Name,
-                    attribute.Location));
-                return null;
-            }
+                attribute,
+                mappedValueType))
+        {
+            return null;
         }
 
         if (resolutionResult is InvokeMethodResolutionResult.NotFound)
@@ -216,8 +157,114 @@ internal sealed class MapHookResolver
         }
 
         return resolutionResult is InvokeMethodResolutionResult.Success && method is not null
-            ? new MapHook(method, fieldOrProperty, explicitType, attribute.Location)
+            ? new MapHook(method, lookup.FieldOrProperty, lookup.ExplicitType, attribute.Location)
             : null;
+    }
+
+    private bool TryBuildHookLookup(MapHookAttributeData attribute, out HookLookup lookup)
+    {
+        if (attribute.FieldName is not null)
+        {
+            return this.TryBuildFieldHookLookup(attribute, out lookup);
+        }
+
+        if (attribute.ClassType is not null)
+        {
+            return this.TryBuildClassTypeHookLookup(attribute, out lookup);
+        }
+
+        lookup = new HookLookup(
+            this.mapClass,
+            this.mapMethod.CanBeUsedByStaticMethod ? InvokeMethodStaticRequirement.Static : InvokeMethodStaticRequirement.StaticOrNotStatic,
+            null,
+            null);
+        return true;
+    }
+
+    private bool TryBuildFieldHookLookup(MapHookAttributeData attribute, out HookLookup lookup)
+    {
+        if (attribute.FieldName is not { Length: > 0 } fieldName || string.IsNullOrWhiteSpace(fieldName))
+        {
+            lookup = default;
+            return false;
+        }
+
+        var fieldOrProperty = this.compilation.LocateAccessibleFieldOrPropertyInTypeHierarchy(
+            this.mapClass,
+            fieldName,
+            this.mapClass);
+        if (fieldOrProperty is null)
+        {
+            this.context.ReportDiagnostic(MappaDiagnostics.CannotFindFieldOrProperty(
+                attribute.Location,
+                fieldName));
+            lookup = default;
+            return false;
+        }
+
+        var staticRequirement = this.mapMethod.CanBeUsedByStaticMethod && !fieldOrProperty.IsStatic
+            ? InvokeMethodStaticRequirement.Static
+            : InvokeMethodStaticRequirement.StaticOrNotStatic;
+        lookup = new HookLookup(GetFieldOrPropertyType(fieldOrProperty), staticRequirement, fieldOrProperty, null);
+        return true;
+    }
+
+    private bool TryBuildClassTypeHookLookup(MapHookAttributeData attribute, out HookLookup lookup)
+    {
+        var classTypeFullName = attribute.ClassType?.FullName;
+        if (classTypeFullName is not { Length: > 0 } metadataName || string.IsNullOrWhiteSpace(metadataName))
+        {
+            throw new MappaGeneratorException($"Cannot detect the full name for hook type '{attribute.ClassType}'.");
+        }
+
+        var explicitType = this.compilation.GetTypeByMetadataName(metadataName);
+        if (explicitType is null)
+        {
+            this.context.ReportDiagnostic(MappaDiagnostics.CannotDetectType(
+                attribute.Location,
+                classTypeFullName));
+            lookup = default;
+            return false;
+        }
+
+        lookup = new HookLookup(explicitType, InvokeMethodStaticRequirement.Static, null, explicitType);
+        return true;
+    }
+
+    private bool ShouldReportFieldMustBeStatic(
+        InvokeMethodResolutionResult resolutionResult,
+        ISymbol? fieldOrProperty,
+        ITypeSymbol lookupType,
+        IMethodSymbol[] methods,
+        MapHookAttributeData attribute,
+        ITypeSymbol mappedValueType)
+    {
+        if (resolutionResult is not InvokeMethodResolutionResult.NotFound
+            || fieldOrProperty is null
+            || !this.mapMethod.CanBeUsedByStaticMethod
+            || fieldOrProperty.IsStatic)
+        {
+            return false;
+        }
+
+        var instanceResolutionResult = this.TryResolveHook(
+            lookupType,
+            methods,
+            attribute.MethodName,
+            mappedValueType,
+            InvokeMethodStaticRequirement.NotStatic,
+            attribute.Location,
+            reportAmbiguity: false,
+            out _);
+        if (instanceResolutionResult is InvokeMethodResolutionResult.NotFound)
+        {
+            return false;
+        }
+
+        this.context.ReportDiagnostic(MappaDiagnostics.FieldOrPropertyMustBeStatic(
+            fieldOrProperty.Name,
+            attribute.Location));
+        return true;
     }
 
     private InvokeMethodResolutionResult TryResolveHook(
@@ -278,5 +325,28 @@ internal sealed class MapHookResolver
         }
 
         return [.. hooks];
+    }
+
+    private readonly struct HookLookup
+    {
+        internal HookLookup(
+            ITypeSymbol lookupType,
+            InvokeMethodStaticRequirement staticRequirement,
+            ISymbol? fieldOrProperty,
+            ITypeSymbol? explicitType)
+        {
+            this.LookupType = lookupType;
+            this.StaticRequirement = staticRequirement;
+            this.FieldOrProperty = fieldOrProperty;
+            this.ExplicitType = explicitType;
+        }
+
+        internal ITypeSymbol LookupType { get; }
+
+        internal InvokeMethodStaticRequirement StaticRequirement { get; }
+
+        internal ISymbol? FieldOrProperty { get; }
+
+        internal ITypeSymbol? ExplicitType { get; }
     }
 }

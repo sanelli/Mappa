@@ -250,38 +250,48 @@ internal sealed class IdentityMapStrategyDetector
     }
 
     private bool CanMapUsingMapToSameTypeRule()
-    {
-        // (non-nullable): T -> T
-        // (nullable): T -> T or T? -> T?
-        // (nullable) T -> T? && T is refType
-        // (nullable || not-nullable) T -> T? && T is not refType
-        return (this.notNullableEnabled &&
-                SymbolEqualityComparer.Default.Equals(this.context.TargetType, this.context.SourceType))
-               || (this.nullableEnabled &&
-                   this.context.TargetType.IsEqualTo(this.context.SourceType, true))
-               || (this.nullableEnabled && SymbolEqualityComparer.Default.Equals(
-                                           this.context.TargetType,
-                                           this.context.SourceType)
-                                           && this.context.TargetType is
-                                               { NullableAnnotation: NullableAnnotation.Annotated, IsReferenceType: true })
-               || (this.context.TargetType is
-                       { NullableAnnotation: NullableAnnotation.Annotated, IsReferenceType: false }
-                   && this.context.TargetType.IsNullableGenericType(this.context.SourceType, this.nullableEnabled));
-    }
+        => this.CanMapSameTypeWhenNullableDisabled()
+           || this.CanMapSameTypeWhenNullableEnabled()
+           || this.CanMapReferenceSourceToAnnotatedSameType()
+           || this.CanMapValueTypeToNullableGenericSameType();
+
+    private bool CanMapSameTypeWhenNullableDisabled()
+        => this.notNullableEnabled
+           && SymbolEqualityComparer.Default.Equals(this.context.TargetType, this.context.SourceType);
+
+    private bool CanMapSameTypeWhenNullableEnabled()
+        => this.nullableEnabled
+           && this.context.TargetType.IsEqualTo(this.context.SourceType, true);
+
+    private bool CanMapReferenceSourceToAnnotatedSameType()
+        => this.nullableEnabled
+           && SymbolEqualityComparer.Default.Equals(this.context.TargetType, this.context.SourceType)
+           && this.context.TargetType is
+               { NullableAnnotation: NullableAnnotation.Annotated, IsReferenceType: true };
+
+    private bool CanMapValueTypeToNullableGenericSameType()
+        => this.context.TargetType is
+               { NullableAnnotation: NullableAnnotation.Annotated, IsReferenceType: false }
+           && this.context.TargetType.IsNullableGenericType(this.context.SourceType, this.nullableEnabled);
 
     private bool CanMapUsingMapToObjectRule()
-    {
-        // (non-nullable): T -> object
-        // (nullable): T -> object?
-        // (nullable) T -> object (When T is not NOT nullable annotated)
-        return (this.notNullableEnabled && this.context.TargetType.IsObject())
-               || (this.nullableEnabled && this.context.TargetType.IsObject() &&
-                   this.context.TargetType.NullableAnnotation == NullableAnnotation.Annotated)
-               || (this.nullableEnabled
-                   && this.context.TargetType.IsObject()
-                   && this.context.TargetType.NullableAnnotation == NullableAnnotation.NotAnnotated
-                   && this.context.SourceType.NullableAnnotation == NullableAnnotation.NotAnnotated);
-    }
+        => this.CanMapToObjectWhenNullableDisabled()
+           || this.CanMapToNullableObjectWhenNullableEnabled()
+           || this.CanMapToNonAnnotatedObjectWhenBothNotAnnotated();
+
+    private bool CanMapToObjectWhenNullableDisabled()
+        => this.notNullableEnabled && this.context.TargetType.IsObject();
+
+    private bool CanMapToNullableObjectWhenNullableEnabled()
+        => this.nullableEnabled
+           && this.context.TargetType.IsObject()
+           && this.context.TargetType.NullableAnnotation == NullableAnnotation.Annotated;
+
+    private bool CanMapToNonAnnotatedObjectWhenBothNotAnnotated()
+        => this.nullableEnabled
+           && this.context.TargetType.IsObject()
+           && this.context.TargetType.NullableAnnotation == NullableAnnotation.NotAnnotated
+           && this.context.SourceType.NullableAnnotation == NullableAnnotation.NotAnnotated;
 
     private bool CanMapUsingImplicitConversion()
     {

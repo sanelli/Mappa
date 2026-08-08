@@ -486,24 +486,85 @@ internal sealed class MappaUserSettings
             return new NoActionDisposable();
         }
 
-        return new PopActionDisposable(
+        return new PopActionDisposable(this.CollectApplyDisposables(mappaSettingsAttribute));
+    }
+
+    private static T ApplyDefinedOrKeep<T>(T candidate, T undefinedSentinel, StackSetting<T> current)
+        where T : struct
+        => !EqualityComparer<T>.Default.Equals(candidate, undefinedSentinel) ? candidate : current;
+
+    private static DateTimeStyles? GetDateTimeStyle(DateTimeStyles style, StackSetting<DateTimeStyles?> currentStyle)
+        => style != MappaSettingsAttribute.UndefinedDateTimeStyle ? style : currentStyle;
+
+    private static NumberStyles? GetNumberStyle(NumberStyles style, StackSetting<NumberStyles?> currentStyle)
+        => style != MappaSettingsAttribute.UndefinedNumberStyle ? style : currentStyle;
+
+    private static short GetDepth(short depth, StackSetting<short> currentDepth)
+        => depth >= 0 ? depth : currentDepth;
+
+    private IDisposable[] CollectApplyDisposables(MappaSettingsAttribute mappaSettingsAttribute)
+    {
+#pragma warning disable CA2000 // Disposables are owned by PopActionDisposable.
+        return
         [
-#pragma warning disable CA2000 // Call System. IDisposable. Dispose on object created by '...' before all references to it are out of scope
+            .. this.CollectDateTimeFormatApplyDisposables(mappaSettingsAttribute),
+            .. this.CollectDateTimeStyleApplyDisposables(mappaSettingsAttribute),
+            .. this.CollectRemainingFormatApplyDisposables(mappaSettingsAttribute),
+            .. this.CollectNumericFormatApplyDisposables(mappaSettingsAttribute),
+            .. this.CollectNumberStyleApplyDisposables(mappaSettingsAttribute),
+            .. this.CollectFeatureToggleApplyDisposables(mappaSettingsAttribute),
+            .. this.CollectDepthApplyDisposables(mappaSettingsAttribute),
+        ];
+#pragma warning restore CA2000
+    }
+
+    private IDisposable[] CollectDateTimeFormatApplyDisposables(MappaSettingsAttribute mappaSettingsAttribute)
+    {
+#pragma warning disable CA2000
+        return
+        [
             this.dateTimeFormat.Apply(mappaSettingsAttribute.DateTimeFormat ?? this.dateTimeFormat),
             this.dateTimeOffsetFormat.Apply(mappaSettingsAttribute.DateTimeOffsetFormat ?? this.dateTimeOffsetFormat),
             this.dateOnlyFormat.Apply(mappaSettingsAttribute.DateOnlyFormat ?? this.dateOnlyFormat),
             this.timeOnlyFormat.Apply(mappaSettingsAttribute.TimeOnlyFormat ?? this.timeOnlyFormat),
+        ];
+#pragma warning restore CA2000
+    }
+
+    private IDisposable[] CollectDateTimeStyleApplyDisposables(MappaSettingsAttribute mappaSettingsAttribute)
+    {
+#pragma warning disable CA2000
+        return
+        [
             this.dateTimeStyle.Apply(GetDateTimeStyle(mappaSettingsAttribute.DateTimeStyle, this.dateTimeStyle)),
             this.dateTimeOffsetStyle.Apply(GetDateTimeStyle(mappaSettingsAttribute.DateTimeOffsetStyle, this.dateTimeOffsetStyle)),
             this.dateOnlyStyle.Apply(GetDateTimeStyle(mappaSettingsAttribute.DateOnlyStyle, this.dateOnlyStyle)),
             this.timeOnlyStyle.Apply(GetDateTimeStyle(mappaSettingsAttribute.TimeOnlyStyle, this.timeOnlyStyle)),
             this.globalDateTimeStyle.Apply(GetDateTimeStyle(mappaSettingsAttribute.GlobalDateTimeStyle, this.globalDateTimeStyle)),
+        ];
+#pragma warning restore CA2000
+    }
+
+    private IDisposable[] CollectRemainingFormatApplyDisposables(MappaSettingsAttribute mappaSettingsAttribute)
+    {
+#pragma warning disable CA2000
+        return
+        [
             this.timeSpanFormat.Apply(mappaSettingsAttribute.TimeSpanFormat ?? this.timeSpanFormat),
             this.guidFormat.Apply(mappaSettingsAttribute.GuidFormat ?? this.guidFormat),
             this.byteFormat.Apply(mappaSettingsAttribute.ByteFormat ?? this.byteFormat),
             this.sByteFormat.Apply(mappaSettingsAttribute.SByteFormat ?? this.sByteFormat),
             this.shortFormat.Apply(mappaSettingsAttribute.ShortFormat ?? this.shortFormat),
             this.uShortFormat.Apply(mappaSettingsAttribute.UShortFormat ?? this.uShortFormat),
+        ];
+#pragma warning restore CA2000
+    }
+
+    private IDisposable[] CollectNumericFormatApplyDisposables(MappaSettingsAttribute mappaSettingsAttribute)
+    {
+#pragma warning disable CA2000
+        return
+        [
             this.intFormat.Apply(mappaSettingsAttribute.IntFormat ?? this.intFormat),
             this.uIntFormat.Apply(mappaSettingsAttribute.UIntFormat ?? this.uIntFormat),
             this.longFormat.Apply(mappaSettingsAttribute.LongFormat ?? this.longFormat),
@@ -511,6 +572,15 @@ internal sealed class MappaUserSettings
             this.decimalFormat.Apply(mappaSettingsAttribute.DecimalFormat ?? this.decimalFormat),
             this.floatFormat.Apply(mappaSettingsAttribute.FloatFormat ?? this.floatFormat),
             this.doubleFormat.Apply(mappaSettingsAttribute.DoubleFormat ?? this.doubleFormat),
+        ];
+#pragma warning restore CA2000
+    }
+
+    private IDisposable[] CollectNumberStyleApplyDisposables(MappaSettingsAttribute mappaSettingsAttribute)
+    {
+#pragma warning disable CA2000
+        return
+        [
             this.byteStyle.Apply(GetNumberStyle(mappaSettingsAttribute.ByteStyle, this.byteStyle)),
             this.sByteStyle.Apply(GetNumberStyle(mappaSettingsAttribute.SByteStyle, this.sByteStyle)),
             this.shortStyle.Apply(GetNumberStyle(mappaSettingsAttribute.ShortStyle, this.shortStyle)),
@@ -523,39 +593,48 @@ internal sealed class MappaUserSettings
             this.floatStyle.Apply(GetNumberStyle(mappaSettingsAttribute.FloatStyle, this.floatStyle)),
             this.doubleStyle.Apply(GetNumberStyle(mappaSettingsAttribute.DoubleStyle, this.doubleStyle)),
             this.globalNumberStyle.Apply(GetNumberStyle(mappaSettingsAttribute.GlobalNumberStyle, this.globalNumberStyle)),
-            this.cultureInfoSetting.Apply(mappaSettingsAttribute.CultureInfoSetting is not CultureInfoSetting.Undefined ? mappaSettingsAttribute.CultureInfoSetting : this.cultureInfoSetting),
-            this.cultureName.Apply(mappaSettingsAttribute.CultureName ?? this.cultureName),
-            this.protobufOptional.Apply(mappaSettingsAttribute.ProtobufOptional is not BooleanSetting.Undefined ? mappaSettingsAttribute.ProtobufOptional : this.protobufOptional),
-            this.pragmaWarning.Apply(mappaSettingsAttribute.PragmaWarning is not PragmaWarningSetting.Undefined ? mappaSettingsAttribute.PragmaWarning : this.pragmaWarning),
-            this.fastCollections.Apply(mappaSettingsAttribute.FastCollections is not BooleanSetting.Undefined ? mappaSettingsAttribute.FastCollections : this.fastCollections),
-            this.containerCapacityConstructors.Apply(mappaSettingsAttribute.ContainerCapacityConstructors is not BooleanSetting.Undefined ? mappaSettingsAttribute.ContainerCapacityConstructors : this.containerCapacityConstructors),
-            this.preventEnumerableCount.Apply(mappaSettingsAttribute.PreventEnumerableCount is not BooleanSetting.Undefined ? mappaSettingsAttribute.PreventEnumerableCount : this.preventEnumerableCount),
-            this.enumerableConcreteType.Apply(mappaSettingsAttribute.EnumerableConcreteType is not EnumerableConcreteTypeSetting.Undefined ? mappaSettingsAttribute.EnumerableConcreteType : this.enumerableConcreteType),
-            this.dictionaryAssignment.Apply(mappaSettingsAttribute.DictionaryAssignment is not DictionaryAssignmentSetting.Undefined ? mappaSettingsAttribute.DictionaryAssignment : this.dictionaryAssignment),
-            this.polymorphicMapMethodWithMatchingDefaultAttribute.Apply(mappaSettingsAttribute.PolymorphicMapMethodWithMatchingDefaultAttribute is not BooleanSetting.Undefined ? mappaSettingsAttribute.PolymorphicMapMethodWithMatchingDefaultAttribute : this.polymorphicMapMethodWithMatchingDefaultAttribute),
-            this.compatibleMapMethod.Apply(mappaSettingsAttribute.CompatibleMapMethod is not BooleanSetting.Undefined ? mappaSettingsAttribute.CompatibleMapMethod : this.compatibleMapMethod),
-            this.caseInsensitivePropertyMap.Apply(mappaSettingsAttribute.CaseInsensitivePropertyMap is not BooleanSetting.Undefined ? mappaSettingsAttribute.CaseInsensitivePropertyMap : this.caseInsensitivePropertyMap),
-            this.ignoreUnderscoreForPropertyMap.Apply(mappaSettingsAttribute.IgnoreUnderscoreForPropertyMap is not BooleanSetting.Undefined ? mappaSettingsAttribute.IgnoreUnderscoreForPropertyMap : this.ignoreUnderscoreForPropertyMap),
-            this.caseInsensitiveEnumMap.Apply(mappaSettingsAttribute.CaseInsensitiveEnumMap is not BooleanSetting.Undefined ? mappaSettingsAttribute.CaseInsensitiveEnumMap : this.caseInsensitiveEnumMap),
-            this.enumStringMapSetting.Apply(mappaSettingsAttribute.EnumStringMapSetting is not EnumStringMapSetting.Undefined ? mappaSettingsAttribute.EnumStringMapSetting : this.enumStringMapSetting),
-            this.enumToEnumMapSetting.Apply(mappaSettingsAttribute.EnumToEnumMapSetting is not EnumToEnumMapSetting.Undefined ? mappaSettingsAttribute.EnumToEnumMapSetting : this.enumToEnumMapSetting),
-            this.identityMapDeepCopy.Apply(mappaSettingsAttribute.IdentityMapDeepCopy is not IdentityMapDeepCopySetting.Undefined ? mappaSettingsAttribute.IdentityMapDeepCopy : this.identityMapDeepCopy),
-            this.referenceReusing.Apply(mappaSettingsAttribute.ReferenceReusing is not BooleanSetting.Undefined ? mappaSettingsAttribute.ReferenceReusing : this.referenceReusing),
-            this.maxRuntimeDepth.Apply(GetDepth(mappaSettingsAttribute.MaxRuntimeDepth, this.maxRuntimeDepth)),
-            this.maxCompileTimeDepth.Apply(GetDepth(mappaSettingsAttribute.MaxCompileTimeDepth, this.maxCompileTimeDepth)),
-            this.breakCompileTimeCycles.Apply(mappaSettingsAttribute.BreakCompileTimeCycles is not BooleanSetting.Undefined ? mappaSettingsAttribute.BreakCompileTimeCycles : this.breakCompileTimeCycles),
- #pragma warning restore CA2000
-        ]);
+        ];
+#pragma warning restore CA2000
     }
 
-    private static DateTimeStyles? GetDateTimeStyle(DateTimeStyles style, StackSetting<DateTimeStyles?> currentStyle)
-        => style != MappaSettingsAttribute.UndefinedDateTimeStyle ? style : currentStyle;
+    private IDisposable[] CollectFeatureToggleApplyDisposables(MappaSettingsAttribute mappaSettingsAttribute)
+    {
+#pragma warning disable CA2000
+        return
+        [
+            this.cultureInfoSetting.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.CultureInfoSetting, CultureInfoSetting.Undefined, this.cultureInfoSetting)),
+            this.cultureName.Apply(mappaSettingsAttribute.CultureName ?? this.cultureName),
+            this.protobufOptional.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.ProtobufOptional, BooleanSetting.Undefined, this.protobufOptional)),
+            this.pragmaWarning.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.PragmaWarning, PragmaWarningSetting.Undefined, this.pragmaWarning)),
+            this.fastCollections.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.FastCollections, BooleanSetting.Undefined, this.fastCollections)),
+            this.containerCapacityConstructors.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.ContainerCapacityConstructors, BooleanSetting.Undefined, this.containerCapacityConstructors)),
+            this.preventEnumerableCount.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.PreventEnumerableCount, BooleanSetting.Undefined, this.preventEnumerableCount)),
+            this.enumerableConcreteType.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.EnumerableConcreteType, EnumerableConcreteTypeSetting.Undefined, this.enumerableConcreteType)),
+            this.dictionaryAssignment.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.DictionaryAssignment, DictionaryAssignmentSetting.Undefined, this.dictionaryAssignment)),
+            this.polymorphicMapMethodWithMatchingDefaultAttribute.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.PolymorphicMapMethodWithMatchingDefaultAttribute, BooleanSetting.Undefined, this.polymorphicMapMethodWithMatchingDefaultAttribute)),
+            this.compatibleMapMethod.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.CompatibleMapMethod, BooleanSetting.Undefined, this.compatibleMapMethod)),
+            this.caseInsensitivePropertyMap.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.CaseInsensitivePropertyMap, BooleanSetting.Undefined, this.caseInsensitivePropertyMap)),
+            this.ignoreUnderscoreForPropertyMap.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.IgnoreUnderscoreForPropertyMap, BooleanSetting.Undefined, this.ignoreUnderscoreForPropertyMap)),
+            this.caseInsensitiveEnumMap.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.CaseInsensitiveEnumMap, BooleanSetting.Undefined, this.caseInsensitiveEnumMap)),
+            this.enumStringMapSetting.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.EnumStringMapSetting, EnumStringMapSetting.Undefined, this.enumStringMapSetting)),
+            this.enumToEnumMapSetting.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.EnumToEnumMapSetting, EnumToEnumMapSetting.Undefined, this.enumToEnumMapSetting)),
+            this.identityMapDeepCopy.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.IdentityMapDeepCopy, IdentityMapDeepCopySetting.Undefined, this.identityMapDeepCopy)),
+            this.referenceReusing.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.ReferenceReusing, BooleanSetting.Undefined, this.referenceReusing)),
+        ];
+#pragma warning restore CA2000
+    }
 
-    private static NumberStyles? GetNumberStyle(NumberStyles style, StackSetting<NumberStyles?> currentStyle)
-        => style != MappaSettingsAttribute.UndefinedNumberStyle ? style : currentStyle;
-
-    private static short GetDepth(short depth, StackSetting<short> currentDepth)
-        => depth >= 0 ? depth : currentDepth;
+    private IDisposable[] CollectDepthApplyDisposables(MappaSettingsAttribute mappaSettingsAttribute)
+    {
+#pragma warning disable CA2000
+        return
+        [
+            this.maxRuntimeDepth.Apply(GetDepth(mappaSettingsAttribute.MaxRuntimeDepth, this.maxRuntimeDepth)),
+            this.maxCompileTimeDepth.Apply(GetDepth(mappaSettingsAttribute.MaxCompileTimeDepth, this.maxCompileTimeDepth)),
+            this.breakCompileTimeCycles.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.BreakCompileTimeCycles, BooleanSetting.Undefined, this.breakCompileTimeCycles)),
+        ];
+#pragma warning restore CA2000
+    }
 
     private sealed class PopActionDisposable
         : IDisposable

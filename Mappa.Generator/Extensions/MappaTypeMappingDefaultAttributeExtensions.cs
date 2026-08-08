@@ -51,126 +51,177 @@ internal static class MappaTypeMappingDefaultAttributeExtensions
                 return false;
 
             case MappaTypeMappingDefaultBehavior.Throw:
-                // Check the type is an exception and there is a constructor that can be used.
-                if (attribute.Type is { } attributeType && !string.IsNullOrWhiteSpace(attributeType.FullName))
-                {
-                    var typeSymbol = compilation.GetTypeByMetadataName(attributeType.FullName.NormalizeType());
-                    if (typeSymbol is null)
-                    {
-                        throw new MappaGeneratorException($"Type '{attributeType.FullName}' cannot be loaded at compile time.");
-                    }
-
-                    if (!typeSymbol.CanBeThrown(compilation))
-                    {
-                        diagnostics.Add(MappaDiagnostics.TypeMustBeAnException(attributeType.FullName, location));
-                        return false;
-                    }
-
-                    if (typeSymbol.IsAbstract)
-                    {
-                        diagnostics.Add(MappaDiagnostics.TypeMustBeConcrete(attributeType.FullName, location));
-                        return false;
-                    }
-
-                    if (!typeSymbol.HasNamedTypeSymbolAccessibleZeroParametersConstructor(compilation)
-                        && !typeSymbol.HasNamedTypeSymbolAccessibleSingleStringParametersConstructor(compilation))
-                    {
-                        diagnostics.Add(MappaDiagnostics.TypeMustHaveAConstructorWithNoParametersOrAConstructorWithOneStringParameter(attributeType.FullName, location));
-                        return false;
-                    }
-                }
-
-                break;
+                return ValidateThrowBehavior(attribute, compilation, location, diagnostics);
 
             case MappaTypeMappingDefaultBehavior.Default:
             case MappaTypeMappingDefaultBehavior.Null:
-                // Check the type is not set.
-                if (attribute.Type is not null)
-                {
-                    diagnostics.Add(MappaDiagnostics.MappaTypeMappingDefaultAttributeUnusedType(location));
-                }
-
-                break;
+                ValidateDefaultOrNullBehavior(attribute, location, diagnostics);
+                return true;
 
             case MappaTypeMappingDefaultBehavior.MapSourceType:
-                if (attribute.Type is { } attributeTargetType && !string.IsNullOrWhiteSpace(attributeTargetType.FullName))
-                {
-                    var typeSymbol = compilation.GetTypeByMetadataName(attributeTargetType.FullName.NormalizeType());
-                    if (typeSymbol is null)
-                    {
-                        throw new MappaGeneratorException($"Type '{attributeTargetType.FullName}' cannot be loaded at compile time.");
-                    }
+                return ValidateMapSourceTypeBehavior(attribute, targetType, sourceType, compilation, location, diagnostics);
 
-                    if (!typeSymbol.IsImplementingOrIsDerivedFromClass(targetType))
-                    {
-                        diagnostics.Add(MappaDiagnostics.ExplicitTargetTypeDoesNotDeriveMapMethodTargetType(typeSymbol, targetType, location));
-                        return false;
-                    }
-
-                    if (typeSymbol.TypeKind == TypeKind.Interface)
-                    {
-                        diagnostics.Add(MappaDiagnostics.CannotIdentifyStrategy(typeSymbol, sourceType, location));
-                        return false;
-                    }
-
-                    if (typeSymbol.IsAbstract)
-                    {
-                        diagnostics.Add(MappaDiagnostics.CannotIdentifyStrategy(typeSymbol, sourceType, location));
-                        return false;
-                    }
-                }
-
-                break;
             case MappaTypeMappingDefaultBehavior.InvokeMethod:
-                // Check the method name is not defined.
-                if (string.IsNullOrWhiteSpace(attribute.MethodName))
-                {
-                    diagnostics.Add(MappaDiagnostics.MethodToInvokeUndefined(location));
-                    return false;
-                }
-
-                var invokeMethodTypeSymbol =
-                    (attribute.Type is { } invokingType && !string.IsNullOrWhiteSpace(invokingType.FullName))
-                        ? compilation.GetTypeByMetadataName(invokingType.FullName)
-                        : mapMethodParentClassSymbol;
-
-                if (invokeMethodTypeSymbol is null)
-                {
-                    throw new MappaGeneratorException("Type that can be used to identify the method to invoke cannot be loaded.");
-                }
-
-                var resolutionResult = InvokeMethodResolution.TryResolvePolymorphismInvokeMethod(
-                    invokeMethodTypeSymbol,
-                    attribute.MethodName!,
+                return ValidateInvokeMethodBehavior(
+                    attribute,
                     sourceType,
-                    compilation,
-                    attribute.Type is not null,
+                    mapMethodParentClassSymbol,
                     nullableEnabled,
                     mapMethodHasTwoParameters,
-                    out var method,
-                    out var ambiguityDetails);
-                switch (resolutionResult)
-                {
-                    case InvokeMethodResolutionResult.NotFound:
-                        diagnostics.Add(MappaDiagnostics.CannotIdentifySuitableMethodToInvoke(
-                            invokeMethodTypeSymbol.ToDisplayString(),
-                            attribute.MethodName!,
-                            location));
-                        return false;
-
-                    case InvokeMethodResolutionResult.Ambiguous:
-                        diagnostics.Add(MappaDiagnostics.AmbiguousInvokeMethodResolution(location, ambiguityDetails));
-                        return false;
-
-                    case InvokeMethodResolutionResult.Success:
-                        resolvedInvokeMethod = method;
-                        break;
-                }
-
-                break;
+                    compilation,
+                    location,
+                    diagnostics,
+                    out resolvedInvokeMethod);
 
             default:
                 throw new ArgumentOutOfRangeException(nameof(attribute));
+        }
+    }
+
+    private static bool ValidateThrowBehavior(
+        MappaTypeMappingDefaultAttribute attribute,
+        Compilation compilation,
+        Location? location,
+        ICollection<Diagnostic> diagnostics)
+    {
+        if (attribute.Type is not { } attributeType || string.IsNullOrWhiteSpace(attributeType.FullName))
+        {
+            return true;
+        }
+
+        var typeSymbol = compilation.GetTypeByMetadataName(attributeType.FullName.NormalizeType());
+        if (typeSymbol is null)
+        {
+            throw new MappaGeneratorException($"Type '{attributeType.FullName}' cannot be loaded at compile time.");
+        }
+
+        if (!typeSymbol.CanBeThrown(compilation))
+        {
+            diagnostics.Add(MappaDiagnostics.TypeMustBeAnException(attributeType.FullName, location));
+            return false;
+        }
+
+        if (typeSymbol.IsAbstract)
+        {
+            diagnostics.Add(MappaDiagnostics.TypeMustBeConcrete(attributeType.FullName, location));
+            return false;
+        }
+
+        if (!typeSymbol.HasNamedTypeSymbolAccessibleZeroParametersConstructor(compilation)
+            && !typeSymbol.HasNamedTypeSymbolAccessibleSingleStringParametersConstructor(compilation))
+        {
+            diagnostics.Add(MappaDiagnostics.TypeMustHaveAConstructorWithNoParametersOrAConstructorWithOneStringParameter(attributeType.FullName, location));
+            return false;
+        }
+
+        return true;
+    }
+
+    private static void ValidateDefaultOrNullBehavior(
+        MappaTypeMappingDefaultAttribute attribute,
+        Location? location,
+        ICollection<Diagnostic> diagnostics)
+    {
+        if (attribute.Type is not null)
+        {
+            diagnostics.Add(MappaDiagnostics.MappaTypeMappingDefaultAttributeUnusedType(location));
+        }
+    }
+
+    private static bool ValidateMapSourceTypeBehavior(
+        MappaTypeMappingDefaultAttribute attribute,
+        ITypeSymbol targetType,
+        ITypeSymbol sourceType,
+        Compilation compilation,
+        Location? location,
+        ICollection<Diagnostic> diagnostics)
+    {
+        if (attribute.Type is not { } attributeTargetType || string.IsNullOrWhiteSpace(attributeTargetType.FullName))
+        {
+            return true;
+        }
+
+        var typeSymbol = compilation.GetTypeByMetadataName(attributeTargetType.FullName.NormalizeType());
+        if (typeSymbol is null)
+        {
+            throw new MappaGeneratorException($"Type '{attributeTargetType.FullName}' cannot be loaded at compile time.");
+        }
+
+        if (!typeSymbol.IsImplementingOrIsDerivedFromClass(targetType))
+        {
+            diagnostics.Add(MappaDiagnostics.ExplicitTargetTypeDoesNotDeriveMapMethodTargetType(typeSymbol, targetType, location));
+            return false;
+        }
+
+        if (typeSymbol.TypeKind == TypeKind.Interface)
+        {
+            diagnostics.Add(MappaDiagnostics.CannotIdentifyStrategy(typeSymbol, sourceType, location));
+            return false;
+        }
+
+        if (typeSymbol.IsAbstract)
+        {
+            diagnostics.Add(MappaDiagnostics.CannotIdentifyStrategy(typeSymbol, sourceType, location));
+            return false;
+        }
+
+        return true;
+    }
+
+    private static bool ValidateInvokeMethodBehavior(
+        MappaTypeMappingDefaultAttribute attribute,
+        ITypeSymbol sourceType,
+        ITypeSymbol mapMethodParentClassSymbol,
+        bool nullableEnabled,
+        bool mapMethodHasTwoParameters,
+        Compilation compilation,
+        Location? location,
+        ICollection<Diagnostic> diagnostics,
+        out IMethodSymbol? resolvedInvokeMethod)
+    {
+        resolvedInvokeMethod = null;
+        if (attribute.MethodName is not { } methodName || string.IsNullOrWhiteSpace(methodName))
+        {
+            diagnostics.Add(MappaDiagnostics.MethodToInvokeUndefined(location));
+            return false;
+        }
+
+        var invokeMethodTypeSymbol =
+            (attribute.Type is { } invokingType && !string.IsNullOrWhiteSpace(invokingType.FullName))
+                ? compilation.GetTypeByMetadataName(invokingType.FullName)
+                : mapMethodParentClassSymbol;
+
+        if (invokeMethodTypeSymbol is null)
+        {
+            throw new MappaGeneratorException("Type that can be used to identify the method to invoke cannot be loaded.");
+        }
+
+        var resolutionResult = InvokeMethodResolution.TryResolvePolymorphismInvokeMethod(
+            invokeMethodTypeSymbol,
+            methodName,
+            sourceType,
+            compilation,
+            attribute.Type is not null,
+            nullableEnabled,
+            mapMethodHasTwoParameters,
+            out var method,
+            out var ambiguityDetails);
+        switch (resolutionResult)
+        {
+            case InvokeMethodResolutionResult.NotFound:
+                diagnostics.Add(MappaDiagnostics.CannotIdentifySuitableMethodToInvoke(
+                    invokeMethodTypeSymbol.ToDisplayString(),
+                    methodName,
+                    location));
+                return false;
+
+            case InvokeMethodResolutionResult.Ambiguous:
+                diagnostics.Add(MappaDiagnostics.AmbiguousInvokeMethodResolution(location, ambiguityDetails));
+                return false;
+
+            case InvokeMethodResolutionResult.Success:
+                resolvedInvokeMethod = method;
+                break;
         }
 
         return true;

@@ -37,19 +37,37 @@ internal sealed partial class ConstructorMapStrategyDetector
             return nestedPropertyPathContext;
         }
 
-        // Remaining segments are already relative to the nested type being mapped.
-        // Descend when the current member is an intermediate (non-leaf) remaining segment.
-        if (nestedPropertyPathContext.RemainingTargetSegments.Length > 0)
+        var fromRemainingSegments = TryGetNestedTypeMappingFromRemainingSegments(targetMemberName, nestedPropertyPathContext);
+        if (fromRemainingSegments is not null)
         {
-            if (nestedPropertyPathContext.RemainingTargetSegments[0].Equals(targetMemberName, StringComparison.Ordinal)
-                && nestedPropertyPathContext.RemainingTargetSegments.Length > 1)
-            {
-                return nestedPropertyPathContext.DescendOneLevel();
-            }
-
-            return nestedPropertyPathContext;
+            return fromRemainingSegments;
         }
 
+        return TryGetNestedTypeMappingFromOriginalPath(targetMemberName, nestedPropertyPathContext);
+    }
+
+    private static PropertyPathContext? TryGetNestedTypeMappingFromRemainingSegments(
+        string targetMemberName,
+        PropertyPathContext nestedPropertyPathContext)
+    {
+        if (nestedPropertyPathContext.RemainingTargetSegments.Length == 0)
+        {
+            return null;
+        }
+
+        if (nestedPropertyPathContext.RemainingTargetSegments[0].Equals(targetMemberName, StringComparison.Ordinal)
+            && nestedPropertyPathContext.RemainingTargetSegments.Length > 1)
+        {
+            return nestedPropertyPathContext.DescendOneLevel();
+        }
+
+        return nestedPropertyPathContext;
+    }
+
+    private static PropertyPathContext? TryGetNestedTypeMappingFromOriginalPath(
+        string targetMemberName,
+        PropertyPathContext nestedPropertyPathContext)
+    {
         var originalTargetPath = PropertyPath.Parse(nestedPropertyPathContext.OriginalTargetPath);
         if (!originalTargetPath.IsNested)
         {
@@ -64,6 +82,16 @@ internal sealed partial class ConstructorMapStrategyDetector
         }
 
         return nestedPropertyPathContext;
+    }
+
+    private static bool IsMustMapEmptyCtorUnmappedProperty(
+        IPropertySymbol propertyWithoutStrategy,
+        MappaMustMapTargetPropertyAttribute? mustMapAttribute)
+    {
+        return mustMapAttribute is not null
+               && !propertyWithoutStrategy.IsRequired
+               && (mustMapAttribute.TargetPropertyNames.Length == 0
+                   || mustMapAttribute.TargetPropertyNames.Contains(propertyWithoutStrategy.Name, StringComparer.Ordinal));
     }
 
     private MapMethod GetAttributeMapMethod()
@@ -175,51 +203,21 @@ internal sealed partial class ConstructorMapStrategyDetector
 
         var targetPath = PropertyPath.Parse(usePropertyAttribute.TargetPropertyName);
         var sourcePath = PropertyPath.Parse(usePropertyAttribute.SourcePropertyName);
-        var activePropertyPathContext = this.context.PropertyPathContext;
-        if (activePropertyPathContext?.IsNestedAttributeScope == true)
-        {
-            activePropertyPathContext = PropertyPathAttributeMatching.CreatePropertyPathContext(
-                usePropertyAttribute.TargetPropertyName,
-                usePropertyAttribute.SourcePropertyName);
-        }
+        var activePropertyPathContext = this.GetActivePropertyPathContextForUseProperty(usePropertyAttribute);
 
-        if (this.context.PropertyPathContext is null && !targetPath.IsNested && sourcePath.IsNested)
+        if (this.TryCreateChainedSourceFromRootNestedSource(usePropertyAttribute, targetPath, sourcePath, out chainedSourcePropertyPath))
         {
-            chainedSourcePropertyPath = new ChainedSourcePropertyPathInfo(
-                usePropertyAttribute.SourcePropertyName,
-                sourcePath.Segments,
-                this.context.GetRootSourceType(),
-                this.context.GetRootMapMethod().SourceParameterName);
             return false;
         }
 
-        if (isLeafTargetMapping
-            && (sourcePath.IsNested || activePropertyPathContext is not null)
-            && this.context.PropertyPathContext is not null)
+        if (this.TryCreateChainedSourceForLeafTargetMapping(
+                usePropertyAttribute,
+                sourcePath,
+                activePropertyPathContext,
+                isLeafTargetMapping,
+                out chainedSourcePropertyPath))
         {
-            // Prefer reading remaining segments from the current nested source receiver
-            // so intermediate temps are reused instead of rebuilding the chain from the root.
-            string[] remainingSourceSegments;
-            if (this.context.PropertyPathContext.IsNestedAttributeScope)
-            {
-                remainingSourceSegments = activePropertyPathContext?.RemainingSourceSegments ?? sourcePath.Segments;
-            }
-            else
-            {
-                remainingSourceSegments = this.context.PropertyPathContext.RemainingSourceSegments.Length > 0
-                    ? this.context.PropertyPathContext.RemainingSourceSegments
-                    : sourcePath.Segments;
-            }
-
-            if (remainingSourceSegments.Length > 0)
-            {
-                chainedSourcePropertyPath = new ChainedSourcePropertyPathInfo(
-                    usePropertyAttribute.SourcePropertyName,
-                    remainingSourceSegments,
-                    this.context.SourceType,
-                    string.Empty);
-                return false;
-            }
+            return false;
         }
 
         var expectedSegment = PropertyPathAttributeMatching.GetExpectedSourcePropertyNameForCurrentLevel(
@@ -239,6 +237,89 @@ internal sealed partial class ConstructorMapStrategyDetector
                 usePropertyAttribute.SourcePropertyName)
             : null;
         return true;
+    }
+
+    private PropertyPathContext? GetActivePropertyPathContextForUseProperty(MappaUsePropertyAttribute usePropertyAttribute)
+    {
+        var activePropertyPathContext = this.context.PropertyPathContext;
+        if (activePropertyPathContext?.IsNestedAttributeScope == true)
+        {
+            return PropertyPathAttributeMatching.CreatePropertyPathContext(
+                usePropertyAttribute.TargetPropertyName,
+                usePropertyAttribute.SourcePropertyName);
+        }
+
+        return activePropertyPathContext;
+    }
+
+    private bool TryCreateChainedSourceFromRootNestedSource(
+        MappaUsePropertyAttribute usePropertyAttribute,
+        PropertyPath targetPath,
+        PropertyPath sourcePath,
+        out ChainedSourcePropertyPathInfo? chainedSourcePropertyPath)
+    {
+        chainedSourcePropertyPath = null;
+        if (this.context.PropertyPathContext is not null || targetPath.IsNested || !sourcePath.IsNested)
+        {
+            return false;
+        }
+
+        chainedSourcePropertyPath = new ChainedSourcePropertyPathInfo(
+            usePropertyAttribute.SourcePropertyName,
+            sourcePath.Segments,
+            this.context.GetRootSourceType(),
+            this.context.GetRootMapMethod().SourceParameterName);
+        return true;
+    }
+
+    private bool TryCreateChainedSourceForLeafTargetMapping(
+        MappaUsePropertyAttribute usePropertyAttribute,
+        PropertyPath sourcePath,
+        PropertyPathContext? activePropertyPathContext,
+        bool isLeafTargetMapping,
+        out ChainedSourcePropertyPathInfo? chainedSourcePropertyPath)
+    {
+        chainedSourcePropertyPath = null;
+        if (!isLeafTargetMapping
+            || (!sourcePath.IsNested && activePropertyPathContext is null)
+            || this.context.PropertyPathContext is null)
+        {
+            return false;
+        }
+
+        var remainingSourceSegments = this.GetRemainingSourceSegmentsForLeafMapping(
+            sourcePath,
+            activePropertyPathContext);
+        if (remainingSourceSegments.Length == 0)
+        {
+            return false;
+        }
+
+        chainedSourcePropertyPath = new ChainedSourcePropertyPathInfo(
+            usePropertyAttribute.SourcePropertyName,
+            remainingSourceSegments,
+            this.context.SourceType,
+            string.Empty);
+        return true;
+    }
+
+    private string[] GetRemainingSourceSegmentsForLeafMapping(
+        PropertyPath sourcePath,
+        PropertyPathContext? activePropertyPathContext)
+    {
+        if (this.context.PropertyPathContext is null)
+        {
+            return [];
+        }
+
+        if (this.context.PropertyPathContext.IsNestedAttributeScope)
+        {
+            return activePropertyPathContext?.RemainingSourceSegments ?? sourcePath.Segments;
+        }
+
+        return this.context.PropertyPathContext.RemainingSourceSegments.Length > 0
+            ? this.context.PropertyPathContext.RemainingSourceSegments
+            : sourcePath.Segments;
     }
 
     private bool IsMappingAttributeActiveAtCurrentLevel(string targetPropertyPath)

@@ -70,6 +70,39 @@ internal static class TypeSymbolExtensions
     private const string ExceptionFullName = "System.Exception";
     private const string IQueryableFullName = "System.Linq.IQueryable`1";
 
+    private static readonly string[] SystemTupleMetadataNames =
+    [
+        Tuple1Fullname,
+        Tuple2Fullname,
+        Tuple3Fullname,
+        Tuple4Fullname,
+        Tuple5Fullname,
+        Tuple6Fullname,
+        Tuple7Fullname,
+        Tuple8Fullname,
+    ];
+
+    private static readonly Dictionary<string, string> NormalizedTypeAliases = new(StringComparer.Ordinal)
+    {
+        ["sbyte"] = typeof(sbyte).ToString(),
+        ["short"] = typeof(short).ToString(),
+        ["int"] = typeof(int).ToString(),
+        ["long"] = typeof(long).ToString(),
+        ["byte"] = typeof(byte).ToString(),
+        ["ushort"] = typeof(ushort).ToString(),
+        ["uint"] = typeof(uint).ToString(),
+        ["ulong"] = typeof(ulong).ToString(),
+        ["float"] = typeof(float).ToString(),
+        ["double"] = typeof(double).ToString(),
+        ["string"] = typeof(string).ToString(),
+        ["char"] = typeof(char).ToString(),
+        ["decimal"] = typeof(decimal).ToString(),
+        ["nint"] = typeof(nint).ToString(),
+        ["nuint"] = typeof(nuint).ToString(),
+        ["void"] = typeof(void).ToString(),
+        ["bool"] = typeof(bool).ToString(),
+    };
+
     /// <summary>
     /// Check if the type is <see cref="Void"/>.
     /// </summary>
@@ -614,15 +647,15 @@ internal static class TypeSymbolExtensions
     /// <param name="compilation">The compilation.</param>
     /// <returns><c>true</c> if the type symbol is <see cref="IDictionary{K,V}"/>.</returns>
     internal static bool IsTuple(this ITypeSymbol typeSymbol, Compilation compilation)
-        => typeSymbol.IsTupleType
-           || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(Tuple1Fullname), typeSymbol.OriginalDefinition)
-           || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(Tuple2Fullname), typeSymbol.OriginalDefinition)
-           || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(Tuple3Fullname), typeSymbol.OriginalDefinition)
-           || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(Tuple4Fullname), typeSymbol.OriginalDefinition)
-           || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(Tuple5Fullname), typeSymbol.OriginalDefinition)
-           || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(Tuple6Fullname), typeSymbol.OriginalDefinition)
-           || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(Tuple7Fullname), typeSymbol.OriginalDefinition)
-           || SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(Tuple8Fullname), typeSymbol.OriginalDefinition);
+    {
+        if (typeSymbol.IsTupleType)
+        {
+            return true;
+        }
+
+        return SystemTupleMetadataNames.Any(metadataName =>
+            SymbolEqualityComparer.Default.Equals(compilation.GetTypeByMetadataName(metadataName), typeSymbol.OriginalDefinition));
+    }
 
     /// <summary>
     /// Gets the element type of the container.
@@ -642,15 +675,10 @@ internal static class TypeSymbolExtensions
             return namedTypeSymbol.TypeArguments.First();
         }
 
-        if (typeSymbol is INamedTypeSymbol nonGenericNamedTypeSymbol)
+        if (TryGetElementTypeFromEnumerableInterface(typeSymbol, out var elementTypeFromInterface)
+            && elementTypeFromInterface is not null)
         {
-            foreach (var @interface in nonGenericNamedTypeSymbol.AllInterfaces)
-            {
-                if (@interface is not null && @interface.IsGenericType && @interface.IsIEnumerable())
-                {
-                    return @interface.TypeArguments.First();
-                }
-            }
+            return elementTypeFromInterface;
         }
 
         throw new MappaGeneratorException($"Cannot obtain element type of \"{typeSymbol.ToDisplayString()}\"");
@@ -665,37 +693,19 @@ internal static class TypeSymbolExtensions
     /// <exception cref="MappaGeneratorException">If <paramref name="typeSymbol"/> is not an array or a generic type.</exception>
     internal static (ITypeSymbol KeyType, ITypeSymbol ValueType) GetKeyAndValueTypes(this ITypeSymbol typeSymbol, Compilation compilation)
     {
-        if (typeSymbol is INamedTypeSymbol { TypeArguments.Length: 2 } namedTypeSymbol)
+        if (TryGetKeyAndValueFromTypeArguments(typeSymbol, out var fromTypeArguments))
         {
-            return (namedTypeSymbol.TypeArguments.First(), namedTypeSymbol.TypeArguments.Last());
+            return fromTypeArguments;
         }
 
-        if (typeSymbol is INamedTypeSymbol { TypeArguments.Length: 1 } mightBeEnumerable)
+        if (TryGetKeyAndValueFromEnumerableElement(typeSymbol, compilation, out var fromEnumerable))
         {
-            var enumerableElementType = mightBeEnumerable.GetElementType();
-            if (enumerableElementType.IsKeyValuePair(compilation))
-            {
-                return enumerableElementType.GetKeyAndValueTypes(compilation);
-            }
+            return fromEnumerable;
         }
 
-        // The type might be non-generic but still implement an IDictionary
-        // so we need to check all the interfaces to get the type argument of
-        // the first IDictionary{TKey, TValue}.
-        if (typeSymbol is INamedTypeSymbol symbol)
+        if (TryGetKeyAndValueFromInterfaces(typeSymbol, compilation, out var fromInterfaces))
         {
-            foreach (var @interface in symbol.AllInterfaces)
-            {
-                if (@interface is not null && @interface.IsGenericType && @interface.IsIDictionary(compilation))
-                {
-                    return (@interface.TypeArguments.First(), @interface.TypeArguments.Last());
-                }
-
-                if (@interface is not null && @interface.IsGenericType && @interface.IsIEnumerableOfKeyValuePairs(compilation))
-                {
-                    return @interface.GetKeyAndValueTypes(compilation);
-                }
-            }
+            return fromInterfaces;
         }
 
         throw new MappaGeneratorException($"Cannot obtain key and value types of \"{typeSymbol.ToDisplayString()}\"");
@@ -966,35 +976,12 @@ internal static class TypeSymbolExtensions
         ITypeSymbol methodType,
         bool isNullableEnabled)
     {
-        if (!isNullableEnabled)
+        if (!AreEligibleForRelaxedNullabilityMatch(requiredType, methodType, isNullableEnabled))
         {
             return false;
         }
 
-        if (!SymbolEqualityComparer.Default.Equals(requiredType, methodType))
-        {
-            return false;
-        }
-
-        if (requiredType.NullableAnnotation == NullableAnnotation.None
-            || methodType.NullableAnnotation == NullableAnnotation.None)
-        {
-            return false;
-        }
-
-        if (requiredType.NullableAnnotation == NullableAnnotation.Annotated
-            && methodType.NullableAnnotation == NullableAnnotation.NotAnnotated)
-        {
-            return true;
-        }
-
-        if (requiredType.NullableAnnotation == NullableAnnotation.NotAnnotated
-            && methodType.NullableAnnotation == NullableAnnotation.Annotated)
-        {
-            return true;
-        }
-
-        return false;
+        return HasOppositeNullableAnnotations(requiredType.NullableAnnotation, methodType.NullableAnnotation);
     }
 
     /// <summary>
@@ -1137,24 +1124,7 @@ internal static class TypeSymbolExtensions
 
         foreach (var attribute in fieldSymbol.GetAttributes())
         {
-            var attributeClass = attribute.AttributeClass;
-            if (attributeClass is null)
-            {
-                continue;
-            }
-
-            var isDescriptionAttribute = descriptionAttributeSymbol is not null
-                && SymbolEqualityComparer.Default.Equals(attributeClass, descriptionAttributeSymbol);
-            isDescriptionAttribute |= attributeClass.Name == "DescriptionAttribute"
-                && attributeClass.ContainingNamespace.ToDisplayString() == "System.ComponentModel";
-            if (!isDescriptionAttribute)
-            {
-                continue;
-            }
-
-            if (attribute.ConstructorArguments.Length > 0
-                && attribute.ConstructorArguments[0].Value is string description
-                && !string.IsNullOrWhiteSpace(description))
+            if (TryReadDescriptionFromAttribute(attribute, descriptionAttributeSymbol, out var description))
             {
                 return description;
             }
@@ -2004,27 +1974,7 @@ internal static class TypeSymbolExtensions
     /// <param name="type">The type name to be normalised.</param>
     /// <returns>The normalised name of the type.</returns>
     internal static string NormalizeType(this string type)
-        => type switch
-        {
-            "sbyte" => typeof(sbyte).ToString(),
-            "short" => typeof(short).ToString(),
-            "int" => typeof(int).ToString(),
-            "long" => typeof(long).ToString(),
-            "byte" => typeof(byte).ToString(),
-            "ushort" => typeof(ushort).ToString(),
-            "uint" => typeof(uint).ToString(),
-            "ulong" => typeof(ulong).ToString(),
-            "float" => typeof(float).ToString(),
-            "double" => typeof(double).ToString(),
-            "string" => typeof(string).ToString(),
-            "char" => typeof(char).ToString(),
-            "decimal" => typeof(decimal).ToString(),
-            "nint" => typeof(nint).ToString(),
-            "nuint" => typeof(nuint).ToString(),
-            "void" => typeof(void).ToString(),
-            "bool" => typeof(bool).ToString(),
-            _ => type,
-        };
+        => NormalizedTypeAliases.TryGetValue(type, out var normalized) ? normalized : type;
 
     /// <summary>
     /// Check if <paramref name="typeSymbol"/> is either <see cref="IsValueTypeNullable"/>
@@ -2248,18 +2198,183 @@ internal static class TypeSymbolExtensions
         bool nullableEnabled,
         bool acceptTwoParameters)
     {
-        return (!mustBeStatic || methodSymbol.IsStatic) && methodSymbol.Parameters.Length switch
+        if (mustBeStatic && !methodSymbol.IsStatic)
+        {
+            return false;
+        }
+
+        return methodSymbol.Parameters.Length switch
         {
             0 => true,
-            1 => methodSymbol.AreParametersRefModifiersValid()
-                 && methodSymbol.Parameters[0].Type.IsEqualTo(expectedSourceType, nullableEnabled),
-            2 when acceptTwoParameters => methodSymbol.AreParametersRefModifiersValid()
-                                          && IsFirstParameterOk()
-                                          && IsSecondParameterOk(),
+            1 => ValidatePolymorphismSingleParameterMethod(methodSymbol, expectedSourceType, nullableEnabled),
+            2 when acceptTwoParameters => ValidatePolymorphismTwoParameterMethod(methodSymbol, expectedSourceType, compilation, nullableEnabled),
             _ => false,
         };
+    }
 
-        bool IsFirstParameterOk() => methodSymbol.Parameters[0].Type.IsEqualTo(expectedSourceType, nullableEnabled);
-        bool IsSecondParameterOk() => methodSymbol.SecondParameterIsMappaContext(compilation);
+    private static bool ValidatePolymorphismSingleParameterMethod(
+        IMethodSymbol methodSymbol,
+        ITypeSymbol expectedSourceType,
+        bool nullableEnabled)
+    {
+        return methodSymbol.AreParametersRefModifiersValid()
+               && methodSymbol.Parameters[0].Type.IsEqualTo(expectedSourceType, nullableEnabled);
+    }
+
+    private static bool ValidatePolymorphismTwoParameterMethod(
+        IMethodSymbol methodSymbol,
+        ITypeSymbol expectedSourceType,
+        Compilation compilation,
+        bool nullableEnabled)
+    {
+        return methodSymbol.AreParametersRefModifiersValid()
+               && methodSymbol.Parameters[0].Type.IsEqualTo(expectedSourceType, nullableEnabled)
+               && methodSymbol.SecondParameterIsMappaContext(compilation);
+    }
+
+    private static bool AreEligibleForRelaxedNullabilityMatch(
+        ITypeSymbol requiredType,
+        ITypeSymbol methodType,
+        bool isNullableEnabled)
+    {
+        return isNullableEnabled
+               && SymbolEqualityComparer.Default.Equals(requiredType, methodType)
+               && requiredType.NullableAnnotation is not NullableAnnotation.None
+               && methodType.NullableAnnotation is not NullableAnnotation.None;
+    }
+
+    private static bool HasOppositeNullableAnnotations(
+        NullableAnnotation requiredAnnotation,
+        NullableAnnotation methodAnnotation)
+    {
+        return (requiredAnnotation, methodAnnotation) switch
+        {
+            (NullableAnnotation.Annotated, NullableAnnotation.NotAnnotated) => true,
+            (NullableAnnotation.NotAnnotated, NullableAnnotation.Annotated) => true,
+            _ => false,
+        };
+    }
+
+    private static bool TryGetElementTypeFromEnumerableInterface(ITypeSymbol typeSymbol, out ITypeSymbol? elementType)
+    {
+        elementType = null;
+        if (typeSymbol is not INamedTypeSymbol nonGenericNamedTypeSymbol)
+        {
+            return false;
+        }
+
+        foreach (var @interface in nonGenericNamedTypeSymbol.AllInterfaces)
+        {
+            if (@interface is not null && @interface.IsGenericType && @interface.IsIEnumerable())
+            {
+                elementType = @interface.TypeArguments.First();
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool TryReadDescriptionFromAttribute(
+        AttributeData attribute,
+        INamedTypeSymbol? descriptionAttributeSymbol,
+        out string? description)
+    {
+        description = null;
+        var attributeClass = attribute.AttributeClass;
+        if (attributeClass is null || !IsDescriptionAttributeClass(attributeClass, descriptionAttributeSymbol))
+        {
+            return false;
+        }
+
+        if (attribute.ConstructorArguments.Length > 0
+            && attribute.ConstructorArguments[0].Value is string descriptionValue
+            && !string.IsNullOrWhiteSpace(descriptionValue))
+        {
+            description = descriptionValue;
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsDescriptionAttributeClass(INamedTypeSymbol attributeClass, INamedTypeSymbol? descriptionAttributeSymbol)
+    {
+        if (descriptionAttributeSymbol is not null
+            && SymbolEqualityComparer.Default.Equals(attributeClass, descriptionAttributeSymbol))
+        {
+            return true;
+        }
+
+        return attributeClass.Name == "DescriptionAttribute"
+               && attributeClass.ContainingNamespace.ToDisplayString() == "System.ComponentModel";
+    }
+
+    private static bool TryGetKeyAndValueFromTypeArguments(
+        ITypeSymbol typeSymbol,
+        out (ITypeSymbol KeyType, ITypeSymbol ValueType) keyAndValueTypes)
+    {
+        if (typeSymbol is INamedTypeSymbol { TypeArguments.Length: 2 } namedTypeSymbol)
+        {
+            keyAndValueTypes = (namedTypeSymbol.TypeArguments.First(), namedTypeSymbol.TypeArguments.Last());
+            return true;
+        }
+
+        keyAndValueTypes = default;
+        return false;
+    }
+
+    private static bool TryGetKeyAndValueFromEnumerableElement(
+        ITypeSymbol typeSymbol,
+        Compilation compilation,
+        out (ITypeSymbol KeyType, ITypeSymbol ValueType) keyAndValueTypes)
+    {
+        if (typeSymbol is INamedTypeSymbol { TypeArguments.Length: 1 } mightBeEnumerable)
+        {
+            var enumerableElementType = mightBeEnumerable.GetElementType();
+            if (enumerableElementType.IsKeyValuePair(compilation))
+            {
+                keyAndValueTypes = enumerableElementType.GetKeyAndValueTypes(compilation);
+                return true;
+            }
+        }
+
+        keyAndValueTypes = default;
+        return false;
+    }
+
+    private static bool TryGetKeyAndValueFromInterfaces(
+        ITypeSymbol typeSymbol,
+        Compilation compilation,
+        out (ITypeSymbol KeyType, ITypeSymbol ValueType) keyAndValueTypes)
+    {
+        if (typeSymbol is not INamedTypeSymbol symbol)
+        {
+            keyAndValueTypes = default;
+            return false;
+        }
+
+        foreach (var @interface in symbol.AllInterfaces)
+        {
+            if (@interface is null || !@interface.IsGenericType)
+            {
+                continue;
+            }
+
+            if (@interface.IsIDictionary(compilation))
+            {
+                keyAndValueTypes = (@interface.TypeArguments.First(), @interface.TypeArguments.Last());
+                return true;
+            }
+
+            if (@interface.IsIEnumerableOfKeyValuePairs(compilation))
+            {
+                keyAndValueTypes = @interface.GetKeyAndValueTypes(compilation);
+                return true;
+            }
+        }
+
+        keyAndValueTypes = default;
+        return false;
     }
 }

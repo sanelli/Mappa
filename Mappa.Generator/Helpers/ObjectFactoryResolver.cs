@@ -113,80 +113,44 @@ internal sealed class ObjectFactoryResolver
         return new TierPickResult(InvokeMethodResolutionResult.Ambiguous, null);
     }
 
+    private static bool ApplyTierPick(
+        TierPickResult tierPick,
+        ObjectFactoryInvocationKind kind,
+        ref IMethodSymbol? method,
+        ref ObjectFactoryInvocationKind invocationKind)
+    {
+        if (tierPick.Status is InvokeMethodResolutionResult.NotFound)
+        {
+            return false;
+        }
+
+        method = tierPick.Method;
+        invocationKind = kind;
+        return true;
+    }
+
     private ObjectFactory? ResolveFactory(MappaObjectFactoryAttributeData attribute)
     {
-        ISymbol? fieldOrProperty = null;
-        ITypeSymbol? explicitType = null;
-        ITypeSymbol lookupType;
-        InvokeMethodStaticRequirement staticRequirement;
-
-        if (attribute.FieldName is not null)
+        if (!this.TryBuildFactoryLookup(attribute, out var lookup))
         {
-            fieldOrProperty = this.compilation.LocateAccessibleFieldOrPropertyInTypeHierarchy(
-                this.mapClass,
-                attribute.FieldName,
-                this.mapClass);
-            if (fieldOrProperty is null)
-            {
-                this.ReportFactoryNotFound(attribute);
-                return null;
-            }
-
-            lookupType = GetFieldOrPropertyType(fieldOrProperty);
-            staticRequirement = this.mapMethod.CanBeUsedByStaticMethod && !fieldOrProperty.IsStatic
-                ? InvokeMethodStaticRequirement.Static
-                : InvokeMethodStaticRequirement.StaticOrNotStatic;
-        }
-        else if (attribute.ClassType is not null)
-        {
-            var classTypeFullName = attribute.ClassType.FullName;
-            if (string.IsNullOrWhiteSpace(classTypeFullName))
-            {
-                throw new MappaGeneratorException($"Cannot detect the full name for factory type '{attribute.ClassType}'.");
-            }
-
-            explicitType = this.compilation.GetTypeByMetadataName(classTypeFullName);
-            if (explicitType is null)
-            {
-                this.ReportFactoryNotFound(attribute);
-                return null;
-            }
-
-            lookupType = explicitType;
-            staticRequirement = InvokeMethodStaticRequirement.Static;
-        }
-        else
-        {
-            lookupType = this.mapClass;
-            staticRequirement = this.mapMethod.CanBeUsedByStaticMethod
-                ? InvokeMethodStaticRequirement.Static
-                : InvokeMethodStaticRequirement.StaticOrNotStatic;
+            return null;
         }
 
-        var methods = lookupType.LocateMethodsIncludingInheritedInterfaces(attribute.MethodName);
+        var methods = lookup.LookupType.LocateMethodsIncludingInheritedInterfaces(attribute.MethodName);
         var resolution = this.TryResolveFactoryMethod(
             methods,
             attribute.MethodName,
-            staticRequirement,
+            lookup.StaticRequirement,
             out var method,
             out var invocationKind);
 
-        if (resolution is InvokeMethodResolutionResult.NotFound &&
-            fieldOrProperty is not null &&
-            this.mapMethod.CanBeUsedByStaticMethod &&
-            !fieldOrProperty.IsStatic)
-        {
-            var instanceResolution = this.TryResolveFactoryMethod(
+        if (this.ShouldRejectNonStaticFactoryField(
+                resolution,
+                lookup.FieldOrProperty,
                 methods,
-                attribute.MethodName,
-                InvokeMethodStaticRequirement.NotStatic,
-                out _,
-                out _);
-            if (instanceResolution is not InvokeMethodResolutionResult.NotFound)
-            {
-                this.ReportFactoryNotFound(attribute);
-                return null;
-            }
+                attribute))
+        {
+            return null;
         }
 
         if (resolution is not InvokeMethodResolutionResult.Success || method is null)
@@ -195,7 +159,102 @@ internal sealed class ObjectFactoryResolver
             return null;
         }
 
-        return new ObjectFactory(method, fieldOrProperty, explicitType, invocationKind, attribute.Location);
+        return new ObjectFactory(method, lookup.FieldOrProperty, lookup.ExplicitType, invocationKind, attribute.Location);
+    }
+
+    private bool TryBuildFactoryLookup(MappaObjectFactoryAttributeData attribute, out FactoryLookup lookup)
+    {
+        if (attribute.FieldName is not null)
+        {
+            return this.TryBuildFieldFactoryLookup(attribute, out lookup);
+        }
+
+        if (attribute.ClassType is not null)
+        {
+            return this.TryBuildClassTypeFactoryLookup(attribute, out lookup);
+        }
+
+        lookup = new FactoryLookup(
+            this.mapClass,
+            this.mapMethod.CanBeUsedByStaticMethod ? InvokeMethodStaticRequirement.Static : InvokeMethodStaticRequirement.StaticOrNotStatic,
+            null,
+            null);
+        return true;
+    }
+
+    private bool TryBuildFieldFactoryLookup(MappaObjectFactoryAttributeData attribute, out FactoryLookup lookup)
+    {
+        if (attribute.FieldName is not { Length: > 0 } fieldName || string.IsNullOrWhiteSpace(fieldName))
+        {
+            lookup = default;
+            return false;
+        }
+
+        var fieldOrProperty = this.compilation.LocateAccessibleFieldOrPropertyInTypeHierarchy(
+            this.mapClass,
+            fieldName,
+            this.mapClass);
+        if (fieldOrProperty is null)
+        {
+            this.ReportFactoryNotFound(attribute);
+            lookup = default;
+            return false;
+        }
+
+        var staticRequirement = this.mapMethod.CanBeUsedByStaticMethod && !fieldOrProperty.IsStatic
+            ? InvokeMethodStaticRequirement.Static
+            : InvokeMethodStaticRequirement.StaticOrNotStatic;
+        lookup = new FactoryLookup(GetFieldOrPropertyType(fieldOrProperty), staticRequirement, fieldOrProperty, null);
+        return true;
+    }
+
+    private bool TryBuildClassTypeFactoryLookup(MappaObjectFactoryAttributeData attribute, out FactoryLookup lookup)
+    {
+        var classTypeFullName = attribute.ClassType?.FullName;
+        if (classTypeFullName is not { Length: > 0 } metadataName || string.IsNullOrWhiteSpace(metadataName))
+        {
+            throw new MappaGeneratorException($"Cannot detect the full name for factory type '{attribute.ClassType}'.");
+        }
+
+        var explicitType = this.compilation.GetTypeByMetadataName(metadataName);
+        if (explicitType is null)
+        {
+            this.ReportFactoryNotFound(attribute);
+            lookup = default;
+            return false;
+        }
+
+        lookup = new FactoryLookup(explicitType, InvokeMethodStaticRequirement.Static, null, explicitType);
+        return true;
+    }
+
+    private bool ShouldRejectNonStaticFactoryField(
+        InvokeMethodResolutionResult resolution,
+        ISymbol? fieldOrProperty,
+        IMethodSymbol[] methods,
+        MappaObjectFactoryAttributeData attribute)
+    {
+        if (resolution is not InvokeMethodResolutionResult.NotFound
+            || fieldOrProperty is null
+            || !this.mapMethod.CanBeUsedByStaticMethod
+            || fieldOrProperty.IsStatic)
+        {
+            return false;
+        }
+
+        var instanceResolution = this.TryResolveFactoryMethod(
+            methods,
+            attribute.MethodName,
+            InvokeMethodStaticRequirement.NotStatic,
+            out _,
+            out _);
+        if (instanceResolution is InvokeMethodResolutionResult.NotFound)
+        {
+            return false;
+        }
+
+        this.ReportFactoryNotFound(attribute);
+        return true;
     }
 
     private InvokeMethodResolutionResult TryResolveFactoryMethod(
@@ -208,12 +267,30 @@ internal sealed class ObjectFactoryResolver
         method = null;
         invocationKind = ObjectFactoryInvocationKind.FullyProduced;
 
-        var nullableEnabled = this.mapMethod.NullableEnabled;
-        var sourceType = this.context.SourceType;
-        var targetType = this.context.TargetType;
-        var mapMethodProvidesContext = this.mapMethod.ProvideMappaContextWhenInvoked();
+        var candidates = this.FilterFactoryMethodCandidates(methods, methodName, staticRequirement);
+        if (candidates.Length == 0)
+        {
+            return InvokeMethodResolutionResult.NotFound;
+        }
 
-        var candidates = methods
+        var standardTierResult = this.TryResolveStandardFactoryTiers(candidates, out method, out invocationKind);
+        if (standardTierResult is not InvokeMethodResolutionResult.NotFound)
+        {
+            return standardTierResult;
+        }
+
+        return this.TryResolveParameterizedFactoryTier(candidates, out method, out invocationKind);
+    }
+
+    private IMethodSymbol[] FilterFactoryMethodCandidates(
+        IMethodSymbol[] methods,
+        string methodName,
+        InvokeMethodStaticRequirement staticRequirement)
+    {
+        var nullableEnabled = this.mapMethod.NullableEnabled;
+        var targetType = this.context.TargetType;
+
+        return methods
             .Where(candidate =>
                 candidate.Name.Equals(methodName, StringComparison.Ordinal) &&
                 this.compilation.IsSymbolAccessibleWithin(candidate, this.mapClass) &&
@@ -226,11 +303,19 @@ internal sealed class ObjectFactoryResolver
                     _ => false,
                 })
             .ToArray();
+    }
 
-        if (candidates.Length == 0)
-        {
-            return InvokeMethodResolutionResult.NotFound;
-        }
+    private InvokeMethodResolutionResult TryResolveStandardFactoryTiers(
+        IMethodSymbol[] candidates,
+        out IMethodSymbol? method,
+        out ObjectFactoryInvocationKind invocationKind)
+    {
+        method = null;
+        invocationKind = ObjectFactoryInvocationKind.FullyProduced;
+
+        var nullableEnabled = this.mapMethod.NullableEnabled;
+        var sourceType = this.context.SourceType;
+        var mapMethodProvidesContext = this.mapMethod.ProvideMappaContextWhenInvoked();
 
         bool IsSourceParameter(IParameterSymbol parameter)
             => parameter.RefKind is RefKind.None &&
@@ -247,10 +332,8 @@ internal sealed class ObjectFactoryResolver
                 candidate => candidate.Parameters.Length == 2 &&
                              IsSourceParameter(candidate.Parameters[0]) &&
                              IsContextParameter(candidate, 1));
-            if (sourceAndContextResult.Status is not InvokeMethodResolutionResult.NotFound)
+            if (ApplyTierPick(sourceAndContextResult, ObjectFactoryInvocationKind.FullyProduced, ref method, ref invocationKind))
             {
-                method = sourceAndContextResult.Method;
-                invocationKind = ObjectFactoryInvocationKind.FullyProduced;
                 return sourceAndContextResult.Status;
             }
         }
@@ -259,10 +342,8 @@ internal sealed class ObjectFactoryResolver
             candidates,
             candidate => candidate.Parameters.Length == 1 &&
                          IsSourceParameter(candidate.Parameters[0]));
-        if (sourceOnlyResult.Status is not InvokeMethodResolutionResult.NotFound)
+        if (ApplyTierPick(sourceOnlyResult, ObjectFactoryInvocationKind.FullyProduced, ref method, ref invocationKind))
         {
-            method = sourceOnlyResult.Method;
-            invocationKind = ObjectFactoryInvocationKind.FullyProduced;
             return sourceOnlyResult.Status;
         }
 
@@ -272,10 +353,8 @@ internal sealed class ObjectFactoryResolver
                 candidates,
                 candidate => candidate.Parameters.Length == 1 &&
                              IsContextParameter(candidate, 0));
-            if (contextOnlyResult.Status is not InvokeMethodResolutionResult.NotFound)
+            if (ApplyTierPick(contextOnlyResult, ObjectFactoryInvocationKind.EmptyCtorLike, ref method, ref invocationKind))
             {
-                method = contextOnlyResult.Method;
-                invocationKind = ObjectFactoryInvocationKind.EmptyCtorLike;
                 return contextOnlyResult.Status;
             }
         }
@@ -283,15 +362,33 @@ internal sealed class ObjectFactoryResolver
         var parameterlessResult = PickFromTier(
             candidates,
             candidate => candidate.Parameters.Length == 0);
-        if (parameterlessResult.Status is not InvokeMethodResolutionResult.NotFound)
+        if (ApplyTierPick(parameterlessResult, ObjectFactoryInvocationKind.EmptyCtorLike, ref method, ref invocationKind))
         {
-            method = parameterlessResult.Method;
-            invocationKind = ObjectFactoryInvocationKind.EmptyCtorLike;
             return parameterlessResult.Status;
         }
 
-        // Tier 5: any remaining signature is parameterized-like.
-        // Prefer the candidate with the highest parameter count when unique at that count.
+        return InvokeMethodResolutionResult.NotFound;
+    }
+
+    private InvokeMethodResolutionResult TryResolveParameterizedFactoryTier(
+        IMethodSymbol[] candidates,
+        out IMethodSymbol? method,
+        out ObjectFactoryInvocationKind invocationKind)
+    {
+        method = null;
+        invocationKind = ObjectFactoryInvocationKind.ParameterizedLike;
+
+        var nullableEnabled = this.mapMethod.NullableEnabled;
+        var sourceType = this.context.SourceType;
+
+        bool IsSourceParameter(IParameterSymbol parameter)
+            => parameter.RefKind is RefKind.None &&
+               parameter.Type.IsEqualTo(sourceType, nullableEnabled);
+
+        bool IsContextParameter(IMethodSymbol candidate, int index)
+            => candidate.Parameters[index].RefKind is RefKind.None &&
+               candidate.ParameterIsMappaContext(this.compilation, index);
+
         var parameterizedCandidates = candidates
             .Where(candidate =>
                 !(candidate.Parameters.Length == 2 &&
@@ -315,7 +412,6 @@ internal sealed class ObjectFactoryResolver
 
         var parameterizedResult = ResolveUniqueCandidate(preferredCandidates);
         method = parameterizedResult.Method;
-        invocationKind = ObjectFactoryInvocationKind.ParameterizedLike;
         return parameterizedResult.Status;
     }
 
@@ -330,6 +426,29 @@ internal sealed class ObjectFactoryResolver
             this.mapMethod.MethodName,
             attribute.TargetType.ToDisplayString(),
             attribute.MethodName));
+    }
+
+    private readonly struct FactoryLookup
+    {
+        internal FactoryLookup(
+            ITypeSymbol lookupType,
+            InvokeMethodStaticRequirement staticRequirement,
+            ISymbol? fieldOrProperty,
+            ITypeSymbol? explicitType)
+        {
+            this.LookupType = lookupType;
+            this.StaticRequirement = staticRequirement;
+            this.FieldOrProperty = fieldOrProperty;
+            this.ExplicitType = explicitType;
+        }
+
+        internal ITypeSymbol LookupType { get; }
+
+        internal InvokeMethodStaticRequirement StaticRequirement { get; }
+
+        internal ISymbol? FieldOrProperty { get; }
+
+        internal ITypeSymbol? ExplicitType { get; }
     }
 
     private sealed class TierPickResult

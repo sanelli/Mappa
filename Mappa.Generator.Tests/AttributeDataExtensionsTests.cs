@@ -573,4 +573,352 @@ public sealed class AttributeDataExtensionsTests
         attribute.InjectFromAssemblies[0].ToDisplayString().Should().Be(AttributeDataExtensionsTestHelper.NamespaceName + ".IIgnored");
         attribute.ResolveMethodName("TestRegistrar").Should().Be("RegisterFromProperty");
     }
+
+    /// <summary>
+    /// Test <see cref="AttributeDataExtensions.GetMappaAllowInaccessibleSourceMembersAttribute"/>
+    /// reads params member names as primitive constructor arguments.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetMappaAllowInaccessibleSourceMembersAttributeReadsPrimitiveParamsMemberNames()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source
+                              {
+                                  private int First { get; set; }
+
+                                  private int Second { get; set; }
+                              }
+
+                              public class Target
+                              {
+                                  public int First { get; set; }
+
+                                  public int Second { get; set; }
+                              }
+
+                              [Mappa]
+                              public sealed partial class TestMapper
+                              {
+                                  [MappaAllowInaccessibleSourceMembers("First", "", "Second")]
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetMethodAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.MapperMetadataName,
+            "Map");
+
+        var attribute = attributes.GetMappaAllowInaccessibleSourceMembersAttribute(compilation);
+
+        attribute.Should().NotBeNull();
+        attribute!.MemberNames.Should().Equal("First", "Second");
+    }
+
+    /// <summary>
+    /// Test <see cref="AttributeDataExtensions.GetMappaAllowInaccessibleTargetMembersAttribute"/>
+    /// reads a single primitive params member name.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetMappaAllowInaccessibleTargetMembersAttributeReadsSinglePrimitiveParamsMemberName()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source
+                              {
+                                  public int Allowed { get; set; }
+                              }
+
+                              public class Target
+                              {
+                                  private int Allowed { get; set; }
+                              }
+
+                              [Mappa]
+                              public sealed partial class TestMapper
+                              {
+                                  [MappaAllowInaccessibleTargetMembers("Allowed")]
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetMethodAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.MapperMetadataName,
+            "Map");
+
+        var attribute = attributes.GetMappaAllowInaccessibleTargetMembersAttribute(compilation);
+
+        attribute.Should().NotBeNull();
+        attribute!.MemberNames.Should().Equal("Allowed");
+    }
+
+    /// <summary>
+    /// Test <see cref="AttributeDataExtensions.GetMappaAllowInaccessibleSourceMembersAttribute"/>
+    /// with the parameterless constructor.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetMappaAllowInaccessibleSourceMembersAttributeReadsParameterlessConstructor()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source
+                              {
+                                  private int Value { get; set; }
+                              }
+
+                              public class Target
+                              {
+                                  public int Value { get; set; }
+                              }
+
+                              [Mappa]
+                              public sealed partial class TestMapper
+                              {
+                                  [MappaAllowInaccessibleSourceMembers]
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetMethodAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.MapperMetadataName,
+            "Map");
+
+        var attribute = attributes.GetMappaAllowInaccessibleSourceMembersAttribute(compilation);
+
+        attribute.Should().NotBeNull();
+        attribute!.MemberNames.Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// Test <see cref="AttributeDataExtensions.GetMappaDependencyInjectionAttributeData"/>
+    /// when IgnoreType and InjectFromAssemblies are empty arrays.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetMappaDependencyInjectionAttributeDataReadsEmptyTypeArrays()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              [MappaDependencyInjection(
+                                  IgnoreType = new System.Type[0],
+                                  InjectFromAssemblies = new System.Type[0])]
+                              public static partial class TestRegistrar
+                              {
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetTypeAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.NamespaceName + ".TestRegistrar");
+
+        var attribute = attributes.GetMappaDependencyInjectionAttributeData(compilation);
+
+        attribute.Should().NotBeNull();
+        attribute!.IgnoreTypes.Should().BeEmpty();
+        attribute.InjectFromAssemblies.Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// Test <see cref="AttributeDataExtensions.GetMappaBeforeMapAttributes"/> reads valid constructors
+    /// and ignores invalid location argument types.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetMappaBeforeMapAttributesReadsValidConstructorsAndIgnoresInvalidLocation()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { }
+
+                              public class Target { }
+
+                              public static class StaticHookHelpers
+                              {
+                                  public static void Before(Source source) { }
+                              }
+
+                              public class InstanceHookHelpers
+                              {
+                                  public void InstanceBefore(Source source) { }
+                              }
+
+                              [Mappa]
+                              public sealed partial class TestMapper
+                              {
+                                  private readonly InstanceHookHelpers helper = new();
+
+                                  [MappaBeforeMap(nameof(LocalBefore))]
+                                  [MappaBeforeMap(typeof(StaticHookHelpers), nameof(StaticHookHelpers.Before))]
+                                  [MappaBeforeMap(nameof(helper), "InstanceBefore")]
+                                  [MappaBeforeMap(42, "InvalidLocation")]
+                                  public partial Target Map(Source input);
+
+                                  private void LocalBefore(Source source) { }
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetMethodAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.MapperMetadataName,
+            "Map");
+
+        var beforeMaps = attributes.GetMappaBeforeMapAttributes(compilation);
+
+        beforeMaps.Should().HaveCount(3);
+        beforeMaps[0].MethodName.Should().Be("LocalBefore");
+        beforeMaps[0].ClassType.Should().BeNull();
+        beforeMaps[0].FieldName.Should().BeNull();
+        beforeMaps[1].ClassType.Should().NotBeNull();
+        beforeMaps[1].MethodName.Should().Be("Before");
+        beforeMaps[2].FieldName.Should().Be("helper");
+        beforeMaps[2].MethodName.Should().Be("InstanceBefore");
+    }
+
+    /// <summary>
+    /// Test <see cref="AttributeDataExtensions.GetInvokeMethodAttributes"/> ignores invalid constructors.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetInvokeMethodAttributesIgnoresInvalidConstructors()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source
+                              {
+                                  public int Property { get; set; }
+                              }
+
+                              public class Target
+                              {
+                                  public string Property { get; set; }
+                              }
+
+                              [Mappa]
+                              public sealed partial class TestMapper
+                              {
+                                  [MappaInvokeMethod(nameof(Target.Property), 42, "LocalMap")]
+                                  [MappaInvokeMethod(nameof(Target.Property), "LocalMap")]
+                                  public partial Target Map(Source input);
+
+                                  private string LocalMap(int value) => value.ToString();
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetMethodAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.MapperMetadataName,
+            "Map");
+
+        var invokeAttributes = attributes.GetInvokeMethodAttributes(compilation);
+
+        invokeAttributes.Should().HaveCount(1);
+        invokeAttributes[0].MethodName.Should().Be("LocalMap");
+        invokeAttributes[0].FieldName.Should().BeNull();
+        invokeAttributes[0].ClassType.Should().BeNull();
+    }
+
+    /// <summary>
+    /// Test <see cref="AttributeDataExtensions.GetMappaObjectFactoryAttributes"/> ignores invalid middle arguments.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetMappaObjectFactoryAttributesIgnoresInvalidMiddleArgument()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { }
+
+                              public class Target { }
+
+                              [Mappa]
+                              public sealed partial class TestMapper
+                              {
+                                  [MappaObjectFactory(typeof(Target), 42, "CreateTarget")]
+                                  [MappaObjectFactory(typeof(Target), nameof(CreateTarget))]
+                                  public partial Target Map(Source input);
+
+                                  private Target CreateTarget() => new();
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetMethodAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.MapperMetadataName,
+            "Map");
+
+        var factories = attributes.GetMappaObjectFactoryAttributes(compilation);
+
+        factories.Should().HaveCount(1);
+        factories[0].MethodName.Should().Be("CreateTarget");
+        factories[0].FieldName.Should().BeNull();
+        factories[0].ClassType.Should().BeNull();
+    }
+
+    /// <summary>
+    /// Test <see cref="AttributeDataExtensions.GetMappaTypeMappingDefaultAttribute"/> returns <see langword="null"/>
+    /// when constructor arguments cannot be interpreted.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetMappaTypeMappingDefaultAttributeReturnsNullForUninterpretableConstructorArguments()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { }
+
+                              public class Target { }
+
+                              [Mappa]
+                              public sealed partial class TestMapper
+                              {
+                                  [MappaTypeMappingDefault(42.5)]
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetMethodAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.MapperMetadataName,
+            "Map");
+
+        attributes.GetMappaTypeMappingDefaultAttribute(compilation).Should().BeNull();
+    }
 }

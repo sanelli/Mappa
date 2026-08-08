@@ -18,6 +18,20 @@ namespace Mappa.Generator.Builders.Strategies;
 internal sealed class MappaAssignFromConstantAttributeStrategyBuilder
     : IMappaStrategyBuilder
 {
+    private static readonly HashSet<Type> NumericPrimitiveTypes =
+    [
+        typeof(sbyte),
+        typeof(byte),
+        typeof(short),
+        typeof(ushort),
+        typeof(int),
+        typeof(uint),
+        typeof(long),
+        typeof(ulong),
+        typeof(float),
+        typeof(double),
+    ];
+
     private readonly MappaAssignFromConstantAttributeStrategy strategy;
 
     /// <summary>
@@ -46,52 +60,76 @@ internal sealed class MappaAssignFromConstantAttributeStrategyBuilder
             return "null";
         }
 
-        return value switch
+        if (value is string stringValue)
         {
-            string s => CSharpLiteralHelper.ToStringLiteral(s),
-            sbyte or byte or short or ushort or int or uint or long or ulong or float or double => $"{value}",
-            bool b => b ? "true" : "false",
-            char c => CSharpLiteralHelper.ToCharLiteral(c),
-            TypedConstant typedConstant when
-                typedConstant.Kind is TypedConstantKind.Enum &&
+            return CSharpLiteralHelper.ToStringLiteral(stringValue);
+        }
+
+        if (value is bool boolValue)
+        {
+            return boolValue ? "true" : "false";
+        }
+
+        if (value is char charValue)
+        {
+            return CSharpLiteralHelper.ToCharLiteral(charValue);
+        }
+
+        if (IsNumericPrimitive(value))
+        {
+            return $"{value}";
+        }
+
+        if (value is TypedConstant typedConstant)
+        {
+            return TypedConstantToCode(typedConstant);
+        }
+
+        throw new MappaGeneratorException("Unexpected MappaAssignFromConstant attribute value.");
+    }
+
+    private static bool IsNumericPrimitive(object value)
+        => NumericPrimitiveTypes.Contains(value.GetType());
+
+    private static string TypedConstantToCode(TypedConstant typedConstant) =>
+        typedConstant.Kind switch
+        {
+            TypedConstantKind.Primitive => ValueToCode(typedConstant.Value),
+            TypedConstantKind.Array => GetCodeForArrays(typedConstant),
+            TypedConstantKind.Type when typedConstant.Value is ITypeSymbol typeSymbol =>
+                $"typeof({typeSymbol.ToDisplayString()})",
+            TypedConstantKind.Enum when
                 typedConstant.Value is not null &&
                 typedConstant.Type is not null &&
-                typedConstant.Type.IsEnum() => GetCodeForEnum(typedConstant.Type, typedConstant.Value),
-            TypedConstant typedConstant when
-                typedConstant.Kind is TypedConstantKind.Primitive => ValueToCode(typedConstant.Value),
-            TypedConstant typedConstant when
-                typedConstant.Kind is TypedConstantKind.Array => GetCodeForArrays(typedConstant),
-            TypedConstant typedConstant when
-                typedConstant.Kind is TypedConstantKind.Type &&
-                typedConstant.Value is ITypeSymbol typeSymbol => $"typeof({typeSymbol.ToDisplayString()})",
+                typedConstant.Type.IsEnum() =>
+                GetCodeForEnum(typedConstant.Type, typedConstant.Value),
             _ => throw new MappaGeneratorException("Unexpected MappaAssignFromConstant attribute value."),
         };
 
-        static string GetCodeForEnum(ITypeSymbol typeSymbol, object integerEnumValue)
+    private static string GetCodeForEnum(ITypeSymbol typeSymbol, object integerEnumValue)
+    {
+        #pragma warning disable S3267 // Loops should be simplified using the "Where" method
+        foreach (var enumValue in typeSymbol.GetEnumValues())
+        #pragma warning restore S3267 // Loops should be simplified using the "Where" method
         {
-            #pragma warning disable S3267 // Loops should be simplified using the "Where" method
-            foreach (var enumValue in typeSymbol.GetEnumValues())
-            #pragma warning restore S3267 // Loops should be simplified using the "Where" method
+            if (enumValue.Value is not null && integerEnumValue.Equals(enumValue.Value))
             {
-                if (enumValue.Value is not null && integerEnumValue.Equals(enumValue.Value))
-                {
-                    return $"{typeSymbol.ToDisplayString()}.{enumValue.Name}";
-                }
+                return $"{typeSymbol.ToDisplayString()}.{enumValue.Name}";
             }
-
-            throw new MappaGeneratorException("Unexpected enumeration value");
         }
 
-        static string GetCodeForArrays(TypedConstant array)
-        {
-            var arrayValues = array.Values;
-            var valuesAsCode = new string[arrayValues.Length];
-            for (var i = 0; i < arrayValues.Length; i++)
-            {
-                valuesAsCode[i] = ValueToCode(arrayValues[i]);
-            }
+        throw new MappaGeneratorException("Unexpected enumeration value");
+    }
 
-            return $"new {array.Type?.ToDisplayString()}{{ {string.Join(", ", valuesAsCode)} }}";
+    private static string GetCodeForArrays(TypedConstant array)
+    {
+        var arrayValues = array.Values;
+        var valuesAsCode = new string[arrayValues.Length];
+        for (var i = 0; i < arrayValues.Length; i++)
+        {
+            valuesAsCode[i] = ValueToCode(arrayValues[i]);
         }
+
+        return $"new {array.Type?.ToDisplayString()}{{ {string.Join(", ", valuesAsCode)} }}";
     }
 }

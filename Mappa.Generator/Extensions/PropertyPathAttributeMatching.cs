@@ -34,21 +34,15 @@ internal static class PropertyPathAttributeMatching
 
         if (propertyPathContext is null)
         {
-            return targetPath.GetFirstSegment() is string firstSegment
-                   && firstSegment.Equals(memberName, stringComparison);
+            return MatchesTargetMemberAtRoot(targetPath, memberName, stringComparison);
         }
 
         if (propertyPathContext.IsNestedAttributeScope)
         {
-            return propertyPathContext.OuterTargetSegment is string outerTargetSegment
-                   && targetPath.Segments.Length >= 2
-                   && targetPath.Segments[0].Equals(outerTargetSegment, stringComparison)
-                   && targetPath.Segments[targetPath.Segments.Length - 1].Equals(memberName, stringComparison);
+            return MatchesTargetMemberInNestedAttributeScope(targetPath, memberName, propertyPathContext, stringComparison);
         }
 
-        return propertyPathContext.RemainingTargetSegments.Length > 0
-               && propertyPathContext.RemainingTargetSegments[0].Equals(memberName, stringComparison)
-               && targetPath.EndsWith(propertyPathContext.RemainingTargetSegments);
+        return MatchesTargetMemberForRemainingSegments(targetPath, memberName, propertyPathContext, stringComparison);
     }
 
     /// <summary>
@@ -60,9 +54,15 @@ internal static class PropertyPathAttributeMatching
     internal static PropertyPathContext CreatePropertyPathContext(string targetPath, string? sourcePath)
     {
         var parsedTargetPath = PropertyPath.Parse(targetPath);
-        var parsedSourcePath = string.IsNullOrWhiteSpace(sourcePath)
-            ? PropertyPath.Parse(string.Empty)
-            : PropertyPath.Parse(sourcePath!);
+        PropertyPath parsedSourcePath;
+        if (string.IsNullOrWhiteSpace(sourcePath))
+        {
+            parsedSourcePath = PropertyPath.Parse(string.Empty);
+        }
+        else
+        {
+            parsedSourcePath = PropertyPath.Parse(sourcePath);
+        }
 
         return new PropertyPathContext(
             targetPath,
@@ -123,4 +123,30 @@ internal static class PropertyPathAttributeMatching
 
         return parsedSourcePath.GetFirstSegment();
     }
+
+    private static bool MatchesTargetMemberAtRoot(
+        PropertyPath targetPath,
+        string memberName,
+        StringComparison stringComparison)
+        => targetPath.GetFirstSegment() is string firstSegment
+           && firstSegment.Equals(memberName, stringComparison);
+
+    private static bool MatchesTargetMemberInNestedAttributeScope(
+        PropertyPath targetPath,
+        string memberName,
+        PropertyPathContext propertyPathContext,
+        StringComparison stringComparison)
+        => propertyPathContext.OuterTargetSegment is string outerTargetSegment
+           && targetPath.Segments.Length >= 2
+           && targetPath.Segments[0].Equals(outerTargetSegment, stringComparison)
+           && targetPath.Segments[targetPath.Segments.Length - 1].Equals(memberName, stringComparison);
+
+    private static bool MatchesTargetMemberForRemainingSegments(
+        PropertyPath targetPath,
+        string memberName,
+        PropertyPathContext propertyPathContext,
+        StringComparison stringComparison)
+        => propertyPathContext.RemainingTargetSegments.Length > 0
+           && propertyPathContext.RemainingTargetSegments[0].Equals(memberName, stringComparison)
+           && targetPath.EndsWith(propertyPathContext.RemainingTargetSegments);
 }

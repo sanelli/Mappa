@@ -18,7 +18,207 @@ namespace Mappa.Generator.Builders.Strategies;
 internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToCollectionMapStrategy strategy)
     : IMappaStrategyBuilder
 {
+    private static readonly Func<ITypeSymbol, Compilation, bool>[] ArraySpanMemoryOrImmutableQueueStackPredicates =
+    [
+        static (type, _) => type.IsArray(),
+        static (type, compilation) => type.IsSpan(compilation),
+        static (type, compilation) => type.IsReadOnlySpan(compilation),
+        static (type, compilation) => type.IsMemory(compilation),
+        static (type, compilation) => type.IsReadOnlyMemory(compilation),
+        static (type, compilation) => type.IsIImmutableQueue(compilation),
+        static (type, compilation) => type.IsImmutableQueue(compilation),
+        static (type, compilation) => type.IsIImmutableStack(compilation),
+        static (type, compilation) => type.IsImmutableStack(compilation),
+    ];
+
+    private static readonly Func<ITypeSymbol, Compilation, bool>[] ListLikeEnumerableTargetPredicates =
+    [
+        static (type, _) => type.IsIEnumerable(),
+        static (type, compilation) => type.IsList(compilation),
+        static (type, _) => type.IsIList(),
+        static (type, _) => type.IsIReadOnlyList(),
+        static (type, _) => type.IsICollection(),
+        static (type, _) => type.IsIReadOnlyCollection(),
+        static (type, compilation) => type.IsReadOnlyCollection(compilation),
+        static (type, compilation) => type.IsFrozenSet(compilation),
+        static (type, compilation) => type.IsIImmutableSet(compilation),
+        static (type, compilation) => type.IsImmutableHashSet(compilation),
+        static (type, compilation) => type.IsImmutableSortedSet(compilation),
+        static (type, compilation) => type.IsIImmutableList(compilation),
+        static (type, compilation) => type.IsImmutableArray(compilation),
+        static (type, compilation) => type.IsImmutableList(compilation),
+    ];
+
+    private static readonly PostLoopDispatchEntry[] PostLoopDispatchEntries =
+    [
+        new(
+            IsSpanMemoryOrReadOnlyWrapperTarget,
+            static (stringBuilder, context, targetTypeSymbol, ref targetVariableName) =>
+                AppendConstructFromBufferPostLoop(stringBuilder, context, targetTypeSymbol, ref targetVariableName),
+            stopAfterMatch: true),
+        new(
+            static (type, compilation) => type.IsFrozenSet(compilation),
+            static (stringBuilder, context, targetTypeSymbol, ref targetVariableName) =>
+                AppendFrozenSetPostLoop(stringBuilder, context, targetTypeSymbol, ref targetVariableName),
+            stopAfterMatch: true),
+        new(
+            static (type, compilation) =>
+                type.IsIImmutableSet(compilation) || type.IsImmutableHashSet(compilation),
+            static (stringBuilder, context, targetTypeSymbol, ref targetVariableName) =>
+                AppendImmutableHashSetPostLoop(stringBuilder, context, targetTypeSymbol, ref targetVariableName),
+            stopAfterMatch: true),
+        new(
+            static (type, compilation) => type.IsImmutableSortedSet(compilation),
+            static (stringBuilder, context, targetTypeSymbol, ref targetVariableName) =>
+                AppendImmutableSortedSetPostLoop(stringBuilder, context, targetTypeSymbol, ref targetVariableName),
+            stopAfterMatch: true),
+        new(
+            static (type, compilation) =>
+                type.IsIImmutableList(compilation) || type.IsImmutableArray(compilation),
+            static (stringBuilder, context, targetTypeSymbol, ref targetVariableName) =>
+                AppendImmutableArrayPostLoop(stringBuilder, context, targetTypeSymbol, ref targetVariableName),
+            stopAfterMatch: true),
+        new(
+            static (type, compilation) => type.IsImmutableList(compilation),
+            static (stringBuilder, context, targetTypeSymbol, ref targetVariableName) =>
+                AppendImmutableListPostLoop(stringBuilder, context, targetTypeSymbol, ref targetVariableName),
+            stopAfterMatch: true),
+        new(
+            static (type, compilation) =>
+                type.IsIImmutableQueue(compilation) || type.IsImmutableQueue(compilation),
+            static (stringBuilder, context, targetTypeSymbol, ref targetVariableName) =>
+                AppendImmutableQueuePostLoop(stringBuilder, context, targetTypeSymbol, ref targetVariableName),
+            stopAfterMatch: true),
+        new(
+            static (type, compilation) =>
+                type.IsIImmutableStack(compilation) || type.IsImmutableStack(compilation),
+            static (stringBuilder, context, targetTypeSymbol, ref targetVariableName) =>
+                AppendImmutableStackPostLoop(stringBuilder, context, targetTypeSymbol, ref targetVariableName),
+            stopAfterMatch: false),
+    ];
+
+    private static readonly TargetVariableDispatchEntry[] TargetVariableDispatchEntries =
+    [
+        new(
+            static ctx => IsFastCollectionArrayTarget(
+                ctx.FastCollections,
+                ctx.SourceTypeSymbol,
+                ctx.TargetTypeSymbol,
+                ctx.BuilderContext.Compilation),
+            static ctx => AppendFastCollectionArrayTarget(
+                ctx.StringBuilder,
+                ctx.Source,
+                ctx.BuilderContext,
+                ctx.TargetTypeSymbol,
+                ctx.SourceTypeSymbol,
+                ctx.State)),
+        new(
+            static ctx => IsArraySpanMemoryOrImmutableQueueStackTarget(ctx.TargetTypeSymbol, ctx.BuilderContext.Compilation),
+            static ctx => AppendArraySpanMemoryOrImmutableQueueStackTarget(
+                ctx.StringBuilder,
+                ctx.Source,
+                ctx.BuilderContext,
+                ctx.TargetTypeSymbol,
+                ctx.SourceTypeSymbol,
+                ctx.PreventEnumerableCount,
+                ctx.EnumerableConcreteType,
+                ctx.State)),
+        new(
+            static ctx => IsHashSetLikeTarget(ctx.TargetTypeSymbol, ctx.BuilderContext.Compilation),
+            static ctx => AppendHashSetLikeTarget(
+                ctx.StringBuilder,
+                ctx.Source,
+                ctx.BuilderContext,
+                ctx.TargetTypeSymbol,
+                ctx.SourceTypeSymbol,
+                ctx.State)),
+        new(
+            static ctx => ctx.TargetTypeSymbol.IsOrDerivedFromStack(ctx.BuilderContext.Compilation),
+            static ctx => AppendStackTarget(
+                ctx.StringBuilder,
+                ctx.Source,
+                ctx.BuilderContext,
+                ctx.MethodSymbol,
+                ctx.TargetTypeSymbol,
+                ctx.SourceTypeSymbol,
+                ctx.ContainerCapacityConstructors,
+                ctx.State)),
+        new(
+            static ctx => ctx.TargetTypeSymbol.IsOrDerivedFromConcurrentStack(ctx.BuilderContext.Compilation),
+            static ctx => AppendConcurrentStackTarget(ctx.StringBuilder, ctx.TargetTypeSymbol, ctx.State)),
+        new(
+            static ctx => ctx.TargetTypeSymbol.IsOrDerivedFromQueue(ctx.BuilderContext.Compilation),
+            static ctx => AppendQueueTarget(
+                ctx.StringBuilder,
+                ctx.Source,
+                ctx.BuilderContext,
+                ctx.MethodSymbol,
+                ctx.TargetTypeSymbol,
+                ctx.SourceTypeSymbol,
+                ctx.ContainerCapacityConstructors,
+                ctx.State)),
+        new(
+            static ctx => ctx.TargetTypeSymbol.IsOrImplementConcurrentQueue(ctx.BuilderContext.Compilation),
+            static ctx => AppendConcurrentQueueTarget(ctx.StringBuilder, ctx.TargetTypeSymbol, ctx.State)),
+        new(
+            static ctx => IsBlockingCollectionOrConcurrentBagTarget(ctx.TargetTypeSymbol, ctx.BuilderContext.Compilation),
+            static ctx => AppendBlockingCollectionOrConcurrentBagTarget(
+                ctx.StringBuilder,
+                ctx.Source,
+                ctx.BuilderContext,
+                ctx.MethodSymbol,
+                ctx.TargetTypeSymbol,
+                ctx.SourceTypeSymbol,
+                ctx.ContainerCapacityConstructors,
+                ctx.State)),
+        new(
+            static ctx => ShouldUseArrayForEnumerableInterfaceTarget(ctx.TargetTypeSymbol, ctx.EnumerableConcreteType),
+            AppendArrayEnumerableInterfaceTarget),
+        new(
+            static ctx => IsListLikeEnumerableTarget(ctx.TargetTypeSymbol, ctx.BuilderContext.Compilation),
+            static ctx => AppendListLikeEnumerableTarget(
+                ctx.StringBuilder,
+                ctx.Source,
+                ctx.BuilderContext,
+                ctx.TargetTypeSymbol,
+                ctx.SourceTypeSymbol,
+                ctx.State)),
+        new(
+            static ctx => ctx.TargetTypeSymbol.IsIProducerConsumerCollection(ctx.BuilderContext.Compilation),
+            static ctx => AppendProducerConsumerCollectionTarget(ctx.StringBuilder, ctx.TargetTypeSymbol, ctx.State)),
+        new(
+            static ctx => ctx.TargetTypeSymbol.ImplementISet(ctx.BuilderContext.Compilation),
+            static ctx => AppendImplementISetTarget(
+                ctx.StringBuilder,
+                ctx.Source,
+                ctx.BuilderContext,
+                ctx.MethodSymbol,
+                ctx.TargetTypeSymbol,
+                ctx.SourceTypeSymbol,
+                ctx.ContainerCapacityConstructors,
+                ctx.State)),
+        new(
+            static ctx => ctx.TargetTypeSymbol.ImplementICollection(),
+            static ctx => AppendImplementICollectionTarget(
+                ctx.StringBuilder,
+                ctx.Source,
+                ctx.BuilderContext,
+                ctx.MethodSymbol,
+                ctx.TargetTypeSymbol,
+                ctx.SourceTypeSymbol,
+                ctx.ContainerCapacityConstructors,
+                ctx.State)),
+    ];
+
     private readonly CollectionToCollectionMapStrategy strategy = strategy;
+
+    private delegate void PostLoopAppendAction(
+        PrettyCode.StringBuilder stringBuilder,
+        MappaBuilderContext context,
+        ITypeSymbol targetTypeSymbol,
+        ref string targetVariableName);
+
+    private delegate void TargetVariableBranchAppender(AppendTargetVariableContext context);
 
     private enum InsertionMethod
     {
@@ -70,41 +270,17 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
                 stringBuilder.AppendLine(targetElementCode);
             }
 
-            switch (addMethod)
-            {
-                case InsertionMethod.Indexer:
-                    var index = loopCounterTemporary ?? targetCounterTemporary ?? throw new MappaGeneratorException("Cannot identify a suitable index");
-                    stringBuilder.AppendLine($"{variableToAccessFrom ?? targetVariableName}[{index}] = {targetElementVariable};");
-
-                    // If there is no counting variable from the loop the target counter must be increased.
-                    if (string.IsNullOrWhiteSpace(loopCounterTemporary))
-                    {
-                        stringBuilder.AppendLine($"{targetCounterTemporary} = {targetCounterTemporary} + 1;");
-                    }
-
-                    break;
-                case InsertionMethod.Add:
-                    if (interfaceMethodAccessMode == InterfaceMethodAccessMode.InterfaceExplicit)
-                    {
-                        var interfaceTemporary = context.NextTemporary();
-                        stringBuilder.AppendLine($"{interfaceToAccessFrom} {interfaceTemporary} = {targetVariableName};");
-                        stringBuilder.AppendLine($"{interfaceTemporary}.Add({targetElementVariable});");
-                    }
-                    else
-                    {
-                        stringBuilder.AppendLine($"{targetVariableName}.Add({targetElementVariable});");
-                    }
-
-                    break;
-                case InsertionMethod.Push:
-                    stringBuilder.AppendLine($"{targetVariableName}.Push({targetElementVariable});");
-                    break;
-                case InsertionMethod.Enqueue:
-                    stringBuilder.AppendLine($"{targetVariableName}.Enqueue({targetElementVariable});");
-                    break;
-                default:
-                    throw new MappaGeneratorException("Unexpected add method.");
-            }
+            AppendMappedElementToTarget(
+                stringBuilder,
+                context,
+                addMethod,
+                targetVariableName,
+                variableToAccessFrom,
+                interfaceMethodAccessMode,
+                interfaceToAccessFrom,
+                targetElementVariable,
+                loopCounterTemporary,
+                targetCounterTemporary);
         }
 
         // For some types we need to do a bit of post-processing to make sure we always return the correct type
@@ -112,6 +288,86 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
         AppendPostLoopCode(stringBuilder, context, this.strategy.TargetType, ref targetVariableName, usedGrowableBuffer);
 
         return (targetVariableName, stringBuilder.ToString());
+    }
+
+    private static void AppendMappedElementToTarget(
+        PrettyCode.StringBuilder stringBuilder,
+        MappaBuilderContext context,
+        InsertionMethod addMethod,
+        string targetVariableName,
+        string? variableToAccessFrom,
+        InterfaceMethodAccessMode interfaceMethodAccessMode,
+        string interfaceToAccessFrom,
+        string targetElementVariable,
+        string? loopCounterTemporary,
+        string? targetCounterTemporary)
+    {
+        switch (addMethod)
+        {
+            case InsertionMethod.Indexer:
+                AppendMappedElementWithIndexer(
+                    stringBuilder,
+                    targetVariableName,
+                    variableToAccessFrom,
+                    targetElementVariable,
+                    loopCounterTemporary,
+                    targetCounterTemporary);
+                break;
+            case InsertionMethod.Add:
+                AppendMappedElementWithAdd(
+                    stringBuilder,
+                    context,
+                    targetVariableName,
+                    interfaceMethodAccessMode,
+                    interfaceToAccessFrom,
+                    targetElementVariable);
+                break;
+            case InsertionMethod.Push:
+                stringBuilder.AppendLine($"{targetVariableName}.Push({targetElementVariable});");
+                break;
+            case InsertionMethod.Enqueue:
+                stringBuilder.AppendLine($"{targetVariableName}.Enqueue({targetElementVariable});");
+                break;
+            default:
+                throw new MappaGeneratorException("Unexpected add method.");
+        }
+    }
+
+    private static void AppendMappedElementWithIndexer(
+        PrettyCode.StringBuilder stringBuilder,
+        string targetVariableName,
+        string? variableToAccessFrom,
+        string targetElementVariable,
+        string? loopCounterTemporary,
+        string? targetCounterTemporary)
+    {
+        var index = loopCounterTemporary ?? targetCounterTemporary ?? throw new MappaGeneratorException("Cannot identify a suitable index");
+        stringBuilder.AppendLine($"{variableToAccessFrom ?? targetVariableName}[{index}] = {targetElementVariable};");
+
+        if (string.IsNullOrWhiteSpace(loopCounterTemporary))
+        {
+            stringBuilder.AppendLine($"{targetCounterTemporary} = {targetCounterTemporary} + 1;");
+        }
+    }
+
+    private static void AppendMappedElementWithAdd(
+        PrettyCode.StringBuilder stringBuilder,
+        MappaBuilderContext context,
+        string targetVariableName,
+        InterfaceMethodAccessMode interfaceMethodAccessMode,
+        string interfaceToAccessFrom,
+        string targetElementVariable)
+    {
+        if (interfaceMethodAccessMode == InterfaceMethodAccessMode.InterfaceExplicit)
+        {
+            var interfaceTemporary = context.NextTemporary();
+            stringBuilder.AppendLine($"{interfaceToAccessFrom} {interfaceTemporary} = {targetVariableName};");
+            stringBuilder.AppendLine($"{interfaceTemporary}.Add({targetElementVariable});");
+        }
+        else
+        {
+            stringBuilder.AppendLine($"{targetVariableName}.Add({targetElementVariable});");
+        }
     }
 
     private static void AppendPostLoopCode(
@@ -123,86 +379,148 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
     {
         if (usedGrowableBuffer)
         {
-            var elementTypeDisplayString = targetTypeSymbol.GetElementType().ToDisplayString();
-            var arrayVariableName = context.NextTemporary();
-            stringBuilder.AppendEmptyLine();
-            stringBuilder.AppendLine($"{elementTypeDisplayString}[] {arrayVariableName} = {targetVariableName}.ToArray();");
-            targetVariableName = arrayVariableName;
+            AppendGrowableBufferToArrayPostLoop(stringBuilder, context, targetTypeSymbol, ref targetVariableName);
         }
 
-        if (targetTypeSymbol.IsSpan(context.Compilation)
-            || targetTypeSymbol.IsReadOnlySpan(context.Compilation)
-            || targetTypeSymbol.IsMemory(context.Compilation)
-            || targetTypeSymbol.IsReadOnlyMemory(context.Compilation)
-            || targetTypeSymbol.IsReadOnlyCollection(context.Compilation)
-            || targetTypeSymbol.IsReadOnlySet(context.Compilation))
+        var compilation = context.Compilation;
+        foreach (var entry in PostLoopDispatchEntries)
         {
-            var targetTypeDisplayString = targetTypeSymbol.ToDisplayString();
-            var postLoopVariableName = context.NextTemporary();
-            stringBuilder.AppendEmptyLine();
-            stringBuilder.AppendLine($"global::{targetTypeDisplayString} {postLoopVariableName} = new global::{targetTypeDisplayString}({targetVariableName});");
-            targetVariableName = postLoopVariableName;
+            if (!entry.Matches(targetTypeSymbol, compilation))
+            {
+                continue;
+            }
+
+            entry.Append(stringBuilder, context, targetTypeSymbol, ref targetVariableName);
+            if (entry.StopAfterMatch)
+            {
+                return;
+            }
         }
-        else if (targetTypeSymbol.IsFrozenSet(context.Compilation))
-        {
-            var postLoopVariableName = context.NextTemporary();
-            stringBuilder.AppendEmptyLine();
-            string elementTypeDisplayString = targetTypeSymbol.GetElementType().ToDisplayString();
-            stringBuilder.AppendLine($"global::System.Collections.Frozen.FrozenSet<{elementTypeDisplayString}> {postLoopVariableName} = System.Collections.Frozen.FrozenSet.ToFrozenSet<{elementTypeDisplayString}>({targetVariableName});");
-            targetVariableName = postLoopVariableName;
-        }
-        else if (targetTypeSymbol.IsIImmutableSet(context.Compilation)
-                 || targetTypeSymbol.IsImmutableHashSet(context.Compilation))
-        {
-            var postLoopVariableName = context.NextTemporary();
-            stringBuilder.AppendEmptyLine();
-            string elementTypeDisplayString = targetTypeSymbol.GetElementType().ToDisplayString();
-            stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {postLoopVariableName} = System.Collections.Immutable.ImmutableHashSet.ToImmutableHashSet<{elementTypeDisplayString}>({targetVariableName});");
-            targetVariableName = postLoopVariableName;
-        }
-        else if (targetTypeSymbol.IsImmutableSortedSet(context.Compilation))
-        {
-            var postLoopVariableName = context.NextTemporary();
-            stringBuilder.AppendEmptyLine();
-            string elementTypeDisplayString = targetTypeSymbol.GetElementType().ToDisplayString();
-            stringBuilder.AppendLine($"global::System.Collections.Immutable.ImmutableSortedSet<{elementTypeDisplayString}> {postLoopVariableName} = System.Collections.Immutable.ImmutableSortedSet.ToImmutableSortedSet<{elementTypeDisplayString}>({targetVariableName});");
-            targetVariableName = postLoopVariableName;
-        }
-        else if (targetTypeSymbol.IsIImmutableList(context.Compilation)
-                 || targetTypeSymbol.IsImmutableArray(context.Compilation))
-        {
-            var postLoopVariableName = context.NextTemporary();
-            stringBuilder.AppendEmptyLine();
-            string elementTypeDisplayString = targetTypeSymbol.GetElementType().ToDisplayString();
-            stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {postLoopVariableName} = System.Collections.Immutable.ImmutableArray.ToImmutableArray<{elementTypeDisplayString}>({targetVariableName});");
-            targetVariableName = postLoopVariableName;
-        }
-        else if (targetTypeSymbol.IsImmutableList(context.Compilation))
-        {
-            var postLoopVariableName = context.NextTemporary();
-            stringBuilder.AppendEmptyLine();
-            string elementTypeDisplayString = targetTypeSymbol.GetElementType().ToDisplayString();
-            stringBuilder.AppendLine($"global::System.Collections.Immutable.ImmutableList<{elementTypeDisplayString}> {postLoopVariableName} = System.Collections.Immutable.ImmutableList.ToImmutableList<{elementTypeDisplayString}>({targetVariableName});");
-            targetVariableName = postLoopVariableName;
-        }
-        else if (targetTypeSymbol.IsIImmutableQueue(context.Compilation)
-                 || targetTypeSymbol.IsImmutableQueue(context.Compilation))
-        {
-            var postLoopVariableName = context.NextTemporary();
-            stringBuilder.AppendEmptyLine();
-            string elementTypeDisplayString = targetTypeSymbol.GetElementType().ToDisplayString();
-            stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {postLoopVariableName} = System.Collections.Immutable.ImmutableQueue.Create<{elementTypeDisplayString}>({targetVariableName});");
-            targetVariableName = postLoopVariableName;
-        }
-        else if (targetTypeSymbol.IsIImmutableStack(context.Compilation)
-                 || targetTypeSymbol.IsImmutableStack(context.Compilation))
-        {
-            var postLoopVariableName = context.NextTemporary();
-            stringBuilder.AppendEmptyLine();
-            string elementTypeDisplayString = targetTypeSymbol.GetElementType().ToDisplayString();
-            stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {postLoopVariableName} = System.Collections.Immutable.ImmutableStack.Create<{elementTypeDisplayString}>({targetVariableName});");
-            targetVariableName = postLoopVariableName;
-        }
+    }
+
+    private static bool IsSpanMemoryOrReadOnlyWrapperTarget(ITypeSymbol targetTypeSymbol, Compilation compilation)
+        => targetTypeSymbol.IsSpan(compilation)
+           || targetTypeSymbol.IsReadOnlySpan(compilation)
+           || targetTypeSymbol.IsMemory(compilation)
+           || targetTypeSymbol.IsReadOnlyMemory(compilation)
+           || targetTypeSymbol.IsReadOnlyCollection(compilation)
+           || targetTypeSymbol.IsReadOnlySet(compilation);
+
+    private static void AppendGrowableBufferToArrayPostLoop(
+        PrettyCode.StringBuilder stringBuilder,
+        MappaBuilderContext context,
+        ITypeSymbol targetTypeSymbol,
+        ref string targetVariableName)
+    {
+        var elementTypeDisplayString = targetTypeSymbol.GetElementType().ToDisplayString();
+        var arrayVariableName = context.NextTemporary();
+        stringBuilder.AppendEmptyLine();
+        stringBuilder.AppendLine($"{elementTypeDisplayString}[] {arrayVariableName} = {targetVariableName}.ToArray();");
+        targetVariableName = arrayVariableName;
+    }
+
+    private static void AppendConstructFromBufferPostLoop(
+        PrettyCode.StringBuilder stringBuilder,
+        MappaBuilderContext context,
+        ITypeSymbol targetTypeSymbol,
+        ref string targetVariableName)
+    {
+        var targetTypeDisplayString = targetTypeSymbol.ToDisplayString();
+        var postLoopVariableName = context.NextTemporary();
+        stringBuilder.AppendEmptyLine();
+        stringBuilder.AppendLine($"global::{targetTypeDisplayString} {postLoopVariableName} = new global::{targetTypeDisplayString}({targetVariableName});");
+        targetVariableName = postLoopVariableName;
+    }
+
+    private static void AppendFrozenSetPostLoop(
+        PrettyCode.StringBuilder stringBuilder,
+        MappaBuilderContext context,
+        ITypeSymbol targetTypeSymbol,
+        ref string targetVariableName)
+    {
+        var postLoopVariableName = context.NextTemporary();
+        stringBuilder.AppendEmptyLine();
+        string elementTypeDisplayString = targetTypeSymbol.GetElementType().ToDisplayString();
+        stringBuilder.AppendLine($"global::System.Collections.Frozen.FrozenSet<{elementTypeDisplayString}> {postLoopVariableName} = System.Collections.Frozen.FrozenSet.ToFrozenSet<{elementTypeDisplayString}>({targetVariableName});");
+        targetVariableName = postLoopVariableName;
+    }
+
+    private static void AppendImmutableHashSetPostLoop(
+        PrettyCode.StringBuilder stringBuilder,
+        MappaBuilderContext context,
+        ITypeSymbol targetTypeSymbol,
+        ref string targetVariableName)
+    {
+        var postLoopVariableName = context.NextTemporary();
+        stringBuilder.AppendEmptyLine();
+        string elementTypeDisplayString = targetTypeSymbol.GetElementType().ToDisplayString();
+        stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {postLoopVariableName} = System.Collections.Immutable.ImmutableHashSet.ToImmutableHashSet<{elementTypeDisplayString}>({targetVariableName});");
+        targetVariableName = postLoopVariableName;
+    }
+
+    private static void AppendImmutableSortedSetPostLoop(
+        PrettyCode.StringBuilder stringBuilder,
+        MappaBuilderContext context,
+        ITypeSymbol targetTypeSymbol,
+        ref string targetVariableName)
+    {
+        var postLoopVariableName = context.NextTemporary();
+        stringBuilder.AppendEmptyLine();
+        string elementTypeDisplayString = targetTypeSymbol.GetElementType().ToDisplayString();
+        stringBuilder.AppendLine($"global::System.Collections.Immutable.ImmutableSortedSet<{elementTypeDisplayString}> {postLoopVariableName} = System.Collections.Immutable.ImmutableSortedSet.ToImmutableSortedSet<{elementTypeDisplayString}>({targetVariableName});");
+        targetVariableName = postLoopVariableName;
+    }
+
+    private static void AppendImmutableArrayPostLoop(
+        PrettyCode.StringBuilder stringBuilder,
+        MappaBuilderContext context,
+        ITypeSymbol targetTypeSymbol,
+        ref string targetVariableName)
+    {
+        var postLoopVariableName = context.NextTemporary();
+        stringBuilder.AppendEmptyLine();
+        string elementTypeDisplayString = targetTypeSymbol.GetElementType().ToDisplayString();
+        stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {postLoopVariableName} = System.Collections.Immutable.ImmutableArray.ToImmutableArray<{elementTypeDisplayString}>({targetVariableName});");
+        targetVariableName = postLoopVariableName;
+    }
+
+    private static void AppendImmutableListPostLoop(
+        PrettyCode.StringBuilder stringBuilder,
+        MappaBuilderContext context,
+        ITypeSymbol targetTypeSymbol,
+        ref string targetVariableName)
+    {
+        var postLoopVariableName = context.NextTemporary();
+        stringBuilder.AppendEmptyLine();
+        string elementTypeDisplayString = targetTypeSymbol.GetElementType().ToDisplayString();
+        stringBuilder.AppendLine($"global::System.Collections.Immutable.ImmutableList<{elementTypeDisplayString}> {postLoopVariableName} = System.Collections.Immutable.ImmutableList.ToImmutableList<{elementTypeDisplayString}>({targetVariableName});");
+        targetVariableName = postLoopVariableName;
+    }
+
+    private static void AppendImmutableQueuePostLoop(
+        PrettyCode.StringBuilder stringBuilder,
+        MappaBuilderContext context,
+        ITypeSymbol targetTypeSymbol,
+        ref string targetVariableName)
+    {
+        var postLoopVariableName = context.NextTemporary();
+        stringBuilder.AppendEmptyLine();
+        string elementTypeDisplayString = targetTypeSymbol.GetElementType().ToDisplayString();
+        stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {postLoopVariableName} = System.Collections.Immutable.ImmutableQueue.Create<{elementTypeDisplayString}>({targetVariableName});");
+        targetVariableName = postLoopVariableName;
+    }
+
+    private static void AppendImmutableStackPostLoop(
+        PrettyCode.StringBuilder stringBuilder,
+        MappaBuilderContext context,
+        ITypeSymbol targetTypeSymbol,
+        ref string targetVariableName)
+    {
+        var postLoopVariableName = context.NextTemporary();
+        stringBuilder.AppendEmptyLine();
+        string elementTypeDisplayString = targetTypeSymbol.GetElementType().ToDisplayString();
+        stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {postLoopVariableName} = System.Collections.Immutable.ImmutableStack.Create<{elementTypeDisplayString}>({targetVariableName});");
+        targetVariableName = postLoopVariableName;
     }
 
     private static void AppendTargetVariable(
@@ -224,283 +542,401 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
         out string? variableToAccessFrom,
         out bool usedGrowableBuffer)
     {
-        targetVariableName = context.NextTemporary();
-        counterVariableName = null;
-        interfaceMethodAccessMode = InterfaceMethodAccessMode.None;
-        interfaceToAccessFrom = string.Empty;
-        variableToAccessFrom = null;
-        usedGrowableBuffer = false;
+        var state = new TargetVariableAppendState(context.NextTemporary());
+        var dispatchContext = new AppendTargetVariableContext(
+            stringBuilder,
+            source,
+            context,
+            methodSymbol,
+            targetTypeSymbol,
+            sourceTypeSymbol,
+            fastCollections,
+            containerCapacityConstructors,
+            preventEnumerableCount,
+            enumerableConcreteType,
+            state);
 
+        foreach (var entry in TargetVariableDispatchEntries)
+        {
+            if (!entry.Matches(dispatchContext))
+            {
+                continue;
+            }
+
+            entry.Append(dispatchContext);
+            targetVariableName = state.TargetVariableName;
+            insertionMethod = state.InsertionMethod;
+            counterVariableName = state.CounterVariableName;
+            interfaceMethodAccessMode = state.InterfaceMethodAccessMode;
+            interfaceToAccessFrom = state.InterfaceToAccessFrom;
+            variableToAccessFrom = state.VariableToAccessFrom;
+            usedGrowableBuffer = state.UsedGrowableBuffer;
+            return;
+        }
+
+        throw new MappaGeneratorException($"Unsupported target type {targetTypeSymbol.ToDisplayString()} during generation of collection to collection mapping.");
+    }
+
+    private static void AppendArrayEnumerableInterfaceTarget(AppendTargetVariableContext context)
+    {
+        var targetVariableNameForArray = context.State.TargetVariableName;
+        AppendArrayTargetVariable(
+            context.StringBuilder,
+            context.Source,
+            context.BuilderContext,
+            context.TargetTypeSymbol,
+            context.SourceTypeSymbol,
+            context.FastCollections,
+            context.PreventEnumerableCount,
+            context.EnumerableConcreteType,
+            ref targetVariableNameForArray,
+            out var arrayInsertionMethod,
+            out var arrayCounterVariableName,
+            out var arrayVariableToAccessFrom,
+            out var arrayUsedGrowableBuffer);
+        context.State.TargetVariableName = targetVariableNameForArray;
+        context.State.InsertionMethod = arrayInsertionMethod;
+        context.State.CounterVariableName = arrayCounterVariableName;
+        context.State.VariableToAccessFrom = arrayVariableToAccessFrom;
+        context.State.UsedGrowableBuffer = arrayUsedGrowableBuffer;
+    }
+
+    private static bool IsFastCollectionArrayTarget(
+        BooleanSetting fastCollections,
+        ITypeSymbol sourceTypeSymbol,
+        ITypeSymbol targetTypeSymbol,
+        Compilation compilation)
+    {
         var isFastCollectionOnSource = fastCollections is BooleanSetting.Enable
-            && (sourceTypeSymbol.IsList(context.Compilation) || sourceTypeSymbol.IsArray());
+            && (sourceTypeSymbol.IsList(compilation) || sourceTypeSymbol.IsArray());
+        return isFastCollectionOnSource && targetTypeSymbol.IsArray();
+    }
 
-        if (isFastCollectionOnSource && targetTypeSymbol.IsArray())
-        {
-            insertionMethod = InsertionMethod.Indexer;
-            var capacity = GetLengthExpression(source, sourceTypeSymbol, context.Compilation);
-            variableToAccessFrom = context.NextTemporary();
-            stringBuilder.AppendLine($"{targetTypeSymbol.GetElementType().ToDisplayString()}[] {targetVariableName} = new {targetTypeSymbol.GetElementType().ToDisplayString()}[{capacity}];");
-            stringBuilder.AppendLine($"global::System.Span<{targetTypeSymbol.GetElementType().ToDisplayString()}> {variableToAccessFrom} = {targetVariableName}.AsSpan();");
-        }
-        else if (targetTypeSymbol.IsArray()
-                  || targetTypeSymbol.IsSpan(context.Compilation)
-                  || targetTypeSymbol.IsReadOnlySpan(context.Compilation)
-                  || targetTypeSymbol.IsMemory(context.Compilation)
-                  || targetTypeSymbol.IsReadOnlyMemory(context.Compilation)
-                  || targetTypeSymbol.IsIImmutableQueue(context.Compilation)
-                  || targetTypeSymbol.IsImmutableQueue(context.Compilation)
-                  || targetTypeSymbol.IsIImmutableStack(context.Compilation)
-                  || targetTypeSymbol.IsImmutableStack(context.Compilation))
-        {
-            if (ShouldUseGrowableBuffer(
-                    preventEnumerableCount,
-                    source,
-                    sourceTypeSymbol,
-                    targetTypeSymbol,
-                    enumerableConcreteType,
-                    context.Compilation))
-            {
-                AppendGrowableListTargetVariable(stringBuilder, targetTypeSymbol, ref targetVariableName, out insertionMethod);
-                usedGrowableBuffer = true;
-            }
-            else
-            {
-                // Array need indexers.
-                insertionMethod = InsertionMethod.Indexer;
+    private static bool MatchesAnyPredicate(ITypeSymbol typeSymbol, Compilation compilation, Func<ITypeSymbol, Compilation, bool>[] predicates)
+        => predicates.Any(predicate => predicate(typeSymbol, compilation));
 
-                // Capacity is always mandatory for arrays.
-                // In some scenarios it might mean we invoke the Enumerable.Count() extension method which
-                // might results in enumerations being executed twice.
-                var capacity = GetLengthExpression(source, sourceTypeSymbol, context.Compilation);
-                stringBuilder.AppendLine($"{targetTypeSymbol.GetElementType().ToDisplayString()}[] {targetVariableName} = new {targetTypeSymbol.GetElementType().ToDisplayString()}[{capacity}];");
+    private static bool IsArraySpanMemoryOrImmutableQueueStackTarget(ITypeSymbol targetTypeSymbol, Compilation compilation)
+        => MatchesAnyPredicate(targetTypeSymbol, compilation, ArraySpanMemoryOrImmutableQueueStackPredicates);
 
-                // If source does not have an indexer we need to create a new counter variable
-                // this for instance is used when mapping generic IEnumerable<TSource> to TTarget[].
-                if (!HasIndexer(context, sourceTypeSymbol))
-                {
-                    counterVariableName = context.NextTemporary();
-                    stringBuilder.AppendLine($"int {counterVariableName} = 0;");
-                }
-            }
-        }
-        else if (targetTypeSymbol.IsISet(context.Compilation)
-                 || targetTypeSymbol.IsIReadOnlySet(context.Compilation)
-                 || targetTypeSymbol.IsHashSet(context.Compilation)
-                 || targetTypeSymbol.IsReadOnlySet(context.Compilation))
-        {
-            // We are going to always use an HashSet so Add method is best here.
-            insertionMethod = InsertionMethod.Add;
-            TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out var capacity);
-            stringBuilder.AppendLine($"global::System.Collections.Generic.HashSet<{targetTypeSymbol.GetElementType().ToDisplayString()}> {targetVariableName} = new global::System.Collections.Generic.HashSet<{targetTypeSymbol.GetElementType().ToDisplayString()}>({capacity});");
-        }
-        else if (targetTypeSymbol.IsOrDerivedFromStack(context.Compilation))
-        {
-            insertionMethod = InsertionMethod.Push;
-            var capacity = string.Empty;
+    private static bool IsHashSetLikeTarget(ITypeSymbol targetTypeSymbol, Compilation compilation)
+        => targetTypeSymbol.IsISet(compilation)
+           || targetTypeSymbol.IsIReadOnlySet(compilation)
+           || targetTypeSymbol.IsHashSet(compilation)
+           || targetTypeSymbol.IsReadOnlySet(compilation);
 
-            if (targetTypeSymbol.IsStack(context.Compilation))
-            {
-                TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out capacity);
-            }
-            else if (containerCapacityConstructors is BooleanSetting.Enable &&
-                      targetTypeSymbol.HasSymbolAccessibleSingleIntegerParametersConstructor(context.Compilation, methodSymbol))
-            {
-                if (!targetTypeSymbol.HasSymbolAccessibleZeroParametersConstructor(context.Compilation, methodSymbol))
-                {
-                    // Since only the constructor with one integer parameter exists the capacity MUST be used.
-                    capacity = GetLengthExpression(source, sourceTypeSymbol, context.Compilation);
-                }
-                else
-                {
-                    TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out capacity);
-                }
-            }
+    private static bool IsBlockingCollectionOrConcurrentBagTarget(ITypeSymbol targetTypeSymbol, Compilation compilation)
+        => targetTypeSymbol.IsOrDerivedFromBlockingCollection(compilation)
+           || targetTypeSymbol.IsOrDerivedFromConcurrentBag(compilation);
 
-            stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {targetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}({capacity});");
-        }
-        else if (targetTypeSymbol.IsOrDerivedFromConcurrentStack(context.Compilation))
-        {
-            // NOTE: ConcurrentStack{T} does not have a constructor accepting a capacity.
-            insertionMethod = InsertionMethod.Push;
-            stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {targetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}();");
-        }
-        else if (targetTypeSymbol.IsOrDerivedFromQueue(context.Compilation))
-        {
-            insertionMethod = InsertionMethod.Enqueue;
-            var capacity = string.Empty;
+    private static bool IsListLikeEnumerableTarget(ITypeSymbol targetTypeSymbol, Compilation compilation)
+        => MatchesAnyPredicate(targetTypeSymbol, compilation, ListLikeEnumerableTargetPredicates);
 
-            if (targetTypeSymbol.IsQueue(context.Compilation))
-            {
-                TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out capacity);
-            }
-            else if (containerCapacityConstructors is BooleanSetting.Enable &&
-                     targetTypeSymbol.HasSymbolAccessibleSingleIntegerParametersConstructor(context.Compilation, methodSymbol))
-            {
-                if (!targetTypeSymbol.HasSymbolAccessibleZeroParametersConstructor(context.Compilation, methodSymbol))
-                {
-                    // Since only the constructor with one integer parameter exists the capacity MUST be used.
-                    capacity = GetLengthExpression(source, sourceTypeSymbol, context.Compilation);
-                }
-                else
-                {
-                    TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out capacity);
-                }
-            }
+    private static void AppendFastCollectionArrayTarget(
+        PrettyCode.StringBuilder stringBuilder,
+        string source,
+        MappaBuilderContext context,
+        ITypeSymbol targetTypeSymbol,
+        ITypeSymbol sourceTypeSymbol,
+        TargetVariableAppendState state)
+    {
+        state.InsertionMethod = InsertionMethod.Indexer;
+        var capacity = GetLengthExpression(source, sourceTypeSymbol, context.Compilation);
+        state.VariableToAccessFrom = context.NextTemporary();
+        stringBuilder.AppendLine($"{targetTypeSymbol.GetElementType().ToDisplayString()}[] {state.TargetVariableName} = new {targetTypeSymbol.GetElementType().ToDisplayString()}[{capacity}];");
+        stringBuilder.AppendLine($"global::System.Span<{targetTypeSymbol.GetElementType().ToDisplayString()}> {state.VariableToAccessFrom} = {state.TargetVariableName}.AsSpan();");
+    }
 
-            stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {targetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}({capacity});");
-        }
-        else if (targetTypeSymbol.IsOrImplementConcurrentQueue(context.Compilation))
-        {
-            // NOTE: ConcurrentQueue{T} does not have a constructor accepting a capacity.
-            insertionMethod = InsertionMethod.Enqueue;
-            stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {targetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}();");
-        }
-        else if (targetTypeSymbol.IsOrDerivedFromBlockingCollection(context.Compilation)
-                 || targetTypeSymbol.IsOrDerivedFromConcurrentBag(context.Compilation))
-        {
-            insertionMethod = InsertionMethod.Add;
-            var capacity = string.Empty;
-
-            // NOTE: ConcurrentBag does not have a constructor accepting a capacity.
-            if (targetTypeSymbol.IsBlockingCollection(context.Compilation))
-            {
-                TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out capacity);
-            }
-            else if (containerCapacityConstructors is BooleanSetting.Enable &&
-                     targetTypeSymbol.IsDerivedFromBlockingCollection(context.Compilation) &&
-                     targetTypeSymbol.HasSymbolAccessibleSingleIntegerParametersConstructor(context.Compilation, methodSymbol))
-            {
-                if (!targetTypeSymbol.HasSymbolAccessibleZeroParametersConstructor(context.Compilation, methodSymbol))
-                {
-                    // Since only the constructor with one integer parameter exists the capacity MUST be used.
-                    capacity = GetLengthExpression(source, sourceTypeSymbol, context.Compilation);
-                }
-                else
-                {
-                    TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out capacity);
-                }
-            }
-
-            stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {targetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}({capacity});");
-        }
-        else if (ShouldUseArrayForEnumerableInterfaceTarget(targetTypeSymbol, enumerableConcreteType))
-        {
-            AppendArrayTargetVariable(
-                stringBuilder,
-                source,
-                context,
-                targetTypeSymbol,
-                sourceTypeSymbol,
-                fastCollections,
+    private static void AppendArraySpanMemoryOrImmutableQueueStackTarget(
+        PrettyCode.StringBuilder stringBuilder,
+        string source,
+        MappaBuilderContext context,
+        ITypeSymbol targetTypeSymbol,
+        ITypeSymbol sourceTypeSymbol,
+        BooleanSetting preventEnumerableCount,
+        EnumerableConcreteTypeSetting enumerableConcreteType,
+        TargetVariableAppendState state)
+    {
+        if (ShouldUseGrowableBuffer(
                 preventEnumerableCount,
+                source,
+                sourceTypeSymbol,
+                targetTypeSymbol,
                 enumerableConcreteType,
-                ref targetVariableName,
-                out insertionMethod,
-                out counterVariableName,
-                out variableToAccessFrom,
-                out usedGrowableBuffer);
-        }
-        else if (targetTypeSymbol.IsIEnumerable()
-            || targetTypeSymbol.IsList(context.Compilation)
-            || targetTypeSymbol.IsIList()
-            || targetTypeSymbol.IsIReadOnlyList()
-            || targetTypeSymbol.IsICollection()
-            || targetTypeSymbol.IsIReadOnlyCollection()
-            || targetTypeSymbol.IsReadOnlyCollection(context.Compilation)
-            || targetTypeSymbol.IsFrozenSet(context.Compilation)
-            || targetTypeSymbol.IsIImmutableSet(context.Compilation)
-            || targetTypeSymbol.IsImmutableHashSet(context.Compilation)
-            || targetTypeSymbol.IsImmutableSortedSet(context.Compilation)
-            || targetTypeSymbol.IsIImmutableList(context.Compilation)
-            || targetTypeSymbol.IsImmutableArray(context.Compilation)
-            || targetTypeSymbol.IsImmutableList(context.Compilation))
+                context.Compilation))
         {
-            // We are going to always use a list, so Add method is best here.
-            insertionMethod = InsertionMethod.Add;
-
-            // Note: even if we set capacity, the list would be empty so we cannot invoke an indexer, but only Add.
-            // (having an initial capacity is anyway an improvement on the performances).
-            TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out var capacity);
-            stringBuilder.AppendLine($"global::System.Collections.Generic.List<{targetTypeSymbol.GetElementType().ToDisplayString()}> {targetVariableName} = new global::System.Collections.Generic.List<{targetTypeSymbol.GetElementType().ToDisplayString()}>({capacity});");
+            var targetVariableNameForGrowable = state.TargetVariableName;
+            AppendGrowableListTargetVariable(stringBuilder, targetTypeSymbol, ref targetVariableNameForGrowable, out var growableInsertionMethod);
+            state.TargetVariableName = targetVariableNameForGrowable;
+            state.InsertionMethod = growableInsertionMethod;
+            state.UsedGrowableBuffer = true;
+            return;
         }
-        else if (targetTypeSymbol.IsIProducerConsumerCollection(context.Compilation))
+
+        // Array need indexers.
+        state.InsertionMethod = InsertionMethod.Indexer;
+
+        // Capacity is always mandatory for arrays.
+        // In some scenarios it might mean we invoke the Enumerable.Count() extension method which
+        // might results in enumerations being executed twice.
+        var capacity = GetLengthExpression(source, sourceTypeSymbol, context.Compilation);
+        stringBuilder.AppendLine($"{targetTypeSymbol.GetElementType().ToDisplayString()}[] {state.TargetVariableName} = new {targetTypeSymbol.GetElementType().ToDisplayString()}[{capacity}];");
+
+        // If source does not have an indexer we need to create a new counter variable
+        // this for instance is used when mapping generic IEnumerable<TSource> to TTarget[].
+        if (!HasIndexer(context, sourceTypeSymbol))
         {
-            // We are going to always use a concurrent bag, so Add method is best here.
-            insertionMethod = InsertionMethod.Add;
-            stringBuilder.AppendLine($"global::System.Collections.Concurrent.ConcurrentBag<{targetTypeSymbol.GetElementType().ToDisplayString()}> {targetVariableName} = new global::System.Collections.Concurrent.ConcurrentBag<{targetTypeSymbol.GetElementType().ToDisplayString()}>();");
+            state.CounterVariableName = context.NextTemporary();
+            stringBuilder.AppendLine($"int {state.CounterVariableName} = 0;");
         }
-        else if (targetTypeSymbol.ImplementISet(context.Compilation))
+    }
+
+    private static void AppendHashSetLikeTarget(
+        PrettyCode.StringBuilder stringBuilder,
+        string source,
+        MappaBuilderContext context,
+        ITypeSymbol targetTypeSymbol,
+        ITypeSymbol sourceTypeSymbol,
+        TargetVariableAppendState state)
+    {
+        // We are going to always use an HashSet so Add method is best here.
+        state.InsertionMethod = InsertionMethod.Add;
+        TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out var capacity);
+        stringBuilder.AppendLine($"global::System.Collections.Generic.HashSet<{targetTypeSymbol.GetElementType().ToDisplayString()}> {state.TargetVariableName} = new global::System.Collections.Generic.HashSet<{targetTypeSymbol.GetElementType().ToDisplayString()}>({capacity});");
+    }
+
+    private static void AppendStackTarget(
+        PrettyCode.StringBuilder stringBuilder,
+        string source,
+        MappaBuilderContext context,
+        IMethodSymbol? methodSymbol,
+        ITypeSymbol targetTypeSymbol,
+        ITypeSymbol sourceTypeSymbol,
+        BooleanSetting containerCapacityConstructors,
+        TargetVariableAppendState state)
+    {
+        state.InsertionMethod = InsertionMethod.Push;
+        var capacity = ResolveContainerCapacity(
+            source,
+            sourceTypeSymbol,
+            targetTypeSymbol,
+            context.Compilation,
+            methodSymbol,
+            containerCapacityConstructors,
+            usePropertyLengthOnly: targetTypeSymbol.IsStack(context.Compilation),
+            allowOptionalIntegerConstructor: true);
+        stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {state.TargetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}({capacity});");
+    }
+
+    private static void AppendConcurrentStackTarget(
+        PrettyCode.StringBuilder stringBuilder,
+        ITypeSymbol targetTypeSymbol,
+        TargetVariableAppendState state)
+    {
+        // NOTE: ConcurrentStack{T} does not have a constructor accepting a capacity.
+        state.InsertionMethod = InsertionMethod.Push;
+        stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {state.TargetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}();");
+    }
+
+    private static void AppendQueueTarget(
+        PrettyCode.StringBuilder stringBuilder,
+        string source,
+        MappaBuilderContext context,
+        IMethodSymbol? methodSymbol,
+        ITypeSymbol targetTypeSymbol,
+        ITypeSymbol sourceTypeSymbol,
+        BooleanSetting containerCapacityConstructors,
+        TargetVariableAppendState state)
+    {
+        state.InsertionMethod = InsertionMethod.Enqueue;
+        var capacity = ResolveContainerCapacity(
+            source,
+            sourceTypeSymbol,
+            targetTypeSymbol,
+            context.Compilation,
+            methodSymbol,
+            containerCapacityConstructors,
+            usePropertyLengthOnly: targetTypeSymbol.IsQueue(context.Compilation),
+            allowOptionalIntegerConstructor: true);
+        stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {state.TargetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}({capacity});");
+    }
+
+    private static void AppendConcurrentQueueTarget(
+        PrettyCode.StringBuilder stringBuilder,
+        ITypeSymbol targetTypeSymbol,
+        TargetVariableAppendState state)
+    {
+        // NOTE: ConcurrentQueue{T} does not have a constructor accepting a capacity.
+        state.InsertionMethod = InsertionMethod.Enqueue;
+        stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {state.TargetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}();");
+    }
+
+    private static void AppendBlockingCollectionOrConcurrentBagTarget(
+        PrettyCode.StringBuilder stringBuilder,
+        string source,
+        MappaBuilderContext context,
+        IMethodSymbol? methodSymbol,
+        ITypeSymbol targetTypeSymbol,
+        ITypeSymbol sourceTypeSymbol,
+        BooleanSetting containerCapacityConstructors,
+        TargetVariableAppendState state)
+    {
+        state.InsertionMethod = InsertionMethod.Add;
+
+        // NOTE: ConcurrentBag does not have a constructor accepting a capacity.
+        var capacity = ResolveContainerCapacity(
+            source,
+            sourceTypeSymbol,
+            targetTypeSymbol,
+            context.Compilation,
+            methodSymbol,
+            containerCapacityConstructors,
+            usePropertyLengthOnly: targetTypeSymbol.IsBlockingCollection(context.Compilation),
+            allowOptionalIntegerConstructor: targetTypeSymbol.IsDerivedFromBlockingCollection(context.Compilation));
+        stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {state.TargetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}({capacity});");
+    }
+
+    private static void AppendListLikeEnumerableTarget(
+        PrettyCode.StringBuilder stringBuilder,
+        string source,
+        MappaBuilderContext context,
+        ITypeSymbol targetTypeSymbol,
+        ITypeSymbol sourceTypeSymbol,
+        TargetVariableAppendState state)
+    {
+        // We are going to always use a list, so Add method is best here.
+        state.InsertionMethod = InsertionMethod.Add;
+
+        // Note: even if we set capacity, the list would be empty so we cannot invoke an indexer, but only Add.
+        // (having an initial capacity is anyway an improvement on the performances).
+        TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out var capacity);
+        stringBuilder.AppendLine($"global::System.Collections.Generic.List<{targetTypeSymbol.GetElementType().ToDisplayString()}> {state.TargetVariableName} = new global::System.Collections.Generic.List<{targetTypeSymbol.GetElementType().ToDisplayString()}>({capacity});");
+    }
+
+    private static void AppendProducerConsumerCollectionTarget(
+        PrettyCode.StringBuilder stringBuilder,
+        ITypeSymbol targetTypeSymbol,
+        TargetVariableAppendState state)
+    {
+        // We are going to always use a concurrent bag, so Add method is best here.
+        state.InsertionMethod = InsertionMethod.Add;
+        stringBuilder.AppendLine($"global::System.Collections.Concurrent.ConcurrentBag<{targetTypeSymbol.GetElementType().ToDisplayString()}> {state.TargetVariableName} = new global::System.Collections.Concurrent.ConcurrentBag<{targetTypeSymbol.GetElementType().ToDisplayString()}>();");
+    }
+
+    private static void AppendImplementISetTarget(
+        PrettyCode.StringBuilder stringBuilder,
+        string source,
+        MappaBuilderContext context,
+        IMethodSymbol? methodSymbol,
+        ITypeSymbol targetTypeSymbol,
+        ITypeSymbol sourceTypeSymbol,
+        BooleanSetting containerCapacityConstructors,
+        TargetVariableAppendState state)
+    {
+        state.InsertionMethod = InsertionMethod.Add;
+        var elementType = targetTypeSymbol.GetElementType();
+
+        // Use ICollection because ISet derive the Add from ICollection
+        state.InterfaceToAccessFrom = $"System.Collections.Generic.ICollection<{TypeSymbolExtensions.NormalizeType(elementType.ToDisplayString())}>";
+        state.InterfaceMethodAccessMode = targetTypeSymbol.GetInterfaceMethodAccessMode(
+            "Add",
+            "System.Collections.Generic.ICollection",
+            TypeSymbolExtensions.NormalizeType(elementType.ToDisplayString()),
+            returnType => returnType.IsVoid(),
+            [elementType]);
+
+        var capacity = ResolveContainerCapacity(
+            source,
+            sourceTypeSymbol,
+            targetTypeSymbol,
+            context.Compilation,
+            methodSymbol,
+            containerCapacityConstructors,
+            usePropertyLengthOnly: false,
+            allowOptionalIntegerConstructor: targetTypeSymbol.TypeKind != TypeKind.Interface);
+        stringBuilder.AppendLine($"global::{targetTypeSymbol} {state.TargetVariableName} = new global::{targetTypeSymbol}({capacity});");
+    }
+
+    private static void AppendImplementICollectionTarget(
+        PrettyCode.StringBuilder stringBuilder,
+        string source,
+        MappaBuilderContext context,
+        IMethodSymbol? methodSymbol,
+        ITypeSymbol targetTypeSymbol,
+        ITypeSymbol sourceTypeSymbol,
+        BooleanSetting containerCapacityConstructors,
+        TargetVariableAppendState state)
+    {
+        // Here we handle the scenario of a concrete type implementing ICollection<T>.
+        // We are sure that is concrete because ICollection<T> is addressed in a different branch
+        // and we re also sure it has a constructor with 0 or 1 arguments that can be used.
+        // And if it is one argument is must be an integer (and the ContainerCapacityConstructors
+        // must be enabled too).
+        state.InsertionMethod = InsertionMethod.Add;
+
+        var elementType = targetTypeSymbol.GetElementType();
+        state.InterfaceToAccessFrom = $"System.Collections.Generic.ICollection<{TypeSymbolExtensions.NormalizeType(elementType.ToDisplayString())}>";
+        state.InterfaceMethodAccessMode = targetTypeSymbol.GetInterfaceMethodAccessMode(
+            "Add",
+            "System.Collections.Generic.ICollection",
+            TypeSymbolExtensions.NormalizeType(elementType.ToDisplayString()),
+            returnType => returnType.IsVoid(),
+            [elementType]);
+
+        var capacity = ResolveContainerCapacity(
+            source,
+            sourceTypeSymbol,
+            targetTypeSymbol,
+            context.Compilation,
+            methodSymbol,
+            containerCapacityConstructors,
+            usePropertyLengthOnly: false,
+            allowOptionalIntegerConstructor: targetTypeSymbol.TypeKind != TypeKind.Interface);
+        stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {state.TargetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}({capacity});");
+    }
+
+    /// <summary>
+    /// Resolves capacity for collection constructors that optionally accept an integer capacity.
+    /// </summary>
+    /// <param name="source">The source expression.</param>
+    /// <param name="sourceTypeSymbol">The source type.</param>
+    /// <param name="targetTypeSymbol">The target type.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <param name="methodSymbol">The method symbol used for accessibility checks.</param>
+    /// <param name="containerCapacityConstructors">Whether capacity constructors are enabled.</param>
+    /// <param name="usePropertyLengthOnly">When <see langword="true"/>, only a property-based length is used.</param>
+    /// <param name="allowOptionalIntegerConstructor">When <see langword="true"/>, optional integer constructors may be used.</param>
+    /// <returns>The capacity expression, or an empty string when capacity is omitted.</returns>
+    private static string ResolveContainerCapacity(
+        string source,
+        ITypeSymbol sourceTypeSymbol,
+        ITypeSymbol targetTypeSymbol,
+        Compilation compilation,
+        IMethodSymbol? methodSymbol,
+        BooleanSetting containerCapacityConstructors,
+        bool usePropertyLengthOnly,
+        bool allowOptionalIntegerConstructor)
+    {
+        if (usePropertyLengthOnly)
         {
-            insertionMethod = InsertionMethod.Add;
-            var elementType = targetTypeSymbol.GetElementType();
-
-            // Use ICollection because ISet derive the Add from ICollection
-            interfaceToAccessFrom = $"System.Collections.Generic.ICollection<{TypeSymbolExtensions.NormalizeType(elementType.ToDisplayString())}>";
-            interfaceMethodAccessMode = targetTypeSymbol.GetInterfaceMethodAccessMode(
-                "Add",
-                "System.Collections.Generic.ICollection",
-                TypeSymbolExtensions.NormalizeType(elementType.ToDisplayString()),
-                returnType => returnType.IsVoid(),
-                [elementType]);
-
-            var capacity = string.Empty;
-            if (targetTypeSymbol.TypeKind != TypeKind.Interface &&
-                containerCapacityConstructors is BooleanSetting.Enable &&
-                targetTypeSymbol.HasSymbolAccessibleSingleIntegerParametersConstructor(context.Compilation, methodSymbol))
-            {
-                if (!targetTypeSymbol.HasSymbolAccessibleZeroParametersConstructor(context.Compilation, methodSymbol))
-                {
-                    // Since only the constructor with one integer parameter exists the capacity MUST be used.
-                    capacity = GetLengthExpression(source, sourceTypeSymbol, context.Compilation);
-                }
-                else
-                {
-                    TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out capacity);
-                }
-            }
-
-            stringBuilder.AppendLine($"global::{targetTypeSymbol} {targetVariableName} = new global::{targetTypeSymbol}({capacity});");
+            TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, compilation, out var capacity);
+            return capacity;
         }
-        else if (targetTypeSymbol.ImplementICollection())
+
+        if (!allowOptionalIntegerConstructor
+            || containerCapacityConstructors is not BooleanSetting.Enable
+            || !targetTypeSymbol.HasSymbolAccessibleSingleIntegerParametersConstructor(compilation, methodSymbol))
         {
-            // Here we handle the scenario of a concrete type implementing ICollection<T>.
-            // We are sure that is concrete because ICollection<T> is addressed in a different branch
-            // and we re also sure it has a constructor with 0 or 1 arguments that can be used.
-            // And if it is one argument is must be an integer (and the ContainerCapacityConstructors
-            // must be enabled too).
-            insertionMethod = InsertionMethod.Add;
-
-            var elementType = targetTypeSymbol.GetElementType();
-            interfaceToAccessFrom = $"System.Collections.Generic.ICollection<{TypeSymbolExtensions.NormalizeType(elementType.ToDisplayString())}>";
-            interfaceMethodAccessMode = targetTypeSymbol.GetInterfaceMethodAccessMode(
-                "Add",
-                "System.Collections.Generic.ICollection",
-                TypeSymbolExtensions.NormalizeType(elementType.ToDisplayString()),
-                returnType => returnType.IsVoid(),
-                [elementType]);
-
-            var capacity = string.Empty;
-            if (targetTypeSymbol.TypeKind != TypeKind.Interface &&
-                containerCapacityConstructors is BooleanSetting.Enable &&
-                targetTypeSymbol.HasSymbolAccessibleSingleIntegerParametersConstructor(context.Compilation, methodSymbol))
-            {
-                if (!targetTypeSymbol.HasSymbolAccessibleZeroParametersConstructor(context.Compilation, methodSymbol))
-                {
-                    // Since only the constructor with one integer parameter exists the capacity MUST be used.
-                    capacity = GetLengthExpression(source, sourceTypeSymbol, context.Compilation);
-                }
-                else
-                {
-                    TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, context.Compilation, out capacity);
-                }
-            }
-
-            stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {targetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}({capacity});");
+            return string.Empty;
         }
-        else
+
+        if (!targetTypeSymbol.HasSymbolAccessibleZeroParametersConstructor(compilation, methodSymbol))
         {
-            throw new MappaGeneratorException($"Unsupported target type {targetTypeSymbol.ToDisplayString()} during generation of collection to collection mapping.");
+            // Since only the constructor with one integer parameter exists the capacity MUST be used.
+            return GetLengthExpression(source, sourceTypeSymbol, compilation);
         }
+
+        TryGetLengthExpressionFromProperty(source, sourceTypeSymbol, compilation, out var capacityFromProperty);
+        return capacityFromProperty;
     }
 
     private static bool ShouldUseArrayForEnumerableInterfaceTarget(
@@ -682,50 +1118,222 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
         out string loopVariableName,
         out string? countingVariableName)
     {
-        // For array, Span<T> or anything implementing IList we can use a for loop
-        // this way we can also use Span<> for ever better performances.
-        string? spanTemporary = null;
-        string? lengthExpression = null;
-        if (HasIndexer(context, sourceTypeSymbol))
+        if (!HasIndexer(context, sourceTypeSymbol))
         {
-            // For Memory<T> or ReadOnlyMemory<T> we need to access the Span<T>/ReadOnlySpan<T> instance via the Span property.
-            if (sourceTypeSymbol.IsMemory(context.Compilation))
-            {
-                spanTemporary = context.NextTemporary();
-                stringBuilder.AppendLine($"global::System.Span<{sourceTypeSymbol.GetElementType().ToDisplayString()}> {spanTemporary} = {source}.Span;");
-            }
-            else if (sourceTypeSymbol.IsReadOnlyMemory(context.Compilation))
-            {
-                spanTemporary = context.NextTemporary();
-                stringBuilder.AppendLine($"global::System.ReadOnlySpan<{sourceTypeSymbol.GetElementType().ToDisplayString()}> {spanTemporary} = {source}.Span;");
-            }
-
-            // For arrays and list we can use Spans when the FastCollection settings is enabled.
-            else if (fastCollections is BooleanSetting.Enable && sourceTypeSymbol.IsArray())
-            {
-                spanTemporary = context.NextTemporary();
-                stringBuilder.AppendLine($"global::System.Span<{sourceTypeSymbol.GetElementType().ToDisplayString()}> {spanTemporary} = {source}.AsSpan();");
-            }
-            else if (fastCollections is BooleanSetting.Enable && sourceTypeSymbol.IsList(context.Compilation))
-            {
-                spanTemporary = context.NextTemporary();
-                lengthExpression = $"{spanTemporary}.Length"; // Force using length, GetLengthExpression uses the original type which usually is correct but not in this context.
-                stringBuilder.AppendLine($"global::System.Span<{sourceTypeSymbol.GetElementType().ToDisplayString()}> {spanTemporary} = global::System.Runtime.InteropServices.CollectionsMarshal.AsSpan<{sourceTypeSymbol.GetElementType().ToDisplayString()}>({source});");
-            }
-
-            countingVariableName = context.NextTemporary();
-            loopVariableName = context.NextTemporary();
-
-            stringBuilder.AppendLine($"for (int {countingVariableName} = 0; {countingVariableName} < {lengthExpression ?? GetLengthExpression(spanTemporary ?? source, sourceTypeSymbol, context.Compilation)}; ++{countingVariableName})");
-            var block = stringBuilder.CurlyBracesBlock();
-            stringBuilder.AppendLine($"{sourceTypeSymbol.GetElementType().ToDisplayString()} {loopVariableName} = {spanTemporary ?? source}[{countingVariableName}];");
-            return block;
+            return AppendForeachLoopBlock(stringBuilder, source, context, sourceTypeSymbol, out loopVariableName, out countingVariableName);
         }
 
-        // Let's use a generic foreach loop (therefore without a counter)!
+        var spanTemporary = TryAppendSpanTemporaryForIndexerLoop(
+            stringBuilder,
+            source,
+            context,
+            sourceTypeSymbol,
+            fastCollections,
+            out var lengthExpression);
+
+        countingVariableName = context.NextTemporary();
+        loopVariableName = context.NextTemporary();
+
+        stringBuilder.AppendLine($"for (int {countingVariableName} = 0; {countingVariableName} < {lengthExpression ?? GetLengthExpression(spanTemporary ?? source, sourceTypeSymbol, context.Compilation)}; ++{countingVariableName})");
+        var block = stringBuilder.CurlyBracesBlock();
+        stringBuilder.AppendLine($"{sourceTypeSymbol.GetElementType().ToDisplayString()} {loopVariableName} = {spanTemporary ?? source}[{countingVariableName}];");
+        return block;
+    }
+
+    private static IDisposable AppendForeachLoopBlock(
+        PrettyCode.StringBuilder stringBuilder,
+        string source,
+        MappaBuilderContext context,
+        ITypeSymbol sourceTypeSymbol,
+        out string loopVariableName,
+        out string? countingVariableName)
+    {
         countingVariableName = null;
         loopVariableName = context.NextTemporary();
         stringBuilder.AppendLine($"foreach ({sourceTypeSymbol.GetElementType().ToDisplayString()} {loopVariableName} in {source})");
         return stringBuilder.CurlyBracesBlock();
+    }
+
+    private static string? TryAppendSpanTemporaryForIndexerLoop(
+        PrettyCode.StringBuilder stringBuilder,
+        string source,
+        MappaBuilderContext context,
+        ITypeSymbol sourceTypeSymbol,
+        BooleanSetting fastCollections,
+        out string? lengthExpression)
+    {
+        lengthExpression = null;
+        var compilation = context.Compilation;
+        var elementTypeDisplay = sourceTypeSymbol.GetElementType().ToDisplayString();
+
+        if (sourceTypeSymbol.IsMemory(compilation))
+        {
+            var spanTemporary = context.NextTemporary();
+            stringBuilder.AppendLine($"global::System.Span<{elementTypeDisplay}> {spanTemporary} = {source}.Span;");
+            return spanTemporary;
+        }
+
+        if (sourceTypeSymbol.IsReadOnlyMemory(compilation))
+        {
+            var spanTemporary = context.NextTemporary();
+            stringBuilder.AppendLine($"global::System.ReadOnlySpan<{elementTypeDisplay}> {spanTemporary} = {source}.Span;");
+            return spanTemporary;
+        }
+
+        if (fastCollections is BooleanSetting.Enable && sourceTypeSymbol.IsArray())
+        {
+            var spanTemporary = context.NextTemporary();
+            stringBuilder.AppendLine($"global::System.Span<{elementTypeDisplay}> {spanTemporary} = {source}.AsSpan();");
+            return spanTemporary;
+        }
+
+        if (fastCollections is BooleanSetting.Enable && sourceTypeSymbol.IsList(compilation))
+        {
+            var spanTemporary = context.NextTemporary();
+            lengthExpression = $"{spanTemporary}.Length";
+            stringBuilder.AppendLine($"global::System.Span<{elementTypeDisplay}> {spanTemporary} = global::System.Runtime.InteropServices.CollectionsMarshal.AsSpan<{elementTypeDisplay}>({source});");
+            return spanTemporary;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Inputs shared while dispatching target variable append branches.
+    /// </summary>
+    private sealed class AppendTargetVariableContext
+    {
+        internal AppendTargetVariableContext(
+            PrettyCode.StringBuilder stringBuilder,
+            string source,
+            MappaBuilderContext builderContext,
+            IMethodSymbol? methodSymbol,
+            ITypeSymbol targetTypeSymbol,
+            ITypeSymbol sourceTypeSymbol,
+            BooleanSetting fastCollections,
+            BooleanSetting containerCapacityConstructors,
+            BooleanSetting preventEnumerableCount,
+            EnumerableConcreteTypeSetting enumerableConcreteType,
+            TargetVariableAppendState state)
+        {
+            this.StringBuilder = stringBuilder;
+            this.Source = source;
+            this.BuilderContext = builderContext;
+            this.MethodSymbol = methodSymbol;
+            this.TargetTypeSymbol = targetTypeSymbol;
+            this.SourceTypeSymbol = sourceTypeSymbol;
+            this.FastCollections = fastCollections;
+            this.ContainerCapacityConstructors = containerCapacityConstructors;
+            this.PreventEnumerableCount = preventEnumerableCount;
+            this.EnumerableConcreteType = enumerableConcreteType;
+            this.State = state;
+        }
+
+        internal PrettyCode.StringBuilder StringBuilder { get; }
+
+        internal string Source { get; }
+
+        internal MappaBuilderContext BuilderContext { get; }
+
+        internal IMethodSymbol? MethodSymbol { get; }
+
+        internal ITypeSymbol TargetTypeSymbol { get; }
+
+        internal ITypeSymbol SourceTypeSymbol { get; }
+
+        internal BooleanSetting FastCollections { get; }
+
+        internal BooleanSetting ContainerCapacityConstructors { get; }
+
+        internal BooleanSetting PreventEnumerableCount { get; }
+
+        internal EnumerableConcreteTypeSetting EnumerableConcreteType { get; }
+
+        internal TargetVariableAppendState State { get; }
+    }
+
+    /// <summary>
+    /// Mutable state collected while appending the target collection variable.
+    /// </summary>
+    private sealed class TargetVariableAppendState
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TargetVariableAppendState"/> class.
+        /// </summary>
+        /// <param name="targetVariableName">The target variable name.</param>
+        public TargetVariableAppendState(string targetVariableName)
+        {
+            this.TargetVariableName = targetVariableName;
+            this.InterfaceToAccessFrom = string.Empty;
+        }
+
+        /// <summary>
+        /// Gets or sets the target variable name.
+        /// </summary>
+        public string TargetVariableName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the insertion method.
+        /// </summary>
+        public InsertionMethod InsertionMethod { get; set; }
+
+        /// <summary>
+        /// Gets or sets the counter variable name.
+        /// </summary>
+        public string? CounterVariableName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the interface method access mode.
+        /// </summary>
+        public InterfaceMethodAccessMode InterfaceMethodAccessMode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the interface used for explicit method access.
+        /// </summary>
+        public string InterfaceToAccessFrom { get; set; }
+
+        /// <summary>
+        /// Gets or sets the variable used for indexer access.
+        /// </summary>
+        public string? VariableToAccessFrom { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether a growable buffer was used.
+        /// </summary>
+        public bool UsedGrowableBuffer { get; set; }
+    }
+
+    private sealed class PostLoopDispatchEntry
+    {
+        internal PostLoopDispatchEntry(
+            Func<ITypeSymbol, Compilation, bool> matches,
+            PostLoopAppendAction append,
+            bool stopAfterMatch)
+        {
+            this.Matches = matches;
+            this.Append = append;
+            this.StopAfterMatch = stopAfterMatch;
+        }
+
+        internal Func<ITypeSymbol, Compilation, bool> Matches { get; }
+
+        internal PostLoopAppendAction Append { get; }
+
+        internal bool StopAfterMatch { get; }
+    }
+
+    private sealed class TargetVariableDispatchEntry
+    {
+        internal TargetVariableDispatchEntry(
+            Func<AppendTargetVariableContext, bool> matches,
+            TargetVariableBranchAppender append)
+        {
+            this.Matches = matches;
+            this.Append = append;
+        }
+
+        internal Func<AppendTargetVariableContext, bool> Matches { get; }
+
+        internal TargetVariableBranchAppender Append { get; }
     }
 }

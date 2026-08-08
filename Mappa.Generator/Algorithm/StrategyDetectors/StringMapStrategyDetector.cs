@@ -19,7 +19,7 @@ namespace Mappa.Generator.Algorithm.StrategyDetectors;
 /// <summary>
 /// Detector for string related strategies.
 /// </summary>
-internal sealed class StringMapStrategyDetector
+internal sealed partial class StringMapStrategyDetector
     : IMapStrategyDetector
 {
     private readonly MappaMapAlgorithmContext context;
@@ -38,170 +38,209 @@ internal sealed class StringMapStrategyDetector
         this.compilation = compilation;
     }
 
-    /// <inheritdoc/>
-    public bool TryDetect(out MapStrategy mapStrategy)
+    private bool TryDetectStringToNumber(out MapStrategy mapStrategy)
     {
-        mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.TargetType);
-
-        // 01. string -> numeric : ParseNumberStrategy
-        if (this.CanMapStringToNumber())
+        mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
+        if (!this.CanMapStringToNumber())
         {
-            var numberStyle = this.GetNumericNumberStyleWithSource(this.context.TargetType, out var numberStylePropertyName);
-            this.WarnIfInvalidNumberStyle(numberStyle, numberStylePropertyName);
-
-            mapStrategy = new StringToNumberMapStrategy(
-                this.context.TargetType,
-                this.context.SourceType,
-                this.GetActualCultureSettingsInfo(),
-                this.context.MappaUserSettings.CultureName,
-                numberStyle);
+            return false;
         }
 
-        // 02. string -> DateTime : InvokeParseStringWithFormatMapStrategy
-        else if (this.CanMapStringToDateTime())
-        {
-            var actualCultureSettingsInfo = this.GetActualCultureSettingsInfo();
-            WarnIfOnlyFormatIsProvided(actualCultureSettingsInfo, this.context.MappaUserSettings.DateTimeFormat);
-            var dateTimeStyle = this.ResolveDateTimeStyleWithSource(
-                this.context.MappaUserSettings.DateTimeStyle,
-                nameof(MappaSettingsAttribute.DateTimeStyle),
-                out var dateTimeStylePropertyName);
-            this.WarnIfInvalidDateTimeStyle(dateTimeStyle, dateTimeStylePropertyName);
+        var numberStyle = this.GetNumericNumberStyleWithSource(this.context.TargetType, out var numberStylePropertyName);
+        this.WarnIfInvalidNumberStyle(numberStyle, numberStylePropertyName);
+        mapStrategy = new StringToNumberMapStrategy(
+            this.context.TargetType,
+            this.context.SourceType,
+            this.GetActualCultureSettingsInfo(),
+            this.context.MappaUserSettings.CultureName,
+            numberStyle);
+        return true;
+    }
 
-            mapStrategy = new InvokeParseStringWithFormatMapStrategy(
-                this.context.TargetType,
-                this.context.SourceType,
-                this.context.MappaUserSettings.DateTimeFormat,
-                actualCultureSettingsInfo,
-                this.context.MappaUserSettings.CultureName,
-                dateTimeStyle);
+    private bool TryDetectStringToDateTime(out MapStrategy mapStrategy)
+    {
+        mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
+        if (!this.CanMapStringToDateTime())
+        {
+            return false;
         }
 
-        // 03. string -> DateTimeOffset : InvokeParseStringWithFormatMapStrategy
-        else if (this.CanMapStringToDateTimeOffset())
-        {
-            var actualCultureSettingsInfo = this.GetActualCultureSettingsInfo();
-            WarnIfOnlyFormatIsProvided(actualCultureSettingsInfo, this.context.MappaUserSettings.DateTimeOffsetFormat);
-            var dateTimeStyle = this.ResolveDateTimeStyleWithSource(
-                this.context.MappaUserSettings.DateTimeOffsetStyle,
-                nameof(MappaSettingsAttribute.DateTimeOffsetStyle),
-                out var dateTimeStylePropertyName);
-            this.WarnIfInvalidDateTimeStyle(dateTimeStyle, dateTimeStylePropertyName);
+        var actualCultureSettingsInfo = this.GetActualCultureSettingsInfo();
+        this.WarnIfOnlyFormatIsProvided(actualCultureSettingsInfo, this.context.MappaUserSettings.DateTimeFormat);
+        var dateTimeStyle = this.ResolveDateTimeStyleWithSource(
+            this.context.MappaUserSettings.DateTimeStyle,
+            nameof(MappaSettingsAttribute.DateTimeStyle),
+            out var dateTimeStylePropertyName);
+        this.WarnIfInvalidDateTimeStyle(dateTimeStyle, dateTimeStylePropertyName);
+        mapStrategy = new InvokeParseStringWithFormatMapStrategy(
+            this.context.TargetType,
+            this.context.SourceType,
+            this.context.MappaUserSettings.DateTimeFormat,
+            actualCultureSettingsInfo,
+            this.context.MappaUserSettings.CultureName,
+            dateTimeStyle);
+        return true;
+    }
 
-            mapStrategy = new InvokeParseStringWithFormatMapStrategy(
-                this.context.TargetType,
-                this.context.SourceType,
-                this.context.MappaUserSettings.DateTimeOffsetFormat,
-                actualCultureSettingsInfo,
-                this.context.MappaUserSettings.CultureName,
-                dateTimeStyle);
+    private bool TryDetectStringToDateTimeOffset(out MapStrategy mapStrategy)
+    {
+        mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
+        if (!this.CanMapStringToDateTimeOffset())
+        {
+            return false;
         }
 
-        // 04. string -> TimeSpan : InvokeParseStringWithFormatMapStrategy
-        else if (this.CanMapStringToTimeSpan())
-        {
-            var actualCultureSettingsInfo = this.GetActualCultureSettingsInfo();
-            WarnIfOnlyFormatIsProvided(actualCultureSettingsInfo, this.context.MappaUserSettings.TimeSpanFormat);
+        var actualCultureSettingsInfo = this.GetActualCultureSettingsInfo();
+        this.WarnIfOnlyFormatIsProvided(actualCultureSettingsInfo, this.context.MappaUserSettings.DateTimeOffsetFormat);
+        var dateTimeStyle = this.ResolveDateTimeStyleWithSource(
+            this.context.MappaUserSettings.DateTimeOffsetStyle,
+            nameof(MappaSettingsAttribute.DateTimeOffsetStyle),
+            out var dateTimeStylePropertyName);
+        this.WarnIfInvalidDateTimeStyle(dateTimeStyle, dateTimeStylePropertyName);
+        mapStrategy = new InvokeParseStringWithFormatMapStrategy(
+            this.context.TargetType,
+            this.context.SourceType,
+            this.context.MappaUserSettings.DateTimeOffsetFormat,
+            actualCultureSettingsInfo,
+            this.context.MappaUserSettings.CultureName,
+            dateTimeStyle);
+        return true;
+    }
 
-            mapStrategy = new InvokeParseStringWithFormatMapStrategy(
-                this.context.TargetType,
-                this.context.SourceType,
-                this.context.MappaUserSettings.TimeSpanFormat,
-                actualCultureSettingsInfo,
-                this.context.MappaUserSettings.CultureName,
-                null);
+    private bool TryDetectStringToTimeSpan(out MapStrategy mapStrategy)
+    {
+        mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
+        if (!this.CanMapStringToTimeSpan())
+        {
+            return false;
         }
 
-        // 05. string -> TimeOnly : InvokeParseStringWithFormatMapStrategy
-        else if (this.CanMapStringToTimeOnly())
-        {
-            var dateTimeStyle = this.ResolveDateTimeStyleWithSource(
-                this.context.MappaUserSettings.TimeOnlyStyle,
-                nameof(MappaSettingsAttribute.TimeOnlyStyle),
-                out var dateTimeStylePropertyName);
-            this.WarnIfInvalidDateTimeStyle(dateTimeStyle, dateTimeStylePropertyName);
+        var actualCultureSettingsInfo = this.GetActualCultureSettingsInfo();
+        this.WarnIfOnlyFormatIsProvided(actualCultureSettingsInfo, this.context.MappaUserSettings.TimeSpanFormat);
+        mapStrategy = new InvokeParseStringWithFormatMapStrategy(
+            this.context.TargetType,
+            this.context.SourceType,
+            this.context.MappaUserSettings.TimeSpanFormat,
+            actualCultureSettingsInfo,
+            this.context.MappaUserSettings.CultureName,
+            null);
+        return true;
+    }
 
-            mapStrategy = new InvokeParseStringWithFormatForDateOnlyAndTimeOnlyMapStrategy(
-                this.context.TargetType,
-                this.context.SourceType,
-                this.context.MappaUserSettings.TimeOnlyFormat,
-                this.GetActualCultureSettingsInfo(),
-                this.context.MappaUserSettings.CultureName,
-                dateTimeStyle);
+    private bool TryDetectStringToTimeOnly(out MapStrategy mapStrategy)
+    {
+        mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
+        if (!this.CanMapStringToTimeOnly())
+        {
+            return false;
         }
 
-        // 06. string -> DateOnly : InvokeParseStringWithFormatMapStrategy
-        else if (this.CanMapStringToDateOnly())
-        {
-            var dateTimeStyle = this.ResolveDateTimeStyleWithSource(
-                this.context.MappaUserSettings.DateOnlyStyle,
-                nameof(MappaSettingsAttribute.DateOnlyStyle),
-                out var dateTimeStylePropertyName);
-            this.WarnIfInvalidDateTimeStyle(dateTimeStyle, dateTimeStylePropertyName);
+        var dateTimeStyle = this.ResolveDateTimeStyleWithSource(
+            this.context.MappaUserSettings.TimeOnlyStyle,
+            nameof(MappaSettingsAttribute.TimeOnlyStyle),
+            out var dateTimeStylePropertyName);
+        this.WarnIfInvalidDateTimeStyle(dateTimeStyle, dateTimeStylePropertyName);
+        mapStrategy = new InvokeParseStringWithFormatForDateOnlyAndTimeOnlyMapStrategy(
+            this.context.TargetType,
+            this.context.SourceType,
+            this.context.MappaUserSettings.TimeOnlyFormat,
+            this.GetActualCultureSettingsInfo(),
+            this.context.MappaUserSettings.CultureName,
+            dateTimeStyle);
+        return true;
+    }
 
-            mapStrategy = new InvokeParseStringWithFormatForDateOnlyAndTimeOnlyMapStrategy(
-                this.context.TargetType,
-                this.context.SourceType,
-                this.context.MappaUserSettings.DateOnlyFormat,
-                this.GetActualCultureSettingsInfo(),
-                this.context.MappaUserSettings.CultureName,
-                dateTimeStyle);
+    private bool TryDetectStringToDateOnly(out MapStrategy mapStrategy)
+    {
+        mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
+        if (!this.CanMapStringToDateOnly())
+        {
+            return false;
         }
 
-        // 07. string -> Guid : ParseGuidStrategy
-        else if (this.CanMapStringToGuid())
+        var dateTimeStyle = this.ResolveDateTimeStyleWithSource(
+            this.context.MappaUserSettings.DateOnlyStyle,
+            nameof(MappaSettingsAttribute.DateOnlyStyle),
+            out var dateTimeStylePropertyName);
+        this.WarnIfInvalidDateTimeStyle(dateTimeStyle, dateTimeStylePropertyName);
+        mapStrategy = new InvokeParseStringWithFormatForDateOnlyAndTimeOnlyMapStrategy(
+            this.context.TargetType,
+            this.context.SourceType,
+            this.context.MappaUserSettings.DateOnlyFormat,
+            this.GetActualCultureSettingsInfo(),
+            this.context.MappaUserSettings.CultureName,
+            dateTimeStyle);
+        return true;
+    }
+
+    private bool TryDetectStringToGuid(out MapStrategy mapStrategy)
+    {
+        mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
+        if (!this.CanMapStringToGuid())
         {
-            mapStrategy = new StringToGuidMapStrategy(
-                this.context.TargetType,
-                this.context.SourceType,
-                this.context.MappaUserSettings.GuidFormat,
-                this.GetActualCultureSettingsInfo(),
-                this.context.MappaUserSettings.CultureName);
+            return false;
         }
 
-        // 08. string -> Uri : ParseUriStrategy
-        else if (this.CanMapStringToUri())
+        mapStrategy = new StringToGuidMapStrategy(
+            this.context.TargetType,
+            this.context.SourceType,
+            this.context.MappaUserSettings.GuidFormat,
+            this.GetActualCultureSettingsInfo(),
+            this.context.MappaUserSettings.CultureName);
+        return true;
+    }
+
+    private bool TryDetectStringToUri(out MapStrategy mapStrategy)
+    {
+        mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
+        if (!this.CanMapStringToUri())
         {
-            mapStrategy = new StringToUriMapStrategy(
-                this.context.TargetType,
-                this.context.SourceType);
+            return false;
         }
 
-        // 09. string -> T when static T T.Parse(string) method exists
-        else if (this.CanMapUsingStaticParseMethod())
+        mapStrategy = new StringToUriMapStrategy(this.context.TargetType, this.context.SourceType);
+        return true;
+    }
+
+    private bool TryDetectUsingStaticParseMethod(out MapStrategy mapStrategy)
+    {
+        mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
+        if (!this.CanMapUsingStaticParseMethod())
         {
-           mapStrategy = new InvokeParseMethodMapStrategy(
-               this.context.TargetType,
-               this.context.SourceType);
+            return false;
         }
 
-        // 10. S -> string : InvokeToStringStrategy
-        else if (this.CanMapToString())
+        mapStrategy = new InvokeParseMethodMapStrategy(this.context.TargetType, this.context.SourceType);
+        return true;
+    }
+
+    private bool TryDetectToString(out MapStrategy mapStrategy)
+    {
+        mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
+        if (!this.CanMapToString())
         {
-            var formatAndCulture = this.IdentifyFormatAndCulture();
-            mapStrategy = new InvokeToStringMapStrategy(
-                this.context.TargetType,
-                this.context.SourceType,
-                formatAndCulture.Format,
-                formatAndCulture.CultureInfoSetting,
-                formatAndCulture.CultureName);
+            return false;
         }
 
-        return mapStrategy is not NoMapStrategy;
+        var formatAndCulture = this.IdentifyFormatAndCulture();
+        mapStrategy = new InvokeToStringMapStrategy(
+            this.context.TargetType,
+            this.context.SourceType,
+            formatAndCulture.Format,
+            formatAndCulture.CultureInfoSetting,
+            formatAndCulture.CultureName);
+        return true;
+    }
 
-        void WarnIfOnlyFormatIsProvided(CultureInfoSetting actualCultureSettingsInfo, string? format)
+    private void WarnIfOnlyFormatIsProvided(CultureInfoSetting actualCultureSettingsInfo, string? format)
+    {
+        if (!string.IsNullOrWhiteSpace(format)
+            && (actualCultureSettingsInfo is CultureInfoSetting.None || actualCultureSettingsInfo is CultureInfoSetting.Undefined))
         {
-            // If format is provided but not the culture then we have a problem
-            // because some types (DateTime, DateTimeOffset, TimeSpan) does not support
-            // ParseExact(string value, string format) so format will be ignored.
-            if (!string.IsNullOrWhiteSpace(format)
-                && (actualCultureSettingsInfo is CultureInfoSetting.None || actualCultureSettingsInfo is CultureInfoSetting.Undefined))
-            {
-                var rootMethod = this.context.GetRootMapMethod();
-                this.context.ReportDiagnostic(MappaDiagnostics.ParseExactDoesNotAcceptOnlyFormat(
-                    rootMethod.MethodDeclarationSyntax,
-                    this.context.TargetType.ToDisplayString()));
-            }
+            var rootMethod = this.context.GetRootMapMethod();
+            this.context.ReportDiagnostic(MappaDiagnostics.ParseExactDoesNotAcceptOnlyFormat(
+                rootMethod.MethodDeclarationSyntax,
+                this.context.TargetType.ToDisplayString()));
         }
     }
 
@@ -310,33 +349,78 @@ internal sealed class StringMapStrategyDetector
 
     private NumberStyles? GetNumericNumberStyleWithSource(ITypeSymbol typeSymbol, out string? propertyName)
     {
-        var settings = this.context.MappaUserSettings;
-        var typeStyle = typeSymbol.SpecialType switch
+        if (this.TryGetPerTypeNumericNumberStyle(typeSymbol.SpecialType, out var typeStyle, out var typeStylePropertyName))
         {
-            SpecialType.System_Byte => (settings.ByteStyle, nameof(MappaSettingsAttribute.ByteStyle)),
-            SpecialType.System_SByte => (settings.SByteStyle, nameof(MappaSettingsAttribute.SByteStyle)),
-            SpecialType.System_Int16 => (settings.ShortStyle, nameof(MappaSettingsAttribute.ShortStyle)),
-            SpecialType.System_UInt16 => (settings.UShortStyle, nameof(MappaSettingsAttribute.UShortStyle)),
-            SpecialType.System_Int32 => (settings.IntStyle, nameof(MappaSettingsAttribute.IntStyle)),
-            SpecialType.System_UInt32 => (settings.UIntStyle, nameof(MappaSettingsAttribute.UIntStyle)),
-            SpecialType.System_Int64 => (settings.LongStyle, nameof(MappaSettingsAttribute.LongStyle)),
-            SpecialType.System_UInt64 => (settings.ULongStyle, nameof(MappaSettingsAttribute.ULongStyle)),
-            SpecialType.System_Decimal => (settings.DecimalStyle, nameof(MappaSettingsAttribute.DecimalStyle)),
-            SpecialType.System_Single => (settings.FloatStyle, nameof(MappaSettingsAttribute.FloatStyle)),
-            SpecialType.System_Double => (settings.DoubleStyle, nameof(MappaSettingsAttribute.DoubleStyle)),
-            _ => ((NumberStyles?)null, null),
-        };
-
-        if (typeStyle.Item1.HasValue)
-        {
-            propertyName = typeStyle.Item2;
-            return typeStyle.Item1;
+            propertyName = typeStylePropertyName;
+            return typeStyle;
         }
 
-        propertyName = settings.GlobalNumberStyle.HasValue
+        propertyName = this.context.MappaUserSettings.GlobalNumberStyle.HasValue
             ? nameof(MappaSettingsAttribute.GlobalNumberStyle)
             : null;
-        return settings.GlobalNumberStyle;
+        return this.context.MappaUserSettings.GlobalNumberStyle;
+    }
+
+    private bool TryGetPerTypeNumericNumberStyle(
+        SpecialType specialType,
+        out NumberStyles? numberStyle,
+        out string? propertyName)
+    {
+        var settings = this.context.MappaUserSettings;
+        numberStyle = null;
+        propertyName = null;
+
+        switch (specialType)
+        {
+            case SpecialType.System_Byte:
+                numberStyle = settings.ByteStyle;
+                propertyName = nameof(MappaSettingsAttribute.ByteStyle);
+                break;
+            case SpecialType.System_SByte:
+                numberStyle = settings.SByteStyle;
+                propertyName = nameof(MappaSettingsAttribute.SByteStyle);
+                break;
+            case SpecialType.System_Int16:
+                numberStyle = settings.ShortStyle;
+                propertyName = nameof(MappaSettingsAttribute.ShortStyle);
+                break;
+            case SpecialType.System_UInt16:
+                numberStyle = settings.UShortStyle;
+                propertyName = nameof(MappaSettingsAttribute.UShortStyle);
+                break;
+            case SpecialType.System_Int32:
+                numberStyle = settings.IntStyle;
+                propertyName = nameof(MappaSettingsAttribute.IntStyle);
+                break;
+            case SpecialType.System_UInt32:
+                numberStyle = settings.UIntStyle;
+                propertyName = nameof(MappaSettingsAttribute.UIntStyle);
+                break;
+            case SpecialType.System_Int64:
+                numberStyle = settings.LongStyle;
+                propertyName = nameof(MappaSettingsAttribute.LongStyle);
+                break;
+            case SpecialType.System_UInt64:
+                numberStyle = settings.ULongStyle;
+                propertyName = nameof(MappaSettingsAttribute.ULongStyle);
+                break;
+            case SpecialType.System_Decimal:
+                numberStyle = settings.DecimalStyle;
+                propertyName = nameof(MappaSettingsAttribute.DecimalStyle);
+                break;
+            case SpecialType.System_Single:
+                numberStyle = settings.FloatStyle;
+                propertyName = nameof(MappaSettingsAttribute.FloatStyle);
+                break;
+            case SpecialType.System_Double:
+                numberStyle = settings.DoubleStyle;
+                propertyName = nameof(MappaSettingsAttribute.DoubleStyle);
+                break;
+            default:
+                return false;
+        }
+
+        return numberStyle.HasValue;
     }
 
     private DateTimeStyles? ResolveDateTimeStyleWithSource(

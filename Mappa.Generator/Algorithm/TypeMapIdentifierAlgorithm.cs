@@ -168,55 +168,14 @@ internal class TypeMapIdentifierAlgorithm
             // If the operation has been cancelled: stop!
             this.CancellationToken.ThrowIfCancellationRequested();
 
-            switch (detector)
+            if (this.ShouldSkipDetector(detector))
             {
-                // Skip the constructor strategy in order to avoid infinite loops
-                // in the case this algorithm is run inside the constructor strategy
-                // detector itself.
-                case ConstructorMapStrategyDetector when !this.Context.AlgorithmSettings.UseConstructorMapStrategyDetector:
-
-                // Skip the nullable reference strategy in order to avoid infinite loops
-                // in the case this algorithm is run inside the nullable reference strategy
-                // detector itself.
-                case NullableMapStrategyDetector when !this.Context.AlgorithmSettings.UseNullableMapStrategyDetector:
-
-                // Skip the identity strategy when resolving nested field mappings for nested deep copy,
-                // or when nested property-path attributes require constructor-based property mapping.
-                case IdentityMapStrategyDetector when !this.Context.AlgorithmSettings.UseIdentityMapStrategyDetector:
-                case IdentityMapStrategyDetector when this.Context.PropertyPathContext is { IsNestedAttributeScope: true }:
-                case IdentityMapStrategyDetector when this.Context.PropertyPathContext?.RemainingTargetSegments.Length > 0:
-                    continue;
-
-                // Polymorphism detector can only run at the root or if following a
-                // nullable detector.
-                case PolymorphismMapStrategyDetector:
-                    if (!CanExecutePolymorphismMapStrategyDetector(this.Context.AlgorithmSettings.Detectors, this.Context.GetRootMapMethod()))
-                    {
-                        continue;
-                    }
-
-                    break;
-
-                // Do not run the identity mapper if we could instead run the mappa polymorphism strategy
-                // where there is at least one TypeMapping attribute.
-                case IdentityMapStrategyDetector:
-                    if (CanExecutePolymorphismMapStrategyDetector(this.Context.AlgorithmSettings.Detectors, this.Context.GetRootMapMethod()))
-                    {
-                        continue;
-                    }
-
-                    break;
+                continue;
             }
 
-            using (this.Context.AlgorithmSettings.ApplyAlgorithmContextDefaults())
+            if (this.TryDetectWithDetector(detector, out var detectedStrategy))
             {
-                using (this.Context.AlgorithmSettings.Detectors.Apply(detector.GetType()))
-                {
-                    if (detector.TryDetect(out var detectedStrategy))
-                    {
-                        return detectedStrategy;
-                    }
-                }
+                return detectedStrategy;
             }
 
             // If any error diagnostic has been reported there is no point in going ahead.
@@ -237,24 +196,6 @@ internal class TypeMapIdentifierAlgorithm
         }
 
         return new NoMapStrategy(this.Context.TargetType, this.Context.SourceType);
-
-        // Identify if the polymorphism detector can actually be executed.
-        static bool CanExecutePolymorphismMapStrategyDetector(StackSetting<Type> detectorsStack, MapMethod mapMethod)
-            => mapMethod.HasAnyAttribute<MappaTypeMappingAttribute>() && detectorsStack.Count switch
-            {
-                // If only one item is present on the stack then
-                // there is actually nothing on the stack beside
-                // the default value null.
-                1 => true,
-
-                // If one detector is on the stack you can apply the polymorphism
-                // detector only if that detector is the nullability detector.
-                2 => detectorsStack.CurrentValue == typeof(NullableMapStrategyDetector),
-
-                // In any other scenario the polymorphism detector
-                // cannot be used.
-                _ => false,
-            };
     }
 
     /// <summary>
@@ -272,6 +213,71 @@ internal class TypeMapIdentifierAlgorithm
         }
 
         return strategy;
+    }
+
+    private static bool CanExecutePolymorphismMapStrategyDetector(StackSetting<Type> detectorsStack, MapMethod mapMethod)
+        => mapMethod.HasAnyAttribute<MappaTypeMappingAttribute>() && detectorsStack.Count switch
+        {
+            // If only one item is present on the stack then
+            // there is actually nothing on the stack beside
+            // the default value null.
+            1 => true,
+
+            // If one detector is on the stack you can apply the polymorphism
+            // detector only if that detector is the nullability detector.
+            2 => detectorsStack.CurrentValue == typeof(NullableMapStrategyDetector),
+
+            // In any other scenario the polymorphism detector
+            // cannot be used.
+            _ => false,
+        };
+
+    private bool ShouldSkipDetector(IMapStrategyDetector detector)
+    {
+        if (this.ShouldSkipConstructorOrNullableDetector(detector)
+            || this.ShouldSkipIdentityDetectorForSettingsOrNestedPaths(detector))
+        {
+            return true;
+        }
+
+        if (detector is PolymorphismMapStrategyDetector)
+        {
+            return !CanExecutePolymorphismMapStrategyDetector(this.Context.AlgorithmSettings.Detectors, this.Context.GetRootMapMethod());
+        }
+
+        if (detector is IdentityMapStrategyDetector)
+        {
+            return CanExecutePolymorphismMapStrategyDetector(this.Context.AlgorithmSettings.Detectors, this.Context.GetRootMapMethod());
+        }
+
+        return false;
+    }
+
+    private bool ShouldSkipConstructorOrNullableDetector(IMapStrategyDetector detector)
+        => (detector is ConstructorMapStrategyDetector && !this.Context.AlgorithmSettings.UseConstructorMapStrategyDetector)
+           || (detector is NullableMapStrategyDetector && !this.Context.AlgorithmSettings.UseNullableMapStrategyDetector);
+
+    private bool ShouldSkipIdentityDetectorForSettingsOrNestedPaths(IMapStrategyDetector detector)
+        => detector is IdentityMapStrategyDetector
+           && (!this.Context.AlgorithmSettings.UseIdentityMapStrategyDetector
+               || this.Context.PropertyPathContext is { IsNestedAttributeScope: true }
+               || this.Context.PropertyPathContext?.RemainingTargetSegments.Length > 0);
+
+    private bool TryDetectWithDetector(IMapStrategyDetector detector, out MapStrategy detectedStrategy)
+    {
+        detectedStrategy = new NoMapStrategy(this.Context.TargetType, this.Context.SourceType);
+        using (this.Context.AlgorithmSettings.ApplyAlgorithmContextDefaults())
+        {
+            using (this.Context.AlgorithmSettings.Detectors.Apply(detector.GetType()))
+            {
+                if (detector.TryDetect(out detectedStrategy))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private bool ShouldReportMappingCycle()

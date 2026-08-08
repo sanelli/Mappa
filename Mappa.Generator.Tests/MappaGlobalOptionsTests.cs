@@ -184,4 +184,122 @@ public sealed class MappaGlobalOptionsTests
         options.MaxCompileTimeDepth.Should().Be((short)50);
         options.BreakCompileTimeCycles.Should().Be(BooleanSetting.Undefined);
     }
+
+    /// <summary>
+    /// Test unrecognized and alternate enum values in <c>.editorconfig</c>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void ParsesUnrecognizedAndAlternateEnumSettingsFromEditorConfig()
+    {
+        const string editorConfig = """
+                                    root = true
+
+                                    [*.cs]
+                                    mappa.cultureinfosettings = NotACulture
+                                    mappa.protobufoptional = NotABoolean
+                                    mappa.enumtoenummapsetting = Undefined
+                                    mappa.identitymapdeepcopy = NestedDeepCopy
+                                    mappa.enumerableconcretetype = Undefined
+                                    mappa.pragmawarning = Undefined
+                                    mappa.debug = true
+                                    mappa.debugcomments = FALSE
+                                    mappa.maxruntimedepth =
+                                    mappa.maxcompiletimedepth = not-a-number
+                                    """;
+
+        var compilation = BuildCompilation("namespace Mappa.Generator.Tests.UnitTests.SourceCode { internal class Placeholder { } }");
+        var options = new MappaGlobalOptions(
+            TestAnalyzerConfigOptionsProvider.FromEditorConfig(editorConfig),
+            compilation.SyntaxTrees[0]);
+
+        options.CultureInfoSetting.Should().Be(CultureInfoSetting.None);
+        options.ProtobufOptional.Should().Be(BooleanSetting.Undefined);
+        options.EnumToEnumMapSetting.Should().Be(EnumToEnumMapSetting.Undefined);
+        options.IdentityMapDeepCopy.Should().Be(IdentityMapDeepCopySetting.NestedDeepCopy);
+        options.EnumerableConcreteType.Should().Be(EnumerableConcreteTypeSetting.Undefined);
+        options.PragmaWarning.Should().Be(PragmaWarningSetting.Undefined);
+        options.MappaDebug.Should().BeTrue();
+        options.MappaDebugComments.Should().BeFalse();
+        options.MaxRuntimeDepth.Should().Be((short)0);
+        options.MaxCompileTimeDepth.Should().Be((short)50);
+    }
+
+    /// <summary>
+    /// Test remaining enum fallbacks and disable paths in <c>.editorconfig</c>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void ParsesRemainingEnumFallbacksAndDisablePathsFromEditorConfig()
+    {
+        const string editorConfig = """
+                                    root = true
+
+                                    [*.cs]
+                                    mappa.cultureinfosettings = CurrentCulture
+                                    mappa.fastcollections = Disable
+                                    mappa.enumtoenummapsetting = NotAValidEnumToEnum
+                                    mappa.identitymapdeepcopy = DeepCopy
+                                    mappa.enumerableconcretetype = NotAValidEnumerable
+                                    mappa.pragmawarning = NoBlock
+                                    mappa.enumstringmapsetting = Description
+                                    """;
+
+        var compilation = BuildCompilation("namespace Mappa.Generator.Tests.UnitTests.SourceCode { internal class Placeholder { } }");
+        var options = new MappaGlobalOptions(
+            TestAnalyzerConfigOptionsProvider.FromEditorConfig(editorConfig),
+            compilation.SyntaxTrees[0]);
+
+        options.CultureInfoSetting.Should().Be(CultureInfoSetting.CurrentCulture);
+        options.FastCollections.Should().Be(BooleanSetting.Disable);
+        options.EnumToEnumMapSetting.Should().Be(EnumToEnumMapSetting.MemberName);
+        options.IdentityMapDeepCopy.Should().Be(IdentityMapDeepCopySetting.DeepCopy);
+        options.EnumerableConcreteType.Should().Be(EnumerableConcreteTypeSetting.List);
+        options.PragmaWarning.Should().Be(PragmaWarningSetting.NoBlock);
+        options.EnumStringMapSetting.Should().Be(EnumStringMapSetting.Description);
+    }
+
+    /// <summary>
+    /// Test identity deep-copy and pragma warning invalid fallbacks.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void ParsesIdentityDeepCopyAndPragmaWarningInvalidFallbacks()
+    {
+        const string editorConfig = """
+                                    root = true
+
+                                    [*.cs]
+                                    mappa.cultureinfosettings = InvariantCulture
+                                    mappa.identitymapdeepcopy = NotAValidDeepCopy
+                                    mappa.enumerableconcretetype = Array
+                                    mappa.pragmawarning = NotAValidPragma
+                                    mappa.enumstringmapsetting = Undefined
+                                    mappa.enumtoenummapsetting = Description
+                                    """;
+
+        var compilation = BuildCompilation("namespace Mappa.Generator.Tests.UnitTests.SourceCode { internal class Placeholder { } }");
+        var options = new MappaGlobalOptions(
+            TestAnalyzerConfigOptionsProvider.FromEditorConfig(editorConfig),
+            compilation.SyntaxTrees[0]);
+
+        options.CultureInfoSetting.Should().Be(CultureInfoSetting.InvariantCulture);
+        options.IdentityMapDeepCopy.Should().Be(IdentityMapDeepCopySetting.ShallowCopy);
+        options.EnumerableConcreteType.Should().Be(EnumerableConcreteTypeSetting.Array);
+        options.PragmaWarning.Should().Be(PragmaWarningSetting.Undefined);
+        options.EnumStringMapSetting.Should().Be(EnumStringMapSetting.Undefined);
+        options.EnumToEnumMapSetting.Should().Be(EnumToEnumMapSetting.Description);
+
+        const string undefinedIdentityEditorConfig = """
+                                                     root = true
+
+                                                     [*.cs]
+                                                     mappa.identitymapdeepcopy = Undefined
+                                                     """;
+
+        var undefinedIdentityOptions = new MappaGlobalOptions(
+            TestAnalyzerConfigOptionsProvider.FromEditorConfig(undefinedIdentityEditorConfig),
+            compilation.SyntaxTrees[0]);
+        undefinedIdentityOptions.IdentityMapDeepCopy.Should().Be(IdentityMapDeepCopySetting.Undefined);
+    }
 }

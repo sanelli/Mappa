@@ -359,4 +359,86 @@ public sealed class AttributeDataExtensionsGetMappaSettingsAttributeTests
         settings.Should().NotBeNull();
         settings!.DictionaryAssignment.Should().Be(DictionaryAssignmentSetting.Add);
     }
+
+    /// <summary>
+    /// Test <see cref="AttributeDataExtensions.GetMappaSettingsAttribute"/> reads depth properties.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetMappaSettingsAttributeReadsDepthProperties()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { }
+
+                              public class Target { }
+
+                              [Mappa]
+                              public sealed partial class TestMapper
+                              {
+                                  [MappaSettings(MaxRuntimeDepth = 7, MaxCompileTimeDepth = 3)]
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetMethodAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.MapperMetadataName,
+            "Map");
+
+        var settings = attributes.GetMappaSettingsAttribute(compilation);
+
+        settings.Should().NotBeNull();
+        settings!.MaxRuntimeDepth.Should().Be((short)7);
+        settings.MaxCompileTimeDepth.Should().Be((short)3);
+    }
+
+    /// <summary>
+    /// Test <see cref="AttributeDataExtensions.GetMappaSettingsAttribute"/> reads typed style enums
+    /// and undefined depth sentinels.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetMappaSettingsAttributeReadsTypedStylesAndUndefinedDepth()
+    {
+        const string source = """
+                              using System.Globalization;
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { }
+
+                              public class Target { }
+
+                              [Mappa]
+                              public sealed partial class TestMapper
+                              {
+                                  [MappaSettings(
+                                      DateTimeStyle = DateTimeStyles.AdjustToUniversal,
+                                      IntStyle = NumberStyles.HexNumber,
+                                      MaxRuntimeDepth = MappaSettingsAttribute.UndefinedDepth,
+                                      MaxCompileTimeDepth = MappaSettingsAttribute.UndefinedDepth)]
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetMethodAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.MapperMetadataName,
+            "Map");
+
+        var settings = attributes.GetMappaSettingsAttribute(compilation);
+
+        settings.Should().NotBeNull();
+        settings!.DateTimeStyle.Should().Be(DateTimeStyles.AdjustToUniversal);
+        settings.IntStyle.Should().Be(NumberStyles.HexNumber);
+        settings.MaxRuntimeDepth.Should().Be(MappaSettingsAttribute.UndefinedDepth);
+        settings.MaxCompileTimeDepth.Should().Be(MappaSettingsAttribute.UndefinedDepth);
+    }
 }

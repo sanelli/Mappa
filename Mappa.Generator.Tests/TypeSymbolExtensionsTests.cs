@@ -25,10 +25,23 @@ public sealed class TypeSymbolExtensionsTests
     /// <param name="alias">The type alias.</param>
     /// <param name="expected">The expected normalized name.</param>
     [Theory]
+    [InlineData("sbyte", "System.SByte")]
+    [InlineData("short", "System.Int16")]
     [InlineData("int", "System.Int32")]
+    [InlineData("long", "System.Int64")]
+    [InlineData("byte", "System.Byte")]
+    [InlineData("ushort", "System.UInt16")]
+    [InlineData("uint", "System.UInt32")]
+    [InlineData("ulong", "System.UInt64")]
+    [InlineData("float", "System.Single")]
+    [InlineData("double", "System.Double")]
     [InlineData("string", "System.String")]
-    [InlineData("bool", "System.Boolean")]
+    [InlineData("char", "System.Char")]
+    [InlineData("decimal", "System.Decimal")]
+    [InlineData("nint", "System.IntPtr")]
+    [InlineData("nuint", "System.UIntPtr")]
     [InlineData("void", "System.Void")]
+    [InlineData("bool", "System.Boolean")]
     [InlineData("System.DateTime", "System.DateTime")]
     [UnitTest]
     public void NormalizeTypeMapsAliasesToClrNames(string alias, string expected)
@@ -597,5 +610,67 @@ public sealed class TypeSymbolExtensionsTests
 
         success.Should().BeTrue();
         elementType.ToDisplayString().Should().Be("string");
+    }
+
+    /// <summary>
+    /// Test <see cref="TypeSymbolExtensions.TryGetQueryableElementType"/> resolves the element type
+    /// from <see cref="System.Linq.IQueryable{T}"/> via <c>AllInterfaces</c>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void TryGetQueryableElementTypeReturnsElementTypeFromImplementedInterface()
+    {
+        const string source = """
+                              using System.Linq;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public interface IMyQueryable<T> : IQueryable<T>
+                              {
+                              }
+
+                              public sealed class Holder
+                              {
+                                  public IMyQueryable<int> Values { get; set; }
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var holder = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Holder")!;
+        var property = holder.GetMembers("Values").OfType<IPropertySymbol>().Single();
+
+        var success = property.Type.TryGetQueryableElementType(compilation, out var elementType);
+
+        success.Should().BeTrue();
+        elementType.ToDisplayString().Should().Be("int");
+    }
+
+    /// <summary>
+    /// Test <see cref="TypeSymbolExtensions.TryGetQueryableElementType"/> returns <c>false</c>
+    /// when the type is not a queryable.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void TryGetQueryableElementTypeReturnsFalseForNonQueryableType()
+    {
+        const string source = """
+                              using System.Collections.Generic;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public sealed class Holder
+                              {
+                                  public List<string> Values { get; set; }
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var holder = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Holder")!;
+        var property = holder.GetMembers("Values").OfType<IPropertySymbol>().Single();
+
+        var success = property.Type.TryGetQueryableElementType(compilation, out var elementType);
+
+        success.Should().BeFalse();
+        elementType.Should().BeNull();
     }
 }

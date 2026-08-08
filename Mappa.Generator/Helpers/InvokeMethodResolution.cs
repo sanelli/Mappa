@@ -240,19 +240,14 @@ internal static class InvokeMethodResolution
         method = null;
         ambiguityDetails = string.Empty;
 
-        var methodsWithTheRightNameAndReturnType = methods
-            .Where(candidate =>
-                candidate.Name.Equals(methodName, StringComparison.Ordinal) &&
-                compilation.IsSymbolAccessibleWithin(candidate, mapClass) &&
-                (candidate.ReturnType.IsEqualTo(targetType, nullableEnabled) ||
-                 compilation.HasImplicitConversion(candidate.ReturnType, targetType)) &&
-                staticRequirement switch
-                {
-                    InvokeMethodStaticRequirement.StaticOrNotStatic => true,
-                    InvokeMethodStaticRequirement.Static => candidate.IsStatic,
-                    InvokeMethodStaticRequirement.NotStatic => !candidate.IsStatic,
-                    _ => false,
-                })
+        var methodsWithTheRightNameAndReturnType = FilterCandidatesByNameReturnTypeAndStatic(
+                methods,
+                compilation,
+                mapClass,
+                methodName,
+                targetType,
+                nullableEnabled,
+                staticRequirement)
             .ToArray();
 
         if (methodsWithTheRightNameAndReturnType.Length == 0)
@@ -262,6 +257,78 @@ internal static class InvokeMethodResolution
 
         var rootProvidesMappaContext = rootMapMethod.ProvideMappaContextWhenInvoked();
         var typeDisplayName = mapClass.ToDisplayString();
+        var sourcePropertyType = sourceProperty?.Type;
+
+        foreach (var tierPredicate in BuildMappaInvokeMethodResolutionTiers(
+                     compilation,
+                     sourceClassType,
+                     sourcePropertyType,
+                     nullableEnabled,
+                     rootProvidesMappaContext))
+        {
+            var tierResult = PickFromTier(
+                methodsWithTheRightNameAndReturnType,
+                methodName,
+                typeDisplayName,
+                tierPredicate);
+            if (tierResult.Status is not InvokeMethodResolutionResult.NotFound)
+            {
+                method = tierResult.Method;
+                ambiguityDetails = tierResult.AmbiguityDetails;
+                return tierResult.Status;
+            }
+        }
+
+        return InvokeMethodResolutionResult.NotFound;
+    }
+
+    private static IEnumerable<Func<IMethodSymbol, bool>> BuildMappaInvokeMethodResolutionTiers(
+        Compilation compilation,
+        ITypeSymbol sourceClassType,
+        ITypeSymbol? sourcePropertyType,
+        bool nullableEnabled,
+        bool rootProvidesMappaContext)
+    {
+        foreach (var tier in BuildExactAndImplicitSourcePropertyTiers(
+                     compilation,
+                     sourceClassType,
+                     sourcePropertyType,
+                     nullableEnabled,
+                     rootProvidesMappaContext))
+        {
+            yield return tier;
+        }
+
+        foreach (var tier in BuildSourceOnlyResolutionTiers(
+                     compilation,
+                     sourceClassType,
+                     nullableEnabled,
+                     rootProvidesMappaContext))
+        {
+            yield return tier;
+        }
+
+        foreach (var tier in BuildPropertyOnlyAndEmptyResolutionTiers(
+                     compilation,
+                     sourcePropertyType,
+                     nullableEnabled,
+                     rootProvidesMappaContext))
+        {
+            yield return tier;
+        }
+    }
+
+    private static IEnumerable<Func<IMethodSymbol, bool>> BuildExactAndImplicitSourcePropertyTiers(
+        Compilation compilation,
+        ITypeSymbol sourceClassType,
+        ITypeSymbol? sourcePropertyType,
+        bool nullableEnabled,
+        bool rootProvidesMappaContext)
+    {
+        if (sourcePropertyType is null)
+        {
+            yield break;
+        }
 
         bool IsExactSourceType(ITypeSymbol parameterType)
             => parameterType.IsEqualTo(sourceClassType, nullableEnabled);
@@ -271,240 +338,148 @@ internal static class InvokeMethodResolution
                compilation.HasImplicitConversion(sourceClassType, parameterType);
 
         bool IsExactSourcePropertyType(ITypeSymbol parameterType)
-            => sourceProperty is not null &&
-               parameterType.IsEqualTo(sourceProperty.Type, nullableEnabled);
+            => parameterType.IsEqualTo(sourcePropertyType, nullableEnabled);
 
         bool IsImplicitSourcePropertyType(ITypeSymbol parameterType)
-            => sourceProperty is not null &&
-               (IsExactSourcePropertyType(parameterType) ||
-                compilation.HasImplicitConversion(sourceProperty.Type, parameterType));
-
-        if (rootProvidesMappaContext && sourceProperty is not null)
-        {
-            var tier1Result = PickFromTier(
-                methodsWithTheRightNameAndReturnType,
-                methodName,
-                typeDisplayName,
-                candidate => candidate.Parameters.Length == 3 &&
-                             IsExactSourceType(candidate.Parameters[0].Type) &&
-                             IsExactSourcePropertyType(candidate.Parameters[1].Type) &&
-                             candidate.ParameterIsMappaContext(compilation, 2));
-            if (tier1Result.Status is not InvokeMethodResolutionResult.NotFound)
-            {
-                method = tier1Result.Method;
-                ambiguityDetails = tier1Result.AmbiguityDetails;
-                return tier1Result.Status;
-            }
-        }
-
-        if (sourceProperty is not null)
-        {
-            var tier2Result = PickFromTier(
-                methodsWithTheRightNameAndReturnType,
-                methodName,
-                typeDisplayName,
-                candidate => candidate.Parameters.Length == 2 &&
-                             IsExactSourceType(candidate.Parameters[0].Type) &&
-                             IsExactSourcePropertyType(candidate.Parameters[1].Type));
-            if (tier2Result.Status is not InvokeMethodResolutionResult.NotFound)
-            {
-                method = tier2Result.Method;
-                ambiguityDetails = tier2Result.AmbiguityDetails;
-                return tier2Result.Status;
-            }
-        }
-
-        if (rootProvidesMappaContext && sourceProperty is not null)
-        {
-            var tier3Result = PickFromTier(
-                methodsWithTheRightNameAndReturnType,
-                methodName,
-                typeDisplayName,
-                candidate => candidate.Parameters.Length == 3 &&
-                             IsImplicitSourceType(candidate.Parameters[0].Type) &&
-                             IsImplicitSourcePropertyType(candidate.Parameters[1].Type) &&
-                             candidate.ParameterIsMappaContext(compilation, 2));
-            if (tier3Result.Status is not InvokeMethodResolutionResult.NotFound)
-            {
-                method = tier3Result.Method;
-                ambiguityDetails = tier3Result.AmbiguityDetails;
-                return tier3Result.Status;
-            }
-        }
-
-        if (sourceProperty is not null)
-        {
-            var tier4Result = PickFromTier(
-                methodsWithTheRightNameAndReturnType,
-                methodName,
-                typeDisplayName,
-                candidate => candidate.Parameters.Length == 2 &&
-                             IsImplicitSourceType(candidate.Parameters[0].Type) &&
-                             IsImplicitSourcePropertyType(candidate.Parameters[1].Type));
-            if (tier4Result.Status is not InvokeMethodResolutionResult.NotFound)
-            {
-                method = tier4Result.Method;
-                ambiguityDetails = tier4Result.AmbiguityDetails;
-                return tier4Result.Status;
-            }
-        }
+            => IsExactSourcePropertyType(parameterType) ||
+               compilation.HasImplicitConversion(sourcePropertyType, parameterType);
 
         if (rootProvidesMappaContext)
         {
-            var tier5Result = PickFromTier(
-                methodsWithTheRightNameAndReturnType,
-                methodName,
-                typeDisplayName,
-                candidate => candidate.Parameters.Length == 2 &&
-                             IsExactSourceType(candidate.Parameters[0].Type) &&
-                             candidate.ParameterIsMappaContext(compilation, 1));
-            if (tier5Result.Status is not InvokeMethodResolutionResult.NotFound)
-            {
-                method = tier5Result.Method;
-                ambiguityDetails = tier5Result.AmbiguityDetails;
-                return tier5Result.Status;
-            }
+            yield return candidate => candidate.Parameters.Length == 3 &&
+                                      IsExactSourceType(candidate.Parameters[0].Type) &&
+                                      IsExactSourcePropertyType(candidate.Parameters[1].Type) &&
+                                      candidate.ParameterIsMappaContext(compilation, 2);
         }
 
-        var tier6Result = PickFromTier(
-            methodsWithTheRightNameAndReturnType,
-            methodName,
-            typeDisplayName,
-            candidate => candidate.Parameters.Length == 1 &&
-                         IsExactSourceType(candidate.Parameters[0].Type));
-        if (tier6Result.Status is not InvokeMethodResolutionResult.NotFound)
-        {
-            method = tier6Result.Method;
-            ambiguityDetails = tier6Result.AmbiguityDetails;
-            return tier6Result.Status;
-        }
+        yield return candidate => candidate.Parameters.Length == 2 &&
+                                  IsExactSourceType(candidate.Parameters[0].Type) &&
+                                  IsExactSourcePropertyType(candidate.Parameters[1].Type);
 
         if (rootProvidesMappaContext)
         {
-            var tier7Result = PickFromTier(
-                methodsWithTheRightNameAndReturnType,
-                methodName,
-                typeDisplayName,
-                candidate => candidate.Parameters.Length == 2 &&
-                             IsImplicitSourceType(candidate.Parameters[0].Type) &&
-                             candidate.ParameterIsMappaContext(compilation, 1));
-            if (tier7Result.Status is not InvokeMethodResolutionResult.NotFound)
-            {
-                method = tier7Result.Method;
-                ambiguityDetails = tier7Result.AmbiguityDetails;
-                return tier7Result.Status;
-            }
+            yield return candidate => candidate.Parameters.Length == 3 &&
+                                      IsImplicitSourceType(candidate.Parameters[0].Type) &&
+                                      IsImplicitSourcePropertyType(candidate.Parameters[1].Type) &&
+                                      candidate.ParameterIsMappaContext(compilation, 2);
         }
 
-        var tier8Result = PickFromTier(
-            methodsWithTheRightNameAndReturnType,
-            methodName,
-            typeDisplayName,
-            candidate => candidate.Parameters.Length == 1 &&
-                         compilation.HasImplicitConversion(sourceClassType, candidate.Parameters[0].Type));
-        if (tier8Result.Status is not InvokeMethodResolutionResult.NotFound)
-        {
-            method = tier8Result.Method;
-            ambiguityDetails = tier8Result.AmbiguityDetails;
-            return tier8Result.Status;
-        }
-
-        if (rootProvidesMappaContext && sourceProperty is not null)
-        {
-            var tier9Result = PickFromTier(
-                methodsWithTheRightNameAndReturnType,
-                methodName,
-                typeDisplayName,
-                candidate => candidate.Parameters.Length == 2 &&
-                             IsExactSourcePropertyType(candidate.Parameters[0].Type) &&
-                             candidate.ParameterIsMappaContext(compilation, 1));
-            if (tier9Result.Status is not InvokeMethodResolutionResult.NotFound)
-            {
-                method = tier9Result.Method;
-                ambiguityDetails = tier9Result.AmbiguityDetails;
-                return tier9Result.Status;
-            }
-        }
-
-        if (sourceProperty is not null)
-        {
-            var tier10Result = PickFromTier(
-                methodsWithTheRightNameAndReturnType,
-                methodName,
-                typeDisplayName,
-                candidate => candidate.Parameters.Length == 1 &&
-                             IsExactSourcePropertyType(candidate.Parameters[0].Type));
-            if (tier10Result.Status is not InvokeMethodResolutionResult.NotFound)
-            {
-                method = tier10Result.Method;
-                ambiguityDetails = tier10Result.AmbiguityDetails;
-                return tier10Result.Status;
-            }
-        }
-
-        if (rootProvidesMappaContext && sourceProperty is not null)
-        {
-            var tier11Result = PickFromTier(
-                methodsWithTheRightNameAndReturnType,
-                methodName,
-                typeDisplayName,
-                candidate => candidate.Parameters.Length == 2 &&
-                             IsImplicitSourcePropertyType(candidate.Parameters[0].Type) &&
-                             candidate.ParameterIsMappaContext(compilation, 1));
-            if (tier11Result.Status is not InvokeMethodResolutionResult.NotFound)
-            {
-                method = tier11Result.Method;
-                ambiguityDetails = tier11Result.AmbiguityDetails;
-                return tier11Result.Status;
-            }
-        }
-
-        if (sourceProperty is not null)
-        {
-            var tier12Result = PickFromTier(
-                methodsWithTheRightNameAndReturnType,
-                methodName,
-                typeDisplayName,
-                candidate => candidate.Parameters.Length == 1 &&
-                             compilation.HasImplicitConversion(sourceProperty.Type, candidate.Parameters[0].Type));
-            if (tier12Result.Status is not InvokeMethodResolutionResult.NotFound)
-            {
-                method = tier12Result.Method;
-                ambiguityDetails = tier12Result.AmbiguityDetails;
-                return tier12Result.Status;
-            }
-        }
-
-        if (rootProvidesMappaContext)
-        {
-            var tier13Result = PickFromTier(
-                methodsWithTheRightNameAndReturnType,
-                methodName,
-                typeDisplayName,
-                candidate => candidate.Parameters.Length == 1 &&
-                             candidate.ParameterIsMappaContext(compilation, 0));
-            if (tier13Result.Status is not InvokeMethodResolutionResult.NotFound)
-            {
-                method = tier13Result.Method;
-                ambiguityDetails = tier13Result.AmbiguityDetails;
-                return tier13Result.Status;
-            }
-        }
-
-        var tier14Result = PickFromTier(
-            methodsWithTheRightNameAndReturnType,
-            methodName,
-            typeDisplayName,
-            candidate => candidate.Parameters.Length == 0);
-        if (tier14Result.Status is not InvokeMethodResolutionResult.NotFound)
-        {
-            method = tier14Result.Method;
-            ambiguityDetails = tier14Result.AmbiguityDetails;
-            return tier14Result.Status;
-        }
-
-        return InvokeMethodResolutionResult.NotFound;
+        yield return candidate => candidate.Parameters.Length == 2 &&
+                                  IsImplicitSourceType(candidate.Parameters[0].Type) &&
+                                  IsImplicitSourcePropertyType(candidate.Parameters[1].Type);
     }
+
+    private static IEnumerable<Func<IMethodSymbol, bool>> BuildSourceOnlyResolutionTiers(
+        Compilation compilation,
+        ITypeSymbol sourceClassType,
+        bool nullableEnabled,
+        bool rootProvidesMappaContext)
+    {
+        bool IsExactSourceType(ITypeSymbol parameterType)
+            => parameterType.IsEqualTo(sourceClassType, nullableEnabled);
+
+        bool IsImplicitSourceType(ITypeSymbol parameterType)
+            => IsExactSourceType(parameterType) ||
+               compilation.HasImplicitConversion(sourceClassType, parameterType);
+
+        if (rootProvidesMappaContext)
+        {
+            yield return candidate => candidate.Parameters.Length == 2 &&
+                                      IsExactSourceType(candidate.Parameters[0].Type) &&
+                                      candidate.ParameterIsMappaContext(compilation, 1);
+        }
+
+        yield return candidate => candidate.Parameters.Length == 1 &&
+                                  IsExactSourceType(candidate.Parameters[0].Type);
+
+        if (rootProvidesMappaContext)
+        {
+            yield return candidate => candidate.Parameters.Length == 2 &&
+                                      IsImplicitSourceType(candidate.Parameters[0].Type) &&
+                                      candidate.ParameterIsMappaContext(compilation, 1);
+        }
+
+        yield return candidate => candidate.Parameters.Length == 1 &&
+                                  compilation.HasImplicitConversion(sourceClassType, candidate.Parameters[0].Type);
+    }
+
+    private static IEnumerable<Func<IMethodSymbol, bool>> BuildPropertyOnlyAndEmptyResolutionTiers(
+        Compilation compilation,
+        ITypeSymbol? sourcePropertyType,
+        bool nullableEnabled,
+        bool rootProvidesMappaContext)
+    {
+        if (sourcePropertyType is not null)
+        {
+            bool IsExactSourcePropertyType(ITypeSymbol parameterType)
+                => parameterType.IsEqualTo(sourcePropertyType, nullableEnabled);
+
+            bool IsImplicitSourcePropertyType(ITypeSymbol parameterType)
+                => IsExactSourcePropertyType(parameterType) ||
+                   compilation.HasImplicitConversion(sourcePropertyType, parameterType);
+
+            if (rootProvidesMappaContext)
+            {
+                yield return candidate => candidate.Parameters.Length == 2 &&
+                                          IsExactSourcePropertyType(candidate.Parameters[0].Type) &&
+                                          candidate.ParameterIsMappaContext(compilation, 1);
+            }
+
+            yield return candidate => candidate.Parameters.Length == 1 &&
+                                      IsExactSourcePropertyType(candidate.Parameters[0].Type);
+
+            if (rootProvidesMappaContext)
+            {
+                yield return candidate => candidate.Parameters.Length == 2 &&
+                                          IsImplicitSourcePropertyType(candidate.Parameters[0].Type) &&
+                                          candidate.ParameterIsMappaContext(compilation, 1);
+            }
+
+            yield return candidate => candidate.Parameters.Length == 1 &&
+                                      compilation.HasImplicitConversion(sourcePropertyType, candidate.Parameters[0].Type);
+        }
+
+        if (rootProvidesMappaContext)
+        {
+            yield return candidate => candidate.Parameters.Length == 1 &&
+                                      candidate.ParameterIsMappaContext(compilation, 0);
+        }
+
+        yield return candidate => candidate.Parameters.Length == 0;
+    }
+
+    private static IEnumerable<IMethodSymbol> FilterCandidatesByNameReturnTypeAndStatic(
+        IMethodSymbol[] methods,
+        Compilation compilation,
+        ITypeSymbol mapClass,
+        string methodName,
+        ITypeSymbol targetType,
+        bool nullableEnabled,
+        InvokeMethodStaticRequirement staticRequirement)
+    {
+        return methods.Where(candidate =>
+            candidate.Name.Equals(methodName, StringComparison.Ordinal) &&
+            compilation.IsSymbolAccessibleWithin(candidate, mapClass) &&
+            MatchesReturnType(compilation, candidate.ReturnType, targetType, nullableEnabled) &&
+            MatchesStaticRequirement(candidate, staticRequirement));
+    }
+
+    private static bool MatchesReturnType(
+        Compilation compilation,
+        ITypeSymbol returnType,
+        ITypeSymbol targetType,
+        bool nullableEnabled)
+        => returnType.IsEqualTo(targetType, nullableEnabled) ||
+           compilation.HasImplicitConversion(returnType, targetType);
+
+    private static bool MatchesStaticRequirement(IMethodSymbol candidate, InvokeMethodStaticRequirement staticRequirement)
+        => staticRequirement switch
+        {
+            InvokeMethodStaticRequirement.StaticOrNotStatic => true,
+            InvokeMethodStaticRequirement.Static => candidate.IsStatic,
+            InvokeMethodStaticRequirement.NotStatic => !candidate.IsStatic,
+            _ => false,
+        };
 
     private static TierPickResult PickFromTier(
         IMethodSymbol[] pool,

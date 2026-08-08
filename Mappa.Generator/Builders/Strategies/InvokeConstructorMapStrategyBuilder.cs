@@ -35,60 +35,14 @@ internal sealed class InvokeConstructorMapStrategyBuilder
 
         using (context.PushCurrentCompositeTypeSourceName(source))
         {
-            // Handle arguments mappings
-            var parametersVariableNames = new List<string>();
-            foreach (var parameterMapStrategy in this.strategy.ParametersMapStrategies)
-            {
-                var (parameterTargetTemporary, parameterCode) = parameterMapStrategy.GetBuilder().BuildSource(source, context, mappaGlobalOptions);
-                if (!string.IsNullOrWhiteSpace(parameterCode))
-                {
-                    builder.AppendLine(parameterCode);
-                }
-
-                parametersVariableNames.Add(parameterTargetTemporary);
-            }
-
-            // Object initializers are only valid on object-creation expressions. Inaccessible
-            // setters and unsafe-accessor constructor invocations assign after construction.
-            // When reference reusing is active, map all initializers after construction so the
-            // target can be registered before nested mappings (including cycles) run.
-            PropertyMapStrategy[] objectInitializerStrategies;
-            PropertyMapStrategy[] postConstructorStrategies;
-            var deferInitializersForReferenceReusing = ReferenceHandlingCodeGenerator.ShouldRegisterReferencePairEarly(
-                context,
+            var parametersVariableNames = BuildParameterMappings(source, context, mappaGlobalOptions, builder, this.strategy.ParametersMapStrategies);
+            var (objectInitializerStrategies, postConstructorStrategies) = this.PartitionConstructorInitializers(context, source);
+            var propertyInitializersMappings = BuildObjectInitializerMappings(
                 source,
-                this.strategy.TargetType,
-                this.strategy.SourceType);
-            if (this.strategy.RequiresUnsafeAccessorOnConstructor || deferInitializersForReferenceReusing)
-            {
-                objectInitializerStrategies = [];
-                postConstructorStrategies = [.. this.strategy.InitializerStrategies];
-            }
-            else
-            {
-                objectInitializerStrategies = this.strategy.InitializerStrategies
-                    .Where(propertyMapStrategy => !propertyMapStrategy.PostConstructorInitializer
-                                                  && !propertyMapStrategy.RequiresUnsafeAccessorOnTarget)
-                    .ToArray();
-                postConstructorStrategies = this.strategy.InitializerStrategies
-                    .Where(propertyMapStrategy => propertyMapStrategy.PostConstructorInitializer
-                                                  || propertyMapStrategy.RequiresUnsafeAccessorOnTarget)
-                    .ToArray();
-            }
-
-            var propertyInitializersMappings = new List<(IPropertySymbol TargetProperty, string TemporaryName, bool RequiresUnsafeAccessorOnTarget)>();
-            foreach (var propertyMapStrategy in objectInitializerStrategies)
-            {
-                var (initializerPropertyTargetTemporary, initializerPropertyCode) = propertyMapStrategy.GetBuilder().BuildSource(source, context, mappaGlobalOptions);
-                propertyInitializersMappings.Add((
-                    propertyMapStrategy.TargetProperty,
-                    initializerPropertyTargetTemporary,
-                    propertyMapStrategy.RequiresUnsafeAccessorOnTarget));
-                if (!string.IsNullOrWhiteSpace(initializerPropertyCode))
-                {
-                    builder.AppendLine(initializerPropertyCode);
-                }
-            }
+                context,
+                mappaGlobalOptions,
+                builder,
+                objectInitializerStrategies);
 
             var hasPropertyInitializers = propertyInitializersMappings.Count > 0;
             var constructionExpression = InaccessibleMemberAccessHelper.BuildConstructorInvocationExpression(
@@ -98,66 +52,202 @@ internal sealed class InvokeConstructorMapStrategyBuilder
                 context);
 
             resultTemporary = context.NextTemporary();
-            if (hasPropertyInitializers)
-            {
-                builder.AppendLine($"{this.strategy.TargetType.ToDisplayString()} {resultTemporary} = {constructionExpression}");
-                using (builder.CurlyBracesBlock(trailingSemicolon: true))
-                {
-                    foreach (var propertyInitializersMapping in propertyInitializersMappings)
-                    {
-                        builder.AppendLine($"{propertyInitializersMapping.TargetProperty.Name} = {propertyInitializersMapping.TemporaryName},");
-                    }
-                }
-            }
-            else
-            {
-                builder.AppendLine($"{this.strategy.TargetType.ToDisplayString()} {resultTemporary} = {constructionExpression};");
-            }
-
-            var earlyAddReferencePair = ReferenceHandlingCodeGenerator.BuildEarlyAddReferencePairStatement(
-                context,
+            this.AppendConstructionWithOptionalObjectInitializer(
+                builder,
                 resultTemporary,
+                constructionExpression,
+                propertyInitializersMappings,
+                hasPropertyInitializers);
+
+            AppendEarlyReferencePair(context, builder, resultTemporary, source, this.strategy.TargetType, this.strategy.SourceType);
+            AppendPostConstructorInitializers(
                 source,
-                this.strategy.TargetType,
-                this.strategy.SourceType);
-            if (earlyAddReferencePair is not null)
-            {
-                builder.AppendLine(earlyAddReferencePair);
-            }
-
-            // Initialise properties after the constructor has been created.
-            using (context.PushCurrentCompositeTypeTargetName(resultTemporary))
-            {
-                foreach (var propertyMapStrategy in postConstructorStrategies)
-                {
-                    var (initializerPropertyTargetTemporary, initializerPropertyCode) = propertyMapStrategy.GetBuilder().BuildSource(source, context, mappaGlobalOptions);
-                    if (!string.IsNullOrWhiteSpace(initializerPropertyCode))
-                    {
-                        builder.AppendLine(initializerPropertyCode);
-                    }
-
-                    // Setter mappings moved out of the object initializer need an explicit assignment.
-                    if (!propertyMapStrategy.PostConstructorInitializer)
-                    {
-                        builder.AppendLine(InaccessibleMemberAccessHelper.BuildPropertyAssignmentStatement(
-                            resultTemporary,
-                            propertyMapStrategy.TargetProperty,
-                            initializerPropertyTargetTemporary,
-                            propertyMapStrategy.RequiresUnsafeAccessorOnTarget,
-                            context));
-                    }
-                }
-            }
-
-            if (this.strategy.AssignToContextEntries.Length > 0 && this.strategy.ContextParameterName is not null)
-            {
-                foreach (var assignToContextEntry in this.strategy.AssignToContextEntries)
-                {
-                    builder.AppendLine($"{this.strategy.ContextParameterName}[{CSharpLiteralHelper.ToStringLiteral(assignToContextEntry.ContextKey)}] = {PropertyPathExpressionBuilder.BuildTargetMemberAccessExpression(resultTemporary, assignToContextEntry.MemberName)};");
-                }
-            }
+                context,
+                mappaGlobalOptions,
+                builder,
+                resultTemporary,
+                postConstructorStrategies);
+            AppendAssignToContextEntries(builder, resultTemporary, this.strategy.AssignToContextEntries, this.strategy.ContextParameterName);
         }
 
         return (resultTemporary, builder.ToString());
     }
+
+    private static List<string> BuildParameterMappings(
+        string source,
+        MappaBuilderContext context,
+        MappaGlobalOptions mappaGlobalOptions,
+        PrettyCode.StringBuilder builder,
+        IReadOnlyList<ParameterMapStrategy> parametersMapStrategies)
+    {
+        var parametersVariableNames = new List<string>();
+        foreach (var parameterMapStrategy in parametersMapStrategies)
+        {
+            var (parameterTargetTemporary, parameterCode) = parameterMapStrategy.GetBuilder().BuildSource(source, context, mappaGlobalOptions);
+            if (!string.IsNullOrWhiteSpace(parameterCode))
+            {
+                builder.AppendLine(parameterCode);
+            }
+
+            parametersVariableNames.Add(parameterTargetTemporary);
+        }
+
+        return parametersVariableNames;
+    }
+
+    private static List<(IPropertySymbol TargetProperty, string TemporaryName, bool RequiresUnsafeAccessorOnTarget)> BuildObjectInitializerMappings(
+        string source,
+        MappaBuilderContext context,
+        MappaGlobalOptions mappaGlobalOptions,
+        PrettyCode.StringBuilder builder,
+        PropertyMapStrategy[] objectInitializerStrategies)
+    {
+        var propertyInitializersMappings = new List<(IPropertySymbol TargetProperty, string TemporaryName, bool RequiresUnsafeAccessorOnTarget)>();
+        foreach (var propertyMapStrategy in objectInitializerStrategies)
+        {
+            var (initializerPropertyTargetTemporary, initializerPropertyCode) = propertyMapStrategy.GetBuilder().BuildSource(source, context, mappaGlobalOptions);
+            propertyInitializersMappings.Add((
+                propertyMapStrategy.TargetProperty,
+                initializerPropertyTargetTemporary,
+                propertyMapStrategy.RequiresUnsafeAccessorOnTarget));
+            if (!string.IsNullOrWhiteSpace(initializerPropertyCode))
+            {
+                builder.AppendLine(initializerPropertyCode);
+            }
+        }
+
+        return propertyInitializersMappings;
+    }
+
+    private static void AppendConstructionWithOptionalObjectInitializer(
+        PrettyCode.StringBuilder builder,
+        string resultTemporary,
+        string constructionExpression,
+        List<(IPropertySymbol TargetProperty, string TemporaryName, bool RequiresUnsafeAccessorOnTarget)> propertyInitializersMappings,
+        bool hasPropertyInitializers,
+        ITypeSymbol targetType)
+    {
+        if (hasPropertyInitializers)
+        {
+            builder.AppendLine($"{targetType.ToDisplayString()} {resultTemporary} = {constructionExpression}");
+            using (builder.CurlyBracesBlock(trailingSemicolon: true))
+            {
+                foreach (var propertyInitializersMapping in propertyInitializersMappings)
+                {
+                    builder.AppendLine($"{propertyInitializersMapping.TargetProperty.Name} = {propertyInitializersMapping.TemporaryName},");
+                }
+            }
+
+            return;
+        }
+
+        builder.AppendLine($"{targetType.ToDisplayString()} {resultTemporary} = {constructionExpression};");
+    }
+
+    private static void AppendEarlyReferencePair(
+        MappaBuilderContext context,
+        PrettyCode.StringBuilder builder,
+        string resultTemporary,
+        string source,
+        ITypeSymbol targetType,
+        ITypeSymbol sourceType)
+    {
+        var earlyAddReferencePair = ReferenceHandlingCodeGenerator.BuildEarlyAddReferencePairStatement(
+            context,
+            resultTemporary,
+            source,
+            targetType,
+            sourceType);
+        if (earlyAddReferencePair is not null)
+        {
+            builder.AppendLine(earlyAddReferencePair);
+        }
+    }
+
+    private static void AppendPostConstructorInitializers(
+        string source,
+        MappaBuilderContext context,
+        MappaGlobalOptions mappaGlobalOptions,
+        PrettyCode.StringBuilder builder,
+        string resultTemporary,
+        PropertyMapStrategy[] postConstructorStrategies)
+    {
+        using (context.PushCurrentCompositeTypeTargetName(resultTemporary))
+        {
+            foreach (var propertyMapStrategy in postConstructorStrategies)
+            {
+                var (initializerPropertyTargetTemporary, initializerPropertyCode) = propertyMapStrategy.GetBuilder().BuildSource(source, context, mappaGlobalOptions);
+                if (!string.IsNullOrWhiteSpace(initializerPropertyCode))
+                {
+                    builder.AppendLine(initializerPropertyCode);
+                }
+
+                if (!propertyMapStrategy.PostConstructorInitializer)
+                {
+                    builder.AppendLine(InaccessibleMemberAccessHelper.BuildPropertyAssignmentStatement(
+                        resultTemporary,
+                        propertyMapStrategy.TargetProperty,
+                        initializerPropertyTargetTemporary,
+                        propertyMapStrategy.RequiresUnsafeAccessorOnTarget,
+                        context));
+                }
+            }
+        }
+    }
+
+    private static void AppendAssignToContextEntries(
+        PrettyCode.StringBuilder builder,
+        string resultTemporary,
+        MappaAssignToContextEntry[] assignToContextEntries,
+        string? contextParameterName)
+    {
+        if (assignToContextEntries.Length == 0 || contextParameterName is null)
+        {
+            return;
+        }
+
+        foreach (var assignToContextEntry in assignToContextEntries)
+        {
+            builder.AppendLine($"{contextParameterName}[{CSharpLiteralHelper.ToStringLiteral(assignToContextEntry.ContextKey)}] = {PropertyPathExpressionBuilder.BuildTargetMemberAccessExpression(resultTemporary, assignToContextEntry.MemberName)};");
+        }
+    }
+
+    private (PropertyMapStrategy[] ObjectInitializers, PropertyMapStrategy[] PostConstructor) PartitionConstructorInitializers(
+        MappaBuilderContext context,
+        string source)
+    {
+        var deferInitializersForReferenceReusing = ReferenceHandlingCodeGenerator.ShouldRegisterReferencePairEarly(
+            context,
+            source,
+            this.strategy.TargetType,
+            this.strategy.SourceType);
+        if (this.strategy.RequiresUnsafeAccessorOnConstructor || deferInitializersForReferenceReusing)
+        {
+            return ([], [.. this.strategy.InitializerStrategies]);
+        }
+
+        var objectInitializerStrategies = this.strategy.InitializerStrategies
+            .Where(propertyMapStrategy => !propertyMapStrategy.PostConstructorInitializer
+                                          && !propertyMapStrategy.RequiresUnsafeAccessorOnTarget)
+            .ToArray();
+        var postConstructorStrategies = this.strategy.InitializerStrategies
+            .Where(propertyMapStrategy => propertyMapStrategy.PostConstructorInitializer
+                                          || propertyMapStrategy.RequiresUnsafeAccessorOnTarget)
+            .ToArray();
+        return (objectInitializerStrategies, postConstructorStrategies);
+    }
+
+    private void AppendConstructionWithOptionalObjectInitializer(
+        PrettyCode.StringBuilder builder,
+        string resultTemporary,
+        string constructionExpression,
+        List<(IPropertySymbol TargetProperty, string TemporaryName, bool RequiresUnsafeAccessorOnTarget)> propertyInitializersMappings,
+        bool hasPropertyInitializers)
+        => AppendConstructionWithOptionalObjectInitializer(
+            builder,
+            resultTemporary,
+            constructionExpression,
+            propertyInitializersMappings,
+            hasPropertyInitializers,
+            this.strategy.TargetType);
 }
