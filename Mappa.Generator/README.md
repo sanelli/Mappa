@@ -76,7 +76,7 @@ When no existing method applies (or for root methods), `TypeMapIdentifierAlgorit
 9. Guid
 10. Constructor
 
-Every `GetStrategy` discovery is wrapped with compile-time depth tracking (`MaxCompileTimeDepth`, default `50`) and source/target type-pair cycle detection (**MP00076** / **MP00077**). Details: [Documentation/mappa-generator-algorithm.md — Reference handling and compile-time guards](../Documentation/mappa-generator-algorithm.md#reference-handling-and-compile-time-guards).
+Every `GetStrategy` discovery is wrapped with compile-time depth tracking (`MaxCompileTimeDepth`, default `50`) and source/target type-pair cycle detection (**MP00076** / **MP00077**). When `BreakCompileTimeCycles` is enabled, cycle edges synthesize private map methods and report **MP00078** instead of **MP00077**. Details: [Documentation/mappa-generator-algorithm.md — Reference handling and compile-time guards](../Documentation/mappa-generator-algorithm.md#reference-handling-and-compile-time-guards).
 
 ## Reference handling
 

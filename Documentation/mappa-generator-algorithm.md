@@ -111,8 +111,13 @@ When `ReferenceReusing` is `Enable` and the map method declares `MappaContext`:
 ### Compile-time mapping cycle detection
 
 - Independently of depth limits, discovery maintains a stack of `(source, target)` type pairs.
-- Re-entering the same pair before the outer discovery completes reports **MP00077** and suggests adding an explicit map method for that pair.
-- Distinct from runtime object-reference cycles handled by `ReferenceReusing`.
+- By default, re-entering the same pair before the outer discovery completes reports **MP00077** and suggests adding an explicit map method for that pair.
+- When `BreakCompileTimeCycles` is enabled, the generator instead:
+  1. Looks for an existing map method for the cycling type pair (including a synthetic method already registered for this class).
+  2. If none exists, synthesizes a **private** `MapMethod` for that pair, registers it with `TryAddMethod`, and reports warning **MP00078**.
+  3. Returns a `MethodMapStrategy` that invokes that method at the cycle edge.
+  4. The class algorithm's strategy while-loop later picks up the synthetic method (same path as other on-demand methods) and generates its body; re-entry into the same pair during that generation reuses the already-registered method.
+- Distinct from runtime object-reference cycles handled by `ReferenceReusing` (enable both when the graph cycles at compile time and at runtime).
 
 ### IQueryable / projection
 
