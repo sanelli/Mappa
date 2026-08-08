@@ -391,6 +391,52 @@ Because Mappa allows only one map method per source/target pair in a mapper clas
 
 See also: [IdentityMapDeepCopyMapper.cs](../Mappa.Samples/IdentityMapDeepCopyMapper.cs).
 
+#### Reference handling
+
+`ReferenceReusing`, `MaxRuntimeDepth`, and `MaxCompileTimeDepth` control how Mappa handles object graphs with cycles, shared references, and deep nesting. Runtime features (`ReferenceReusing` and `MaxRuntimeDepth`) require a `MappaContext` parameter; without it the generator warns (**MP00074** / **MP00075**) and skips reference handling for that method. Prefer a dedicated map method per nested reference type, and use nullable cycle-closing properties so a `null` edge can terminate recurrence.
+
+**Reference reuse** — enable `ReferenceReusing` and pass a fresh `MappaContext` so generated code records each mapped source→target pair and returns the existing target when the same source instance appears again:
+
+```csharp
+[Mappa]
+[MappaSettings(ReferenceReusing = BooleanSetting.Enable)]
+public sealed partial class ReferenceReusingCycleMapper
+{
+    public partial ReferenceHandlingPersonTarget MapPerson(
+        ReferenceHandlingPersonSource input,
+        MappaContext context);
+
+    public partial ReferenceHandlingAddressTarget MapAddress(
+        ReferenceHandlingAddressSource input,
+        MappaContext context);
+}
+
+var mapper = new ReferenceReusingCycleMapper();
+var context = new MappaContext();
+var target = mapper.MapPerson(source, context);
+```
+
+**Runtime depth** — `MaxRuntimeDepth` is a `short`. Use `-1` (`UndefinedDepth`) to inherit. The effective default is `0` (unlimited). A positive value is copied onto the context's reference manager; nested reference-type maps increase depth, and exceeding the limit throws `MappaException`. The root map does not increase depth (`1` allows the root plus one nested level):
+
+```csharp
+[Mappa]
+[MappaSettings(MaxRuntimeDepth = 2)]
+public sealed partial class MaxRuntimeDepthMapper
+{
+    public partial ReferenceHandlingLevel0Target Map(
+        ReferenceHandlingLevel0Source input,
+        MappaContext context);
+}
+```
+
+**Compile-time depth** — `MaxCompileTimeDepth` limits how deep the generator may recurse while discovering strategies (effective default `50`; `0` disables tracking). Exceeding it reports **MP00076** and stops generation for that mapping. This is independent of `MaxRuntimeDepth`.
+
+**Compile-time mapping cycles** — while discovering strategies, the generator tracks the current source/target type-pair stack. Re-entering the same pair before the outer discovery completes reports **MP00077**. Add an explicit map method for that pair to break the cycle (combine with `ReferenceReusing` when the object graph also cycles at runtime).
+
+**IQueryable projection** — `ReferenceReusing` and `MaxRuntimeDepth` are not supported on `IQueryable` projection methods and are rejected with **MP00057**.
+
+See also: [ReferenceHandlingMapper.cs](../Mappa.Samples/ReferenceHandlingMapper.cs), [algorithm — reference handling](./mappa-generator-algorithm.md#reference-handling-and-compile-time-guards), [error codes](./error-codes.md).
+
 #### Enumerable concrete type settings
 
 `EnumerableConcreteType` controls the concrete buffer used when a collection mapping targets a sequence-like interface. The default is `List` (`List<T>` with `Add`). Set `Array` to allocate `T[]` instead (indexer insertion). Concrete `List<T>` return types always remain lists. The setting applies to interface targets such as `IEnumerable<T>`, `IList<T>`, `ICollection<T>`, `IReadOnlyList<T>`, and `IReadOnlyCollection<T>`:

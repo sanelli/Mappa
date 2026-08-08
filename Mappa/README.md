@@ -25,7 +25,7 @@ This is the list of attributes provided:
 - `MappaMapEnumIgnore`: Excludes a specific enum member from mapping;
 - `MappaMapEnumDefault`: Configures fallback behaviour when an enum value cannot be mapped;
 
-This package also provides the `MappaContext` class that can be used to pass contextual values to mappers via the `MappaAssignFromContext` attribute, store mapped values via the `MappaAssignToContext` attribute, supply context to methods invoked via the `MappaInvokeMethodAttribute` attribute, supply context to before/after map hooks, or supply context to object factory methods.
+This package also provides the `MappaContext` class that can be used to pass contextual values to mappers via the `MappaAssignFromContext` attribute, store mapped values via the `MappaAssignToContext` attribute, supply context to methods invoked via the `MappaInvokeMethodAttribute` attribute, supply context to before/after map hooks, or supply context to object factory methods. When `ReferenceReusing` or `MaxRuntimeDepth` is enabled, `MappaContext` also owns a private `MappaReferenceManager` used by generated code to track mapped references and nesting depth.
 
 **Queryable projection:** map methods with signature `IQueryable<TSource>` → `IQueryable<TTarget>` are handled by the generator as deferred `Select` projections for ORM providers. This is signature-driven and does not require a new attribute in this package. Generated projection methods are annotated with `[RequiresDynamicCode]` and are not compatible with Native AOT. See the [tutorial](../Documentation/tutorial.md#iqueryable-projection) and [IQueryableProjectionMapper.cs](../Mappa.Samples/IQueryableProjectionMapper.cs).
 
@@ -61,6 +61,9 @@ Via `MappaSettings` the following settings can be tweaked:
 - `EnumStringMapSetting`: selects whether enum and string mappings match members by name (default) or by `[Description]` attribute value;
 - `EnumToEnumMapSetting`: selects whether enum-to-enum mappings match members by name (default), by underlying numeric value, or by `[Description]` attribute value;
 - `IdentityMapDeepCopy`: selects whether identity mappings return the original reference, clone via `MemberwiseClone`, or recursively copy nested fields (see `Mappa.MappaCloning.MemberwiseClone`).
+- `ReferenceReusing`: when enabled, reuses already-mapped reference-type instances when the same source appears again (cycles / shared DAGs). Requires `MappaContext`. Disabled by default.
+- `MaxRuntimeDepth`: maximum runtime nesting depth (`short`; negative/`-1` = unset/inherit; effective default `0` = unlimited). Requires `MappaContext`. Overflow throws `MappaException`.
+- `MaxCompileTimeDepth`: maximum generator strategy-discovery depth (`short`; negative/`-1` = unset/inherit; effective default `50`; `0` disables). Generator-only.
 
 Via `MappaTypeMappingDefault` the following settings can be tweaked:
 - `Undefined`: this setting should never be used;

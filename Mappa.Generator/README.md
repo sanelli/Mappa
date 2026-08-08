@@ -76,6 +76,12 @@ When no existing method applies (or for root methods), `TypeMapIdentifierAlgorit
 9. Guid
 10. Constructor
 
+Every `GetStrategy` discovery is wrapped with compile-time depth tracking (`MaxCompileTimeDepth`, default `50`) and source/target type-pair cycle detection (**MP00076** / **MP00077**). Details: [Documentation/mappa-generator-algorithm.md — Reference handling and compile-time guards](../Documentation/mappa-generator-algorithm.md#reference-handling-and-compile-time-guards).
+
+## Reference handling
+
+When `ReferenceReusing` is enabled and the map method declares `MappaContext`, generated code reuses already-mapped reference-type instances via `MappaReferenceManager` (obtained through an `UnsafeAccessor` getter on the context). `MaxRuntimeDepth` (`short`; effective default `0` = unlimited) limits nested reference-type mapping depth at runtime and throws `MappaException` when exceeded. Missing `MappaContext` warns with **MP00074** / **MP00075** and skips runtime reference handling. `ReferenceReusing` / `MaxRuntimeDepth` are rejected on `IQueryable` projection methods (**MP00057**).
+
 ## Strategy details
 
 ### 1. Identity strategy
@@ -203,6 +209,7 @@ When no existing method applies (or for root methods), `TypeMapIdentifierAlgorit
     - Nested `IQueryable` properties, polymorphic root element maps, non-inlinable invoke methods, and before/after hooks are rejected with dedicated diagnostics (MP00055–MP00060),
     - `[MappaObjectFactory]` on a projection map for the element target is rejected with **MP00064**,
     - `[MappaAllowInaccessibleSourceMembers]` / `[MappaAllowInaccessibleTargetMembers]` on a projection map are rejected with **MP00069**,
+    - `ReferenceReusing` / `MaxRuntimeDepth` on a projection map are rejected with **MP00057**,
     - Mapping `IQueryable<TSource>` to a concrete collection (for example `List<TTarget>`) is not a projection: the container path applies and may emit warning MP00061,
     - Prefer numeric or description enum mappings over case-insensitive member-name matching for ORM providers (warning MP00060),
     - Generated projection methods are annotated with `[RequiresDynamicCode]` and are **not compatible with Native AOT** deployment.
@@ -314,6 +321,7 @@ Currently unsupported features include:
 - Nested `IQueryable` / collection projections inside member initializers (for example projecting `source.Children` as `IQueryable` inside a parent projection).
 - Tuple and `Guid` expression builders inside queryable projections.
 - Provider-specific expression shapes that compile but are not translated by a given LINQ provider at runtime.
+- `ReferenceReusing` / `MaxRuntimeDepth` (and `MappaContext`) on `IQueryable` projection map methods.
 
 Other relevant packages:
 - [Mappa](https://www.nuget.org/packages/Mappa/): attributes and `MappaContext` used to drive the source generator;
