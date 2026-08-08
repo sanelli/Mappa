@@ -83,6 +83,21 @@ internal class TypeMapIdentifierAlgorithm
                 // MapSourceType defaults). Those paths already prevent unbounded recursion.
                 if (this.ShouldReportMappingCycle())
                 {
+                    // Prefer an existing map method for the cycling pair (user or synthetic) so a
+                    // synthetic method body can self-invoke even when BreakCompileTimeCycles is no
+                    // longer Enable on the settings stack (e.g. method-level Enable only).
+                    if (this.Context.TryGetMethod(
+                            this.Context.TargetType,
+                            this.Context.SourceType,
+                            out var existingMapMethodOnCycle))
+                    {
+                        var rootMapMethod = this.Context.GetRootMapMethod();
+                        return this.WrapIfNullableReferenceSource(
+                            new MethodMapStrategy(
+                                existingMapMethodOnCycle,
+                                rootMapMethod.MaybeGetMappaContextParameterName()));
+                    }
+
                     if (this.Context.MappaUserSettings.BreakCompileTimeCycles is BooleanSetting.Enable)
                     {
                         return this.BreakCompileTimeCycleWithSyntheticOrExistingMethod();

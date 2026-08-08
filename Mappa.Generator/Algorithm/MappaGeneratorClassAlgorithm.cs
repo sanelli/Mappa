@@ -103,7 +103,9 @@ internal sealed class MappaGeneratorClassAlgorithm
         MappaObjectFactoryAttributeData[] classObjectFactoryAttributes,
         CancellationToken cancellationToken)
     {
-        foreach (var mapMethod in classContext.MapMethods)
+        // Snapshot: strategy discovery may TryAddMethod synthetic map methods mid-enumeration.
+        MapMethod[] mapMethodsSnapshot = [.. classContext.MapMethods];
+        foreach (var mapMethod in mapMethodsSnapshot)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
