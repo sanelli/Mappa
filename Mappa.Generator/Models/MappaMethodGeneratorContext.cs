@@ -37,7 +37,7 @@ internal sealed class MappaMethodGeneratorContext
     internal override MapMethod? MapMethod { get; }
 
     /// <inheritdoc/>
-    internal override ISymbol ParentSymbol => this.GetMapMethod().MethodSymbol.ContainingSymbol;
+    internal override ISymbol ParentSymbol => this.GetMapMethod().ContainingType;
 
     /// <inheritdoc/>
     internal override ITypeSymbol SourceType => this.GetMapMethod().SourceType;
@@ -60,15 +60,15 @@ internal sealed class MappaMethodGeneratorContext
 
     /// <inheritdoc/>
     internal override bool TryGetMethod(ITypeSymbol targetType, ITypeSymbol sourceType, out MapMethod mapMethod)
-        => this.ClassContext.TryGetMethod(targetType, sourceType, this.IsNullableEnabled(), this.GetRootMapMethod().MethodSymbol.IsStatic, out mapMethod);
+        => this.ClassContext.TryGetMethod(targetType, sourceType, this.IsNullableEnabled(), this.GetRootMapMethod().CanBeUsedByStaticMethod, out mapMethod);
 
     /// <inheritdoc/>
     internal override bool TryGetPolymorphicMethod(ITypeSymbol targetType, ITypeSymbol sourceType, IMappaUserSettings mappaUserSettings, out MapMethod mapMethod)
-        => this.ClassContext.TryGetPolymorphicMethod(targetType, sourceType, this.IsNullableEnabled(), this.GetRootMapMethod().MethodSymbol.IsStatic, mappaUserSettings, out mapMethod);
+        => this.ClassContext.TryGetPolymorphicMethod(targetType, sourceType, this.IsNullableEnabled(), this.GetRootMapMethod().CanBeUsedByStaticMethod, mappaUserSettings, out mapMethod);
 
     /// <inheritdoc/>
     internal override bool TryGetCompatibleMethod(ITypeSymbol targetType, ITypeSymbol sourceType, Compilation compilation, out MapMethod mapMethod)
-        => this.ClassContext.TryGetCompatibleMethod(targetType, sourceType, this.GetRootMapMethod().MethodSymbol.IsStatic, compilation, out mapMethod);
+        => this.ClassContext.TryGetCompatibleMethod(targetType, sourceType, this.GetRootMapMethod().CanBeUsedByStaticMethod, compilation, out mapMethod);
 
     /// <inheritdoc/>
     internal override void ReportDiagnostic(Diagnostic diagnostic)

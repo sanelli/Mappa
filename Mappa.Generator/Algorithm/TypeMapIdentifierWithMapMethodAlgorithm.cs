@@ -59,7 +59,7 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
 
             if (this.Context.MappaUserSettings.CompatibleMapMethod is BooleanSetting.Enable
                 && this.Context.TryGetCompatibleMethod(this.Context.TargetType, this.Context.SourceType, this.Compilation, out mapMethod)
-                && !ReferenceEquals(mapMethod.MethodSymbol, this.Context.GetRootMapMethod().MethodSymbol))
+                && !ReferenceEquals(mapMethod, this.Context.GetRootMapMethod()))
             {
                 var mapMethodRequireMappaContext = mapMethod.RequireMappaContextWhenInvoked();
                 var rootMapMethod = this.Context.GetRootMapMethod();
@@ -78,7 +78,7 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
             }
 
             if (this.Context.TryGetPolymorphicMethod(this.Context.TargetType, this.Context.SourceType, this.Context.MappaUserSettings, out mapMethod)
-                && !ReferenceEquals(mapMethod.MethodSymbol, this.Context.GetRootMapMethod().MethodSymbol))
+                && !ReferenceEquals(mapMethod, this.Context.GetRootMapMethod()))
             {
                 var mapMethodRequireMappaContext = mapMethod.RequireMappaContextWhenInvoked();
                 var rootMapMethod = this.Context.GetRootMapMethod();
@@ -100,24 +100,6 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
         return this.ComputeStrategy();
     }
 
-    /// <summary>
-    /// Wraps a map-method strategy in <see cref="NullableStrategy"/> when the source is a nullable
-    /// reference type, so <c>null</c> edges short-circuit before invoking the nested map method
-    /// (required for ReferenceReusing cycle edges).
-    /// </summary>
-    /// <param name="strategy">The strategy that maps the non-null source.</param>
-    /// <returns>The original strategy, or a nullable wrapper around it.</returns>
-    private MapStrategy WrapIfNullableReferenceSource(MapStrategy strategy)
-    {
-        var sourceType = this.Context.SourceType;
-        if (sourceType is { IsReferenceType: true, NullableAnnotation: NullableAnnotation.Annotated })
-        {
-            return new NullableStrategy(this.Context.TargetType, sourceType, strategy);
-        }
-
-        return strategy;
-    }
-
     private void MaybeReportNestedMapWithoutMappaContext(MapMethod mapMethod, bool mapMethodRequireMappaContext)
     {
         if (mapMethodRequireMappaContext)
@@ -136,7 +118,7 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
             return;
         }
 
-        if (ReferenceEquals(mapMethod.MethodSymbol, rootMapMethod.MethodSymbol))
+        if (ReferenceEquals(mapMethod, rootMapMethod))
         {
             return;
         }

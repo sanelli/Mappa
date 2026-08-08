@@ -142,7 +142,7 @@ internal sealed class ContainerMapStrategyDetector
                 this.context.ReportDiagnostic(
                     MappaDiagnostics.IQueryableMappedAsCollection(
                         this.context.MapMethod.MethodDeclarationSyntax?.GetLocation(),
-                        this.context.MapMethod.MethodSymbol.Name));
+                        this.context.MapMethod.MethodName));
             }
 
             elementStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);

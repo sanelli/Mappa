@@ -1330,4 +1330,25 @@ internal static class MappaDiagnostics
             location,
             sourceType.ToDisplayString(),
             targetType.ToDisplayString());
+
+    /// <summary>
+    /// Diagnostic to report that a compile-time mapping cycle was automatically broken
+    /// by synthesizing a private map method.
+    /// </summary>
+    /// <param name="location">The location associated with the mapping.</param>
+    /// <param name="sourceType">The source type being mapped.</param>
+    /// <param name="targetType">The target type being mapped.</param>
+    /// <param name="syntheticMethodName">The name of the synthesized private map method.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappingCycleAutoBroken(
+        Location? location,
+        ITypeSymbol sourceType,
+        ITypeSymbol targetType,
+        string syntheticMethodName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappingCycleAutoBroken,
+            location,
+            sourceType.ToDisplayString(),
+            targetType.ToDisplayString(),
+            syntheticMethodName);
 }

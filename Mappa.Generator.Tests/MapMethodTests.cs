@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Attributes;
 using Mappa.Generator.Exceptions;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
@@ -367,6 +368,169 @@ public sealed class MapMethodTests
         var requiredTarget = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.UnrelatedTarget")!;
 
         mapMethod.IsCompatibleMapFor(requiredTarget, requiredSource, compilation).Should().BeFalse();
+    }
+
+    /// <summary>
+    /// Test <see cref="MapMethod.CreateSynthetic"/> builds an unmapped private map method with optional context.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CreateSyntheticBuildsUnmappedMethodWithContextMetadata()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { }
+
+                              public class Target { }
+
+                              [Mappa]
+                              public sealed partial class Mapper
+                              {
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var sourceType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Source")!;
+        var targetType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Target")!;
+        var mapperType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Mapper")!;
+
+        var mapMethod = MapMethod.CreateSynthetic(
+            "Map__Source__To__Target",
+            sourceType,
+            targetType,
+            mapperType,
+            nullableEnabled: true,
+            isStatic: false,
+            sourceParameterName: "source",
+            mappaContextParameterName: "context",
+            location: null);
+
+        mapMethod.IsSynthetic.Should().BeTrue();
+        mapMethod.Mapped.Should().BeFalse();
+        mapMethod.MethodSymbol.Should().BeNull();
+        mapMethod.MethodDeclarationSyntax.Should().BeNull();
+        mapMethod.MethodName.Should().Be("Map__Source__To__Target");
+        mapMethod.SourceParameterName.Should().Be("source");
+        mapMethod.AccessFieldName.Should().Be("this");
+        mapMethod.CanBeUsedByStaticMethod.Should().BeFalse();
+        mapMethod.RequireMappaContextWhenInvoked().Should().BeTrue();
+        mapMethod.GetMappaContextParameterName().Should().Be("context");
+        mapMethod.ContainingType.Should().Be(mapperType);
+    }
+
+    /// <summary>
+    /// Test <see cref="MapMethod.CreateSynthetic"/> omits context when the root method has none.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CreateSyntheticOmitsContextWhenParameterNameIsNull()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { }
+
+                              public class Target { }
+
+                              [Mappa]
+                              public static partial class Mapper
+                              {
+                                  public static partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var sourceType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Source")!;
+        var targetType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Target")!;
+        var mapperType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Mapper")!;
+
+        var mapMethod = MapMethod.CreateSynthetic(
+            "Map__Source__To__Target",
+            sourceType,
+            targetType,
+            mapperType,
+            nullableEnabled: false,
+            isStatic: true,
+            sourceParameterName: "input",
+            mappaContextParameterName: null,
+            location: null);
+
+        mapMethod.CanBeUsedByStaticMethod.Should().BeTrue();
+        mapMethod.AccessFieldName.Should().BeEmpty();
+        mapMethod.RequireMappaContextWhenInvoked().Should().BeFalse();
+        mapMethod.MaybeGetMappaContextParameterName().Should().BeNull();
+    }
+
+    /// <summary>
+    /// Test <see cref="MapMethod.SetMaxRuntimeDepth"/> throws when the value has already been set.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void SetMaxRuntimeDepthThrowsWhenValueIsAlreadySet()
+    {
+        var mapMethod = CreateMapMethodFromSyntax(
+            """
+            using Mappa.Attributes;
+
+            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+            public class Source { }
+
+            public class Target { }
+
+            [Mappa]
+            public sealed partial class Mapper
+            {
+                public partial Target Map(Source input);
+            }
+            """,
+            "Map");
+        mapMethod.SetMaxRuntimeDepth(3);
+
+        var act = () => mapMethod.SetMaxRuntimeDepth(5);
+
+        act.Should()
+            .Throw<MappaGeneratorException>()
+            .WithMessage("You are trying to set max runtime depth multiple times.");
+    }
+
+    /// <summary>
+    /// Test <see cref="MapMethod.SetReferenceReusing"/> throws when the value has already been set.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void SetReferenceReusingThrowsWhenValueIsAlreadySet()
+    {
+        var mapMethod = CreateMapMethodFromSyntax(
+            """
+            using Mappa.Attributes;
+
+            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+            public class Source { }
+
+            public class Target { }
+
+            [Mappa]
+            public sealed partial class Mapper
+            {
+                public partial Target Map(Source input);
+            }
+            """,
+            "Map");
+        mapMethod.SetReferenceReusing(BooleanSetting.Enable);
+
+        var act = () => mapMethod.SetReferenceReusing(BooleanSetting.Disable);
+
+        act.Should()
+            .Throw<MappaGeneratorException>()
+            .WithMessage("You are trying to set reference reusing multiple times.");
     }
 
     private static MapMethod CreateMapMethodFromSyntax(string source, string methodName, bool nullableEnabled = false)

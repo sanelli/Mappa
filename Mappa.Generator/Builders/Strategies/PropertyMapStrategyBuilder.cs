@@ -37,7 +37,7 @@ internal sealed class PropertyMapStrategyBuilder
         {
             var chainedSourcePropertyPath = this.strategy.ChainedSourcePropertyPath;
             var chainSource = source;
-            var rootParameterName = context.GetMapMethod().MethodSymbol.Parameters[0].Name;
+            var rootParameterName = context.GetMapMethod().SourceParameterName;
             var receiverPathPrefix = chainedSourcePropertyPath.ReceiverPathPrefix;
 
             // Only rewrite to the root parameter when the chain is intentionally rooted there.

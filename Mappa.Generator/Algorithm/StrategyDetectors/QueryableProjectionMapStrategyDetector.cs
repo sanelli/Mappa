@@ -88,10 +88,16 @@ internal sealed class QueryableProjectionMapStrategyDetector
                 new ProjectionCapabilityAnalysisContext(
                     this.context,
                     this.compilation,
-                    this.context.MapMethod.MethodSymbol.Name,
+                    this.context.MapMethod.MethodName,
                     this.context.MapMethod.MethodDeclarationSyntax?.GetLocation(),
                     this.cancellationToken),
                 out var normalizedElementStrategy))
+        {
+            return false;
+        }
+
+        var mapMethodSymbol = this.context.MapMethod.MethodSymbol;
+        if (mapMethodSymbol is null)
         {
             return false;
         }
@@ -102,7 +108,7 @@ internal sealed class QueryableProjectionMapStrategyDetector
             normalizedElementStrategy,
             sourceElementType,
             targetElementType,
-            this.context.MapMethod.MethodSymbol);
+            mapMethodSymbol);
         return true;
     }
 }

@@ -18,6 +18,8 @@ namespace Mappa.Generator.Models;
 internal sealed class MapMethod
 {
     private readonly Attribute[] attributes;
+    private readonly INamedTypeSymbol containingType;
+    private readonly string? mappaContextParameterName;
     private MethodParameterMapStrategy? methodParameterMapStrategy;
     private bool pragmaWarningHasBeenSet;
     private bool maxRuntimeDepthHasBeenSet;
@@ -44,9 +46,14 @@ internal sealed class MapMethod
         this.MethodName = methodDeclarationSyntax.Identifier.ToFullString();
         this.MethodSymbol = semanticModel.GetDeclaredSymbol(methodDeclarationSyntax, cancellationToken)
             ?? throw new MappaGeneratorException($"Cannot obtain the method symbol for method \"{methodDeclarationSyntax.Identifier}\" syntax node.", methodDeclarationSyntax.GetLocation());
+        this.containingType = this.MethodSymbol.ContainingType
+            ?? throw new MappaGeneratorException($"Cannot obtain the containing type for method \"{methodDeclarationSyntax.Identifier}\" syntax node.", methodDeclarationSyntax.GetLocation());
         this.TargetType = this.MethodSymbol.ReturnType;
         this.SourceType = this.MethodSymbol.Parameters[0].Type;
         this.SourceParameterName = this.MethodSymbol.Parameters[0].Name;
+        this.mappaContextParameterName = this.MethodSymbol.Parameters.Length >= 2
+            ? this.MethodSymbol.Parameters[1].Name
+            : null;
         this.Mapped = false;
         this.Location = methodDeclarationSyntax.GetLocation();
         this.NullableEnabled = nullableEnabled;
@@ -54,6 +61,7 @@ internal sealed class MapMethod
         this.attributes = this.MethodSymbol.GetMethodMappaAttributes(semanticModel.Compilation);
         this.CanBeUsedByStaticMethod = this.MethodSymbol.IsStatic;
         this.ReferenceReusing = BooleanSetting.Undefined;
+        this.IsSynthetic = false;
     }
 
     /// <summary>
@@ -78,21 +86,63 @@ internal sealed class MapMethod
         this.AccessFieldName = accessFiledName;
         this.MethodName = methodSymbol.Name;
         this.MethodSymbol = methodSymbol;
+        this.containingType = methodSymbol.ContainingType
+            ?? throw new MappaGeneratorException($"Cannot obtain the containing type for method \"{methodSymbol.Name}\".");
         this.TargetType = this.MethodSymbol.ReturnType;
         this.SourceType = this.MethodSymbol.Parameters[0].Type;
         this.SourceParameterName = this.MethodSymbol.Parameters[0].Name;
+        this.mappaContextParameterName = this.MethodSymbol.Parameters.Length >= 2
+            ? this.MethodSymbol.Parameters[1].Name
+            : null;
         this.Mapped = true;
         this.NullableEnabled = nullableEnabled;
         this.attributes = attributes;
         this.PragmaWarning = PragmaWarningSetting.Undefined;
         this.CanBeUsedByStaticMethod = canBeUsedByStaticMethod;
         this.ReferenceReusing = BooleanSetting.Undefined;
+        this.IsSynthetic = false;
+    }
+
+    private MapMethod(
+        string methodName,
+        ITypeSymbol sourceType,
+        ITypeSymbol targetType,
+        INamedTypeSymbol containingType,
+        bool nullableEnabled,
+        bool isStatic,
+        string sourceParameterName,
+        string? mappaContextParameterName,
+        Location? location)
+    {
+        this.MethodDeclarationSyntax = null;
+        this.MethodSymbol = null;
+        this.AccessFieldName = isStatic ? string.Empty : "this";
+        this.MethodName = methodName;
+        this.containingType = containingType;
+        this.SourceType = sourceType;
+        this.TargetType = targetType;
+        this.SourceParameterName = sourceParameterName;
+        this.mappaContextParameterName = mappaContextParameterName;
+        this.Mapped = false;
+        this.Location = location;
+        this.NullableEnabled = nullableEnabled;
+        this.attributes = [];
+        this.PragmaWarning = PragmaWarningSetting.Undefined;
+        this.CanBeUsedByStaticMethod = isStatic;
+        this.ReferenceReusing = BooleanSetting.Undefined;
+        this.IsSynthetic = true;
     }
 
     /// <summary>
     /// Gets a value indicating whether reference nullable is enabled.
     /// </summary>
     internal bool NullableEnabled { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether this method was synthesized by the generator
+    /// to break a compile-time mapping cycle.
+    /// </summary>
+    internal bool IsSynthetic { get; }
 
     /// <summary>
     /// Gets the pragma warning settings specific for the method being mapped.
@@ -130,9 +180,14 @@ internal sealed class MapMethod
     internal ITypeSymbol SourceType { get; }
 
     /// <summary>
-    /// Gets the method symbol.
+    /// Gets the method symbol, or <c>null</c> when <see cref="IsSynthetic"/> is <c>true</c>.
     /// </summary>
-    internal IMethodSymbol MethodSymbol { get; }
+    internal IMethodSymbol? MethodSymbol { get; }
+
+    /// <summary>
+    /// Gets the type that contains the map method (the mapper class, or the dependency declaring type).
+    /// </summary>
+    internal INamedTypeSymbol ContainingType => this.containingType;
 
     /// <summary>
     /// Gets the source parameter name.
@@ -169,6 +224,40 @@ internal sealed class MapMethod
     /// Gets a value indicating whether the strategy has been set.
     /// </summary>
     internal bool HasStrategy => this.methodParameterMapStrategy is not null;
+
+    /// <summary>
+    /// Creates a generator-synthesized private map method used to break a compile-time mapping cycle.
+    /// </summary>
+    /// <param name="methodName">The unique private method name.</param>
+    /// <param name="sourceType">The source type.</param>
+    /// <param name="targetType">The target type.</param>
+    /// <param name="containingType">The mapper class that will contain the method.</param>
+    /// <param name="nullableEnabled"><c>true</c> if reference nullable is enabled.</param>
+    /// <param name="isStatic"><c>true</c> when the synthetic method should be static.</param>
+    /// <param name="sourceParameterName">The source parameter name.</param>
+    /// <param name="mappaContextParameterName">The optional <see cref="MappaContext"/> parameter name.</param>
+    /// <param name="location">The location associated with the cycle edge.</param>
+    /// <returns>The synthetic map method.</returns>
+    internal static MapMethod CreateSynthetic(
+        string methodName,
+        ITypeSymbol sourceType,
+        ITypeSymbol targetType,
+        INamedTypeSymbol containingType,
+        bool nullableEnabled,
+        bool isStatic,
+        string sourceParameterName,
+        string? mappaContextParameterName,
+        Location? location)
+        => new(
+            methodName,
+            sourceType,
+            targetType,
+            containingType,
+            nullableEnabled,
+            isStatic,
+            sourceParameterName,
+            mappaContextParameterName,
+            location);
 
     /// <summary>
     /// Mark the method as being mapped.
@@ -279,24 +368,20 @@ internal sealed class MapMethod
     /// </summary>
     /// <returns><c>true</c> when the method require a mappa context to be invoked, <c>false</c> otherwise.</returns>
     internal bool RequireMappaContextWhenInvoked()
-    {
-        return this.MethodSymbol.Parameters.Length == 2;
-    }
+        => this.mappaContextParameterName is not null;
 
     /// <summary>
     /// Returns <c>true</c> when the method provide a mappa context.
     /// </summary>
     /// <returns><c>true</c> when the method provide a mappa context, <c>false</c> otherwise.</returns>
     internal bool ProvideMappaContextWhenInvoked()
-    {
-        return this.MethodSymbol.Parameters.Length == 2;
-    }
+        => this.mappaContextParameterName is not null;
 
     /// <summary>
     /// Gets the name of the mappa context parameter.
     /// </summary>
     /// <returns>The name of the mappa context parameter.</returns>
-    /// <exception cref="MappaGenerator">When the method does not have a mappa context parameter.</exception>
+    /// <exception cref="MappaGeneratorException">When the method does not have a mappa context parameter.</exception>
     internal string GetMappaContextParameterName()
         => this.MaybeGetMappaContextParameterName() ?? throw new MappaGeneratorException("Method does not have a mappa context parameter.");
 
@@ -305,14 +390,14 @@ internal sealed class MapMethod
     /// </summary>
     /// <returns>The name of the mappa context parameter, or <c>null</c> if not present.</returns>
     internal string? MaybeGetMappaContextParameterName()
-    {
-        if (this.MethodSymbol.Parameters.Length < 2)
-        {
-            return null;
-        }
+        => this.mappaContextParameterName;
 
-        return this.MethodSymbol.Parameters[1].Name;
-    }
+    /// <summary>
+    /// Gets the <see cref="RefKind"/> of the source parameter.
+    /// </summary>
+    /// <returns>The source parameter ref kind, or <see cref="RefKind.None"/> for synthetic methods.</returns>
+    internal RefKind GetSourceParameterRefKind()
+        => this.MethodSymbol?.Parameters[0].RefKind ?? RefKind.None;
 
     /// <summary>
     /// Set the <see cref="PragmaWarning"/> field.

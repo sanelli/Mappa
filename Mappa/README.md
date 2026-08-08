@@ -64,6 +64,7 @@ Via `MappaSettings` the following settings can be tweaked:
 - `ReferenceReusing`: when enabled, reuses already-mapped reference-type instances when the same source appears again (cycles / shared DAGs). Requires `MappaContext`. Disabled by default.
 - `MaxRuntimeDepth`: maximum runtime nesting depth (`short`; negative/`-1` = unset/inherit; effective default `0` = unlimited). Requires `MappaContext`. Overflow throws `MappaException`.
 - `MaxCompileTimeDepth`: maximum generator strategy-discovery depth (`short`; negative/`-1` = unset/inherit; effective default `50`; `0` disables). Generator-only.
+- `BreakCompileTimeCycles`: when enabled, synthesizes private map methods at compile-time mapping-cycle edges instead of **MP00077**; reports **MP00078**. Generator-only; disabled by default. Pair with `ReferenceReusing` for runtime object cycles.
 
 Via `MappaTypeMappingDefault` the following settings can be tweaked:
 - `Undefined`: this setting should never be used;

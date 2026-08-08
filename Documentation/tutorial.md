@@ -393,7 +393,7 @@ See also: [IdentityMapDeepCopyMapper.cs](../Mappa.Samples/IdentityMapDeepCopyMap
 
 #### Reference handling
 
-`ReferenceReusing`, `MaxRuntimeDepth`, and `MaxCompileTimeDepth` control how Mappa handles object graphs with cycles, shared references, and deep nesting. Runtime features (`ReferenceReusing` and `MaxRuntimeDepth`) require a `MappaContext` parameter; without it the generator warns (**MP00074** / **MP00075**) and skips reference handling for that method. Prefer a dedicated map method per nested reference type, and use nullable cycle-closing properties so a `null` edge can terminate recurrence.
+`ReferenceReusing`, `MaxRuntimeDepth`, `MaxCompileTimeDepth`, and `BreakCompileTimeCycles` control how Mappa handles object graphs with cycles, shared references, and deep nesting. Runtime features (`ReferenceReusing` and `MaxRuntimeDepth`) require a `MappaContext` parameter; without it the generator warns (**MP00074** / **MP00075**) and skips reference handling for that method. Prefer a dedicated map method per nested reference type when you want an explicit API surface, and use nullable cycle-closing properties so a `null` edge can terminate recurrence.
 
 **Reference reuse** — enable `ReferenceReusing` and pass a fresh `MappaContext` so generated code records each mapped source→target pair and returns the existing target when the same source instance appears again:
 
@@ -431,11 +431,24 @@ public sealed partial class MaxRuntimeDepthMapper
 
 **Compile-time depth** — `MaxCompileTimeDepth` limits how deep the generator may recurse while discovering strategies (effective default `50`; `0` disables tracking). Exceeding it reports **MP00076** and stops generation for that mapping. This is independent of `MaxRuntimeDepth`.
 
-**Compile-time mapping cycles** — while discovering strategies, the generator tracks the current source/target type-pair stack. Re-entering the same pair before the outer discovery completes reports **MP00077**. Add an explicit map method for that pair to break the cycle (combine with `ReferenceReusing` when the object graph also cycles at runtime).
+**Compile-time mapping cycles** — while discovering strategies, the generator tracks the current source/target type-pair stack. By default, re-entering the same pair before the outer discovery completes reports **MP00077**. Add an explicit map method for that pair to break the cycle, or enable `BreakCompileTimeCycles` so the generator synthesizes a **private** map method for the cycling pair, invokes it at the cycle edge, and reports warning **MP00078**. Combine either approach with `ReferenceReusing` when the object graph also cycles at runtime (otherwise a closed cycle can recurse indefinitely).
+
+```csharp
+[Mappa]
+[MappaSettings(
+    BreakCompileTimeCycles = BooleanSetting.Enable,
+    ReferenceReusing = BooleanSetting.Enable)]
+public sealed partial class BreakCompileTimeCyclesMapper
+{
+    public partial ReferenceHandlingPersonTarget Map(
+        ReferenceHandlingPersonSource input,
+        MappaContext context);
+}
+```
 
 **IQueryable projection** — `ReferenceReusing` and `MaxRuntimeDepth` are not supported on `IQueryable` projection methods and are rejected with **MP00057**.
 
-See also: [ReferenceHandlingMapper.cs](../Mappa.Samples/ReferenceHandlingMapper.cs), [algorithm — reference handling](./mappa-generator-algorithm.md#reference-handling-and-compile-time-guards), [error codes](./error-codes.md).
+See also: [ReferenceHandlingMapper.cs](../Mappa.Samples/ReferenceHandlingMapper.cs), [BreakCompileTimeCyclesMapper.cs](../Mappa.Samples/BreakCompileTimeCyclesMapper.cs), [algorithm — reference handling](./mappa-generator-algorithm.md#reference-handling-and-compile-time-guards), [error codes](./error-codes.md).
 
 #### Enumerable concrete type settings
 

@@ -506,5 +506,11 @@ namespace Mappa.Generator.Diagnostics {
                 return ResourceManager.GetString("MappingCycleDetected", resourceCulture);
             }
         }
+
+        internal static string MappingCycleAutoBroken {
+            get {
+                return ResourceManager.GetString("MappingCycleAutoBroken", resourceCulture);
+            }
+        }
     }
 }

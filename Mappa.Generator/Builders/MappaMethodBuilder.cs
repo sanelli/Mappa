@@ -5,6 +5,7 @@
 using System.CodeDom.Compiler;
 using System.Diagnostics;
 
+using Mappa.Generator.Exceptions;
 using Mappa.Generator.Extensions;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
@@ -77,27 +78,51 @@ internal sealed class MappaMethodBuilder
 
     private string GetSignature()
     {
+        if (this.mapMethod.IsSynthetic)
+        {
+            return this.GetSyntheticSignature();
+        }
+
+        var methodSymbol = this.mapMethod.MethodSymbol;
+        if (methodSymbol is null)
+        {
+            throw new MappaGeneratorException($"Non-synthetic map method \"{this.mapMethod.MethodName}\" is missing a method symbol.");
+        }
+
         var modifiersWithReturnType = string.Join(
             " ",
-            this.mapMethod.MethodSymbol.GetSymbolModifiers(),
+            methodSymbol.GetSymbolModifiers(),
             "partial",
             this.mapMethod.TargetType.ToDisplayString())
             .Trim();
 
-        var extensionMethod = this.mapMethod.MethodSymbol.IsExtensionMethod ? "this " : string.Empty;
-        var paramsModifier = this.mapMethod.MethodSymbol.Parameters[0].IsParams ? "params " : string.Empty;
-        var refModifiers = this.mapMethod.MethodSymbol.Parameters[0].RefKind == RefKind.In ? "in " : string.Empty;
+        var extensionMethod = methodSymbol.IsExtensionMethod ? "this " : string.Empty;
+        var paramsModifier = methodSymbol.Parameters[0].IsParams ? "params " : string.Empty;
+        var refModifiers = methodSymbol.Parameters[0].RefKind == RefKind.In ? "in " : string.Empty;
         var sourceParameter = $"{extensionMethod}{refModifiers}{paramsModifier}{this.mapMethod.SourceType.ToDisplayString()} {this.mapMethod.SourceParameterName}";
 
         var contextParameter = string.Empty;
         if (this.mapMethod.RequireMappaContextWhenInvoked())
         {
-            var contextRefModifier = this.mapMethod.MethodSymbol.Parameters[1].RefKind == RefKind.In ? "in " : string.Empty;
+            var contextRefModifier = methodSymbol.Parameters[1].RefKind == RefKind.In ? "in " : string.Empty;
             contextParameter = $", {contextRefModifier}{typeof(MappaContext).FullName} {this.mapMethod.GetMappaContextParameterName()}";
         }
 
         var signature = $"{modifiersWithReturnType} {this.mapMethod.MethodName}({sourceParameter}{contextParameter})";
 
         return signature;
+    }
+
+    private string GetSyntheticSignature()
+    {
+        var modifiers = this.mapMethod.CanBeUsedByStaticMethod ? "private static" : "private";
+        var sourceParameter = $"{this.mapMethod.SourceType.ToDisplayString()} {this.mapMethod.SourceParameterName}";
+        var contextParameter = string.Empty;
+        if (this.mapMethod.RequireMappaContextWhenInvoked())
+        {
+            contextParameter = $", {typeof(MappaContext).FullName} {this.mapMethod.GetMappaContextParameterName()}";
+        }
+
+        return $"{modifiers} {this.mapMethod.TargetType.ToDisplayString()} {this.mapMethod.MethodName}({sourceParameter}{contextParameter})";
     }
 }

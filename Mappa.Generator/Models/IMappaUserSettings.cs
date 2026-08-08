@@ -310,4 +310,10 @@ internal interface IMappaUserSettings
     /// When the value is <c>0</c>, no compile-time depth limit is applied.
     /// </summary>
     short MaxCompileTimeDepth { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether the source generator should break compile-time
+    /// mapping cycles by synthesizing private map methods.
+    /// </summary>
+    BooleanSetting BreakCompileTimeCycles { get; }
 }

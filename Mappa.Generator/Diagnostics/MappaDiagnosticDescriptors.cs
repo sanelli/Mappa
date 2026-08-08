@@ -91,6 +91,7 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? referenceHandlingNestedMapWithoutMappaContext;
     private static DiagnosticDescriptor? maxCompileTimeDepthReached;
     private static DiagnosticDescriptor? mappingCycleDetected;
+    private static DiagnosticDescriptor? mappingCycleAutoBroken;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -707,6 +708,14 @@ internal static class MappaDiagnosticDescriptors
         => mappingCycleDetected ??= BuildError(
             MappaDiagnosticsKind.MappingCycleDetected,
             DiagnosticsResources.MappingCycleDetected);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MappingCycleAutoBroken"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MappingCycleAutoBroken
+        => mappingCycleAutoBroken ??= BuildWarning(
+            MappaDiagnosticsKind.MappingCycleAutoBroken,
+            DiagnosticsResources.MappingCycleAutoBroken);
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(

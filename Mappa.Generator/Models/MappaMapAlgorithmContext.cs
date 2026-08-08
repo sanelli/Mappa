@@ -197,6 +197,25 @@ internal abstract class MappaMapAlgorithmContext
         return this.GetRootAlgorithmContext().SourceType;
     }
 
+    /// <summary>
+    /// Tries to resolve the <see cref="MappaClassGeneratorContext"/> that owns the current mapping
+    /// by walking <see cref="DerivedMappaMapAlgorithmContext"/> parents.
+    /// </summary>
+    /// <param name="classContext">The class generator context when found.</param>
+    /// <returns><c>true</c> when a class context is available; otherwise <c>false</c>.</returns>
+    internal bool TryGetClassGeneratorContext(out MappaClassGeneratorContext? classContext)
+    {
+        var root = this.GetRootAlgorithmContext();
+        if (root is MappaMethodGeneratorContext methodContext)
+        {
+            classContext = methodContext.ClassContext;
+            return true;
+        }
+
+        classContext = null;
+        return false;
+    }
+
     private MappaMapAlgorithmContext GetRootAlgorithmContext()
     {
         MappaMapAlgorithmContext context = this;

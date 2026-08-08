@@ -45,7 +45,15 @@ internal static class PropertySymbolExtensions
         this IPropertySymbol property,
         Compilation compilation,
         MapMethod method)
-         => property.IsSetterAccessible(compilation, method.MethodSymbol);
+    {
+        var setMethod = property.SetMethod;
+        if (setMethod is null)
+        {
+            return false;
+        }
+
+        return compilation.IsSymbolAccessibleWithin(setMethod, method.ContainingType);
+    }
 
     /// <summary>
     /// Check if a property getter is accessible from inside a method.
@@ -79,5 +87,13 @@ internal static class PropertySymbolExtensions
         this IPropertySymbol property,
         Compilation compilation,
         MapMethod method)
-        => property.IsGetterAccessible(compilation, method.MethodSymbol);
+    {
+        var getMethod = property.GetMethod;
+        if (getMethod is null)
+        {
+            return false;
+        }
+
+        return compilation.IsSymbolAccessibleWithin(getMethod, method.ContainingType);
+    }
 }

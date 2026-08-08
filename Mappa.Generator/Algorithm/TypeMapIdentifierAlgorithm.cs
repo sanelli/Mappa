@@ -83,6 +83,26 @@ internal class TypeMapIdentifierAlgorithm
                 // MapSourceType defaults). Those paths already prevent unbounded recursion.
                 if (this.ShouldReportMappingCycle())
                 {
+                    // Prefer an existing map method for the cycling pair (user or synthetic) so a
+                    // synthetic method body can self-invoke even when BreakCompileTimeCycles is no
+                    // longer Enable on the settings stack (e.g. method-level Enable only).
+                    if (this.Context.TryGetMethod(
+                            this.Context.TargetType,
+                            this.Context.SourceType,
+                            out var existingMapMethodOnCycle))
+                    {
+                        var rootMapMethod = this.Context.GetRootMapMethod();
+                        return this.WrapIfNullableReferenceSource(
+                            new MethodMapStrategy(
+                                existingMapMethodOnCycle,
+                                rootMapMethod.MaybeGetMappaContextParameterName()));
+                    }
+
+                    if (this.Context.MappaUserSettings.BreakCompileTimeCycles is BooleanSetting.Enable)
+                    {
+                        return this.BreakCompileTimeCycleWithSyntheticOrExistingMethod();
+                    }
+
                     this.Context.ReportDiagnostic(MappaDiagnostics.MappingCycleDetected(
                         this.Context.GetLocation(),
                         this.Context.SourceType,
@@ -237,11 +257,83 @@ internal class TypeMapIdentifierAlgorithm
             };
     }
 
+    /// <summary>
+    /// Wraps a map-method strategy in <see cref="NullableStrategy"/> when the source is a nullable
+    /// reference type, so <c>null</c> edges short-circuit before invoking the nested map method.
+    /// </summary>
+    /// <param name="strategy">The strategy that maps the non-null source.</param>
+    /// <returns>The original strategy, or a nullable wrapper around it.</returns>
+    protected MapStrategy WrapIfNullableReferenceSource(MapStrategy strategy)
+    {
+        var sourceType = this.Context.SourceType;
+        if (sourceType is { IsReferenceType: true, NullableAnnotation: NullableAnnotation.Annotated })
+        {
+            return new NullableStrategy(this.Context.TargetType, sourceType, strategy);
+        }
+
+        return strategy;
+    }
+
     private bool ShouldReportMappingCycle()
         => this.Context.AlgorithmSettings.DetectMappingCycles.CurrentValue
            && this.Context.AlgorithmSettings.UseNullableMapStrategyDetector.CurrentValue
            && this.Context.AlgorithmSettings.UseConstructorMapStrategyDetector.CurrentValue
            && this.Context.AlgorithmSettings.UseIdentityMapStrategyDetector.CurrentValue;
+
+    /// <summary>
+    /// Breaks a compile-time mapping cycle by synthesizing a private map method and returning
+    /// a <see cref="MethodMapStrategy"/>. Callers must only invoke this when
+    /// <see cref="MappaMapAlgorithmContext.TryGetMethod"/> has already failed for the cycling pair.
+    /// </summary>
+    /// <returns>The method invocation strategy for the cycling type pair.</returns>
+    private MapStrategy BreakCompileTimeCycleWithSyntheticOrExistingMethod()
+    {
+        var targetType = this.Context.TargetType;
+        var sourceType = this.Context.SourceType;
+        var rootMapMethod = this.Context.GetRootMapMethod();
+        var contextParameterName = rootMapMethod.MaybeGetMappaContextParameterName();
+
+        if (!this.Context.TryGetClassGeneratorContext(out var classContext) || classContext is null)
+        {
+            this.Context.ReportDiagnostic(MappaDiagnostics.MappingCycleDetected(
+                this.Context.GetLocation(),
+                sourceType,
+                targetType));
+            return new NoMapStrategy(targetType, sourceType);
+        }
+
+        var methodName = SyntheticMapMethodNaming.AllocateName(classContext, sourceType, targetType);
+        var syntheticMapMethod = MapMethod.CreateSynthetic(
+            methodName,
+            sourceType,
+            targetType,
+            classContext.ClassSymbol,
+            this.Context.IsNullableEnabled(),
+            rootMapMethod.CanBeUsedByStaticMethod,
+            sourceParameterName: "source",
+            mappaContextParameterName: contextParameterName,
+            location: this.Context.GetLocation());
+
+        if (!classContext.TryAddMethod(syntheticMapMethod))
+        {
+            // A map for the pair exists but is not usable from this call site
+            // (for example an instance-only method while the root map is static).
+            this.Context.ReportDiagnostic(MappaDiagnostics.MappingCycleDetected(
+                this.Context.GetLocation(),
+                sourceType,
+                targetType));
+            return new NoMapStrategy(targetType, sourceType);
+        }
+
+        this.Context.ReportDiagnostic(MappaDiagnostics.MappingCycleAutoBroken(
+            this.Context.GetLocation(),
+            sourceType,
+            targetType,
+            methodName));
+
+        return this.WrapIfNullableReferenceSource(
+            new MethodMapStrategy(syntheticMapMethod, contextParameterName));
+    }
 
     /// <summary>
     /// Runs <paramref name="computeStrategy"/> under the compile-time depth guard when

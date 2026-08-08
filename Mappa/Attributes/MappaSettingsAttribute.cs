@@ -368,4 +368,13 @@ public sealed class MappaSettingsAttribute
     /// When the effective value is <c>0</c>, no compile-time depth limit is applied.
     /// </summary>
     public short MaxCompileTimeDepth { get; set; } = UndefinedDepth;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the source generator should break compile-time
+    /// mapping cycles by synthesizing private map methods for the cycling type pair and invoking
+    /// them at the cycle edge, instead of reporting a mapping-cycle error.
+    /// This setting is used only by the generator and is not emitted into generated mapping code.
+    /// It is not enabled by default.
+    /// </summary>
+    public BooleanSetting BreakCompileTimeCycles { get; set; } = BooleanSetting.Undefined;
 }

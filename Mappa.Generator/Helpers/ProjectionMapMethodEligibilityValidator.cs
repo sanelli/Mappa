@@ -38,13 +38,18 @@ internal static class ProjectionMapMethodEligibilityValidator
         MappaObjectFactoryAttributeData[] methodObjectFactoryAttributes,
         IMappaUserSettings mappaUserSettings)
     {
+        if (mapMethod.IsSynthetic || mapMethod.MethodSymbol is null)
+        {
+            return true;
+        }
+
         if (!mapMethod.MethodSymbol.IsQueryableProjectionMapMethod(compilation))
         {
             return true;
         }
 
         var methodDeclarationSyntax = mapMethod.MethodDeclarationSyntax;
-        var methodName = mapMethod.MethodSymbol.Name;
+        var methodName = mapMethod.MethodName;
 
         if (mapMethod.MethodSymbol.Parameters.Length > 1
             && mapMethod.MethodSymbol.SecondParameterIsMappaContext(compilation))
