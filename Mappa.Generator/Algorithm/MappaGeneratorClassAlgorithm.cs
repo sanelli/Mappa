@@ -8,6 +8,7 @@ using Mappa.Attributes;
 using Mappa.Generator.Builders;
 using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Diagnostics.Debug;
+using Mappa.Generator.Exceptions;
 using Mappa.Generator.Extensions;
 using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
@@ -111,7 +112,7 @@ internal sealed class MappaGeneratorClassAlgorithm
                 continue;
             }
 
-            var methodAttributes = mapMethod.MethodSymbol.GetAttributes();
+            var methodAttributes = mapMethod.MethodSymbol?.GetAttributes() ?? [];
             var methodObjectFactoryAttributes = methodAttributes.GetMappaObjectFactoryAttributes(this.Compilation);
             var mappaSettingsAttribute = mapMethod.GetAttribute<MappaSettingsAttribute>();
             using (mappaUserSettings.Apply(mappaSettingsAttribute))
@@ -423,26 +424,31 @@ internal sealed class MappaGeneratorClassAlgorithm
             classContext.SemanticModel,
             classContext.IsNullableEnabled(methodDeclarationSyntax),
             cancellationToken);
+        var methodSymbol = mapMethod.MethodSymbol;
+        if (methodSymbol is null)
+        {
+            throw new MappaGeneratorException($"Cannot obtain the method symbol for method \"{methodDeclarationSyntax.Identifier}\".", methodDeclarationSyntax.GetLocation());
+        }
 
         if (methodDeclarationSyntax.HasArity(2)
-            && !mapMethod.MethodSymbol.SecondParameterIsMappaContext(this.Compilation))
+            && !methodSymbol.SecondParameterIsMappaContext(this.Compilation))
         {
             classContext.ReportDiagnostic(MappaDiagnostics.MethodHasInvalidMappaContextParameter(methodDeclarationSyntax));
             return false;
         }
 
-        if (!mapMethod.MethodSymbol.AreParametersRefModifiersValid())
+        if (!methodSymbol.AreParametersRefModifiersValid())
         {
             return false;
         }
 
-        if (mapMethod.MethodSymbol.IsVoid())
+        if (methodSymbol.IsVoid())
         {
             classContext.ReportDiagnostic(MappaDiagnostics.MethodIsVoid(methodDeclarationSyntax));
             return false;
         }
 
-        if (mapMethod.MethodSymbol.ReturnsAnyTaskType(this.Compilation))
+        if (methodSymbol.ReturnsAnyTaskType(this.Compilation))
         {
             classContext.ReportDiagnostic(MappaDiagnostics.MethodReturnsTaskType(methodDeclarationSyntax));
             return false;
@@ -617,24 +623,29 @@ internal sealed class MappaGeneratorClassAlgorithm
             classContext.SemanticModel,
             classContext.IsNullableEnabled(methodDeclarationSyntax),
             cancellationToken);
+        var methodSymbol = mapMethod.MethodSymbol;
+        if (methodSymbol is null)
+        {
+            throw new MappaGeneratorException($"Cannot obtain the method symbol for method \"{methodDeclarationSyntax.Identifier}\".", methodDeclarationSyntax.GetLocation());
+        }
 
         if (methodDeclarationSyntax.HasArity(2)
-            && !mapMethod.MethodSymbol.SecondParameterIsMappaContext(this.Compilation))
+            && !methodSymbol.SecondParameterIsMappaContext(this.Compilation))
         {
             return;
         }
 
-        if (!mapMethod.MethodSymbol.AreParametersRefModifiersValid())
+        if (!methodSymbol.AreParametersRefModifiersValid())
         {
             return;
         }
 
-        if (mapMethod.MethodSymbol.IsVoid())
+        if (methodSymbol.IsVoid())
         {
             return;
         }
 
-        if (mapMethod.MethodSymbol.ReturnsAnyTaskType(this.Compilation))
+        if (methodSymbol.ReturnsAnyTaskType(this.Compilation))
         {
             return;
         }

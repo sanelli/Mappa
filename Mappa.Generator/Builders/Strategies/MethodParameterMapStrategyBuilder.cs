@@ -56,7 +56,7 @@ internal sealed class MethodParameterMapStrategyBuilder
 
         var strategyInput = source;
         if (beforeMapHooks.Any(hook => RequiresMappedValue(hook, context.Compilation)) &&
-            context.GetMapMethod().MethodSymbol.Parameters[0].RefKind is RefKind.In)
+            context.GetMapMethod().GetSourceParameterRefKind() is RefKind.In)
         {
             strategyInput = context.NextTemporary();
             code.Add($"{this.MethodParameterMapStrategy.SourceType.ToDisplayString()} {strategyInput} = {source};");

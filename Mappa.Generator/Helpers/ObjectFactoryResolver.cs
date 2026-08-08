@@ -35,7 +35,7 @@ internal sealed class ObjectFactoryResolver
         this.compilation = compilation;
         this.context = context;
         this.mapMethod = mapMethod;
-        this.mapClass = mapMethod.MethodSymbol.ContainingType;
+        this.mapClass = mapMethod.ContainingType;
     }
 
     /// <summary>
@@ -133,7 +133,7 @@ internal sealed class ObjectFactoryResolver
             }
 
             lookupType = GetFieldOrPropertyType(fieldOrProperty);
-            staticRequirement = this.mapMethod.MethodSymbol.IsStatic && !fieldOrProperty.IsStatic
+            staticRequirement = this.mapMethod.CanBeUsedByStaticMethod && !fieldOrProperty.IsStatic
                 ? InvokeMethodStaticRequirement.Static
                 : InvokeMethodStaticRequirement.StaticOrNotStatic;
         }
@@ -158,7 +158,7 @@ internal sealed class ObjectFactoryResolver
         else
         {
             lookupType = this.mapClass;
-            staticRequirement = this.mapMethod.MethodSymbol.IsStatic
+            staticRequirement = this.mapMethod.CanBeUsedByStaticMethod
                 ? InvokeMethodStaticRequirement.Static
                 : InvokeMethodStaticRequirement.StaticOrNotStatic;
         }
@@ -173,7 +173,7 @@ internal sealed class ObjectFactoryResolver
 
         if (resolution is InvokeMethodResolutionResult.NotFound &&
             fieldOrProperty is not null &&
-            this.mapMethod.MethodSymbol.IsStatic &&
+            this.mapMethod.CanBeUsedByStaticMethod &&
             !fieldOrProperty.IsStatic)
         {
             var instanceResolution = this.TryResolveFactoryMethod(

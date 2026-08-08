@@ -219,7 +219,7 @@ internal sealed class IdentityMapStrategyDetector
     {
         nestedFieldStrategies = [];
         var rootMapMethod = this.context.GetRootMapMethod();
-        var within = rootMapMethod.MethodSymbol.ContainingSymbol;
+        var within = rootMapMethod.ContainingType;
         var nestedFields = new List<IdentityMapNestedFieldStrategy>();
 
         foreach (var field in typeSymbol.GetAccessibleInstanceFields(this.compilation, within))

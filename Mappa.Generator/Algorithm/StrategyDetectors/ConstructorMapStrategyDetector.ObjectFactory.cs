@@ -24,12 +24,12 @@ internal sealed partial class ConstructorMapStrategyDetector
         mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
 
         var rootMapMethod = this.context.GetRootMapMethod();
-        var classAttributes = rootMapMethod.MethodSymbol.ContainingType
+        var classAttributes = rootMapMethod.ContainingType
             .GetAttributes()
             .GetMappaObjectFactoryAttributes(this.compilation);
-        var methodAttributes = rootMapMethod.MethodSymbol
-            .GetAttributes()
-            .GetMappaObjectFactoryAttributes(this.compilation);
+        var methodAttributes = rootMapMethod.MethodSymbol is null
+            ? []
+            : rootMapMethod.MethodSymbol.GetAttributes().GetMappaObjectFactoryAttributes(this.compilation);
 
         var hasMatchingFactory = classAttributes
             .Concat(methodAttributes)

@@ -71,13 +71,15 @@ public sealed class QueryableProjectionMapStrategyBuilderTests
             BooleanSetting.Undefined,
             BooleanSetting.Undefined,
             EnumerableConcreteTypeSetting.Undefined);
+        var methodSymbol = mapMethod.MethodSymbol;
+        methodSymbol.Should().NotBeNull();
         var strategy = new QueryableProjectionMapStrategy(
             mapMethod.TargetType,
             mapMethod.SourceType,
             unsupportedElementStrategy,
             orderType,
             orderDtoType,
-            mapMethod.MethodSymbol);
+            methodSymbol);
         var builder = new QueryableProjectionMapStrategyBuilder(strategy);
         var builderContext = new MappaBuilderContext(compilation);
         var globalOptions = new MappaGlobalOptions(

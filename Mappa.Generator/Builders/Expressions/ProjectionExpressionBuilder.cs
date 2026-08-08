@@ -210,7 +210,7 @@ internal static class ProjectionExpressionBuilder
         {
             var mapMethod = context.BuilderContext.GetMapMethod();
             var chainSource = source;
-            var rootParameterName = mapMethod.MethodSymbol.Parameters[0].Name;
+            var rootParameterName = mapMethod.SourceParameterName;
             var receiverPathPrefix = chainedSourcePropertyPath.ReceiverPathPrefix;
 
             if (!string.IsNullOrWhiteSpace(receiverPathPrefix)

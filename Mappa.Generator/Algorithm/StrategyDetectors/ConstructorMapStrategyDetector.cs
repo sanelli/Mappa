@@ -523,7 +523,7 @@ internal sealed partial class ConstructorMapStrategyDetector
                 .OfType<IFieldSymbol>()
                 .FirstOrDefault(candidate =>
                     candidate.Name.Equals(fieldName, StringComparison.Ordinal)
-                    && this.compilation.IsSymbolAccessibleWithin(candidate, rootMapMethod.MethodSymbol.ContainingSymbol));
+                    && this.compilation.IsSymbolAccessibleWithin(candidate, rootMapMethod.ContainingType));
 
             if (field is not null)
             {
@@ -779,7 +779,7 @@ internal sealed partial class ConstructorMapStrategyDetector
 
         var mapMethod = this.GetAttributeMapMethod();
         var mapMethodMethodDeclarationSyntax = mapMethod.MethodDeclarationSyntax ?? throw new MappaGeneratorException("Method declaration syntax has not been defined.");
-        var mapMethodClass = (INamedTypeSymbol)mapMethod.MethodSymbol.ContainingSymbol;
+        var mapMethodClass = mapMethod.ContainingType;
 
         var rootMethod = this.context.GetRootMapMethod();
         ISymbol? fieldOrProperty = null;
@@ -800,7 +800,7 @@ internal sealed partial class ConstructorMapStrategyDetector
                 return;
             }
 
-            if (rootMethod.MethodSymbol.IsStatic && !fieldOrProperty.IsStatic)
+            if (rootMethod.CanBeUsedByStaticMethod && !fieldOrProperty.IsStatic)
             {
                 this.context.ReportDiagnostic(MappaDiagnostics.FieldOrPropertyMustBeStatic(
                       fieldOrProperty.Name,
@@ -854,7 +854,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         else
         {
             var rootMapMethod = rootMethod;
-            var staticRequirement = rootMapMethod.MethodSymbol.IsStatic
+            var staticRequirement = rootMapMethod.CanBeUsedByStaticMethod
                 ? InvokeMethodStaticRequirement.Static
                 : InvokeMethodStaticRequirement.StaticOrNotStatic;
 

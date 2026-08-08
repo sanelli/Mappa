@@ -189,7 +189,7 @@ internal sealed partial class ConstructorMapStrategyDetector
                 usePropertyAttribute.SourcePropertyName,
                 sourcePath.Segments,
                 this.context.GetRootSourceType(),
-                this.context.GetRootMapMethod().MethodSymbol.Parameters[0].Name);
+                this.context.GetRootMapMethod().SourceParameterName);
             return false;
         }
 
@@ -320,7 +320,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         else
         {
             var rootSourceType = this.context.GetRootSourceType();
-            var rootReceiverExpression = this.context.GetRootMapMethod().MethodSymbol.Parameters[0].Name;
+            var rootReceiverExpression = this.context.GetRootMapMethod().SourceParameterName;
             if (!PropertyPathSymbolResolver.TryGetReceiverTypeForPathPrefix(
                     rootSourceType,
                     rootReceiverExpression,

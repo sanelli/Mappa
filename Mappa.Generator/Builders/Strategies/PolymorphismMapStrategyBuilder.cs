@@ -137,14 +137,14 @@ internal sealed class PolymorphismMapStrategyBuilder(PolymorphismMapStrategy str
                 var invokeMethodTypeSymbol =
                     (attribute.Type is { } invokingType && !string.IsNullOrWhiteSpace(invokingType.FullName))
                         ? context.Compilation.GetTypeByMetadataName(invokingType.FullName)
-                        : context.GetMapMethod().MethodSymbol.ContainingSymbol as ITypeSymbol;
+                        : context.GetMapMethod().ContainingType as ITypeSymbol;
                 if (invokeMethodTypeSymbol is null)
                 {
                     throw new MappaGeneratorException("Cannot identify the type on which the method is being invoked on.");
                 }
 
                 var methodInvocationCode = BuildMethodInvocationCode(
-                    context.GetMapMethod().MethodSymbol.ContainingType,
+                    context.GetMapMethod().ContainingType,
                     invokeMethodTypeSymbol,
                     defaultInvokeMethod,
                     source,

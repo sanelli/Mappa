@@ -59,7 +59,7 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
 
             if (this.Context.MappaUserSettings.CompatibleMapMethod is BooleanSetting.Enable
                 && this.Context.TryGetCompatibleMethod(this.Context.TargetType, this.Context.SourceType, this.Compilation, out mapMethod)
-                && !ReferenceEquals(mapMethod.MethodSymbol, this.Context.GetRootMapMethod().MethodSymbol))
+                && !ReferenceEquals(mapMethod, this.Context.GetRootMapMethod()))
             {
                 var mapMethodRequireMappaContext = mapMethod.RequireMappaContextWhenInvoked();
                 var rootMapMethod = this.Context.GetRootMapMethod();
@@ -78,7 +78,7 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
             }
 
             if (this.Context.TryGetPolymorphicMethod(this.Context.TargetType, this.Context.SourceType, this.Context.MappaUserSettings, out mapMethod)
-                && !ReferenceEquals(mapMethod.MethodSymbol, this.Context.GetRootMapMethod().MethodSymbol))
+                && !ReferenceEquals(mapMethod, this.Context.GetRootMapMethod()))
             {
                 var mapMethodRequireMappaContext = mapMethod.RequireMappaContextWhenInvoked();
                 var rootMapMethod = this.Context.GetRootMapMethod();
@@ -136,7 +136,7 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
             return;
         }
 
-        if (ReferenceEquals(mapMethod.MethodSymbol, rootMapMethod.MethodSymbol))
+        if (ReferenceEquals(mapMethod, rootMapMethod))
         {
             return;
         }

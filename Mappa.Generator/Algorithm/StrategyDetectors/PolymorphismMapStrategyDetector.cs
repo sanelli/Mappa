@@ -125,8 +125,8 @@ internal sealed class PolymorphismMapStrategyDetector(MappaMapAlgorithmContext c
         var mappaTypeMappingDefaultAttribute = this.GetTypeMappingDefaultAttribute()
                                                ?? new MappaTypeMappingDefaultAttribute(MappaTypeMappingDefaultBehavior.Throw);
 
-        var methodSymbolContainingSymbol = rootMapMethod.MethodSymbol.ContainingSymbol as ITypeSymbol ?? throw new MappaGeneratorException("Method parent is not a type symbol");
-        var mapMethodHasTwoParameters = rootMapMethod.MethodSymbol.Parameters.Length == 2;
+        var methodSymbolContainingSymbol = rootMapMethod.ContainingType as ITypeSymbol ?? throw new MappaGeneratorException("Method parent is not a type symbol");
+        var mapMethodHasTwoParameters = rootMapMethod.RequireMappaContextWhenInvoked();
         var validationSuccessful = mappaTypeMappingDefaultAttribute.IsValid(
             this.context.TargetType,
             this.context.SourceType,

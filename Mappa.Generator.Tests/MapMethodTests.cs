@@ -369,6 +369,103 @@ public sealed class MapMethodTests
         mapMethod.IsCompatibleMapFor(requiredTarget, requiredSource, compilation).Should().BeFalse();
     }
 
+    /// <summary>
+    /// Test <see cref="MapMethod.CreateSynthetic"/> builds an unmapped private map method with optional context.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CreateSyntheticBuildsUnmappedMethodWithContextMetadata()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { }
+
+                              public class Target { }
+
+                              [Mappa]
+                              public sealed partial class Mapper
+                              {
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var sourceType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Source")!;
+        var targetType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Target")!;
+        var mapperType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Mapper")!;
+
+        var mapMethod = MapMethod.CreateSynthetic(
+            "Map__Source__To__Target",
+            sourceType,
+            targetType,
+            mapperType,
+            nullableEnabled: true,
+            isStatic: false,
+            sourceParameterName: "source",
+            mappaContextParameterName: "context",
+            location: null);
+
+        mapMethod.IsSynthetic.Should().BeTrue();
+        mapMethod.Mapped.Should().BeFalse();
+        mapMethod.MethodSymbol.Should().BeNull();
+        mapMethod.MethodDeclarationSyntax.Should().BeNull();
+        mapMethod.MethodName.Should().Be("Map__Source__To__Target");
+        mapMethod.SourceParameterName.Should().Be("source");
+        mapMethod.AccessFieldName.Should().Be("this");
+        mapMethod.CanBeUsedByStaticMethod.Should().BeFalse();
+        mapMethod.RequireMappaContextWhenInvoked().Should().BeTrue();
+        mapMethod.GetMappaContextParameterName().Should().Be("context");
+        mapMethod.ContainingType.Should().Be(mapperType);
+    }
+
+    /// <summary>
+    /// Test <see cref="MapMethod.CreateSynthetic"/> omits context when the root method has none.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CreateSyntheticOmitsContextWhenParameterNameIsNull()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { }
+
+                              public class Target { }
+
+                              [Mappa]
+                              public static partial class Mapper
+                              {
+                                  public static partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var sourceType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Source")!;
+        var targetType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Target")!;
+        var mapperType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Mapper")!;
+
+        var mapMethod = MapMethod.CreateSynthetic(
+            "Map__Source__To__Target",
+            sourceType,
+            targetType,
+            mapperType,
+            nullableEnabled: false,
+            isStatic: true,
+            sourceParameterName: "input",
+            mappaContextParameterName: null,
+            location: null);
+
+        mapMethod.CanBeUsedByStaticMethod.Should().BeTrue();
+        mapMethod.AccessFieldName.Should().BeEmpty();
+        mapMethod.RequireMappaContextWhenInvoked().Should().BeFalse();
+        mapMethod.MaybeGetMappaContextParameterName().Should().BeNull();
+    }
+
     private static MapMethod CreateMapMethodFromSyntax(string source, string methodName, bool nullableEnabled = false)
     {
         var compilation = BuildCompilation(source);

@@ -462,7 +462,7 @@ internal sealed class StringMapStrategyDetector
                 .OfType<IMethodSymbol>()
                 .Where(method => nameof(Guid.Parse).Equals(method.Name, StringComparison.Ordinal))
                 .Where(method => method.IsStatic)
-                .Where(method => this.context.MapMethod is not null && this.compilation.IsSymbolAccessibleWithin(method, this.context.MapMethod.MethodSymbol.ContainingSymbol))
+                .Where(method => this.context.MapMethod is not null && this.compilation.IsSymbolAccessibleWithin(method, this.context.MapMethod.ContainingType))
                 .FirstOrDefault(method => method.Parameters.Length == 1 && method.Parameters[0].Type.IsString());
             targetHasParseMethod = parseMethod is not null;
         }
