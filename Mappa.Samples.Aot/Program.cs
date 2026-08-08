@@ -76,6 +76,7 @@ internal static class Program
         PreventEnumerableCountMapperRunner.Run(report);
         ProtobufOptionalMapperRunner.Run(report);
         ReadOnlyTargetCollectionMapperRunner.Run(report);
+        BreakCompileTimeCyclesMapperRunner.Run(report);
         ReferenceHandlingMapperRunner.Run(report);
         ReferenceNullableToReferenceNullableMapperRunner.Run(report);
         RelaxedNullabilityMethodMapMapperRunner.Run(report);
