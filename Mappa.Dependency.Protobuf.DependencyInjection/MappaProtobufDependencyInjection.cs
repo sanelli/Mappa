@@ -2,24 +2,24 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using Microsoft.Extensions.DependencyInjection;
+using Mappa.Attributes;
 
 namespace Mappa.Dependency.Protobuf.DependencyInjection;
 
 /// <summary>
-/// Register the protobuf service collection.
+/// Dependency injection helpers for <see cref="MappaProtobufMapper"/>.
+/// The generator emits <c>RegisterMappaProtobuf</c> via
+/// <see cref="MappaDependencyInjectionAttribute"/> and
+/// <see cref="MappaDependencyInjectionAttribute.InjectFromAssemblies"/>.
 /// </summary>
-public static class MappaProtobufDependencyInjection
+/// <remarks>
+/// Call <c>services.RegisterMappaProtobuf()</c> after referencing
+/// <c>Microsoft.Extensions.DependencyInjection</c>.
+/// </remarks>
+[MappaDependencyInjection(
+    "RegisterMappaProtobuf",
+    InjectInterfaces = MappaDependencyInjectionInjectInterfaces.InterfaceAndClass,
+    InjectFromAssemblies = new[] { typeof(MappaProtobufMapper) })]
+public static partial class MappaProtobufDependencyInjection
 {
-    /// <summary>
-    /// Register the service mappa protobuf mapper as singleton.
-    /// </summary>
-    /// <param name="serviceCollection">The service collection.</param>
-    /// <returns>The input <paramref name="serviceCollection"/>.</returns>
-    public static IServiceCollection RegisterMappaProtobuf(this IServiceCollection serviceCollection)
-    {
-        serviceCollection.AddSingleton<MappaProtobufMapper>();
-        serviceCollection.AddSingleton<IMappaProtobufMapper, MappaProtobufMapper>(serviceProvider => serviceProvider.GetRequiredService<MappaProtobufMapper>());
-        return serviceCollection;
-    }
 }

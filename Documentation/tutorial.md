@@ -761,10 +761,11 @@ Mappa searches dependency types (and their base classes) for suitable mapping me
 See also: [MapMethodStrategyWithDependencyMapper.cs](../Mappa.Samples/MapMethodStrategyWithDependencyMapper.cs).
 
 ### MappaDependencyInjection attribute
-Use `[MappaDependencyInjection]` on a **separate** partial registrar class to generate a method that registers every `[Mappa]` mapper in the same assembly with `Microsoft.Extensions.DependencyInjection`:
+Use `[MappaDependencyInjection]` on a **separate** partial registrar class to generate a method that registers `[Mappa]` mappers with `Microsoft.Extensions.DependencyInjection`. By default only mappers in the same assembly are discovered; use `InjectFromAssemblies` with marker types to also register `[Mappa]` mappers from other assemblies (additive):
 
 ```csharp
 using Mappa.Attributes;
+using Mappa.Dependency.Bson;
 using Microsoft.Extensions.DependencyInjection;
 
 [Mappa]
@@ -773,7 +774,9 @@ public sealed partial class PersonMapper
     public partial PersonDto Map(Person source);
 }
 
-[MappaDependencyInjection("RegisterMappers")]
+[MappaDependencyInjection(
+    "RegisterMappers",
+    InjectFromAssemblies = new[] { typeof(MappaBsonMapper) })]
 public static partial class MapperRegistrar
 {
 }
@@ -782,11 +785,12 @@ public static partial class MapperRegistrar
 var services = new ServiceCollection();
 services.RegisterMappers();
 var mapper = services.BuildServiceProvider().GetRequiredService<PersonMapper>();
+var bson = services.BuildServiceProvider().GetRequiredService<MappaBsonMapper>();
 ```
 
-Reference `Microsoft.Extensions.DependencyInjection` in the project. Configure lifetime, interface injection, method name, accessibility, and exclusions via attribute properties. See [Mappa attributes — MappaDependencyInjection](./mappa-attributes.md#mappadependencyinjection) for defaults and diagnostics **MP00070**–**MP00073**.
+Reference `Microsoft.Extensions.DependencyInjection` in the project. Configure lifetime, interface injection, method name, accessibility, exclusions (`IgnoreType`), and cross-assembly discovery (`InjectFromAssemblies`) via attribute properties. See [Mappa attributes — MappaDependencyInjection](./mappa-attributes.md#mappadependencyinjection) for defaults and diagnostics **MP00070**–**MP00073**.
 
-See also: [MappaDependencyInjectionRegistrar.cs](../Mappa.Samples/MappaDependencyInjectionRegistrar.cs) and [MappaDependencyInjectionMapper.cs](../Mappa.Samples/MappaDependencyInjectionMapper.cs).
+See also: [MappaDependencyInjectionRegistrar.cs](../Mappa.Samples/MappaDependencyInjectionRegistrar.cs) (with `InjectFromAssemblies`), [MappaDependencyInjectionSameAssemblyRegistrar.cs](../Mappa.Samples/MappaDependencyInjectionSameAssemblyRegistrar.cs), and [MappaDependencyInjectionMapper.cs](../Mappa.Samples/MappaDependencyInjectionMapper.cs).
 
 ### Polymorphism support
 Use `[MappaTypeMapping]` to map different concrete source types to different target types. Use `[MappaTypeMappingDefault]` to define the fallback behaviour. The generic helpers `[MappaTypeMapping<TTarget, TSource>]` and `[MappaTypeMappingDefault<TDefault>]` (for `MapSourceType` with an explicit target) are equivalent to the `typeof` forms:

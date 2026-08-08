@@ -30,9 +30,10 @@ the source generator attempts to identify a mapping from `TSource` to `TTarget`.
 Separately from mapper generation, classes marked with `[MappaDependencyInjection]` are processed by a second incremental pipeline:
 
 1. Validate the registrar (must be `partial`; must not also have `[Mappa]`).
-2. Parse attribute properties (method name, lifetime, interface injection mode, `IgnoreType`, accessibility, extension-method flag).
-3. Walk all named types in the current assembly; collect `[Mappa]` mapper types (skip the registrar, ignored types, and static mappers).
-4. Emit `{FullTypeName}.DependencyInjection.g.cs` with a registration method that calls `AddSingleton` / `AddScoped` / `AddTransient` according to the attribute configuration.
+2. Parse attribute properties (method name, lifetime, interface injection mode, `IgnoreType`, `InjectFromAssemblies`, accessibility, extension-method flag).
+3. Build the set of assemblies to scan: always the current compilation assembly, plus each distinct assembly of types listed in `InjectFromAssemblies` (deduplicated; ordered by assembly identity for stable output).
+4. Walk all named types in those assemblies; collect `[Mappa]` mapper types (skip the registrar, ignored types, and static mappers; apply `InjectInterfaces` / `IgnoreType` filters).
+5. Emit `{FullTypeName}.DependencyInjection.g.cs` with a registration method that calls `AddSingleton` / `AddScoped` / `AddTransient` according to the attribute configuration.
 
 Details and diagnostics (**MP00070**–**MP00073**): [Mappa attributes — MappaDependencyInjection](./mappa-attributes.md#mappadependencyinjection).
 

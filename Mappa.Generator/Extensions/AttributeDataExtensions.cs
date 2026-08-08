@@ -1041,6 +1041,7 @@ internal static class AttributeDataExtensions
         var serviceLifetime = MappaDependencyInjectionServiceLifetime.Singleton;
         var injectInterfaces = MappaDependencyInjectionInjectInterfaces.ClassOnly;
         var ignoreTypes = ImmutableArray<INamedTypeSymbol>.Empty;
+        var injectFromAssemblies = ImmutableArray<INamedTypeSymbol>.Empty;
 
         foreach (var namedArgument in attributeData.NamedArguments)
         {
@@ -1074,6 +1075,10 @@ internal static class AttributeDataExtensions
                 case nameof(MappaDependencyInjectionAttribute.IgnoreType):
                     ignoreTypes = ReadNamedTypeArray(namedArgument.Value);
                     break;
+
+                case nameof(MappaDependencyInjectionAttribute.InjectFromAssemblies):
+                    injectFromAssemblies = ReadNamedTypeArray(namedArgument.Value);
+                    break;
             }
         }
 
@@ -1086,6 +1091,7 @@ internal static class AttributeDataExtensions
             serviceLifetime,
             injectInterfaces,
             ignoreTypes,
+            injectFromAssemblies,
             location);
     }
 

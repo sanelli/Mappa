@@ -16,7 +16,7 @@ namespace Mappa.Dependency.Protobuf.DependencyInjection.Tests;
 public sealed class DependencyInjectionTests
 {
     /// <summary>
-    /// That that is possible inject the protobuf mappers as singletons.
+    /// Tests that it is possible to inject the protobuf mapper as a singleton.
     /// </summary>
     [Fact]
     [UnitTest]
@@ -35,7 +35,7 @@ public sealed class DependencyInjectionTests
     }
 
     /// <summary>
-    /// That that is possible inject the protobuf mappers interface as singletons.
+    /// Tests that it is possible to inject the protobuf mapper interface as a singleton.
     /// </summary>
     [Fact]
     [UnitTest]
@@ -51,5 +51,25 @@ public sealed class DependencyInjectionTests
 
         // Assert
         service.Should().NotBeNull();
+    }
+
+    /// <summary>
+    /// Tests that the concrete and interface registrations share the same singleton instance.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void ConcreteAndInterfaceResolveToSameSingletonInstance()
+    {
+        // Arrange
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.RegisterMappaProtobuf();
+        var serviceProvider = serviceCollection.BuildServiceProvider();
+
+        // Act
+        var concrete = serviceProvider.GetRequiredService<MappaProtobufMapper>();
+        var asInterface = serviceProvider.GetRequiredService<IMappaProtobufMapper>();
+
+        // Assert
+        asInterface.Should().BeSameAs(concrete);
     }
 }

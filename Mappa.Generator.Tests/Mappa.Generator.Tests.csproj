@@ -41,8 +41,9 @@
         </PackageReference>
 	</ItemGroup>
 	<ItemGroup>
-		<ProjectReference Include="..\Mappa.Generator\Mappa.Generator.csproj" />
+        <ProjectReference Include="..\Mappa.Generator\Mappa.Generator.csproj" />
 		<ProjectReference Include="..\Mappa\Mappa.csproj" />
+        <ProjectReference Include="..\Mappa.Dependency.Bson\Mappa.Dependency.Bson.csproj" />
         <ProjectReference Include="..\Mappa.Dependency.Protobuf\Mappa.Dependency.Protobuf.csproj" />
 	</ItemGroup>
 	<ItemGroup>
