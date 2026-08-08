@@ -41,63 +41,102 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
     {
         this.CancellationToken.ThrowIfCancellationRequested();
 
-        if (this.Context.PropertyPathContext is null)
+        var existingStrategy = this.TryGetExistingMapMethodStrategy();
+        if (existingStrategy is not null)
         {
-            if (this.Context.TryGetMethod(this.Context.TargetType, this.Context.SourceType, out var mapMethod))
-            {
-                var mapMethodRequireMappaContext = mapMethod.RequireMappaContextWhenInvoked();
-                var rootMapMethod = this.Context.GetRootMapMethod();
-                var callerMethodProvideMappaContext = rootMapMethod.ProvideMappaContextWhenInvoked();
-
-                if (!mapMethodRequireMappaContext || /* mapMethodRequireMappaContext && */ callerMethodProvideMappaContext)
-                {
-                    this.MaybeReportNestedMapWithoutMappaContext(mapMethod, mapMethodRequireMappaContext);
-                    return this.WrapIfNullableReferenceSource(
-                        new MethodMapStrategy(mapMethod, rootMapMethod.MaybeGetMappaContextParameterName()));
-                }
-            }
-
-            if (this.Context.MappaUserSettings.CompatibleMapMethod is BooleanSetting.Enable
-                && this.Context.TryGetCompatibleMethod(this.Context.TargetType, this.Context.SourceType, this.Compilation, out mapMethod)
-                && !ReferenceEquals(mapMethod, this.Context.GetRootMapMethod()))
-            {
-                var mapMethodRequireMappaContext = mapMethod.RequireMappaContextWhenInvoked();
-                var rootMapMethod = this.Context.GetRootMapMethod();
-                var callerMethodProvideMappaContext = rootMapMethod.ProvideMappaContextWhenInvoked();
-
-                if (!mapMethodRequireMappaContext || /* mapMethodRequireMappaContext && */ callerMethodProvideMappaContext)
-                {
-                    this.MaybeReportNestedMapWithoutMappaContext(mapMethod, mapMethodRequireMappaContext);
-                    return this.WrapIfNullableReferenceSource(
-                        new CompatibleMethodMapStrategy(
-                            this.Context.TargetType,
-                            this.Context.SourceType,
-                            mapMethod,
-                            rootMapMethod.MaybeGetMappaContextParameterName()));
-                }
-            }
-
-            if (this.Context.TryGetPolymorphicMethod(this.Context.TargetType, this.Context.SourceType, this.Context.MappaUserSettings, out mapMethod)
-                && !ReferenceEquals(mapMethod, this.Context.GetRootMapMethod()))
-            {
-                var mapMethodRequireMappaContext = mapMethod.RequireMappaContextWhenInvoked();
-                var rootMapMethod = this.Context.GetRootMapMethod();
-                var callerMethodProvideMappaContext = rootMapMethod.ProvideMappaContextWhenInvoked();
-
-                if (!mapMethodRequireMappaContext || /* mapMethodRequireMappaContext && */ callerMethodProvideMappaContext)
-                {
-                    this.MaybeReportNestedMapWithoutMappaContext(mapMethod, mapMethodRequireMappaContext);
-                    return this.WrapIfNullableReferenceSource(
-                        new PolymorphicMethodMapStrategy(
-                            this.Context.TargetType,
-                            this.Context.SourceType,
-                            mapMethod,
-                            rootMapMethod.MaybeGetMappaContextParameterName()));
-                }
-            }
+            return existingStrategy;
         }
 
         return this.ComputeStrategy();
+    }
+
+    private MapStrategy? TryGetExistingMapMethodStrategy()
+    {
+        if (this.Context.PropertyPathContext is not null)
+        {
+            return null;
+        }
+
+        return this.TryGetDirectMethodStrategy()
+               ?? this.TryGetCompatibleMethodStrategy()
+               ?? this.TryGetPolymorphicMethodStrategy();
+    }
+
+    private MapStrategy? TryGetDirectMethodStrategy()
+    {
+        if (!this.Context.TryGetMethod(this.Context.TargetType, this.Context.SourceType, out var mapMethod))
+        {
+            return null;
+        }
+
+        return this.TryCreateWrappedMapMethodStrategy(
+            mapMethod,
+            (method, contextParameterName) => new MethodMapStrategy(method, contextParameterName));
+    }
+
+    private MapStrategy? TryGetCompatibleMethodStrategy()
+    {
+        if (this.Context.MappaUserSettings.CompatibleMapMethod is not BooleanSetting.Enable)
+        {
+            return null;
+        }
+
+        if (!this.Context.TryGetCompatibleMethod(this.Context.TargetType, this.Context.SourceType, this.Compilation, out var mapMethod))
+        {
+            return null;
+        }
+
+        if (ReferenceEquals(mapMethod, this.Context.GetRootMapMethod()))
+        {
+            return null;
+        }
+
+        return this.TryCreateWrappedMapMethodStrategy(
+            mapMethod,
+            (method, contextParameterName) => new CompatibleMethodMapStrategy(
+                this.Context.TargetType,
+                this.Context.SourceType,
+                method,
+                contextParameterName));
+    }
+
+    private MapStrategy? TryGetPolymorphicMethodStrategy()
+    {
+        if (!this.Context.TryGetPolymorphicMethod(this.Context.TargetType, this.Context.SourceType, this.Context.MappaUserSettings, out var mapMethod))
+        {
+            return null;
+        }
+
+        if (ReferenceEquals(mapMethod, this.Context.GetRootMapMethod()))
+        {
+            return null;
+        }
+
+        return this.TryCreateWrappedMapMethodStrategy(
+            mapMethod,
+            (method, contextParameterName) => new PolymorphicMethodMapStrategy(
+                this.Context.TargetType,
+                this.Context.SourceType,
+                method,
+                contextParameterName));
+    }
+
+    private MapStrategy? TryCreateWrappedMapMethodStrategy(
+        MapMethod mapMethod,
+        Func<MapMethod, string?, MapStrategy> createStrategy)
+    {
+        var mapMethodRequireMappaContext = mapMethod.RequireMappaContextWhenInvoked();
+        var rootMapMethod = this.Context.GetRootMapMethod();
+        var callerMethodProvideMappaContext = rootMapMethod.ProvideMappaContextWhenInvoked();
+
+        if (mapMethodRequireMappaContext && !callerMethodProvideMappaContext)
+        {
+            return null;
+        }
+
+        this.MaybeReportNestedMapWithoutMappaContext(mapMethod, mapMethodRequireMappaContext);
+        return this.WrapIfNullableReferenceSource(
+            createStrategy(mapMethod, rootMapMethod.MaybeGetMappaContextParameterName()));
     }
 
     private void MaybeReportNestedMapWithoutMappaContext(MapMethod mapMethod, bool mapMethodRequireMappaContext)

@@ -31,80 +31,91 @@ internal sealed class NullableStrategyBuilder
     /// <inheritdoc/>
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
-        // TTargetType target
-        // if ( source.HasValue OR source is not null )
-        // begin
-        //   -> Mapping
-        //   target := mapped
-        // end else begin
-        //   target.IsNullable -> mapped := null
-        //  !target.IsNullable -> throw NullReference
-        // end.
         PrettyCode.StringBuilder stringBuilder = new();
         var targetTemporary = context.NextTemporary();
         var originalSourceTemporary = source;
 
         stringBuilder.AppendLine($"{this.strategy.TargetType.ToDisplayString()} {targetTemporary};");
-
-        // if block.
         stringBuilder.AppendLine(this.strategy.SourceType.IsReferenceType
             ? $"if ({source} is not null)"
             : $"if ({source}.HasValue)");
         using (stringBuilder.CurlyBracesBlock())
         {
-            source = context.NextTemporary();
-
-            if (this.strategy.SourceType.IsValueType)
-            {
-                stringBuilder.AppendLine($"{this.strategy.SourceType.GetTypeInsideNullable()} {source} = {originalSourceTemporary}.Value;");
-            }
-            else
-            {
-                var type = this.strategy.SourceType.ToDisplayString();
-                if (type.EndsWith("?", StringComparison.Ordinal))
-                {
-                    type = type.Substring(0, type.Length - 1);
-                }
-
-                stringBuilder.AppendLine($"{type} {source} = {originalSourceTemporary};");
-            }
-
-            var (elementTemporary, elementCode) = ReferenceHandlingCodeGenerator.BuildNestedSource(
-                this.strategy.ElementStrategy,
-                source,
-                context,
-                mappaGlobalOptions);
-            if (!string.IsNullOrEmpty(elementCode))
-            {
-                stringBuilder.AppendEmptyLine();
-                stringBuilder.AppendLine(elementCode);
-            }
-
-            stringBuilder.AppendLine($"{targetTemporary} = {elementTemporary};");
+            this.AppendNullableIfBlock(stringBuilder, context, mappaGlobalOptions, originalSourceTemporary, targetTemporary, ref source);
         }
 
-        // else block
         stringBuilder.AppendLine("else");
         using (stringBuilder.CurlyBracesBlock())
         {
-            // If target nullability is None, but we are working in a nullable-enabled context
-            // and the target type is a reference type, then we need to use <c>null!</c> and not just <c>null</c>
-            // to avoid the CS8600 warning.
-            var @suppressNullableWarningNull = string.Empty;
-            if (context.GetMapMethod().NullableEnabled && this.strategy.TargetType is
-                {
-                    IsReferenceType: true,
-                    NullableAnnotation: NullableAnnotation.None,
-                })
-            {
-                suppressNullableWarningNull = "!";
-            }
-
-            stringBuilder.AppendLine(this.strategy.TargetType.IsNullable()
-                ? $"{targetTemporary} = ({this.strategy.TargetType.ToDisplayString()}) null{suppressNullableWarningNull};"
-                : $"throw new System.NullReferenceException(\"\\\"{originalSourceTemporary}\\\" is null.\");");
+            this.AppendNullableElseBlock(stringBuilder, context, originalSourceTemporary, targetTemporary);
         }
 
         return (targetTemporary, stringBuilder.ToString());
+    }
+
+    private static string GetNullableSuppressSuffix(MappaBuilderContext context, ITypeSymbol targetType)
+    {
+        if (!context.GetMapMethod().NullableEnabled)
+        {
+            return string.Empty;
+        }
+
+        if (targetType is not { IsReferenceType: true, NullableAnnotation: NullableAnnotation.None })
+        {
+            return string.Empty;
+        }
+
+        return "!";
+    }
+
+    private void AppendNullableIfBlock(
+        PrettyCode.StringBuilder stringBuilder,
+        MappaBuilderContext context,
+        MappaGlobalOptions mappaGlobalOptions,
+        string originalSourceTemporary,
+        string targetTemporary,
+        ref string source)
+    {
+        source = context.NextTemporary();
+
+        if (this.strategy.SourceType.IsValueType)
+        {
+            stringBuilder.AppendLine($"{this.strategy.SourceType.GetTypeInsideNullable()} {source} = {originalSourceTemporary}.Value;");
+        }
+        else
+        {
+            var type = this.strategy.SourceType.ToDisplayString();
+            if (type.EndsWith("?", StringComparison.Ordinal))
+            {
+                type = type.Substring(0, type.Length - 1);
+            }
+
+            stringBuilder.AppendLine($"{type} {source} = {originalSourceTemporary};");
+        }
+
+        var (elementTemporary, elementCode) = ReferenceHandlingCodeGenerator.BuildNestedSource(
+            this.strategy.ElementStrategy,
+            source,
+            context,
+            mappaGlobalOptions);
+        if (!string.IsNullOrEmpty(elementCode))
+        {
+            stringBuilder.AppendEmptyLine();
+            stringBuilder.AppendLine(elementCode);
+        }
+
+        stringBuilder.AppendLine($"{targetTemporary} = {elementTemporary};");
+    }
+
+    private void AppendNullableElseBlock(
+        PrettyCode.StringBuilder stringBuilder,
+        MappaBuilderContext context,
+        string originalSourceTemporary,
+        string targetTemporary)
+    {
+        var suppressNullableWarningNull = GetNullableSuppressSuffix(context, this.strategy.TargetType);
+        stringBuilder.AppendLine(this.strategy.TargetType.IsNullable()
+            ? $"{targetTemporary} = ({this.strategy.TargetType.ToDisplayString()}) null{suppressNullableWarningNull};"
+            : $"throw new System.NullReferenceException(\"\\\"{originalSourceTemporary}\\\" is null.\");");
     }
 }

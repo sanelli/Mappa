@@ -18,6 +18,119 @@ namespace Mappa.Generator.Algorithm.StrategyDetectors;
 internal sealed class ContainerMapStrategyDetector
     : IMapStrategyDetector
 {
+    private static readonly Func<ITypeSymbol, Compilation, bool>[] SourceCollectionTypePredicates =
+    {
+        static (type, _) => type.IsOrImplementIEnumerable(),
+        static (type, compilation) => type.IsSpan(compilation),
+        static (type, compilation) => type.IsMemory(compilation),
+        static (type, compilation) => type.IsReadOnlySpan(compilation),
+        static (type, compilation) => type.IsReadOnlyMemory(compilation),
+    };
+
+    private static readonly Func<ITypeSymbol, Compilation, bool>[] SupportedCollectionTargetTypePredicates =
+    {
+        static (type, _) => type.IsArray(),
+        static (type, _) => type.IsIEnumerable(),
+        static (type, _) => type.IsIList(),
+        static (type, _) => type.IsIReadOnlyList(),
+        static (type, compilation) => type.IsList(compilation),
+        static (type, _) => type.IsOrImplementICollection(),
+        static (type, _) => type.IsIReadOnlyCollection(),
+        static (type, compilation) => type.IsSpan(compilation),
+        static (type, compilation) => type.IsReadOnlySpan(compilation),
+        static (type, compilation) => type.IsMemory(compilation),
+        static (type, compilation) => type.IsReadOnlyMemory(compilation),
+        static (type, compilation) => type.IsOrDerivedFromStack(compilation),
+        static (type, compilation) => type.IsOrDerivedFromQueue(compilation),
+        static (type, compilation) => type.IsOrImplementISet(compilation),
+        static (type, compilation) => type.IsIReadOnlySet(compilation),
+        static (type, compilation) => type.IsHashSet(compilation),
+        static (type, compilation) => type.IsReadOnlyCollection(compilation),
+        static (type, compilation) => type.IsReadOnlySet(compilation),
+        static (type, compilation) => type.IsFrozenSet(compilation),
+        static (type, compilation) => type.IsIImmutableSet(compilation),
+        static (type, compilation) => type.IsImmutableHashSet(compilation),
+        static (type, compilation) => type.IsImmutableSortedSet(compilation),
+        static (type, compilation) => type.IsIImmutableList(compilation),
+        static (type, compilation) => type.IsImmutableArray(compilation),
+        static (type, compilation) => type.IsImmutableList(compilation),
+        static (type, compilation) => type.IsIImmutableQueue(compilation),
+        static (type, compilation) => type.IsImmutableQueue(compilation),
+        static (type, compilation) => type.IsIImmutableStack(compilation),
+        static (type, compilation) => type.IsImmutableStack(compilation),
+        static (type, compilation) => type.IsOrDerivedFromBlockingCollection(compilation),
+        static (type, compilation) => type.IsOrDerivedFromConcurrentBag(compilation),
+        static (type, compilation) => type.IsOrDerivedFromConcurrentStack(compilation),
+        static (type, compilation) => type.IsOrImplementConcurrentQueue(compilation),
+        static (type, compilation) => type.IsIProducerConsumerCollection(compilation),
+    };
+
+    private static readonly Func<ITypeSymbol, Compilation, bool>[] SupportedCollectionInterfaceTargetPredicates =
+    {
+        static (type, _) => type.IsIEnumerable(),
+        static (type, _) => type.IsIList(),
+        static (type, _) => type.IsIReadOnlyList(),
+        static (type, _) => type.IsICollection(),
+        static (type, _) => type.IsIReadOnlyCollection(),
+        static (type, compilation) => type.IsISet(compilation),
+        static (type, compilation) => type.IsIReadOnlySet(compilation),
+        static (type, compilation) => type.IsIImmutableSet(compilation),
+        static (type, compilation) => type.IsIImmutableList(compilation),
+        static (type, compilation) => type.IsIImmutableQueue(compilation),
+        static (type, compilation) => type.IsIImmutableStack(compilation),
+        static (type, compilation) => type.IsIProducerConsumerCollection(compilation),
+    };
+
+    private static readonly Func<ITypeSymbol, Compilation, bool>[] BuiltInCollectionConstructorTargetPredicates =
+    {
+        static (type, compilation) => type.IsReadOnlyCollection(compilation),
+        static (type, compilation) => type.IsReadOnlySet(compilation),
+        static (type, compilation) => type.IsFrozenSet(compilation),
+        static (type, compilation) => type.IsImmutableHashSet(compilation),
+        static (type, compilation) => type.IsImmutableSortedSet(compilation),
+        static (type, compilation) => type.IsImmutableArray(compilation),
+        static (type, compilation) => type.IsImmutableList(compilation),
+        static (type, compilation) => type.IsImmutableQueue(compilation),
+        static (type, compilation) => type.IsImmutableStack(compilation),
+    };
+
+    private static readonly Func<ITypeSymbol, Compilation, bool>[] CapacityConstructorSupportPredicates =
+    {
+        static (type, _) => type.ImplementICollection(),
+        static (type, compilation) => type.ImplementISet(compilation),
+        static (type, compilation) => type.IsOrDerivedFromStack(compilation),
+        static (type, compilation) => type.IsOrDerivedFromQueue(compilation),
+        static (type, compilation) => type.IsOrDerivedFromBlockingCollection(compilation),
+    };
+
+    private static readonly Func<ITypeSymbol, Compilation, bool>[] DictionaryConcreteTargetTypePredicates =
+    [
+        static (type, compilation) => type.IsOrImplementIDictionary(compilation),
+        static (type, compilation) => type.IsIEnumerableOfKeyValuePairs(compilation),
+        static (type, compilation) => type.IsIReadOnlyDictionary(compilation),
+        static (type, compilation) => type.IsReadOnlyDictionary(compilation),
+        static (type, compilation) => type.IsIImmutableDictionary(compilation),
+        static (type, compilation) => type.IsImmutableDictionary(compilation),
+        static (type, compilation) => type.IsImmutableSortedDictionary(compilation),
+        static (type, compilation) => type.IsFrozenDictionary(compilation),
+    ];
+
+    private static readonly Func<ITypeSymbol, Compilation, bool>[] DictionaryInterfaceTargetTypePredicates =
+    [
+        static (type, compilation) => type.IsIDictionary(compilation),
+        static (type, compilation) => type.IsIEnumerableOfKeyValuePairs(compilation),
+        static (type, compilation) => type.IsIReadOnlyDictionary(compilation),
+        static (type, compilation) => type.IsIImmutableDictionary(compilation),
+    ];
+
+    private static readonly Func<ITypeSymbol, Compilation, bool>[] DictionaryBuiltInConstructorTargetPredicates =
+    [
+        static (type, compilation) => type.IsReadOnlyDictionary(compilation),
+        static (type, compilation) => type.IsImmutableDictionary(compilation),
+        static (type, compilation) => type.IsImmutableSortedDictionary(compilation),
+        static (type, compilation) => type.IsFrozenDictionary(compilation),
+    ];
+
     private readonly MappaMapAlgorithmContext context;
     private readonly Compilation compilation;
     private readonly CancellationToken cancellationToken;
@@ -77,217 +190,165 @@ internal sealed class ContainerMapStrategyDetector
             ? EnumerableConcreteTypeSetting.List
             : enumerableConcreteTypeSetting;
 
+    private static bool MatchesAnyPredicate(
+        ITypeSymbol type,
+        Compilation compilation,
+        Func<ITypeSymbol, Compilation, bool>[] predicates)
+        => predicates.Any(predicate => predicate(type, compilation));
+
+    private static bool IsSourceCollectionType(ITypeSymbol type, Compilation compilation)
+        => MatchesAnyPredicate(type, compilation, SourceCollectionTypePredicates);
+
+    private static bool IsSupportedCollectionTargetType(ITypeSymbol type, Compilation compilation)
+        => MatchesAnyPredicate(type, compilation, SupportedCollectionTargetTypePredicates);
+
     private bool CanMapDictionaryToDictionary(out MapStrategy keyStrategy, out MapStrategy valueStrategy)
     {
-        var isSourceDictionary = this.context.SourceType.IsOrImplementIDictionary(this.compilation)
-                                 || this.context.TargetType.IsIReadOnlyDictionary(this.compilation)
-                                 || this.context.TargetType.IsOrImplementIEnumerableOfKeyValuePair(this.compilation);
-        var isTargetDictionary = (this.context.TargetType.IsOrImplementIDictionary(this.compilation)
-                                  || this.context.TargetType.IsIEnumerableOfKeyValuePairs(this.compilation)
-                                  || this.context.TargetType.IsIReadOnlyDictionary(this.compilation)
-                                  || this.context.TargetType.IsReadOnlyDictionary(this.compilation)
-                                  || this.context.TargetType.IsIImmutableDictionary(this.compilation)
-                                  || this.context.TargetType.IsImmutableDictionary(this.compilation)
-                                  || this.context.TargetType.IsImmutableSortedDictionary(this.compilation)
-                                  || this.context.TargetType.IsFrozenDictionary(this.compilation))
-            && IfInterfaceAcceptOnlyIDictionary();
-
         keyStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
         valueStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
 
-        return isSourceDictionary && isTargetDictionary && this.context.TryGetKeyAndValueStrategy(
+        if (!this.IsDictionaryMappingSourceSideEligible())
+        {
+            return false;
+        }
+
+        if (!MatchesAnyPredicate(this.context.TargetType, this.compilation, DictionaryConcreteTargetTypePredicates)
+            || !this.TargetTypeAcceptsDictionaryMapping())
+        {
+            return false;
+        }
+
+        return this.context.TryGetKeyAndValueStrategy(
             this.compilation,
             out keyStrategy,
             out valueStrategy,
             this.cancellationToken);
+    }
 
-        bool IfInterfaceAcceptOnlyIDictionary()
+    private bool IsDictionaryMappingSourceSideEligible()
+        => this.context.SourceType.IsOrImplementIDictionary(this.compilation)
+           || this.context.TargetType.IsIReadOnlyDictionary(this.compilation)
+           || this.context.TargetType.IsOrImplementIEnumerableOfKeyValuePair(this.compilation);
+
+    private bool TargetTypeAcceptsDictionaryMapping()
+    {
+        if (this.context.TargetType.TypeKind is TypeKind.Interface)
         {
-            if (this.context.TargetType.TypeKind is TypeKind.Interface)
-            {
-                return this.context.TargetType.IsIDictionary(this.compilation)
-                       || this.context.TargetType.IsIEnumerableOfKeyValuePairs(this.compilation)
-                       || this.context.TargetType.IsIReadOnlyDictionary(this.compilation)
-                       || this.context.TargetType.IsIImmutableDictionary(this.compilation)
-                       ;
-            }
-
-            // Target type MUST have a constructor with no arguments
-            // unless it is a ReadOnlyDictionary, ImmutableDictionary or a FrozenDictionary
-            // for which special coding is provided.
-            if (this.context.TargetType.IsReadOnlyDictionary(this.compilation)
-                || this.context.TargetType.IsImmutableDictionary(this.compilation)
-                || this.context.TargetType.IsImmutableSortedDictionary(this.compilation)
-                || this.context.TargetType.IsFrozenDictionary(this.compilation))
-            {
-                return true;
-            }
-
-            return this.context.TargetType.HasSymbolAccessibleZeroParametersConstructor(this.compilation, this.context.MapMethod?.MethodSymbol);
+            return MatchesAnyPredicate(
+                this.context.TargetType,
+                this.compilation,
+                DictionaryInterfaceTargetTypePredicates);
         }
+
+        if (MatchesAnyPredicate(
+                this.context.TargetType,
+                this.compilation,
+                DictionaryBuiltInConstructorTargetPredicates))
+        {
+            return true;
+        }
+
+        return this.context.TargetType.HasSymbolAccessibleZeroParametersConstructor(this.compilation, this.context.MapMethod?.MethodSymbol);
     }
 
     private bool CanMapCollectionToCollection(out MapStrategy elementStrategy)
     {
-        var sourceIsQueryable = this.context.SourceType.IsOrImplementIQueryable(this.compilation);
-        var targetIsQueryable = this.context.TargetType.IsOrImplementIQueryable(this.compilation);
+        elementStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
 
-        if (sourceIsQueryable || targetIsQueryable)
+        if (this.RejectQueryableCollectionToCollectionMapping())
         {
-            if (sourceIsQueryable
-                && !targetIsQueryable
-                && this.context.MapMethod is not null
-                && this.IsConcreteCollectionTarget())
-            {
-                this.context.ReportDiagnostic(
-                    MappaDiagnostics.IQueryableMappedAsCollection(
-                        this.context.MapMethod.MethodDeclarationSyntax?.GetLocation(),
-                        this.context.MapMethod.MethodName));
-            }
-
-            elementStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
             return false;
         }
 
-        var isSourceCollection = this.context.SourceType.IsOrImplementIEnumerable()
-            || this.context.SourceType.IsSpan(this.compilation)
-            || this.context.SourceType.IsMemory(this.compilation)
-            || this.context.SourceType.IsReadOnlySpan(this.compilation)
-            || this.context.SourceType.IsReadOnlyMemory(this.compilation);
+        if (!IsSourceCollectionType(this.context.SourceType, this.compilation))
+        {
+            return false;
+        }
 
-        var isTargetCollection = (this.context.TargetType.IsArray()
-                                 || this.context.TargetType.IsIEnumerable()
-                                 || this.context.TargetType.IsIList()
-                                 || this.context.TargetType.IsIReadOnlyList()
-                                 || this.context.TargetType.IsList(this.compilation)
-                                 || this.context.TargetType.IsOrImplementICollection()
-                                 || this.context.TargetType.IsIReadOnlyCollection()
-                                 || this.context.TargetType.IsSpan(this.compilation)
-                                 || this.context.TargetType.IsReadOnlySpan(this.compilation)
-                                 || this.context.TargetType.IsMemory(this.compilation)
-                                 || this.context.TargetType.IsReadOnlyMemory(this.compilation)
-                                 || this.context.TargetType.IsOrDerivedFromStack(this.compilation)
-                                 || this.context.TargetType.IsOrDerivedFromQueue(this.compilation)
-                                 || this.context.TargetType.IsOrImplementISet(this.compilation)
-                                 || this.context.TargetType.IsIReadOnlySet(this.compilation)
-                                 || this.context.TargetType.IsHashSet(this.compilation)
-                                 || this.context.TargetType.IsReadOnlyCollection(this.compilation)
-                                 || this.context.TargetType.IsReadOnlySet(this.compilation)
-                                 || this.context.TargetType.IsFrozenSet(this.compilation)
-                                 || this.context.TargetType.IsIImmutableSet(this.compilation)
-                                 || this.context.TargetType.IsImmutableHashSet(this.compilation)
-                                 || this.context.TargetType.IsImmutableSortedSet(this.compilation)
-                                 || this.context.TargetType.IsIImmutableList(this.compilation)
-                                 || this.context.TargetType.IsImmutableArray(this.compilation)
-                                 || this.context.TargetType.IsImmutableList(this.compilation)
-                                 || this.context.TargetType.IsIImmutableQueue(this.compilation)
-                                 || this.context.TargetType.IsImmutableQueue(this.compilation)
-                                 || this.context.TargetType.IsIImmutableStack(this.compilation)
-                                 || this.context.TargetType.IsImmutableStack(this.compilation)
-                                 || this.context.TargetType.IsOrDerivedFromBlockingCollection(this.compilation)
-                                 || this.context.TargetType.IsOrDerivedFromConcurrentBag(this.compilation)
-                                 || this.context.TargetType.IsOrDerivedFromConcurrentStack(this.compilation)
-                                 || this.context.TargetType.IsOrImplementConcurrentQueue(this.compilation)
-                                 || this.context.TargetType.IsIProducerConsumerCollection(this.compilation))
-                                 && InterfaceAndConstructorChecks();
+        if (!IsSupportedCollectionTargetType(this.context.TargetType, this.compilation))
+        {
+            return false;
+        }
 
-        elementStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
+        if (!this.PassesInterfaceAndConstructorChecks())
+        {
+            return false;
+        }
 
-        return isSourceCollection && isTargetCollection && this.context.TryGetElementStrategy(
+        return this.context.TryGetElementStrategy(
             this.compilation,
             out elementStrategy,
             this.cancellationToken);
-
-        bool InterfaceAndConstructorChecks()
-        {
-            if (this.context.TargetType.TypeKind is TypeKind.Array)
-            {
-                return true;
-            }
-
-            if (this.context.TargetType.TypeKind is TypeKind.Interface)
-            {
-                return this.context.TargetType.IsIEnumerable()
-                       || this.context.TargetType.IsIList()
-                       || this.context.TargetType.IsIReadOnlyList()
-                       || this.context.TargetType.IsICollection()
-                       || this.context.TargetType.IsIReadOnlyCollection()
-                       || this.context.TargetType.IsISet(this.compilation)
-                       || this.context.TargetType.IsIReadOnlySet(this.compilation)
-                       || this.context.TargetType.IsIImmutableSet(this.compilation)
-                       || this.context.TargetType.IsIImmutableList(this.compilation)
-                       || this.context.TargetType.IsIImmutableQueue(this.compilation)
-                       || this.context.TargetType.IsIImmutableStack(this.compilation)
-                       || this.context.TargetType.IsIProducerConsumerCollection(this.compilation);
-            }
-
-            // For the following concrete types a suitable constructor exists.
-            if (this.context.TargetType.IsReadOnlyCollection(this.compilation)
-                || this.context.TargetType.IsReadOnlySet(this.compilation)
-                || this.context.TargetType.IsFrozenSet(this.compilation)
-                || this.context.TargetType.IsImmutableHashSet(this.compilation)
-                || this.context.TargetType.IsImmutableSortedSet(this.compilation)
-                || this.context.TargetType.IsImmutableArray(this.compilation)
-                || this.context.TargetType.IsImmutableList(this.compilation)
-                || this.context.TargetType.IsImmutableQueue(this.compilation)
-                || this.context.TargetType.IsImmutableStack(this.compilation))
-            {
-                return true;
-            }
-
-            // Any other concrete type must either have:
-            // - a constructor with no parameters
-            // - (only if ContainerCapacityConstructors is enabled) a constructor with one integer
-            //   parameter and implement either: ICollection{T}, ISet{T}, IQueue{T}, IStack{T}
-            //   or derive BlockingCollection{T}.
-            return this.context.TargetType.HasSymbolAccessibleZeroParametersConstructor(this.compilation, this.context.MapMethod?.MethodSymbol)
-                || (this.context.MappaUserSettings.ContainerCapacityConstructors is BooleanSetting.Enable
-                    && this.context.TargetType.TypeKind != TypeKind.Interface
-                    && CanSupportImplementationWithCapacityConstructor()
-                    && this.context.TargetType.HasSymbolAccessibleSingleIntegerParametersConstructor(this.compilation, this.context.MapMethod?.MethodSymbol));
-        }
-
-        bool CanSupportImplementationWithCapacityConstructor()
-            => this.context.TargetType.ImplementICollection()
-            || this.context.TargetType.ImplementISet(this.compilation)
-            || this.context.TargetType.IsOrDerivedFromStack(this.compilation)
-            || this.context.TargetType.IsOrDerivedFromQueue(this.compilation)
-            || this.context.TargetType.IsOrDerivedFromBlockingCollection(this.compilation);
     }
 
+    private bool RejectQueryableCollectionToCollectionMapping()
+    {
+        var sourceIsQueryable = this.context.SourceType.IsOrImplementIQueryable(this.compilation);
+        var targetIsQueryable = this.context.TargetType.IsOrImplementIQueryable(this.compilation);
+        if (!sourceIsQueryable && !targetIsQueryable)
+        {
+            return false;
+        }
+
+        if (sourceIsQueryable
+            && !targetIsQueryable
+            && this.context.MapMethod is not null
+            && this.IsConcreteCollectionTarget())
+        {
+            this.context.ReportDiagnostic(
+                MappaDiagnostics.IQueryableMappedAsCollection(
+                    this.context.MapMethod.MethodDeclarationSyntax?.GetLocation(),
+                    this.context.MapMethod.MethodName));
+        }
+
+        return true;
+    }
+
+    private bool PassesInterfaceAndConstructorChecks()
+    {
+        if (this.context.TargetType.TypeKind is TypeKind.Array)
+        {
+            return true;
+        }
+
+        if (this.context.TargetType.TypeKind is TypeKind.Interface)
+        {
+            return MatchesAnyPredicate(
+                this.context.TargetType,
+                this.compilation,
+                SupportedCollectionInterfaceTargetPredicates);
+        }
+
+        // For the following concrete types a suitable constructor exists.
+        if (MatchesAnyPredicate(
+                this.context.TargetType,
+                this.compilation,
+                BuiltInCollectionConstructorTargetPredicates))
+        {
+            return true;
+        }
+
+        // Any other concrete type must either have:
+        // - a constructor with no parameters
+        // - (only if ContainerCapacityConstructors is enabled) a constructor with one integer
+        //   parameter and implement either: ICollection{T}, ISet{T}, IQueue{T}, IStack{T}
+        //   or derive BlockingCollection{T}.
+        return this.context.TargetType.HasSymbolAccessibleZeroParametersConstructor(this.compilation, this.context.MapMethod?.MethodSymbol)
+            || this.PassesCapacityConstructorChecks();
+    }
+
+    private bool PassesCapacityConstructorChecks()
+        => this.context.MappaUserSettings.ContainerCapacityConstructors is BooleanSetting.Enable
+            && this.context.TargetType.TypeKind != TypeKind.Interface
+            && this.CanSupportImplementationWithCapacityConstructor()
+            && this.context.TargetType.HasSymbolAccessibleSingleIntegerParametersConstructor(this.compilation, this.context.MapMethod?.MethodSymbol);
+
+    private bool CanSupportImplementationWithCapacityConstructor()
+        => MatchesAnyPredicate(
+            this.context.TargetType,
+            this.compilation,
+            CapacityConstructorSupportPredicates);
+
     private bool IsConcreteCollectionTarget()
-        => this.context.TargetType.IsArray()
-           || this.context.TargetType.IsIEnumerable()
-           || this.context.TargetType.IsIList()
-           || this.context.TargetType.IsIReadOnlyList()
-           || this.context.TargetType.IsList(this.compilation)
-           || this.context.TargetType.IsOrImplementICollection()
-           || this.context.TargetType.IsIReadOnlyCollection()
-           || this.context.TargetType.IsSpan(this.compilation)
-           || this.context.TargetType.IsReadOnlySpan(this.compilation)
-           || this.context.TargetType.IsMemory(this.compilation)
-           || this.context.TargetType.IsReadOnlyMemory(this.compilation)
-           || this.context.TargetType.IsOrDerivedFromStack(this.compilation)
-           || this.context.TargetType.IsOrDerivedFromQueue(this.compilation)
-           || this.context.TargetType.IsOrImplementISet(this.compilation)
-           || this.context.TargetType.IsIReadOnlySet(this.compilation)
-           || this.context.TargetType.IsHashSet(this.compilation)
-           || this.context.TargetType.IsReadOnlyCollection(this.compilation)
-           || this.context.TargetType.IsReadOnlySet(this.compilation)
-           || this.context.TargetType.IsFrozenSet(this.compilation)
-           || this.context.TargetType.IsIImmutableSet(this.compilation)
-           || this.context.TargetType.IsImmutableHashSet(this.compilation)
-           || this.context.TargetType.IsImmutableSortedSet(this.compilation)
-           || this.context.TargetType.IsIImmutableList(this.compilation)
-           || this.context.TargetType.IsImmutableArray(this.compilation)
-           || this.context.TargetType.IsImmutableList(this.compilation)
-           || this.context.TargetType.IsIImmutableQueue(this.compilation)
-           || this.context.TargetType.IsImmutableQueue(this.compilation)
-           || this.context.TargetType.IsIImmutableStack(this.compilation)
-           || this.context.TargetType.IsImmutableStack(this.compilation)
-           || this.context.TargetType.IsOrDerivedFromBlockingCollection(this.compilation)
-           || this.context.TargetType.IsOrDerivedFromConcurrentBag(this.compilation)
-           || this.context.TargetType.IsOrDerivedFromConcurrentStack(this.compilation)
-           || this.context.TargetType.IsOrImplementConcurrentQueue(this.compilation)
-           || this.context.TargetType.IsIProducerConsumerCollection(this.compilation);
+        => IsSupportedCollectionTargetType(this.context.TargetType, this.compilation);
 }

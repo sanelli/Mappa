@@ -219,50 +219,14 @@ internal static class MethodSymbolExtensions
         Predicate<ITypeSymbol> returnTypeCheck,
         ITypeSymbol[] parameterTypes)
     {
-        // Look up for accessible method in the type and its hierarchy.
-        var currentSymbol = targetTypeSymbol;
-        while (currentSymbol is not null)
-        {
-            if (HasExpectedMethod(currentSymbol, methodName))
-            {
-                return InterfaceMethodAccessMode.Direct;
-            }
-
-            currentSymbol = currentSymbol.BaseType;
-        }
-
-        string explicitName = $"{fullInterfaceName}<{elementTypeName}>.{methodName}";
-        currentSymbol = targetTypeSymbol;
-        while (currentSymbol is not null)
-        {
-            if (HasExpectedMethod(currentSymbol, explicitName))
-            {
-                return InterfaceMethodAccessMode.InterfaceExplicit;
-            }
-
-            currentSymbol = currentSymbol.BaseType;
-        }
-
-        // Look up for the generic variant of the method name.
-        if (targetTypeSymbol is INamedTypeSymbol
-            { OriginalDefinition.TypeArguments.Length: > 0 } namedTypeSymbol)
-        {
-            var typeArgumentName = namedTypeSymbol.OriginalDefinition.TypeArguments[0].Name;
-            string genericName = $"{fullInterfaceName}<{typeArgumentName}>.{methodName}";
-            currentSymbol = targetTypeSymbol;
-            while (currentSymbol is not null)
-            {
-                if (HasExpectedMethod(currentSymbol, genericName))
-                {
-                    return InterfaceMethodAccessMode.InterfaceExplicit;
-                }
-
-                currentSymbol = currentSymbol.BaseType;
-            }
-        }
-
-        // The method cannot be found.
-        return InterfaceMethodAccessMode.None;
+        bool HasExpectedMethod(ITypeSymbol typeSymbol, string name)
+            => typeSymbol
+                .GetMembers()
+                .OfType<IMethodSymbol>()
+                .Any(method => method.Name.Equals(name, StringComparison.Ordinal)
+                     && returnTypeCheck(method.ReturnType)
+                     && method.Parameters.Length == parameterTypes.Length
+                     && EqualParameters(method));
 
         bool EqualParameters(IMethodSymbol methodSymbol)
         {
@@ -277,14 +241,29 @@ internal static class MethodSymbolExtensions
             return true;
         }
 
-        bool HasExpectedMethod(ITypeSymbol typeSymbol, string name)
-            => typeSymbol
-                .GetMembers()
-                .OfType<IMethodSymbol>()
-                .Any(method => method.Name.Equals(name, StringComparison.Ordinal)
-                     && returnTypeCheck(method.ReturnType)
-                     && method.Parameters.Length == parameterTypes.Length
-                     && EqualParameters(method));
+        if (ExistsInTypeHierarchy(targetTypeSymbol, type => HasExpectedMethod(type, methodName)))
+        {
+            return InterfaceMethodAccessMode.Direct;
+        }
+
+        string explicitName = $"{fullInterfaceName}<{elementTypeName}>.{methodName}";
+        if (ExistsInTypeHierarchy(targetTypeSymbol, type => HasExpectedMethod(type, explicitName)))
+        {
+            return InterfaceMethodAccessMode.InterfaceExplicit;
+        }
+
+        if (targetTypeSymbol is INamedTypeSymbol
+            { OriginalDefinition.TypeArguments.Length: > 0 } namedTypeSymbol)
+        {
+            var typeArgumentName = namedTypeSymbol.OriginalDefinition.TypeArguments[0].Name;
+            string genericName = $"{fullInterfaceName}<{typeArgumentName}>.{methodName}";
+            if (ExistsInTypeHierarchy(targetTypeSymbol, type => HasExpectedMethod(type, genericName)))
+            {
+                return InterfaceMethodAccessMode.InterfaceExplicit;
+            }
+        }
+
+        return InterfaceMethodAccessMode.None;
     }
 
     /// <summary>
@@ -298,71 +277,40 @@ internal static class MethodSymbolExtensions
         this ITypeSymbol targetTypeSymbol,
         Compilation compilation)
     {
-        // Get and value type
         var (keyType, valueType) = targetTypeSymbol.GetKeyAndValueTypes(compilation);
 
-        // Look up for an indexer implementation in the hierarchy.
-        var currentType = targetTypeSymbol;
-        while (currentType is not null)
-        {
-            var hasIndexer = HasIndexer("this[]");
-            if (hasIndexer)
-            {
-                return InterfaceMethodAccessMode.Direct;
-            }
-
-            currentType = currentType.BaseType;
-        }
-
-        // Look for non-generic explicit implementation of IDictionary
-        var nonGenericName = $"System.Collections.Generic.IDictionary<{TypeSymbolExtensions.NormalizeType(keyType.ToDisplayString())},{TypeSymbolExtensions.NormalizeType(valueType.ToDisplayString())}>.this[]";
-        currentType = targetTypeSymbol;
-        while (currentType is not null)
-        {
-            var hasIndexer = HasIndexer(nonGenericName);
-            if (hasIndexer)
-            {
-                return InterfaceMethodAccessMode.InterfaceExplicit;
-            }
-
-            currentType = currentType.BaseType;
-        }
-
-        // Look for generic explicit implementation of IDictionary
-        if (targetTypeSymbol is INamedTypeSymbol { OriginalDefinition.TypeArguments.Length: 2 } namedTypeSymbol)
-        {
-            var keyTypeArgument = namedTypeSymbol.OriginalDefinition.TypeArguments[0].Name;
-            var valueTypeArgument = namedTypeSymbol.OriginalDefinition.TypeArguments[1].Name;
-
-            var genericName = $"System.Collections.Generic.IDictionary<{keyTypeArgument},{valueTypeArgument}>.this[]";
-
-            currentType = targetTypeSymbol;
-            while (currentType is not null)
-            {
-                var hasIndexer = HasIndexer(genericName);
-                if (hasIndexer)
-                {
-                    return InterfaceMethodAccessMode.InterfaceExplicit;
-                }
-
-                currentType = currentType.BaseType;
-            }
-        }
-
-        // Not found
-        return InterfaceMethodAccessMode.None;
-
         bool HasIndexer(string name)
-        {
-            var hasIndexer = targetTypeSymbol.GetMembers()
+            => targetTypeSymbol.GetMembers()
                 .OfType<IPropertySymbol>()
                 .Any(propertySymbol => propertySymbol.IsIndexer
                                          && propertySymbol.Parameters.Length == 1
                                          && propertySymbol.Name.Equals(name, StringComparison.OrdinalIgnoreCase)
                                          && SymbolEqualityComparer.Default.Equals(propertySymbol.Type, valueType)
                                          && SymbolEqualityComparer.Default.Equals(propertySymbol.Parameters[0].Type, keyType));
-            return hasIndexer;
+
+        if (HasIndexer("this[]"))
+        {
+            return InterfaceMethodAccessMode.Direct;
         }
+
+        var nonGenericName = $"System.Collections.Generic.IDictionary<{TypeSymbolExtensions.NormalizeType(keyType.ToDisplayString())},{TypeSymbolExtensions.NormalizeType(valueType.ToDisplayString())}>.this[]";
+        if (HasIndexer(nonGenericName))
+        {
+            return InterfaceMethodAccessMode.InterfaceExplicit;
+        }
+
+        if (targetTypeSymbol is INamedTypeSymbol { OriginalDefinition.TypeArguments.Length: 2 } namedTypeSymbol)
+        {
+            var keyTypeArgument = namedTypeSymbol.OriginalDefinition.TypeArguments[0].Name;
+            var valueTypeArgument = namedTypeSymbol.OriginalDefinition.TypeArguments[1].Name;
+            var genericName = $"System.Collections.Generic.IDictionary<{keyTypeArgument},{valueTypeArgument}>.this[]";
+            if (HasIndexer(genericName))
+            {
+                return InterfaceMethodAccessMode.InterfaceExplicit;
+            }
+        }
+
+        return InterfaceMethodAccessMode.None;
     }
 
     /// <summary>
@@ -378,60 +326,38 @@ internal static class MethodSymbolExtensions
     {
         var (keyType, valueType) = targetTypeSymbol.GetKeyAndValueTypes(compilation);
 
-        var currentType = targetTypeSymbol;
-        while (currentType is not null)
-        {
-            if (HasAdd("Add"))
-            {
-                return InterfaceMethodAccessMode.Direct;
-            }
-
-            currentType = currentType.BaseType;
-        }
-
-        var nonGenericName = $"System.Collections.Generic.IDictionary<{TypeSymbolExtensions.NormalizeType(keyType.ToDisplayString())},{TypeSymbolExtensions.NormalizeType(valueType.ToDisplayString())}>.Add";
-        currentType = targetTypeSymbol;
-        while (currentType is not null)
-        {
-            if (HasAdd(nonGenericName))
-            {
-                return InterfaceMethodAccessMode.InterfaceExplicit;
-            }
-
-            currentType = currentType.BaseType;
-        }
-
-        if (targetTypeSymbol is INamedTypeSymbol { OriginalDefinition.TypeArguments.Length: 2 } namedTypeSymbol)
-        {
-            var keyTypeArgument = namedTypeSymbol.OriginalDefinition.TypeArguments[0].Name;
-            var valueTypeArgument = namedTypeSymbol.OriginalDefinition.TypeArguments[1].Name;
-
-            var genericName = $"System.Collections.Generic.IDictionary<{keyTypeArgument},{valueTypeArgument}>.Add";
-
-            currentType = targetTypeSymbol;
-            while (currentType is not null)
-            {
-                if (HasAdd(genericName))
-                {
-                    return InterfaceMethodAccessMode.InterfaceExplicit;
-                }
-
-                currentType = currentType.BaseType;
-            }
-        }
-
-        return InterfaceMethodAccessMode.None;
-
         bool HasAdd(string name)
-        {
-            return targetTypeSymbol.GetMembers()
+            => targetTypeSymbol.GetMembers()
                 .OfType<IMethodSymbol>()
                 .Any(methodSymbol => methodSymbol.Name.Equals(name, StringComparison.OrdinalIgnoreCase)
                                      && methodSymbol.ReturnType.IsVoid()
                                      && methodSymbol.Parameters.Length == 2
                                      && SymbolEqualityComparer.Default.Equals(methodSymbol.Parameters[0].Type, keyType)
                                      && SymbolEqualityComparer.Default.Equals(methodSymbol.Parameters[1].Type, valueType));
+
+        if (HasAdd("Add"))
+        {
+            return InterfaceMethodAccessMode.Direct;
         }
+
+        var nonGenericName = $"System.Collections.Generic.IDictionary<{TypeSymbolExtensions.NormalizeType(keyType.ToDisplayString())},{TypeSymbolExtensions.NormalizeType(valueType.ToDisplayString())}>.Add";
+        if (HasAdd(nonGenericName))
+        {
+            return InterfaceMethodAccessMode.InterfaceExplicit;
+        }
+
+        if (targetTypeSymbol is INamedTypeSymbol { OriginalDefinition.TypeArguments.Length: 2 } namedTypeSymbol)
+        {
+            var keyTypeArgument = namedTypeSymbol.OriginalDefinition.TypeArguments[0].Name;
+            var valueTypeArgument = namedTypeSymbol.OriginalDefinition.TypeArguments[1].Name;
+            var genericName = $"System.Collections.Generic.IDictionary<{keyTypeArgument},{valueTypeArgument}>.Add";
+            if (HasAdd(genericName))
+            {
+                return InterfaceMethodAccessMode.InterfaceExplicit;
+            }
+        }
+
+        return InterfaceMethodAccessMode.None;
     }
 
     /// <summary>
@@ -456,5 +382,21 @@ internal static class MethodSymbolExtensions
         }
 
         return true;
+    }
+
+    private static bool ExistsInTypeHierarchy(ITypeSymbol typeSymbol, Func<ITypeSymbol, bool> predicate)
+    {
+        var currentSymbol = typeSymbol;
+        while (currentSymbol is not null)
+        {
+            if (predicate(currentSymbol))
+            {
+                return true;
+            }
+
+            currentSymbol = currentSymbol.BaseType;
+        }
+
+        return false;
     }
 }

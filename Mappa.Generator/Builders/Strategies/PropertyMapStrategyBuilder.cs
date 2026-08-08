@@ -31,65 +31,7 @@ internal sealed class PropertyMapStrategyBuilder
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
         var builder = new PrettyCode.StringBuilder();
-
-        var sourcePropertyTemporary = string.Empty;
-        if (this.strategy.ChainedSourcePropertyPath is not null)
-        {
-            var chainedSourcePropertyPath = this.strategy.ChainedSourcePropertyPath;
-            var chainSource = source;
-            var rootParameterName = context.GetMapMethod().SourceParameterName;
-            var receiverPathPrefix = chainedSourcePropertyPath.ReceiverPathPrefix;
-
-            // Only rewrite to the root parameter when the chain is intentionally rooted there.
-            // Empty prefix means read remaining segments from the current nested source receiver.
-            if (!string.IsNullOrWhiteSpace(receiverPathPrefix)
-                && (receiverPathPrefix.Equals(rootParameterName, StringComparison.Ordinal)
-                    || receiverPathPrefix.StartsWith($"{rootParameterName}.", StringComparison.Ordinal)))
-            {
-                chainSource = rootParameterName;
-            }
-
-            var accessExpression = PropertyPathExpressionBuilder.BuildChainedAccessExpression(
-                chainSource,
-                receiverPathPrefix,
-                chainedSourcePropertyPath.RemainingSourceSegments,
-                chainedSourcePropertyPath.StartingSourceType,
-                context.GetMapMethod().NullableEnabled,
-                this.strategy.TargetProperty.Type,
-                out var resolvedProperties,
-                chainedSourcePropertyPath.OriginalSourcePath);
-
-            ITypeSymbol innermostSourceType;
-            if (resolvedProperties.Length > 0)
-            {
-                innermostSourceType = resolvedProperties[resolvedProperties.Length - 1].Type;
-            }
-            else if (PropertyPathSymbolResolver.TryGetReceiverTypeForPathPrefix(
-                         chainedSourcePropertyPath.StartingSourceType,
-                         chainSource,
-                         string.IsNullOrWhiteSpace(receiverPathPrefix) ? chainSource : receiverPathPrefix,
-                         out var receiverType))
-            {
-                innermostSourceType = receiverType;
-            }
-            else
-            {
-                innermostSourceType = chainedSourcePropertyPath.StartingSourceType;
-            }
-
-            sourcePropertyTemporary = context.NextTemporary();
-            builder.AppendLine($"{innermostSourceType.ToDisplayString()} {sourcePropertyTemporary} = {accessExpression};");
-        }
-        else if (this.strategy.SourceProperty is not null)
-        {
-            sourcePropertyTemporary = context.NextTemporary();
-            var sourceReadExpression = InaccessibleMemberAccessHelper.BuildPropertyReadExpression(
-                source,
-                this.strategy.SourceProperty,
-                this.strategy.RequiresUnsafeAccessorOnSource,
-                context);
-            builder.AppendLine($"{this.strategy.SourceProperty.Type.ToDisplayString()} {sourcePropertyTemporary} = {sourceReadExpression};");
-        }
+        var sourcePropertyTemporary = this.BuildSourcePropertyTemporary(builder, source, context);
 
         string targetTemporary;
         string code;
@@ -111,5 +53,100 @@ internal sealed class PropertyMapStrategyBuilder
         }
 
         return (targetTemporary, builder.ToString());
+    }
+
+    private static ITypeSymbol ResolveInnermostChainedSourceType(
+        ChainedSourcePropertyPathInfo chainedSourcePropertyPath,
+        string chainSource,
+        string receiverPathPrefix,
+        IPropertySymbol[] resolvedProperties)
+    {
+        if (resolvedProperties.Length > 0)
+        {
+            return resolvedProperties[resolvedProperties.Length - 1].Type;
+        }
+
+        if (PropertyPathSymbolResolver.TryGetReceiverTypeForPathPrefix(
+                chainedSourcePropertyPath.StartingSourceType,
+                chainSource,
+                string.IsNullOrWhiteSpace(receiverPathPrefix) ? chainSource : receiverPathPrefix,
+                out var receiverType))
+        {
+            return receiverType;
+        }
+
+        return chainedSourcePropertyPath.StartingSourceType;
+    }
+
+    private string BuildSourcePropertyTemporary(PrettyCode.StringBuilder builder, string source, MappaBuilderContext context)
+    {
+        if (this.strategy.ChainedSourcePropertyPath is not null)
+        {
+            return this.AppendChainedSourcePropertyRead(builder, source, context);
+        }
+
+        if (this.strategy.SourceProperty is not null)
+        {
+            return this.AppendDirectSourcePropertyRead(builder, source, context);
+        }
+
+        return string.Empty;
+    }
+
+    private string AppendChainedSourcePropertyRead(PrettyCode.StringBuilder builder, string source, MappaBuilderContext context)
+    {
+        var chainedSourcePropertyPath = this.strategy.ChainedSourcePropertyPath;
+        if (chainedSourcePropertyPath is null)
+        {
+            return string.Empty;
+        }
+
+        var chainSource = source;
+        var rootParameterName = context.GetMapMethod().SourceParameterName;
+        var receiverPathPrefix = chainedSourcePropertyPath.ReceiverPathPrefix;
+
+        if (!string.IsNullOrWhiteSpace(receiverPathPrefix)
+            && (receiverPathPrefix.Equals(rootParameterName, StringComparison.Ordinal)
+                || receiverPathPrefix.StartsWith($"{rootParameterName}.", StringComparison.Ordinal)))
+        {
+            chainSource = rootParameterName;
+        }
+
+        var accessExpression = PropertyPathExpressionBuilder.BuildChainedAccessExpression(
+            chainSource,
+            receiverPathPrefix,
+            chainedSourcePropertyPath.RemainingSourceSegments,
+            chainedSourcePropertyPath.StartingSourceType,
+            context.GetMapMethod().NullableEnabled,
+            this.strategy.TargetProperty.Type,
+            out var resolvedProperties,
+            chainedSourcePropertyPath.OriginalSourcePath);
+
+        var innermostSourceType = ResolveInnermostChainedSourceType(
+            chainedSourcePropertyPath,
+            chainSource,
+            receiverPathPrefix,
+            resolvedProperties);
+
+        var sourcePropertyTemporary = context.NextTemporary();
+        builder.AppendLine($"{innermostSourceType.ToDisplayString()} {sourcePropertyTemporary} = {accessExpression};");
+        return sourcePropertyTemporary;
+    }
+
+    private string AppendDirectSourcePropertyRead(PrettyCode.StringBuilder builder, string source, MappaBuilderContext context)
+    {
+        if (this.strategy.SourceProperty is not { } sourceProperty)
+        {
+            return string.Empty;
+        }
+
+        var sourcePropertyTemporary = context.NextTemporary();
+        var sourceReadExpression = InaccessibleMemberAccessHelper.BuildPropertyReadExpression(
+            source,
+            sourceProperty,
+            this.strategy.RequiresUnsafeAccessorOnSource,
+            context);
+        builder.AppendLine($"{sourceProperty.Type.ToDisplayString()} {sourcePropertyTemporary} = {sourceReadExpression};");
+        return sourcePropertyTemporary;
     }
 }

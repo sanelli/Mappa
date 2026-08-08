@@ -145,52 +145,76 @@ internal sealed class MappaDependencyInjectionGeneratorAlgorithm
         {
             foreach (var type in assembly.GetAllNamedTypes())
             {
-                if (SymbolEqualityComparer.Default.Equals(type, registrarClass))
-                {
-                    continue;
-                }
-
-                if (attributeData.IsIgnored(type))
-                {
-                    continue;
-                }
-
-                if (!type.GetAttributes().HasMappaAttribute(this.Compilation))
-                {
-                    continue;
-                }
-
-                // Static mapper classes cannot be registered with Microsoft.Extensions.DependencyInjection.
-                if (type.IsStatic)
-                {
-                    this.Context.ReportDiagnostic(
-                        MappaDiagnostics.MappaDependencyInjectionStaticMapperSkipped(
-                            classDeclarationSyntax,
-                            type.ToDisplayString()));
-                    continue;
-                }
-
-                var interfaces = GetEligibleInterfaces(type, attributeData);
-                switch (attributeData.InjectInterfaces)
-                {
-                    case MappaDependencyInjectionInjectInterfaces.InterfaceOnly:
-                    case MappaDependencyInjectionInjectInterfaces.InterfaceAndClass:
-                        if (interfaces.IsDefaultOrEmpty)
-                        {
-                            this.Context.ReportDiagnostic(
-                                MappaDiagnostics.MappaDependencyInjectionMapperHasNoEligibleInterfaces(
-                                    classDeclarationSyntax,
-                                    type.ToDisplayString()));
-                            continue;
-                        }
-
-                        break;
-                }
-
-                results.Add((type, interfaces));
+                this.TryAddDiscoveredMapper(type, registrarClass, attributeData, classDeclarationSyntax, results);
             }
         }
 
         return [.. results];
+    }
+
+    private void TryAddDiscoveredMapper(
+        INamedTypeSymbol type,
+        INamedTypeSymbol registrarClass,
+        MappaDependencyInjectionAttributeData attributeData,
+        ClassDeclarationSyntax classDeclarationSyntax,
+        List<(INamedTypeSymbol Mapper, ImmutableArray<INamedTypeSymbol> Interfaces)> results)
+    {
+        if (SymbolEqualityComparer.Default.Equals(type, registrarClass))
+        {
+            return;
+        }
+
+        if (attributeData.IsIgnored(type))
+        {
+            return;
+        }
+
+        if (!type.GetAttributes().HasMappaAttribute(this.Compilation))
+        {
+            return;
+        }
+
+        // Static mapper classes cannot be registered with Microsoft.Extensions.DependencyInjection.
+        if (type.IsStatic)
+        {
+            this.Context.ReportDiagnostic(
+                MappaDiagnostics.MappaDependencyInjectionStaticMapperSkipped(
+                    classDeclarationSyntax,
+                    type.ToDisplayString()));
+            return;
+        }
+
+        var interfaces = GetEligibleInterfaces(type, attributeData);
+        if (!this.HasRequiredEligibleInterfaces(attributeData, type, interfaces, classDeclarationSyntax))
+        {
+            return;
+        }
+
+        results.Add((type, interfaces));
+    }
+
+    private bool HasRequiredEligibleInterfaces(
+        MappaDependencyInjectionAttributeData attributeData,
+        INamedTypeSymbol type,
+        ImmutableArray<INamedTypeSymbol> interfaces,
+        ClassDeclarationSyntax classDeclarationSyntax)
+    {
+        switch (attributeData.InjectInterfaces)
+        {
+            case MappaDependencyInjectionInjectInterfaces.InterfaceOnly:
+            case MappaDependencyInjectionInjectInterfaces.InterfaceAndClass:
+                if (interfaces.IsDefaultOrEmpty)
+                {
+                    this.Context.ReportDiagnostic(
+                        MappaDiagnostics.MappaDependencyInjectionMapperHasNoEligibleInterfaces(
+                            classDeclarationSyntax,
+                            type.ToDisplayString()));
+                    return false;
+                }
+
+                break;
+        }
+
+        return true;
     }
 }

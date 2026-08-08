@@ -319,353 +319,64 @@ internal sealed class MappaGlobalOptions
     {
         var options = analyzerConfigOptionsProvider.GetOptions(syntaxTree);
 
-        this.MappaDebug = options.TryGetValue(GetOptionName(MappaDebugFlagName), out var mappaDebug)
-                          && !string.IsNullOrWhiteSpace(mappaDebug)
-                          && "true".Equals(mappaDebug, StringComparison.OrdinalIgnoreCase);
+        this.MappaDebug = ReadBooleanFlag(options, MappaDebugFlagName);
+        this.MappaDebugComments = ReadBooleanFlag(options, MappaDebugCommentsFlagName);
 
-        this.MappaDebugComments =
-            options.TryGetValue(GetOptionName(MappaDebugCommentsFlagName), out var mappaDebugComments)
-            && !string.IsNullOrWhiteSpace(mappaDebugComments)
-            && "true".Equals(mappaDebugComments, StringComparison.OrdinalIgnoreCase);
-
-        this.DateTimeFormat = options.TryGetValue(GetOptionName(MappaSettingsDateTimeFormat), out var dateTimeFormat)
-                              && !string.IsNullOrWhiteSpace(dateTimeFormat)
-            ? dateTimeFormat
-            : null;
-
-        this.DateTimeOffsetFormat = options.TryGetValue(GetOptionName(MappaSettingsDateTimeOffsetFormat), out var dateTimeOffsetFormat)
-                              && !string.IsNullOrWhiteSpace(dateTimeOffsetFormat)
-            ? dateTimeOffsetFormat
-            : null;
-
-        this.DateOnlyFormat = options.TryGetValue(GetOptionName(MappaSettingsDateOnlyFormat), out var dateOnlyFormat)
-                              && !string.IsNullOrWhiteSpace(dateOnlyFormat)
-            ? dateOnlyFormat
-            : null;
-
-        this.TimeOnlyFormat = options.TryGetValue(GetOptionName(MappaSettingsTimeOnlyFormat), out var timeOnlyFormat)
-                              && !string.IsNullOrWhiteSpace(timeOnlyFormat)
-            ? timeOnlyFormat
-            : null;
-
+        this.DateTimeFormat = ReadFormatOption(options, MappaSettingsDateTimeFormat);
+        this.DateTimeOffsetFormat = ReadFormatOption(options, MappaSettingsDateTimeOffsetFormat);
+        this.DateOnlyFormat = ReadFormatOption(options, MappaSettingsDateOnlyFormat);
+        this.TimeOnlyFormat = ReadFormatOption(options, MappaSettingsTimeOnlyFormat);
         this.DateTimeStyle = ReadDateTimeStylesOption(options, MappaSettingsDateTimeStyle);
-
         this.DateTimeOffsetStyle = ReadDateTimeStylesOption(options, MappaSettingsDateTimeOffsetStyle);
-
         this.DateOnlyStyle = ReadDateTimeStylesOption(options, MappaSettingsDateOnlyStyle);
-
         this.TimeOnlyStyle = ReadDateTimeStylesOption(options, MappaSettingsTimeOnlyStyle);
-
         this.GlobalDateTimeStyle = ReadDateTimeStylesOption(options, MappaSettingsGlobalDateTimeStyle);
-
-        this.TimeSpanFormat = options.TryGetValue(GetOptionName(MappaSettingsTimeSpanFormat), out var timeSpanFormat)
-                              && !string.IsNullOrWhiteSpace(timeSpanFormat)
-            ? timeSpanFormat
-            : null;
-
+        this.TimeSpanFormat = ReadFormatOption(options, MappaSettingsTimeSpanFormat);
         this.GuidFormat = ReadFormatOption(options, MappaSettingsGuidFormat);
-
         this.ByteFormat = ReadFormatOption(options, MappaSettingsByteFormat);
-
         this.SByteFormat = ReadFormatOption(options, MappaSettingsSByteFormat);
-
         this.ShortFormat = ReadFormatOption(options, MappaSettingsShortFormat);
-
         this.UShortFormat = ReadFormatOption(options, MappaSettingsUShortFormat);
-
         this.IntFormat = ReadFormatOption(options, MappaSettingsIntFormat);
-
         this.UIntFormat = ReadFormatOption(options, MappaSettingsUIntFormat);
-
         this.LongFormat = ReadFormatOption(options, MappaSettingsLongFormat);
-
         this.ULongFormat = ReadFormatOption(options, MappaSettingsULongFormat);
-
         this.DecimalFormat = ReadFormatOption(options, MappaSettingsDecimalFormat);
-
         this.FloatFormat = ReadFormatOption(options, MappaSettingsFloatFormat);
-
         this.DoubleFormat = ReadFormatOption(options, MappaSettingsDoubleFormat);
-
         this.ByteStyle = ReadNumberStylesOption(options, MappaSettingsByteStyle);
-
         this.SByteStyle = ReadNumberStylesOption(options, MappaSettingsSByteStyle);
-
         this.ShortStyle = ReadNumberStylesOption(options, MappaSettingsShortStyle);
-
         this.UShortStyle = ReadNumberStylesOption(options, MappaSettingsUShortStyle);
-
         this.IntStyle = ReadNumberStylesOption(options, MappaSettingsIntStyle);
-
         this.UIntStyle = ReadNumberStylesOption(options, MappaSettingsUIntStyle);
-
         this.LongStyle = ReadNumberStylesOption(options, MappaSettingsLongStyle);
-
         this.ULongStyle = ReadNumberStylesOption(options, MappaSettingsULongStyle);
-
         this.DecimalStyle = ReadNumberStylesOption(options, MappaSettingsDecimalStyle);
-
         this.FloatStyle = ReadNumberStylesOption(options, MappaSettingsFloatStyle);
-
         this.DoubleStyle = ReadNumberStylesOption(options, MappaSettingsDoubleStyle);
-
         this.GlobalNumberStyle = ReadNumberStylesOption(options, MappaSettingsGlobalNumberStyle);
-
-        this.CultureName = options.TryGetValue(GetOptionName(MappaSettingsCultureName), out var cultureName)
-                           && !string.IsNullOrWhiteSpace(cultureName)
-            ? cultureName
-            : null;
-
-        this.CultureInfoSetting = options.TryGetValue(GetOptionName(MappaSettingsCultureInfoSettings), out var cultureInfoSettings)
-                                  && !string.IsNullOrWhiteSpace(cultureInfoSettings)
-            ? GetCultureInfoSettingsFromString(cultureInfoSettings)
-            : CultureInfoSetting.None;
-
-        this.ProtobufOptional = options.TryGetValue(GetOptionName(MappaSettingsProtobufOptional), out var protobufOptional)
-            ? GetBooleanSettingFromString(protobufOptional)
-            : BooleanSetting.Undefined;
-
-        this.PragmaWarning = options.TryGetValue(GetOptionName(MappaSettingsPragmaWarning), out var pragmaWarning)
-            ? GetPragmaWarningSettingFromString(pragmaWarning)
-            : PragmaWarningSetting.NoBlock;
-
-        this.FastCollections = options.TryGetValue(GetOptionName(MappaSettingsFastCollections), out var fastCollections)
-            ? GetBooleanSettingFromString(fastCollections)
-            : BooleanSetting.Undefined;
-
-        this.ContainerCapacityConstructors = options.TryGetValue(GetOptionName(MappaSettingsContainerCapacityConstructors), out var containerCapacityConstructors)
-            ? GetBooleanSettingFromString(containerCapacityConstructors)
-            : BooleanSetting.Undefined;
-
-        this.PreventEnumerableCount = options.TryGetValue(GetOptionName(MappaSettingsPreventEnumerableCount), out var preventEnumerableCount)
-            ? GetBooleanSettingFromString(preventEnumerableCount)
-            : BooleanSetting.Undefined;
-
-        this.PolymorphicMapMethodWithMatchingDefaultAttribute = options.TryGetValue(GetOptionName(MappaSettingsPolymorphicMapMethodWithMatchingDefaultAttribute), out var polymorphicMapMethodWithMatchingDefaultAttribute)
-            ? GetBooleanSettingFromString(polymorphicMapMethodWithMatchingDefaultAttribute)
-            : BooleanSetting.Undefined;
-
-        this.CompatibleMapMethod = options.TryGetValue(GetOptionName(MappaSettingsCompatibleMapMethod), out var compatibleMapMethod)
-            ? GetBooleanSettingFromString(compatibleMapMethod)
-            : BooleanSetting.Undefined;
-
-        this.CaseInsensitivePropertyMap = options.TryGetValue(GetOptionName(MappaSettingsCaseInsensitivePropertyMap), out var caseInsensitivePropertyMap)
-            ? GetBooleanSettingFromString(caseInsensitivePropertyMap)
-            : BooleanSetting.Undefined;
-
-        this.IgnoreUnderscoreForPropertyMap = options.TryGetValue(GetOptionName(MappaSettingsIgnoreUnderscoreForPropertyMap), out var ignoreUnderscoreForPropertyMap)
-            ? GetBooleanSettingFromString(ignoreUnderscoreForPropertyMap)
-            : BooleanSetting.Undefined;
-
-        this.CaseInsensitiveEnumMap = options.TryGetValue(GetOptionName(MappaSettingsCaseInsensitiveEnumMap), out var caseInsensitiveEnumMap)
-            ? GetBooleanSettingFromString(caseInsensitiveEnumMap)
-            : BooleanSetting.Undefined;
-
-        this.EnumStringMapSetting = options.TryGetValue(GetOptionName(MappaSettingsEnumStringMapSetting), out var enumStringMapSetting)
-            ? GetEnumStringMapSettingFromString(enumStringMapSetting)
-            : EnumStringMapSetting.MemberName;
-
-        this.EnumToEnumMapSetting = options.TryGetValue(GetOptionName(MappaSettingsEnumToEnumMapSetting), out var enumToEnumMapSetting)
-            ? GetEnumToEnumMapSettingFromString(enumToEnumMapSetting)
-            : EnumToEnumMapSetting.MemberName;
-
-        this.IdentityMapDeepCopy = options.TryGetValue(GetOptionName(MappaSettingsIdentityMapDeepCopy), out var identityMapDeepCopy)
-            ? GetIdentityMapDeepCopySettingFromString(identityMapDeepCopy)
-            : IdentityMapDeepCopySetting.ShallowCopy;
-
-        this.ReferenceReusing = options.TryGetValue(GetOptionName(MappaSettingsReferenceReusing), out var referenceReusing)
-            ? GetBooleanSettingFromString(referenceReusing)
-            : BooleanSetting.Undefined;
-
+        this.CultureName = ReadFormatOption(options, MappaSettingsCultureName);
+        this.CultureInfoSetting = ReadCultureInfoSettingOption(options, MappaSettingsCultureInfoSettings);
+        this.ProtobufOptional = ReadBooleanSettingOption(options, MappaSettingsProtobufOptional, BooleanSetting.Undefined);
+        this.PragmaWarning = ReadPragmaWarningSettingOption(options, MappaSettingsPragmaWarning);
+        this.FastCollections = ReadBooleanSettingOption(options, MappaSettingsFastCollections, BooleanSetting.Undefined);
+        this.ContainerCapacityConstructors = ReadBooleanSettingOption(options, MappaSettingsContainerCapacityConstructors, BooleanSetting.Undefined);
+        this.PreventEnumerableCount = ReadBooleanSettingOption(options, MappaSettingsPreventEnumerableCount, BooleanSetting.Undefined);
+        this.PolymorphicMapMethodWithMatchingDefaultAttribute = ReadBooleanSettingOption(options, MappaSettingsPolymorphicMapMethodWithMatchingDefaultAttribute, BooleanSetting.Undefined);
+        this.CompatibleMapMethod = ReadBooleanSettingOption(options, MappaSettingsCompatibleMapMethod, BooleanSetting.Undefined);
+        this.CaseInsensitivePropertyMap = ReadBooleanSettingOption(options, MappaSettingsCaseInsensitivePropertyMap, BooleanSetting.Undefined);
+        this.IgnoreUnderscoreForPropertyMap = ReadBooleanSettingOption(options, MappaSettingsIgnoreUnderscoreForPropertyMap, BooleanSetting.Undefined);
+        this.CaseInsensitiveEnumMap = ReadBooleanSettingOption(options, MappaSettingsCaseInsensitiveEnumMap, BooleanSetting.Undefined);
+        this.EnumStringMapSetting = ReadEnumStringMapSettingOption(options, MappaSettingsEnumStringMapSetting);
+        this.EnumToEnumMapSetting = ReadEnumToEnumMapSettingOption(options, MappaSettingsEnumToEnumMapSetting);
+        this.IdentityMapDeepCopy = ReadIdentityMapDeepCopySettingOption(options, MappaSettingsIdentityMapDeepCopy);
+        this.ReferenceReusing = ReadBooleanSettingOption(options, MappaSettingsReferenceReusing, BooleanSetting.Undefined);
         this.MaxRuntimeDepth = ReadDepthOption(options, MappaSettingsMaxRuntimeDepth, DefaultMaxRuntimeDepth);
-
         this.MaxCompileTimeDepth = ReadDepthOption(options, MappaSettingsMaxCompileTimeDepth, DefaultMaxCompileTimeDepth);
-
-        this.BreakCompileTimeCycles = options.TryGetValue(GetOptionName(MappaSettingsBreakCompileTimeCycles), out var breakCompileTimeCycles)
-            ? GetBooleanSettingFromString(breakCompileTimeCycles)
-            : BooleanSetting.Undefined;
-
-        this.EnumerableConcreteType = options.TryGetValue(GetOptionName(MappaSettingsEnumerableConcreteType), out var enumerableConcreteType)
-            ? GetEnumerableConcreteTypeSettingFromString(enumerableConcreteType)
-            : EnumerableConcreteTypeSetting.List;
-
-        this.DictionaryAssignment = options.TryGetValue(GetOptionName(MappaSettingsDictionaryAssignment), out var dictionaryAssignment)
-            ? GetDictionaryAssignmentSettingFromString(dictionaryAssignment)
-            : DictionaryAssignmentSetting.Indexer;
-
-        static CultureInfoSetting GetCultureInfoSettingsFromString(string cultureInfoSettings)
-        {
-            if (cultureInfoSettings.Equals(nameof(CultureInfoSetting.CurrentCulture), StringComparison.OrdinalIgnoreCase))
-            {
-                return CultureInfoSetting.CurrentCulture;
-            }
-
-            if (cultureInfoSettings.Equals(nameof(CultureInfoSetting.InvariantCulture), StringComparison.OrdinalIgnoreCase))
-            {
-                return CultureInfoSetting.InvariantCulture;
-            }
-
-            if (cultureInfoSettings.Equals(nameof(CultureInfoSetting.UserDefined), StringComparison.OrdinalIgnoreCase))
-            {
-                return CultureInfoSetting.UserDefined;
-            }
-
-            return CultureInfoSetting.None;
-        }
-
-        static BooleanSetting GetBooleanSettingFromString(string enableSettings)
-        {
-            if (enableSettings.Equals(nameof(BooleanSetting.Undefined), StringComparison.OrdinalIgnoreCase))
-            {
-                return BooleanSetting.Undefined;
-            }
-
-            if (enableSettings.Equals(nameof(BooleanSetting.Enable), StringComparison.OrdinalIgnoreCase))
-            {
-                return BooleanSetting.Enable;
-            }
-
-            if (enableSettings.Equals(nameof(BooleanSetting.Disable), StringComparison.OrdinalIgnoreCase))
-            {
-                return BooleanSetting.Disable;
-            }
-
-            return BooleanSetting.Undefined;
-        }
-
-        static EnumToEnumMapSetting GetEnumToEnumMapSettingFromString(string enumToEnumMapSettingValue)
-        {
-            if (enumToEnumMapSettingValue.Equals(nameof(EnumToEnumMapSetting.NumericValue), StringComparison.OrdinalIgnoreCase))
-            {
-                return EnumToEnumMapSetting.NumericValue;
-            }
-
-            if (enumToEnumMapSettingValue.Equals(nameof(EnumToEnumMapSetting.Description), StringComparison.OrdinalIgnoreCase))
-            {
-                return EnumToEnumMapSetting.Description;
-            }
-
-            if (enumToEnumMapSettingValue.Equals(nameof(EnumToEnumMapSetting.Undefined), StringComparison.OrdinalIgnoreCase))
-            {
-                return EnumToEnumMapSetting.Undefined;
-            }
-
-            return EnumToEnumMapSetting.MemberName;
-        }
-
-        static EnumStringMapSetting GetEnumStringMapSettingFromString(string enumStringMapSettingValue)
-        {
-            if (enumStringMapSettingValue.Equals(nameof(EnumStringMapSetting.Description), StringComparison.OrdinalIgnoreCase))
-            {
-                return EnumStringMapSetting.Description;
-            }
-
-            if (enumStringMapSettingValue.Equals(nameof(EnumStringMapSetting.Undefined), StringComparison.OrdinalIgnoreCase))
-            {
-                return EnumStringMapSetting.Undefined;
-            }
-
-            return EnumStringMapSetting.MemberName;
-        }
-
-        static IdentityMapDeepCopySetting GetIdentityMapDeepCopySettingFromString(string identityMapDeepCopyValue)
-        {
-            if (identityMapDeepCopyValue.Equals(nameof(IdentityMapDeepCopySetting.DeepCopy), StringComparison.OrdinalIgnoreCase))
-            {
-                return IdentityMapDeepCopySetting.DeepCopy;
-            }
-
-            if (identityMapDeepCopyValue.Equals(nameof(IdentityMapDeepCopySetting.NestedDeepCopy), StringComparison.OrdinalIgnoreCase))
-            {
-                return IdentityMapDeepCopySetting.NestedDeepCopy;
-            }
-
-            if (identityMapDeepCopyValue.Equals(nameof(IdentityMapDeepCopySetting.Undefined), StringComparison.OrdinalIgnoreCase))
-            {
-                return IdentityMapDeepCopySetting.Undefined;
-            }
-
-            return IdentityMapDeepCopySetting.ShallowCopy;
-        }
-
-        static EnumerableConcreteTypeSetting GetEnumerableConcreteTypeSettingFromString(string enumerableConcreteTypeValue)
-        {
-            if (enumerableConcreteTypeValue.Equals(nameof(EnumerableConcreteTypeSetting.Array), StringComparison.OrdinalIgnoreCase))
-            {
-                return EnumerableConcreteTypeSetting.Array;
-            }
-
-            if (enumerableConcreteTypeValue.Equals(nameof(EnumerableConcreteTypeSetting.Undefined), StringComparison.OrdinalIgnoreCase))
-            {
-                return EnumerableConcreteTypeSetting.Undefined;
-            }
-
-            return EnumerableConcreteTypeSetting.List;
-        }
-
-        static DictionaryAssignmentSetting GetDictionaryAssignmentSettingFromString(string dictionaryAssignmentValue)
-        {
-            if (dictionaryAssignmentValue.Equals(nameof(DictionaryAssignmentSetting.Add), StringComparison.OrdinalIgnoreCase))
-            {
-                return DictionaryAssignmentSetting.Add;
-            }
-
-            if (dictionaryAssignmentValue.Equals(nameof(DictionaryAssignmentSetting.Undefined), StringComparison.OrdinalIgnoreCase))
-            {
-                return DictionaryAssignmentSetting.Undefined;
-            }
-
-            return DictionaryAssignmentSetting.Indexer;
-        }
-
-        static PragmaWarningSetting GetPragmaWarningSettingFromString(string enableSettings)
-        {
-            if (enableSettings.Equals(nameof(PragmaWarningSetting.Undefined), StringComparison.OrdinalIgnoreCase))
-            {
-                return PragmaWarningSetting.Undefined;
-            }
-
-            if (enableSettings.Equals(nameof(PragmaWarningSetting.NoBlock), StringComparison.OrdinalIgnoreCase))
-            {
-                return PragmaWarningSetting.NoBlock;
-            }
-
-            if (enableSettings.Equals(nameof(BooleanSetting.Disable), StringComparison.OrdinalIgnoreCase))
-            {
-                return PragmaWarningSetting.Disable;
-            }
-
-            return PragmaWarningSetting.Undefined;
-        }
-
-        static string? ReadFormatOption(AnalyzerConfigOptions options, string optionName)
-            => options.TryGetValue(GetOptionName(optionName), out var format)
-               && !string.IsNullOrWhiteSpace(format)
-                ? format
-                : null;
-
-        static DateTimeStyles? ReadDateTimeStylesOption(AnalyzerConfigOptions options, string optionName)
-            => options.TryGetValue(GetOptionName(optionName), out var dateTimeStyles)
-                ? ParseDateTimeStylesCodeHelper.TryParseFromString(dateTimeStyles)
-                : null;
-
-        static NumberStyles? ReadNumberStylesOption(AnalyzerConfigOptions options, string optionName)
-            => options.TryGetValue(GetOptionName(optionName), out var numberStyles)
-                ? ParseNumberStylesCodeHelper.TryParseFromString(numberStyles)
-                : null;
-
-        static short ReadDepthOption(AnalyzerConfigOptions options, string optionName, short defaultValue)
-        {
-            if (!options.TryGetValue(GetOptionName(optionName), out var depthValue)
-                || string.IsNullOrWhiteSpace(depthValue)
-                || !short.TryParse(depthValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed)
-                || parsed < 0)
-            {
-                return defaultValue;
-            }
-
-            return parsed;
-        }
+        this.BreakCompileTimeCycles = ReadBooleanSettingOption(options, MappaSettingsBreakCompileTimeCycles, BooleanSetting.Undefined);
+        this.EnumerableConcreteType = ReadEnumerableConcreteTypeSettingOption(options, MappaSettingsEnumerableConcreteType);
+        this.DictionaryAssignment = ReadDictionaryAssignmentSettingOption(options, MappaSettingsDictionaryAssignment);
     }
 
     /// <inheritdoc />
@@ -842,6 +553,226 @@ internal sealed class MappaGlobalOptions
     /// Gets a value indicating whether to report debug comments in the generated code.
     /// </summary>
     internal bool MappaDebugComments { get; }
+
+    private static bool ReadBooleanFlag(AnalyzerConfigOptions options, string optionName)
+        => options.TryGetValue(GetOptionName(optionName), out var value)
+           && !string.IsNullOrWhiteSpace(value)
+           && "true".Equals(value, StringComparison.OrdinalIgnoreCase);
+
+    private static string? ReadFormatOption(AnalyzerConfigOptions options, string optionName)
+        => options.TryGetValue(GetOptionName(optionName), out var format)
+           && !string.IsNullOrWhiteSpace(format)
+            ? format
+            : null;
+
+    private static DateTimeStyles? ReadDateTimeStylesOption(AnalyzerConfigOptions options, string optionName)
+        => options.TryGetValue(GetOptionName(optionName), out var dateTimeStyles)
+            ? ParseDateTimeStylesCodeHelper.TryParseFromString(dateTimeStyles)
+            : null;
+
+    private static NumberStyles? ReadNumberStylesOption(AnalyzerConfigOptions options, string optionName)
+        => options.TryGetValue(GetOptionName(optionName), out var numberStyles)
+            ? ParseNumberStylesCodeHelper.TryParseFromString(numberStyles)
+            : null;
+
+    private static short ReadDepthOption(AnalyzerConfigOptions options, string optionName, short defaultValue)
+    {
+        if (!options.TryGetValue(GetOptionName(optionName), out var depthValue)
+            || string.IsNullOrWhiteSpace(depthValue)
+            || !short.TryParse(depthValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed)
+            || parsed < 0)
+        {
+            return defaultValue;
+        }
+
+        return parsed;
+    }
+
+    private static CultureInfoSetting ReadCultureInfoSettingOption(AnalyzerConfigOptions options, string optionName)
+        => options.TryGetValue(GetOptionName(optionName), out var cultureInfoSettings)
+           && !string.IsNullOrWhiteSpace(cultureInfoSettings)
+            ? GetCultureInfoSettingsFromString(cultureInfoSettings)
+            : CultureInfoSetting.None;
+
+    private static BooleanSetting ReadBooleanSettingOption(AnalyzerConfigOptions options, string optionName, BooleanSetting defaultValue)
+        => options.TryGetValue(GetOptionName(optionName), out var value)
+            ? GetBooleanSettingFromString(value)
+            : defaultValue;
+
+    private static PragmaWarningSetting ReadPragmaWarningSettingOption(AnalyzerConfigOptions options, string optionName)
+        => options.TryGetValue(GetOptionName(optionName), out var pragmaWarning)
+            ? GetPragmaWarningSettingFromString(pragmaWarning)
+            : PragmaWarningSetting.NoBlock;
+
+    private static EnumStringMapSetting ReadEnumStringMapSettingOption(AnalyzerConfigOptions options, string optionName)
+        => options.TryGetValue(GetOptionName(optionName), out var enumStringMapSetting)
+            ? GetEnumStringMapSettingFromString(enumStringMapSetting)
+            : EnumStringMapSetting.MemberName;
+
+    private static EnumToEnumMapSetting ReadEnumToEnumMapSettingOption(AnalyzerConfigOptions options, string optionName)
+        => options.TryGetValue(GetOptionName(optionName), out var enumToEnumMapSetting)
+            ? GetEnumToEnumMapSettingFromString(enumToEnumMapSetting)
+            : EnumToEnumMapSetting.MemberName;
+
+    private static IdentityMapDeepCopySetting ReadIdentityMapDeepCopySettingOption(AnalyzerConfigOptions options, string optionName)
+        => options.TryGetValue(GetOptionName(optionName), out var identityMapDeepCopy)
+            ? GetIdentityMapDeepCopySettingFromString(identityMapDeepCopy)
+            : IdentityMapDeepCopySetting.ShallowCopy;
+
+    private static EnumerableConcreteTypeSetting ReadEnumerableConcreteTypeSettingOption(AnalyzerConfigOptions options, string optionName)
+        => options.TryGetValue(GetOptionName(optionName), out var enumerableConcreteType)
+            ? GetEnumerableConcreteTypeSettingFromString(enumerableConcreteType)
+            : EnumerableConcreteTypeSetting.List;
+
+    private static DictionaryAssignmentSetting ReadDictionaryAssignmentSettingOption(AnalyzerConfigOptions options, string optionName)
+        => options.TryGetValue(GetOptionName(optionName), out var dictionaryAssignment)
+            ? GetDictionaryAssignmentSettingFromString(dictionaryAssignment)
+            : DictionaryAssignmentSetting.Indexer;
+
+    private static CultureInfoSetting GetCultureInfoSettingsFromString(string cultureInfoSettings)
+    {
+        if (cultureInfoSettings.Equals(nameof(CultureInfoSetting.CurrentCulture), StringComparison.OrdinalIgnoreCase))
+        {
+            return CultureInfoSetting.CurrentCulture;
+        }
+
+        if (cultureInfoSettings.Equals(nameof(CultureInfoSetting.InvariantCulture), StringComparison.OrdinalIgnoreCase))
+        {
+            return CultureInfoSetting.InvariantCulture;
+        }
+
+        if (cultureInfoSettings.Equals(nameof(CultureInfoSetting.UserDefined), StringComparison.OrdinalIgnoreCase))
+        {
+            return CultureInfoSetting.UserDefined;
+        }
+
+        return CultureInfoSetting.None;
+    }
+
+    private static BooleanSetting GetBooleanSettingFromString(string enableSettings)
+    {
+        if (enableSettings.Equals(nameof(BooleanSetting.Undefined), StringComparison.OrdinalIgnoreCase))
+        {
+            return BooleanSetting.Undefined;
+        }
+
+        if (enableSettings.Equals(nameof(BooleanSetting.Enable), StringComparison.OrdinalIgnoreCase))
+        {
+            return BooleanSetting.Enable;
+        }
+
+        if (enableSettings.Equals(nameof(BooleanSetting.Disable), StringComparison.OrdinalIgnoreCase))
+        {
+            return BooleanSetting.Disable;
+        }
+
+        return BooleanSetting.Undefined;
+    }
+
+    private static EnumToEnumMapSetting GetEnumToEnumMapSettingFromString(string enumToEnumMapSettingValue)
+    {
+        if (enumToEnumMapSettingValue.Equals(nameof(EnumToEnumMapSetting.NumericValue), StringComparison.OrdinalIgnoreCase))
+        {
+            return EnumToEnumMapSetting.NumericValue;
+        }
+
+        if (enumToEnumMapSettingValue.Equals(nameof(EnumToEnumMapSetting.Description), StringComparison.OrdinalIgnoreCase))
+        {
+            return EnumToEnumMapSetting.Description;
+        }
+
+        if (enumToEnumMapSettingValue.Equals(nameof(EnumToEnumMapSetting.Undefined), StringComparison.OrdinalIgnoreCase))
+        {
+            return EnumToEnumMapSetting.Undefined;
+        }
+
+        return EnumToEnumMapSetting.MemberName;
+    }
+
+    private static EnumStringMapSetting GetEnumStringMapSettingFromString(string enumStringMapSettingValue)
+    {
+        if (enumStringMapSettingValue.Equals(nameof(EnumStringMapSetting.Description), StringComparison.OrdinalIgnoreCase))
+        {
+            return EnumStringMapSetting.Description;
+        }
+
+        if (enumStringMapSettingValue.Equals(nameof(EnumStringMapSetting.Undefined), StringComparison.OrdinalIgnoreCase))
+        {
+            return EnumStringMapSetting.Undefined;
+        }
+
+        return EnumStringMapSetting.MemberName;
+    }
+
+    private static IdentityMapDeepCopySetting GetIdentityMapDeepCopySettingFromString(string identityMapDeepCopyValue)
+    {
+        if (identityMapDeepCopyValue.Equals(nameof(IdentityMapDeepCopySetting.DeepCopy), StringComparison.OrdinalIgnoreCase))
+        {
+            return IdentityMapDeepCopySetting.DeepCopy;
+        }
+
+        if (identityMapDeepCopyValue.Equals(nameof(IdentityMapDeepCopySetting.NestedDeepCopy), StringComparison.OrdinalIgnoreCase))
+        {
+            return IdentityMapDeepCopySetting.NestedDeepCopy;
+        }
+
+        if (identityMapDeepCopyValue.Equals(nameof(IdentityMapDeepCopySetting.Undefined), StringComparison.OrdinalIgnoreCase))
+        {
+            return IdentityMapDeepCopySetting.Undefined;
+        }
+
+        return IdentityMapDeepCopySetting.ShallowCopy;
+    }
+
+    private static EnumerableConcreteTypeSetting GetEnumerableConcreteTypeSettingFromString(string enumerableConcreteTypeValue)
+    {
+        if (enumerableConcreteTypeValue.Equals(nameof(EnumerableConcreteTypeSetting.Array), StringComparison.OrdinalIgnoreCase))
+        {
+            return EnumerableConcreteTypeSetting.Array;
+        }
+
+        if (enumerableConcreteTypeValue.Equals(nameof(EnumerableConcreteTypeSetting.Undefined), StringComparison.OrdinalIgnoreCase))
+        {
+            return EnumerableConcreteTypeSetting.Undefined;
+        }
+
+        return EnumerableConcreteTypeSetting.List;
+    }
+
+    private static DictionaryAssignmentSetting GetDictionaryAssignmentSettingFromString(string dictionaryAssignmentValue)
+    {
+        if (dictionaryAssignmentValue.Equals(nameof(DictionaryAssignmentSetting.Add), StringComparison.OrdinalIgnoreCase))
+        {
+            return DictionaryAssignmentSetting.Add;
+        }
+
+        if (dictionaryAssignmentValue.Equals(nameof(DictionaryAssignmentSetting.Undefined), StringComparison.OrdinalIgnoreCase))
+        {
+            return DictionaryAssignmentSetting.Undefined;
+        }
+
+        return DictionaryAssignmentSetting.Indexer;
+    }
+
+    private static PragmaWarningSetting GetPragmaWarningSettingFromString(string enableSettings)
+    {
+        if (enableSettings.Equals(nameof(PragmaWarningSetting.Undefined), StringComparison.OrdinalIgnoreCase))
+        {
+            return PragmaWarningSetting.Undefined;
+        }
+
+        if (enableSettings.Equals(nameof(PragmaWarningSetting.NoBlock), StringComparison.OrdinalIgnoreCase))
+        {
+            return PragmaWarningSetting.NoBlock;
+        }
+
+        if (enableSettings.Equals(nameof(BooleanSetting.Disable), StringComparison.OrdinalIgnoreCase))
+        {
+            return PragmaWarningSetting.Disable;
+        }
+
+        return PragmaWarningSetting.Undefined;
+    }
 
     private static string GetOptionName(string name)
 #pragma warning disable CA1308 // Normalize strings to uppercase

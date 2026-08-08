@@ -48,48 +48,13 @@ internal sealed class MethodParameterMapStrategyBuilder
             return ($"return {strategySource};", JoinHeader(maxRuntimeDepthInitialization, header));
         }
 
-        var code = new List<string>();
-        if (maxRuntimeDepthInitialization is not null)
-        {
-            code.Add(maxRuntimeDepthInitialization);
-        }
-
-        var strategyInput = source;
-        if (beforeMapHooks.Any(hook => RequiresMappedValue(hook, context.Compilation)) &&
-            context.GetMapMethod().GetSourceParameterRefKind() is RefKind.In)
-        {
-            strategyInput = context.NextTemporary();
-            code.Add($"{this.MethodParameterMapStrategy.SourceType.ToDisplayString()} {strategyInput} = {source};");
-        }
-
-        foreach (var hook in beforeMapHooks)
-        {
-            code.Add(BuildHookInvocation(hook, strategyInput, context));
-        }
-
-        var (mappedValue, mappingCode) = ReferenceHandlingCodeGenerator.BuildRootSource(
-            this.MethodParameterMapStrategy.Strategy,
-            strategyInput,
+        return this.BuildSourceWithMapHooks(
+            source,
             context,
-            mappaGlobalOptions);
-        if (!string.IsNullOrWhiteSpace(mappingCode))
-        {
-            code.Add(mappingCode);
-        }
-
-        if (afterMapHooks.Count == 0)
-        {
-            return ($"return {mappedValue};", string.Join("\n", code));
-        }
-
-        var targetTemporary = context.NextTemporary();
-        code.Add($"{this.MethodParameterMapStrategy.TargetType.ToDisplayString()} {targetTemporary} = {mappedValue};");
-        foreach (var hook in afterMapHooks)
-        {
-            code.Add(BuildHookInvocation(hook, targetTemporary, context));
-        }
-
-        return ($"return {targetTemporary};", string.Join("\n", code));
+            mappaGlobalOptions,
+            maxRuntimeDepthInitialization,
+            beforeMapHooks,
+            afterMapHooks);
     }
 
     private static string JoinHeader(string? maxRuntimeDepthInitialization, string header)
@@ -166,4 +131,71 @@ internal sealed class MethodParameterMapStrategyBuilder
             IPropertySymbol property => property.Type,
             _ => throw new MappaGeneratorException($"Unexpected symbol kind '{fieldOrProperty.Kind}' for field or property '{fieldOrProperty.Name}'."),
         };
+
+    private (string VariableName, string Code) BuildSourceWithMapHooks(
+        string source,
+        MappaBuilderContext context,
+        MappaGlobalOptions mappaGlobalOptions,
+        string? maxRuntimeDepthInitialization,
+        IReadOnlyList<MapHook> beforeMapHooks,
+        IReadOnlyList<MapHook> afterMapHooks)
+    {
+        var code = new List<string>();
+        if (maxRuntimeDepthInitialization is not null)
+        {
+            code.Add(maxRuntimeDepthInitialization);
+        }
+
+        var strategyInput = this.ResolveStrategyInputForBeforeMapHooks(source, context, beforeMapHooks, code);
+
+        foreach (var hook in beforeMapHooks)
+        {
+            code.Add(BuildHookInvocation(hook, strategyInput, context));
+        }
+
+        var (mappedValue, mappingCode) = ReferenceHandlingCodeGenerator.BuildRootSource(
+            this.MethodParameterMapStrategy.Strategy,
+            strategyInput,
+            context,
+            mappaGlobalOptions);
+        if (!string.IsNullOrWhiteSpace(mappingCode))
+        {
+            code.Add(mappingCode);
+        }
+
+        if (afterMapHooks.Count == 0)
+        {
+            return ($"return {mappedValue};", string.Join("\n", code));
+        }
+
+        var targetTemporary = context.NextTemporary();
+        code.Add($"{this.MethodParameterMapStrategy.TargetType.ToDisplayString()} {targetTemporary} = {mappedValue};");
+        foreach (var hook in afterMapHooks)
+        {
+            code.Add(BuildHookInvocation(hook, targetTemporary, context));
+        }
+
+        return ($"return {targetTemporary};", string.Join("\n", code));
+    }
+
+    private string ResolveStrategyInputForBeforeMapHooks(
+        string source,
+        MappaBuilderContext context,
+        IReadOnlyList<MapHook> beforeMapHooks,
+        List<string> code)
+    {
+        if (!beforeMapHooks.Any(hook => RequiresMappedValue(hook, context.Compilation)))
+        {
+            return source;
+        }
+
+        if (context.GetMapMethod().GetSourceParameterRefKind() is not RefKind.In)
+        {
+            return source;
+        }
+
+        var strategyInput = context.NextTemporary();
+        code.Add($"{this.MethodParameterMapStrategy.SourceType.ToDisplayString()} {strategyInput} = {source};");
+        return strategyInput;
+    }
 }

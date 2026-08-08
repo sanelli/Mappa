@@ -37,112 +37,39 @@ internal sealed class DateAndTimeMapStrategyDetector
     {
         mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.TargetType);
 
-        // 01. DateTime -> DateOnly.
-        if (this.CanMapDateTimeToDateOnly())
+        foreach (var candidate in this.GetDateTimeMappingCandidates())
+#pragma warning disable S3267 // Loops should be simplified using the "Where" LINQ method
         {
-            mapStrategy = new DateTimeToDateOnlyMapStrategy(
-                this.context.TargetType,
-                this.context.SourceType);
-        }
+            if (!candidate.CanMap())
+            {
+                continue;
+            }
 
-        // 02. DateTime -> TimeOnly
-        else if (this.CanMapDateTimeToTimeOnly())
-        {
-            mapStrategy = new DateTimeToTimeOnlyMapStrategy(
-                this.context.TargetType,
-                this.context.SourceType);
+            mapStrategy = candidate.CreateStrategy();
+            return true;
         }
+#pragma warning restore S3267 // Loops should be simplified using the "Where" LINQ method
 
-        // 03. DateOnly -> DateTime
-        else if (this.CanMapDateOnlyToDateTime())
-        {
-            mapStrategy = new DateOnlyToDateTimeMapStrategy(
-                this.context.TargetType,
-                this.context.SourceType);
-        }
+        return false;
+    }
 
-        // 04. DateTime -> long.
-        else if (this.CanMapDateTimeToLong())
-        {
-            mapStrategy = new DateTimeToLongMapStrategy(
-                this.context.TargetType,
-                this.context.SourceType);
-        }
-
-        // 05. long -> DateTime.
-        else if (this.CanMapLongOrSmallerNumericTypeToDateTime())
-        {
-            mapStrategy = new LongToDateTimeMapStrategy(
-                this.context.TargetType,
-                this.context.SourceType);
-        }
-
-        // 06. DateOnly -> long.
-        else if (this.CanMapDateOnlyToLong())
-        {
-            mapStrategy = new DateOnlyToLongMapStrategy(
-                this.context.TargetType,
-                this.context.SourceType);
-        }
-
-        // 07. TimeSpan -> double.
-        else if (this.CanMapTimeSpanToDouble())
-        {
-            mapStrategy = new TimeSpanToDoubleMapStrategy(
-                this.context.TargetType,
-                this.context.SourceType);
-        }
-
-        // 08. double -> TimeSpan.
-        else if (this.CanMapDoubleToTimeSpan())
-        {
-            mapStrategy = new DoubleToTimeSpanMapStrategy(
-                this.context.TargetType,
-                this.context.SourceType);
-        }
-
-        // 09. DateTimeOffset -> DateOnly.
-        else if (this.CanMapDateTimeOffsetToDateOnly())
-        {
-            mapStrategy = new DateTimeOffsetToDateOnlyMapStrategy(
-                this.context.TargetType,
-                this.context.SourceType);
-        }
-
-        // 10. DateTimeOffset -> TimeOnly
-        else if (this.CanMapDateTimeOffsetToTimeOnly())
-        {
-            mapStrategy = new DateTimeOffsetToTimeOnlyMapStrategy(
-                this.context.TargetType,
-                this.context.SourceType);
-        }
-
-        // 11. DateTimeOffset -> long.
-        else if (this.CanMapDateTimeOffsetToLong())
-        {
-            mapStrategy = new DateTimeOffsetToLongMapStrategy(
-                this.context.TargetType,
-                this.context.SourceType);
-        }
-
-        // 12. long -> DateTimeOffset.
-        else if (this.CanMapLongOrSmallerNumericTypeToDateTimeOffset())
-        {
-            mapStrategy = new LongToDateTimeOffsetMapStrategy(
-                this.context.TargetType,
-                this.context.SourceType);
-        }
-
-        // 13. DateTimeOffset -> DateTime.
-        // NOTE: The reverse is handled by the identity strategy.
-        else if (this.CanMapDateTimeOffsetToDateTime())
-        {
-            mapStrategy = new DateTimeOffsetToDateTimeMapStrategy(
-                this.context.TargetType,
-                this.context.SourceType);
-        }
-
-        return mapStrategy is not NoMapStrategy;
+    private IEnumerable<(Func<bool> CanMap, Func<MapStrategy> CreateStrategy)> GetDateTimeMappingCandidates()
+    {
+        var targetType = this.context.TargetType;
+        var sourceType = this.context.SourceType;
+        yield return (this.CanMapDateTimeToDateOnly, () => new DateTimeToDateOnlyMapStrategy(targetType, sourceType));
+        yield return (this.CanMapDateTimeToTimeOnly, () => new DateTimeToTimeOnlyMapStrategy(targetType, sourceType));
+        yield return (this.CanMapDateOnlyToDateTime, () => new DateOnlyToDateTimeMapStrategy(targetType, sourceType));
+        yield return (this.CanMapDateTimeToLong, () => new DateTimeToLongMapStrategy(targetType, sourceType));
+        yield return (this.CanMapLongOrSmallerNumericTypeToDateTime, () => new LongToDateTimeMapStrategy(targetType, sourceType));
+        yield return (this.CanMapDateOnlyToLong, () => new DateOnlyToLongMapStrategy(targetType, sourceType));
+        yield return (this.CanMapTimeSpanToDouble, () => new TimeSpanToDoubleMapStrategy(targetType, sourceType));
+        yield return (this.CanMapDoubleToTimeSpan, () => new DoubleToTimeSpanMapStrategy(targetType, sourceType));
+        yield return (this.CanMapDateTimeOffsetToDateOnly, () => new DateTimeOffsetToDateOnlyMapStrategy(targetType, sourceType));
+        yield return (this.CanMapDateTimeOffsetToTimeOnly, () => new DateTimeOffsetToTimeOnlyMapStrategy(targetType, sourceType));
+        yield return (this.CanMapDateTimeOffsetToLong, () => new DateTimeOffsetToLongMapStrategy(targetType, sourceType));
+        yield return (this.CanMapLongOrSmallerNumericTypeToDateTimeOffset, () => new LongToDateTimeOffsetMapStrategy(targetType, sourceType));
+        yield return (this.CanMapDateTimeOffsetToDateTime, () => new DateTimeOffsetToDateTimeMapStrategy(targetType, sourceType));
     }
 
     private bool CanMapDateTimeToDateOnly()

@@ -86,118 +86,172 @@ internal sealed class PolymorphismMapStrategyBuilder(PolymorphismMapStrategy str
             case MappaTypeMappingDefaultBehavior.Undefined:
                 throw new MappaGeneratorException("Unexpected undefined behavior while generating default branch for type mapping.");
             case MappaTypeMappingDefaultBehavior.Throw:
-
-                var exceptionToThrow = attribute.Type is { } exceptionType
-                    ? (exceptionType.FullName ?? throw new MappaGeneratorException("Cannot obtain exception type name"))
-                    : "System.ArgumentOutOfRangeException";
-
-                var exceptionSymbol = context.Compilation.GetTypeByMetadataName(exceptionToThrow)
-                    ?? throw new MappaGeneratorException("Cannot obtain exception type by name");
-                var parameters = string.Empty;
-
-                if (exceptionSymbol.HasNamedTypeSymbolAccessibleSingleStringParametersConstructor(context.Compilation))
-                {
-                    parameters = $"nameof({source})";
-                }
-                else if (!exceptionSymbol.HasNamedTypeSymbolAccessibleZeroParametersConstructor(context.Compilation))
-                {
-                    throw new MappaGeneratorException("Cannot identify a suitable constructor to generate the exception");
-                }
-
-                builder.AppendLine($"throw new global::{exceptionToThrow}({parameters});");
+                AppendThrowDefaultCode(attribute, source, context, builder);
                 break;
             case MappaTypeMappingDefaultBehavior.Default:
-                builder.AppendLine($"{targetTemporary} = default;");
-                builder.AppendLine("break;");
+                AppendAssignDefaultAndBreak(targetTemporary, builder);
                 break;
             case MappaTypeMappingDefaultBehavior.Null:
-                builder.AppendLine($"{targetTemporary} = null;");
-                builder.AppendLine("break;");
+                AppendAssignNullAndBreak(targetTemporary, builder);
                 break;
             case MappaTypeMappingDefaultBehavior.MapSourceType:
-                var (defaultVariable, defaultCode) = ReferenceHandlingCodeGenerator.BuildNestedSource(
-                    defaultBehaviorStrategy,
+                AppendMapSourceTypeDefaultCode(
                     source,
+                    targetTemporary,
+                    defaultBehaviorStrategy,
+                    builder,
                     context,
                     mappaGlobalOptions);
-                if (!string.IsNullOrWhiteSpace(defaultCode))
-                {
-                    builder.AppendLine(defaultCode);
-                }
-
-                builder.AppendLine($"{targetTemporary} = {defaultVariable};");
-                builder.AppendLine("break;");
                 break;
             case MappaTypeMappingDefaultBehavior.InvokeMethod:
-                if (defaultInvokeMethod is null)
-                {
-                    throw new MappaGeneratorException("Cannot identify the method to be invoked.");
-                }
-
-                var invokeMethodTypeSymbol =
-                    (attribute.Type is { } invokingType && !string.IsNullOrWhiteSpace(invokingType.FullName))
-                        ? context.Compilation.GetTypeByMetadataName(invokingType.FullName)
-                        : context.GetMapMethod().ContainingType as ITypeSymbol;
-                if (invokeMethodTypeSymbol is null)
-                {
-                    throw new MappaGeneratorException("Cannot identify the type on which the method is being invoked on.");
-                }
-
-                var methodInvocationCode = BuildMethodInvocationCode(
-                    context.GetMapMethod().ContainingType,
-                    invokeMethodTypeSymbol,
-                    defaultInvokeMethod,
+                AppendInvokeMethodDefaultCode(
+                    attribute,
                     source,
-                    contextParameterName);
-                builder.AppendLine($"{targetTemporary} = {methodInvocationCode};");
-                builder.AppendLine("break;");
+                    targetTemporary,
+                    defaultInvokeMethod,
+                    contextParameterName,
+                    builder,
+                    context);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(attribute));
         }
+    }
 
-        static string BuildMethodInvocationCode(
-            ITypeSymbol mapMethodTypeSymbol,
-            ITypeSymbol? typeSymbol,
-            IMethodSymbol method,
-            string source,
-            string? contextParameterName)
+    private static void AppendThrowDefaultCode(
+        MappaTypeMappingDefaultAttribute attribute,
+        string source,
+        MappaBuilderContext context,
+        PrettyCode.StringBuilder builder)
+    {
+        var exceptionToThrow = attribute.Type is { } exceptionType
+            ? (exceptionType.FullName ?? throw new MappaGeneratorException("Cannot obtain exception type name"))
+            : "System.ArgumentOutOfRangeException";
+
+        var exceptionSymbol = context.Compilation.GetTypeByMetadataName(exceptionToThrow)
+            ?? throw new MappaGeneratorException("Cannot obtain exception type by name");
+        var parameters = string.Empty;
+
+        if (exceptionSymbol.HasNamedTypeSymbolAccessibleSingleStringParametersConstructor(context.Compilation))
         {
-            var head = string.Empty;
-            if (typeSymbol is not null && !SymbolEqualityComparer.Default.Equals(typeSymbol, mapMethodTypeSymbol))
-            {
-                head = $"global::{typeSymbol.ToDisplayString()}.";
-            }
-            else if (!method.IsStatic)
-            {
-                head = "this.";
-            }
-
-            string parameters;
-            switch (method.Parameters.Length)
-            {
-                case 0:
-                    parameters = string.Empty;
-                    break;
-
-                case 1:
-                    parameters = source;
-                    break;
-
-                case 2:
-                    if (string.IsNullOrWhiteSpace(contextParameterName))
-                    {
-                        throw new MappaGeneratorException("Default mapping method requires to parameters but context on original mapping is not provided.");
-                    }
-
-                    parameters = $"{source}, {contextParameterName}";
-                    break;
-
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(method), $@"Unexpected number of parameters for method '{method.Name}'.");
-            }
-
-            return $"{head}{method.Name}({parameters})";
+            parameters = $"nameof({source})";
         }
+        else if (!exceptionSymbol.HasNamedTypeSymbolAccessibleZeroParametersConstructor(context.Compilation))
+        {
+            throw new MappaGeneratorException("Cannot identify a suitable constructor to generate the exception");
+        }
+
+        builder.AppendLine($"throw new global::{exceptionToThrow}({parameters});");
+    }
+
+    private static void AppendAssignDefaultAndBreak(string targetTemporary, PrettyCode.StringBuilder builder)
+    {
+        builder.AppendLine($"{targetTemporary} = default;");
+        builder.AppendLine("break;");
+    }
+
+    private static void AppendAssignNullAndBreak(string targetTemporary, PrettyCode.StringBuilder builder)
+    {
+        builder.AppendLine($"{targetTemporary} = null;");
+        builder.AppendLine("break;");
+    }
+
+    private static void AppendMapSourceTypeDefaultCode(
+        string source,
+        string targetTemporary,
+        MapStrategy defaultBehaviorStrategy,
+        PrettyCode.StringBuilder builder,
+        MappaBuilderContext context,
+        MappaGlobalOptions mappaGlobalOptions)
+    {
+        var (defaultVariable, defaultCode) = ReferenceHandlingCodeGenerator.BuildNestedSource(
+            defaultBehaviorStrategy,
+            source,
+            context,
+            mappaGlobalOptions);
+        if (!string.IsNullOrWhiteSpace(defaultCode))
+        {
+            builder.AppendLine(defaultCode);
+        }
+
+        builder.AppendLine($"{targetTemporary} = {defaultVariable};");
+        builder.AppendLine("break;");
+    }
+
+    private static void AppendInvokeMethodDefaultCode(
+        MappaTypeMappingDefaultAttribute attribute,
+        string source,
+        string targetTemporary,
+        IMethodSymbol? defaultInvokeMethod,
+        string? contextParameterName,
+        PrettyCode.StringBuilder builder,
+        MappaBuilderContext context)
+    {
+        if (defaultInvokeMethod is null)
+        {
+            throw new MappaGeneratorException("Cannot identify the method to be invoked.");
+        }
+
+        var invokeMethodTypeSymbol =
+            (attribute.Type is { } invokingType && !string.IsNullOrWhiteSpace(invokingType.FullName))
+                ? context.Compilation.GetTypeByMetadataName(invokingType.FullName)
+                : context.GetMapMethod().ContainingType as ITypeSymbol;
+        if (invokeMethodTypeSymbol is null)
+        {
+            throw new MappaGeneratorException("Cannot identify the type on which the method is being invoked on.");
+        }
+
+        var methodInvocationCode = BuildMethodInvocationCode(
+            context.GetMapMethod().ContainingType,
+            invokeMethodTypeSymbol,
+            defaultInvokeMethod,
+            source,
+            contextParameterName);
+        builder.AppendLine($"{targetTemporary} = {methodInvocationCode};");
+        builder.AppendLine("break;");
+    }
+
+    private static string BuildMethodInvocationCode(
+        ITypeSymbol mapMethodTypeSymbol,
+        ITypeSymbol? typeSymbol,
+        IMethodSymbol method,
+        string source,
+        string? contextParameterName)
+    {
+        var head = string.Empty;
+        if (typeSymbol is not null && !SymbolEqualityComparer.Default.Equals(typeSymbol, mapMethodTypeSymbol))
+        {
+            head = $"global::{typeSymbol.ToDisplayString()}.";
+        }
+        else if (!method.IsStatic)
+        {
+            head = "this.";
+        }
+
+        string parameters;
+        switch (method.Parameters.Length)
+        {
+            case 0:
+                parameters = string.Empty;
+                break;
+
+            case 1:
+                parameters = source;
+                break;
+
+            case 2:
+                if (string.IsNullOrWhiteSpace(contextParameterName))
+                {
+                    throw new MappaGeneratorException("Default mapping method requires to parameters but context on original mapping is not provided.");
+                }
+
+                parameters = $"{source}, {contextParameterName}";
+                break;
+
+            default:
+                throw new ArgumentOutOfRangeException(nameof(method), $@"Unexpected number of parameters for method '{method.Name}'.");
+        }
+
+        return $"{head}{method.Name}({parameters})";
     }
 }

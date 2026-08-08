@@ -8,6 +8,7 @@ using Mappa.Generator.Extensions;
 using Mappa.Generator.Models;
 
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Mappa.Generator.Helpers;
 
@@ -48,56 +49,192 @@ internal static class ProjectionMapMethodEligibilityValidator
             return true;
         }
 
+        return ValidateProjectionQueryableMethod(
+            mapMethod,
+            compilation,
+            classContext,
+            classBeforeMapAttributes,
+            classAfterMapAttributes,
+            classObjectFactoryAttributes,
+            methodObjectFactoryAttributes,
+            mappaUserSettings);
+    }
+
+    private static bool ValidateProjectionQueryableMethod(
+        MapMethod mapMethod,
+        Compilation compilation,
+        MappaClassGeneratorContext classContext,
+        MapHookAttributeData[] classBeforeMapAttributes,
+        MapHookAttributeData[] classAfterMapAttributes,
+        MappaObjectFactoryAttributeData[] classObjectFactoryAttributes,
+        MappaObjectFactoryAttributeData[] methodObjectFactoryAttributes,
+        IMappaUserSettings mappaUserSettings)
+    {
         var methodDeclarationSyntax = mapMethod.MethodDeclarationSyntax;
         var methodName = mapMethod.MethodName;
 
-        if (mapMethod.MethodSymbol.Parameters.Length > 1
-            && mapMethod.MethodSymbol.SecondParameterIsMappaContext(compilation))
+        if (mapMethod.MethodSymbol is not IMethodSymbol methodSymbol)
         {
-            classContext.ReportDiagnostic(
-                MappaDiagnostics.ProjectionMethodHasMappaContextParameter(methodDeclarationSyntax, methodName));
+            return true;
+        }
+
+        if (!ValidateProjectionQueryableHasNoMappaContextParameter(
+                methodSymbol,
+                compilation,
+                classContext,
+                methodDeclarationSyntax,
+                methodName))
+        {
             return false;
         }
 
-        if (ReferenceHandlingCodeGenerator.IsReferenceHandlingRequested(mappaUserSettings))
+        if (!ValidateProjectionQueryableHasNoReferenceHandling(
+                mappaUserSettings,
+                classContext,
+                methodDeclarationSyntax,
+                methodName))
         {
-            classContext.ReportDiagnostic(
-                MappaDiagnostics.ProjectionMappingNotSupported(
-                    methodDeclarationSyntax?.GetLocation(),
-                    methodName,
-                    "reference handling"));
             return false;
         }
 
-        var methodAttributes = mapMethod.MethodSymbol.GetAttributes();
-        var hasMethodBeforeMapHooks = methodAttributes.GetMappaBeforeMapAttributes(compilation).Length > 0;
-        var hasMethodAfterMapHooks = methodAttributes.GetMappaAfterMapAttributes(compilation).Length > 0;
-        if (classBeforeMapAttributes.Length > 0
-            || classAfterMapAttributes.Length > 0
-            || hasMethodBeforeMapHooks
-            || hasMethodAfterMapHooks)
+        if (!ValidateProjectionQueryableHasNoBeforeOrAfterMapHooks(
+                mapMethod,
+                compilation,
+                classContext,
+                classBeforeMapAttributes,
+                classAfterMapAttributes,
+                methodDeclarationSyntax,
+                methodName))
         {
-            classContext.ReportDiagnostic(
-                MappaDiagnostics.ProjectionMethodHasBeforeOrAfterMapHooks(methodDeclarationSyntax, methodName));
             return false;
         }
 
-        if (classObjectFactoryAttributes.Length > 0
-            || methodObjectFactoryAttributes.Length > 0)
+        if (!ValidateProjectionQueryableHasNoObjectFactory(
+                classObjectFactoryAttributes,
+                methodObjectFactoryAttributes,
+                classContext,
+                methodDeclarationSyntax,
+                methodName))
         {
-            classContext.ReportDiagnostic(
-                MappaDiagnostics.ProjectionMethodHasObjectFactory(methodDeclarationSyntax, methodName));
             return false;
         }
 
-        if (mapMethod.GetAttribute<MappaAllowInaccessibleSourceMembersAttribute>() is not null
-            || mapMethod.GetAttribute<MappaAllowInaccessibleTargetMembersAttribute>() is not null)
+        return ValidateProjectionQueryableHasNoAllowInaccessibleMembers(mapMethod, classContext, methodDeclarationSyntax, methodName);
+    }
+
+    private static bool ValidateProjectionQueryableHasNoMappaContextParameter(
+        IMethodSymbol methodSymbol,
+        Compilation compilation,
+        MappaClassGeneratorContext classContext,
+        MethodDeclarationSyntax? methodDeclarationSyntax,
+        string methodName)
+    {
+        if (methodSymbol.Parameters.Length <= 1
+            || !methodSymbol.SecondParameterIsMappaContext(compilation))
         {
-            classContext.ReportDiagnostic(
-                MappaDiagnostics.ProjectionMethodHasAllowInaccessibleMembers(methodDeclarationSyntax, methodName));
+            return true;
+        }
+
+        classContext.ReportDiagnostic(
+            MappaDiagnostics.ProjectionMethodHasMappaContextParameter(methodDeclarationSyntax, methodName));
+        return false;
+    }
+
+    private static bool ValidateProjectionQueryableHasNoReferenceHandling(
+        IMappaUserSettings mappaUserSettings,
+        MappaClassGeneratorContext classContext,
+        MethodDeclarationSyntax? methodDeclarationSyntax,
+        string methodName)
+    {
+        if (!ReferenceHandlingCodeGenerator.IsReferenceHandlingRequested(mappaUserSettings))
+        {
+            return true;
+        }
+
+        classContext.ReportDiagnostic(
+            MappaDiagnostics.ProjectionMappingNotSupported(
+                methodDeclarationSyntax?.GetLocation(),
+                methodName,
+                "reference handling"));
+        return false;
+    }
+
+    private static bool ValidateProjectionQueryableHasNoBeforeOrAfterMapHooks(
+        MapMethod mapMethod,
+        Compilation compilation,
+        MappaClassGeneratorContext classContext,
+        MapHookAttributeData[] classBeforeMapAttributes,
+        MapHookAttributeData[] classAfterMapAttributes,
+        MethodDeclarationSyntax? methodDeclarationSyntax,
+        string methodName)
+    {
+        if (!HasBeforeOrAfterMapHooks(
+                mapMethod,
+                compilation,
+                classBeforeMapAttributes,
+                classAfterMapAttributes))
+        {
+            return true;
+        }
+
+        classContext.ReportDiagnostic(
+            MappaDiagnostics.ProjectionMethodHasBeforeOrAfterMapHooks(methodDeclarationSyntax, methodName));
+        return false;
+    }
+
+    private static bool ValidateProjectionQueryableHasNoObjectFactory(
+        MappaObjectFactoryAttributeData[] classObjectFactoryAttributes,
+        MappaObjectFactoryAttributeData[] methodObjectFactoryAttributes,
+        MappaClassGeneratorContext classContext,
+        MethodDeclarationSyntax? methodDeclarationSyntax,
+        string methodName)
+    {
+        if (classObjectFactoryAttributes.Length == 0 && methodObjectFactoryAttributes.Length == 0)
+        {
+            return true;
+        }
+
+        classContext.ReportDiagnostic(
+            MappaDiagnostics.ProjectionMethodHasObjectFactory(methodDeclarationSyntax, methodName));
+        return false;
+    }
+
+    private static bool ValidateProjectionQueryableHasNoAllowInaccessibleMembers(
+        MapMethod mapMethod,
+        MappaClassGeneratorContext classContext,
+        MethodDeclarationSyntax? methodDeclarationSyntax,
+        string methodName)
+    {
+        if (mapMethod.GetAttribute<MappaAllowInaccessibleSourceMembersAttribute>() is null
+            && mapMethod.GetAttribute<MappaAllowInaccessibleTargetMembersAttribute>() is null)
+        {
+            return true;
+        }
+
+        classContext.ReportDiagnostic(
+            MappaDiagnostics.ProjectionMethodHasAllowInaccessibleMembers(methodDeclarationSyntax, methodName));
+        return false;
+    }
+
+    private static bool HasBeforeOrAfterMapHooks(
+        MapMethod mapMethod,
+        Compilation compilation,
+        MapHookAttributeData[] classBeforeMapAttributes,
+        MapHookAttributeData[] classAfterMapAttributes)
+    {
+        if (classBeforeMapAttributes.Length > 0 || classAfterMapAttributes.Length > 0)
+        {
+            return true;
+        }
+
+        var methodAttributes = mapMethod.MethodSymbol?.GetAttributes();
+        if (methodAttributes is null)
+        {
             return false;
         }
 
-        return true;
+        var attributes = methodAttributes.GetValueOrDefault();
+        return attributes.GetMappaBeforeMapAttributes(compilation).Length > 0
+               || attributes.GetMappaAfterMapAttributes(compilation).Length > 0;
     }
 }

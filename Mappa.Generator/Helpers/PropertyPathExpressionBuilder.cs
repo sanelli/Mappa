@@ -57,36 +57,24 @@ internal static class PropertyPathExpressionBuilder
             return chainExpression;
         }
 
-        var expression = chainExpression;
-        var diagnosticPath = string.Empty;
-        var usedConditionalAccess = false;
-        var receiverTypeForAccess = pathStartingType;
+        var segmentChain = BuildSegmentAccessChain(
+            chainExpression,
+            pathSegments,
+            pathStartingType,
+            nullableEnabled,
+            resolvedProperties,
+            out var diagnosticPath,
+            out var receiverTypeForAccess,
+            out var usedConditionalAccess);
 
-        for (var index = 0; index < pathSegments.Length; index++)
-        {
-            var segment = pathSegments[index];
-            var useConditionalAccess = ShouldUseConditionalAccess(receiverTypeForAccess, nullableEnabled);
-            usedConditionalAccess = usedConditionalAccess || useConditionalAccess;
-            var accessOperator = useConditionalAccess ? "?." : ".";
-            expression = $"{expression}{accessOperator}{segment}";
-            diagnosticPath = string.IsNullOrWhiteSpace(diagnosticPath)
-                ? segment
-                : $"{diagnosticPath}.{segment}";
-            receiverTypeForAccess = resolvedProperties[index].Type;
-        }
-
-        // Append ?? throw only when the access expression can be null and the target cannot.
-        var expressionCanBeNull = usedConditionalAccess
-            || IsNullableCapableType(receiverTypeForAccess, nullableEnabled);
-        if (expressionCanBeNull && !targetType.IsNullable())
-        {
-            var pathForDiagnostic = string.IsNullOrWhiteSpace(diagnosticPathOverride)
-                ? diagnosticPath
-                : diagnosticPathOverride;
-            expression = $"{expression} ?? throw new System.NullReferenceException({CSharpLiteralHelper.ToStringLiteral($"\"{pathForDiagnostic}\" is null.")})";
-        }
-
-        return expression;
+        return MaybeAppendNullCoalescingThrow(
+            segmentChain,
+            usedConditionalAccess,
+            receiverTypeForAccess,
+            nullableEnabled,
+            targetType,
+            diagnosticPath,
+            diagnosticPathOverride);
     }
 
     /// <summary>
@@ -104,6 +92,60 @@ internal static class PropertyPathExpressionBuilder
         }
 
         return $"{receiverExpression}.{path.ToDotSeparatedString()}";
+    }
+
+    private static string BuildSegmentAccessChain(
+        string chainExpression,
+        string[] pathSegments,
+        ITypeSymbol pathStartingType,
+        bool nullableEnabled,
+        IPropertySymbol[] resolvedProperties,
+        out string diagnosticPath,
+        out ITypeSymbol receiverTypeForAccess,
+        out bool usedConditionalAccess)
+    {
+        var expression = chainExpression;
+        diagnosticPath = string.Empty;
+        usedConditionalAccess = false;
+        var receiverTypeForAccessLocal = pathStartingType;
+
+        for (var index = 0; index < pathSegments.Length; index++)
+        {
+            var segment = pathSegments[index];
+            var useConditionalAccess = ShouldUseConditionalAccess(receiverTypeForAccessLocal, nullableEnabled);
+            usedConditionalAccess = usedConditionalAccess || useConditionalAccess;
+            var accessOperator = useConditionalAccess ? "?." : ".";
+            expression = $"{expression}{accessOperator}{segment}";
+            diagnosticPath = string.IsNullOrWhiteSpace(diagnosticPath)
+                ? segment
+                : $"{diagnosticPath}.{segment}";
+            receiverTypeForAccessLocal = resolvedProperties[index].Type;
+        }
+
+        receiverTypeForAccess = receiverTypeForAccessLocal;
+        return expression;
+    }
+
+    private static string MaybeAppendNullCoalescingThrow(
+        string expression,
+        bool usedConditionalAccess,
+        ITypeSymbol receiverTypeForAccess,
+        bool nullableEnabled,
+        ITypeSymbol targetType,
+        string diagnosticPath,
+        string? diagnosticPathOverride)
+    {
+        var expressionCanBeNull = usedConditionalAccess
+            || IsNullableCapableType(receiverTypeForAccess, nullableEnabled);
+        if (!expressionCanBeNull || targetType.IsNullable())
+        {
+            return expression;
+        }
+
+        var pathForDiagnostic = string.IsNullOrWhiteSpace(diagnosticPathOverride)
+            ? diagnosticPath
+            : diagnosticPathOverride;
+        return $"{expression} ?? throw new System.NullReferenceException({CSharpLiteralHelper.ToStringLiteral($"\"{pathForDiagnostic}\" is null.")})";
     }
 
     private static bool ShouldUseConditionalAccess(ITypeSymbol segmentType, bool nullableEnabled)

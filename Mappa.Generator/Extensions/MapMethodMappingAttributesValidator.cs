@@ -15,7 +15,7 @@ namespace Mappa.Generator.Extensions;
 /// <summary>
 /// Extension methods that validate mapping attributes declared on a map method.
 /// </summary>
-internal static class MapMethodMappingAttributesValidator
+internal static partial class MapMethodMappingAttributesValidator
 {
     /// <summary>
     /// Reports a warning for each mapping attribute whose <c>TargetPropertyName</c>
@@ -66,104 +66,37 @@ internal static class MapMethodMappingAttributesValidator
         var targetTypeName = targetType.ToDisplayString();
         var sourceTypeName = sourceType.ToDisplayString();
 
-        foreach (var attribute in mapMethod.GetAttributes<MappaUsePropertyAttribute>())
-        {
-            ValidateTargetPropertyPath(
-                context,
-                methodDeclarationSyntax,
-                methodName,
-                targetTypeName,
-                nameof(MappaUsePropertyAttribute),
-                attribute.TargetPropertyName,
-                propertyNames,
-                constructorParameterNames,
-                targetType,
-                context.PropertyPathContext);
-            ValidateSourcePropertyPath(
-                context,
-                methodDeclarationSyntax,
-                methodName,
-                sourceTypeName,
-                nameof(MappaUsePropertyAttribute),
-                attribute.TargetPropertyName,
-                attribute.SourcePropertyName,
-                sourceType,
-                context.PropertyPathContext);
-        }
+        var validationContext = new TargetNamesValidationContext(
+            methodDeclarationSyntax,
+            methodName,
+            targetTypeName,
+            sourceTypeName,
+            propertyNames,
+            constructorParameterNames,
+            targetType,
+            sourceType,
+            context.PropertyPathContext);
 
-        foreach (var attribute in mapMethod.GetAttributes<MappaInvokeMethodAttribute>())
-        {
-            ValidateTargetPropertyPath(
-                context,
-                methodDeclarationSyntax,
-                methodName,
-                targetTypeName,
-                nameof(MappaInvokeMethodAttribute),
-                attribute.TargetPropertyName,
-                propertyNames,
-                constructorParameterNames,
-                targetType,
-                context.PropertyPathContext);
-
-            if (!string.IsNullOrWhiteSpace(attribute.SourcePropertyName))
-            {
-                ValidateSourcePropertyPath(
-                    context,
-                    methodDeclarationSyntax,
-                    methodName,
-                    sourceTypeName,
-                    nameof(MappaInvokeMethodAttribute),
-                    attribute.TargetPropertyName,
-                    attribute.SourcePropertyName!,
-                    sourceType,
-                    context.PropertyPathContext);
-            }
-        }
-
-        foreach (var attribute in mapMethod.GetAttributes<MappaAssignFromContextAttribute>())
-        {
-            ValidateTargetPropertyPath(
-                context,
-                methodDeclarationSyntax,
-                methodName,
-                targetTypeName,
-                nameof(MappaAssignFromContextAttribute),
-                attribute.TargetPropertyName,
-                propertyNames,
-                constructorParameterNames,
-                targetType,
-                context.PropertyPathContext);
-        }
-
-        foreach (var attribute in mapMethod.GetAttributes<MappaAssignFromConstantAttribute>())
-        {
-            ValidateTargetPropertyPath(
-                context,
-                methodDeclarationSyntax,
-                methodName,
-                targetTypeName,
-                nameof(MappaAssignFromConstantAttribute),
-                attribute.TargetPropertyName,
-                propertyNames,
-                constructorParameterNames,
-                targetType,
-                context.PropertyPathContext);
-        }
-
-        foreach (var ignoreAttribute in mapMethod.GetAttributes<MappaIgnoreTargetPropertyAttribute>())
-        {
-            ValidateTargetPropertyPath(
-                context,
-                methodDeclarationSyntax,
-                methodName,
-                targetTypeName,
-                nameof(MappaIgnoreTargetPropertyAttribute),
-                ignoreAttribute.TargetPropertyName,
-                propertyNames,
-                constructorParameterNames,
-                targetType,
-                context.PropertyPathContext);
-        }
+        ValidateUsePropertyTargetNames(context, validationContext, mapMethod.GetAttributes<MappaUsePropertyAttribute>());
+        ValidateInvokeMethodTargetNames(context, validationContext, mapMethod.GetAttributes<MappaInvokeMethodAttribute>());
+        ValidateTargetOnlyAttributeNames(
+            context,
+            validationContext,
+            mapMethod.GetAttributes<MappaAssignFromContextAttribute>(),
+            nameof(MappaAssignFromContextAttribute),
+            attribute => attribute.TargetPropertyName);
+        ValidateTargetOnlyAttributeNames(
+            context,
+            validationContext,
+            mapMethod.GetAttributes<MappaAssignFromConstantAttribute>(),
+            nameof(MappaAssignFromConstantAttribute),
+            attribute => attribute.TargetPropertyName);
+        ValidateTargetOnlyAttributeNames(
+            context,
+            validationContext,
+            mapMethod.GetAttributes<MappaIgnoreTargetPropertyAttribute>(),
+            nameof(MappaIgnoreTargetPropertyAttribute),
+            attribute => attribute.TargetPropertyName);
     }
 
     /// <summary>
@@ -275,35 +208,14 @@ internal static class MapMethodMappingAttributesValidator
 
         foreach (var propertyName in mustMapAttribute.TargetPropertyNames.Distinct(StringComparer.Ordinal))
         {
-            if (ignoredPropertyNames.Contains(propertyName))
-            {
-                context.ReportDiagnostic(MappaDiagnostics.MultipleAttributesTargetTheSamePropertyOrParameter(
-                    methodDeclarationSyntax,
-                    propertyName));
-            }
-
-            var targetProperty = Array.Find(
+            ValidateSingleMustMapTargetPropertyName(
+                context,
+                methodDeclarationSyntax,
+                methodName,
+                targetTypeName,
                 targetProperties,
-                property => property.Name.Equals(propertyName, StringComparison.Ordinal));
-            if (targetProperty is null)
-            {
-                context.ReportDiagnostic(MappaDiagnostics.MappingAttributeTargetPropertyOrParameterDoesNotExist(
-                    methodDeclarationSyntax,
-                    methodName,
-                    nameof(MappaMustMapTargetPropertyAttribute),
-                    propertyName,
-                    targetTypeName));
-                continue;
-            }
-
-            if (targetProperty.IsRequired)
-            {
-                context.ReportDiagnostic(MappaDiagnostics.MappaMustMapTargetPropertyListsRequiredProperty(
-                    methodDeclarationSyntax,
-                    methodName,
-                    propertyName,
-                    targetTypeName));
-            }
+                ignoredPropertyNames,
+                propertyName);
         }
     }
 
@@ -336,43 +248,15 @@ internal static class MapMethodMappingAttributesValidator
             return;
         }
 
-        var methodName = context.GetRootMapMethod().MethodName;
-
-        if (!compilation.IsUnsafeAccessorSupported())
-        {
-            context.ReportDiagnostic(MappaDiagnostics.UnsafeAccessorNotSupported(
-                methodDeclarationSyntax,
-                methodName));
-        }
-
-        if (targetAttribute is { AllowProperties: false, AllowConstructors: false })
-        {
-            context.ReportDiagnostic(MappaDiagnostics.AllowInaccessibleTargetMembersDisabledAll(
-                methodDeclarationSyntax,
-                methodName));
-        }
-
-        if (sourceAttribute is not null)
-        {
-            ValidateMemberNamesExist(
-                context,
-                methodDeclarationSyntax,
-                methodName,
-                nameof(MappaAllowInaccessibleSourceMembersAttribute),
-                sourceAttribute.MemberNames,
-                context.SourceType);
-        }
-
-        if (targetAttribute is not null)
-        {
-            ValidateMemberNamesExist(
-                context,
-                methodDeclarationSyntax,
-                methodName,
-                nameof(MappaAllowInaccessibleTargetMembersAttribute),
-                targetAttribute.MemberNames,
-                context.TargetType);
-        }
+        ReportAllowInaccessibleMembersAttributeDiagnostics(
+            context,
+            compilation,
+            methodDeclarationSyntax,
+            targetAttribute,
+            sourceAttribute,
+            context.GetRootMapMethod().MethodName,
+            context.SourceType,
+            context.TargetType);
     }
 
     /// <summary>
@@ -450,6 +334,46 @@ internal static class MapMethodMappingAttributesValidator
         }
 
         return attributeTargetPath.EndsWith(propertyPathContext.RemainingTargetSegments);
+    }
+
+    private static void ValidateSingleMustMapTargetPropertyName(
+        MappaMapAlgorithmContext context,
+        MethodDeclarationSyntax methodDeclarationSyntax,
+        string methodName,
+        string targetTypeName,
+        IPropertySymbol[] targetProperties,
+        HashSet<string> ignoredPropertyNames,
+        string propertyName)
+    {
+        if (ignoredPropertyNames.Contains(propertyName))
+        {
+            context.ReportDiagnostic(MappaDiagnostics.MultipleAttributesTargetTheSamePropertyOrParameter(
+                methodDeclarationSyntax,
+                propertyName));
+        }
+
+        var targetProperty = Array.Find(
+            targetProperties,
+            property => property.Name.Equals(propertyName, StringComparison.Ordinal));
+        if (targetProperty is null)
+        {
+            context.ReportDiagnostic(MappaDiagnostics.MappingAttributeTargetPropertyOrParameterDoesNotExist(
+                methodDeclarationSyntax,
+                methodName,
+                nameof(MappaMustMapTargetPropertyAttribute),
+                propertyName,
+                targetTypeName));
+            return;
+        }
+
+        if (targetProperty.IsRequired)
+        {
+            context.ReportDiagnostic(MappaDiagnostics.MappaMustMapTargetPropertyListsRequiredProperty(
+                methodDeclarationSyntax,
+                methodName,
+                propertyName,
+                targetTypeName));
+        }
     }
 
     private static void ValidateTargetPropertyPath(
@@ -584,6 +508,53 @@ internal static class MapMethodMappingAttributesValidator
 
         return constructorParameterNames.Any(
             parameterName => parameterName.Equals(targetName, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static void ReportAllowInaccessibleMembersAttributeDiagnostics(
+        MappaMapAlgorithmContext context,
+        Compilation compilation,
+        MethodDeclarationSyntax methodDeclarationSyntax,
+        MappaAllowInaccessibleTargetMembersAttribute? targetAttribute,
+        MappaAllowInaccessibleSourceMembersAttribute? sourceAttribute,
+        string methodName,
+        ITypeSymbol sourceType,
+        ITypeSymbol targetType)
+    {
+        if (!compilation.IsUnsafeAccessorSupported())
+        {
+            context.ReportDiagnostic(MappaDiagnostics.UnsafeAccessorNotSupported(
+                methodDeclarationSyntax,
+                methodName));
+        }
+
+        if (targetAttribute is { AllowProperties: false, AllowConstructors: false })
+        {
+            context.ReportDiagnostic(MappaDiagnostics.AllowInaccessibleTargetMembersDisabledAll(
+                methodDeclarationSyntax,
+                methodName));
+        }
+
+        if (sourceAttribute is not null)
+        {
+            ValidateMemberNamesExist(
+                context,
+                methodDeclarationSyntax,
+                methodName,
+                nameof(MappaAllowInaccessibleSourceMembersAttribute),
+                sourceAttribute.MemberNames,
+                sourceType);
+        }
+
+        if (targetAttribute is not null)
+        {
+            ValidateMemberNamesExist(
+                context,
+                methodDeclarationSyntax,
+                methodName,
+                nameof(MappaAllowInaccessibleTargetMembersAttribute),
+                targetAttribute.MemberNames,
+                targetType);
+        }
     }
 
     private static void ValidateMemberNamesExist(

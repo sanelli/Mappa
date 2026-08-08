@@ -110,6 +110,34 @@ internal sealed class MappaDependencyInjectionFileBuilder
             _ => "public",
         };
 
+    private static void AppendInterfaceOnlyMapperRegistrations(
+        PrettyCode.StringBuilder builder,
+        string addMethodName,
+        string mapperTypeName,
+        ImmutableArray<INamedTypeSymbol> interfaces)
+    {
+        foreach (var @interface in interfaces)
+        {
+            var interfaceTypeName = $"global::{@interface.ToDisplayString()}";
+            builder.AppendLine($"services.{addMethodName}<{interfaceTypeName}, {mapperTypeName}>();");
+        }
+    }
+
+    private static void AppendInterfaceAndClassMapperRegistrations(
+        PrettyCode.StringBuilder builder,
+        string addMethodName,
+        string mapperTypeName,
+        ImmutableArray<INamedTypeSymbol> interfaces)
+    {
+        builder.AppendLine($"services.{addMethodName}<{mapperTypeName}>();");
+        foreach (var @interface in interfaces)
+        {
+            var interfaceTypeName = $"global::{@interface.ToDisplayString()}";
+            builder.AppendLine(
+                $"services.{addMethodName}<{interfaceTypeName}, {mapperTypeName}>(serviceProvider => serviceProvider.GetRequiredService<{mapperTypeName}>());");
+        }
+    }
+
     private string BuildClassSource()
     {
         var builder = new PrettyCode.StringBuilder();
@@ -156,40 +184,32 @@ internal sealed class MappaDependencyInjectionFileBuilder
         builder.AppendLine($"{modifiers} global::Microsoft.Extensions.DependencyInjection.IServiceCollection {methodName}({parameter})");
         using (builder.CurlyBracesBlock())
         {
-            foreach (var (mapper, interfaces) in this.Mappers)
-            {
-                var mapperTypeName = $"global::{mapper.ToDisplayString()}";
-                switch (this.AttributeData.InjectInterfaces)
-                {
-                    case MappaDependencyInjectionInjectInterfaces.InterfaceOnly:
-                        foreach (var @interface in interfaces)
-                        {
-                            var interfaceTypeName = $"global::{@interface.ToDisplayString()}";
-                            builder.AppendLine($"services.{addMethodName}<{interfaceTypeName}, {mapperTypeName}>();");
-                        }
-
-                        break;
-
-                    case MappaDependencyInjectionInjectInterfaces.InterfaceAndClass:
-                        builder.AppendLine($"services.{addMethodName}<{mapperTypeName}>();");
-                        foreach (var @interface in interfaces)
-                        {
-                            var interfaceTypeName = $"global::{@interface.ToDisplayString()}";
-                            builder.AppendLine(
-                                $"services.{addMethodName}<{interfaceTypeName}, {mapperTypeName}>(serviceProvider => serviceProvider.GetRequiredService<{mapperTypeName}>());");
-                        }
-
-                        break;
-
-                    default:
-                        builder.AppendLine($"services.{addMethodName}<{mapperTypeName}>();");
-                        break;
-                }
-            }
-
+            this.AppendMapperServiceRegistrations(builder, addMethodName);
             builder.AppendLine("return services;");
         }
 
         return builder.ToString();
+    }
+
+    private void AppendMapperServiceRegistrations(PrettyCode.StringBuilder builder, string addMethodName)
+    {
+        foreach (var (mapper, interfaces) in this.Mappers)
+        {
+            var mapperTypeName = $"global::{mapper.ToDisplayString()}";
+            switch (this.AttributeData.InjectInterfaces)
+            {
+                case MappaDependencyInjectionInjectInterfaces.InterfaceOnly:
+                    AppendInterfaceOnlyMapperRegistrations(builder, addMethodName, mapperTypeName, interfaces);
+                    break;
+
+                case MappaDependencyInjectionInjectInterfaces.InterfaceAndClass:
+                    AppendInterfaceAndClassMapperRegistrations(builder, addMethodName, mapperTypeName, interfaces);
+                    break;
+
+                default:
+                    builder.AppendLine($"services.{addMethodName}<{mapperTypeName}>();");
+                    break;
+            }
+        }
     }
 }

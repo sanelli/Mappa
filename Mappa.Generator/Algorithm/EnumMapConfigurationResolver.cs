@@ -352,41 +352,65 @@ internal sealed class EnumMapConfigurationResolver
         {
             if (this.legKind is EnumMapLegKind.EnumToEnum)
             {
-                this.TryGetEnumToEnumPair(memberAttribute, out var sourceMemberName, out var targetMemberName);
-                if (this.sourceEnumType is { } activeSourceEnumType
-                    && ignoredSourceMemberNames.Contains(sourceMemberName))
-                {
-                    isValid = false;
-                    this.ReportIgnoreConflict(activeSourceEnumType, sourceMemberName);
-                }
-
-                if (this.targetEnumType is { } activeTargetEnumType
-                    && ignoredTargetMemberNames.Contains(targetMemberName))
-                {
-                    isValid = false;
-                    this.ReportIgnoreConflict(activeTargetEnumType, targetMemberName);
-                }
-
+                isValid &= this.ValidateEnumToEnumIgnoreConflict(
+                    memberAttribute,
+                    ignoredSourceMemberNames,
+                    ignoredTargetMemberNames);
                 continue;
             }
 
-            if (this.sourceEnumType is { } sourceOnlyEnumType
-                && (ignoredSourceMemberNames.Contains(memberAttribute.EnumMemberName)
-                    || ignoredTargetMemberNames.Contains(memberAttribute.EnumMemberName)))
-            {
-                isValid = false;
-                this.ReportIgnoreConflict(sourceOnlyEnumType, memberAttribute.EnumMemberName);
-            }
-            else if (this.targetEnumType is { } targetOnlyEnumType
-                     && (ignoredSourceMemberNames.Contains(memberAttribute.EnumMemberName)
-                         || ignoredTargetMemberNames.Contains(memberAttribute.EnumMemberName)))
-            {
-                isValid = false;
-                this.ReportIgnoreConflict(targetOnlyEnumType, memberAttribute.EnumMemberName);
-            }
+            isValid &= this.ValidateSingleEnumIgnoreConflict(memberAttribute, ignoredSourceMemberNames, ignoredTargetMemberNames);
         }
 
         return isValid;
+    }
+
+    private bool ValidateEnumToEnumIgnoreConflict(
+        EnumMapMemberInfoAttribute memberAttribute,
+        HashSet<string> ignoredSourceMemberNames,
+        HashSet<string> ignoredTargetMemberNames)
+    {
+        var isValid = true;
+        this.TryGetEnumToEnumPair(memberAttribute, out var sourceMemberName, out var targetMemberName);
+        if (this.sourceEnumType is { } activeSourceEnumType
+            && ignoredSourceMemberNames.Contains(sourceMemberName))
+        {
+            isValid = false;
+            this.ReportIgnoreConflict(activeSourceEnumType, sourceMemberName);
+        }
+
+        if (this.targetEnumType is { } activeTargetEnumType
+            && ignoredTargetMemberNames.Contains(targetMemberName))
+        {
+            isValid = false;
+            this.ReportIgnoreConflict(activeTargetEnumType, targetMemberName);
+        }
+
+        return isValid;
+    }
+
+    private bool ValidateSingleEnumIgnoreConflict(
+        EnumMapMemberInfoAttribute memberAttribute,
+        HashSet<string> ignoredSourceMemberNames,
+        HashSet<string> ignoredTargetMemberNames)
+    {
+        if (this.sourceEnumType is { } sourceOnlyEnumType
+            && (ignoredSourceMemberNames.Contains(memberAttribute.EnumMemberName)
+                || ignoredTargetMemberNames.Contains(memberAttribute.EnumMemberName)))
+        {
+            this.ReportIgnoreConflict(sourceOnlyEnumType, memberAttribute.EnumMemberName);
+            return false;
+        }
+
+        if (this.targetEnumType is { } targetOnlyEnumType
+            && (ignoredSourceMemberNames.Contains(memberAttribute.EnumMemberName)
+                || ignoredTargetMemberNames.Contains(memberAttribute.EnumMemberName)))
+        {
+            this.ReportIgnoreConflict(targetOnlyEnumType, memberAttribute.EnumMemberName);
+            return false;
+        }
+
+        return true;
     }
 
     private bool TryResolveDefault(

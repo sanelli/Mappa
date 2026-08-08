@@ -46,34 +46,12 @@ internal sealed partial class ConstructorMapStrategyDetector
             return false;
         }
 
-        ParameterMapStrategy[] parametersMapStrategies = [];
-        PropertyMapStrategy[] initializerStrategies = [];
-
-        switch (objectFactory.InvocationKind)
+        if (!this.TryBuildObjectFactoryParameterAndInitializerStrategies(
+                objectFactory,
+                out var parametersMapStrategies,
+                out var initializerStrategies))
         {
-            case ObjectFactoryInvocationKind.FullyProduced:
-                break;
-
-            case ObjectFactoryInvocationKind.EmptyCtorLike:
-                if (!this.TryBuildEmptyCtorLikePropertyInitializers(
-                        requireAtLeastOneMappedProperty: false,
-                        out initializerStrategies))
-                {
-                    return false;
-                }
-
-                break;
-
-            case ObjectFactoryInvocationKind.ParameterizedLike:
-                if (!this.TryMapFactoryParameters(objectFactory.Method, out parametersMapStrategies))
-                {
-                    return false;
-                }
-
-                break;
-
-            default:
-                throw new MappaGeneratorException($"Unexpected object factory invocation kind '{objectFactory.InvocationKind}'.");
+            return false;
         }
 
         mapStrategy = new InvokeObjectFactoryMapStrategy(
@@ -193,75 +171,7 @@ internal sealed partial class ConstructorMapStrategyDetector
     private InvokeObjectFactoryMapStrategy EnrichInvokeObjectFactoryMapStrategyWithAssignToContext(
         InvokeObjectFactoryMapStrategy strategy)
     {
-        // Nested (derived) contexts do not expose a MapMethod; attribute enrichment is root-only.
-        if (this.context.MapMethod is null)
-        {
-            return strategy;
-        }
-
-        var attributes = this.context.MapMethod.GetAttributes<MappaAssignToContextAttribute>();
-        if (attributes.Length == 0)
-        {
-            return strategy;
-        }
-
-        var methodDeclarationSyntax = this.context.MapMethod.MethodDeclarationSyntax
-            ?? throw new MappaGeneratorException("Method declaration syntax has not been defined.");
-        var rootMapMethod = this.context.GetRootMapMethod();
-        var methodName = rootMapMethod.MethodName;
-        var targetTypeName = this.context.TargetType.ToDisplayString();
-        var providesContext = rootMapMethod.ProvideMappaContextWhenInvoked();
-
-        var duplicateContextKeys = new HashSet<string>(
-            attributes
-                .GroupBy(attribute => attribute.ContextKey, StringComparer.Ordinal)
-                .Where(group => group.Count() > 1)
-                .Select(group => group.Key),
-            StringComparer.Ordinal);
-
-        foreach (var duplicateContextKey in duplicateContextKeys)
-        {
-            this.context.ReportDiagnostic(MappaDiagnostics.MultipleMappaAssignToContextAttributesUseTheSameContextKey(
-                methodDeclarationSyntax,
-                methodName,
-                duplicateContextKey));
-        }
-
-        List<MappaAssignToContextEntry> assignToContextEntries = new();
-        string? contextParameterName = null;
-
-        foreach (var attribute in attributes)
-        {
-            if (duplicateContextKeys.Contains(attribute.ContextKey))
-            {
-                continue;
-            }
-
-            if (!providesContext)
-            {
-                this.context.ReportDiagnostic(MappaDiagnostics.CannotUseMappaAssignToContextAttributeWithoutContextParameter(
-                    methodDeclarationSyntax,
-                    methodName,
-                    attribute.ContextKey));
-                continue;
-            }
-
-            if (!this.TryResolveAssignToContextTargetMember(attribute.TargetPropertyName))
-            {
-                this.context.ReportDiagnostic(MappaDiagnostics.MappaAssignToContextTargetMemberDoesNotExistOrIsNotAccessible(
-                    methodDeclarationSyntax,
-                    methodName,
-                    attribute.ContextKey,
-                    attribute.TargetPropertyName,
-                    targetTypeName));
-                continue;
-            }
-
-            assignToContextEntries.Add(new MappaAssignToContextEntry(attribute.ContextKey, attribute.TargetPropertyName));
-            contextParameterName ??= rootMapMethod.GetMappaContextParameterName();
-        }
-
-        if (assignToContextEntries.Count == 0)
+        if (!this.TryBuildAssignToContextEnrichment(attributesEnabled: true, out var entries, out var contextParameterName))
         {
             return strategy;
         }
@@ -272,8 +182,34 @@ internal sealed partial class ConstructorMapStrategyDetector
             strategy.ObjectFactory,
             strategy.ParametersMapStrategies,
             strategy.InitializerStrategies,
-            [.. assignToContextEntries],
+            entries,
             contextParameterName);
+    }
+
+    private bool TryBuildObjectFactoryParameterAndInitializerStrategies(
+        ObjectFactory objectFactory,
+        out ParameterMapStrategy[] parametersMapStrategies,
+        out PropertyMapStrategy[] initializerStrategies)
+    {
+        parametersMapStrategies = [];
+        initializerStrategies = [];
+
+        switch (objectFactory.InvocationKind)
+        {
+            case ObjectFactoryInvocationKind.FullyProduced:
+                return true;
+
+            case ObjectFactoryInvocationKind.EmptyCtorLike:
+                return this.TryBuildEmptyCtorLikePropertyInitializers(
+                    requireAtLeastOneMappedProperty: false,
+                    out initializerStrategies);
+
+            case ObjectFactoryInvocationKind.ParameterizedLike:
+                return this.TryMapFactoryParameters(objectFactory.Method, out parametersMapStrategies);
+
+            default:
+                throw new MappaGeneratorException($"Unexpected object factory invocation kind '{objectFactory.InvocationKind}'.");
+        }
     }
 
     private bool TryBuildEmptyCtorLikePropertyInitializers(
@@ -302,308 +238,11 @@ internal sealed partial class ConstructorMapStrategyDetector
         var mappedInitializerStrategies = targetProperties
             .Where(targetProperty => this.context.MappaUserSettings.ProtobufOptional is not BooleanSetting.Enable
                                      || allTargetProperties.All(otherProperty => !targetProperty.Name.Equals($"Has{otherProperty.Name}", StringComparison.Ordinal)))
-            .Select(
-                targetProperty =>
-                {
-                    var usePropertyAttributes = this.GetMatchingUsePropertyAttributes(
-                        targetProperty.Name,
-                        StringComparison.Ordinal);
-
-                    string expectedSourcePropertyName;
-                    var useExactNameFromAttribute = false;
-                    PropertyPathContext? nestedPropertyPathContext = null;
-                    ChainedSourcePropertyPathInfo? chainedSourcePropertyPath = null;
-                    switch (usePropertyAttributes.Length)
-                    {
-                        case 0:
-                            expectedSourcePropertyName = targetProperty.Name;
-                            break;
-                        case 1:
-                        {
-                            var usePropertyAttribute = usePropertyAttributes[0];
-                            var isLeafTargetMapping = this.IsLeafTargetMappingForAttribute(usePropertyAttribute.TargetPropertyName);
-                            if (this.TryResolveExpectedSourcePropertyName(
-                                    usePropertyAttribute,
-                                    isLeafTargetMapping,
-                                    out expectedSourcePropertyName,
-                                    out useExactNameFromAttribute,
-                                    out nestedPropertyPathContext,
-                                    out chainedSourcePropertyPath))
-                            {
-                                break;
-                            }
-
-                            useExactNameFromAttribute = true;
-                            expectedSourcePropertyName = targetProperty.Name;
-                            break;
-                        }
-
-                        default:
-                        {
-                            var distinctTargetPaths = usePropertyAttributes
-                                .Select(attribute => attribute.TargetPropertyName)
-                                .Distinct(StringComparer.Ordinal)
-                                .ToArray();
-                            if (distinctTargetPaths.Length == 1)
-                            {
-                                this.context.ReportDiagnostic(MappaDiagnostics.TooManyUsePropertyAttributesForTheSameTargetProperty(this.context.GetRootMapMethod().MethodDeclarationSyntax, this.context.GetRootMapMethod().MethodName, targetProperty.Name));
-                                return new PropertyMapStrategy(targetProperty, null, noMapStrategy, false);
-                            }
-
-                            var distinctSourceRoots = usePropertyAttributes
-                                .Select(attribute => PropertyPath.Parse(attribute.SourcePropertyName).GetFirstSegment())
-                                .Where(segment => segment is not null)
-                                .Distinct(StringComparer.Ordinal)
-                                .ToArray();
-                            if (distinctSourceRoots.Length == 1)
-                            {
-                                var sourceRoot = distinctSourceRoots[0];
-                                if (sourceRoot is not null)
-                                {
-                                    expectedSourcePropertyName = sourceRoot;
-                                    useExactNameFromAttribute = true;
-                                }
-                                else
-                                {
-                                    expectedSourcePropertyName = targetProperty.Name;
-                                }
-                            }
-                            else
-                            {
-                                expectedSourcePropertyName = targetProperty.Name;
-                            }
-
-                            nestedPropertyPathContext = PropertyPathContext.CreateNestedAttributeScope(targetProperty.Name);
-                            break;
-                        }
-                    }
-
-                    if (this.context.PropertyPathContext is null
-                        && this.HasNestedPathAttributesForTargetMember(targetProperty.Name, StringComparison.Ordinal)
-                        && (nestedPropertyPathContext is null
-                            || this.CountNestedPathAttributesForTargetMember(targetProperty.Name, StringComparison.Ordinal) > 1))
-                    {
-                        nestedPropertyPathContext = PropertyPathContext.CreateNestedAttributeScope(targetProperty.Name);
-                    }
-
-                    IPropertySymbol? sourceProperty = null;
-                    if (chainedSourcePropertyPath is null)
-                    {
-                        PropertyMapNameMatcher.TryFindSourceProperty(
-                            sourceProperties,
-                            expectedSourcePropertyName,
-                            this.context.MappaUserSettings.CaseInsensitivePropertyMap,
-                            this.context.MappaUserSettings.IgnoreUnderscoreForPropertyMap,
-                            isConstructorParameterPath: false,
-                            useExactNameFromAttribute,
-                            out sourceProperty);
-                    }
-                    else if (this.TryResolveChainedSourceProperty(
-                                 chainedSourcePropertyPath,
-                                 out var resolvedSourceProperties,
-                                 out _))
-                    {
-                        sourceProperty = resolvedSourceProperties[0];
-                    }
-
-                    if ((this.context.MapMethod is not null || this.context.PropertyPathContext is not null)
-                        && this.TryGetStrategyForPropertyOrArgumentUsingAttributesOnMethod(
-                            targetProperty.Name,
-                            targetProperty.Type,
-                            this.context.SourceType,
-                            ref sourceProperty,
-                            StringComparison.Ordinal,
-                            isConstructorParameterPath: false,
-                            out var propertyStrategyFromAttribute))
-                    {
-                        if (!this.TryIsTargetPropertyWritable(targetProperty, out var requiresUnsafeAccessorOnTargetFromAttribute))
-                        {
-                            this.context.ReportDiagnostic(MappaDiagnostics.PropertySetterIsNotAccessible(this.context.GetRootMapMethod().MethodDeclarationSyntax, this.context.TargetType, targetProperty));
-                            return new PropertyMapStrategy(targetProperty, null, noMapStrategy, false);
-                        }
-
-                        propertyStrategyFromAttribute = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, sourceProperties, propertyStrategyFromAttribute);
-                        propertyStrategyFromAttribute = this.EncapsulateMapStrategyForTargetOptional(targetProperty, allTargetProperties, propertyStrategyFromAttribute, out var postConstructorInitializer);
-                        var requiresUnsafeAccessorOnSourceFromAttribute = sourceProperty is not null
-                            && this.TryIsSourcePropertyReadable(sourceProperty, out var sourceRequiresUnsafeFromAttribute)
-                            && sourceRequiresUnsafeFromAttribute;
-                        return new PropertyMapStrategy(
-                            targetProperty,
-                            sourceProperty,
-                            propertyStrategyFromAttribute,
-                            postConstructorInitializer,
-                            chainedSourcePropertyPath,
-                            requiresUnsafeAccessorOnSourceFromAttribute,
-                            requiresUnsafeAccessorOnTargetFromAttribute);
-                    }
-
-                    if (chainedSourcePropertyPath is not null
-                        && this.TryResolveChainedSourceProperty(
-                            chainedSourcePropertyPath,
-                            out var chainedSourceProperties,
-                            out _))
-                    {
-                        var innerSourceType = chainedSourceProperties[chainedSourceProperties.Length - 1].Type;
-                        MapStrategy chainedPropertyStrategy = new IdentityMapStrategy(targetProperty.Type, innerSourceType);
-                        chainedPropertyStrategy = this.EncapsulateMapStrategyForTargetOptional(targetProperty, allTargetProperties, chainedPropertyStrategy, out var chainedPostConstructorInitializer);
-                        this.TryIsTargetPropertyWritable(targetProperty, out var requiresUnsafeAccessorOnTargetFromChain);
-                        return new PropertyMapStrategy(
-                            targetProperty,
-                            null,
-                            chainedPropertyStrategy,
-                            chainedPostConstructorInitializer,
-                            chainedSourcePropertyPath,
-                            requiresUnsafeAccessorOnSource: false,
-                            requiresUnsafeAccessorOnTarget: requiresUnsafeAccessorOnTargetFromChain);
-                    }
-
-                    var canWriteTargetProperty = this.TryIsTargetPropertyWritable(targetProperty, out var requiresUnsafeAccessorOnTargetSetter);
-                    if (sourceProperty is not null &&
-                        !canWriteTargetProperty &&
-                        this.TryIsTargetPropertyGetterReadable(targetProperty, out var requiresUnsafeAccessorOnTargetGetter))
-                    {
-                        if (targetProperty.Type.IsOrImplementIDictionary(this.compilation)
-                            && sourceProperty.Type.IsOrImplementIDictionary(this.compilation)
-                            && this.context.TryGetKeyAndValueStrategy(
-                                targetProperty.Type,
-                                sourceProperty.Type,
-                                this.compilation,
-                                out var keyStrategy,
-                                out var valueStrategy,
-                                this.cancellationToken))
-                        {
-                            var dictionaryPropertyStrategy = new ReadonlyDictionaryPropertyMapStrategy(
-                                targetProperty,
-                                sourceProperty,
-                                keyStrategy,
-                                valueStrategy,
-                                DictionaryAssignmentSettingHelper.GetEffective(this.context.MappaUserSettings.DictionaryAssignment));
-                            this.TryIsSourcePropertyReadable(sourceProperty, out var requiresUnsafeAccessorOnSourceDictionary);
-                            return new PropertyMapStrategy(
-                                targetProperty,
-                                sourceProperty,
-                                dictionaryPropertyStrategy,
-                                true,
-                                requiresUnsafeAccessorOnSource: requiresUnsafeAccessorOnSourceDictionary,
-                                requiresUnsafeAccessorOnTarget: requiresUnsafeAccessorOnTargetGetter);
-                        }
-                        else if ((targetProperty.Type.IsOrDerivedFromStack(this.compilation)
-                                  || targetProperty.Type.IsOrDerivedFromConcurrentStack(this.compilation))
-                                 && (sourceProperty.Type.IsArray() || sourceProperty.Type.IsOrImplementIEnumerable())
-                                 && this.context.TryGetElementStrategy(
-                                     targetProperty.Type,
-                                     sourceProperty.Type,
-                                     this.compilation,
-                                     out var stackElementStrategy,
-                                     this.cancellationToken))
-                        {
-                            var stackPropertyStrategy = new ReadonlyStackPropertyMapStrategy(targetProperty, sourceProperty, stackElementStrategy);
-                            this.TryIsSourcePropertyReadable(sourceProperty, out var requiresUnsafeAccessorOnSourceStack);
-                            return new PropertyMapStrategy(
-                                targetProperty,
-                                sourceProperty,
-                                stackPropertyStrategy,
-                                true,
-                                requiresUnsafeAccessorOnSource: requiresUnsafeAccessorOnSourceStack,
-                                requiresUnsafeAccessorOnTarget: requiresUnsafeAccessorOnTargetGetter);
-                        }
-                        else if ((targetProperty.Type.IsOrDerivedFromQueue(this.compilation)
-                                  || targetProperty.Type.IsOrImplementConcurrentQueue(this.compilation))
-                                 && (sourceProperty.Type.IsArray() || sourceProperty.Type.IsOrImplementIEnumerable())
-                                 && this.context.TryGetElementStrategy(
-                                     targetProperty.Type,
-                                     sourceProperty.Type,
-                                     this.compilation,
-                                     out var queueElementStrategy,
-                                     this.cancellationToken))
-                        {
-                            var queuePropertyStrategy = new ReadonlyQueuePropertyMapStrategy(targetProperty, sourceProperty, queueElementStrategy);
-                            this.TryIsSourcePropertyReadable(sourceProperty, out var requiresUnsafeAccessorOnSourceQueue);
-                            return new PropertyMapStrategy(
-                                targetProperty,
-                                sourceProperty,
-                                queuePropertyStrategy,
-                                true,
-                                requiresUnsafeAccessorOnSource: requiresUnsafeAccessorOnSourceQueue,
-                                requiresUnsafeAccessorOnTarget: requiresUnsafeAccessorOnTargetGetter);
-                        }
-                        else if ((targetProperty.Type.IsOrDerivedFromConcurrentBag(this.compilation)
-                                  || targetProperty.Type.IsOrDerivedFromBlockingCollection(this.compilation))
-                                 && (sourceProperty.Type.IsArray() || sourceProperty.Type.IsOrImplementIEnumerable())
-                                 && this.context.TryGetElementStrategy(
-                                     targetProperty.Type,
-                                     sourceProperty.Type,
-                                     this.compilation,
-                                     out var addCollectionElementStrategy,
-                                     this.cancellationToken))
-                        {
-                            var addCollectionPropertyStrategy = new ReadonlyAddCollectionPropertyMapStrategy(targetProperty, sourceProperty, addCollectionElementStrategy);
-                            this.TryIsSourcePropertyReadable(sourceProperty, out var requiresUnsafeAccessorOnSourceAddCollection);
-                            return new PropertyMapStrategy(
-                                targetProperty,
-                                sourceProperty,
-                                addCollectionPropertyStrategy,
-                                true,
-                                requiresUnsafeAccessorOnSource: requiresUnsafeAccessorOnSourceAddCollection,
-                                requiresUnsafeAccessorOnTarget: requiresUnsafeAccessorOnTargetGetter);
-                        }
-                        else if (targetProperty.Type.IsOrImplementICollection()
-                                 && (sourceProperty.Type.IsArray() || sourceProperty.Type.IsOrImplementIEnumerable())
-                                 && this.context.TryGetElementStrategy(
-                                     targetProperty.Type,
-                                     sourceProperty.Type,
-                                     this.compilation,
-                                     out var elementStrategy,
-                                     this.cancellationToken))
-                        {
-                            var collectionPropertyStrategy = new ReadonlyCollectionPropertyMapStrategy(targetProperty, sourceProperty, elementStrategy);
-                            this.TryIsSourcePropertyReadable(sourceProperty, out var requiresUnsafeAccessorOnSourceCollection);
-                            return new PropertyMapStrategy(
-                                targetProperty,
-                                sourceProperty,
-                                collectionPropertyStrategy,
-                                true,
-                                requiresUnsafeAccessorOnSource: requiresUnsafeAccessorOnSourceCollection,
-                                requiresUnsafeAccessorOnTarget: requiresUnsafeAccessorOnTargetGetter);
-                        }
-
-                        return new PropertyMapStrategy(targetProperty, null, noMapStrategy, false);
-                    }
-
-                    if (sourceProperty is null)
-                    {
-                        return new PropertyMapStrategy(targetProperty, sourceProperty, noMapStrategy, false);
-                    }
-
-                    if (!canWriteTargetProperty)
-                    {
-                        return new PropertyMapStrategy(targetProperty, sourceProperty, noMapStrategy, false);
-                    }
-
-                    var targetPropertyType = targetProperty.Type;
-                    var sourcePropertyType = sourceProperty.Type;
-
-                    if (this.TryGetStrategyBetweenTypes(
-                            targetPropertyType,
-                            sourcePropertyType,
-                            true,
-                            ConstructorMapStrategyDetector.GetNestedTypeMappingPropertyPathContext(targetProperty.Name, nestedPropertyPathContext),
-                            out var propertyStrategy))
-                    {
-                        propertyStrategy = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, sourceProperties, propertyStrategy);
-                        propertyStrategy = this.EncapsulateMapStrategyForTargetOptional(targetProperty, allTargetProperties, propertyStrategy, out var postConstructorInitializer);
-                        this.TryIsSourcePropertyReadable(sourceProperty, out var requiresUnsafeAccessorOnSource);
-                        return new PropertyMapStrategy(
-                            targetProperty,
-                            sourceProperty,
-                            propertyStrategy,
-                            postConstructorInitializer,
-                            requiresUnsafeAccessorOnSource: requiresUnsafeAccessorOnSource,
-                            requiresUnsafeAccessorOnTarget: requiresUnsafeAccessorOnTargetSetter);
-                    }
-
-                    return new PropertyMapStrategy(targetProperty, null, noMapStrategy, false);
-                })
+            .Select(targetProperty => this.TryCreateEmptyCtorPropertyMapStrategy(
+                targetProperty,
+                allTargetProperties,
+                sourceProperties,
+                noMapStrategy))
             .ToArray();
 
         if (Array.Exists(mappedInitializerStrategies, propertyStrategy => propertyStrategy.TargetProperty.IsRequired && propertyStrategy.PropertyStrategy is NoMapStrategy))
@@ -619,42 +258,7 @@ internal sealed partial class ConstructorMapStrategyDetector
             .Where(propertyStrategy => propertyStrategy.PropertyStrategy is NoMapStrategy)
             .ToArray();
 
-        var mustMapAttribute = this.GetMustMapTargetPropertyAttribute();
-        var mustMapFailed = false;
-
-        foreach (var propertyWithoutStrategy in propertiesWithoutStrategy.Select(propertyStrategy => propertyStrategy.TargetProperty))
-        {
-            var targetCollections = propertyWithoutStrategy.Type.IsPostInitializationCollectionType(this.compilation);
-            var hasSetter = this.TryIsTargetPropertyWritable(propertyWithoutStrategy, out _);
-
-            if (!hasSetter && !targetCollections)
-            {
-                continue;
-            }
-
-            var isMustMapCandidate = mustMapAttribute is not null
-                                     && !propertyWithoutStrategy.IsRequired
-                                     && (mustMapAttribute.TargetPropertyNames.Length == 0
-                                         || mustMapAttribute.TargetPropertyNames.Contains(propertyWithoutStrategy.Name, StringComparer.Ordinal));
-
-            if (isMustMapCandidate)
-            {
-                this.context.ReportDiagnostic(MappaDiagnostics.MustMapTargetPropertyWasNotMapped(
-                    this.context.GetRootMapMethod().MethodDeclarationSyntax,
-                    this.context.TargetType,
-                    propertyWithoutStrategy));
-                mustMapFailed = true;
-            }
-            else if (propertiesWithStrategies.Length > 0)
-            {
-                this.context.ReportDiagnostic(MappaDiagnostics.CannotMapNonRequiredProperty(
-                    this.context.GetRootMapMethod().MethodDeclarationSyntax,
-                    this.context.TargetType,
-                    propertyWithoutStrategy));
-            }
-        }
-
-        if (mustMapFailed)
+        if (this.ReportEmptyCtorDiagnosticsForUnmappedProperties(propertiesWithStrategies, propertiesWithoutStrategy))
         {
             return false;
         }

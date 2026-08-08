@@ -17,6 +17,31 @@ namespace Mappa.Generator.Algorithm;
 /// </summary>
 internal static class ProjectionCapabilityAnalyzer
 {
+    private static readonly Type[] BuiltInTranslatableStrategyTypes =
+    [
+        typeof(EnumToIntegralMapStrategy),
+        typeof(IntegralToEnumMapStrategy),
+        typeof(InvokeParseMethodMapStrategy),
+        typeof(InvokeToStringMapStrategy),
+        typeof(InvokeParseStringWithFormatMapStrategy),
+        typeof(InvokeParseStringWithFormatForDateOnlyAndTimeOnlyMapStrategy),
+        typeof(StringToNumberMapStrategy),
+        typeof(StringToUriMapStrategy),
+        typeof(DateOnlyToDateTimeMapStrategy),
+        typeof(DateOnlyToLongMapStrategy),
+        typeof(DateTimeOffsetToDateOnlyMapStrategy),
+        typeof(DateTimeOffsetToDateTimeMapStrategy),
+        typeof(DateTimeOffsetToLongMapStrategy),
+        typeof(DateTimeOffsetToTimeOnlyMapStrategy),
+        typeof(DateTimeToDateOnlyMapStrategy),
+        typeof(DateTimeToTimeOnlyMapStrategy),
+        typeof(DateTimeToLongMapStrategy),
+        typeof(DoubleToTimeSpanMapStrategy),
+        typeof(LongToDateTimeMapStrategy),
+        typeof(LongToDateTimeOffsetMapStrategy),
+        typeof(TimeSpanToDoubleMapStrategy),
+    ];
+
     private enum AnalysisFailureKind
     {
         UnsupportedConstruct,
@@ -69,114 +94,259 @@ internal static class ProjectionCapabilityAnalyzer
         failureMember = null;
         normalizedStrategy = strategy;
 
-        if (analysisContext is not null
-            && ReferenceHandlingCodeGenerator.IsReferenceHandlingRequested(analysisContext.AlgorithmContext.MappaUserSettings))
+        if (!PassesReferenceHandlingGuard(analysisContext, out failureKind, out failureMember))
         {
-            failureKind = AnalysisFailureKind.UnsupportedConstruct;
-            failureMember = "reference handling";
             return false;
         }
 
-        switch (strategy)
+        return TryAnalyzeKnownStrategy(
+            strategy,
+            analysisContext,
+            out normalizedStrategy,
+            out failureKind,
+            out failureMember);
+    }
+
+    private static bool PassesReferenceHandlingGuard(
+        ProjectionCapabilityAnalysisContext? analysisContext,
+        out AnalysisFailureKind? failureKind,
+        out string? failureMember)
+    {
+        failureKind = null;
+        failureMember = null;
+        if (analysisContext is null
+            || !ReferenceHandlingCodeGenerator.IsReferenceHandlingRequested(analysisContext.AlgorithmContext.MappaUserSettings))
         {
-            case IdentityMapStrategy identityMapStrategy:
-                return IsIdentitySupported(identityMapStrategy);
-
-            case NullableStrategy nullableStrategy:
-                if (!TryAnalyzeCore(
-                        nullableStrategy.ElementStrategy,
-                        analysisContext,
-                        out var normalizedElementStrategy,
-                        out failureKind,
-                        out failureMember))
-                {
-                    return false;
-                }
-
-                normalizedStrategy = new NullableStrategy(
-                    nullableStrategy.TargetType,
-                    nullableStrategy.SourceType,
-                    normalizedElementStrategy);
-                return true;
-
-            case InvokeConstructorMapStrategy invokeConstructorMapStrategy:
-                return TryAnalyzeConstructor(invokeConstructorMapStrategy, analysisContext, out normalizedStrategy, out failureKind, out failureMember);
-
-            case InvokeObjectFactoryMapStrategy invokeObjectFactoryMapStrategy:
-                failureKind = AnalysisFailureKind.InvokeMethodNotInlinable;
-                failureMember = invokeObjectFactoryMapStrategy.ObjectFactory.Method.Name;
-                return false;
-
-            case ParameterMapStrategy parameterMapStrategy:
-                if (!TryAnalyzeCore(
-                        parameterMapStrategy.ParameterStrategy,
-                        analysisContext,
-                        out var normalizedParameterStrategy,
-                        out failureKind,
-                        out failureMember))
-                {
-                    return false;
-                }
-
-                normalizedStrategy = new ParameterMapStrategy(
-                    parameterMapStrategy.TargetParameter,
-                    parameterMapStrategy.SourceProperty,
-                    normalizedParameterStrategy,
-                    parameterMapStrategy.RequiresUnsafeAccessorOnSource);
-                return true;
-
-            case PropertyMapStrategy propertyMapStrategy:
-                return TryAnalyzeProperty(propertyMapStrategy, analysisContext, out normalizedStrategy, out failureKind, out failureMember);
-
-            case MethodMapStrategy methodMapStrategy:
-                return TryAnalyzeMethodMap(methodMapStrategy, analysisContext, out normalizedStrategy, out failureKind, out failureMember);
-
-            case MappaInvokeMethodAttributeStrategy mappaInvokeMethodAttributeStrategy:
-                return TryAnalyzeInvokeMethodAttribute(mappaInvokeMethodAttributeStrategy, analysisContext, out normalizedStrategy, out failureKind, out failureMember);
-
-            case EnumToEnumMapStrategy enumToEnumMapStrategy:
-                TryReportEnumWarning(enumToEnumMapStrategy.EnumToEnumMapSetting, enumToEnumMapStrategy.CaseInsensitiveEnumMap, analysisContext);
-                return true;
-
-            case EnumToStringMapStrategy enumToStringMapStrategy:
-                TryReportEnumStringWarning(
-                    enumToStringMapStrategy.EnumStringMapSetting,
-                    analysisContext?.AlgorithmContext.MappaUserSettings.CaseInsensitiveEnumMap ?? BooleanSetting.Undefined,
-                    analysisContext);
-                return true;
-
-            case StringToEnumMapStrategy stringToEnumMapStrategy:
-                TryReportEnumStringWarning(stringToEnumMapStrategy.EnumStringMapSetting, stringToEnumMapStrategy.CaseInsensitiveEnumMap, analysisContext);
-                return true;
-
-            default:
-                return IsBuiltInTranslatableStrategy(strategy)
-                    || TryAnalyzeUnsupported(strategy, out failureKind, out failureMember);
+            return true;
         }
+
+        failureKind = AnalysisFailureKind.UnsupportedConstruct;
+        failureMember = "reference handling";
+        return false;
+    }
+
+    private static bool TryAnalyzeKnownStrategy(
+        MapStrategy strategy,
+        ProjectionCapabilityAnalysisContext? analysisContext,
+        out MapStrategy normalizedStrategy,
+        out AnalysisFailureKind? failureKind,
+        out string? failureMember)
+    {
+        normalizedStrategy = strategy;
+        failureKind = null;
+        failureMember = null;
+
+        if (TryAnalyzeStructuralStrategies(
+                strategy,
+                analysisContext,
+                out normalizedStrategy,
+                out failureKind,
+                out failureMember,
+                out var handled))
+        {
+            return handled;
+        }
+
+        if (TryAnalyzeEnumStrategies(strategy, analysisContext))
+        {
+            return true;
+        }
+
+        return IsBuiltInTranslatableStrategy(strategy)
+            || TryAnalyzeUnsupported(strategy, out failureKind, out failureMember);
+    }
+
+    private static bool TryAnalyzeStructuralStrategies(
+        MapStrategy strategy,
+        ProjectionCapabilityAnalysisContext? analysisContext,
+        out MapStrategy normalizedStrategy,
+        out AnalysisFailureKind? failureKind,
+        out string? failureMember,
+        out bool handled)
+    {
+        if (TryAnalyzeConstructorLikeStrategies(
+                strategy,
+                analysisContext,
+                out normalizedStrategy,
+                out failureKind,
+                out failureMember,
+                out handled))
+        {
+            return true;
+        }
+
+        return TryAnalyzeMemberStrategies(
+            strategy,
+            analysisContext,
+            out normalizedStrategy,
+            out failureKind,
+            out failureMember,
+            out handled);
+    }
+
+    private static bool TryAnalyzeConstructorLikeStrategies(
+        MapStrategy strategy,
+        ProjectionCapabilityAnalysisContext? analysisContext,
+        out MapStrategy normalizedStrategy,
+        out AnalysisFailureKind? failureKind,
+        out string? failureMember,
+        out bool handled)
+    {
+        normalizedStrategy = strategy;
+        failureKind = null;
+        failureMember = null;
+        handled = false;
+
+        if (strategy is IdentityMapStrategy identityMapStrategy)
+        {
+            handled = IsIdentitySupported(identityMapStrategy);
+            return true;
+        }
+
+        if (strategy is NullableStrategy nullableStrategy)
+        {
+            handled = TryAnalyzeNullableStrategy(nullableStrategy, analysisContext, out normalizedStrategy, out failureKind, out failureMember);
+            return true;
+        }
+
+        if (strategy is InvokeConstructorMapStrategy invokeConstructorMapStrategy)
+        {
+            handled = TryAnalyzeConstructor(invokeConstructorMapStrategy, analysisContext, out normalizedStrategy, out failureKind, out failureMember);
+            return true;
+        }
+
+        if (strategy is InvokeObjectFactoryMapStrategy invokeObjectFactoryMapStrategy)
+        {
+            failureKind = AnalysisFailureKind.InvokeMethodNotInlinable;
+            failureMember = invokeObjectFactoryMapStrategy.ObjectFactory.Method.Name;
+            handled = false;
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool TryAnalyzeMemberStrategies(
+        MapStrategy strategy,
+        ProjectionCapabilityAnalysisContext? analysisContext,
+        out MapStrategy normalizedStrategy,
+        out AnalysisFailureKind? failureKind,
+        out string? failureMember,
+        out bool handled)
+    {
+        normalizedStrategy = strategy;
+        failureKind = null;
+        failureMember = null;
+        handled = false;
+
+        if (strategy is ParameterMapStrategy parameterMapStrategy)
+        {
+            handled = TryAnalyzeParameterStrategy(parameterMapStrategy, analysisContext, out normalizedStrategy, out failureKind, out failureMember);
+            return true;
+        }
+
+        if (strategy is PropertyMapStrategy propertyMapStrategy)
+        {
+            handled = TryAnalyzeProperty(propertyMapStrategy, analysisContext, out normalizedStrategy, out failureKind, out failureMember);
+            return true;
+        }
+
+        if (strategy is MethodMapStrategy methodMapStrategy)
+        {
+            handled = TryAnalyzeMethodMap(methodMapStrategy, analysisContext, out normalizedStrategy, out failureKind, out failureMember);
+            return true;
+        }
+
+        if (strategy is MappaInvokeMethodAttributeStrategy mappaInvokeMethodAttributeStrategy)
+        {
+            handled = TryAnalyzeInvokeMethodAttribute(mappaInvokeMethodAttributeStrategy, analysisContext, out normalizedStrategy, out failureKind, out failureMember);
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool TryAnalyzeEnumStrategies(
+        MapStrategy strategy,
+        ProjectionCapabilityAnalysisContext? analysisContext)
+    {
+        if (strategy is EnumToEnumMapStrategy enumToEnumMapStrategy)
+        {
+            TryReportEnumWarning(enumToEnumMapStrategy.EnumToEnumMapSetting, enumToEnumMapStrategy.CaseInsensitiveEnumMap, analysisContext);
+            return true;
+        }
+
+        if (strategy is EnumToStringMapStrategy enumToStringMapStrategy)
+        {
+            TryReportEnumStringWarning(
+                enumToStringMapStrategy.EnumStringMapSetting,
+                analysisContext?.AlgorithmContext.MappaUserSettings.CaseInsensitiveEnumMap ?? BooleanSetting.Undefined,
+                analysisContext);
+            return true;
+        }
+
+        if (strategy is StringToEnumMapStrategy stringToEnumMapStrategy)
+        {
+            TryReportEnumStringWarning(stringToEnumMapStrategy.EnumStringMapSetting, stringToEnumMapStrategy.CaseInsensitiveEnumMap, analysisContext);
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool TryAnalyzeNullableStrategy(
+        NullableStrategy nullableStrategy,
+        ProjectionCapabilityAnalysisContext? analysisContext,
+        out MapStrategy normalizedStrategy,
+        out AnalysisFailureKind? failureKind,
+        out string? failureMember)
+    {
+        if (!TryAnalyzeCore(
+                nullableStrategy.ElementStrategy,
+                analysisContext,
+                out var normalizedElementStrategy,
+                out failureKind,
+                out failureMember))
+        {
+            normalizedStrategy = nullableStrategy;
+            return false;
+        }
+
+        normalizedStrategy = new NullableStrategy(
+            nullableStrategy.TargetType,
+            nullableStrategy.SourceType,
+            normalizedElementStrategy);
+        return true;
+    }
+
+    private static bool TryAnalyzeParameterStrategy(
+        ParameterMapStrategy parameterMapStrategy,
+        ProjectionCapabilityAnalysisContext? analysisContext,
+        out MapStrategy normalizedStrategy,
+        out AnalysisFailureKind? failureKind,
+        out string? failureMember)
+    {
+        if (!TryAnalyzeCore(
+                parameterMapStrategy.ParameterStrategy,
+                analysisContext,
+                out var normalizedParameterStrategy,
+                out failureKind,
+                out failureMember))
+        {
+            normalizedStrategy = parameterMapStrategy;
+            return false;
+        }
+
+        normalizedStrategy = new ParameterMapStrategy(
+            parameterMapStrategy.TargetParameter,
+            parameterMapStrategy.SourceProperty,
+            normalizedParameterStrategy,
+            parameterMapStrategy.RequiresUnsafeAccessorOnSource);
+        return true;
     }
 
     private static bool IsBuiltInTranslatableStrategy(MapStrategy strategy)
-        => strategy is EnumToIntegralMapStrategy
-            or IntegralToEnumMapStrategy
-            or InvokeParseMethodMapStrategy
-            or InvokeToStringMapStrategy
-            or InvokeParseStringWithFormatMapStrategy
-            or InvokeParseStringWithFormatForDateOnlyAndTimeOnlyMapStrategy
-            or StringToNumberMapStrategy
-            or StringToUriMapStrategy
-            or DateOnlyToDateTimeMapStrategy
-            or DateOnlyToLongMapStrategy
-            or DateTimeOffsetToDateOnlyMapStrategy
-            or DateTimeOffsetToDateTimeMapStrategy
-            or DateTimeOffsetToLongMapStrategy
-            or DateTimeOffsetToTimeOnlyMapStrategy
-            or DateTimeToDateOnlyMapStrategy
-            or DateTimeToTimeOnlyMapStrategy
-            or DateTimeToLongMapStrategy
-            or DoubleToTimeSpanMapStrategy
-            or LongToDateTimeMapStrategy
-            or LongToDateTimeOffsetMapStrategy
-            or TimeSpanToDoubleMapStrategy;
+        => BuiltInTranslatableStrategyTypes.Any(strategyType => strategyType.IsInstanceOfType(strategy));
 
     private static bool TryAnalyzeUnsupported(
         MapStrategy strategy,

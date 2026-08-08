@@ -95,6 +95,23 @@ internal sealed class MappaGeneratorClassAlgorithm
         }
     }
 
+    private static bool IsMapMethodIgnored(
+        MethodDeclarationSyntax methodDeclarationSyntax,
+        MappaClassGeneratorContext classContext,
+        CancellationToken cancellationToken)
+        => methodDeclarationSyntax.AttributeLists
+            .GetMappaIgnoreAttributeSyntax(classContext.SemanticModel, cancellationToken) is not null;
+
+    private static MapMethod CreateMapMethodFromDeclaration(
+        MethodDeclarationSyntax methodDeclarationSyntax,
+        MappaClassGeneratorContext classContext,
+        CancellationToken cancellationToken)
+        => new(
+            methodDeclarationSyntax,
+            classContext.SemanticModel,
+            classContext.IsNullableEnabled(methodDeclarationSyntax),
+            cancellationToken);
+
     private void GenerateStrategyForEachMethod(
         MappaClassGeneratorContext classContext,
         MappaUserSettings mappaUserSettings,
@@ -191,7 +208,20 @@ internal sealed class MappaGeneratorClassAlgorithm
             return;
         }
 
-        // Gather all the methods that require a mapping.
+        this.CollectMapMethodsFromClassDeclarations(classDeclarationSyntax, classContext, mappaDebug, cancellationToken);
+        this.CollectMapMethodsFromTypeHierarchy(classDeclarationSyntax, classContext, cancellationToken);
+        this.CollectMapMethodsFromStaticDependencies(classContext);
+        this.CollectMapMethodsFromMappaDependencies(classDeclarationSyntax, classContext, cancellationToken);
+        this.IdentifyStrategiesAndGenerateSource(classContext, options, cancellationToken);
+        this.ReportAllDiagnostics(classContext);
+    }
+
+    private void CollectMapMethodsFromClassDeclarations(
+        ClassDeclarationSyntax classDeclarationSyntax,
+        MappaClassGeneratorContext classContext,
+        MappaDebug mappaDebug,
+        CancellationToken cancellationToken)
+    {
         foreach (var methodDeclarationSyntax in classDeclarationSyntax.ChildNodes().OfType<MethodDeclarationSyntax>())
         {
             mappaDebug.Debug(
@@ -207,8 +237,13 @@ internal sealed class MappaGeneratorClassAlgorithm
                 this.AcceptMapMethodAlreadyMapped(methodDeclarationSyntax, classContext, cancellationToken);
             }
         }
+    }
 
-        // List methods also from base classes of the mapper.
+    private void CollectMapMethodsFromTypeHierarchy(
+        ClassDeclarationSyntax classDeclarationSyntax,
+        MappaClassGeneratorContext classContext,
+        CancellationToken cancellationToken)
+    {
         foreach (var method in this.Compilation.GetMethodsInTypeHierarchyFromMetadata(classContext.ClassSymbol))
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -223,8 +258,10 @@ internal sealed class MappaGeneratorClassAlgorithm
                 canBeInvokedByStaticMethod: method.IsStatic,
                 classContext);
         }
+    }
 
-        // Get all the static types on the class listed as static dependencies
+    private void CollectMapMethodsFromStaticDependencies(MappaClassGeneratorContext classContext)
+    {
         foreach (var dependencyType in classContext
                      .ClassSymbol
                      .GetAttributes()
@@ -235,7 +272,6 @@ internal sealed class MappaGeneratorClassAlgorithm
             var accessFieldName = $"global::{dependencyType.ToDisplayString()}";
             foreach (var method in methods)
             {
-                // Skip non-static methods
                 if (!method.IsStatic)
                 {
                     continue;
@@ -256,34 +292,60 @@ internal sealed class MappaGeneratorClassAlgorithm
                 this.Context.ReportDiagnostic(MappaDiagnostics.DependencyDoesNotProvideAnyViableMethod(classContext.ClassDeclarationSyntax, dependencyType.ToDisplayString()));
             }
         }
+    }
 
-        // Get all accessible properties that:
-        // - have a getter method
-        // - have MappaDependency attribute
+    private void CollectMapMethodsFromMappaDependencies(
+        ClassDeclarationSyntax classDeclarationSyntax,
+        MappaClassGeneratorContext classContext,
+        CancellationToken cancellationToken)
+    {
         var processedDependencyMemberNames = new HashSet<string>(StringComparer.Ordinal);
+        this.CollectMapMethodsFromMappaDependencyProperties(
+            classDeclarationSyntax,
+            classContext,
+            processedDependencyMemberNames,
+            cancellationToken);
+        this.CollectMapMethodsFromMappaDependencyFields(
+            classDeclarationSyntax,
+            classContext,
+            processedDependencyMemberNames,
+            cancellationToken);
+    }
+
+    private void CollectMapMethodsFromMappaDependencyProperties(
+        ClassDeclarationSyntax classDeclarationSyntax,
+        MappaClassGeneratorContext classContext,
+        HashSet<string> processedDependencyMemberNames,
+        CancellationToken cancellationToken)
+    {
 #pragma warning disable S3267 // Loops should be simplified using the "Where" LINQ method
         foreach (var propertyDeclarationSyntax in classDeclarationSyntax.ChildNodes().OfType<PropertyDeclarationSyntax>())
 #pragma warning restore S3267 // Loops should be simplified using the "Where" LINQ method
         {
-            if (propertyDeclarationSyntax.AccessorList is not null && propertyDeclarationSyntax.AccessorList.Accessors.Any(accessor => accessor.Kind() == SyntaxKind.GetAccessorDeclaration))
+            if (propertyDeclarationSyntax.AccessorList is null
+                || !propertyDeclarationSyntax.AccessorList.Accessors.Any(accessor => accessor.Kind() == SyntaxKind.GetAccessorDeclaration))
             {
-                if (propertyDeclarationSyntax.AttributeLists.GetMappaDependencyAttributeSyntax(classContext.SemanticModel, cancellationToken) is null)
-                {
-                    continue;
-                }
-
-                var propertySymbol = classContext.SemanticModel.GetDeclaredSymbol(propertyDeclarationSyntax, cancellationToken);
-                if (propertySymbol is not null)
-                {
-                    var propertyIdentifier = propertyDeclarationSyntax.Identifier.ToString();
-                    processedDependencyMemberNames.Add(propertyIdentifier);
-                    this.ProcessMappaDependencyProperty(
-                        propertyDeclarationSyntax,
-                        propertySymbol,
-                        propertyIdentifier,
-                        classContext);
-                }
+                continue;
             }
+
+            if (propertyDeclarationSyntax.AttributeLists.GetMappaDependencyAttributeSyntax(classContext.SemanticModel, cancellationToken) is null)
+            {
+                continue;
+            }
+
+            var propertySymbol = classContext.SemanticModel.GetDeclaredSymbol(propertyDeclarationSyntax, cancellationToken);
+            if (propertySymbol is null)
+            {
+                continue;
+            }
+
+            var propertyIdentifier = propertyDeclarationSyntax.Identifier.ToString();
+            processedDependencyMemberNames.Add(propertyIdentifier);
+            this.ProcessMappaDependencyProperty(
+                propertyDeclarationSyntax,
+                propertySymbol,
+                propertyIdentifier,
+                classContext);
         }
 
         foreach (var propertySymbol in this.Compilation.GetMappaDependencyPropertiesInMapperBaseTypeHierarchy(classContext.ClassSymbol))
@@ -301,8 +363,14 @@ internal sealed class MappaGeneratorClassAlgorithm
                 propertySymbol.Name,
                 classContext);
         }
+    }
 
-        // Get all accessible fields that have MappaDependency attribute
+    private void CollectMapMethodsFromMappaDependencyFields(
+        ClassDeclarationSyntax classDeclarationSyntax,
+        MappaClassGeneratorContext classContext,
+        HashSet<string> processedDependencyMemberNames,
+        CancellationToken cancellationToken)
+    {
         foreach (var fieldDeclarationSyntax in classDeclarationSyntax.ChildNodes().OfType<FieldDeclarationSyntax>())
         {
             if (fieldDeclarationSyntax.AttributeLists.GetMappaDependencyAttributeSyntax(classContext.SemanticModel, cancellationToken) is null)
@@ -343,7 +411,13 @@ internal sealed class MappaGeneratorClassAlgorithm
                 fieldSymbol.Name,
                 classContext);
         }
+    }
 
+    private void IdentifyStrategiesAndGenerateSource(
+        MappaClassGeneratorContext classContext,
+        MappaGlobalOptions options,
+        CancellationToken cancellationToken)
+    {
         var classAttributes = classContext.ClassSymbol.GetAttributes();
         var classBeforeMapAttributes = classAttributes.GetMappaBeforeMapAttributes(this.Compilation);
         var classAfterMapAttributes = classAttributes.GetMappaAfterMapAttributes(this.Compilation);
@@ -369,9 +443,6 @@ internal sealed class MappaGeneratorClassAlgorithm
 
         // Build the source code (only if there is something to generate)
         this.GenerateSourceCode(classContext, options);
-
-        // Report the diagnostics.
-        this.ReportAllDiagnostics(classContext);
     }
 
     private void ReportAllDiagnostics(MappaClassGeneratorContext classContext)
@@ -404,8 +475,7 @@ internal sealed class MappaGeneratorClassAlgorithm
         MappaClassGeneratorContext classContext,
         CancellationToken cancellationToken)
     {
-        if (methodDeclarationSyntax.AttributeLists
-            .GetMappaIgnoreAttributeSyntax(classContext.SemanticModel, cancellationToken) is not null)
+        if (IsMapMethodIgnored(methodDeclarationSyntax, classContext, cancellationToken))
         {
             return false;
         }
@@ -421,38 +491,9 @@ internal sealed class MappaGeneratorClassAlgorithm
             return false;
         }
 
-        var mapMethod = new MapMethod(
-            methodDeclarationSyntax,
-            classContext.SemanticModel,
-            classContext.IsNullableEnabled(methodDeclarationSyntax),
-            cancellationToken);
-        var methodSymbol = mapMethod.MethodSymbol;
-        if (methodSymbol is null)
+        var mapMethod = CreateMapMethodFromDeclaration(methodDeclarationSyntax, classContext, cancellationToken);
+        if (!this.ValidateMapMethodSymbolForAccept(methodDeclarationSyntax, mapMethod, classContext, reportDiagnostics: true))
         {
-            throw new MappaGeneratorException($"Cannot obtain the method symbol for method \"{methodDeclarationSyntax.Identifier}\".", methodDeclarationSyntax.GetLocation());
-        }
-
-        if (methodDeclarationSyntax.HasArity(2)
-            && !methodSymbol.SecondParameterIsMappaContext(this.Compilation))
-        {
-            classContext.ReportDiagnostic(MappaDiagnostics.MethodHasInvalidMappaContextParameter(methodDeclarationSyntax));
-            return false;
-        }
-
-        if (!methodSymbol.AreParametersRefModifiersValid())
-        {
-            return false;
-        }
-
-        if (methodSymbol.IsVoid())
-        {
-            classContext.ReportDiagnostic(MappaDiagnostics.MethodIsVoid(methodDeclarationSyntax));
-            return false;
-        }
-
-        if (methodSymbol.ReturnsAnyTaskType(this.Compilation))
-        {
-            classContext.ReportDiagnostic(MappaDiagnostics.MethodReturnsTaskType(methodDeclarationSyntax));
             return false;
         }
 
@@ -540,45 +581,7 @@ internal sealed class MappaGeneratorClassAlgorithm
         bool canBeInvokedByStaticMethod,
         MappaClassGeneratorContext classContext)
     {
-        var methodAttributes = method.GetAttributes();
-        if (methodAttributes.GetMappaIgnoreAttribute(this.Compilation) is not null)
-        {
-            return false;
-        }
-
-        if (!this.Compilation.IsSymbolAccessibleWithin(method, classContext.ClassSymbol))
-        {
-            return false;
-        }
-
-        if (method.IsStatic != methodMustBeStatic)
-        {
-            return false;
-        }
-
-        if (method.Parameters.Length != 1
-            && method.Parameters.Length != 2)
-        {
-            return false;
-        }
-
-        if (method.Parameters.Length == 2
-            && !method.SecondParameterIsMappaContext(this.Compilation))
-        {
-            return false;
-        }
-
-        if (!method.AreParametersRefModifiersValid())
-        {
-            return false;
-        }
-
-        if (method.IsVoid())
-        {
-            return false;
-        }
-
-        if (method.ReturnsAnyTaskType(this.Compilation))
+        if (!this.IsViableDependencyMapMethod(method, classContext, methodMustBeStatic))
         {
             return false;
         }
@@ -604,8 +607,7 @@ internal sealed class MappaGeneratorClassAlgorithm
         MappaClassGeneratorContext classContext,
         CancellationToken cancellationToken)
     {
-        if (methodDeclarationSyntax.AttributeLists
-                .GetMappaIgnoreAttributeSyntax(classContext.SemanticModel, cancellationToken) is not null)
+        if (IsMapMethodIgnored(methodDeclarationSyntax, classContext, cancellationToken))
         {
             return;
         }
@@ -620,34 +622,8 @@ internal sealed class MappaGeneratorClassAlgorithm
             return;
         }
 
-        var mapMethod = new MapMethod(
-            methodDeclarationSyntax,
-            classContext.SemanticModel,
-            classContext.IsNullableEnabled(methodDeclarationSyntax),
-            cancellationToken);
-        var methodSymbol = mapMethod.MethodSymbol;
-        if (methodSymbol is null)
-        {
-            throw new MappaGeneratorException($"Cannot obtain the method symbol for method \"{methodDeclarationSyntax.Identifier}\".", methodDeclarationSyntax.GetLocation());
-        }
-
-        if (methodDeclarationSyntax.HasArity(2)
-            && !methodSymbol.SecondParameterIsMappaContext(this.Compilation))
-        {
-            return;
-        }
-
-        if (!methodSymbol.AreParametersRefModifiersValid())
-        {
-            return;
-        }
-
-        if (methodSymbol.IsVoid())
-        {
-            return;
-        }
-
-        if (methodSymbol.ReturnsAnyTaskType(this.Compilation))
+        var mapMethod = CreateMapMethodFromDeclaration(methodDeclarationSyntax, classContext, cancellationToken);
+        if (!this.ValidateMapMethodSymbolForAccept(methodDeclarationSyntax, mapMethod, classContext, reportDiagnostics: false))
         {
             return;
         }
@@ -657,5 +633,141 @@ internal sealed class MappaGeneratorClassAlgorithm
         {
             mapMethod.MarkMapped();
         }
+    }
+
+    private bool ValidateMapMethodSymbolForAccept(
+        MethodDeclarationSyntax methodDeclarationSyntax,
+        MapMethod mapMethod,
+        MappaClassGeneratorContext classContext,
+        bool reportDiagnostics)
+    {
+        var methodSymbol = mapMethod.MethodSymbol;
+        if (methodSymbol is null)
+        {
+            throw new MappaGeneratorException($"Cannot obtain the method symbol for method \"{methodDeclarationSyntax.Identifier}\".", methodDeclarationSyntax.GetLocation());
+        }
+
+        if (!this.ValidateMapMethodMappaContextParameter(methodDeclarationSyntax, methodSymbol, classContext, reportDiagnostics))
+        {
+            return false;
+        }
+
+        if (!methodSymbol.AreParametersRefModifiersValid())
+        {
+            return false;
+        }
+
+        if (!this.ValidateMapMethodReturnType(methodDeclarationSyntax, methodSymbol, classContext, reportDiagnostics))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private bool ValidateMapMethodMappaContextParameter(
+        MethodDeclarationSyntax methodDeclarationSyntax,
+        IMethodSymbol methodSymbol,
+        MappaClassGeneratorContext classContext,
+        bool reportDiagnostics)
+    {
+        if (!methodDeclarationSyntax.HasArity(2)
+            || methodSymbol.SecondParameterIsMappaContext(this.Compilation))
+        {
+            return true;
+        }
+
+        if (reportDiagnostics)
+        {
+            classContext.ReportDiagnostic(MappaDiagnostics.MethodHasInvalidMappaContextParameter(methodDeclarationSyntax));
+        }
+
+        return false;
+    }
+
+    private bool ValidateMapMethodReturnType(
+        MethodDeclarationSyntax methodDeclarationSyntax,
+        IMethodSymbol methodSymbol,
+        MappaClassGeneratorContext classContext,
+        bool reportDiagnostics)
+    {
+        if (methodSymbol.IsVoid())
+        {
+            if (reportDiagnostics)
+            {
+                classContext.ReportDiagnostic(MappaDiagnostics.MethodIsVoid(methodDeclarationSyntax));
+            }
+
+            return false;
+        }
+
+        if (methodSymbol.ReturnsAnyTaskType(this.Compilation))
+        {
+            if (reportDiagnostics)
+            {
+                classContext.ReportDiagnostic(MappaDiagnostics.MethodReturnsTaskType(methodDeclarationSyntax));
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private bool IsViableDependencyMapMethod(
+        IMethodSymbol method,
+        MappaClassGeneratorContext classContext,
+        bool methodMustBeStatic)
+    {
+        if (!this.PassesDependencyMapMethodBasicChecks(method, classContext, methodMustBeStatic))
+        {
+            return false;
+        }
+
+        if (!method.AreParametersRefModifiersValid())
+        {
+            return false;
+        }
+
+        if (method.IsVoid())
+        {
+            return false;
+        }
+
+        return !method.ReturnsAnyTaskType(this.Compilation);
+    }
+
+    private bool PassesDependencyMapMethodBasicChecks(
+        IMethodSymbol method,
+        MappaClassGeneratorContext classContext,
+        bool methodMustBeStatic)
+    {
+        if (method.GetAttributes().GetMappaIgnoreAttribute(this.Compilation) is not null)
+        {
+            return false;
+        }
+
+        if (!this.Compilation.IsSymbolAccessibleWithin(method, classContext.ClassSymbol))
+        {
+            return false;
+        }
+
+        if (method.IsStatic != methodMustBeStatic)
+        {
+            return false;
+        }
+
+        if (method.Parameters.Length is not (1 or 2))
+        {
+            return false;
+        }
+
+        if (method.Parameters.Length == 2
+            && !method.SecondParameterIsMappaContext(this.Compilation))
+        {
+            return false;
+        }
+
+        return true;
     }
 }

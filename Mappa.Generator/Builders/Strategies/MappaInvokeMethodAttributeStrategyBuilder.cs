@@ -7,6 +7,8 @@ using Mappa.Generator.Extensions;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
+using Microsoft.CodeAnalysis;
+
 namespace Mappa.Generator.Builders.Strategies;
 
 /// <summary>
@@ -63,52 +65,62 @@ internal sealed class MappaInvokeMethodAttributeStrategyBuilder
         var method = this.strategy.Method;
         var compositeSource = context.GetCompositeTypeSourceName();
 
-        switch (method.Parameters.Length)
+        return method.Parameters.Length switch
         {
-            case 0:
-                return string.Empty;
+            0 => string.Empty,
+            1 => this.GetParametersForSingleArgumentMethod(compilation, source, compositeSource),
+            2 => this.GetParametersForTwoArgumentMethod(compilation, source, compositeSource),
+            3 => $"{compositeSource}, {source}, {this.GetContextArgument()}",
+            _ => throw new MappaGeneratorException("Unexpected parameter type"),
+        };
+    }
 
-            case 3:
-                return $"{compositeSource}, {source}, {this.GetContextArgument()}";
+    private string GetParametersForSingleArgumentMethod(Compilation compilation, string source, string compositeSource)
+    {
+        var method = this.strategy.Method;
+        if (method.ParameterIsMappaContext(compilation, 0))
+        {
+            return this.GetContextArgument();
+        }
 
-            case 2:
-                if (method.ParameterIsMappaContext(compilation, 1))
-                {
-                    if (method.Parameters[0].Type.IsEqualTo(this.strategy.SourceType, this.strategy.IsNullableEnabled) ||
-                        compilation.HasImplicitConversion(this.strategy.SourceType, method.Parameters[0].Type))
-                    {
-                        return $"{compositeSource}, {this.GetContextArgument()}";
-                    }
+        if (this.ParameterAcceptsCompositeSource(method.Parameters[0].Type, compilation))
+        {
+            return compositeSource;
+        }
 
-                    return $"{source}, {this.GetContextArgument()}";
-                }
-
-                return $"{compositeSource}, {source}";
-
-            case 1:
-                if (method.ParameterIsMappaContext(compilation, 0))
-                {
-                    return this.GetContextArgument();
-                }
-
-                if (method.Parameters[0].Type.IsEqualTo(this.strategy.SourceType, this.strategy.IsNullableEnabled) ||
-                    compilation.HasImplicitConversion(this.strategy.SourceType, method.Parameters[0].Type))
-                {
-                    return compositeSource;
-                }
-
-                if (this.strategy.SourceProperty is not null &&
-                    (method.Parameters[0].Type.IsEqualTo(this.strategy.SourceProperty.Type, this.strategy.IsNullableEnabled) ||
-                    compilation.HasImplicitConversion(this.strategy.SourceProperty.Type, method.Parameters[0].Type)))
-                {
-                    return source;
-                }
-
-                break;
+        if (this.strategy.SourceProperty is not null &&
+            this.ParameterAcceptsPropertyType(method.Parameters[0].Type, compilation))
+        {
+            return source;
         }
 
         throw new MappaGeneratorException("Unexpected parameter type");
     }
+
+    private string GetParametersForTwoArgumentMethod(Compilation compilation, string source, string compositeSource)
+    {
+        var method = this.strategy.Method;
+        if (method.ParameterIsMappaContext(compilation, 1))
+        {
+            if (this.ParameterAcceptsCompositeSource(method.Parameters[0].Type, compilation))
+            {
+                return $"{compositeSource}, {this.GetContextArgument()}";
+            }
+
+            return $"{source}, {this.GetContextArgument()}";
+        }
+
+        return $"{compositeSource}, {source}";
+    }
+
+    private bool ParameterAcceptsCompositeSource(ITypeSymbol parameterType, Compilation compilation)
+        => parameterType.IsEqualTo(this.strategy.SourceType, this.strategy.IsNullableEnabled) ||
+           compilation.HasImplicitConversion(this.strategy.SourceType, parameterType);
+
+    private bool ParameterAcceptsPropertyType(ITypeSymbol parameterType, Compilation compilation)
+        => this.strategy.SourceProperty is not null &&
+           (parameterType.IsEqualTo(this.strategy.SourceProperty.Type, this.strategy.IsNullableEnabled) ||
+            compilation.HasImplicitConversion(this.strategy.SourceProperty.Type, parameterType));
 
     private string GetContextArgument()
         => this.strategy.ContextParameterName

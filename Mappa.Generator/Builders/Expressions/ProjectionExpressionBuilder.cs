@@ -18,6 +18,60 @@ namespace Mappa.Generator.Builders.Expressions;
 /// </summary>
 internal static class ProjectionExpressionBuilder
 {
+    private static readonly Dictionary<Type, Func<MapStrategy, string, ExpressionBuildContext, string>> ExpressionBuilders =
+        new()
+        {
+            [typeof(IdentityMapStrategy)] = static (_, source, _) => BuildIdentityExpression(source),
+            [typeof(NullableStrategy)] = static (strategy, source, context) =>
+                BuildNullableExpression((NullableStrategy)strategy, source, context),
+            [typeof(InvokeConstructorMapStrategy)] = static (strategy, source, context) =>
+                BuildConstructorExpression((InvokeConstructorMapStrategy)strategy, source, context),
+            [typeof(ParameterMapStrategy)] = static (strategy, source, context) =>
+                BuildParameterExpression((ParameterMapStrategy)strategy, source, context),
+            [typeof(PropertyMapStrategy)] = static (strategy, source, context) =>
+                BuildPropertyExpression((PropertyMapStrategy)strategy, source, context),
+            [typeof(EnumToEnumMapStrategy)] = static (strategy, source, _) =>
+                EnumMapSwitchExpressionHelper.BuildSwitchExpression(((EnumToEnumMapStrategy)strategy).EnumMapConfiguration, source),
+            [typeof(EnumToIntegralMapStrategy)] = static (strategy, source, _) =>
+                EnumMapSwitchExpressionHelper.BuildSwitchExpression(((EnumToIntegralMapStrategy)strategy).EnumMapConfiguration, source),
+            [typeof(EnumToStringMapStrategy)] = static (strategy, source, _) =>
+                EnumMapSwitchExpressionHelper.BuildSwitchExpression(((EnumToStringMapStrategy)strategy).EnumMapConfiguration, source),
+            [typeof(IntegralToEnumMapStrategy)] = static (strategy, source, _) =>
+                BuildIntegralToEnumExpression((IntegralToEnumMapStrategy)strategy, source),
+            [typeof(StringToEnumMapStrategy)] = static (strategy, source, _) =>
+                BuildStringToEnumExpression((StringToEnumMapStrategy)strategy, source),
+            [typeof(InvokeParseMethodMapStrategy)] = static (strategy, source, _) =>
+                $"{((InvokeParseMethodMapStrategy)strategy).TargetType.ToDisplayString()}.Parse({source})",
+            [typeof(InvokeToStringMapStrategy)] = static (strategy, source, _) =>
+                BuildToStringExpression((InvokeToStringMapStrategy)strategy, source),
+            [typeof(InvokeParseStringWithFormatMapStrategy)] = static (strategy, source, _) =>
+                BuildParseWithFormatExpression((InvokeParseStringWithFormatMapStrategy)strategy, source),
+            [typeof(InvokeParseStringWithFormatForDateOnlyAndTimeOnlyMapStrategy)] = static (strategy, source, _) =>
+                BuildParseDateOnlyOrTimeOnlyExpression((InvokeParseStringWithFormatForDateOnlyAndTimeOnlyMapStrategy)strategy, source),
+            [typeof(StringToNumberMapStrategy)] = static (strategy, source, _) =>
+                BuildStringToNumberExpression((StringToNumberMapStrategy)strategy, source),
+            [typeof(StringToUriMapStrategy)] = static (_, source, _) => $"new System.Uri({source})",
+            [typeof(DateOnlyToDateTimeMapStrategy)] = static (_, source, _) =>
+                $"new System.DateTime({source}, System.TimeOnly.MinValue, System.DateTimeKind.Utc)",
+            [typeof(DateOnlyToLongMapStrategy)] = static (_, source, _) =>
+                $"(long)new System.DateTime({source}, System.TimeOnly.MinValue, System.DateTimeKind.Utc).ToUniversalTime().Subtract(System.DateTime.UnixEpoch).TotalSeconds",
+            [typeof(DateTimeOffsetToDateOnlyMapStrategy)] = static (_, source, _) =>
+                $"System.DateOnly.FromDateTime({source}.DateTime)",
+            [typeof(DateTimeOffsetToDateTimeMapStrategy)] = static (_, source, _) => $"{source}.DateTime",
+            [typeof(DateTimeOffsetToLongMapStrategy)] = static (_, source, _) => $"{source}.ToUnixTimeSeconds()",
+            [typeof(DateTimeOffsetToTimeOnlyMapStrategy)] = static (_, source, _) =>
+                $"System.TimeOnly.FromDateTime({source}.DateTime)",
+            [typeof(DateTimeToDateOnlyMapStrategy)] = static (_, source, _) => $"System.DateOnly.FromDateTime({source})",
+            [typeof(DateTimeToLongMapStrategy)] = static (_, source, _) =>
+                $"(long){source}.ToUniversalTime().Subtract(System.DateTime.UnixEpoch).TotalSeconds",
+            [typeof(DateTimeToTimeOnlyMapStrategy)] = static (_, source, _) => $"System.TimeOnly.FromDateTime({source})",
+            [typeof(DoubleToTimeSpanMapStrategy)] = static (_, source, _) => $"System.TimeSpan.FromDays({source})",
+            [typeof(LongToDateTimeMapStrategy)] = static (_, source, _) => $"System.DateTime.UnixEpoch.AddSeconds({source})",
+            [typeof(LongToDateTimeOffsetMapStrategy)] = static (_, source, _) =>
+                $"System.DateTimeOffset.FromUnixTimeSeconds({source})",
+            [typeof(TimeSpanToDoubleMapStrategy)] = static (_, source, _) => $"{source}.TotalDays",
+        };
+
     /// <summary>
     /// Attempts to build a projection expression for the specified strategy.
     /// </summary>
@@ -38,47 +92,12 @@ internal static class ProjectionExpressionBuilder
             return false;
         }
 
-        expression = strategy switch
+        if (!ExpressionBuilders.TryGetValue(strategy.GetType(), out var builder))
         {
-            IdentityMapStrategy => BuildIdentityExpression(source),
-            NullableStrategy nullableStrategy => BuildNullableExpression(nullableStrategy, source, context),
-            InvokeConstructorMapStrategy invokeConstructorMapStrategy => BuildConstructorExpression(invokeConstructorMapStrategy, source, context),
-            ParameterMapStrategy parameterMapStrategy => BuildParameterExpression(parameterMapStrategy, source, context),
-            PropertyMapStrategy propertyMapStrategy => BuildPropertyExpression(propertyMapStrategy, source, context),
-            EnumToEnumMapStrategy enumToEnumMapStrategy => EnumMapSwitchExpressionHelper.BuildSwitchExpression(
-                enumToEnumMapStrategy.EnumMapConfiguration,
-                source),
-            EnumToIntegralMapStrategy enumToIntegralMapStrategy => EnumMapSwitchExpressionHelper.BuildSwitchExpression(
-                enumToIntegralMapStrategy.EnumMapConfiguration,
-                source),
-            EnumToStringMapStrategy enumToStringMapStrategy => EnumMapSwitchExpressionHelper.BuildSwitchExpression(
-                enumToStringMapStrategy.EnumMapConfiguration,
-                source),
-            IntegralToEnumMapStrategy integralToEnumMapStrategy => BuildIntegralToEnumExpression(integralToEnumMapStrategy, source),
-            StringToEnumMapStrategy stringToEnumMapStrategy => BuildStringToEnumExpression(stringToEnumMapStrategy, source),
-            InvokeParseMethodMapStrategy invokeParseMethodMapStrategy => $"{invokeParseMethodMapStrategy.TargetType.ToDisplayString()}.Parse({source})",
-            InvokeToStringMapStrategy invokeToStringMapStrategy => BuildToStringExpression(invokeToStringMapStrategy, source),
-            InvokeParseStringWithFormatMapStrategy invokeParseStringWithFormatMapStrategy => BuildParseWithFormatExpression(invokeParseStringWithFormatMapStrategy, source),
-            InvokeParseStringWithFormatForDateOnlyAndTimeOnlyMapStrategy invokeParseStringWithFormatForDateOnlyAndTimeOnlyMapStrategy
-                => BuildParseDateOnlyOrTimeOnlyExpression(invokeParseStringWithFormatForDateOnlyAndTimeOnlyMapStrategy, source),
-            StringToNumberMapStrategy stringToNumberMapStrategy => BuildStringToNumberExpression(stringToNumberMapStrategy, source),
-            StringToUriMapStrategy => $"new System.Uri({source})",
-            DateOnlyToDateTimeMapStrategy => $"new System.DateTime({source}, System.TimeOnly.MinValue, System.DateTimeKind.Utc)",
-            DateOnlyToLongMapStrategy => $"(long)new System.DateTime({source}, System.TimeOnly.MinValue, System.DateTimeKind.Utc).ToUniversalTime().Subtract(System.DateTime.UnixEpoch).TotalSeconds",
-            DateTimeOffsetToDateOnlyMapStrategy => $"System.DateOnly.FromDateTime({source}.DateTime)",
-            DateTimeOffsetToDateTimeMapStrategy => $"{source}.DateTime",
-            DateTimeOffsetToLongMapStrategy => $"{source}.ToUnixTimeSeconds()",
-            DateTimeOffsetToTimeOnlyMapStrategy => $"System.TimeOnly.FromDateTime({source}.DateTime)",
-            DateTimeToDateOnlyMapStrategy => $"System.DateOnly.FromDateTime({source})",
-            DateTimeToLongMapStrategy => $"(long){source}.ToUniversalTime().Subtract(System.DateTime.UnixEpoch).TotalSeconds",
-            DateTimeToTimeOnlyMapStrategy => $"System.TimeOnly.FromDateTime({source})",
-            DoubleToTimeSpanMapStrategy => $"System.TimeSpan.FromDays({source})",
-            LongToDateTimeMapStrategy => $"System.DateTime.UnixEpoch.AddSeconds({source})",
-            LongToDateTimeOffsetMapStrategy => $"System.DateTimeOffset.FromUnixTimeSeconds({source})",
-            TimeSpanToDoubleMapStrategy => $"{source}.TotalDays",
-            _ => throw new MappaGeneratorException($"Unsupported projection strategy '{strategy.GetType().Name}'."),
-        };
+            throw new MappaGeneratorException($"Unsupported projection strategy '{strategy.GetType().Name}'.");
+        }
 
+        expression = builder(strategy, source, context);
         return true;
     }
 

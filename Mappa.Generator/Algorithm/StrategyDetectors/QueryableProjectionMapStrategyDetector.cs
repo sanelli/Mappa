@@ -42,6 +42,64 @@ internal sealed class QueryableProjectionMapStrategyDetector
     {
         mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
 
+        if (!this.TryGetQueryableElementMapping(
+                out var sourceElementType,
+                out var targetElementType,
+                out var normalizedElementStrategy))
+        {
+            return false;
+        }
+
+        var mapMethodSymbol = this.context.MapMethod?.MethodSymbol;
+        if (mapMethodSymbol is null)
+        {
+            return false;
+        }
+
+        mapStrategy = new QueryableProjectionMapStrategy(
+            this.context.TargetType,
+            this.context.SourceType,
+            normalizedElementStrategy,
+            sourceElementType,
+            targetElementType,
+            mapMethodSymbol);
+        return true;
+    }
+
+    private bool TryGetQueryableElementMapping(
+        out ITypeSymbol sourceElementType,
+        out ITypeSymbol targetElementType,
+        out MapStrategy normalizedElementStrategy)
+    {
+        normalizedElementStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
+        sourceElementType = this.context.SourceType;
+        targetElementType = this.context.TargetType;
+
+        if (!this.CanStartQueryableElementMapping())
+        {
+            return false;
+        }
+
+        if (!this.TryGetDistinctQueryableElementTypes(out sourceElementType, out targetElementType))
+        {
+            return false;
+        }
+
+        var mapMethod = this.context.MapMethod;
+        if (mapMethod is null)
+        {
+            return false;
+        }
+
+        return this.TryGetProjectableQueryableElementStrategy(
+            mapMethod,
+            sourceElementType,
+            targetElementType,
+            out normalizedElementStrategy);
+    }
+
+    private bool CanStartQueryableElementMapping()
+    {
         if (this.context.MapMethod is null)
         {
             return false;
@@ -52,22 +110,33 @@ internal sealed class QueryableProjectionMapStrategyDetector
             return false;
         }
 
-        if (!this.context.SourceType.IsOrImplementIQueryable(this.compilation)
-            || !this.context.TargetType.IsOrImplementIQueryable(this.compilation))
+        return this.context.SourceType.IsOrImplementIQueryable(this.compilation)
+               && this.context.TargetType.IsOrImplementIQueryable(this.compilation);
+    }
+
+    private bool TryGetDistinctQueryableElementTypes(
+        out ITypeSymbol sourceElementType,
+        out ITypeSymbol targetElementType)
+    {
+        sourceElementType = this.context.SourceType;
+        targetElementType = this.context.TargetType;
+
+        if (!this.context.SourceType.TryGetQueryableElementType(this.compilation, out sourceElementType)
+            || !this.context.TargetType.TryGetQueryableElementType(this.compilation, out targetElementType))
         {
             return false;
         }
 
-        if (!this.context.SourceType.TryGetQueryableElementType(this.compilation, out var sourceElementType)
-            || !this.context.TargetType.TryGetQueryableElementType(this.compilation, out var targetElementType))
-        {
-            return false;
-        }
+        return !SymbolEqualityComparer.Default.Equals(sourceElementType, targetElementType);
+    }
 
-        if (SymbolEqualityComparer.Default.Equals(sourceElementType, targetElementType))
-        {
-            return false;
-        }
+    private bool TryGetProjectableQueryableElementStrategy(
+        MapMethod mapMethod,
+        ITypeSymbol sourceElementType,
+        ITypeSymbol targetElementType,
+        out MapStrategy normalizedElementStrategy)
+    {
+        normalizedElementStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
 
         var derivedContext = new DerivedMappaMapAlgorithmContext(
             this.context,
@@ -83,32 +152,14 @@ internal sealed class QueryableProjectionMapStrategyDetector
             return false;
         }
 
-        if (!ProjectionCapabilityAnalyzer.TryAnalyze(
-                elementStrategy,
-                new ProjectionCapabilityAnalysisContext(
-                    this.context,
-                    this.compilation,
-                    this.context.MapMethod.MethodName,
-                    this.context.MapMethod.MethodDeclarationSyntax?.GetLocation(),
-                    this.cancellationToken),
-                out var normalizedElementStrategy))
-        {
-            return false;
-        }
-
-        var mapMethodSymbol = this.context.MapMethod.MethodSymbol;
-        if (mapMethodSymbol is null)
-        {
-            return false;
-        }
-
-        mapStrategy = new QueryableProjectionMapStrategy(
-            this.context.TargetType,
-            this.context.SourceType,
-            normalizedElementStrategy,
-            sourceElementType,
-            targetElementType,
-            mapMethodSymbol);
-        return true;
+        return ProjectionCapabilityAnalyzer.TryAnalyze(
+            elementStrategy,
+            new ProjectionCapabilityAnalysisContext(
+                this.context,
+                this.compilation,
+                mapMethod.MethodName,
+                mapMethod.MethodDeclarationSyntax?.GetLocation(),
+                this.cancellationToken),
+            out normalizedElementStrategy);
     }
 }
