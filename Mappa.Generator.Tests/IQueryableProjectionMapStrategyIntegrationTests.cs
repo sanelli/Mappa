@@ -440,6 +440,7 @@ public sealed partial class IQueryableProjectionMapStrategyIntegrationTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
+            .HaveDiagnostics(2)
             .HaveDiagnostic(Mappa.Generator.Diagnostics.MappaDiagnosticDescriptors.IQueryableMappedAsCollection, "Map")
             .HaveDiagnostic(
                 Mappa.Generator.Diagnostics.MappaDiagnosticDescriptors.CannotIdentifyStrategy,
@@ -505,6 +506,7 @@ public sealed partial class IQueryableProjectionMapStrategyIntegrationTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
+            .HaveDiagnostics(1)
             .HaveDiagnostic(
                 Mappa.Generator.Diagnostics.MappaDiagnosticDescriptors.CannotIdentifyStrategy,
                 "System.Collections.Generic.List<Mappa.Generator.Tests.UnitTests.SourceCode.Order>",
@@ -634,6 +636,7 @@ public sealed partial class IQueryableProjectionMapStrategyIntegrationTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
+            .HaveDiagnostics(2)
             .HaveDiagnostic(Mappa.Generator.Diagnostics.MappaDiagnosticDescriptors.IQueryableMappedAsCollection, "Map")
             .HaveDiagnostic(
                 Mappa.Generator.Diagnostics.MappaDiagnosticDescriptors.CannotIdentifyStrategy,

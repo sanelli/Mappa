@@ -256,7 +256,9 @@ public sealed class BreakCompileTimeCyclesSettingsIntegrationTests
     private static void AssertMappingCycleStillReported(GeneratedResults generatedResults)
     {
         generatedResults.Should()
+            .HaveDiagnostics(2)
             .HaveDiagnostic(MappaDiagnosticDescriptors.MappingCycleDetected, ASourceType, ATargetType)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.CannotMapNonRequiredProperty, BTargetType, "Child")
             .HaveGeneratedSourceCode()
             .WithCompilationUnit()
             .NotBeNull().And

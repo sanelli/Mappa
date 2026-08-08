@@ -53,6 +53,7 @@ public sealed partial class MappaObjectFactoryIntegrationTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
+            .HaveDiagnostics(1)
             .HaveDiagnostic(MappaDiagnosticDescriptors.DuplicateObjectFactoryForTargetType, "Map", TargetType)
             .NotHaveGeneratedAnySourceCode();
     }
@@ -97,6 +98,7 @@ public sealed partial class MappaObjectFactoryIntegrationTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
+            .HaveDiagnostics(1)
             .HaveDiagnostic(MappaDiagnosticDescriptors.DuplicateObjectFactoryForTargetType, "Map", TargetType)
             .NotHaveGeneratedAnySourceCode();
     }
@@ -141,6 +143,7 @@ public sealed partial class MappaObjectFactoryIntegrationTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
+            .HaveDiagnostics(1)
             .HaveDiagnostic(MappaDiagnosticDescriptors.DuplicateObjectFactoryForTargetType, "Map", TargetType)
             .NotHaveGeneratedAnySourceCode();
     }
@@ -425,6 +428,7 @@ public sealed partial class MappaObjectFactoryIntegrationTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
+            .HaveDiagnostics(1)
             .HaveDiagnostic(MappaDiagnosticDescriptors.ProjectionMethodHasObjectFactory, "ProjectToDto")
             .NotHaveGeneratedAnySourceCode();
     }
@@ -468,6 +472,7 @@ public sealed partial class MappaObjectFactoryIntegrationTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
+            .HaveDiagnostics(1)
             .HaveDiagnostic(MappaDiagnosticDescriptors.ProjectionMethodHasObjectFactory, "ProjectToDto")
             .NotHaveGeneratedAnySourceCode();
     }

@@ -693,6 +693,7 @@ public sealed class MappaAllowInaccessibleMembersIntegrationTests
             .ConfigureAwait(true);
 
         generatedResults.Should()
+            .HaveDiagnostics(1)
             .HaveDiagnostic(MappaDiagnosticDescriptors.UnsafeAccessorNotSupported, "Map");
     }
 
@@ -813,6 +814,7 @@ public sealed class MappaAllowInaccessibleMembersIntegrationTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
+            .HaveDiagnostics(1)
             .HaveDiagnostic(MappaDiagnosticDescriptors.AllowInaccessibleTargetMembersDisabledAll, "Map");
     }
 
@@ -853,6 +855,7 @@ public sealed class MappaAllowInaccessibleMembersIntegrationTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
+            .HaveDiagnostics(1)
             .HaveDiagnostic(MappaDiagnosticDescriptors.ProjectionMethodHasAllowInaccessibleMembers, "Map")
             .NotHaveGeneratedAnySourceCode();
     }
@@ -1071,6 +1074,7 @@ public sealed class MappaAllowInaccessibleMembersIntegrationTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
+            .HaveDiagnostics(1)
             .HaveDiagnostic(MappaDiagnosticDescriptors.CannotIdentifyStrategy, SourceTypeName, TargetTypeName);
     }
 

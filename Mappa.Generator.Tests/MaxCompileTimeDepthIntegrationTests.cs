@@ -334,6 +334,7 @@ public sealed class MaxCompileTimeDepthIntegrationTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
+            .HaveDiagnostics(1)
             .HaveDiagnostic(
                 MappaDiagnosticDescriptors.MaxCompileTimeDepthReached,
                 Level2SourceType,
@@ -578,6 +579,7 @@ public sealed class MaxCompileTimeDepthIntegrationTests
         NullableAnnotation parameterNullableAnnotation = NullableAnnotation.NotAnnotated)
     {
         generatedResults.Should()
+            .HaveDiagnostics(1)
             .HaveDiagnostic(
                 MappaDiagnosticDescriptors.MaxCompileTimeDepthReached,
                 exceededSourceType,
