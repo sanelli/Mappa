@@ -26,14 +26,19 @@ internal sealed class MappaDependencyInjectionGeneratorAlgorithm
     /// <param name="context">The source production context.</param>
     /// <param name="compilation">The compilation.</param>
     /// <param name="classDeclarationSyntaxes">The candidate registrar class declarations.</param>
+    /// <param name="classSymbolResolver">
+    /// Optional resolver used by unit tests to simulate <c>GetDeclaredSymbol</c> failures.
+    /// </param>
     public MappaDependencyInjectionGeneratorAlgorithm(
         SourceProductionContext context,
         Compilation compilation,
-        ImmutableArray<ClassDeclarationSyntax?> classDeclarationSyntaxes)
+        ImmutableArray<ClassDeclarationSyntax?> classDeclarationSyntaxes,
+        Func<Compilation, ClassDeclarationSyntax, CancellationToken, INamedTypeSymbol?>? classSymbolResolver = null)
     {
         this.Context = context;
         this.Compilation = compilation;
         this.ClassDeclarationSyntaxes = classDeclarationSyntaxes;
+        this.ClassSymbolResolver = classSymbolResolver;
     }
 
     private SourceProductionContext Context { get; }
@@ -41,6 +46,8 @@ internal sealed class MappaDependencyInjectionGeneratorAlgorithm
     private Compilation Compilation { get; }
 
     private ImmutableArray<ClassDeclarationSyntax?> ClassDeclarationSyntaxes { get; }
+
+    private Func<Compilation, ClassDeclarationSyntax, CancellationToken, INamedTypeSymbol?>? ClassSymbolResolver { get; }
 
     /// <summary>
     /// Execute the algorithm and produce the sources.
@@ -74,8 +81,8 @@ internal sealed class MappaDependencyInjectionGeneratorAlgorithm
 
     private void ExecuteForSingleClass(ClassDeclarationSyntax classDeclarationSyntax, CancellationToken cancellationToken)
     {
-        var semanticModel = this.Compilation.GetSemanticModel(classDeclarationSyntax.SyntaxTree);
-        if (semanticModel.GetDeclaredSymbol(classDeclarationSyntax, cancellationToken) is not INamedTypeSymbol classSymbol)
+        var classSymbol = this.ResolveClassSymbol(classDeclarationSyntax, cancellationToken);
+        if (classSymbol is null)
         {
             return;
         }
@@ -106,57 +113,82 @@ internal sealed class MappaDependencyInjectionGeneratorAlgorithm
         this.Context.AddSource(builder.HintName, builder.BuildSource());
     }
 
+    private INamedTypeSymbol? ResolveClassSymbol(ClassDeclarationSyntax classDeclarationSyntax, CancellationToken cancellationToken)
+    {
+        if (this.ClassSymbolResolver is not null)
+        {
+            return this.ClassSymbolResolver(this.Compilation, classDeclarationSyntax, cancellationToken);
+        }
+
+        var semanticModel = this.Compilation.GetSemanticModel(classDeclarationSyntax.SyntaxTree);
+        return semanticModel.GetDeclaredSymbol(classDeclarationSyntax, cancellationToken) as INamedTypeSymbol;
+    }
+
     private ImmutableArray<(INamedTypeSymbol Mapper, ImmutableArray<INamedTypeSymbol> Interfaces)> DiscoverMappers(
         INamedTypeSymbol registrarClass,
         MappaDependencyInjectionAttributeData attributeData,
         ClassDeclarationSyntax classDeclarationSyntax)
     {
-        var results = new List<(INamedTypeSymbol Mapper, ImmutableArray<INamedTypeSymbol> Interfaces)>();
-        foreach (var type in this.Compilation.Assembly.GetAllNamedTypes())
+        var assemblies = new HashSet<IAssemblySymbol>(SymbolEqualityComparer.Default)
         {
-            if (SymbolEqualityComparer.Default.Equals(type, registrarClass))
+            this.Compilation.Assembly,
+        };
+
+        foreach (var markerType in attributeData.InjectFromAssemblies)
+        {
+            assemblies.Add(markerType.ContainingAssembly);
+        }
+
+        var results = new List<(INamedTypeSymbol Mapper, ImmutableArray<INamedTypeSymbol> Interfaces)>();
+        foreach (var assembly in assemblies
+                     .OrderBy(candidate => candidate.Identity.GetDisplayName(), StringComparer.Ordinal))
+        {
+            foreach (var type in assembly.GetAllNamedTypes())
             {
-                continue;
+                if (SymbolEqualityComparer.Default.Equals(type, registrarClass))
+                {
+                    continue;
+                }
+
+                if (attributeData.IsIgnored(type))
+                {
+                    continue;
+                }
+
+                if (!type.GetAttributes().HasMappaAttribute(this.Compilation))
+                {
+                    continue;
+                }
+
+                // Static mapper classes cannot be registered with Microsoft.Extensions.DependencyInjection.
+                if (type.IsStatic)
+                {
+                    this.Context.ReportDiagnostic(
+                        MappaDiagnostics.MappaDependencyInjectionStaticMapperSkipped(
+                            classDeclarationSyntax,
+                            type.ToDisplayString()));
+                    continue;
+                }
+
+                var interfaces = GetEligibleInterfaces(type, attributeData);
+                switch (attributeData.InjectInterfaces)
+                {
+                    case MappaDependencyInjectionInjectInterfaces.InterfaceOnly:
+                    case MappaDependencyInjectionInjectInterfaces.InterfaceAndClass:
+                        if (interfaces.IsDefaultOrEmpty)
+                        {
+                            this.Context.ReportDiagnostic(
+                                MappaDiagnostics.MappaDependencyInjectionMapperHasNoEligibleInterfaces(
+                                    classDeclarationSyntax,
+                                    type.ToDisplayString()));
+                            continue;
+                        }
+
+                        break;
+                }
+
+                results.Add((type, interfaces));
             }
-
-            if (attributeData.IsIgnored(type))
-            {
-                continue;
-            }
-
-            if (!type.GetAttributes().HasMappaAttribute(this.Compilation))
-            {
-                continue;
-            }
-
-            // Static mapper classes cannot be registered with Microsoft.Extensions.DependencyInjection.
-            if (type.IsStatic)
-            {
-                this.Context.ReportDiagnostic(
-                    MappaDiagnostics.MappaDependencyInjectionStaticMapperSkipped(
-                        classDeclarationSyntax,
-                        type.ToDisplayString()));
-                continue;
-            }
-
-            var interfaces = GetEligibleInterfaces(type, attributeData);
-            switch (attributeData.InjectInterfaces)
-            {
-                case MappaDependencyInjectionInjectInterfaces.InterfaceOnly:
-                case MappaDependencyInjectionInjectInterfaces.InterfaceAndClass:
-                    if (interfaces.IsDefaultOrEmpty)
-                    {
-                        this.Context.ReportDiagnostic(
-                            MappaDiagnostics.MappaDependencyInjectionMapperHasNoEligibleInterfaces(
-                                classDeclarationSyntax,
-                                type.ToDisplayString()));
-                        continue;
-                    }
-
-                    break;
-            }
-
-            results.Add((type, interfaces));
         }
 
         return [.. results];

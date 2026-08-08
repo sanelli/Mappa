@@ -5,12 +5,15 @@
 using Google.Protobuf.WellKnownTypes;
 
 using Mappa.Attributes;
+using Mappa.Dependency.Bson;
 using Mappa.Dependency.Protobuf;
 using Mappa.Generator.Tests.Helpers;
 using Mappa.Generator.Tests.Models;
 
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
+
+using MongoDB.Bson;
 
 namespace Mappa.Generator.Tests.Abstractions;
 
@@ -115,7 +118,9 @@ public abstract class MappaGeneratorAbstractUnitTests
         {
             MetadataReference.CreateFromFile(typeof(MappaAttribute).GetTypeInfo().Assembly.Location),
             MetadataReference.CreateFromFile(typeof(MappaProtobufMapper).GetTypeInfo().Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(MappaBsonMapper).GetTypeInfo().Assembly.Location),
             MetadataReference.CreateFromFile(typeof(Timestamp).GetTypeInfo().Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ObjectId).GetTypeInfo().Assembly.Location),
             MetadataReference.CreateFromFile(typeof(object).GetTypeInfo().Assembly.Location),
             MetadataReference.CreateFromFile(typeof(Uri).GetTypeInfo().Assembly.Location),
             MetadataReference.CreateFromFile(dateTimeStylesAssembly.Location),

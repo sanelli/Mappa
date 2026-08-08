@@ -23,6 +23,7 @@ internal sealed class MappaDependencyInjectionAttributeData
     /// <param name="serviceLifetime">The DI service lifetime.</param>
     /// <param name="injectInterfaces">How classes and interfaces are registered.</param>
     /// <param name="ignoreTypes">Types to exclude from registration.</param>
+    /// <param name="injectFromAssemblies">Marker types whose assemblies are also scanned.</param>
     /// <param name="location">The attribute location.</param>
     internal MappaDependencyInjectionAttributeData(
         string? constructorMethodName,
@@ -32,6 +33,7 @@ internal sealed class MappaDependencyInjectionAttributeData
         MappaDependencyInjectionServiceLifetime serviceLifetime,
         MappaDependencyInjectionInjectInterfaces injectInterfaces,
         ImmutableArray<INamedTypeSymbol> ignoreTypes,
+        ImmutableArray<INamedTypeSymbol> injectFromAssemblies,
         Location? location)
     {
         this.ConstructorMethodName = constructorMethodName;
@@ -41,6 +43,7 @@ internal sealed class MappaDependencyInjectionAttributeData
         this.ServiceLifetime = serviceLifetime;
         this.InjectInterfaces = injectInterfaces;
         this.IgnoreTypes = ignoreTypes;
+        this.InjectFromAssemblies = injectFromAssemblies;
         this.Location = location;
     }
 
@@ -60,7 +63,7 @@ internal sealed class MappaDependencyInjectionAttributeData
     internal bool ExtensionMethod { get; }
 
     /// <summary>
-    /// Gets the accessibility of the generated registration method.
+    /// Gets the accessibility of the generated method.
     /// </summary>
     internal MappaDependencyInjectionMethodAccessibility Accessibility { get; }
 
@@ -80,6 +83,11 @@ internal sealed class MappaDependencyInjectionAttributeData
     internal ImmutableArray<INamedTypeSymbol> IgnoreTypes { get; }
 
     /// <summary>
+    /// Gets marker types whose assemblies are scanned in addition to the registrar's assembly.
+    /// </summary>
+    internal ImmutableArray<INamedTypeSymbol> InjectFromAssemblies { get; }
+
+    /// <summary>
     /// Gets the attribute location.
     /// </summary>
     internal Location? Location { get; }
@@ -91,14 +99,16 @@ internal sealed class MappaDependencyInjectionAttributeData
     /// <returns>The method name to generate.</returns>
     internal string ResolveMethodName(string className)
     {
-        if (!string.IsNullOrWhiteSpace(this.MethodName))
+        var methodName = this.MethodName;
+        if (methodName is not null && !string.IsNullOrWhiteSpace(methodName))
         {
-            return this.MethodName!;
+            return methodName;
         }
 
-        if (!string.IsNullOrWhiteSpace(this.ConstructorMethodName))
+        var constructorMethodName = this.ConstructorMethodName;
+        if (constructorMethodName is not null && !string.IsNullOrWhiteSpace(constructorMethodName))
         {
-            return this.ConstructorMethodName!;
+            return constructorMethodName;
         }
 
         return $"Register{className}";

@@ -546,7 +546,8 @@ public sealed class AttributeDataExtensionsTests
                                   Accessibility = MappaDependencyInjectionMethodAccessibility.Internal,
                                   ServiceLifetime = MappaDependencyInjectionServiceLifetime.Scoped,
                                   InjectInterfaces = MappaDependencyInjectionInjectInterfaces.InterfaceAndClass,
-                                  IgnoreType = new[] { typeof(IIgnored) })]
+                                  IgnoreType = new[] { typeof(IIgnored) },
+                                  InjectFromAssemblies = new[] { typeof(IIgnored) })]
                               public static partial class TestRegistrar
                               {
                               }
@@ -568,6 +569,8 @@ public sealed class AttributeDataExtensionsTests
         attribute.InjectInterfaces.Should().Be(MappaDependencyInjectionInjectInterfaces.InterfaceAndClass);
         attribute.IgnoreTypes.Should().HaveCount(1);
         attribute.IgnoreTypes[0].ToDisplayString().Should().Be(AttributeDataExtensionsTestHelper.NamespaceName + ".IIgnored");
+        attribute.InjectFromAssemblies.Should().HaveCount(1);
+        attribute.InjectFromAssemblies[0].ToDisplayString().Should().Be(AttributeDataExtensionsTestHelper.NamespaceName + ".IIgnored");
         attribute.ResolveMethodName("TestRegistrar").Should().Be("RegisterFromProperty");
     }
 }
