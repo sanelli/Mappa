@@ -49,8 +49,15 @@ internal static class SyntheticMapMethodNaming
     /// <param name="type">The type.</param>
     /// <returns>The sanitized name fragment.</returns>
     internal static string SanitizeTypeName(ITypeSymbol type)
+        => SanitizeTypeName(type.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat));
+
+    /// <summary>
+    /// Sanitizes a display name into an identifier-safe fragment.
+    /// </summary>
+    /// <param name="displayName">The display name.</param>
+    /// <returns>The sanitized name fragment.</returns>
+    internal static string SanitizeTypeName(string displayName)
     {
-        var displayName = type.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
         var builder = new StringBuilder(displayName.Length);
         foreach (var character in displayName)
         {

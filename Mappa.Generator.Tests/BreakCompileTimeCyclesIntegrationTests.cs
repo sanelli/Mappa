@@ -301,6 +301,99 @@ public sealed class BreakCompileTimeCyclesIntegrationTests
             invokePrefix: "this.");
     }
 
+    /// <summary>
+    /// When the root map is static and only an instance map exists for the cycling pair,
+    /// BreakCompileTimeCycles cannot reuse or synthesize a usable method and reports MP00077.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task StaticRootWithInstanceOnlyCycleMapReportsMappingCycleWhenBreakEnabled()
+    {
+        var sourceCode = $$"""
+                           #nullable enable
+                           using Mappa.Attributes;
+
+                           namespace {{Ns}};
+
+                           {{MutualCycleTypes}}
+
+                           [Mappa]
+                           public sealed partial class Mapper
+                           {
+                               public partial ATarget MapA(ASource input);
+
+                               [MappaSettings(BreakCompileTimeCycles = BooleanSetting.Enable)]
+                               public static partial RootTarget Map(RootSource input);
+                           }
+                           #nullable restore
+                           """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .HaveDiagnostics(2)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.MappingCycleDetected, ASourceType, ATargetType)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.CannotMapNonRequiredProperty, BTargetType, "Child")
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveMapMethod(
+                "Mapper",
+                SealedClassModifiers,
+                "Map",
+                PublicStaticPartialMethodModifiers,
+                false,
+                RootTargetType,
+                NullableAnnotation.NotAnnotated,
+                "input",
+                RootSourceType,
+                NullableAnnotation.NotAnnotated,
+                2,
+                block =>
+                {
+                    // MapA is generated first (temps 1–7); static Map continues and omits the cyclic back-edge.
+                    block
+                        .HasSyntaxNodesCount(8)
+                        .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax(
+                            ASourceType,
+                            "__mappa_tmp_8",
+                            init => init.BeMemberAccessExpressionSyntax("input.Child")))
+                        .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax(
+                            typeof(int).ToString(),
+                            "__mappa_tmp_9",
+                            init => init.BeMemberAccessExpressionSyntax("__mappa_tmp_8.Id")))
+                        .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax(
+                            BSourceType,
+                            "__mappa_tmp_10",
+                            init => init.BeMemberAccessExpressionSyntax("__mappa_tmp_8.Child")))
+                        .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax(
+                            typeof(int).ToString(),
+                            "__mappa_tmp_11",
+                            init => init.BeMemberAccessExpressionSyntax("__mappa_tmp_10.Id")))
+                        .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax(
+                            BTargetType,
+                            "__mappa_tmp_12",
+                            init => init.BeObjectCreationExpressionSyntax(
+                                BTargetType,
+                                ("Id", expression => expression.BeIdentifierNameSyntax("__mappa_tmp_11")))))
+                        .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax(
+                            ATargetType,
+                            "__mappa_tmp_13",
+                            init => init.BeObjectCreationExpressionSyntax(
+                                ATargetType,
+                                ("Id", expression => expression.BeIdentifierNameSyntax("__mappa_tmp_9")),
+                                ("Child", expression => expression.BeIdentifierNameSyntax("__mappa_tmp_12")))))
+                        .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax(
+                            RootTargetType,
+                            "__mappa_tmp_14",
+                            init => init.BeObjectCreationExpressionSyntax(
+                                RootTargetType,
+                                ("Child", expression => expression.BeIdentifierNameSyntax("__mappa_tmp_13")))))
+                        .HasNextSyntaxNode(node => node.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_14")));
+                });
+    }
+
     private static void AssertEnabledWithoutContext(
         GeneratedResults generatedResults,
         string syntheticMethodName,

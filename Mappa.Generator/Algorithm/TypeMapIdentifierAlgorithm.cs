@@ -281,8 +281,9 @@ internal class TypeMapIdentifierAlgorithm
            && this.Context.AlgorithmSettings.UseIdentityMapStrategyDetector.CurrentValue;
 
     /// <summary>
-    /// Breaks a compile-time mapping cycle by invoking an existing map method for the type pair
-    /// or by synthesizing a private map method and returning a <see cref="MethodMapStrategy"/>.
+    /// Breaks a compile-time mapping cycle by synthesizing a private map method and returning
+    /// a <see cref="MethodMapStrategy"/>. Callers must only invoke this when
+    /// <see cref="MappaMapAlgorithmContext.TryGetMethod"/> has already failed for the cycling pair.
     /// </summary>
     /// <returns>The method invocation strategy for the cycling type pair.</returns>
     private MapStrategy BreakCompileTimeCycleWithSyntheticOrExistingMethod()
@@ -291,12 +292,6 @@ internal class TypeMapIdentifierAlgorithm
         var sourceType = this.Context.SourceType;
         var rootMapMethod = this.Context.GetRootMapMethod();
         var contextParameterName = rootMapMethod.MaybeGetMappaContextParameterName();
-
-        if (this.Context.TryGetMethod(targetType, sourceType, out var existingMapMethod))
-        {
-            return this.WrapIfNullableReferenceSource(
-                new MethodMapStrategy(existingMapMethod, contextParameterName));
-        }
 
         if (!this.Context.TryGetClassGeneratorContext(out var classContext) || classContext is null)
         {
@@ -321,12 +316,8 @@ internal class TypeMapIdentifierAlgorithm
 
         if (!classContext.TryAddMethod(syntheticMapMethod))
         {
-            if (this.Context.TryGetMethod(targetType, sourceType, out existingMapMethod))
-            {
-                return this.WrapIfNullableReferenceSource(
-                    new MethodMapStrategy(existingMapMethod, contextParameterName));
-            }
-
+            // A map for the pair exists but is not usable from this call site
+            // (for example an instance-only method while the root map is static).
             this.Context.ReportDiagnostic(MappaDiagnostics.MappingCycleDetected(
                 this.Context.GetLocation(),
                 sourceType,

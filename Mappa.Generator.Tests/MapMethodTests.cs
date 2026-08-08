@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Attributes;
 using Mappa.Generator.Exceptions;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
@@ -464,6 +465,72 @@ public sealed class MapMethodTests
         mapMethod.AccessFieldName.Should().BeEmpty();
         mapMethod.RequireMappaContextWhenInvoked().Should().BeFalse();
         mapMethod.MaybeGetMappaContextParameterName().Should().BeNull();
+    }
+
+    /// <summary>
+    /// Test <see cref="MapMethod.SetMaxRuntimeDepth"/> throws when the value has already been set.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void SetMaxRuntimeDepthThrowsWhenValueIsAlreadySet()
+    {
+        var mapMethod = CreateMapMethodFromSyntax(
+            """
+            using Mappa.Attributes;
+
+            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+            public class Source { }
+
+            public class Target { }
+
+            [Mappa]
+            public sealed partial class Mapper
+            {
+                public partial Target Map(Source input);
+            }
+            """,
+            "Map");
+        mapMethod.SetMaxRuntimeDepth(3);
+
+        var act = () => mapMethod.SetMaxRuntimeDepth(5);
+
+        act.Should()
+            .Throw<MappaGeneratorException>()
+            .WithMessage("You are trying to set max runtime depth multiple times.");
+    }
+
+    /// <summary>
+    /// Test <see cref="MapMethod.SetReferenceReusing"/> throws when the value has already been set.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void SetReferenceReusingThrowsWhenValueIsAlreadySet()
+    {
+        var mapMethod = CreateMapMethodFromSyntax(
+            """
+            using Mappa.Attributes;
+
+            namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+            public class Source { }
+
+            public class Target { }
+
+            [Mappa]
+            public sealed partial class Mapper
+            {
+                public partial Target Map(Source input);
+            }
+            """,
+            "Map");
+        mapMethod.SetReferenceReusing(BooleanSetting.Enable);
+
+        var act = () => mapMethod.SetReferenceReusing(BooleanSetting.Disable);
+
+        act.Should()
+            .Throw<MappaGeneratorException>()
+            .WithMessage("You are trying to set reference reusing multiple times.");
     }
 
     private static MapMethod CreateMapMethodFromSyntax(string source, string methodName, bool nullableEnabled = false)
