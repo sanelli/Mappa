@@ -127,4 +127,56 @@ public sealed class MappaGlobalOptionsTests
         options.MaxRuntimeDepth.Should().Be((short)0);
         options.MaxCompileTimeDepth.Should().Be((short)50);
     }
+
+    /// <summary>
+    /// Test <see cref="MappaGlobalOptions"/> reads reference-handling settings from <c>.editorconfig</c>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void ReadsReferenceHandlingSettingsFromEditorConfig()
+    {
+        const string editorConfig = """
+                                    root = true
+
+                                    [*.cs]
+                                    mappa.referencereusing = enable
+                                    mappa.maxruntimedepth = 7
+                                    mappa.maxcompiletimedepth = 3
+                                    """;
+
+        var compilation = BuildCompilation("namespace Mappa.Generator.Tests.UnitTests.SourceCode { internal class Placeholder { } }");
+        var options = new MappaGlobalOptions(
+            TestAnalyzerConfigOptionsProvider.FromEditorConfig(editorConfig),
+            compilation.SyntaxTrees[0]);
+
+        options.ReferenceReusing.Should().Be(BooleanSetting.Enable);
+        options.MaxRuntimeDepth.Should().Be((short)7);
+        options.MaxCompileTimeDepth.Should().Be((short)3);
+    }
+
+    /// <summary>
+    /// Test negative depth values in <c>.editorconfig</c> fall back to defaults.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void TreatsNegativeDepthValuesInEditorConfigAsUnset()
+    {
+        const string editorConfig = """
+                                    root = true
+
+                                    [*.cs]
+                                    mappa.maxruntimedepth = -1
+                                    mappa.maxcompiletimedepth = -5
+                                    mappa.referencereusing = Undefined
+                                    """;
+
+        var compilation = BuildCompilation("namespace Mappa.Generator.Tests.UnitTests.SourceCode { internal class Placeholder { } }");
+        var options = new MappaGlobalOptions(
+            TestAnalyzerConfigOptionsProvider.FromEditorConfig(editorConfig),
+            compilation.SyntaxTrees[0]);
+
+        options.ReferenceReusing.Should().Be(BooleanSetting.Undefined);
+        options.MaxRuntimeDepth.Should().Be((short)0);
+        options.MaxCompileTimeDepth.Should().Be((short)50);
+    }
 }
