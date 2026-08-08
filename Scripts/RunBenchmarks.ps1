@@ -353,9 +353,20 @@ try
     $memorySvgPath = Join-Path $MappaBenchmarkPath "MAPPA-BENCHMARK-MEMORY.svg"
     $timePercentSvgPath = Join-Path $MappaBenchmarkPath "MAPPA-BENCHMARK-TIME-PERCENTAGES.svg"
     $memoryPercentSvgPath = Join-Path $MappaBenchmarkPath "MAPPA-BENCHMARK-MEMORY-PERCENTAGES.svg"
+    $comparisonSvgPath = Join-Path $MappaBenchmarkPath "MAPPA-BENCHMARK-COMPARISON.svg"
+    $comparisonMarkdownPath = Join-Path $MappaBenchmarkPath "Benchmark.Comparison.md"
 
     Write-BenchmarkSummaryMarkdown -Benchmarks $benchmarks -OutputPath $summaryPath
     Write-BenchmarkHistoryTable -Benchmarks $benchmarks -MappaVersion $currentMappaVersion -OutputPath $historyPath
+
+    $comparisonRows = @(Get-BenchmarkComparisonRows -Benchmarks $benchmarks)
+    if ($comparisonRows.Count -eq 0)
+    {
+        throw "No comparison chart benchmarks were found in CSV results."
+    }
+
+    New-BenchmarkComparisonSvg -Rows $comparisonRows -OutputPath $comparisonSvgPath
+    Write-BenchmarkComparisonMarkdown -Rows $comparisonRows -OutputPath $comparisonMarkdownPath
 
     $chartBenchmarks = [System.Collections.Generic.List[object]]::new()
     $percentageChartBenchmarks = [System.Collections.Generic.List[object]]::new()
@@ -545,6 +556,8 @@ try
     Write-Host "Wrote:"
     Write-Host " - $summaryPath"
     Write-Host " - $historyPath"
+    Write-Host " - $comparisonSvgPath"
+    Write-Host " - $comparisonMarkdownPath"
     Write-Host " - $timeSvgPath"
     Write-Host " - $memorySvgPath"
     Write-Host " - $timePercentSvgPath"

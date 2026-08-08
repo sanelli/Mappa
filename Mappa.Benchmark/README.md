@@ -42,7 +42,7 @@ Outputs are written under `.mappa-benchmark/` (gitignored). See [Documentation/d
 
 ### Chart / CI subset
 
-`MAPPA-BENCHMARK-TIME.svg`, `MAPPA-BENCHMARK-MEMORY.svg`, `MAPPA-BENCHMARK-TIME-PERCENTAGES.svg`, and `MAPPA-BENCHMARK-MEMORY-PERCENTAGES.svg` (and CI `-ChartBenchmarksOnly`) include:
+`MAPPA-BENCHMARK-COMPARISON.svg`, `MAPPA-BENCHMARK-TIME.svg`, `MAPPA-BENCHMARK-MEMORY.svg`, `MAPPA-BENCHMARK-TIME-PERCENTAGES.svg`, and `MAPPA-BENCHMARK-MEMORY-PERCENTAGES.svg` (and CI `-ChartBenchmarksOnly`) include:
 
 - `ArrayToListBenchmark`
 - `ListToArrayBenchmark`
@@ -50,6 +50,11 @@ Outputs are written under `.mappa-benchmark/` (gitignored). See [Documentation/d
 - `DictionaryBenchmark`
 - `NestedDtoBenchmark`
 - `IQueryableProjectionBenchmark`
+- `StringToEnumBenchmark`
+- `EnumToStringBenchmark`
+- `ReferenceReusingSharedDagBenchmark`
+
+The comparison SVG lists the best time and best memory mapper(s) per scenario (ties included). When Mappa is not among the winners, the cell also shows the percentage delta versus Mappa. Memory winners are `n/a` for `StringToEnumBenchmark` and `EnumToStringBenchmark` (same exclusions as the absolute and percentage memory charts).
 
 ## Spotify attribution
 

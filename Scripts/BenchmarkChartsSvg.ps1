@@ -614,3 +614,353 @@ function Get-BenchmarkBarBreakWavePath
 
     return "  <path d=`"$d`" fill=`"none`" stroke=`"$BackgroundColor`" stroke-width=`"5`" stroke-linecap=`"round`" stroke-linejoin=`"round`"/>`n  <path d=`"$d`" fill=`"none`" stroke=`"$FillColor`" stroke-width=`"1.5`" stroke-linecap=`"round`" stroke-linejoin=`"round`"/>"
 }
+
+function Get-BenchmarkBestMappers
+{
+    param(
+        [Parameter(Mandatory = $true)]
+        [hashtable]$Mappers,
+
+        [Parameter(Mandatory = $true)]
+        [string]$MetricProperty,
+
+        [string[]]$MapperOrder = $script:BenchmarkMapperOrder
+    )
+
+    $bestMappers = [System.Collections.Generic.List[string]]::new()
+    $bestValue = $null
+    foreach ($mapper in $MapperOrder)
+    {
+        if (-not $Mappers.ContainsKey($mapper))
+        {
+            continue
+        }
+
+        $entry = $Mappers[$mapper]
+        if ($null -eq $entry)
+        {
+            continue
+        }
+
+        $value = $entry.$MetricProperty
+        if ($null -eq $value)
+        {
+            continue
+        }
+
+        $numeric = [double]$value
+        if ($null -eq $bestValue)
+        {
+            $bestValue = $numeric
+            $bestMappers.Clear()
+            $bestMappers.Add($mapper) | Out-Null
+            continue
+        }
+
+        if ($numeric -lt $bestValue)
+        {
+            $bestValue = $numeric
+            $bestMappers.Clear()
+            $bestMappers.Add($mapper) | Out-Null
+            continue
+        }
+
+        if ($numeric -eq $bestValue)
+        {
+            $bestMappers.Add($mapper) | Out-Null
+        }
+    }
+
+    return [pscustomobject]@{
+        Mappers = @($bestMappers.ToArray())
+        BestValue = $bestValue
+    }
+}
+
+function Format-BenchmarkWinnerDeltaPercent
+{
+    param(
+        [Nullable[double]]$BestValue,
+        [Nullable[double]]$MappaValue
+    )
+
+    if (($null -eq $BestValue) -or ($null -eq $MappaValue) -or ($MappaValue -eq 0.0))
+    {
+        return $null
+    }
+
+    $delta = (($BestValue / $MappaValue) - 1.0) * 100.0
+    return $delta.ToString("0.#", [System.Globalization.CultureInfo]::InvariantCulture) + "%"
+}
+
+function Get-BenchmarkWinnerCell
+{
+    param(
+        [Parameter(Mandatory = $true)]
+        [hashtable]$Mappers,
+
+        [Parameter(Mandatory = $true)]
+        [string]$MetricProperty,
+
+        [switch]$Unavailable
+    )
+
+    if ($Unavailable)
+    {
+        return [pscustomobject]@{
+            Mappers = @()
+            Label = "n/a"
+            ShowDelta = $false
+            DeltaPercent = $null
+        }
+    }
+
+    $best = Get-BenchmarkBestMappers -Mappers $Mappers -MetricProperty $MetricProperty
+    if (($null -eq $best.BestValue) -or ($best.Mappers.Count -eq 0))
+    {
+        return [pscustomobject]@{
+            Mappers = @()
+            Label = "n/a"
+            ShowDelta = $false
+            DeltaPercent = $null
+        }
+    }
+
+    $includeMappa = $best.Mappers -contains "Mappa"
+    $showDelta = -not $includeMappa
+    $deltaPercent = $null
+    if ($showDelta)
+    {
+        $mappaEntry = $Mappers["Mappa"]
+        $mappaValue = if ($null -eq $mappaEntry) { $null } else { $mappaEntry.$MetricProperty }
+        $deltaPercent = Format-BenchmarkWinnerDeltaPercent -BestValue $best.BestValue -MappaValue $mappaValue
+    }
+
+    $label = ($best.Mappers -join ", ")
+    if ($showDelta -and (-not [string]::IsNullOrWhiteSpace($deltaPercent)))
+    {
+        $label = "$label ($deltaPercent)"
+    }
+
+    return [pscustomobject]@{
+        Mappers = @($best.Mappers)
+        Label = $label
+        ShowDelta = $showDelta
+        DeltaPercent = $deltaPercent
+    }
+}
+
+function Get-BenchmarkComparisonRows
+{
+    param(
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
+        [object[]]$Benchmarks,
+
+        [string[]]$BenchmarkNames = $script:BenchmarkChartNames
+    )
+
+    $rows = [System.Collections.Generic.List[object]]::new()
+    foreach ($name in $BenchmarkNames)
+    {
+        $match = @($Benchmarks | Where-Object { $_.Name -eq $name } | Select-Object -First 1)
+        if ($match.Count -eq 0 -or $null -eq $match[0])
+        {
+            continue
+        }
+
+        $benchmark = $match[0]
+        $bestTime = Get-BenchmarkWinnerCell -Mappers $benchmark.Mappers -MetricProperty "MeanNs"
+        if ($script:BenchmarkMemoryChartExcludedNames -contains $name)
+        {
+            $bestMemory = Get-BenchmarkWinnerCell -Mappers $benchmark.Mappers -MetricProperty "AllocatedBytes" -Unavailable
+        }
+        else
+        {
+            $bestMemory = Get-BenchmarkWinnerCell -Mappers $benchmark.Mappers -MetricProperty "AllocatedBytes"
+        }
+
+        $rows.Add([pscustomobject]@{
+                Name = $name
+                DisplayName = (Get-BenchmarkChartDisplayName -BenchmarkName $name)
+                BestTime = $bestTime
+                BestMemory = $bestMemory
+                BestTimeLabel = $bestTime.Label
+                BestMemoryLabel = $bestMemory.Label
+            }) | Out-Null
+    }
+
+    return $rows.ToArray()
+}
+
+function Add-BenchmarkWinnerSvgText
+{
+    param(
+        [Parameter(Mandatory = $true)]
+        [System.Text.StringBuilder]$Builder,
+
+        [Parameter(Mandatory = $true)]
+        [double]$X,
+
+        [Parameter(Mandatory = $true)]
+        [double]$Y,
+
+        [Parameter(Mandatory = $true)]
+        $WinnerCell
+    )
+
+    if (($null -eq $WinnerCell) -or ($WinnerCell.Mappers.Count -eq 0))
+    {
+        $label = [System.Security.SecurityElement]::Escape([string]$WinnerCell.Label)
+        [void]$Builder.AppendLine("  <text x=`"$([Math]::Round($X, 2))`" y=`"$([Math]::Round($Y, 2))`" font-family=`"Segoe UI, Arial, sans-serif`" font-size=`"12`" fill=`"#555555`">$label</text>")
+        return
+    }
+
+    [void]$Builder.Append("  <text x=`"$([Math]::Round($X, 2))`" y=`"$([Math]::Round($Y, 2))`" font-family=`"Segoe UI, Arial, sans-serif`" font-size=`"12`">")
+    for ($i = 0; $i -lt $WinnerCell.Mappers.Count; $i++)
+    {
+        if ($i -gt 0)
+        {
+            [void]$Builder.Append('<tspan fill="#555555">, </tspan>')
+        }
+
+        $mapper = [string]$WinnerCell.Mappers[$i]
+        $color = "#555555"
+        if ($script:BenchmarkMapperColors.ContainsKey($mapper))
+        {
+            $color = $script:BenchmarkMapperColors[$mapper]
+        }
+
+        $escapedMapper = [System.Security.SecurityElement]::Escape($mapper)
+        [void]$Builder.Append("<tspan font-weight=`"bold`" fill=`"$color`">$escapedMapper</tspan>")
+    }
+
+    if ($WinnerCell.ShowDelta -and (-not [string]::IsNullOrWhiteSpace([string]$WinnerCell.DeltaPercent)))
+    {
+        $escapedDelta = [System.Security.SecurityElement]::Escape(" ($($WinnerCell.DeltaPercent))")
+        [void]$Builder.Append("<tspan fill=`"#555555`">$escapedDelta</tspan>")
+    }
+
+    [void]$Builder.AppendLine("</text>")
+}
+
+function New-BenchmarkComparisonSvg
+{
+    param(
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
+        [object[]]$Rows,
+
+        [Parameter(Mandatory = $true)]
+        [string]$OutputPath,
+
+        [string]$Title = "Benchmark winners"
+    )
+
+    $leftMargin = 16.0
+    $rightMargin = 16.0
+    $topMargin = 44.0
+    $bottomMargin = 16.0
+    $rowHeight = 26.0
+    $headerHeight = 28.0
+    $colBenchmarkWidth = 150.0
+    $colTimeWidth = 175.0
+    $colMemoryWidth = 175.0
+    $tableWidth = $colBenchmarkWidth + $colTimeWidth + $colMemoryWidth
+    $width = $leftMargin + $tableWidth + $rightMargin
+    $tableBottom = $topMargin + $headerHeight + ($Rows.Count * $rowHeight)
+    $height = $tableBottom + $bottomMargin
+    $dividerColor = "#e0e0e0"
+
+    $builder = New-Object System.Text.StringBuilder
+    [void]$builder.AppendLine('<?xml version="1.0" encoding="UTF-8" standalone="no"?>')
+    [void]$builder.AppendLine("<svg xmlns=`"http://www.w3.org/2000/svg`" width=`"$([Math]::Round($width, 2))`" height=`"$([Math]::Round($height, 2))`" viewBox=`"0 0 $([Math]::Round($width, 2)) $([Math]::Round($height, 2))`">")
+    [void]$builder.AppendLine('  <rect width="100%" height="100%" fill="#ffffff"/>')
+    [void]$builder.AppendLine("  <text x=`"$([Math]::Round($width / 2.0, 2))`" y=`"26`" text-anchor=`"middle`" font-family=`"Segoe UI, Arial, sans-serif`" font-size=`"16`" fill=`"#222222`">$Title</text>")
+
+    $tableX = $leftMargin
+    $headerY = $topMargin
+    [void]$builder.AppendLine("  <rect x=`"$([Math]::Round($tableX, 2))`" y=`"$([Math]::Round($headerY, 2))`" width=`"$([Math]::Round($tableWidth, 2))`" height=`"$([Math]::Round($headerHeight, 2))`" fill=`"#f3f3f3`" stroke=`"#cccccc`" stroke-width=`"1`"/>")
+
+    $headerTextY = $headerY + 18.0
+    $col1X = $tableX + 8.0
+    $col2X = $tableX + $colBenchmarkWidth + 8.0
+    $col3X = $tableX + $colBenchmarkWidth + $colTimeWidth + 8.0
+    [void]$builder.AppendLine("  <text x=`"$([Math]::Round($col1X, 2))`" y=`"$([Math]::Round($headerTextY, 2))`" font-family=`"Segoe UI, Arial, sans-serif`" font-size=`"12`" font-weight=`"bold`" fill=`"#333333`">Benchmark</text>")
+    [void]$builder.AppendLine("  <text x=`"$([Math]::Round($col2X, 2))`" y=`"$([Math]::Round($headerTextY, 2))`" font-family=`"Segoe UI, Arial, sans-serif`" font-size=`"12`" font-weight=`"bold`" fill=`"#333333`">Best time</text>")
+    [void]$builder.AppendLine("  <text x=`"$([Math]::Round($col3X, 2))`" y=`"$([Math]::Round($headerTextY, 2))`" font-family=`"Segoe UI, Arial, sans-serif`" font-size=`"12`" font-weight=`"bold`" fill=`"#333333`">Best memory</text>")
+
+    $rowIndex = 0
+    foreach ($row in $Rows)
+    {
+        $rowY = $topMargin + $headerHeight + ($rowIndex * $rowHeight)
+        $fill = if (($rowIndex % 2) -eq 0) { "#ffffff" } else { "#fafafa" }
+        [void]$builder.AppendLine("  <rect x=`"$([Math]::Round($tableX, 2))`" y=`"$([Math]::Round($rowY, 2))`" width=`"$([Math]::Round($tableWidth, 2))`" height=`"$([Math]::Round($rowHeight, 2))`" fill=`"$fill`" stroke=`"#dddddd`" stroke-width=`"1`"/>")
+
+        $textY = $rowY + 17.0
+        $displayName = [System.Security.SecurityElement]::Escape([string]$row.DisplayName)
+        [void]$builder.AppendLine("  <text x=`"$([Math]::Round($col1X, 2))`" y=`"$([Math]::Round($textY, 2))`" font-family=`"Segoe UI, Arial, sans-serif`" font-size=`"12`" fill=`"#222222`">$displayName</text>")
+
+        Add-BenchmarkWinnerSvgText -Builder $builder -X $col2X -Y $textY -WinnerCell $row.BestTime
+        Add-BenchmarkWinnerSvgText -Builder $builder -X $col3X -Y $textY -WinnerCell $row.BestMemory
+
+        $rowIndex++
+    }
+
+    $divider1X = $tableX + $colBenchmarkWidth
+    $divider2X = $tableX + $colBenchmarkWidth + $colTimeWidth
+    [void]$builder.AppendLine("  <line x1=`"$([Math]::Round($divider1X, 2))`" y1=`"$([Math]::Round($topMargin, 2))`" x2=`"$([Math]::Round($divider1X, 2))`" y2=`"$([Math]::Round($tableBottom, 2))`" stroke=`"$dividerColor`" stroke-width=`"1`"/>")
+    [void]$builder.AppendLine("  <line x1=`"$([Math]::Round($divider2X, 2))`" y1=`"$([Math]::Round($topMargin, 2))`" x2=`"$([Math]::Round($divider2X, 2))`" y2=`"$([Math]::Round($tableBottom, 2))`" stroke=`"$dividerColor`" stroke-width=`"1`"/>")
+
+    [void]$builder.AppendLine("</svg>")
+
+    $directory = Split-Path -Parent $OutputPath
+    if (-not [string]::IsNullOrWhiteSpace($directory) -and -not (Test-Path -LiteralPath $directory))
+    {
+        New-Item -ItemType Directory -Path $directory | Out-Null
+    }
+
+    $fullOutputPath = $OutputPath
+    if (-not [System.IO.Path]::IsPathRooted($OutputPath))
+    {
+        $fullOutputPath = Join-Path (Get-Location).Path $OutputPath
+    }
+
+    [System.IO.File]::WriteAllText($fullOutputPath, $builder.ToString())
+}
+
+function Write-BenchmarkComparisonMarkdown
+{
+    param(
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
+        [object[]]$Rows,
+
+        [Parameter(Mandatory = $true)]
+        [string]$OutputPath
+    )
+
+    $builder = New-Object System.Text.StringBuilder
+    [void]$builder.AppendLine("# Benchmark comparison")
+    [void]$builder.AppendLine()
+    [void]$builder.AppendLine("| Benchmark | Best time | Best memory |")
+    [void]$builder.AppendLine("| --- | --- | --- |")
+    foreach ($row in $Rows)
+    {
+        [void]$builder.AppendLine("| $($row.DisplayName) | $($row.BestTimeLabel) | $($row.BestMemoryLabel) |")
+    }
+
+    $directory = Split-Path -Parent $OutputPath
+    if (-not [string]::IsNullOrWhiteSpace($directory) -and -not (Test-Path -LiteralPath $directory))
+    {
+        New-Item -ItemType Directory -Path $directory | Out-Null
+    }
+
+    $fullOutputPath = $OutputPath
+    if (-not [System.IO.Path]::IsPathRooted($OutputPath))
+    {
+        $fullOutputPath = Join-Path (Get-Location).Path $OutputPath
+    }
+
+    [System.IO.File]::WriteAllText($fullOutputPath, $builder.ToString().TrimEnd() + "`n")
+}
