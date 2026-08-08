@@ -395,7 +395,7 @@ See also: [IdentityMapDeepCopyMapper.cs](../Mappa.Samples/IdentityMapDeepCopyMap
 
 `ReferenceReusing`, `MaxRuntimeDepth`, `MaxCompileTimeDepth`, and `BreakCompileTimeCycles` control how Mappa handles object graphs with cycles, shared references, and deep nesting. Runtime features (`ReferenceReusing` and `MaxRuntimeDepth`) require a `MappaContext` parameter; without it the generator warns (**MP00074** / **MP00075**) and skips reference handling for that method. Prefer a dedicated map method per nested reference type when you want an explicit API surface, and use nullable cycle-closing properties so a `null` edge can terminate recurrence.
 
-**Reference reuse** — enable `ReferenceReusing` and pass a fresh `MappaContext` so generated code records each mapped source→target pair and returns the existing target when the same source instance appears again:
+**Reference reuse** — enable `ReferenceReusing` and pass a fresh `MappaContext` so generated code records each mapped source→target pair and returns the existing target when the same source instance appears again. `MappaContext` is not thread-safe: use one instance per logical mapping operation and do not share it across concurrent mapping operations without external synchronization (especially important with `ReferenceReusing` or `MaxRuntimeDepth`):
 
 ```csharp
 [Mappa]

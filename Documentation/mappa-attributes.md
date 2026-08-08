@@ -26,7 +26,7 @@ This is the list of attributes provided:
 - `MappaMapEnumIgnore`: Excludes a specific enum member from mapping;
 - `MappaMapEnumDefault`: Configures fallback behaviour when an enum value cannot be mapped;
 
-The [Mappa](https://www.nuget.org/packages/Mappa/) package also provides the `MappaContext` class that can be used to pass contextual values to mappers via the `MappaAssignFromContext` attribute, store mapped values via the `MappaAssignToContext` attribute, supply context to methods invoked via the `MappaInvokeMethodAttribute` attribute, supply context to before/after map hooks, or supply context to object factory methods. When `ReferenceReusing` or `MaxRuntimeDepth` is enabled, `MappaContext` also owns a private `MappaReferenceManager` used by generated code (via `UnsafeAccessor`) to track mapped references and nesting depth.
+The [Mappa](https://www.nuget.org/packages/Mappa/) package also provides the `MappaContext` class that can be used to pass contextual values to mappers via the `MappaAssignFromContext` attribute, store mapped values via the `MappaAssignToContext` attribute, supply context to methods invoked via the `MappaInvokeMethodAttribute` attribute, supply context to before/after map hooks, or supply context to object factory methods. When `ReferenceReusing` or `MaxRuntimeDepth` is enabled, `MappaContext` also owns a private `MappaReferenceManager` used by generated code (via `UnsafeAccessor`) to track mapped references and nesting depth. `MappaContext` is not thread-safe: use one instance per logical mapping operation and do not share a single instance across concurrent mappings without external synchronization.
 
 ## MappaDependencyInjection
 

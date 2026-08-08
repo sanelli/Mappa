@@ -161,7 +161,7 @@ internal static class ParseDateTimeStylesCodeHelper
                     return $"System.Globalization.CultureInfo.GetCultureInfo({CSharpLiteralHelper.ToRequiredStringLiteral(cultureName)})";
                 }
 
-                throw new MappaGeneratorException("Unexpected scenario when building GeyCultureInfo without culture name");
+                throw new MappaGeneratorException("Unexpected scenario when building GetCultureInfo without culture name");
         }
 
         throw new MappaGeneratorException($"Unexpected culture info setting '{cultureInfoSetting}'.");
