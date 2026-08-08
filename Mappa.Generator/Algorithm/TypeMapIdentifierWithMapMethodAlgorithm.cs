@@ -2,6 +2,8 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Diagnostics;
+using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -49,6 +51,7 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
 
                 if (!mapMethodRequireMappaContext || /* mapMethodRequireMappaContext && */ callerMethodProvideMappaContext)
                 {
+                    this.MaybeReportNestedMapWithoutMappaContext(mapMethod, mapMethodRequireMappaContext);
                     return new MethodMapStrategy(mapMethod, rootMapMethod.MaybeGetMappaContextParameterName());
                 }
             }
@@ -63,6 +66,7 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
 
                 if (!mapMethodRequireMappaContext || /* mapMethodRequireMappaContext && */ callerMethodProvideMappaContext)
                 {
+                    this.MaybeReportNestedMapWithoutMappaContext(mapMethod, mapMethodRequireMappaContext);
                     return new CompatibleMethodMapStrategy(
                         this.Context.TargetType,
                         this.Context.SourceType,
@@ -80,6 +84,7 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
 
                 if (!mapMethodRequireMappaContext || /* mapMethodRequireMappaContext && */ callerMethodProvideMappaContext)
                 {
+                    this.MaybeReportNestedMapWithoutMappaContext(mapMethod, mapMethodRequireMappaContext);
                     return new PolymorphicMethodMapStrategy(
                         this.Context.TargetType,
                         this.Context.SourceType,
@@ -90,5 +95,33 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
         }
 
         return this.ComputeStrategy();
+    }
+
+    private void MaybeReportNestedMapWithoutMappaContext(MapMethod mapMethod, bool mapMethodRequireMappaContext)
+    {
+        if (mapMethodRequireMappaContext)
+        {
+            return;
+        }
+
+        if (!ReferenceHandlingCodeGenerator.IsReferenceHandlingRequested(this.Context.MappaUserSettings))
+        {
+            return;
+        }
+
+        var rootMapMethod = this.Context.GetRootMapMethod();
+        if (!rootMapMethod.ProvideMappaContextWhenInvoked())
+        {
+            return;
+        }
+
+        if (ReferenceEquals(mapMethod.MethodSymbol, rootMapMethod.MethodSymbol))
+        {
+            return;
+        }
+
+        this.Context.ReportDiagnostic(MappaDiagnostics.ReferenceHandlingNestedMapWithoutMappaContext(
+            this.Context.GetLocation(),
+            mapMethod.MethodName));
     }
 }

@@ -113,36 +113,37 @@ internal sealed class MappaGeneratorClassAlgorithm
 
             var methodAttributes = mapMethod.MethodSymbol.GetAttributes();
             var methodObjectFactoryAttributes = methodAttributes.GetMappaObjectFactoryAttributes(this.Compilation);
-
-            if (!ProjectionMapMethodEligibilityValidator.TryValidate(
-                    mapMethod,
-                    this.Compilation,
-                    classContext,
-                    classBeforeMapAttributes,
-                    classAfterMapAttributes,
-                    classObjectFactoryAttributes,
-                    methodObjectFactoryAttributes))
-            {
-                mapMethod.MarkMapped();
-                continue;
-            }
-
-            if (!ObjectFactoryDuplicateValidator.TryValidate(
-                    mapMethod,
-                    classObjectFactoryAttributes,
-                    methodObjectFactoryAttributes,
-                    classContext))
-            {
-                mapMethod.MarkMapped();
-                continue;
-            }
-
             var mappaSettingsAttribute = mapMethod.GetAttribute<MappaSettingsAttribute>();
             using (mappaUserSettings.Apply(mappaSettingsAttribute))
             {
                 mapMethod.SetPragmaWarning(mappaUserSettings.PragmaWarning);
                 mapMethod.SetMaxRuntimeDepth(mappaUserSettings.MaxRuntimeDepth);
                 mapMethod.SetReferenceReusing(mappaUserSettings.ReferenceReusing);
+
+                if (!ProjectionMapMethodEligibilityValidator.TryValidate(
+                        mapMethod,
+                        this.Compilation,
+                        classContext,
+                        classBeforeMapAttributes,
+                        classAfterMapAttributes,
+                        classObjectFactoryAttributes,
+                        methodObjectFactoryAttributes,
+                        mappaUserSettings))
+                {
+                    mapMethod.MarkMapped();
+                    continue;
+                }
+
+                if (!ObjectFactoryDuplicateValidator.TryValidate(
+                        mapMethod,
+                        classObjectFactoryAttributes,
+                        methodObjectFactoryAttributes,
+                        classContext))
+                {
+                    mapMethod.MarkMapped();
+                    continue;
+                }
+
                 var methodContext = new MappaMethodGeneratorContext(classContext, mappaUserSettings, mapMethod);
                 var typeIdentifierAlgorithm = new TypeMapIdentifierAlgorithm(
                     methodContext,

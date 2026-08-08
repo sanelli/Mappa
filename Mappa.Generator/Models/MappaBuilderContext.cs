@@ -72,6 +72,12 @@ internal sealed class MappaBuilderContext
     internal bool IsReferenceReusingActive => this.referenceReusingActive.CurrentValue;
 
     /// <summary>
+    /// Gets a value indicating whether any runtime reference-handling feature is active.
+    /// </summary>
+    internal bool IsReferenceHandlingActive
+        => this.IsMaxRuntimeDepthActive || this.IsReferenceReusingActive;
+
+    /// <summary>
     /// Gets the target property currently being accessed via an optional unsafe accessor, if any.
     /// </summary>
     internal IPropertySymbol? CurrentTargetPropertyForUnsafeAccess
@@ -124,11 +130,10 @@ internal sealed class MappaBuilderContext
         var effectiveDepth = (short)0;
         var activateReferenceReusing = false;
 
-        var maxRuntimeDepthRequested = mapMethod.MaxRuntimeDepth > 0;
-        var referenceReusingRequested = mapMethod.ReferenceReusing is BooleanSetting.Enable;
+        var referenceHandlingRequested = ReferenceHandlingCodeGenerator.IsReferenceHandlingRequested(mapMethod);
         var hasMappaContext = mapMethod.ProvideMappaContextWhenInvoked();
 
-        if ((maxRuntimeDepthRequested || referenceReusingRequested) && !hasMappaContext)
+        if (referenceHandlingRequested && !hasMappaContext)
         {
             if (mapMethod.MethodDeclarationSyntax is not null)
             {
@@ -136,18 +141,18 @@ internal sealed class MappaBuilderContext
                     mapMethod.MethodDeclarationSyntax));
             }
         }
-        else if ((maxRuntimeDepthRequested || referenceReusingRequested) && hasMappaContext)
+        else if (referenceHandlingRequested && hasMappaContext)
         {
             if (this.Compilation.IsUnsafeAccessorSupported())
             {
                 this.referenceManagerAccessorRequired = true;
-                if (maxRuntimeDepthRequested)
+                if (mapMethod.MaxRuntimeDepth > 0)
                 {
                     activateMaxRuntimeDepth = true;
                     effectiveDepth = mapMethod.MaxRuntimeDepth;
                 }
 
-                if (referenceReusingRequested)
+                if (mapMethod.ReferenceReusing is BooleanSetting.Enable)
                 {
                     activateReferenceReusing = true;
                 }

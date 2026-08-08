@@ -26,6 +26,22 @@ internal static class ReferenceHandlingCodeGenerator
     internal const string AccessorMethodName = "GetReferenceManager";
 
     /// <summary>
+    /// Returns <c>true</c> when ReferenceReusing or MaxRuntimeDepth is requested on <paramref name="settings"/>.
+    /// </summary>
+    /// <param name="settings">The user settings.</param>
+    /// <returns><c>true</c> when reference handling is requested.</returns>
+    internal static bool IsReferenceHandlingRequested(IMappaUserSettings settings)
+        => settings.ReferenceReusing is BooleanSetting.Enable || settings.MaxRuntimeDepth > 0;
+
+    /// <summary>
+    /// Returns <c>true</c> when ReferenceReusing or MaxRuntimeDepth is requested on <paramref name="mapMethod"/>.
+    /// </summary>
+    /// <param name="mapMethod">The map method.</param>
+    /// <returns><c>true</c> when reference handling is requested.</returns>
+    internal static bool IsReferenceHandlingRequested(MapMethod mapMethod)
+        => mapMethod.ReferenceReusing is BooleanSetting.Enable || mapMethod.MaxRuntimeDepth > 0;
+
+    /// <summary>
     /// Builds the file-local UnsafeAccessor type used to reach <c>MappaContext.ReferenceManager</c>.
     /// </summary>
     /// <param name="context">The builder context.</param>
