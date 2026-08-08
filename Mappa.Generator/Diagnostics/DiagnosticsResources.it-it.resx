@@ -242,4 +242,7 @@
     <data name="MappingCycleDetected" xml:space="preserve">
         <value>È stato rilevato un ciclo di mappatura durante l'individuazione di una strategia da '{0}' a '{1}'. Aggiungere un metodo di mappatura esplicito da '{0}' a '{1}' per interrompere il ciclo.</value>
     </data>
+    <data name="MappingCycleAutoBroken" xml:space="preserve">
+        <value>Un ciclo di mappatura in compilazione da '{0}' a '{1}' è stato interrotto automaticamente sintetizzando il metodo di mappatura privato '{2}'.</value>
+    </data>
 </root>

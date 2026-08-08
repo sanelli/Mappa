@@ -242,4 +242,7 @@
     <data name="MappingCycleDetected" xml:space="preserve">
         <value>A mapping cycle was detected while discovering a strategy from '{0}' to '{1}'. Add an explicit mapping method from '{0}' to '{1}' to break the cycle.</value>
     </data>
+    <data name="MappingCycleAutoBroken" xml:space="preserve">
+        <value>A compile-time mapping cycle from '{0}' to '{1}' was automatically broken by synthesizing private map method '{2}'.</value>
+    </data>
 </root>

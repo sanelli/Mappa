@@ -423,4 +423,11 @@ internal enum MappaDiagnosticsKind
     /// discovery for that pair completed (compile-time mapping cycle).
     /// </summary>
     MappingCycleDetected,
+
+    /// <summary>
+    /// A compile-time mapping cycle was automatically broken by synthesizing a private
+    /// map method for the cycling source/target type pair
+    /// (<see cref="Mappa.Attributes.MappaSettingsAttribute.BreakCompileTimeCycles"/>).
+    /// </summary>
+    MappingCycleAutoBroken,
 }
