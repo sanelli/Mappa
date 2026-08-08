@@ -104,6 +104,94 @@ public sealed partial class IQueryableProjectionMapStrategyIntegrationTests
     }
 
     /// <summary>
+    /// Test class-level before-map hooks are rejected on projection methods.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task ClassLevelBeforeMapHookIsRejectedOnProjectionMethod()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using System.Linq;
+                                  using Mappa;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class Order
+                                  {
+                                      public int Id { get; set; }
+                                  }
+
+                                  public class OrderDto
+                                  {
+                                      public int Id { get; set; }
+                                  }
+
+                                  [Mappa]
+                                  [MappaBeforeMap(nameof(Before))]
+                                  public static partial class Mapper
+                                  {
+                                      public static partial IQueryable<OrderDto> ProjectToDto(this IQueryable<Order> query);
+
+                                      private static void Before(ref IQueryable<Order> query) { }
+                                  }
+                                  #nullable restore
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .HaveDiagnostic(MappaDiagnosticDescriptors.ProjectionMethodHasBeforeOrAfterMapHooks, "ProjectToDto")
+            .NotHaveGeneratedAnySourceCode();
+    }
+
+    /// <summary>
+    /// Test class-level after-map hooks are rejected on projection methods.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task ClassLevelAfterMapHookIsRejectedOnProjectionMethod()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using System.Linq;
+                                  using Mappa;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class Order
+                                  {
+                                      public int Id { get; set; }
+                                  }
+
+                                  public class OrderDto
+                                  {
+                                      public int Id { get; set; }
+                                  }
+
+                                  [Mappa]
+                                  [MappaAfterMap(nameof(After))]
+                                  public static partial class Mapper
+                                  {
+                                      public static partial IQueryable<OrderDto> ProjectToDto(this IQueryable<Order> query);
+
+                                      private static void After(ref IQueryable<OrderDto> query) { }
+                                  }
+                                  #nullable restore
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .HaveDiagnostic(MappaDiagnosticDescriptors.ProjectionMethodHasBeforeOrAfterMapHooks, "ProjectToDto")
+            .NotHaveGeneratedAnySourceCode();
+    }
+
+    /// <summary>
     /// Test <see cref="MappaContext"/> parameters are rejected on projection methods.
     /// </summary>
     /// <returns>The async task.</returns>

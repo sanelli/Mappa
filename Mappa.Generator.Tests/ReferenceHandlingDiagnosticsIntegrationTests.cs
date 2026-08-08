@@ -402,6 +402,169 @@ public sealed class ReferenceHandlingDiagnosticsIntegrationTests
     }
 
     /// <summary>
+    /// Nested map without <see cref="MappaContext"/> does not emit MP00075 when the root
+    /// also lacks context (early return in <c>MaybeReportNestedMapWithoutMappaContext</c>).
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task NestedMapWithoutContextDoesNotWarnWhenRootAlsoLacksContext()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class InnerSource
+                                  {
+                                      public int Value { get; set; }
+                                  }
+
+                                  public class InnerTarget
+                                  {
+                                      public int Value { get; set; }
+                                  }
+
+                                  public class Source
+                                  {
+                                      public InnerSource Child { get; set; } = null!;
+                                  }
+
+                                  public class Target
+                                  {
+                                      public InnerTarget Child { get; set; } = null!;
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public InnerTarget MapInner(InnerSource input)
+                                      {
+                                          return new InnerTarget() { Value = input.Value };
+                                      }
+
+                                      [MappaSettings(ReferenceReusing = BooleanSetting.Enable)]
+                                      public partial Target Map(Source input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert — only root-without-context (MP00074); nested-map warning (MP00075) is skipped.
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.ReferenceHandlingRootMapWithoutMappaContext, "Map")
+            .HaveGeneratedSourceCode()
+            .NotHaveCompilationErrors()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                TargetType,
+                NullableAnnotation.NotAnnotated,
+                SourceType,
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(4)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                InnerSourceType,
+                                "__mappa_tmp_1",
+                                initializationAssertions => initializationAssertions.BeMemberAccessExpressionSyntax("input.Child"));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                InnerTargetType,
+                                "__mappa_tmp_2",
+                                initializationAssertions =>
+                                {
+                                    initializationAssertions.BeInvocationExpressionSyntax(
+                                        "this.MapInner",
+                                        parameterAssertions => parameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_1"));
+                                });
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                TargetType,
+                                "__mappa_tmp_3",
+                                initializationAssertions =>
+                                {
+                                    initializationAssertions.BeObjectCreationExpressionSyntax(
+                                        TargetType,
+                                        ("Child", expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_2")));
+                                });
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_3"));
+                        });
+                });
+    }
+
+    /// <summary>
+    /// Reference handling on C# 11 reports UnsafeAccessorNotSupported and does not apply reuse.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task ReferenceReusingOnCSharp11ReportsUnsafeAccessorNotSupported()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class Source
+                                  {
+                                      public int Value { get; set; }
+                                  }
+
+                                  public class Target
+                                  {
+                                      public int Value { get; set; }
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaSettings(ReferenceReusing = BooleanSetting.Enable)]
+                                      public partial Target Map(Source input, MappaContext context);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, LanguageVersion.CSharp11, CancellationToken.None)
+            .ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.UnsafeAccessorNotSupported, "Map")
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethodWithContext(
+                TargetType,
+                NullableAnnotation.NotAnnotated,
+                SourceType,
+                NullableAnnotation.NotAnnotated,
+                AssertSimpleIntValueMapWithoutReferenceHandling);
+    }
+
+    /// <summary>
     /// Reference handling is rejected on <see cref="System.Linq.IQueryable{T}"/> projection methods.
     /// </summary>
     /// <returns>The async task.</returns>

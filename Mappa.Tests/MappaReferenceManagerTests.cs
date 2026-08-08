@@ -2,6 +2,8 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using System.Reflection;
+
 using AwesomeAssertions;
 
 using Xunit;
@@ -249,6 +251,38 @@ public sealed class MappaReferenceManagerTests
 
         // Assert
         act.Should().NotThrow();
+    }
+
+    /// <summary>
+    /// Tests that the private reference-equality comparer rejects <see langword="null"/> hash codes.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void ReferenceEqualityComparerGetHashCodeThrowsForNull()
+    {
+        // Arrange
+        var comparerType = typeof(MappaReferenceManager).GetNestedType(
+            "ReferenceEqualityComparer",
+            BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException("ReferenceEqualityComparer was not found.");
+        var instance = comparerType.GetProperty("Instance", BindingFlags.Public | BindingFlags.Static)?.GetValue(null)
+            ?? throw new InvalidOperationException("ReferenceEqualityComparer.Instance was not found.");
+        var interfaceMap = comparerType.GetInterfaceMap(typeof(IEqualityComparer<object>));
+        var getHashCodeInterface = typeof(IEqualityComparer<object>).GetMethod(nameof(IEqualityComparer<object>.GetHashCode))
+            ?? throw new InvalidOperationException("IEqualityComparer<object>.GetHashCode was not found.");
+        var getHashCodeIndex = Array.IndexOf(interfaceMap.InterfaceMethods, getHashCodeInterface);
+        getHashCodeIndex.Should().BeGreaterThanOrEqualTo(0);
+        var getHashCode = interfaceMap.TargetMethods[getHashCodeIndex];
+
+        // Act
+#pragma warning disable CS8625 // Intentional null argument
+        var act = () => getHashCode.Invoke(instance, [null]);
+#pragma warning restore CS8625
+
+        // Assert
+        act.Should().Throw<TargetInvocationException>()
+            .WithInnerException<ArgumentNullException>()
+            .Which.ParamName.Should().Be("obj");
     }
 
     /// <summary>

@@ -306,6 +306,105 @@ public sealed class ProjectionCapabilityAnalyzerTests
     }
 
     /// <summary>
+    /// Test object-factory strategies are rejected as non-inlinable for projections.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void TryAnalyzeReportsInvokeMethodNotInlinableForObjectFactory()
+    {
+        const string source = """
+                              #nullable enable
+                              using System.Linq;
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { public int Value { get; set; } }
+                              public class Target { public int Value { get; set; } }
+
+                              [Mappa]
+                              public static partial class Mapper
+                              {
+                                  public static partial IQueryable<Target> ProjectToDto(this IQueryable<Source> query);
+
+                                  private static Target CreateTarget() => new Target();
+                              }
+                              """;
+
+        var (analysisContext, classContext, compilation) = CreateAnalysisContext(source);
+        var sourceType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Source")
+                         ?? throw new InvalidOperationException("Source type was not found.");
+        var targetType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Target")
+                         ?? throw new InvalidOperationException("Target type was not found.");
+        var mapperType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Mapper")
+                         ?? throw new InvalidOperationException("Mapper type was not found.");
+        var factoryMethod = mapperType.GetMembers("CreateTarget").OfType<IMethodSymbol>().Single();
+        var objectFactory = new ObjectFactory(
+            factoryMethod,
+            fieldOrProperty: null,
+            explicitType: null,
+            ObjectFactoryInvocationKind.FullyProduced,
+            attributeLocation: null);
+        var strategy = new InvokeObjectFactoryMapStrategy(
+            targetType,
+            sourceType,
+            objectFactory,
+            [],
+            [],
+            [],
+            contextParameterName: null);
+
+        var supported = ProjectionCapabilityAnalyzer.TryAnalyze(strategy, analysisContext, out _);
+
+        supported.Should().BeFalse();
+        classContext.Diagnostics.Should().ContainSingle()
+            .Which.Id.Should().Be(MappaDiagnosticDescriptors.ProjectionInvokeMethodNotInlinable.Id);
+    }
+
+    /// <summary>
+    /// Test reference-handling settings reject projection analysis with UnsupportedConstruct.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void TryAnalyzeReportsUnsupportedConstructWhenReferenceHandlingIsRequested()
+    {
+        const string source = """
+                              #nullable enable
+                              using System.Linq;
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { public int Value { get; set; } }
+                              public class Target { public int Value { get; set; } }
+
+                              [Mappa]
+                              public static partial class Mapper
+                              {
+                                  public static partial IQueryable<Target> ProjectToDto(this IQueryable<Source> query);
+                              }
+                              """;
+
+        const string editorConfig = """
+                                    root = true
+
+                                    [*.cs]
+                                    mappa.referencereusing = enable
+                                    """;
+
+        var (analysisContext, classContext, compilation) = CreateAnalysisContext(source, editorConfig: editorConfig);
+        var intType = compilation.GetSpecialType(SpecialType.System_Int32);
+        var strategy = CreateShallowIdentity(intType, intType);
+
+        var supported = ProjectionCapabilityAnalyzer.TryAnalyze(strategy, analysisContext, out _);
+
+        supported.Should().BeFalse();
+        classContext.Diagnostics.Should().ContainSingle()
+            .Which.Id.Should().Be(MappaDiagnosticDescriptors.ProjectionMappingNotSupported.Id);
+        classContext.Diagnostics.Single().GetMessage(null).Should().Contain("reference handling");
+    }
+
+    /// <summary>
     /// Test unsupported constructs report <see cref="MappaDiagnosticDescriptors.ProjectionMappingNotSupported"/>.
     /// </summary>
     [Fact]

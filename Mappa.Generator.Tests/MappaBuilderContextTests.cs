@@ -2,12 +2,15 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa;
 using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Exceptions;
+using Mappa.Generator.Extensions;
 using Mappa.Generator.Models;
 using Mappa.Generator.Tests.Abstractions;
 
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 using Xunit;
@@ -146,6 +149,95 @@ public sealed class MappaBuilderContextTests
 
         context.NextTemporary().Should().Be("__mappa_tmp_1");
         context.NextTemporary().Should().Be("__mappa_tmp_2");
+    }
+
+    /// <summary>
+    /// Test <see cref="MappaBuilderContext.PushMapMethod"/> activates reference-handling flags
+    /// and <see cref="MappaBuilderContext.IsReferenceHandlingActive"/> when supported.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void PushMapMethodActivatesReferenceHandlingFlagsWhenUnsafeAccessorIsSupported()
+    {
+        const string source = """
+                              using Mappa;
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { }
+
+                              public class Target { }
+
+                              [Mappa]
+                              public sealed partial class Mapper
+                              {
+                                  public partial Target Map(Source input, MappaContext context);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var mapMethod = CreateMapMethod(compilation, "Map");
+        mapMethod.SetReferenceReusing(BooleanSetting.Enable);
+        mapMethod.SetMaxRuntimeDepth(3);
+        var context = new MappaBuilderContext(compilation);
+
+        context.IsReferenceHandlingActive.Should().BeFalse();
+
+        using (context.PushMapMethod(mapMethod))
+        {
+            context.IsReferenceReusingActive.Should().BeTrue();
+            context.IsMaxRuntimeDepthActive.Should().BeTrue();
+            context.EffectiveMaxRuntimeDepth.Should().Be((short)3);
+            context.IsReferenceHandlingActive.Should().BeTrue();
+            context.ReferenceManagerAccessorRequired.Should().BeTrue();
+            context.Diagnostics.Should().BeEmpty();
+        }
+
+        context.IsReferenceHandlingActive.Should().BeFalse();
+        context.IsReferenceReusingActive.Should().BeFalse();
+        context.IsMaxRuntimeDepthActive.Should().BeFalse();
+    }
+
+    /// <summary>
+    /// Test <see cref="MappaBuilderContext.PushMapMethod"/> reports UnsafeAccessorNotSupported
+    /// when reference handling is requested on an unsupported language version.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void PushMapMethodReportsUnsafeAccessorNotSupportedWhenLanguageVersionIsTooLow()
+    {
+        const string source = """
+                              using Mappa;
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { }
+
+                              public class Target { }
+
+                              [Mappa]
+                              public sealed partial class Mapper
+                              {
+                                  public partial Target Map(Source input, MappaContext context);
+                              }
+                              """;
+
+        var parseOptions = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.CSharp11);
+        var compilation = BuildCompilation(source, parseOptions);
+        compilation.IsUnsafeAccessorSupported().Should().BeFalse();
+        var mapMethod = CreateMapMethod(compilation, "Map");
+        mapMethod.SetReferenceReusing(BooleanSetting.Enable);
+        var context = new MappaBuilderContext(compilation);
+
+        using (context.PushMapMethod(mapMethod))
+        {
+            context.IsReferenceHandlingActive.Should().BeFalse();
+            context.ReferenceManagerAccessorRequired.Should().BeFalse();
+            context.Diagnostics.Should().ContainSingle()
+                .Which.Id.Should().Be(MappaDiagnosticDescriptors.UnsafeAccessorNotSupported.Id);
+        }
     }
 
     private static MapMethod CreateMapMethod(CSharpCompilation compilation, string methodName)
