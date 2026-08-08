@@ -1,8 +1,6 @@
 param(
     [string]$SummaryXmlPath = "./.mappa-tests-and-coverage/Summary.xml",
     [string]$GistId = "7f4a85bc809328b4821b03125f9190cb",
-    [string]$BenchmarkSummaryPath = "./.mappa-benchmark/Benchmark.Summary.md",
-    [string]$BenchmarkComparisonPath = "./.mappa-benchmark/Benchmark.Comparison.md",
     [double]$WarningDropPercent = 1.0,
     [double]$FailDropPercent = 5.0,
     [switch]$DryRun
@@ -246,33 +244,6 @@ if ($failMetrics.Count -gt 0)
 if (($warningMetrics.Count -eq 0) -and ($failMetrics.Count -eq 0))
 {
     [void]$bodyBuilder.AppendLine("No coverage metric dropped by more than $WarningDropPercent percentage point(s) versus baseline.")
-}
-
-[void]$bodyBuilder.AppendLine()
-[void]$bodyBuilder.AppendLine("## Benchmarks")
-[void]$bodyBuilder.AppendLine()
-
-if (Test-Path -LiteralPath $BenchmarkComparisonPath)
-{
-    $comparisonMarkdown = (Get-Content -Raw -LiteralPath $BenchmarkComparisonPath).Trim()
-    # Drop the leading H1 so the PR section heading remains ## Benchmarks.
-    $comparisonMarkdown = $comparisonMarkdown -replace '(?s)^#\s+Benchmark comparison\s*', ""
-    [void]$bodyBuilder.AppendLine("### Winners (chart subset)")
-    [void]$bodyBuilder.AppendLine()
-    [void]$bodyBuilder.AppendLine($comparisonMarkdown.Trim())
-    [void]$bodyBuilder.AppendLine()
-}
-
-if (Test-Path -LiteralPath $BenchmarkSummaryPath)
-{
-    $summaryMarkdown = (Get-Content -Raw -LiteralPath $BenchmarkSummaryPath).Trim()
-    # Drop the leading H1 so the PR section heading remains ## Benchmarks.
-    $summaryMarkdown = $summaryMarkdown -replace '(?s)^#\s+Benchmark summary\s*', ""
-    [void]$bodyBuilder.AppendLine($summaryMarkdown.Trim())
-}
-else
-{
-    [void]$bodyBuilder.AppendLine("Benchmark summary not found. Run Scripts/RunBenchmarks.ps1 before commenting.")
 }
 
 $commentBody = $bodyBuilder.ToString().TrimEnd() + "`n"

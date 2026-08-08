@@ -10,13 +10,13 @@ From the repository root (PowerShell):
 .\Scripts\RunBenchmarks.ps1
 ```
 
-CI uses the chart subset only:
+`main` merge CI uses the chart subset only (pull requests do not run benchmarks):
 
 ```powershell
 .\Scripts\RunBenchmarks.ps1 -ChartBenchmarksOnly
 ```
 
-Jobs use BenchmarkDotNet **Short** run mode. Prefer a Release rebuild first (`.\Scripts\RebuildUponVersionChange.ps1`).
+Jobs use BenchmarkDotNet **Default** run mode (more iterations/warmups than Short — longer wall-clock, lower noise). Prefer a Release rebuild first (`.\Scripts\RebuildUponVersionChange.ps1`).
 
 Outputs are written under `.mappa-benchmark/` (gitignored). See [Documentation/development.md](../Documentation/development.md) for the full list of artifacts and gist publishing via `UpdateBenchmarkGists.ps1`.
 
