@@ -28,12 +28,14 @@ The development environment uses **PowerShell**. All commands run in the termina
 - **Plan frontmatter format:** each TODO entry uses `id: "<n>"` and `content: <n>. <description>` where `<n>` is the same integer as the corresponding `### <n>.` heading in the plan body.
 - Plan steps after any coverage baseline must follow the **Code** project order below, but only include projects that require changes — do **not** add empty steps for unchanged projects.
 - Step numbers are **sequential** (1, 2, 3, …) across all steps. When a coverage baseline is required, it is step `1` and project work starts at step `2` (e.g. if **Mappa** and **Mappa.Tests** need no changes, the first project step may be **Mappa.Generator** numbered as step `2`). When the baseline is omitted, step `1` is the first real work item.
+- **Post–generator-tests coverage checkpoint (when required):** when the plan includes **Mappa.Generator.Tests** work (after **Mappa.Generator** / generator-test steps are complete), **always** insert a numbered plan step **immediately after** those generator-test steps and **before** the post-generator version bump, samples, benchmarks, documentation, or any later project. That step must: (1) run `.\Scripts\RunTestsAndReportCoverage.ps1`; (2) report overall **line**, **branch**, and **method** coverage versus the baseline (when a baseline was recorded); (3) report the **main coverage gaps** for types/assemblies touched by the issue (especially **Mappa.Generator**), using [`.mappa-tests-and-coverage/Summary.xml`](.mappa-tests-and-coverage/Summary.xml) and the HTML report under [`.mappa-tests-and-coverage/`](.mappa-tests-and-coverage/). After reporting, **stop and ask the developer** whether to **fix the gaps now** (add/extend tests) or **proceed with the next plan steps**. Do **not** start gap fixes or continue to the next step until the developer answers. If they choose to fix, complete the fixes (and re-run coverage as needed) before continuing; if they choose to proceed, continue with the next planned step as written. Omit this checkpoint only when the plan has **no** **Mappa.Generator.Tests** steps.
 - Generated code **must compile** and **all tests must pass** before finishing.
 
 ## Code Coverage
 
 - **When the issue changes code** (C# in any project listed under **Code**), step 1 of the plan runs `.\Scripts\RunTestsAndReportCoverage.ps1` and records the baseline from [`.mappa-tests-and-coverage/Summary.xml`](.mappa-tests-and-coverage/Summary.xml): **line**, **branch**, and **method** coverage. Also note coverage for any assembly expected to change (especially **Mappa.Generator**).
 - **When the issue does not change code** (Scripts, Documentation, and/or `.cursor` rules only), skip the coverage baseline and the final coverage comparison.
+- **Post–generator-tests checkpoint:** see **Planning** — after **Mappa.Generator.Tests** work, run coverage, report main gaps, and wait for the developer’s choice (fix now vs proceed). This is in addition to the final coverage step below.
 - **Coverage must not decrease** relative to that baseline when the issue is finished (code-change issues only). Compare the final run using the same metrics.
 - If coverage decreases — including after adding new production code with uncovered paths — **add or extend tests** until coverage is restored. Prefer targeted unit and integration tests for new branches, edge cases, and negative paths.
 - When analyzing gaps, use [`.mappa-tests-and-coverage/Summary.xml`](.mappa-tests-and-coverage/Summary.xml) and the HTML report under [`.mappa-tests-and-coverage/`](.mappa-tests-and-coverage/) to find uncovered lines and branches.
@@ -45,19 +47,21 @@ The development environment uses **PowerShell**. All commands run in the termina
    2. Mappa.Tests
    3. Mappa.Generator
    4. Mappa.Generator.Tests
-   5. Mappa.Samples
-   6. Mappa.Samples.Tests
-   7. Mappa.Samples.Aot
-   8. Mappa.Benchmark
-   9. Mappa.Dependency.Bson
-   10. Mappa.Dependency.Bson.DependencyInjection
-   11. Mappa.Dependency.Bson.Tests
-   12. Mappa.Dependency.Bson.DependencyInjection.Tests
-   13. Mappa.Dependency.Protobuf
-   14. Mappa.Dependency.Protobuf.DependencyInjection
-   15. Mappa.Dependency.Protobuf.Tests
-   16. Mappa.Dependency.Protobuf.DependencyInjection.Tests
-   17. Documentation
+   5. *(when step 4 is in the plan)* Post–generator-tests coverage checkpoint — run `.\Scripts\RunTestsAndReportCoverage.ps1`, report overall coverage vs baseline and main gaps, then ask the developer whether to fix gaps or proceed (see **Planning**)
+   6. Mappa.Samples
+   7. Mappa.Samples.Tests
+   8. Mappa.Samples.Aot
+   9. Mappa.Benchmark
+   10. Mappa.Dependency.Bson
+   11. Mappa.Dependency.Bson.DependencyInjection
+   12. Mappa.Dependency.Bson.Tests
+   13. Mappa.Dependency.Bson.DependencyInjection.Tests
+   14. Mappa.Dependency.Protobuf
+   15. Mappa.Dependency.Protobuf.DependencyInjection
+   16. Mappa.Dependency.Protobuf.Tests
+   17. Mappa.Dependency.Protobuf.DependencyInjection.Tests
+   18. Documentation
+- The post-generator **Versioning** bump (after **Mappa.Generator** is complete and tests pass) still runs **after** the post–generator-tests coverage checkpoint (and any developer-requested gap fixes), and **before** **Mappa.Samples**.
 
 ## Coding Standards
 
@@ -99,10 +103,10 @@ A version bump updates `MappaVersion.targets` and rebuilds all downstream projec
 | Milestone | Bump? | Why |
 |-----------|-------|-----|
 | **Mappa** changed (new attribute, API, etc.) | Yes, before **Mappa.Generator** work | Generator must compile against the updated Mappa package (`typeof(...)`, `GetTypeByMetadataName`, etc.). |
-| **Mappa.Generator** changed (feature complete, tests pass) | Yes, before **Mappa.Samples** | Samples reference the generator analyzer package; they need the published generator behavior before sample code is added. |
+| **Mappa.Generator** changed (feature complete, tests pass) | Yes, after the post–generator-tests coverage checkpoint (and any developer-requested gap fixes), before **Mappa.Samples** | Samples reference the generator analyzer package; they need the published generator behavior before sample code is added. |
 | **Mappa.Samples** / **Mappa.Samples.Tests** / **Mappa.Samples.Aot** only | No | Sample projects do not modify **Mappa** or **Mappa.Generator**; the prior generator bump is sufficient. |
 | **Documentation** only | Yes (alpha increment at end) | Required by CI version check; no functional inter-project bump is needed. |
-| Bug fix in **Mappa.Generator** with no new **Mappa** surface | Yes, once after generator changes (before samples if samples are updated) | Same as any generator change. |
+| Bug fix in **Mappa.Generator** with no new **Mappa** surface | Yes, once after generator changes and the post–generator-tests coverage checkpoint (before samples if samples are updated) | Same as any generator change. |
 
 ### How to bump
 
