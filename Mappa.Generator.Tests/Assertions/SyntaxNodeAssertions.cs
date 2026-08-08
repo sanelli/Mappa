@@ -537,4 +537,28 @@ internal sealed class SyntaxNodeAssertions
 
         return this;
     }
+
+    /// <summary>
+    /// Assert the statement is a <c>using</c> statement with an expression resource.
+    /// </summary>
+    /// <param name="expressionAssertions">The assertions on the using expression.</param>
+    /// <param name="statementAssertions">The assertions on the using body statement.</param>
+    /// <returns>The assertions.</returns>
+    internal SyntaxNodeAssertions BeUsingStatementSyntax(
+        Action<ExpressionSyntaxAssertions> expressionAssertions,
+        Action<IStatementSyntaxBaseAssertions> statementAssertions)
+    {
+        ArgumentNullException.ThrowIfNull(expressionAssertions);
+        ArgumentNullException.ThrowIfNull(statementAssertions);
+
+        this.Subject.Should().BeOfType<UsingStatementSyntax>();
+        var usingStatementSyntax = (UsingStatementSyntax)this.Subject;
+
+        usingStatementSyntax.Declaration.Should().BeNull();
+        usingStatementSyntax.Expression.Should().NotBeNull();
+        expressionAssertions(new ExpressionSyntaxAssertions(usingStatementSyntax.Expression!, this.semanticModel, this.compilation));
+        statementAssertions(usingStatementSyntax.Statement.ToAssertion(this.semanticModel, this.compilation));
+
+        return this;
+    }
 }
