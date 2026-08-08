@@ -2,6 +2,7 @@ param([switch]$AlwaysSuccess);
 
 [double]$Threshold = 80.00
 $MappaTestsAndCoveragePath = ".mappa-tests-and-coverage"
+$MappaGeneratorTestsDumpPath = ".mappa-generator-tests-dump"
 
 function Get-CoverageColor
 {
@@ -31,6 +32,12 @@ if (Test-Path $MappaTestsAndCoveragePath)
 {
     Remove-Item -Recurse -Force $MappaTestsAndCoveragePath
 }
+
+if (Test-Path $MappaGeneratorTestsDumpPath)
+{
+    Remove-Item -Recurse -Force $MappaGeneratorTestsDumpPath
+}
+New-Item -ItemType Directory -Name $MappaGeneratorTestsDumpPath > $null
 
 dotnet publish -c Release --self-contained ./Mappa.Samples.Aot/
 if (-not $?)

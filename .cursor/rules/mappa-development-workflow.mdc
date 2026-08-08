@@ -87,6 +87,7 @@ The development environment uses **PowerShell**. All commands run in the termina
 - When creating a pull request for a GitHub issue, **also upload the plan** used for that work to the **original GitHub issue** (not only the PR description).
 - Post the plan as an issue comment with `gh issue comment <number>` after the PR exists (so the comment can include the PR URL).
 - Include: a short heading (e.g. `## Implementation plan`), a link to the PR, and the full contents of the plan file under `.cursor/plans/` (e.g. `issue_<number>_*.plan.md`). Prefer `--body-file` with a temporary markdown file built in PowerShell rather than bash heredocs.
+- **Also upload the new generator tests report** from [`.mappa-generator-tests-dump/new-generator-tests-report.md`](.mappa-generator-tests-dump/new-generator-tests-report.md) to the same GitHub issue (same `gh issue comment` / `--body-file` PowerShell pattern). Include a heading such as `## New generator tests report` and the full report contents (or post it as a second comment). If the report file is missing, create an empty report first (see **Tests**), then upload it.
 - If no issue number is known when creating the PR, ask the user for one before posting the plan.
 - **Pre-PR dependency check:** before creating a pull request, run `dotnet package list --outdated` (from the repository root, or per project as needed) and **report every package whose Latest version is greater than the Requested/Resolved version**. Search open GitHub issues for an existing dependency-update task. Then ask the user whether they want to **create a new GitHub issue** (if none is open) or **update the existing open issue** (if one already tracks dependency updates) with the outdated packages found. Do **not** silently open or edit the issue.
 
@@ -134,6 +135,11 @@ A single feature may require **two** bumps (e.g. one after **Mappa**, one after 
 - When `blockSyntaxAssertions` (or nested block assertions) include `HasSyntaxNodesCount(X)`, there must be exactly **X** subsequent `HasNextSyntaxNode` entries chained after it.
 - Prefer `.HaveDiagnostics(n).HaveDiagnostic(MappaDiagnosticDescriptors.…, messageArgs)` (or `NotHaveDiagnostics()`) over asserting warning IDs alone. Do not reintroduce `HaveOnlyWarnings`.
 - When adding samples in **Mappa.Samples**, also update **Mappa.Samples.Aot**.
+- **New generator tests report:** after all **Mappa.Generator.Tests** work for an issue is complete (and dumps exist under [`.mappa-generator-tests-dump/`](.mappa-generator-tests-dump/) from successful generation), write [`.mappa-generator-tests-dump/new-generator-tests-report.md`](.mappa-generator-tests-dump/new-generator-tests-report.md) covering each **new** generator integration test with:
+  1. the purpose of the test (from the test XML documentation / summary);
+  2. the original input source from the integration test arrange;
+  3. the generated source (from the corresponding dump `.g.cs` / run output).
+  If there are no new generator integration tests, write an **empty** report file. Successful generation dumps use `{className}_{testMethodName}.g.cs` (or `{className}_{testMethodName}_{sanitizedTheoryParams}.g.cs` for theories); `.\Scripts\RunTestsAndReportCoverage.ps1` deletes and recreates `.mappa-generator-tests-dump/` before tests.
 
 ## Samples
 

@@ -88,6 +88,7 @@ public abstract class MappaGeneratorAbstractUnitTests
             out var outputCompilation,
             out var diagnostics,
             cancellationToken);
+        GeneratedSourceDumpHelper.TryDumpGeneratedSources(driver);
         return Task.FromResult(new GeneratedResults(driver, outputCompilation, diagnostics.ToArray()));
     }
 
