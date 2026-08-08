@@ -9,6 +9,12 @@ namespace Mappa.Attributes;
 /// emit a method that registers all <see cref="MappaAttribute"/> mapper types from the
 /// same assembly into an <c>IServiceCollection</c>.
 /// <para>
+/// By default only mappers in the registrar's assembly are discovered. When
+/// <see cref="InjectFromAssemblies"/> is non-empty, mappers from each marker type's
+/// assembly are included as well (additive). Marker types are not specially registered
+/// unless they also have <see cref="MappaAttribute"/> and pass the usual filters.
+/// </para>
+/// <para>
 /// The class must be <c>partial</c>; otherwise the generator reports a warning and does
 /// not emit registration code. Applying both <see cref="MappaAttribute"/> and
 /// <see cref="MappaDependencyInjectionAttribute"/> on the same class is an error.
@@ -31,6 +37,7 @@ public sealed class MappaDependencyInjectionAttribute
     public MappaDependencyInjectionAttribute()
     {
         this.IgnoreType = [];
+        this.InjectFromAssemblies = [];
     }
 
     /// <summary>
@@ -44,6 +51,7 @@ public sealed class MappaDependencyInjectionAttribute
     {
         this.ConstructorMethodName = constructorMethodName;
         this.IgnoreType = [];
+        this.InjectFromAssemblies = [];
     }
 
     /// <summary>
@@ -95,4 +103,16 @@ public sealed class MappaDependencyInjectionAttribute
     /// is not used for registration.
     /// </summary>
     public Type[] IgnoreType { get; set; }
+
+    /// <summary>
+    /// Gets or sets marker types whose assemblies are scanned for additional
+    /// <see cref="MappaAttribute"/> mapper types to register.
+    /// Defaults to an empty array (same-assembly discovery only).
+    /// When non-empty, each type's assembly is included in addition to the registrar's
+    /// assembly. Existing tunables such as <see cref="IgnoreType"/>,
+    /// <see cref="InjectInterfaces"/>, and <see cref="ServiceLifetime"/> apply across
+    /// all discovered assemblies. Marker types themselves are not specially registered
+    /// unless they also have <see cref="MappaAttribute"/> and are otherwise eligible.
+    /// </summary>
+    public Type[] InjectFromAssemblies { get; set; }
 }

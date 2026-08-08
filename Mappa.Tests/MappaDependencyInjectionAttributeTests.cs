@@ -34,6 +34,7 @@ public sealed class MappaDependencyInjectionAttributeTests
         attribute.ServiceLifetime.Should().Be(MappaDependencyInjectionServiceLifetime.Singleton);
         attribute.InjectInterfaces.Should().Be(MappaDependencyInjectionInjectInterfaces.ClassOnly);
         attribute.IgnoreType.Should().BeEmpty();
+        attribute.InjectFromAssemblies.Should().BeEmpty();
     }
 
     /// <summary>
@@ -54,6 +55,7 @@ public sealed class MappaDependencyInjectionAttributeTests
         attribute.ServiceLifetime.Should().Be(MappaDependencyInjectionServiceLifetime.Singleton);
         attribute.InjectInterfaces.Should().Be(MappaDependencyInjectionInjectInterfaces.ClassOnly);
         attribute.IgnoreType.Should().BeEmpty();
+        attribute.InjectFromAssemblies.Should().BeEmpty();
     }
 
     /// <summary>
@@ -72,6 +74,7 @@ public sealed class MappaDependencyInjectionAttributeTests
             ServiceLifetime = MappaDependencyInjectionServiceLifetime.Scoped,
             InjectInterfaces = MappaDependencyInjectionInjectInterfaces.InterfaceAndClass,
             IgnoreType = [typeof(string), typeof(MappaContext)],
+            InjectFromAssemblies = [typeof(MappaContext), typeof(string)],
         };
 
         // Assert
@@ -81,6 +84,7 @@ public sealed class MappaDependencyInjectionAttributeTests
         attribute.ServiceLifetime.Should().Be(MappaDependencyInjectionServiceLifetime.Scoped);
         attribute.InjectInterfaces.Should().Be(MappaDependencyInjectionInjectInterfaces.InterfaceAndClass);
         attribute.IgnoreType.Should().Equal(typeof(string), typeof(MappaContext));
+        attribute.InjectFromAssemblies.Should().Equal(typeof(MappaContext), typeof(string));
     }
 
     /// <summary>
