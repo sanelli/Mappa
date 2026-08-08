@@ -232,6 +232,10 @@ namespace Mappa.Generator.Models;
 ///         <description>Set the default maximum nesting depth while discovering mapping strategies. Non-negative <see cref="short"/> values apply; negative values are treated as unset. When fully unset the effective default is <c>50</c>.</description>
 ///     </item>
 ///     <item>
+///         <term><c>mappa.breakcompiletimecycles</c></term>
+///         <description>Set the default value to enable or disable breaking compile-time mapping cycles by synthesizing private map methods. Valid values are the values from the <see cref="BooleanSetting"/> <c>enum</c>.</description>
+///     </item>
+///     <item>
 ///         <term><c>mappa.enumerableconcretetype</c></term>
 ///         <description>Set the default concrete type for sequence-like collection interface targets. Valid values are the values of the <see cref="EnumerableConcreteTypeSetting"/> <c>enum</c>.</description>
 ///     </item>
@@ -299,6 +303,7 @@ internal sealed class MappaGlobalOptions
     private const string MappaSettingsReferenceReusing = "referencereusing";
     private const string MappaSettingsMaxRuntimeDepth = "maxruntimedepth";
     private const string MappaSettingsMaxCompileTimeDepth = "maxcompiletimedepth";
+    private const string MappaSettingsBreakCompileTimeCycles = "breakcompiletimecycles";
     private const string MappaSettingsEnumerableConcreteType = "enumerableconcretetype";
     private const string MappaSettingsDictionaryAssignment = "dictionaryassignment";
 
@@ -475,6 +480,10 @@ internal sealed class MappaGlobalOptions
         this.MaxRuntimeDepth = ReadDepthOption(options, MappaSettingsMaxRuntimeDepth, DefaultMaxRuntimeDepth);
 
         this.MaxCompileTimeDepth = ReadDepthOption(options, MappaSettingsMaxCompileTimeDepth, DefaultMaxCompileTimeDepth);
+
+        this.BreakCompileTimeCycles = options.TryGetValue(GetOptionName(MappaSettingsBreakCompileTimeCycles), out var breakCompileTimeCycles)
+            ? GetBooleanSettingFromString(breakCompileTimeCycles)
+            : BooleanSetting.Undefined;
 
         this.EnumerableConcreteType = options.TryGetValue(GetOptionName(MappaSettingsEnumerableConcreteType), out var enumerableConcreteType)
             ? GetEnumerableConcreteTypeSettingFromString(enumerableConcreteType)
@@ -814,6 +823,9 @@ internal sealed class MappaGlobalOptions
 
     /// <inheritdoc/>
     public short MaxCompileTimeDepth { get; }
+
+    /// <inheritdoc/>
+    public BooleanSetting BreakCompileTimeCycles { get; }
 
     /// <inheritdoc/>
     public EnumerableConcreteTypeSetting EnumerableConcreteType { get; }

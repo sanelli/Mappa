@@ -126,6 +126,7 @@ public sealed class MappaGlobalOptionsTests
         options.ReferenceReusing.Should().Be(BooleanSetting.Undefined);
         options.MaxRuntimeDepth.Should().Be((short)0);
         options.MaxCompileTimeDepth.Should().Be((short)50);
+        options.BreakCompileTimeCycles.Should().Be(BooleanSetting.Undefined);
     }
 
     /// <summary>
@@ -142,6 +143,7 @@ public sealed class MappaGlobalOptionsTests
                                     mappa.referencereusing = enable
                                     mappa.maxruntimedepth = 7
                                     mappa.maxcompiletimedepth = 3
+                                    mappa.breakcompiletimecycles = enable
                                     """;
 
         var compilation = BuildCompilation("namespace Mappa.Generator.Tests.UnitTests.SourceCode { internal class Placeholder { } }");
@@ -152,6 +154,7 @@ public sealed class MappaGlobalOptionsTests
         options.ReferenceReusing.Should().Be(BooleanSetting.Enable);
         options.MaxRuntimeDepth.Should().Be((short)7);
         options.MaxCompileTimeDepth.Should().Be((short)3);
+        options.BreakCompileTimeCycles.Should().Be(BooleanSetting.Enable);
     }
 
     /// <summary>
@@ -168,6 +171,7 @@ public sealed class MappaGlobalOptionsTests
                                     mappa.maxruntimedepth = -1
                                     mappa.maxcompiletimedepth = -5
                                     mappa.referencereusing = Undefined
+                                    mappa.breakcompiletimecycles = Undefined
                                     """;
 
         var compilation = BuildCompilation("namespace Mappa.Generator.Tests.UnitTests.SourceCode { internal class Placeholder { } }");
@@ -178,5 +182,6 @@ public sealed class MappaGlobalOptionsTests
         options.ReferenceReusing.Should().Be(BooleanSetting.Undefined);
         options.MaxRuntimeDepth.Should().Be((short)0);
         options.MaxCompileTimeDepth.Should().Be((short)50);
+        options.BreakCompileTimeCycles.Should().Be(BooleanSetting.Undefined);
     }
 }

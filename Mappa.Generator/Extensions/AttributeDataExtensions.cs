@@ -729,6 +729,10 @@ internal static class AttributeDataExtensions
                 case nameof(MappaSettingsAttribute.MaxCompileTimeDepth):
                     attribute.MaxCompileTimeDepth = ReadDepth(namedArgument.Value);
                     break;
+
+                case nameof(MappaSettingsAttribute.BreakCompileTimeCycles) when namedArgument.Value.Value is int value:
+                    attribute.BreakCompileTimeCycles = (BooleanSetting)value;
+                    break;
             }
         }
 
