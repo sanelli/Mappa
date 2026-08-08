@@ -20,8 +20,8 @@ This is the list of attributes provided:
 - `MappaBeforeMap`: Invokes a named hook immediately before the generated root mapping body (see [MappaBeforeMap and MappaAfterMap](#mappabeforemap-and-mappaaftermap));
 - `MappaAfterMap`: Invokes a named hook immediately after the generated root mapping body and before returning the target (see [MappaBeforeMap and MappaAfterMap](#mappabeforemap-and-mappaaftermap));
 - `MappaObjectFactory`: Forces construction of a target type via a named factory method instead of `new` (see [MappaObjectFactory](#mappaobjectfactory));
-- `MappaTypeMapping`: When mapping structured types or interfaces, allows defining the target type depending on the source type;
-- `MappaTypeMappingDefault`: Describes the default behaviour for polymorphic methods defined via `MappaTypeMapping`.
+- `MappaTypeMapping`: When mapping structured types or interfaces, allows defining the target type depending on the source type; also available as `MappaTypeMapping<TTarget, TSource>`;
+- `MappaTypeMappingDefault`: Describes the default behaviour for polymorphic methods defined via `MappaTypeMapping`; also available as `MappaTypeMappingDefault<TDefault>` for `MapSourceType` with an explicit target type.
 - `MappaMapEnumMember`: Configures explicit enum↔integral, enum↔string, or enum↔enum member pairings (see [MappaMapEnumMember, MappaMapEnumIgnore, and MappaMapEnumDefault](#mappamapenummember-mappamapenumignore-and-mappamapenumdefault));
 - `MappaMapEnumIgnore`: Excludes a specific enum member from mapping;
 - `MappaMapEnumDefault`: Configures fallback behaviour when an enum value cannot be mapped;
@@ -361,6 +361,11 @@ When resolving parse styles for a mapping target, the generator uses the type-sp
 
 `MappaTypeMapping` defines how a polymorphic source type maps to a concrete target type. Multiple attributes can be applied to the same method, one per source type.
 
+Use either the non-generic form or the generic helper (equivalent behaviour):
+
+- `[MappaTypeMapping(typeof(TTarget), typeof(TSource))]`
+- `[MappaTypeMapping<TTarget, TSource>]`
+
 `MappaTypeMappingDefault` defines the behaviour when the runtime source type does not match any `[MappaTypeMapping]` entry:
 - `Undefined`: this setting should never be used;
 - `Throw`: throws `ArgumentOutOfRangeException` or the exception defined in the attribute;
@@ -368,6 +373,11 @@ When resolving parse styles for a mapping target, the generator uses the type-sp
 - `Null`: returns `null`;
 - `MapSourceType`: maps the source type to the target type of the method or the type specified in the attribute;
 - `InvokeMethod`: invokes a method in the mapper with the name specified in the attribute to perform the mapping; the attribute can also specify the type on which the method is defined—in that case the method must be `static`. The method can optionally accept a `MappaContext` parameter. When more than one method matches, the generator reports error **MP00042** (see [Overload selection priority](#overload-selection-priority) for `[MappaInvokeMethod]` tier rules).
+
+For `MapSourceType` with an explicit target type, the following forms are equivalent:
+
+- `[MappaTypeMappingDefault(MappaTypeMappingDefaultBehavior.MapSourceType, typeof(TDefault))]`
+- `[MappaTypeMappingDefault<TDefault>]`
 
 ## MappaMapEnumMember, MappaMapEnumIgnore, and MappaMapEnumDefault
 
