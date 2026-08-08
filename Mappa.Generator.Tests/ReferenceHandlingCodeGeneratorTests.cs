@@ -243,6 +243,167 @@ public sealed class ReferenceHandlingCodeGeneratorTests
                 "input.Nested",
                 context,
                 globalOptions);
+
+            var nestedField = referenceType.GetMembers("Value").OfType<IFieldSymbol>().Single();
+            AssertNoTryGetReferenceWrap(
+                new IdentityMapStrategy(
+                    referenceType,
+                    referenceType,
+                    IdentityMapDeepCopySetting.NestedDeepCopy,
+                    requiresMemberwiseClone: false,
+                    nestedFieldStrategies:
+                    [
+                        new IdentityMapNestedFieldStrategy(
+                            nestedField,
+                            new IdentityMapStrategy(nestedField.Type, nestedField.Type)),
+                    ]),
+                "input.Nested",
+                context,
+                globalOptions);
+        }
+    }
+
+    /// <summary>
+    /// MaxRuntimeDepth wraps strategies that emit no supporting code (empty innerCode path).
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void BuildNestedSourceIncreaseDepthWithEmptyInnerCode()
+    {
+        var (compilation, mapMethod, globalOptions, _, _, _, _, _, referenceType)
+            = CreateFixture();
+        var context = new MappaBuilderContext(compilation);
+        mapMethod.SetMaxRuntimeDepth(2);
+
+        using (context.PushMapMethod(mapMethod))
+        {
+            var (_, code) = ReferenceHandlingCodeGenerator.BuildNestedSource(
+                new NoMapStrategy(referenceType, referenceType),
+                "input.Nested",
+                context,
+                globalOptions);
+
+            code.Should().Contain("IncreaseDepth");
+            ParseBlock(code)
+                .DescendantNodes()
+                .OfType<UsingStatementSyntax>()
+                .Should()
+                .ContainSingle();
+        }
+    }
+
+    /// <summary>
+    /// Additional container/wrapper strategies skip MaxRuntimeDepth wrapping.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void BuildNestedSourceDoesNotIncreaseDepthForDictionaryAndTupleStrategies()
+    {
+        var (compilation, mapMethod, globalOptions, _, _, intType, _, _, referenceType)
+            = CreateFixture();
+        var context = new MappaBuilderContext(compilation);
+        mapMethod.SetMaxRuntimeDepth(3);
+
+        var dictionaryType = compilation.GetTypeByMetadataName("System.Collections.Generic.Dictionary`2")
+            ?.Construct(intType, referenceType)
+            ?? throw new InvalidOperationException("Dictionary<int, Nested> was not found.");
+        var tupleType = compilation.CreateTupleTypeSymbol([intType, referenceType], ["Item1", "Item2"]);
+
+        using (context.PushMapMethod(mapMethod))
+        {
+            AssertNoIncreaseDepthWrap(
+                new DictionaryToDictionaryMapStrategy(
+                    dictionaryType,
+                    dictionaryType,
+                    new IdentityMapStrategy(intType, intType),
+                    new IdentityMapStrategy(referenceType, referenceType),
+                    DictionaryAssignmentSetting.Undefined),
+                "input.Map",
+                context,
+                globalOptions);
+            AssertNoIncreaseDepthWrap(
+                new TupleToTupleMapStrategy(
+                    tupleType,
+                    tupleType,
+                    [
+                        new IdentityMapStrategy(intType, intType),
+                        new IdentityMapStrategy(referenceType, referenceType),
+                    ]),
+                "input.Pair",
+                context,
+                globalOptions);
+
+            var nameProperty = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Source")
+                ?.GetMembers("Name")
+                .OfType<IPropertySymbol>()
+                .Single()
+                ?? throw new InvalidOperationException("Source.Name was not found.");
+            AssertNoIncreaseDepthWrap(
+                new OptionalSourcePropertyMapStrategy(
+                    new IdentityMapStrategy(referenceType, referenceType),
+                    nameProperty),
+                "input.Nested",
+                context,
+                globalOptions);
+            AssertNoIncreaseDepthWrap(
+                new OptionalTargetPropertyMapStrategy(
+                    new IdentityMapStrategy(referenceType, referenceType),
+                    nameProperty),
+                "input.Nested",
+                context,
+                globalOptions);
+        }
+    }
+
+    /// <summary>
+    /// Reference reuse eligibility rejects mismatched string/enum/value combinations.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void ShouldRegisterReferencePairEarlyRejectsMixedIneligibleTypes()
+    {
+        var (compilation, mapMethod, _, stringType, enumType, intType, _, _, referenceType)
+            = CreateFixture();
+        var context = new MappaBuilderContext(compilation);
+        mapMethod.SetReferenceReusing(BooleanSetting.Enable);
+
+        using (context.PushMapMethod(mapMethod))
+        {
+            ReferenceHandlingCodeGenerator.ShouldRegisterReferencePairEarly(
+                    context,
+                    "input.Name",
+                    referenceType,
+                    stringType)
+                .Should()
+                .BeFalse();
+            ReferenceHandlingCodeGenerator.ShouldRegisterReferencePairEarly(
+                    context,
+                    "input.Status",
+                    referenceType,
+                    enumType)
+                .Should()
+                .BeFalse();
+            ReferenceHandlingCodeGenerator.ShouldRegisterReferencePairEarly(
+                    context,
+                    "input.Count",
+                    referenceType,
+                    intType)
+                .Should()
+                .BeFalse();
+            ReferenceHandlingCodeGenerator.ShouldRegisterReferencePairEarly(
+                    context,
+                    "input.Nested",
+                    intType,
+                    referenceType)
+                .Should()
+                .BeFalse();
+            ReferenceHandlingCodeGenerator.ShouldRegisterReferencePairEarly(
+                    context,
+                    "   ",
+                    referenceType,
+                    referenceType)
+                .Should()
+                .BeFalse();
         }
     }
 
