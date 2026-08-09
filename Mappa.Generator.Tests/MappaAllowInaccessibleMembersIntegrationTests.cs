@@ -375,6 +375,179 @@ public sealed class MappaAllowInaccessibleMembersIntegrationTests
     }
 
     /// <summary>
+    /// Maps using a private target constructor when <c>AllowConstructors</c> is explicitly <c>true</c>
+    /// and inaccessible property writes are disabled.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapUsingPrivateTargetConstructorWhenAllowConstructorsIsTrueAndAllowPropertiesIsFalse()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class Source
+                                  {
+                                      public int Property { get; set; }
+                                  }
+
+                                  public class Target
+                                  {
+                                      private Target()
+                                      {
+                                      }
+
+                                      public int Property { get; set; }
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaAllowInaccessibleTargetMembers(AllowProperties = false, AllowConstructors = true)]
+                                      public partial Target Map(Source input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                TargetTypeName,
+                NullableAnnotation.NotAnnotated,
+                SourceTypeName,
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(4)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                TargetTypeName,
+                                "__mappa_tmp_2",
+                                initializationAssertions => initializationAssertions.BeInvocationExpressionSyntax(
+                                    $"{AccessorsClassName}.__mappa_tmp_1"));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(int).ToString(),
+                                "__mappa_tmp_3",
+                                initializationAssertions => initializationAssertions.BeMemberAccessExpressionSyntax("input.Property"));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeAssignmentExpressionStatement(
+                                leftAssertions => leftAssertions.BeMemberAccessExpressionSyntax("__mappa_tmp_2.Property"),
+                                assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_3"));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_2"));
+                        });
+                })
+            .HaveClass(AccessorsClassName, classAssertions =>
+            {
+                classAssertions
+                    .HaveModifiers(SyntaxKind.FileKeyword, SyntaxKind.StaticKeyword)
+                    .HaveMethods(1)
+                    .HaveExternUnsafeAccessorMethod("__mappa_tmp_1", "Constructor", null);
+            });
+    }
+
+    /// <summary>
+    /// Maps a public source property with a private getter when opted in.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapPublicSourcePropertyWithPrivateGetterWhenOptedIn()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class Source
+                                  {
+                                      public int Property { private get; set; }
+                                  }
+
+                                  public class Target
+                                  {
+                                      public int Property { get; set; }
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaAllowInaccessibleSourceMembers]
+                                      public partial Target Map(Source input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                TargetTypeName,
+                NullableAnnotation.NotAnnotated,
+                SourceTypeName,
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(3)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(int).ToString(),
+                                "__mappa_tmp_1",
+                                initializationAssertions => initializationAssertions.BeInvocationExpressionSyntax(
+                                    $"{AccessorsClassName}.__mappa_tmp_2",
+                                    argumentAssertions => argumentAssertions.BeIdentifierNameSyntax("input")));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                TargetTypeName,
+                                "__mappa_tmp_3",
+                                initializationAssertions =>
+                                {
+                                    initializationAssertions.BeObjectCreationExpressionSyntax(
+                                        TargetTypeName,
+                                        ("Property", initAssertions => initAssertions.BeIdentifierNameSyntax("__mappa_tmp_1")));
+                                });
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_3"));
+                        });
+                })
+            .HaveClass(AccessorsClassName, classAssertions =>
+            {
+                classAssertions
+                    .HaveModifiers(SyntaxKind.FileKeyword, SyntaxKind.StaticKeyword)
+                    .HaveMethods(1)
+                    .HaveExternUnsafeAccessorMethod("__mappa_tmp_2", "Method", "get_Property");
+            });
+    }
+
+    /// <summary>
     /// Maps a protected source property when opted in.
     /// </summary>
     /// <returns>The async task.</returns>

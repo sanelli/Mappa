@@ -999,4 +999,266 @@ public sealed class AttributeDataExtensionsTests
         attribute.IgnoreTypes.Should().BeEmpty();
         attribute.InjectFromAssemblies.Should().BeEmpty();
     }
+
+    /// <summary>
+    /// Test <see cref="AttributeDataExtensions.GetMappaAllowInaccessibleTargetMembersAttribute"/>
+    /// reads <c>AllowProperties = false</c> and <c>AllowConstructors = false</c>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetMappaAllowInaccessibleTargetMembersAttributeReadsAllowPropertiesAndAllowConstructorsFalse()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source
+                              {
+                                  public int Value { get; set; }
+                              }
+
+                              public class Target
+                              {
+                                  private int Value { get; set; }
+                              }
+
+                              [Mappa]
+                              public sealed partial class TestMapper
+                              {
+                                  [MappaAllowInaccessibleTargetMembers(AllowProperties = false, AllowConstructors = false)]
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetMethodAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.MapperMetadataName,
+            "Map");
+
+        var attribute = attributes.GetMappaAllowInaccessibleTargetMembersAttribute(compilation);
+
+        attribute.Should().NotBeNull();
+        attribute!.AllowProperties.Should().BeFalse();
+        attribute.AllowConstructors.Should().BeFalse();
+        attribute.MemberNames.Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// Test <see cref="AttributeDataExtensions.GetMappaAllowInaccessibleTargetMembersAttribute"/>
+    /// filters empty primitive params member names.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetMappaAllowInaccessibleTargetMembersAttributeFiltersEmptyPrimitiveMemberNames()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source
+                              {
+                                  public int Allowed { get; set; }
+                              }
+
+                              public class Target
+                              {
+                                  private int Allowed { get; set; }
+                              }
+
+                              [Mappa]
+                              public sealed partial class TestMapper
+                              {
+                                  [MappaAllowInaccessibleTargetMembers("", "Allowed", "")]
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetMethodAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.MapperMetadataName,
+            "Map");
+
+        var attribute = attributes.GetMappaAllowInaccessibleTargetMembersAttribute(compilation);
+
+        attribute.Should().NotBeNull();
+        attribute!.MemberNames.Should().Equal("Allowed");
+    }
+
+    /// <summary>
+    /// Test <see cref="AttributeDataExtensions.GetMappaStaticDependencies"/> ignores constructor
+    /// arguments that are not <see cref="Microsoft.CodeAnalysis.INamedTypeSymbol"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetMappaStaticDependenciesIgnoresNonNamedTypeConstructorArguments()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { }
+
+                              public class Target { }
+
+                              public static class ValidDependency { }
+
+                              [Mappa]
+                              [MappaStaticDependency(typeof(int[]))]
+                              [MappaStaticDependency(typeof(ValidDependency))]
+                              public sealed partial class TestMapper
+                              {
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetTypeAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.MapperMetadataName);
+
+        var dependencies = attributes.GetMappaStaticDependencies(compilation);
+
+        dependencies.Should().HaveCount(1);
+        dependencies[0].ToDisplayString().Should().Be("Mappa.Generator.Tests.UnitTests.SourceCode.ValidDependency");
+    }
+
+    /// <summary>
+    /// Test <see cref="AttributeDataExtensions.GetEnumMapIgnoreAttributes"/> keeps defined enum members
+    /// and skips constants that do not match any enum member.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetEnumMapIgnoreAttributesSkipsUndefinedEnumMemberConstants()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public enum SampleEnum
+                              {
+                                  Alpha = 1,
+                                  Beta = 2,
+                              }
+
+                              public class Source { }
+
+                              public class Target { }
+
+                              [Mappa]
+                              public sealed partial class TestMapper
+                              {
+                                  [MappaMapEnumIgnore<SampleEnum>(SampleEnum.Alpha)]
+                                  [MappaMapEnumIgnore<SampleEnum>((SampleEnum)999)]
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetMethodAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.MapperMetadataName,
+            "Map");
+
+        var ignores = attributes.GetEnumMapIgnoreAttributes(compilation);
+
+        ignores.Should().HaveCount(1);
+        ignores[0].EnumMemberName.Should().Be("Alpha");
+        ignores[0].EnumType.ToDisplayString().Should().Be(AttributeDataExtensionsTestHelper.NamespaceName + ".SampleEnum");
+    }
+
+    /// <summary>
+    /// Test <see cref="AttributeDataExtensions.GetEnumMapMemberAttributes"/> ignores null string
+    /// second constructor arguments and keeps a valid pairing.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetEnumMapMemberAttributesIgnoresNullStringSecondArgument()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public enum SampleEnum
+                              {
+                                  Alpha = 1,
+                                  Beta = 2,
+                              }
+
+                              public class Source { }
+
+                              public class Target { }
+
+                              [Mappa]
+                              public sealed partial class TestMapper
+                              {
+                                  [MappaMapEnumMember<SampleEnum>(SampleEnum.Alpha, null)]
+                                  [MappaMapEnumMember<SampleEnum>(SampleEnum.Beta, "beta")]
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetMethodAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.MapperMetadataName,
+            "Map");
+
+        var members = attributes.GetEnumMapMemberAttributes(compilation);
+
+        members.Should().HaveCount(1);
+        members[0].EnumMemberName.Should().Be("Beta");
+        members[0].StringValue.Should().Be("beta");
+    }
+
+    /// <summary>
+    /// Test <see cref="AttributeDataExtensions.GetEnumMapDefaultAttributes"/> ignores null string
+    /// second constructor arguments and keeps a valid default.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetEnumMapDefaultAttributesIgnoresNullStringSecondArgument()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public enum SampleEnum
+                              {
+                                  Alpha = 1,
+                                  Beta = 2,
+                              }
+
+                              public class Source { }
+
+                              public class Target { }
+
+                              [Mappa]
+                              public sealed partial class TestMapper
+                              {
+                                  [MappaMapEnumDefault<SampleEnum>(MappaMapEnumDefaultBehavior.UseDefaultValue, null)]
+                                  [MappaMapEnumDefault<SampleEnum>(MappaMapEnumDefaultBehavior.UseDefaultValue, "fallback")]
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetMethodAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.MapperMetadataName,
+            "Map");
+
+        var defaults = attributes.GetEnumMapDefaultAttributes(compilation);
+
+        defaults.Should().HaveCount(1);
+        defaults[0].Behavior.Should().Be(MappaMapEnumDefaultBehavior.UseDefaultValue);
+        defaults[0].StringDefaultValue.Should().Be("fallback");
+    }
 }

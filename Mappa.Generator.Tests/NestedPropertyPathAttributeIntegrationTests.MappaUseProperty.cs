@@ -424,6 +424,71 @@ public sealed partial class NestedPropertyPathAttributeIntegrationTests
     }
 
     /// <summary>
+    /// Test multiple nested <see cref="MappaUsePropertyAttribute"/> paths that share a target root
+    /// but use different first source segments (distinct source roots).
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapUsingMultipleMappaUsePropertyAttributesWithDistinctSourceRootsUnderSharedTargetRoot()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class AddressDto
+                                  {
+                                      public string City { get; set; } = null!;
+                                      public string ZipCode { get; set; } = null!;
+                                  }
+
+                                  public class Source
+                                  {
+                                      public AddressDto Address { get; set; } = null!;
+                                      public AddressDto Home { get; set; } = null!;
+                                      public AddressDto Work { get; set; } = null!;
+                                  }
+
+                                  public class Target
+                                  {
+                                      public AddressDto Address { get; set; } = null!;
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaUseProperty("Address.City", "Home.City")]
+                                      [MappaUseProperty("Address.ZipCode", "Work.ZipCode")]
+                                      public partial Target Map(Source input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                TargetTypeName,
+                NullableAnnotation.NotAnnotated,
+                SourceTypeName,
+                NullableAnnotation.NotAnnotated,
+                block => block
+                    .HasSyntaxNodesCount(6)
+                    .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.AddressDto", "__mappa_tmp_1", value => value.BeMemberAccessExpressionSyntax("input.Address")))
+                    .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax(typeof(string).ToString(), "__mappa_tmp_2", value => value.BeMemberAccessExpressionSyntax("__mappa_tmp_1.City")))
+                    .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax(typeof(string).ToString(), "__mappa_tmp_3", value => value.BeMemberAccessExpressionSyntax("__mappa_tmp_1.ZipCode")))
+                    .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.AddressDto", "__mappa_tmp_4", value => value.BeObjectCreationExpressionSyntax("Mappa.Generator.Tests.UnitTests.SourceCode.AddressDto", ("City", property => property.BeIdentifierNameSyntax("__mappa_tmp_2")), ("ZipCode", property => property.BeIdentifierNameSyntax("__mappa_tmp_3")))))
+                    .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax(TargetTypeName, "__mappa_tmp_5", value => value.BeObjectCreationExpressionSyntax(TargetTypeName, ("Address", property => property.BeIdentifierNameSyntax("__mappa_tmp_4")))))
+                    .HasNextSyntaxNode(node => node.BeReturnStatement("__mappa_tmp_5")));
+    }
+
+    /// <summary>
     /// Test mapping fails when multiple <see cref="MappaUsePropertyAttribute"/> declarations target the same exact nested path.
     /// </summary>
     /// <returns>The async task.</returns>

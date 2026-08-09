@@ -208,6 +208,49 @@ public sealed class MappingAttributeConflictWarningIntegrationTests
     }
 
     /// <summary>
+    /// Test MP00007 is emitted when <see cref="MappaAssignFromConstantAttribute"/> and
+    /// <see cref="MappaAssignFromContextAttribute"/> target the same property.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task AnErrorIsEmittedWhenMappaAssignFromConstantAndMappaAssignFromContextTargetTheSameProperty()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class Source
+                                  {
+                                      public int Foo { get; set; }
+                                  }
+
+                                  public class Target
+                                  {
+                                      public int Property { get; set; }
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaAssignFromConstant(nameof(Target.Property), 42)]
+                                      [MappaAssignFromContext(nameof(Target.Property), "Value")]
+                                      public partial Target Map(Source input, MappaContext context);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.MultipleAttributesTargetTheSamePropertyOrParameter, "Map", "Property");
+    }
+
+    /// <summary>
     /// Test MP00032 is emitted when <see cref="MappaInvokeMethodAttribute"/> resolves to a
     /// parameterless method while <see cref="MappaUsePropertyAttribute"/> is also defined.
     /// </summary>
