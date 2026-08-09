@@ -69,6 +69,8 @@ internal class TypeMapIdentifierAlgorithm
     /// </returns>
     protected MapStrategy WithGetStrategyGuards(Func<MapStrategy> computeStrategy)
     {
+        this.CancellationToken.ThrowIfCancellationRequested();
+
         IDisposable? typePairScope = null;
         try
         {

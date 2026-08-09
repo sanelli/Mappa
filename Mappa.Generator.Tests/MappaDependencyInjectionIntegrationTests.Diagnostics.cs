@@ -13,12 +13,12 @@ namespace Mappa.Generator.Tests;
 public sealed partial class MappaDependencyInjectionIntegrationTests
 {
     /// <summary>
-    /// Non-partial registrar reports MP00070 and does not generate sources.
+    /// Non-partial registrar is filtered by the DI syntax provider (<c>IsPartial</c>) and does not generate sources or MP00070.
     /// </summary>
     /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
-    public async Task NonPartialRegistrarReportsWarningAndDoesNotGenerate()
+    public async Task NonPartialRegistrarIsIgnoredBySyntaxProvider()
     {
         // Arrange
         const string sourceCode = """
@@ -42,8 +42,7 @@ public sealed partial class MappaDependencyInjectionIntegrationTests
 
         // Assert
         generatedResults.Should()
-            .HaveDiagnostics(1)
-            .HaveDiagnostic(MappaDiagnosticDescriptors.MappaDependencyInjectionClassIsNotPartial, "Registrar")
+            .NotHaveDiagnostics()
             .NotHaveGeneratedAnySourceCode();
     }
 

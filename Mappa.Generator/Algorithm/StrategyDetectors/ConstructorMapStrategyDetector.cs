@@ -44,6 +44,8 @@ internal sealed partial class ConstructorMapStrategyDetector
     /// <inheritdoc/>
     public bool TryDetect(out MapStrategy mapStrategy)
     {
+        this.cancellationToken.ThrowIfCancellationRequested();
+
         mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
 
         this.context.ValidateTargetNamesExist(this.compilation);
@@ -102,6 +104,8 @@ internal sealed partial class ConstructorMapStrategyDetector
 
     private bool CanInvokeConstructorWithParameters(out MapStrategy strategy)
     {
+        this.cancellationToken.ThrowIfCancellationRequested();
+
         var noMapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
         strategy = noMapStrategy;
 
@@ -125,6 +129,8 @@ internal sealed partial class ConstructorMapStrategyDetector
             // and we try to match with a property of the source.
             var constructorsWithMappings = constructors.Select(methodSymbol =>
                 {
+                    this.cancellationToken.ThrowIfCancellationRequested();
+
                     // For each argument of the constructor
                     (IParameterSymbol Parameter, IPropertySymbol Property, MapStrategy Strategy)[] strategiesForEachParameter = methodSymbol.Parameters
                         .Select<IParameterSymbol, (IParameterSymbol Parameter, IPropertySymbol Property, MapStrategy Strategy)>(
@@ -363,6 +369,7 @@ internal sealed partial class ConstructorMapStrategyDetector
 
     private bool CanInvokeEmptyConstructor(out MapStrategy strategy)
     {
+        this.cancellationToken.ThrowIfCancellationRequested();
         var noMapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
 
         // Detect all constructors that:

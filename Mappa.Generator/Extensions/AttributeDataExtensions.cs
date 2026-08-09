@@ -17,6 +17,16 @@ namespace Mappa.Generator.Extensions;
 /// </summary>
 internal static class AttributeDataExtensions
 {
+    /// <summary>
+    /// Metadata name for <c>Mappa.Attributes.MappaAttribute</c>.
+    /// </summary>
+    internal const string MappaAttributeFullName = "Mappa.Attributes.MappaAttribute";
+
+    /// <summary>
+    /// Metadata name for <c>Mappa.Attributes.MappaDependencyInjectionAttribute</c>.
+    /// </summary>
+    internal const string MappaDependencyInjectionAttributeFullName = "Mappa.Attributes.MappaDependencyInjectionAttribute";
+
     private const string MappaAfterMapAttributeFullName = "Mappa.Attributes.MappaAfterMapAttribute";
     private const string MappaBeforeMapAttributeFullName = "Mappa.Attributes.MappaBeforeMapAttribute";
     private const string MappaObjectFactoryAttributeFullName = "Mappa.Attributes.MappaObjectFactoryAttribute";
@@ -41,8 +51,6 @@ internal static class AttributeDataExtensions
     private const string MappaMapEnumMemberToEnumAttributeFullName = "Mappa.Attributes.MappaMapEnumMemberAttribute`2";
     private const string MappaMapEnumIgnoreAttributeFullName = "Mappa.Attributes.MappaMapEnumIgnoreAttribute`1";
     private const string MappaMapEnumDefaultAttributeFullName = "Mappa.Attributes.MappaMapEnumDefaultAttribute`1";
-    private const string MappaAttributeFullName = "Mappa.Attributes.MappaAttribute";
-    private const string MappaDependencyInjectionAttributeFullName = "Mappa.Attributes.MappaDependencyInjectionAttribute";
 
     private static readonly Dictionary<string, Action<MappaSettingsAttribute, TypedConstant>> MappaSettingsNamedArgumentApplicators =
         new(StringComparer.Ordinal)
