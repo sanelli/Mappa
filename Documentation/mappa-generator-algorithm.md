@@ -25,11 +25,36 @@ public partial class Mapper
 
 the source generator attempts to identify a mapping from `TSource` to `TTarget`.
 
+## Incremental discovery
+
+`MappaGenerator` uses two Roslyn incremental pipelines, each driven by `SyntaxProvider.ForAttributeWithMetadataName` so only classes that actually carry the relevant attribute are considered (avoiding semantic lookups on every attributed type in the compilation):
+
+| Pipeline | Metadata name | Predicate |
+|----------|---------------|-----------|
+| Mapper (`[Mappa]`) | `Mappa.Attributes.MappaAttribute` | `ClassDeclarationSyntax` **and** `partial` |
+| Dependency injection (`[MappaDependencyInjection]`) | `Mappa.Attributes.MappaDependencyInjectionAttribute` | `ClassDeclarationSyntax` **and** `partial` |
+
+Both predicates require `partial`. Non-partial classes with either attribute never enter the corresponding pipeline, so they produce neither generated sources nor discovery diagnostics from that pipeline. The DI algorithm still contains a defensive **MP00070** check if a non-partial registrar is supplied directly (for example from unit-test harnesses).
+
+## CancellationToken convention
+
+Generator algorithms take `SourceProductionContext.CancellationToken` (or an equivalent token) at entry and call `ThrowIfCancellationRequested` at loop, recursion, and long-scan boundaries so IDE/build cancellation stays responsive on large types. Mapping results are unchanged when the token is not cancelled.
+
+Typical check sites include:
+
+- Per-class / per-method collection loops in `MappaGeneratorClassAlgorithm` (including static and syntax-declared `[MappaDependency]` members)
+- The strategy-generation `while` that maps all methods
+- `TypeMapIdentifierAlgorithm.WithGetStrategyGuards` (every recursive `GetStrategy` entry) and the per-detector loop in `ComputeStrategy`
+- Heavy constructor detection loops in `ConstructorMapStrategyDetector`
+- Assembly / named-type scans in DI `DiscoverMappers`
+
+Attribute parsing helpers that only inspect small `AttributeData` arrays are not given a `CancellationToken` parameter; callers check around larger batches instead.
+
 ## Dependency injection registration
 
-Separately from mapper generation, classes marked with `[MappaDependencyInjection]` are processed by a second incremental pipeline:
+Separately from mapper generation, **partial** classes marked with `[MappaDependencyInjection]` are processed by a second incremental pipeline (see [Incremental discovery](#incremental-discovery)):
 
-1. Validate the registrar (must be `partial`; must not also have `[Mappa]`).
+1. Validate the registrar (must not also have `[Mappa]`; non-partial classes are filtered at the syntax provider).
 2. Parse attribute properties (method name, lifetime, interface injection mode, `IgnoreType`, `InjectFromAssemblies`, accessibility, extension-method flag).
 3. Build the set of assemblies to scan: always the current compilation assembly, plus each distinct assembly of types listed in `InjectFromAssemblies` (deduplicated; ordered by assembly identity for stable output).
 4. Walk all named types in those assemblies; collect `[Mappa]` mapper types (skip the registrar, ignored types, and static mappers; apply `InjectInterfaces` / `IgnoreType` filters).

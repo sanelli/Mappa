@@ -5,6 +5,7 @@
 using System.Collections.Immutable;
 
 using Mappa.Generator.Algorithm;
+using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Tests.Abstractions;
 
 using Microsoft.CodeAnalysis;
@@ -102,6 +103,36 @@ public sealed class MappaDependencyInjectionGeneratorAlgorithmTests
 
         runResult.Diagnostics.Should().BeEmpty();
         runResult.GeneratedTrees.Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// Non-partial registrar still reports MP00070 when fed directly to the algorithm harness
+    /// (syntax provider filters these out of the incremental pipeline).
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void ExecuteReportsNonPartialRegistrarDiagnostic()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              [MappaDependencyInjection]
+                              public static class Registrar
+                              {
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var classDeclaration = GetClassDeclaration(compilation, "Registrar");
+
+        var runResult = RunAlgorithm(compilation, [classDeclaration]);
+
+        runResult.GeneratedTrees.Should().BeEmpty();
+        runResult.Diagnostics.Should().ContainSingle(diagnostic =>
+            diagnostic.Id == MappaDiagnosticDescriptors.MappaDependencyInjectionClassIsNotPartial.Id
+            && diagnostic.GetMessage(null).Contains("Registrar", StringComparison.Ordinal));
     }
 
     private static ClassDeclarationSyntax GetClassDeclaration(Compilation compilation, string className)

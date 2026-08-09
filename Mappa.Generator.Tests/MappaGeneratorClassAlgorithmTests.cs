@@ -45,10 +45,39 @@ public sealed class MappaGeneratorClassAlgorithmTests
         var compilation = BuildCompilation(source);
         var classDeclaration = GetClassDeclaration(compilation, "Mapper");
 
-        var runResult = RunAlgorithm(compilation, [null, classDeclaration]);
+        var runResult = RunAlgorithm(compilation, [null, classDeclaration], CancellationToken.None);
 
         runResult.Diagnostics.Should().BeEmpty();
         runResult.GeneratedTrees.Should().HaveCount(1);
+    }
+
+    /// <summary>
+    /// A pre-cancelled token aborts algorithm execution with <see cref="OperationCanceledException"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void ExecuteThrowsWhenCancellationTokenIsAlreadyCancelled()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              [Mappa]
+                              public sealed partial class Mapper
+                              {
+                                  public partial int Map(int input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var classDeclaration = GetClassDeclaration(compilation, "Mapper");
+        using var cancellationTokenSource = new CancellationTokenSource();
+        cancellationTokenSource.Cancel();
+
+        var act = () => RunAlgorithm(compilation, [classDeclaration], cancellationTokenSource.Token);
+
+        act.Should().Throw<OperationCanceledException>();
     }
 
     private static ClassDeclarationSyntax GetClassDeclaration(Compilation compilation, string className)
@@ -60,7 +89,8 @@ public sealed class MappaGeneratorClassAlgorithmTests
 
     private static GeneratorDriverRunResult RunAlgorithm(
         Compilation compilation,
-        ImmutableArray<ClassDeclarationSyntax?> classDeclarations)
+        ImmutableArray<ClassDeclarationSyntax?> classDeclarations,
+        CancellationToken cancellationToken)
     {
         GeneratorDriver driver = CSharpGeneratorDriver.Create(
             new ClassAlgorithmHarness(classDeclarations).AsSourceGenerator());
@@ -68,7 +98,7 @@ public sealed class MappaGeneratorClassAlgorithmTests
             compilation,
             out _,
             out _,
-            TestContext.Current.CancellationToken);
+            cancellationToken);
         return driver.GetRunResult();
     }
 

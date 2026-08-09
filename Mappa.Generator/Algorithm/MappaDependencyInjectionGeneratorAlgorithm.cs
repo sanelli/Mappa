@@ -108,7 +108,7 @@ internal sealed class MappaDependencyInjectionGeneratorAlgorithm
             return;
         }
 
-        var mappers = this.DiscoverMappers(classSymbol, attributeData, classDeclarationSyntax);
+        var mappers = this.DiscoverMappers(classSymbol, attributeData, classDeclarationSyntax, cancellationToken);
         var builder = new MappaDependencyInjectionFileBuilder(classDeclarationSyntax, classSymbol, attributeData, mappers);
         this.Context.AddSource(builder.HintName, builder.BuildSource());
     }
@@ -127,7 +127,8 @@ internal sealed class MappaDependencyInjectionGeneratorAlgorithm
     private ImmutableArray<(INamedTypeSymbol Mapper, ImmutableArray<INamedTypeSymbol> Interfaces)> DiscoverMappers(
         INamedTypeSymbol registrarClass,
         MappaDependencyInjectionAttributeData attributeData,
-        ClassDeclarationSyntax classDeclarationSyntax)
+        ClassDeclarationSyntax classDeclarationSyntax,
+        CancellationToken cancellationToken)
     {
         var assemblies = new HashSet<IAssemblySymbol>(SymbolEqualityComparer.Default)
         {
@@ -143,8 +144,11 @@ internal sealed class MappaDependencyInjectionGeneratorAlgorithm
         foreach (var assembly in assemblies
                      .OrderBy(candidate => candidate.Identity.GetDisplayName(), StringComparer.Ordinal))
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             foreach (var type in assembly.GetAllNamedTypes())
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 this.TryAddDiscoveredMapper(type, registrarClass, attributeData, classDeclarationSyntax, results);
             }
         }

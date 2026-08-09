@@ -16,16 +16,6 @@ namespace Mappa.Generator.Extensions;
 internal static class AttributeSyntaxExtensions
 {
     /// <summary>
-    /// Get the <see cref="MappaAttribute"/>.
-    /// </summary>
-    /// <param name="attributeLists">The attributes list to query.</param>
-    /// <param name="semanticModel">The semantic model.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>The <see cref="MappaAttribute"/> attribute, or <c>null</c> if the attribute does not exist.</returns>
-    internal static AttributeSyntax? GetMappaAttributeSyntax(this SyntaxList<AttributeListSyntax> attributeLists, SemanticModel semanticModel, CancellationToken cancellationToken)
-        => attributeLists.GetAttributes<MappaAttribute>(semanticModel, cancellationToken).SingleOrDefault();
-
-    /// <summary>
     /// Get the <see cref="MappaDependencyAttribute"/>.
     /// </summary>
     /// <param name="attributeLists">The attribute list to query.</param>
@@ -44,21 +34,6 @@ internal static class AttributeSyntaxExtensions
     /// <returns>The <see cref="MappaIgnoreAttribute"/> attribute, or <c>null</c> if the attribute does not exist.</returns>
     internal static AttributeSyntax? GetMappaIgnoreAttributeSyntax(this SyntaxList<AttributeListSyntax> attributeLists, SemanticModel semanticModel, CancellationToken cancellationToken)
         => attributeLists.GetAttributes<MappaIgnoreAttribute>(semanticModel, cancellationToken).SingleOrDefault();
-
-    /// <summary>
-    /// Get the <see cref="MappaDependencyInjectionAttribute"/>.
-    /// </summary>
-    /// <param name="attributeLists">The attribute list to query.</param>
-    /// <param name="semanticModel">The semantic model.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>
-    /// The <see cref="MappaDependencyInjectionAttribute"/> attribute, or <c>null</c> if the attribute does not exist.
-    /// </returns>
-    internal static AttributeSyntax? GetMappaDependencyInjectionAttributeSyntax(
-        this SyntaxList<AttributeListSyntax> attributeLists,
-        SemanticModel semanticModel,
-        CancellationToken cancellationToken)
-        => attributeLists.GetAttributes<MappaDependencyInjectionAttribute>(semanticModel, cancellationToken).SingleOrDefault();
 
     /// <summary>
     /// Get the attributes with the specified type.

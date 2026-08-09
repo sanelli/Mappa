@@ -210,7 +210,7 @@ internal sealed class MappaGeneratorClassAlgorithm
 
         this.CollectMapMethodsFromClassDeclarations(classDeclarationSyntax, classContext, mappaDebug, cancellationToken);
         this.CollectMapMethodsFromTypeHierarchy(classDeclarationSyntax, classContext, cancellationToken);
-        this.CollectMapMethodsFromStaticDependencies(classContext);
+        this.CollectMapMethodsFromStaticDependencies(classContext, cancellationToken);
         this.CollectMapMethodsFromMappaDependencies(classDeclarationSyntax, classContext, cancellationToken);
         this.IdentifyStrategiesAndGenerateSource(classContext, options, cancellationToken);
         this.ReportAllDiagnostics(classContext);
@@ -260,18 +260,24 @@ internal sealed class MappaGeneratorClassAlgorithm
         }
     }
 
-    private void CollectMapMethodsFromStaticDependencies(MappaClassGeneratorContext classContext)
+    private void CollectMapMethodsFromStaticDependencies(
+        MappaClassGeneratorContext classContext,
+        CancellationToken cancellationToken)
     {
         foreach (var dependencyType in classContext
                      .ClassSymbol
                      .GetAttributes()
                      .GetMappaStaticDependencies(this.Compilation))
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             var anyMethodCanBeUsed = false;
             var methods = dependencyType.GetMembers().OfType<IMethodSymbol>().ToArray();
             var accessFieldName = $"global::{dependencyType.ToDisplayString()}";
             foreach (var method in methods)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 if (!method.IsStatic)
                 {
                     continue;
@@ -322,6 +328,8 @@ internal sealed class MappaGeneratorClassAlgorithm
         foreach (var propertyDeclarationSyntax in classDeclarationSyntax.ChildNodes().OfType<PropertyDeclarationSyntax>())
 #pragma warning restore S3267 // Loops should be simplified using the "Where" LINQ method
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (propertyDeclarationSyntax.AccessorList is null
                 || !propertyDeclarationSyntax.AccessorList.Accessors.Any(accessor => accessor.Kind() == SyntaxKind.GetAccessorDeclaration))
             {
@@ -373,6 +381,8 @@ internal sealed class MappaGeneratorClassAlgorithm
     {
         foreach (var fieldDeclarationSyntax in classDeclarationSyntax.ChildNodes().OfType<FieldDeclarationSyntax>())
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (fieldDeclarationSyntax.AttributeLists.GetMappaDependencyAttributeSyntax(classContext.SemanticModel, cancellationToken) is null)
             {
                 continue;
@@ -431,6 +441,8 @@ internal sealed class MappaGeneratorClassAlgorithm
             // While generating strategies new methods might be found or requested to be generated.
             while (!classContext.AreAllMethodsMapped())
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 this.GenerateStrategyForEachMethod(
                     classContext,
                     mappaUserSettings,

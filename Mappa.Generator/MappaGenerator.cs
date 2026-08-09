@@ -23,10 +23,11 @@ public sealed class MappaGenerator
     /// <inheritdoc/>
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        // Step 1. Identify the classes exposing the [Mappa] attribute.
-        var classDeclarations = context.SyntaxProvider.CreateSyntaxProvider(
-                IsPartialClassDeclarationWithAttributes,
-                GetSemanticTargetForGeneration)
+        // Step 1. Identify partial classes exposing the [Mappa] attribute.
+        var classDeclarations = context.SyntaxProvider.ForAttributeWithMetadataName(
+                AttributeDataExtensions.MappaAttributeFullName,
+                static (node, _) => node is ClassDeclarationSyntax classDeclarationSyntax && classDeclarationSyntax.IsPartial(),
+                static (attributeContext, _) => attributeContext.TargetNode as ClassDeclarationSyntax)
             .Where(CommonExtensions.IsNotNull);
 
         // Step 2.Get the analyzer options, the compilation provider and the classes
@@ -39,10 +40,11 @@ public sealed class MappaGenerator
         // Step 3. Register the source output to generate the code.
         context.RegisterSourceOutput(analyzerConfigOptionsCompilationAndClasses, Execute);
 
-        // Step 4. Identify classes exposing [MappaDependencyInjection] (partial not required for diagnostics).
-        var dependencyInjectionClassDeclarations = context.SyntaxProvider.CreateSyntaxProvider(
-                IsClassDeclarationWithAttributes,
-                GetDependencyInjectionSemanticTargetForGeneration)
+        // Step 4. Identify partial classes exposing [MappaDependencyInjection].
+        var dependencyInjectionClassDeclarations = context.SyntaxProvider.ForAttributeWithMetadataName(
+                AttributeDataExtensions.MappaDependencyInjectionAttributeFullName,
+                static (node, _) => node is ClassDeclarationSyntax classDeclarationSyntax && classDeclarationSyntax.IsPartial(),
+                static (attributeContext, _) => attributeContext.TargetNode as ClassDeclarationSyntax)
             .Where(CommonExtensions.IsNotNull);
 
         // Step 5. Register the source output for dependency injection registration methods.
@@ -51,29 +53,6 @@ public sealed class MappaGenerator
             .Combine(dependencyInjectionClassDeclarations.Collect());
         context.RegisterSourceOutput(compilationAndDependencyInjectionClasses, ExecuteDependencyInjection);
     }
-
-    private static bool IsPartialClassDeclarationWithAttributes(SyntaxNode syntaxNode, CancellationToken cancellationToken)
-        => syntaxNode is ClassDeclarationSyntax classDeclarationSyntax &&
-            classDeclarationSyntax.AttributeLists.Any() &&
-            classDeclarationSyntax.IsPartial();
-
-    private static bool IsClassDeclarationWithAttributes(SyntaxNode syntaxNode, CancellationToken cancellationToken)
-        => syntaxNode is ClassDeclarationSyntax classDeclarationSyntax &&
-            classDeclarationSyntax.AttributeLists.Any();
-
-    private static ClassDeclarationSyntax? GetSemanticTargetForGeneration(GeneratorSyntaxContext context, CancellationToken cancellationToken)
-        => context.Node is ClassDeclarationSyntax classDeclarationSyntax &&
-            classDeclarationSyntax.HasMappaAttribute(context.SemanticModel, cancellationToken)
-                ? classDeclarationSyntax
-                : null;
-
-    private static ClassDeclarationSyntax? GetDependencyInjectionSemanticTargetForGeneration(
-        GeneratorSyntaxContext context,
-        CancellationToken cancellationToken)
-        => context.Node is ClassDeclarationSyntax classDeclarationSyntax &&
-            classDeclarationSyntax.HasMappaDependencyInjectionAttribute(context.SemanticModel, cancellationToken)
-                ? classDeclarationSyntax
-                : null;
 
     private static void Execute(SourceProductionContext context, (AnalyzerConfigOptionsProvider AnalyzerConfigOptionsProvider, (Compilation Compilation, ImmutableArray<ClassDeclarationSyntax?> ClassDeclarationSyntaxes) Right) settings)
         => Execute(context, settings.AnalyzerConfigOptionsProvider, settings.Right.Compilation, settings.Right.ClassDeclarationSyntaxes);

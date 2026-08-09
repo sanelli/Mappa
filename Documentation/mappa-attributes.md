@@ -34,7 +34,7 @@ The [Mappa](https://www.nuget.org/packages/Mappa/) package also provides the `Ma
 
 ### Requirements and conflicts
 
-- The registrar class must be `partial`. A non-partial class reports **MP00070** and no registration method is generated.
+- The registrar class must be `partial`. Non-partial classes with `[MappaDependencyInjection]` are filtered out by the incremental syntax provider (no registration method and no **MP00070** from the normal pipeline). **MP00070** remains as a defensive diagnostic if a non-partial registrar is supplied directly to the DI algorithm.
 - Applying both `[Mappa]` and `[MappaDependencyInjection]` on the same class is an error (**MP00071**). Keep `[Mappa]` on mapper classes and `[MappaDependencyInjection]` on a separate registrar.
 - The consuming project must reference `Microsoft.Extensions.DependencyInjection` (or Abstractions plus an implementation that provides `IServiceCollection` extension methods such as `AddSingleton`).
 
