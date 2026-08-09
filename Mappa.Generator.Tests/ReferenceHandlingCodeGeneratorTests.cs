@@ -239,6 +239,148 @@ public sealed class ReferenceHandlingCodeGeneratorTests
     }
 
     /// <summary>
+    /// Exit <c>AddReferencePair</c> is omitted when the wrapped strategy invokes a map method
+    /// that already enables <c>ReferenceReusing</c> (including compatible and polymorphic invocations).
+    /// </summary>
+    /// <param name="kind">Which method-invocation strategy to wrap.</param>
+    [Theory]
+    [UnitTest]
+    [InlineData("method")]
+    [InlineData("compatible")]
+    [InlineData("polymorphic")]
+    public void BuildNestedSourceOmitsExitAddWhenInvokedMapMethodReusesReferences(string kind)
+    {
+        var (compilation, mapMethod, globalOptions, _, _, _, _, _, referenceType)
+            = CreateFixture();
+        var context = new MappaBuilderContext(compilation);
+        mapMethod.SetReferenceReusing(BooleanSetting.Enable);
+
+        using (context.PushMapMethod(mapMethod))
+        {
+            MapStrategy strategy = kind switch
+            {
+                "method" => new MethodMapStrategy(mapMethod, "context"),
+                "compatible" => new CompatibleMethodMapStrategy(referenceType, referenceType, mapMethod, "context"),
+                "polymorphic" => new PolymorphicMethodMapStrategy(referenceType, referenceType, mapMethod, "context"),
+                _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null),
+            };
+
+            var (_, code) = ReferenceHandlingCodeGenerator.BuildNestedSource(
+                strategy,
+                "input.Nested",
+                context,
+                globalOptions);
+
+            ParseBlock(code)
+                .DescendantNodes()
+                .OfType<InvocationExpressionSyntax>()
+                .Select(invocation => invocation.Expression.ToString())
+                .Should()
+                .Contain(expression => expression.Contains("TryGetReference", StringComparison.Ordinal))
+                .And
+                .NotContain(expression => expression.Contains("AddReferencePair", StringComparison.Ordinal));
+        }
+    }
+
+    /// <summary>
+    /// Exit <c>AddReferencePair</c> is kept when the invoked map method does not enable reference reuse.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void BuildNestedSourceKeepsExitAddWhenInvokedMapMethodDoesNotReuseReferences()
+    {
+        var (compilation, mapMethod, globalOptions, _, _, _, _, _, _)
+            = CreateFixture();
+        var context = new MappaBuilderContext(compilation);
+        mapMethod.SetReferenceReusing(BooleanSetting.Enable);
+
+        var callee = CreateMapMethodFromFixtureCompilation(compilation);
+        callee.SetReferenceReusing(BooleanSetting.Disable);
+
+        using (context.PushMapMethod(mapMethod))
+        {
+            var (_, code) = ReferenceHandlingCodeGenerator.BuildNestedSource(
+                new MethodMapStrategy(callee, "context"),
+                "input.Nested",
+                context,
+                globalOptions);
+
+            ParseBlock(code)
+                .DescendantNodes()
+                .OfType<InvocationExpressionSyntax>()
+                .Select(invocation => invocation.Expression.ToString())
+                .Should()
+                .Contain(expression => expression.Contains("TryGetReference", StringComparison.Ordinal))
+                .And
+                .Contain(expression => expression.Contains("AddReferencePair", StringComparison.Ordinal));
+        }
+    }
+
+    /// <summary>
+    /// Unconstrained type parameters are not eligible for reference-pair registration.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void ShouldRegisterReferencePairEarlyReturnsFalseForUnconstrainedTypeParameter()
+    {
+        const string source = """
+                              using Mappa;
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Nested
+                              {
+                                  public int Value;
+                              }
+
+                              [Mappa]
+                              public sealed partial class Mapper
+                              {
+                                  public partial Nested MapOpen<T>(T input, MappaContext context);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var syntaxTree = compilation.SyntaxTrees.Single(tree =>
+            tree.GetRoot(TestContext.Current.CancellationToken).DescendantNodes().OfType<MethodDeclarationSyntax>().Any(method => method.Identifier.Text == "MapOpen"));
+        var methodDeclarationSyntax = syntaxTree.GetRoot(TestContext.Current.CancellationToken)
+            .DescendantNodes()
+            .OfType<MethodDeclarationSyntax>()
+            .Single(method => method.Identifier.Text == "MapOpen");
+        var mapMethod = new MapMethod(
+            methodDeclarationSyntax,
+            compilation.GetSemanticModel(syntaxTree),
+            nullableEnabled: true,
+            TestContext.Current.CancellationToken);
+        mapMethod.SetReferenceReusing(BooleanSetting.Enable);
+
+        var referenceType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Nested")
+            ?? throw new InvalidOperationException("Nested type was not found.");
+        var typeParameter = mapMethod.MethodSymbol?.TypeParameters.Single()
+            ?? throw new InvalidOperationException("MapOpen type parameter was not found.");
+        var context = new MappaBuilderContext(compilation);
+
+        using (context.PushMapMethod(mapMethod))
+        {
+            ReferenceHandlingCodeGenerator.ShouldRegisterReferencePairEarly(
+                    context,
+                    "input",
+                    referenceType,
+                    typeParameter)
+                .Should()
+                .BeFalse();
+            ReferenceHandlingCodeGenerator.ShouldRegisterReferencePairEarly(
+                    context,
+                    "input",
+                    typeParameter,
+                    referenceType)
+                .Should()
+                .BeFalse();
+        }
+    }
+
+    /// <summary>
     /// Identity strategies without memberwise clone skip reference reuse.
     /// </summary>
     [Fact]
@@ -543,5 +685,20 @@ public sealed class ReferenceHandlingCodeGeneratorTests
             ?? throw new InvalidOperationException("List<Nested> was not found.");
 
         return (compilation, mapMethod, globalOptions, stringType, enumType, intType, nullableIntType, listType, referenceType);
+    }
+
+    private static MapMethod CreateMapMethodFromFixtureCompilation(CSharpCompilation compilation)
+    {
+        var syntaxTree = compilation.SyntaxTrees.Single(tree =>
+            tree.GetRoot(TestContext.Current.CancellationToken).DescendantNodes().OfType<MethodDeclarationSyntax>().Any(method => method.Identifier.Text == "Map"));
+        var methodDeclarationSyntax = syntaxTree.GetRoot(TestContext.Current.CancellationToken)
+            .DescendantNodes()
+            .OfType<MethodDeclarationSyntax>()
+            .Single(method => method.Identifier.Text == "Map");
+        return new MapMethod(
+            methodDeclarationSyntax,
+            compilation.GetSemanticModel(syntaxTree),
+            nullableEnabled: true,
+            TestContext.Current.CancellationToken);
     }
 }

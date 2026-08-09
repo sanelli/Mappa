@@ -295,6 +295,112 @@ public sealed class ReferenceHandlingRemainingIntegrationTests
         assembly.GetType(Level1TargetType)!.GetProperty("Value")!.GetValue(child).Should().Be(99);
     }
 
+    /// <summary>
+    /// Before/after map hooks with <c>ReferenceReusing</c> emit the manager local and MaxDepth-free
+    /// hook invocations around the reuse wrap.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task ReferenceReusingWithBeforeAndAfterMapHooksEmitsManagerLocalAroundHooks()
+    {
+        var sourceCode = $$"""
+                           #nullable enable
+                           using Mappa;
+                           using Mappa.Attributes;
+
+                           namespace {{Ns}};
+
+                           public class Source
+                           {
+                               public int Value { get; set; }
+                           }
+
+                           public class Target
+                           {
+                               public int Value { get; set; }
+                           }
+
+                           [Mappa]
+                           [MappaSettings(ReferenceReusing = BooleanSetting.Enable)]
+                           public sealed partial class Mapper
+                           {
+                               [MappaBeforeMap(nameof(Before))]
+                               [MappaAfterMap(nameof(After))]
+                               public partial Target Map(Source input, MappaContext context);
+
+                               private void Before(ref Source input, MappaContext context)
+                               {
+                               }
+
+                               private void After(ref Target target, MappaContext context)
+                               {
+                               }
+                           }
+                           """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .NotHaveCompilationErrors()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveClass(ReferenceHandlingCodeGenerator.AccessorTypeName, _ => { /* presence */ })
+            .HaveDefaultMapMethodWithContext(
+                TargetType,
+                NullableAnnotation.NotAnnotated,
+                SourceType,
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    const string managerLocal = "__mappa_tmp_1";
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(7)
+                        .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax(
+                            "global::Mappa.MappaReferenceManager",
+                            managerLocal,
+                            init => init.BeInvocationExpressionSyntax(
+                                AccessorGetReferenceManager,
+                                arg => arg.BeIdentifierNameSyntax("context"))))
+                        .HasNextSyntaxNode(node => node.BeInvocationExpressionSyntaxStatementWithArguments(
+                            "this.Before",
+                            (SyntaxKind.RefKeyword, expression => expression.BeIdentifierNameSyntax("input")),
+                            (SyntaxKind.None, expression => expression.BeIdentifierNameSyntax("context"))))
+                        .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax(TargetType, "__mappa_tmp_4"))
+                        .HasNextSyntaxNode(node =>
+                        {
+                            node.BeIfStatementSyntax(
+                                condition =>
+                                {
+                                    condition.BePrefixUnaryExpressionSyntax(
+                                        SyntaxKind.ExclamationToken,
+                                        operand => operand.BeInvocationExpressionSyntax(
+                                            $"{managerLocal}.TryGetReference<{TargetType}>",
+                                            arg => arg.BeIdentifierNameSyntax("input"),
+                                            arg => arg.BeIdentifierNameSyntax("__mappa_tmp_4")));
+                                },
+                                thenStatement =>
+                                {
+                                    thenStatement
+                                        .BeBlockStatement()
+                                        .AsBlock()
+                                        .HasSyntaxNodesCount(5);
+                                });
+                        })
+                        .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax(
+                            TargetType,
+                            "__mappa_tmp_5",
+                            init => init.BeIdentifierNameSyntax("__mappa_tmp_4")))
+                        .HasNextSyntaxNode(node => node.BeInvocationExpressionSyntaxStatementWithArguments(
+                            "this.After",
+                            (SyntaxKind.RefKeyword, expression => expression.BeIdentifierNameSyntax("__mappa_tmp_5")),
+                            (SyntaxKind.None, expression => expression.BeIdentifierNameSyntax("context"))))
+                        .HasNextSyntaxNode(node => node.BeReturnStatement("__mappa_tmp_5"));
+                });
+    }
+
     private static void AssertFlatMapWithoutReferenceHandling(BlockSyntaxAssertions blockSyntaxAssertions)
     {
         blockSyntaxAssertions
