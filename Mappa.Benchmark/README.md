@@ -54,7 +54,7 @@ Outputs are written under `.mappa-benchmark/` (gitignored). See [Documentation/d
 - `EnumToStringBenchmark`
 - `ReferenceReusingSharedDagBenchmark`
 
-The comparison SVG lists the best time and best memory mapper(s) per scenario (ties included). When Mappa is not among the winners, the cell also shows the percentage delta versus Mappa. Memory winners are `n/a` for `StringToEnumBenchmark` and `EnumToStringBenchmark` (same exclusions as the absolute and percentage memory charts).
+The comparison SVG lists the best time and best memory mapper(s) per scenario. Ties that include Mappa always list Mappa first. When Mappa is not among the winners, the cell also shows the percentage delta versus Mappa. When Mappa is the sole winner, the cell shows a smaller side annotation with the delta versus the second-best mapper and that mapper's name (omitted when values are equal). Memory winners are `n/a` for `StringToEnumBenchmark` and `EnumToStringBenchmark` (same exclusions as the absolute and percentage memory charts).
 
 ## Spotify attribution
 
