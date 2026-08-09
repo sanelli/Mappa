@@ -3,6 +3,7 @@
 // </copyright>
 
 using Mappa.Generator.Diagnostics;
+using Mappa.Generator.Helpers;
 using Mappa.Generator.Tests.Abstractions;
 using Mappa.Generator.Tests.Assertions;
 using Mappa.Generator.Tests.Assertions.Extensions;
@@ -1043,6 +1044,108 @@ public sealed partial class MappaObjectFactoryIntegrationTests
                                 TargetType,
                                 ("NestedProperty", prop => prop.BeIdentifierNameSyntax("__mappa_tmp_4")))))
                         .HasNextSyntaxNode(node => node.BeReturnStatement("__mappa_tmp_5"));
+                });
+    }
+
+    /// <summary>
+    /// Empty-ctor-like factory with ReferenceReusing emits early <c>AddReferencePair</c> before property assigns.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapUsingEmptyCtorLikeFactoryWithReferenceReusingEmitsEarlyAddReferencePair()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class Source
+                                  {
+                                      public int Value { get; set; }
+                                  }
+
+                                  public class Target
+                                  {
+                                      public int Value { get; set; }
+                                  }
+
+                                  [Mappa]
+                                  [MappaSettings(ReferenceReusing = BooleanSetting.Enable)]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaObjectFactory(typeof(Target), nameof(CreateTarget))]
+                                      public partial Target Map(Source input, MappaContext context);
+
+                                      private Target CreateTarget() => new Target();
+                                  }
+                                  #nullable restore
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .NotHaveCompilationErrors()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .HaveDefaultMapMethodWithContext(
+                TargetType,
+                NullableAnnotation.NotAnnotated,
+                SourceType,
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(4)
+                        .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax(
+                            "global::Mappa.MappaReferenceManager",
+                            "__mappa_tmp_1",
+                            init => init.BeInvocationExpressionSyntax(
+                                $"{ReferenceHandlingCodeGenerator.AccessorTypeName}.{ReferenceHandlingCodeGenerator.AccessorMethodName}",
+                                arg => arg.BeIdentifierNameSyntax("context"))))
+                        .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax(TargetType, "__mappa_tmp_4"))
+                        .HasNextSyntaxNode(node =>
+                        {
+                            node.BeIfStatementSyntax(
+                                condition =>
+                                {
+                                    condition.BePrefixUnaryExpressionSyntax(
+                                        SyntaxKind.ExclamationToken,
+                                        operand => operand.BeInvocationExpressionSyntax(
+                                            $"__mappa_tmp_1.TryGetReference<{TargetType}>",
+                                            arg => arg.BeIdentifierNameSyntax("input"),
+                                            arg => arg.BeIdentifierNameSyntax("__mappa_tmp_4")));
+                                },
+                                thenStatement =>
+                                {
+                                    thenStatement
+                                        .BeBlockStatement()
+                                        .AsBlock()
+                                        .HasSyntaxNodesCount(5)
+                                        .HasNextSyntaxNode(n => n.BeLocalDeclarationStatementSyntax(
+                                            TargetType,
+                                            "__mappa_tmp_2",
+                                            init => init.BeInvocationExpressionSyntax("this.CreateTarget")))
+                                        .HasNextSyntaxNode(n => n.BeInvocationExpressionSyntaxStatement(
+                                            $"__mappa_tmp_1.AddReferencePair<{TargetType}, {SourceType}>",
+                                            arg => arg.BeIdentifierNameSyntax("__mappa_tmp_2"),
+                                            arg => arg.BeIdentifierNameSyntax("input")))
+                                        .HasNextSyntaxNode(n => n.BeLocalDeclarationStatementSyntax(
+                                            typeof(int).ToString(),
+                                            "__mappa_tmp_3",
+                                            init => init.BeMemberAccessExpressionSyntax("input.Value")))
+                                        .HasNextSyntaxNode(n => n.BeAssignmentExpressionStatement(
+                                            left => left.BeMemberAccessExpressionSyntax("__mappa_tmp_2.Value"),
+                                            right => right.BeIdentifierNameSyntax("__mappa_tmp_3")))
+                                        .HasNextSyntaxNode(n => n.BeAssignmentExpressionStatement(
+                                            "__mappa_tmp_4",
+                                            right => right.BeIdentifierNameSyntax("__mappa_tmp_2")));
+                                });
+                        })
+                        .HasNextSyntaxNode(node => node.BeReturnStatement("__mappa_tmp_4"));
                 });
     }
 }

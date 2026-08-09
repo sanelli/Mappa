@@ -693,6 +693,46 @@ function Format-BenchmarkWinnerDeltaPercent
     return $delta.ToString("0.#", [System.Globalization.CultureInfo]::InvariantCulture) + "%"
 }
 
+function Format-BenchmarkSecondBestDeltaPercent
+{
+    param(
+        [Nullable[double]]$MappaValue,
+        [Nullable[double]]$SecondBestValue
+    )
+
+    if (($null -eq $MappaValue) -or ($null -eq $SecondBestValue) -or ($MappaValue -eq 0.0))
+    {
+        return $null
+    }
+
+    # Positive means the second-best mapper is worse than Mappa (higher time/memory).
+    $delta = (($SecondBestValue / $MappaValue) - 1.0) * 100.0
+    $formatted = $delta.ToString("0.#", [System.Globalization.CultureInfo]::InvariantCulture) + "%"
+    if (-not $formatted.StartsWith("-") -and -not $formatted.StartsWith("+"))
+    {
+        $formatted = "+" + $formatted
+    }
+
+    return $formatted
+}
+
+function Get-BenchmarkMappersWithMappaFirst
+{
+    param([string[]]$Mappers)
+
+    if (($null -eq $Mappers) -or ($Mappers.Count -eq 0))
+    {
+        return @()
+    }
+
+    if (($Mappers -contains "Mappa") -and ($Mappers[0] -ne "Mappa"))
+    {
+        return @("Mappa") + @($Mappers | Where-Object { $_ -ne "Mappa" })
+    }
+
+    return @($Mappers)
+}
+
 function Get-BenchmarkWinnerCell
 {
     param(
@@ -712,6 +752,7 @@ function Get-BenchmarkWinnerCell
             Label = "n/a"
             ShowDelta = $false
             DeltaPercent = $null
+            SecondBestMapper = $null
         }
     }
 
@@ -723,30 +764,68 @@ function Get-BenchmarkWinnerCell
             Label = "n/a"
             ShowDelta = $false
             DeltaPercent = $null
+            SecondBestMapper = $null
         }
     }
 
-    $includeMappa = $best.Mappers -contains "Mappa"
-    $showDelta = -not $includeMappa
+    $orderedWinners = @(Get-BenchmarkMappersWithMappaFirst -Mappers $best.Mappers)
+    $includeMappa = $orderedWinners -contains "Mappa"
+    $mappaIsSoleWinner = $includeMappa -and ($orderedWinners.Count -eq 1)
+    $showDelta = $false
     $deltaPercent = $null
-    if ($showDelta)
+    $secondBestMapper = $null
+
+    if ($mappaIsSoleWinner)
     {
+        $otherMappers = @{}
+        foreach ($mapperName in $Mappers.Keys)
+        {
+            if ($mapperName -ne "Mappa")
+            {
+                $otherMappers[$mapperName] = $Mappers[$mapperName]
+            }
+        }
+
+        $secondBest = Get-BenchmarkBestMappers -Mappers $otherMappers -MetricProperty $MetricProperty
+        $mappaEntry = $Mappers["Mappa"]
+        $mappaValue = if ($null -eq $mappaEntry) { $null } else { $mappaEntry.$MetricProperty }
+        if (($null -ne $secondBest.BestValue) -and
+            ($secondBest.Mappers.Count -gt 0) -and
+            ($null -ne $mappaValue) -and
+            ([double]$secondBest.BestValue -ne [double]$mappaValue))
+        {
+            $showDelta = $true
+            $secondBestMapper = [string]$secondBest.Mappers[0]
+            $deltaPercent = Format-BenchmarkSecondBestDeltaPercent -MappaValue $mappaValue -SecondBestValue $secondBest.BestValue
+        }
+    }
+    elseif (-not $includeMappa)
+    {
+        $showDelta = $true
         $mappaEntry = $Mappers["Mappa"]
         $mappaValue = if ($null -eq $mappaEntry) { $null } else { $mappaEntry.$MetricProperty }
         $deltaPercent = Format-BenchmarkWinnerDeltaPercent -BestValue $best.BestValue -MappaValue $mappaValue
     }
 
-    $label = ($best.Mappers -join ", ")
+    $label = ($orderedWinners -join ", ")
     if ($showDelta -and (-not [string]::IsNullOrWhiteSpace($deltaPercent)))
     {
-        $label = "$label ($deltaPercent)"
+        if (-not [string]::IsNullOrWhiteSpace($secondBestMapper))
+        {
+            $label = "$label ($deltaPercent $secondBestMapper)"
+        }
+        else
+        {
+            $label = "$label ($deltaPercent)"
+        }
     }
 
     return [pscustomobject]@{
-        Mappers = @($best.Mappers)
+        Mappers = $orderedWinners
         Label = $label
         ShowDelta = $showDelta
         DeltaPercent = $deltaPercent
+        SecondBestMapper = $secondBestMapper
     }
 }
 
@@ -837,8 +916,15 @@ function Add-BenchmarkWinnerSvgText
 
     if ($WinnerCell.ShowDelta -and (-not [string]::IsNullOrWhiteSpace([string]$WinnerCell.DeltaPercent)))
     {
-        $escapedDelta = [System.Security.SecurityElement]::Escape(" ($($WinnerCell.DeltaPercent))")
-        [void]$Builder.Append("<tspan fill=`"#555555`">$escapedDelta</tspan>")
+        $sideText = " ($($WinnerCell.DeltaPercent)"
+        if (-not [string]::IsNullOrWhiteSpace([string]$WinnerCell.SecondBestMapper))
+        {
+            $sideText += " $($WinnerCell.SecondBestMapper)"
+        }
+
+        $sideText += ")"
+        $escapedDelta = [System.Security.SecurityElement]::Escape($sideText)
+        [void]$Builder.Append("<tspan font-size=`"9`" fill=`"#555555`">$escapedDelta</tspan>")
     }
 
     [void]$Builder.AppendLine("</text>")
@@ -864,8 +950,8 @@ function New-BenchmarkComparisonSvg
     $rowHeight = 26.0
     $headerHeight = 28.0
     $colBenchmarkWidth = 150.0
-    $colTimeWidth = 175.0
-    $colMemoryWidth = 175.0
+    $colTimeWidth = 220.0
+    $colMemoryWidth = 220.0
     $tableWidth = $colBenchmarkWidth + $colTimeWidth + $colMemoryWidth
     $width = $leftMargin + $tableWidth + $rightMargin
     $tableBottom = $topMargin + $headerHeight + ($Rows.Count * $rowHeight)

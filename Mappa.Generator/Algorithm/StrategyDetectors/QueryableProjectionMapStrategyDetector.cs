@@ -42,16 +42,39 @@ internal sealed class QueryableProjectionMapStrategyDetector
     {
         mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
 
-        if (!this.TryGetQueryableElementMapping(
-                out var sourceElementType,
-                out var targetElementType,
-                out var normalizedElementStrategy))
+        var mapMethod = this.context.MapMethod;
+        if (mapMethod is null)
         {
             return false;
         }
 
-        var mapMethodSymbol = this.context.MapMethod?.MethodSymbol;
+        if (ReferenceHandlingCodeGenerator.IsReferenceHandlingRequested(this.context.MappaUserSettings))
+        {
+            return false;
+        }
+
+        if (!this.context.SourceType.IsOrImplementIQueryable(this.compilation)
+            || !this.context.TargetType.IsOrImplementIQueryable(this.compilation))
+        {
+            return false;
+        }
+
+        var mapMethodSymbol = mapMethod.MethodSymbol;
         if (mapMethodSymbol is null)
+        {
+            return false;
+        }
+
+        if (!this.TryGetDistinctQueryableElementTypes(out var sourceElementType, out var targetElementType))
+        {
+            return false;
+        }
+
+        if (!this.TryGetProjectableQueryableElementStrategy(
+                mapMethod,
+                sourceElementType,
+                targetElementType,
+                out var normalizedElementStrategy))
         {
             return false;
         }
@@ -64,54 +87,6 @@ internal sealed class QueryableProjectionMapStrategyDetector
             targetElementType,
             mapMethodSymbol);
         return true;
-    }
-
-    private bool TryGetQueryableElementMapping(
-        out ITypeSymbol sourceElementType,
-        out ITypeSymbol targetElementType,
-        out MapStrategy normalizedElementStrategy)
-    {
-        normalizedElementStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
-        sourceElementType = this.context.SourceType;
-        targetElementType = this.context.TargetType;
-
-        if (!this.CanStartQueryableElementMapping())
-        {
-            return false;
-        }
-
-        if (!this.TryGetDistinctQueryableElementTypes(out sourceElementType, out targetElementType))
-        {
-            return false;
-        }
-
-        var mapMethod = this.context.MapMethod;
-        if (mapMethod is null)
-        {
-            return false;
-        }
-
-        return this.TryGetProjectableQueryableElementStrategy(
-            mapMethod,
-            sourceElementType,
-            targetElementType,
-            out normalizedElementStrategy);
-    }
-
-    private bool CanStartQueryableElementMapping()
-    {
-        if (this.context.MapMethod is null)
-        {
-            return false;
-        }
-
-        if (ReferenceHandlingCodeGenerator.IsReferenceHandlingRequested(this.context.MappaUserSettings))
-        {
-            return false;
-        }
-
-        return this.context.SourceType.IsOrImplementIQueryable(this.compilation)
-               && this.context.TargetType.IsOrImplementIQueryable(this.compilation);
     }
 
     private bool TryGetDistinctQueryableElementTypes(
