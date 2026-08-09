@@ -80,7 +80,7 @@ public sealed class MappaReferenceManagerTests
 
     /// <summary>
     /// Tests that <see cref="MappaReferenceManager.TryGetReference{TTarget}"/> returns <c>false</c>
-    /// when the stored target is not of the requested type.
+    /// when no pair was registered for the requested target type (composite-key miss).
     /// </summary>
     [Fact]
     [UnitTest]
@@ -89,17 +89,69 @@ public sealed class MappaReferenceManagerTests
         // Arrange
         var manager = new MappaReferenceManager();
         var source = new object();
-        manager.AddReferencePair(new MappedTarget { Name = "mapped" }, source);
+        var mapped = new MappedTarget { Name = "mapped" };
+        manager.AddReferencePair(mapped, source);
 
         // Act
         var found = manager.TryGetReference<string>(source, out _);
 
         // Assert
         found.Should().BeFalse();
+        manager.TryGetReference<MappedTarget>(source, out var stillStored).Should().BeTrue();
+        stillStored.Should().BeSameAs(mapped);
     }
 
     /// <summary>
-    /// Tests that <see cref="MappaReferenceManager.AddReferencePair"/> throws when source is <see langword="null"/>.
+    /// Tests that the same source can store distinct targets for different declared target types.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void AddReferencePairAllowsSameSourceForDifferentTargetTypes()
+    {
+        // Arrange
+        var manager = new MappaReferenceManager();
+        var source = new object();
+        var mappedTarget = new MappedTarget { Name = "mapped" };
+        const string stringTarget = "other";
+
+        // Act
+        manager.AddReferencePair(mappedTarget, source);
+        manager.AddReferencePair(stringTarget, source);
+        var foundMapped = manager.TryGetReference<MappedTarget>(source, out var retrievedMapped);
+        var foundString = manager.TryGetReference<string>(source, out var retrievedString);
+
+        // Assert
+        foundMapped.Should().BeTrue();
+        retrievedMapped.Should().BeSameAs(mappedTarget);
+        foundString.Should().BeTrue();
+        retrievedString.Should().BeSameAs(stringTarget);
+    }
+
+    /// <summary>
+    /// Tests that registering again for the same source and declared target type overwrites the stored target.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void AddReferencePairOverwritesSameSourceAndTargetType()
+    {
+        // Arrange
+        var manager = new MappaReferenceManager();
+        var source = new object();
+        var first = new MappedTarget { Name = "first" };
+        var second = new MappedTarget { Name = "second" };
+        manager.AddReferencePair(first, source);
+
+        // Act
+        manager.AddReferencePair(second, source);
+        var found = manager.TryGetReference<MappedTarget>(source, out var retrieved);
+
+        // Assert
+        found.Should().BeTrue();
+        retrieved.Should().BeSameAs(second);
+    }
+
+    /// <summary>
+    /// Tests that <see cref="MappaReferenceManager.AddReferencePair{TTarget,TSource}"/> throws when source is <see langword="null"/>.
     /// </summary>
     [Fact]
     [UnitTest]
@@ -110,7 +162,7 @@ public sealed class MappaReferenceManagerTests
 
         // Act
 #pragma warning disable CS8625 // Intentional null argument
-        var act = () => manager.AddReferencePair(new object(), null);
+        var act = () => manager.AddReferencePair<object, object>(new object(), null);
 #pragma warning restore CS8625
 
         // Assert
@@ -254,35 +306,42 @@ public sealed class MappaReferenceManagerTests
     }
 
     /// <summary>
-    /// Tests that the private reference-equality comparer rejects <see langword="null"/> hash codes.
+    /// Tests that the private composite reference key uses reference equality for sources
+    /// and distinguishes different declared target types.
     /// </summary>
     [Fact]
     [UnitTest]
-    public void ReferenceEqualityComparerGetHashCodeThrowsForNull()
+    public void ReferenceKeyEqualsAndGetHashCodeUseSourceIdentityAndTargetType()
     {
         // Arrange
-        var comparerType = typeof(MappaReferenceManager).GetNestedType(
-            "ReferenceEqualityComparer",
+        var keyType = typeof(MappaReferenceManager).GetNestedType(
+            "ReferenceKey",
             BindingFlags.NonPublic)
-            ?? throw new InvalidOperationException("ReferenceEqualityComparer was not found.");
-        var instance = comparerType.GetProperty("Instance", BindingFlags.Public | BindingFlags.Static)?.GetValue(null)
-            ?? throw new InvalidOperationException("ReferenceEqualityComparer.Instance was not found.");
-        var interfaceMap = comparerType.GetInterfaceMap(typeof(IEqualityComparer<object>));
-        var getHashCodeInterface = typeof(IEqualityComparer<object>).GetMethod(nameof(IEqualityComparer<object>.GetHashCode))
-            ?? throw new InvalidOperationException("IEqualityComparer<object>.GetHashCode was not found.");
-        var getHashCodeIndex = Array.IndexOf(interfaceMap.InterfaceMethods, getHashCodeInterface);
-        getHashCodeIndex.Should().BeGreaterThanOrEqualTo(0);
-        var getHashCode = interfaceMap.TargetMethods[getHashCodeIndex];
+            ?? throw new InvalidOperationException("ReferenceKey was not found.");
+        var sourceA = new object();
+        var sourceB = new object();
+        var keyAMapped = Activator.CreateInstance(keyType, sourceA, typeof(MappedTarget))
+            ?? throw new InvalidOperationException("Failed to create ReferenceKey.");
+        var keyAMappedAgain = Activator.CreateInstance(keyType, sourceA, typeof(MappedTarget))
+            ?? throw new InvalidOperationException("Failed to create ReferenceKey.");
+        var keyAString = Activator.CreateInstance(keyType, sourceA, typeof(string))
+            ?? throw new InvalidOperationException("Failed to create ReferenceKey.");
+        var keyBMapped = Activator.CreateInstance(keyType, sourceB, typeof(MappedTarget))
+            ?? throw new InvalidOperationException("Failed to create ReferenceKey.");
 
         // Act
-#pragma warning disable CS8625 // Intentional null argument
-        var act = () => getHashCode.Invoke(instance, [null]);
-#pragma warning restore CS8625
+        var equalsSame = keyAMapped.Equals(keyAMappedAgain);
+        var equalsDifferentTargetType = keyAMapped.Equals(keyAString);
+        var equalsDifferentSource = keyAMapped.Equals(keyBMapped);
+        var equalsObjectWrongType = keyAMapped.Equals("not-a-key");
+        var hashSame = keyAMapped.GetHashCode() == keyAMappedAgain.GetHashCode();
 
         // Assert
-        act.Should().Throw<TargetInvocationException>()
-            .WithInnerException<ArgumentNullException>()
-            .Which.ParamName.Should().Be("obj");
+        equalsSame.Should().BeTrue();
+        equalsDifferentTargetType.Should().BeFalse();
+        equalsDifferentSource.Should().BeFalse();
+        equalsObjectWrongType.Should().BeFalse();
+        hashSame.Should().BeTrue();
     }
 
     /// <summary>
