@@ -1123,6 +1123,147 @@ public sealed class IdentityStrategyIntegrationTests
                 AssertNestedDeepCopyPersonIdentityMapBody);
     }
 
+    /// <summary>
+    /// Test same-type <c>int[]</c> mapping with <see cref="IdentityMapDeepCopySetting.NestedDeepCopy"/>
+    /// falls through to collection mapping (not identity / MemberwiseClone).
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapIntArrayToSameIntArrayWhenIdentityMapDeepCopyIsNestedDeepCopy()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaSettings(IdentityMapDeepCopy = IdentityMapDeepCopySetting.NestedDeepCopy)]
+                                      public partial int[] Map(int[] input);
+                                  }
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .HaveDefaultMapMethod(
+                typeof(int[]).ToString(),
+                typeof(int[]).ToString(),
+                AssertNestedDeepCopyIntArrayMapBody);
+    }
+
+    /// <summary>
+    /// Test same-type <c>int[]</c> mapping with <see cref="IdentityMapDeepCopySetting.DeepCopy"/>
+    /// emits <see cref="object.MemberwiseClone"/>.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapIntArrayToSameIntArrayWhenIdentityMapDeepCopyIsDeepCopy()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      [MappaSettings(IdentityMapDeepCopy = IdentityMapDeepCopySetting.DeepCopy)]
+                                      public partial int[] Map(int[] input);
+                                  }
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .HaveDefaultMapMethod(
+                typeof(int[]).ToString(),
+                typeof(int[]).ToString(),
+                AssertMemberwiseCloneIntArrayIdentityMapBody);
+    }
+
+    private static void AssertNestedDeepCopyIntArrayMapBody(BlockSyntaxAssertions blockSyntaxAssertions)
+    {
+        blockSyntaxAssertions
+            .HasSyntaxNodesCount(3)
+            .HasNextSyntaxNode(syntaxNodeAssertions =>
+                syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                    typeof(int[]).ToString(),
+                    "__mappa_tmp_1",
+                    initializerAssertions => initializerAssertions.BeArrayCreationExpressionSyntax(
+                        typeof(int).ToString(),
+                        sizeAssertion => sizeAssertion.BeMemberAccessExpressionSyntax("input.Length"))))
+            .HasNextSyntaxNode(syntaxNodeAssertions =>
+                syntaxNodeAssertions.BeForStatementSyntax(
+                    declarationAssertions => declarationAssertions.BeAssignmentFromConstant(typeof(int).ToString(), "__mappa_tmp_2", 0),
+                    conditionAssertions => conditionAssertions.BeBinaryExpressionSyntax(
+                        leftExpressionAssertions => leftExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_2"),
+                        SyntaxKind.LessThanToken,
+                        rightExpressionAssertions => rightExpressionAssertions.BeMemberAccessExpressionSyntax("input.Length")),
+                    incrementorAssertions => incrementorAssertions.BePrefixUnaryExpressionSyntax(
+                        SyntaxKind.PlusPlusToken,
+                        operandAssertions => operandAssertions.BeIdentifierNameSyntax("__mappa_tmp_2")),
+                    statementAssertions =>
+                        statementAssertions
+                            .BeBlockStatement()
+                            .AsBlock()
+                            .HasSyntaxNodesCount(3)
+                            .HasNextSyntaxNode(foreachStatementAssertions =>
+                                foreachStatementAssertions.BeLocalDeclarationStatementSyntax(
+                                    typeof(int).ToString(),
+                                    "__mappa_tmp_3",
+                                    initializerAssertions => initializerAssertions.BeElementAccessExpressionSyntaxWithIdentifierNameSyntax("input", "__mappa_tmp_2")))
+                            .HasNextSyntaxNode(foreachStatementAssertions =>
+                                foreachStatementAssertions.BeLocalDeclarationStatementSyntax(
+                                    typeof(int).ToString(),
+                                    "__mappa_tmp_4",
+                                    initializerAssertions => initializerAssertions.BeIdentifierNameSyntax("__mappa_tmp_3")))
+                            .HasNextSyntaxNode(foreachStatementAssertions =>
+                                foreachStatementAssertions.BeAssignmentExpressionStatement(
+                                    leftExpression => leftExpression.BeElementAccessExpressionSyntaxWithIdentifierNameSyntax("__mappa_tmp_1", "__mappa_tmp_2"),
+                                    rightExpression => rightExpression.BeIdentifierNameSyntax("__mappa_tmp_4")))))
+            .HasNextSyntaxNode(syntaxNodeAssertions =>
+                syntaxNodeAssertions.BeReturnStatement(expressionAssertions => expressionAssertions
+                    .BeIdentifierNameSyntax("__mappa_tmp_1")));
+    }
+
+    private static void AssertMemberwiseCloneIntArrayIdentityMapBody(BlockSyntaxAssertions blockSyntaxAssertions)
+    {
+        blockSyntaxAssertions
+            .HasSyntaxNodesCount(2)
+            .HasNextSyntaxNode(syntaxNodeAssertions =>
+            {
+                syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                    typeof(int[]).ToString(),
+                    "__mappa_tmp_1",
+                    initializationAssertions => initializationAssertions.BeCastExpressionSyntax(
+                        typeof(int[]).ToString(),
+                        castExpressionAssertions => castExpressionAssertions.BeInvocationExpressionSyntax(
+                            IdentityMapDeepCopyMemberwiseCloneInvocation,
+                            argumentAssertions => argumentAssertions.BeIdentifierNameSyntax("input"))));
+            })
+            .HasNextSyntaxNode(syntaxNodeAssertions =>
+            {
+                syntaxNodeAssertions.BeReturnStatement(expressionSyntaxAssertions =>
+                {
+                    expressionSyntaxAssertions.BeIdentifierNameSyntax("__mappa_tmp_1");
+                });
+            });
+    }
+
     private static void AssertNestedDeepCopyPersonIdentityMapBody(BlockSyntaxAssertions blockSyntaxAssertions)
     {
         blockSyntaxAssertions

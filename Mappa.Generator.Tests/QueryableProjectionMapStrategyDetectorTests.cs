@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Attributes;
 using Mappa.Generator.Algorithm.StrategyDetectors;
 using Mappa.Generator.Diagnostics.Debug;
 using Mappa.Generator.Models;
@@ -245,6 +246,56 @@ public sealed class QueryableProjectionMapStrategyDetectorTests
 
         detected.Should().BeTrue();
         mapStrategy.Should().BeOfType<QueryableProjectionMapStrategy>();
+    }
+
+    /// <summary>
+    /// Test the detector rejects queryable projections when reference reusing is enabled.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void TryDetectReturnsFalseWhenReferenceReusingIsEnabled()
+    {
+        const string source = """
+                              using System.Linq;
+                              using Mappa;
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Order
+                              {
+                                  public int Id { get; set; }
+                                  public string Name { get; set; } = null!;
+                              }
+
+                              public class OrderDto
+                              {
+                                  public int Id { get; set; }
+                                  public string Name { get; set; } = null!;
+                              }
+
+                              [Mappa]
+                              public static partial class Mapper
+                              {
+                                  [MappaSettings(ReferenceReusing = BooleanSetting.Enable)]
+                                  public static partial IQueryable<OrderDto> ProjectToDto(this IQueryable<Order> query);
+                              }
+                              """;
+
+        var (methodContext, compilation) = CreateMethodContext(source, "ProjectToDto");
+        var settingsAttribute = methodContext.MapMethod?.GetAttribute<MappaSettingsAttribute>();
+        using (methodContext.MappaUserSettings.Apply(settingsAttribute))
+        {
+            var detector = new QueryableProjectionMapStrategyDetector(
+                methodContext,
+                compilation,
+                TestContext.Current.CancellationToken);
+
+            var detected = detector.TryDetect(out var mapStrategy);
+
+            detected.Should().BeFalse();
+            mapStrategy.Should().BeOfType<NoMapStrategy>();
+        }
     }
 
     private static (MappaMethodGeneratorContext MethodContext, Compilation Compilation) CreateMethodContext(

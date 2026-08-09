@@ -921,4 +921,82 @@ public sealed class AttributeDataExtensionsTests
 
         attributes.GetMappaTypeMappingDefaultAttribute(compilation).Should().BeNull();
     }
+
+    /// <summary>
+    /// Test <see cref="AttributeDataExtensions.GetMappaDependencyInjectionAttributeData"/>
+    /// ignores non-named types in IgnoreType / InjectFromAssemblies arrays.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetMappaDependencyInjectionAttributeDataIgnoresNonNamedTypesInTypeArrays()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public interface IIgnored
+                              {
+                              }
+
+                              [MappaDependencyInjection(
+                                  IgnoreType = new System.Type[] { typeof(int[]), typeof(IIgnored) },
+                                  InjectFromAssemblies = new System.Type[] { typeof(string[]), typeof(IIgnored) })]
+                              public static partial class TestRegistrar
+                              {
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetTypeAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.NamespaceName + ".TestRegistrar");
+
+        var attribute = attributes.GetMappaDependencyInjectionAttributeData(compilation);
+        if (attribute is null)
+        {
+            throw new InvalidOperationException("Expected MappaDependencyInjection attribute data.");
+        }
+
+        attribute.IgnoreTypes.Should().HaveCount(1);
+        attribute.IgnoreTypes[0].ToDisplayString().Should().Be(AttributeDataExtensionsTestHelper.NamespaceName + ".IIgnored");
+        attribute.InjectFromAssemblies.Should().HaveCount(1);
+        attribute.InjectFromAssemblies[0].ToDisplayString().Should().Be(AttributeDataExtensionsTestHelper.NamespaceName + ".IIgnored");
+    }
+
+    /// <summary>
+    /// Test <see cref="AttributeDataExtensions.GetMappaDependencyInjectionAttributeData"/>
+    /// returns empty type arrays when only non-named types are provided.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetMappaDependencyInjectionAttributeDataReturnsEmptyWhenTypeArraysContainOnlyNonNamedTypes()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              [MappaDependencyInjection(
+                                  IgnoreType = new System.Type[] { typeof(int[]), typeof(byte[]) },
+                                  InjectFromAssemblies = new System.Type[] { typeof(string[]) })]
+                              public static partial class TestRegistrar
+                              {
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetTypeAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.NamespaceName + ".TestRegistrar");
+
+        var attribute = attributes.GetMappaDependencyInjectionAttributeData(compilation);
+        if (attribute is null)
+        {
+            throw new InvalidOperationException("Expected MappaDependencyInjection attribute data.");
+        }
+
+        attribute.IgnoreTypes.Should().BeEmpty();
+        attribute.InjectFromAssemblies.Should().BeEmpty();
+    }
 }

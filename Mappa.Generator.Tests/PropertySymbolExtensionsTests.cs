@@ -3,9 +3,11 @@
 // </copyright>
 
 using Mappa.Generator.Extensions;
+using Mappa.Generator.Models;
 using Mappa.Generator.Tests.Abstractions;
 
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 using Xunit;
 using Xunit.OpenCategories.V3;
@@ -20,14 +22,14 @@ public sealed class PropertySymbolExtensionsTests
 {
     /// <summary>
     /// Test <c>PropertySymbolExtensions.IsSetterAccessible</c> and
-    /// <c>PropertySymbolExtensions.IsGetterAccessible</c> for common accessor combinations.
+    /// <c>PropertySymbolExtensions.IsGetterAccessible</c> for public set, private set, and get-only properties.
     /// </summary>
     [Fact]
     [UnitTest]
     public void PropertyAccessorAccessibilityDetectsGetOnlyPrivateSetAndPublicProperties()
     {
         const string source = """
-                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                              namespace Coverage;
 
                               public sealed class Target
                               {
@@ -38,23 +40,20 @@ public sealed class PropertySymbolExtensionsTests
                                   public int GetOnly { get; }
                               }
 
-                              public sealed partial class Mapper
-                              {
-                                  public Target Map(Source input) => throw new System.NotImplementedException();
-                              }
-
                               public sealed class Source
                               {
                               }
+
+                              public sealed class Mapper
+                              {
+                                  public Target Map(Source input) => new Target();
+                              }
                               """;
 
-        var compilation = BuildCompilation(source);
-        var target = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Target");
-        var mapper = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Mapper");
-        var mapMethod = mapper!.GetMembers("Map").OfType<IMethodSymbol>().Single();
-        var publicSet = target!.GetMembers("PublicSet").OfType<IPropertySymbol>().Single();
-        var privateSet = target.GetMembers("PrivateSet").OfType<IPropertySymbol>().Single();
-        var getOnly = target.GetMembers("GetOnly").OfType<IPropertySymbol>().Single();
+        var (compilation, mapMethod, targetType) = CreateMapMethodAndTarget(source);
+        var publicSet = targetType.GetMembers("PublicSet").OfType<IPropertySymbol>().Single();
+        var privateSet = targetType.GetMembers("PrivateSet").OfType<IPropertySymbol>().Single();
+        var getOnly = targetType.GetMembers("GetOnly").OfType<IPropertySymbol>().Single();
 
         publicSet.IsSetterAccessible(compilation, mapMethod).Should().BeTrue();
         publicSet.IsGetterAccessible(compilation, mapMethod).Should().BeTrue();
@@ -62,42 +61,75 @@ public sealed class PropertySymbolExtensionsTests
         privateSet.IsSetterAccessible(compilation, mapMethod).Should().BeFalse();
         privateSet.IsGetterAccessible(compilation, mapMethod).Should().BeTrue();
 
+        getOnly.SetMethod.Should().BeNull();
         getOnly.IsSetterAccessible(compilation, mapMethod).Should().BeFalse();
         getOnly.IsGetterAccessible(compilation, mapMethod).Should().BeTrue();
     }
 
     /// <summary>
-    /// Test <c>PropertySymbolExtensions.IsGetterAccessible</c> returns <c>false</c> when the getter is inaccessible.
+    /// Test getter accessibility for private-get and set-only properties.
     /// </summary>
     [Fact]
     [UnitTest]
-    public void IsGetterAccessibleReturnsFalseWhenGetterIsInaccessible()
+    public void IsGetterAccessibleReturnsFalseWhenGetterIsMissingOrInaccessible()
     {
         const string source = """
-                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+                              namespace Coverage;
 
                               public sealed class Target
                               {
                                   public int Hidden { private get; set; }
-                              }
 
-                              public sealed partial class Mapper
-                              {
-                                  public Target Map(Source input) => throw new System.NotImplementedException();
+                                  public int SetOnly
+                                  {
+                                      set { }
+                                  }
                               }
 
                               public sealed class Source
                               {
                               }
+
+                              public sealed class Mapper
+                              {
+                                  public Target Map(Source input) => new Target();
+                              }
                               """;
 
-        var compilation = BuildCompilation(source);
-        var target = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Target");
-        var mapper = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Mapper");
-        var mapMethod = mapper!.GetMembers("Map").OfType<IMethodSymbol>().Single();
-        var hidden = target!.GetMembers("Hidden").OfType<IPropertySymbol>().Single();
+        var (compilation, mapMethod, targetType) = CreateMapMethodAndTarget(source);
+        var hidden = targetType.GetMembers("Hidden").OfType<IPropertySymbol>().Single();
+        var setOnly = targetType.GetMembers("SetOnly").OfType<IPropertySymbol>().Single();
 
         hidden.IsGetterAccessible(compilation, mapMethod).Should().BeFalse();
         hidden.IsSetterAccessible(compilation, mapMethod).Should().BeTrue();
+
+        setOnly.GetMethod.Should().BeNull();
+        setOnly.IsGetterAccessible(compilation, mapMethod).Should().BeFalse();
+        setOnly.IsSetterAccessible(compilation, mapMethod).Should().BeTrue();
+    }
+
+    private static (Compilation Compilation, MapMethod MapMethod, INamedTypeSymbol TargetType) CreateMapMethodAndTarget(
+        string source)
+    {
+        var compilation = BuildCompilation(source);
+        var tree = compilation.SyntaxTrees.Single();
+        var model = compilation.GetSemanticModel(tree);
+        var mapMethodSyntax = tree.GetRoot(TestContext.Current.CancellationToken)
+            .DescendantNodes()
+            .OfType<MethodDeclarationSyntax>()
+            .Single(method => method.Identifier.Text == "Map");
+        var mapMethod = new MapMethod(
+            mapMethodSyntax,
+            model,
+            nullableEnabled: true,
+            TestContext.Current.CancellationToken);
+
+        var targetType = compilation.GetTypeByMetadataName("Coverage.Target");
+        if (targetType is null)
+        {
+            throw new InvalidOperationException("Expected Coverage.Target to be present in the compilation.");
+        }
+
+        return (compilation, mapMethod, targetType);
     }
 }

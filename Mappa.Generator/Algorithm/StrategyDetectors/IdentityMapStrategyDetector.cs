@@ -184,6 +184,7 @@ internal sealed class IdentityMapStrategyDetector
 
         switch (effectiveSetting)
         {
+            case IdentityMapDeepCopySetting.Undefined:
             case IdentityMapDeepCopySetting.ShallowCopy:
                 mapStrategy = new IdentityMapStrategy(targetType, sourceType);
                 return true;

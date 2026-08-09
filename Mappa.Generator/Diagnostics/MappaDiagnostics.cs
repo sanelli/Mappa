@@ -221,7 +221,7 @@ internal static class MappaDiagnostics
         string typeName)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.ParseExactDoesNotAcceptOnlyFormat,
-            methodDeclarationSyntax?.GetLocation(),
+            GetSyntaxLocation(methodDeclarationSyntax),
             typeName);
 
     /// <summary>
@@ -238,7 +238,7 @@ internal static class MappaDiagnostics
         IPropertySymbol property)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.PropertySetterIsNotAccessible,
-            methodDeclarationSyntax?.GetLocation(),
+            GetSyntaxLocation(methodDeclarationSyntax),
             $"{typeSymbol.ToDisplayString()}.{property.Name}");
 
     /// <summary>
@@ -256,7 +256,7 @@ internal static class MappaDiagnostics
         string property)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.TooManyUsePropertyAttributesForTheSameTargetProperty,
-            methodDeclarationSyntax?.GetLocation(),
+            GetSyntaxLocation(methodDeclarationSyntax),
             dependency,
             property);
 
@@ -273,7 +273,7 @@ internal static class MappaDiagnostics
         string dependency)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.DependencyDoesNotProvideAnyViableMethod,
-            syntaxNode?.GetLocation(),
+            GetSyntaxLocation(syntaxNode),
             dependency);
 
     /// <summary>
@@ -289,7 +289,7 @@ internal static class MappaDiagnostics
         IPropertySymbol property)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.CannotMapNonRequiredProperty,
-            syntaxNode?.GetLocation(),
+            GetSyntaxLocation(syntaxNode),
             parentType.ToDisplayString(),
             property.Name);
 
@@ -655,7 +655,7 @@ internal static class MappaDiagnostics
         string enumTypeName)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.InvalidMappaSettingsStyleValue,
-            methodDeclarationSyntax?.GetLocation(),
+            GetSyntaxLocation(methodDeclarationSyntax),
             propertyName,
             value,
             enumTypeName);
@@ -675,7 +675,7 @@ internal static class MappaDiagnostics
         string unmappedMemberNames)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.NotAllSourceEnumMembersCanBeMapped,
-            methodDeclarationSyntax?.GetLocation(),
+            GetSyntaxLocation(methodDeclarationSyntax),
             sourceEnumTypeName,
             targetEnumTypeName,
             unmappedMemberNames);
@@ -693,7 +693,7 @@ internal static class MappaDiagnostics
         string missingMemberNames)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.EnumMemberMissingDescription,
-            methodDeclarationSyntax?.GetLocation(),
+            GetSyntaxLocation(methodDeclarationSyntax),
             enumTypeName,
             missingMemberNames);
 
@@ -708,7 +708,7 @@ internal static class MappaDiagnostics
         string details)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.AmbiguousEnumMap,
-            methodDeclarationSyntax?.GetLocation(),
+            GetSyntaxLocation(methodDeclarationSyntax),
             details);
 
     /// <summary>
@@ -834,7 +834,7 @@ internal static class MappaDiagnostics
         string targetTypeName)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.EnumMapAttributeEnumTypeMismatch,
-            methodDeclarationSyntax?.GetLocation(),
+            GetSyntaxLocation(methodDeclarationSyntax),
             methodName,
             attributeName,
             enumTypeName,
@@ -856,7 +856,7 @@ internal static class MappaDiagnostics
         string details)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.EnumMapMemberMappingClash,
-            methodDeclarationSyntax?.GetLocation(),
+            GetSyntaxLocation(methodDeclarationSyntax),
             methodName,
             enumTypeName,
             details);
@@ -876,7 +876,7 @@ internal static class MappaDiagnostics
         string enumMemberName)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.EnumMapIgnoreConflictsWithMemberMapping,
-            methodDeclarationSyntax?.GetLocation(),
+            GetSyntaxLocation(methodDeclarationSyntax),
             methodName,
             enumTypeName,
             enumMemberName);
@@ -894,7 +894,7 @@ internal static class MappaDiagnostics
         string enumTypeName)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.EnumMapDefaultBehaviorRequiresDefaultValue,
-            methodDeclarationSyntax?.GetLocation(),
+            GetSyntaxLocation(methodDeclarationSyntax),
             methodName,
             enumTypeName);
 
@@ -914,7 +914,7 @@ internal static class MappaDiagnostics
         string targetTypeName)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.EnumMapDefaultValueConstructorMismatch,
-            methodDeclarationSyntax?.GetLocation(),
+            GetSyntaxLocation(methodDeclarationSyntax),
             methodName,
             enumTypeName,
             targetTypeName);
@@ -932,7 +932,7 @@ internal static class MappaDiagnostics
         string enumTypeName)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.EnumMapDefaultAttributeUnusedDefaultValue,
-            methodDeclarationSyntax?.GetLocation(),
+            GetSyntaxLocation(methodDeclarationSyntax),
             methodName,
             enumTypeName);
 
@@ -950,7 +950,7 @@ internal static class MappaDiagnostics
         int numberOfAttributes)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.TooManyEnumMapDefaultAttributesOnDirectEnumMap,
-            methodDeclarationSyntax?.GetLocation(),
+            GetSyntaxLocation(methodDeclarationSyntax),
             methodName,
             numberOfAttributes);
 
@@ -967,7 +967,7 @@ internal static class MappaDiagnostics
         string enumTypeName)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.DuplicateEnumMapDefaultAttribute,
-            methodDeclarationSyntax?.GetLocation(),
+            GetSyntaxLocation(methodDeclarationSyntax),
             methodName,
             enumTypeName);
 
@@ -982,7 +982,7 @@ internal static class MappaDiagnostics
         string methodName)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.ProjectionMethodHasBeforeOrAfterMapHooks,
-            methodDeclarationSyntax?.GetLocation(),
+            GetSyntaxLocation(methodDeclarationSyntax),
             methodName);
 
     /// <summary>
@@ -996,7 +996,7 @@ internal static class MappaDiagnostics
         string methodName)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.ProjectionMethodHasMappaContextParameter,
-            methodDeclarationSyntax?.GetLocation(),
+            GetSyntaxLocation(methodDeclarationSyntax),
             methodName);
 
     /// <summary>
@@ -1126,7 +1126,7 @@ internal static class MappaDiagnostics
         string methodName)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.ProjectionMethodHasObjectFactory,
-            methodDeclarationSyntax?.GetLocation(),
+            GetSyntaxLocation(methodDeclarationSyntax),
             methodName);
 
     /// <summary>
@@ -1142,7 +1142,7 @@ internal static class MappaDiagnostics
         IPropertySymbol property)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.MustMapTargetPropertyWasNotMapped,
-            syntaxNode?.GetLocation(),
+            GetSyntaxLocation(syntaxNode),
             parentType.ToDisplayString(),
             property.Name);
 
@@ -1177,7 +1177,7 @@ internal static class MappaDiagnostics
         string methodName)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.UnsafeAccessorNotSupported,
-            methodDeclarationSyntax?.GetLocation(),
+            GetSyntaxLocation(methodDeclarationSyntax),
             methodName);
 
     /// <summary>
@@ -1191,7 +1191,7 @@ internal static class MappaDiagnostics
         string methodName)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.AllowInaccessibleTargetMembersDisabledAll,
-            methodDeclarationSyntax?.GetLocation(),
+            GetSyntaxLocation(methodDeclarationSyntax),
             methodName);
 
     /// <summary>
@@ -1205,7 +1205,7 @@ internal static class MappaDiagnostics
         string methodName)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.ProjectionMethodHasAllowInaccessibleMembers,
-            methodDeclarationSyntax?.GetLocation(),
+            GetSyntaxLocation(methodDeclarationSyntax),
             methodName);
 
     /// <summary>
@@ -1220,7 +1220,7 @@ internal static class MappaDiagnostics
         string className)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.MappaDependencyInjectionClassIsNotPartial,
-            classDeclarationSyntax?.GetLocation(),
+            GetSyntaxLocation(classDeclarationSyntax),
             className);
 
     /// <summary>
@@ -1235,7 +1235,7 @@ internal static class MappaDiagnostics
         string className)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.MappaAndMappaDependencyInjectionBothApplied,
-            classDeclarationSyntax?.GetLocation(),
+            GetSyntaxLocation(classDeclarationSyntax),
             className);
 
     /// <summary>
@@ -1249,7 +1249,7 @@ internal static class MappaDiagnostics
         string mapperTypeName)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.MappaDependencyInjectionMapperHasNoEligibleInterfaces,
-            classDeclarationSyntax?.GetLocation(),
+            GetSyntaxLocation(classDeclarationSyntax),
             mapperTypeName);
 
     /// <summary>
@@ -1263,7 +1263,7 @@ internal static class MappaDiagnostics
         string mapperTypeName)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.MappaDependencyInjectionStaticMapperSkipped,
-            classDeclarationSyntax?.GetLocation(),
+            GetSyntaxLocation(classDeclarationSyntax),
             mapperTypeName);
 
     /// <summary>
@@ -1351,4 +1351,7 @@ internal static class MappaDiagnostics
             sourceType.ToDisplayString(),
             targetType.ToDisplayString(),
             syntheticMethodName);
+
+    private static Location? GetSyntaxLocation(SyntaxNode? syntaxNode)
+        => syntaxNode?.GetLocation();
 }
