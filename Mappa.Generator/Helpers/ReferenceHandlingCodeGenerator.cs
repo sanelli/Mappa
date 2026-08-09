@@ -82,15 +82,29 @@ internal static class ReferenceHandlingCodeGenerator
     }
 
     /// <summary>
-    /// Gets the expression that retrieves the reference manager for the current map method's context parameter.
+    /// Builds the statement that caches the reference manager in a local for the current map method.
     /// </summary>
     /// <param name="context">The builder context.</param>
-    /// <returns>The accessor invocation expression.</returns>
-    internal static string GetReferenceManagerExpression(MappaBuilderContext context)
+    /// <returns>The local declaration statement, or <c>null</c> when reference handling is inactive.</returns>
+    internal static string? BuildReferenceManagerLocalDeclaration(MappaBuilderContext context)
     {
+        if (!context.IsReferenceHandlingActive)
+        {
+            return null;
+        }
+
+        var localName = context.GetOrCreateReferenceManagerLocalName();
         var contextParameterName = context.GetMapMethod().GetMappaContextParameterName();
-        return $"{AccessorTypeName}.{AccessorMethodName}({contextParameterName})";
+        return $"global::Mappa.MappaReferenceManager {localName} = {AccessorTypeName}.{AccessorMethodName}({contextParameterName});";
     }
+
+    /// <summary>
+    /// Gets the expression that retrieves the reference manager for the current map method.
+    /// </summary>
+    /// <param name="context">The builder context.</param>
+    /// <returns>The cached local name (or allocates one if needed).</returns>
+    internal static string GetReferenceManagerExpression(MappaBuilderContext context)
+        => context.GetOrCreateReferenceManagerLocalName();
 
     /// <summary>
     /// Builds the statement that assigns <see cref="MappaReferenceManager.MaxDepth"/> for the root map method.
@@ -146,7 +160,8 @@ internal static class ReferenceHandlingCodeGenerator
             return null;
         }
 
-        return $"{GetReferenceManagerExpression(context)}.AddReferencePair({targetTemporary}, {source});";
+        context.MarkEarlyReferencePairRegistered();
+        return BuildAddReferencePairStatement(context, targetTemporary, source, targetType, sourceType);
     }
 
     /// <summary>
@@ -202,29 +217,70 @@ internal static class ReferenceHandlingCodeGenerator
             return strategy.GetBuilder().BuildSource(source, context, mappaGlobalOptions);
         }
 
-        var (innerVariableName, innerCode) = strategy.GetBuilder().BuildSource(source, context, mappaGlobalOptions);
-        var builder = new PrettyCode.StringBuilder();
-        var resultTemporary = context.NextTemporary();
-        var targetTypeDisplay = strategy.TargetType.ToDisplayString();
-        var referenceManagerExpression = GetReferenceManagerExpression(context);
-
-        builder.AppendLine($"{targetTypeDisplay} {resultTemporary};");
-        if (reuse)
+        using (context.PushEarlyReferencePairRegistrationScope())
         {
-            builder.AppendLine($"if (!{referenceManagerExpression}.TryGetReference<{targetTypeDisplay}>({source}, out {resultTemporary}))");
-            using (builder.CurlyBracesBlock())
+            var (innerVariableName, innerCode) = strategy.GetBuilder().BuildSource(source, context, mappaGlobalOptions);
+            var builder = new PrettyCode.StringBuilder();
+            var resultTemporary = context.NextTemporary();
+            var targetTypeDisplay = strategy.TargetType.ToDisplayString();
+            var referenceManagerExpression = GetReferenceManagerExpression(context);
+
+            builder.AppendLine($"{targetTypeDisplay} {resultTemporary};");
+            if (reuse)
+            {
+                builder.AppendLine($"if (!{referenceManagerExpression}.TryGetReference<{targetTypeDisplay}>({source}, out {resultTemporary}))");
+                using (builder.CurlyBracesBlock())
+                {
+                    AppendInnerMapping(builder, innerCode, resultTemporary, innerVariableName, increaseDepth, referenceManagerExpression);
+                    if (!ShouldOmitExitAddReferencePair(strategy, context))
+                    {
+                        builder.AppendLine(BuildAddReferencePairStatement(
+                            context,
+                            resultTemporary,
+                            source,
+                            strategy.TargetType,
+                            strategy.SourceType));
+                    }
+                }
+            }
+            else
             {
                 AppendInnerMapping(builder, innerCode, resultTemporary, innerVariableName, increaseDepth, referenceManagerExpression);
-                builder.AppendLine($"{referenceManagerExpression}.AddReferencePair({resultTemporary}, {source});");
             }
+
+            return (resultTemporary, builder.ToString());
         }
-        else
+    }
+
+    private static string BuildAddReferencePairStatement(
+        MappaBuilderContext context,
+        string targetTemporary,
+        string source,
+        ITypeSymbol targetType,
+        ITypeSymbol sourceType)
+        => $"{GetReferenceManagerExpression(context)}.AddReferencePair<{GetReferenceReuseTypeArgument(targetType)}, {GetReferenceReuseTypeArgument(sourceType)}>({targetTemporary}, {source});";
+
+    private static string GetReferenceReuseTypeArgument(ITypeSymbol type)
+        => type.ToDisplayNameWithoutNullableAnnotation();
+
+    private static bool ShouldOmitExitAddReferencePair(MapStrategy strategy, MappaBuilderContext context)
+    {
+        if (context.EarlyReferencePairRegistered)
         {
-            AppendInnerMapping(builder, innerCode, resultTemporary, innerVariableName, increaseDepth, referenceManagerExpression);
+            return true;
         }
 
-        return (resultTemporary, builder.ToString());
+        return GetInvokedMapMethod(strategy) is { ReferenceReusing: BooleanSetting.Enable };
     }
+
+    private static MapMethod? GetInvokedMapMethod(MapStrategy strategy)
+        => strategy switch
+        {
+            MethodMapStrategy methodMap => methodMap.MapMethod,
+            CompatibleMethodMapStrategy compatibleMethodMap => compatibleMethodMap.MapMethod,
+            PolymorphicMethodMapStrategy polymorphicMethodMap => polymorphicMethodMap.MapMethod,
+            _ => null,
+        };
 
     private static void AppendInnerMapping(
         PrettyCode.StringBuilder builder,

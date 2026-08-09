@@ -11,7 +11,7 @@ namespace Mappa;
 /// </summary>
 public sealed class MappaReferenceManager
 {
-    private readonly Dictionary<object, object> references = new(ReferenceEqualityComparer.Instance);
+    private readonly Dictionary<ReferenceKey, object> references = new Dictionary<ReferenceKey, object>();
     private short currentDepth;
 
     /// <summary>
@@ -21,9 +21,10 @@ public sealed class MappaReferenceManager
     public short MaxDepth { get; set; }
 
     /// <summary>
-    /// Attempts to obtain a previously mapped target for <paramref name="source"/>.
+    /// Attempts to obtain a previously mapped target for <paramref name="source"/>
+    /// registered under the declared target type <typeparamref name="TTarget"/>.
     /// </summary>
-    /// <typeparam name="TTarget">The expected target type.</typeparam>
+    /// <typeparam name="TTarget">The expected target type (lookup key uses <c>typeof(TTarget)</c>).</typeparam>
     /// <param name="source">The source instance.</param>
     /// <param name="target">The previously mapped target when found.</param>
     /// <returns><c>true</c> when a matching reference pair exists; otherwise <c>false</c>.</returns>
@@ -35,7 +36,7 @@ public sealed class MappaReferenceManager
             return false;
         }
 
-        if (this.references.TryGetValue(source, out var stored)
+        if (this.references.TryGetValue(new ReferenceKey(source, typeof(TTarget)), out var stored)
             && stored is TTarget typedTarget)
         {
             target = typedTarget;
@@ -46,18 +47,23 @@ public sealed class MappaReferenceManager
     }
 
     /// <summary>
-    /// Stores a source/target reference pair so later mappings can reuse the target.
+    /// Stores a source/target reference pair keyed by source identity and <c>typeof(TTarget)</c>
+    /// so later mappings to the same declared target type can reuse the target.
     /// </summary>
+    /// <typeparam name="TTarget">The declared target type used as part of the reuse key.</typeparam>
+    /// <typeparam name="TSource">The source type.</typeparam>
     /// <param name="target">The mapped target instance.</param>
     /// <param name="source">The source instance.</param>
-    public void AddReferencePair(object target, object source)
+    public void AddReferencePair<TTarget, TSource>(TTarget target, TSource source)
+        where TTarget : class
+        where TSource : class
     {
         if (source is null)
         {
             throw new ArgumentNullException(nameof(source));
         }
 
-        this.references[source] = target;
+        this.references[new ReferenceKey(source, typeof(TTarget))] = target;
     }
 
     /// <summary>
@@ -85,6 +91,34 @@ public sealed class MappaReferenceManager
         this.currentDepth--;
     }
 
+    private readonly struct ReferenceKey
+        : IEquatable<ReferenceKey>
+    {
+        private readonly object source;
+        private readonly Type targetType;
+
+        public ReferenceKey(object source, Type targetType)
+        {
+            this.source = source;
+            this.targetType = targetType;
+        }
+
+        public bool Equals(ReferenceKey other)
+            => ReferenceEquals(this.source, other.source)
+               && this.targetType == other.targetType;
+
+        public override bool Equals(object obj)
+            => obj is ReferenceKey other && this.Equals(other);
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return (RuntimeHelpers.GetHashCode(this.source) * 397) ^ this.targetType.GetHashCode();
+            }
+        }
+    }
+
     private sealed class DepthScope
         : IDisposable
     {
@@ -105,24 +139,6 @@ public sealed class MappaReferenceManager
 
             this.manager.DecreaseDepth();
             this.disposed = true;
-        }
-    }
-
-    private sealed class ReferenceEqualityComparer
-        : IEqualityComparer<object>
-    {
-        public static ReferenceEqualityComparer Instance { get; } = new();
-
-        bool IEqualityComparer<object>.Equals(object x, object y) => ReferenceEquals(x, y);
-
-        int IEqualityComparer<object>.GetHashCode(object obj)
-        {
-            if (obj is null)
-            {
-                throw new ArgumentNullException(nameof(obj));
-            }
-
-            return RuntimeHelpers.GetHashCode(obj);
         }
     }
 }

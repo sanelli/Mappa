@@ -23,9 +23,11 @@ internal sealed class MappaBuilderContext
     private readonly StackSetting<bool> maxRuntimeDepthActive = new(false);
     private readonly StackSetting<short> effectiveMaxRuntimeDepth = new(0);
     private readonly StackSetting<bool> referenceReusingActive = new(false);
+    private readonly StackSetting<bool> earlyReferencePairRegistered = new(false);
     private readonly List<Diagnostic> diagnostics = new();
     private uint temporaryCounter;
     private bool referenceManagerAccessorRequired;
+    private string? referenceManagerLocalName;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaBuilderContext"/> class.
@@ -78,6 +80,12 @@ internal sealed class MappaBuilderContext
         => this.IsMaxRuntimeDepthActive || this.IsReferenceReusingActive;
 
     /// <summary>
+    /// Gets a value indicating whether an early <c>AddReferencePair</c> was emitted
+    /// in the current reference-handling registration scope.
+    /// </summary>
+    internal bool EarlyReferencePairRegistered => this.earlyReferencePairRegistered.CurrentValue;
+
+    /// <summary>
     /// Gets the target property currently being accessed via an optional unsafe accessor, if any.
     /// </summary>
     internal IPropertySymbol? CurrentTargetPropertyForUnsafeAccess
@@ -95,6 +103,34 @@ internal sealed class MappaBuilderContext
     /// <returns>A new temporary value.</returns>
     internal string NextTemporary()
         => $"__mappa_tmp_{++this.temporaryCounter}";
+
+    /// <summary>
+    /// Gets or creates the per-map-method temporary that holds the reference manager.
+    /// </summary>
+    /// <returns>The temporary variable name.</returns>
+    internal string GetOrCreateReferenceManagerLocalName()
+        => this.referenceManagerLocalName ??= this.NextTemporary();
+
+    /// <summary>
+    /// Begins a scope that tracks whether an early <c>AddReferencePair</c> was emitted.
+    /// </summary>
+    /// <returns>An <see cref="IDisposable"/> that restores the previous scope value.</returns>
+    internal IDisposable PushEarlyReferencePairRegistrationScope()
+        => this.earlyReferencePairRegistered.Apply(false);
+
+    /// <summary>
+    /// Marks that an early <c>AddReferencePair</c> was emitted in the current registration scope.
+    /// </summary>
+    internal void MarkEarlyReferencePairRegistered()
+    {
+        if (this.earlyReferencePairRegistered.CurrentValue)
+        {
+            return;
+        }
+
+        this.earlyReferencePairRegistered.Pop();
+        this.earlyReferencePairRegistered.Push(true);
+    }
 
     /// <summary>
     /// Push a new value for the source name for struct, record, classes, etc...
@@ -125,6 +161,7 @@ internal sealed class MappaBuilderContext
     /// <returns>Disposable value used to remove the method from the stack.</returns>
     internal IDisposable PushMapMethod(MapMethod mapMethod)
     {
+        this.referenceManagerLocalName = null;
         var mapMethodScope = this.mapMethodBeingBuilt.Apply(mapMethod);
         var activateMaxRuntimeDepth = false;
         var effectiveDepth = (short)0;

@@ -86,8 +86,13 @@ public sealed class ReferenceReusingIntegrationTests
                                     }
                                     """;
 
-    private static string ReferenceManager
-        => $"{ReferenceHandlingCodeGenerator.AccessorTypeName}.{ReferenceHandlingCodeGenerator.AccessorMethodName}(context)";
+    private const string MapAManagerLocal = "__mappa_tmp_1";
+    private const string MapBManagerLocal = "__mappa_tmp_10";
+    private const string MapRootManagerLocal = "__mappa_tmp_1";
+    private const string SimpleMapManagerLocal = "__mappa_tmp_1";
+
+    private static string AccessorGetReferenceManager
+        => $"{ReferenceHandlingCodeGenerator.AccessorTypeName}.{ReferenceHandlingCodeGenerator.AccessorMethodName}";
 
     /// <summary>
     /// A↔B cycle with dedicated map methods emits TryGetReference / MapA / MapB
@@ -437,8 +442,9 @@ public sealed class ReferenceReusingIntegrationTests
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
-                        .HasSyntaxNodesCount(3)
-                        .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax(TargetType, "__mappa_tmp_3"))
+                        .HasSyntaxNodesCount(4)
+                        .HasNextSyntaxNode(node => AssertReferenceManagerLocal(node, SimpleMapManagerLocal))
+                        .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax(TargetType, "__mappa_tmp_4"))
                         .HasNextSyntaxNode(node =>
                         {
                             node.BeIfStatementSyntax(
@@ -447,19 +453,19 @@ public sealed class ReferenceReusingIntegrationTests
                                     condition.BePrefixUnaryExpressionSyntax(
                                         SyntaxKind.ExclamationToken,
                                         operand => operand.BeInvocationExpressionSyntax(
-                                            $"{ReferenceManager}.TryGetReference<{TargetType}>",
+                                            $"{SimpleMapManagerLocal}.TryGetReference<{TargetType}>",
                                             arg => arg.BeIdentifierNameSyntax("input"),
-                                            arg => arg.BeIdentifierNameSyntax("__mappa_tmp_3")));
+                                            arg => arg.BeIdentifierNameSyntax("__mappa_tmp_4")));
                                 },
                                 thenStatement =>
                                 {
                                     thenStatement
                                         .BeBlockStatement()
                                         .AsBlock()
-                                        .HasSyntaxNodesCount(6);
+                                        .HasSyntaxNodesCount(5);
                                 });
                         })
-                        .HasNextSyntaxNode(node => node.BeReturnStatement("__mappa_tmp_3"));
+                        .HasNextSyntaxNode(node => node.BeReturnStatement("__mappa_tmp_4"));
                 });
 
         // Arrange / Act — disabled (no ReferenceReusing / MaxRuntimeDepth)
@@ -491,11 +497,24 @@ public sealed class ReferenceReusingIntegrationTests
         AssertAccessorAbsence(disabledResults);
     }
 
+    private static void AssertReferenceManagerLocal(
+        SyntaxNodeAssertions node,
+        string managerLocal)
+    {
+        node.BeLocalDeclarationStatementSyntax(
+            "global::Mappa.MappaReferenceManager",
+            managerLocal,
+            init => init.BeInvocationExpressionSyntax(
+                AccessorGetReferenceManager,
+                arg => arg.BeIdentifierNameSyntax("context")));
+    }
+
     private static void AssertMapACycleSyntax(BlockSyntaxAssertions blockSyntaxAssertions)
     {
         blockSyntaxAssertions
-            .HasSyntaxNodesCount(3)
-            .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax(ATargetType, "__mappa_tmp_8"))
+            .HasSyntaxNodesCount(4)
+            .HasNextSyntaxNode(node => AssertReferenceManagerLocal(node, MapAManagerLocal))
+            .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax(ATargetType, "__mappa_tmp_9"))
             .HasNextSyntaxNode(node =>
             {
                 node.BeIfStatementSyntax(
@@ -504,43 +523,43 @@ public sealed class ReferenceReusingIntegrationTests
                         condition.BePrefixUnaryExpressionSyntax(
                             SyntaxKind.ExclamationToken,
                             operand => operand.BeInvocationExpressionSyntax(
-                                $"{ReferenceManager}.TryGetReference<{ATargetType}>",
+                                $"{MapAManagerLocal}.TryGetReference<{ATargetType}>",
                                 arg => arg.BeIdentifierNameSyntax("input"),
-                                arg => arg.BeIdentifierNameSyntax("__mappa_tmp_8")));
+                                arg => arg.BeIdentifierNameSyntax("__mappa_tmp_9")));
                     },
                     thenStatement =>
                     {
                         thenStatement
                             .BeBlockStatement()
                             .AsBlock()
-                            .HasSyntaxNodesCount(10)
+                            .HasSyntaxNodesCount(9)
                             .HasNextSyntaxNode(n => n.BeLocalDeclarationStatementSyntax(
                                 ATargetType,
-                                "__mappa_tmp_1",
+                                "__mappa_tmp_2",
                                 init => init.BeObjectCreationExpressionSyntax(ATargetType)))
                             .HasNextSyntaxNode(n => n.BeInvocationExpressionSyntaxStatement(
-                                $"{ReferenceManager}.AddReferencePair",
-                                arg => arg.BeIdentifierNameSyntax("__mappa_tmp_1"),
+                                $"{MapAManagerLocal}.AddReferencePair<{ATargetType}, {ASourceType}>",
+                                arg => arg.BeIdentifierNameSyntax("__mappa_tmp_2"),
                                 arg => arg.BeIdentifierNameSyntax("input")))
                             .HasNextSyntaxNode(n => n.BeLocalDeclarationStatementSyntax(
                                 typeof(int).ToString(),
-                                "__mappa_tmp_2",
+                                "__mappa_tmp_3",
                                 init => init.BeMemberAccessExpressionSyntax("input.Id")))
                             .HasNextSyntaxNode(n => n.BeAssignmentExpressionStatement(
-                                left => left.BeMemberAccessExpressionSyntax("__mappa_tmp_1.Id"),
-                                right => right.BeIdentifierNameSyntax("__mappa_tmp_2")))
+                                left => left.BeMemberAccessExpressionSyntax("__mappa_tmp_2.Id"),
+                                right => right.BeIdentifierNameSyntax("__mappa_tmp_3")))
                             .HasNextSyntaxNode(n => n.BeLocalDeclarationStatementSyntax(
                                 $"{BSourceType}?",
-                                "__mappa_tmp_3",
+                                "__mappa_tmp_4",
                                 init => init.BeMemberAccessExpressionSyntax("input.Child")))
-                            .HasNextSyntaxNode(n => n.BeLocalDeclarationStatementSyntax($"{BTargetType}?", "__mappa_tmp_4"))
+                            .HasNextSyntaxNode(n => n.BeLocalDeclarationStatementSyntax($"{BTargetType}?", "__mappa_tmp_5"))
                             .HasNextSyntaxNode(n =>
                             {
                                 n.BeIfStatementSyntax(
                                     condition =>
                                     {
                                         condition.BeIsPatternExpressionSyntax(
-                                            expression => expression.BeIdentifierNameSyntax("__mappa_tmp_3"),
+                                            expression => expression.BeIdentifierNameSyntax("__mappa_tmp_4"),
                                             pattern => pattern.BeUnaryPatternSyntax(
                                                 SyntaxKind.NotKeyword,
                                                 inner => inner.BeConstantPatternSyntax(null)));
@@ -553,9 +572,9 @@ public sealed class ReferenceReusingIntegrationTests
                                             .HasSyntaxNodesCount(4)
                                             .HasNextSyntaxNode(inner => inner.BeLocalDeclarationStatementSyntax(
                                                 BSourceType,
-                                                "__mappa_tmp_5",
-                                                init => init.BeIdentifierNameSyntax("__mappa_tmp_3")))
-                                            .HasNextSyntaxNode(inner => inner.BeLocalDeclarationStatementSyntax(BTargetType, "__mappa_tmp_7"))
+                                                "__mappa_tmp_6",
+                                                init => init.BeIdentifierNameSyntax("__mappa_tmp_4")))
+                                            .HasNextSyntaxNode(inner => inner.BeLocalDeclarationStatementSyntax(BTargetType, "__mappa_tmp_8"))
                                             .HasNextSyntaxNode(inner =>
                                             {
                                                 inner.BeIfStatementSyntax(
@@ -564,35 +583,31 @@ public sealed class ReferenceReusingIntegrationTests
                                                         condition.BePrefixUnaryExpressionSyntax(
                                                             SyntaxKind.ExclamationToken,
                                                             operand => operand.BeInvocationExpressionSyntax(
-                                                                $"{ReferenceManager}.TryGetReference<{BTargetType}>",
-                                                                arg => arg.BeIdentifierNameSyntax("__mappa_tmp_5"),
-                                                                arg => arg.BeIdentifierNameSyntax("__mappa_tmp_7")));
+                                                                $"{MapAManagerLocal}.TryGetReference<{BTargetType}>",
+                                                                arg => arg.BeIdentifierNameSyntax("__mappa_tmp_6"),
+                                                                arg => arg.BeIdentifierNameSyntax("__mappa_tmp_8")));
                                                     },
                                                     mapThen =>
                                                     {
                                                         mapThen
                                                             .BeBlockStatement()
                                                             .AsBlock()
-                                                            .HasSyntaxNodesCount(3)
+                                                            .HasSyntaxNodesCount(2)
                                                             .HasNextSyntaxNode(map => map.BeLocalDeclarationStatementSyntax(
                                                                 BTargetType,
-                                                                "__mappa_tmp_6",
+                                                                "__mappa_tmp_7",
                                                                 init => init.BeInvocationExpressionSyntax(
                                                                     "this.MapB",
-                                                                    arg => arg.BeIdentifierNameSyntax("__mappa_tmp_5"),
+                                                                    arg => arg.BeIdentifierNameSyntax("__mappa_tmp_6"),
                                                                     arg => arg.BeIdentifierNameSyntax("context"))))
                                                             .HasNextSyntaxNode(map => map.BeAssignmentExpressionStatement(
-                                                                "__mappa_tmp_7",
-                                                                right => right.BeIdentifierNameSyntax("__mappa_tmp_6")))
-                                                            .HasNextSyntaxNode(map => map.BeInvocationExpressionSyntaxStatement(
-                                                                $"{ReferenceManager}.AddReferencePair",
-                                                                arg => arg.BeIdentifierNameSyntax("__mappa_tmp_7"),
-                                                                arg => arg.BeIdentifierNameSyntax("__mappa_tmp_5")));
+                                                                "__mappa_tmp_8",
+                                                                right => right.BeIdentifierNameSyntax("__mappa_tmp_7")));
                                                     });
                                             })
                                             .HasNextSyntaxNode(inner => inner.BeAssignmentExpressionStatement(
-                                                "__mappa_tmp_4",
-                                                right => right.BeIdentifierNameSyntax("__mappa_tmp_7")));
+                                                "__mappa_tmp_5",
+                                                right => right.BeIdentifierNameSyntax("__mappa_tmp_8")));
                                     },
                                     nullableElse =>
                                     {
@@ -601,32 +616,29 @@ public sealed class ReferenceReusingIntegrationTests
                                             .AsBlock()
                                             .HasSyntaxNodesCount(1)
                                             .HasNextSyntaxNode(elseNode => elseNode.BeAssignmentExpressionStatement(
-                                                left => left.BeIdentifierNameSyntax("__mappa_tmp_4"),
+                                                left => left.BeIdentifierNameSyntax("__mappa_tmp_5"),
                                                 right => right.BeCastExpressionSyntax(
                                                     $"{BTargetType}?",
                                                     expression => expression.BeLiteralExpressionSyntax(null))));
                                     });
                             })
                             .HasNextSyntaxNode(n => n.BeAssignmentExpressionStatement(
-                                left => left.BeMemberAccessExpressionSyntax("__mappa_tmp_1.Child"),
-                                right => right.BeIdentifierNameSyntax("__mappa_tmp_4")))
+                                left => left.BeMemberAccessExpressionSyntax("__mappa_tmp_2.Child"),
+                                right => right.BeIdentifierNameSyntax("__mappa_tmp_5")))
                             .HasNextSyntaxNode(n => n.BeAssignmentExpressionStatement(
-                                "__mappa_tmp_8",
-                                right => right.BeIdentifierNameSyntax("__mappa_tmp_1")))
-                            .HasNextSyntaxNode(n => n.BeInvocationExpressionSyntaxStatement(
-                                $"{ReferenceManager}.AddReferencePair",
-                                arg => arg.BeIdentifierNameSyntax("__mappa_tmp_8"),
-                                arg => arg.BeIdentifierNameSyntax("input")));
+                                "__mappa_tmp_9",
+                                right => right.BeIdentifierNameSyntax("__mappa_tmp_2")));
                     });
             })
-            .HasNextSyntaxNode(node => node.BeReturnStatement("__mappa_tmp_8"));
+            .HasNextSyntaxNode(node => node.BeReturnStatement("__mappa_tmp_9"));
     }
 
     private static void AssertMapBCycleSyntax(BlockSyntaxAssertions blockSyntaxAssertions)
     {
         blockSyntaxAssertions
-            .HasSyntaxNodesCount(3)
-            .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax(BTargetType, "__mappa_tmp_16"))
+            .HasSyntaxNodesCount(4)
+            .HasNextSyntaxNode(node => AssertReferenceManagerLocal(node, MapBManagerLocal))
+            .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax(BTargetType, "__mappa_tmp_18"))
             .HasNextSyntaxNode(node =>
             {
                 node.BeIfStatementSyntax(
@@ -635,43 +647,43 @@ public sealed class ReferenceReusingIntegrationTests
                         condition.BePrefixUnaryExpressionSyntax(
                             SyntaxKind.ExclamationToken,
                             operand => operand.BeInvocationExpressionSyntax(
-                                $"{ReferenceManager}.TryGetReference<{BTargetType}>",
+                                $"{MapBManagerLocal}.TryGetReference<{BTargetType}>",
                                 arg => arg.BeIdentifierNameSyntax("input"),
-                                arg => arg.BeIdentifierNameSyntax("__mappa_tmp_16")));
+                                arg => arg.BeIdentifierNameSyntax("__mappa_tmp_18")));
                     },
                     thenStatement =>
                     {
                         thenStatement
                             .BeBlockStatement()
                             .AsBlock()
-                            .HasSyntaxNodesCount(10)
+                            .HasSyntaxNodesCount(9)
                             .HasNextSyntaxNode(n => n.BeLocalDeclarationStatementSyntax(
                                 BTargetType,
-                                "__mappa_tmp_9",
+                                "__mappa_tmp_11",
                                 init => init.BeObjectCreationExpressionSyntax(BTargetType)))
                             .HasNextSyntaxNode(n => n.BeInvocationExpressionSyntaxStatement(
-                                $"{ReferenceManager}.AddReferencePair",
-                                arg => arg.BeIdentifierNameSyntax("__mappa_tmp_9"),
+                                $"{MapBManagerLocal}.AddReferencePair<{BTargetType}, {BSourceType}>",
+                                arg => arg.BeIdentifierNameSyntax("__mappa_tmp_11"),
                                 arg => arg.BeIdentifierNameSyntax("input")))
                             .HasNextSyntaxNode(n => n.BeLocalDeclarationStatementSyntax(
                                 typeof(int).ToString(),
-                                "__mappa_tmp_10",
+                                "__mappa_tmp_12",
                                 init => init.BeMemberAccessExpressionSyntax("input.Id")))
                             .HasNextSyntaxNode(n => n.BeAssignmentExpressionStatement(
-                                left => left.BeMemberAccessExpressionSyntax("__mappa_tmp_9.Id"),
-                                right => right.BeIdentifierNameSyntax("__mappa_tmp_10")))
+                                left => left.BeMemberAccessExpressionSyntax("__mappa_tmp_11.Id"),
+                                right => right.BeIdentifierNameSyntax("__mappa_tmp_12")))
                             .HasNextSyntaxNode(n => n.BeLocalDeclarationStatementSyntax(
                                 $"{ASourceType}?",
-                                "__mappa_tmp_11",
+                                "__mappa_tmp_13",
                                 init => init.BeMemberAccessExpressionSyntax("input.Parent")))
-                            .HasNextSyntaxNode(n => n.BeLocalDeclarationStatementSyntax($"{ATargetType}?", "__mappa_tmp_12"))
+                            .HasNextSyntaxNode(n => n.BeLocalDeclarationStatementSyntax($"{ATargetType}?", "__mappa_tmp_14"))
                             .HasNextSyntaxNode(n =>
                             {
                                 n.BeIfStatementSyntax(
                                     condition =>
                                     {
                                         condition.BeIsPatternExpressionSyntax(
-                                            expression => expression.BeIdentifierNameSyntax("__mappa_tmp_11"),
+                                            expression => expression.BeIdentifierNameSyntax("__mappa_tmp_13"),
                                             pattern => pattern.BeUnaryPatternSyntax(
                                                 SyntaxKind.NotKeyword,
                                                 inner => inner.BeConstantPatternSyntax(null)));
@@ -684,9 +696,9 @@ public sealed class ReferenceReusingIntegrationTests
                                             .HasSyntaxNodesCount(4)
                                             .HasNextSyntaxNode(inner => inner.BeLocalDeclarationStatementSyntax(
                                                 ASourceType,
-                                                "__mappa_tmp_13",
-                                                init => init.BeIdentifierNameSyntax("__mappa_tmp_11")))
-                                            .HasNextSyntaxNode(inner => inner.BeLocalDeclarationStatementSyntax(ATargetType, "__mappa_tmp_15"))
+                                                "__mappa_tmp_15",
+                                                init => init.BeIdentifierNameSyntax("__mappa_tmp_13")))
+                                            .HasNextSyntaxNode(inner => inner.BeLocalDeclarationStatementSyntax(ATargetType, "__mappa_tmp_17"))
                                             .HasNextSyntaxNode(inner =>
                                             {
                                                 inner.BeIfStatementSyntax(
@@ -695,35 +707,31 @@ public sealed class ReferenceReusingIntegrationTests
                                                         condition.BePrefixUnaryExpressionSyntax(
                                                             SyntaxKind.ExclamationToken,
                                                             operand => operand.BeInvocationExpressionSyntax(
-                                                                $"{ReferenceManager}.TryGetReference<{ATargetType}>",
-                                                                arg => arg.BeIdentifierNameSyntax("__mappa_tmp_13"),
-                                                                arg => arg.BeIdentifierNameSyntax("__mappa_tmp_15")));
+                                                                $"{MapBManagerLocal}.TryGetReference<{ATargetType}>",
+                                                                arg => arg.BeIdentifierNameSyntax("__mappa_tmp_15"),
+                                                                arg => arg.BeIdentifierNameSyntax("__mappa_tmp_17")));
                                                     },
                                                     mapThen =>
                                                     {
                                                         mapThen
                                                             .BeBlockStatement()
                                                             .AsBlock()
-                                                            .HasSyntaxNodesCount(3)
+                                                            .HasSyntaxNodesCount(2)
                                                             .HasNextSyntaxNode(map => map.BeLocalDeclarationStatementSyntax(
                                                                 ATargetType,
-                                                                "__mappa_tmp_14",
+                                                                "__mappa_tmp_16",
                                                                 init => init.BeInvocationExpressionSyntax(
                                                                     "this.MapA",
-                                                                    arg => arg.BeIdentifierNameSyntax("__mappa_tmp_13"),
+                                                                    arg => arg.BeIdentifierNameSyntax("__mappa_tmp_15"),
                                                                     arg => arg.BeIdentifierNameSyntax("context"))))
                                                             .HasNextSyntaxNode(map => map.BeAssignmentExpressionStatement(
-                                                                "__mappa_tmp_15",
-                                                                right => right.BeIdentifierNameSyntax("__mappa_tmp_14")))
-                                                            .HasNextSyntaxNode(map => map.BeInvocationExpressionSyntaxStatement(
-                                                                $"{ReferenceManager}.AddReferencePair",
-                                                                arg => arg.BeIdentifierNameSyntax("__mappa_tmp_15"),
-                                                                arg => arg.BeIdentifierNameSyntax("__mappa_tmp_13")));
+                                                                "__mappa_tmp_17",
+                                                                right => right.BeIdentifierNameSyntax("__mappa_tmp_16")));
                                                     });
                                             })
                                             .HasNextSyntaxNode(inner => inner.BeAssignmentExpressionStatement(
-                                                "__mappa_tmp_12",
-                                                right => right.BeIdentifierNameSyntax("__mappa_tmp_15")));
+                                                "__mappa_tmp_14",
+                                                right => right.BeIdentifierNameSyntax("__mappa_tmp_17")));
                                     },
                                     nullableElse =>
                                     {
@@ -732,32 +740,29 @@ public sealed class ReferenceReusingIntegrationTests
                                             .AsBlock()
                                             .HasSyntaxNodesCount(1)
                                             .HasNextSyntaxNode(elseNode => elseNode.BeAssignmentExpressionStatement(
-                                                left => left.BeIdentifierNameSyntax("__mappa_tmp_12"),
+                                                left => left.BeIdentifierNameSyntax("__mappa_tmp_14"),
                                                 right => right.BeCastExpressionSyntax(
                                                     $"{ATargetType}?",
                                                     expression => expression.BeLiteralExpressionSyntax(null))));
                                     });
                             })
                             .HasNextSyntaxNode(n => n.BeAssignmentExpressionStatement(
-                                left => left.BeMemberAccessExpressionSyntax("__mappa_tmp_9.Parent"),
-                                right => right.BeIdentifierNameSyntax("__mappa_tmp_12")))
+                                left => left.BeMemberAccessExpressionSyntax("__mappa_tmp_11.Parent"),
+                                right => right.BeIdentifierNameSyntax("__mappa_tmp_14")))
                             .HasNextSyntaxNode(n => n.BeAssignmentExpressionStatement(
-                                "__mappa_tmp_16",
-                                right => right.BeIdentifierNameSyntax("__mappa_tmp_9")))
-                            .HasNextSyntaxNode(n => n.BeInvocationExpressionSyntaxStatement(
-                                $"{ReferenceManager}.AddReferencePair",
-                                arg => arg.BeIdentifierNameSyntax("__mappa_tmp_16"),
-                                arg => arg.BeIdentifierNameSyntax("input")));
+                                "__mappa_tmp_18",
+                                right => right.BeIdentifierNameSyntax("__mappa_tmp_11")));
                     });
             })
-            .HasNextSyntaxNode(node => node.BeReturnStatement("__mappa_tmp_16"));
+            .HasNextSyntaxNode(node => node.BeReturnStatement("__mappa_tmp_18"));
     }
 
     private static void AssertMapRootSharedReferenceSyntax(BlockSyntaxAssertions blockSyntaxAssertions)
     {
         blockSyntaxAssertions
-            .HasSyntaxNodesCount(3)
-            .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax(RootTargetType, "__mappa_tmp_8"))
+            .HasSyntaxNodesCount(4)
+            .HasNextSyntaxNode(node => AssertReferenceManagerLocal(node, MapRootManagerLocal))
+            .HasNextSyntaxNode(node => node.BeLocalDeclarationStatementSyntax(RootTargetType, "__mappa_tmp_9"))
             .HasNextSyntaxNode(node =>
             {
                 node.BeIfStatementSyntax(
@@ -766,29 +771,29 @@ public sealed class ReferenceReusingIntegrationTests
                         condition.BePrefixUnaryExpressionSyntax(
                             SyntaxKind.ExclamationToken,
                             operand => operand.BeInvocationExpressionSyntax(
-                                $"{ReferenceManager}.TryGetReference<{RootTargetType}>",
+                                $"{MapRootManagerLocal}.TryGetReference<{RootTargetType}>",
                                 arg => arg.BeIdentifierNameSyntax("input"),
-                                arg => arg.BeIdentifierNameSyntax("__mappa_tmp_8")));
+                                arg => arg.BeIdentifierNameSyntax("__mappa_tmp_9")));
                     },
                     thenStatement =>
                     {
                         thenStatement
                             .BeBlockStatement()
                             .AsBlock()
-                            .HasSyntaxNodesCount(12)
+                            .HasSyntaxNodesCount(11)
                             .HasNextSyntaxNode(n => n.BeLocalDeclarationStatementSyntax(
                                 RootTargetType,
-                                "__mappa_tmp_1",
+                                "__mappa_tmp_2",
                                 init => init.BeObjectCreationExpressionSyntax(RootTargetType)))
                             .HasNextSyntaxNode(n => n.BeInvocationExpressionSyntaxStatement(
-                                $"{ReferenceManager}.AddReferencePair",
-                                arg => arg.BeIdentifierNameSyntax("__mappa_tmp_1"),
+                                $"{MapRootManagerLocal}.AddReferencePair<{RootTargetType}, {RootSourceType}>",
+                                arg => arg.BeIdentifierNameSyntax("__mappa_tmp_2"),
                                 arg => arg.BeIdentifierNameSyntax("input")))
                             .HasNextSyntaxNode(n => n.BeLocalDeclarationStatementSyntax(
                                 NodeSourceType,
-                                "__mappa_tmp_2",
+                                "__mappa_tmp_3",
                                 init => init.BeMemberAccessExpressionSyntax("input.Left")))
-                            .HasNextSyntaxNode(n => n.BeLocalDeclarationStatementSyntax(NodeTargetType, "__mappa_tmp_4"))
+                            .HasNextSyntaxNode(n => n.BeLocalDeclarationStatementSyntax(NodeTargetType, "__mappa_tmp_5"))
                             .HasNextSyntaxNode(n =>
                             {
                                 n.BeIfStatementSyntax(
@@ -797,40 +802,36 @@ public sealed class ReferenceReusingIntegrationTests
                                         condition.BePrefixUnaryExpressionSyntax(
                                             SyntaxKind.ExclamationToken,
                                             operand => operand.BeInvocationExpressionSyntax(
-                                                $"{ReferenceManager}.TryGetReference<{NodeTargetType}>",
-                                                arg => arg.BeIdentifierNameSyntax("__mappa_tmp_2"),
-                                                arg => arg.BeIdentifierNameSyntax("__mappa_tmp_4")));
+                                                $"{MapRootManagerLocal}.TryGetReference<{NodeTargetType}>",
+                                                arg => arg.BeIdentifierNameSyntax("__mappa_tmp_3"),
+                                                arg => arg.BeIdentifierNameSyntax("__mappa_tmp_5")));
                                     },
                                     leftThen =>
                                     {
                                         leftThen
                                             .BeBlockStatement()
                                             .AsBlock()
-                                            .HasSyntaxNodesCount(3)
+                                            .HasSyntaxNodesCount(2)
                                             .HasNextSyntaxNode(map => map.BeLocalDeclarationStatementSyntax(
                                                 NodeTargetType,
-                                                "__mappa_tmp_3",
+                                                "__mappa_tmp_4",
                                                 init => init.BeInvocationExpressionSyntax(
                                                     "this.MapNode",
-                                                    arg => arg.BeIdentifierNameSyntax("__mappa_tmp_2"),
+                                                    arg => arg.BeIdentifierNameSyntax("__mappa_tmp_3"),
                                                     arg => arg.BeIdentifierNameSyntax("context"))))
                                             .HasNextSyntaxNode(map => map.BeAssignmentExpressionStatement(
-                                                "__mappa_tmp_4",
-                                                right => right.BeIdentifierNameSyntax("__mappa_tmp_3")))
-                                            .HasNextSyntaxNode(map => map.BeInvocationExpressionSyntaxStatement(
-                                                $"{ReferenceManager}.AddReferencePair",
-                                                arg => arg.BeIdentifierNameSyntax("__mappa_tmp_4"),
-                                                arg => arg.BeIdentifierNameSyntax("__mappa_tmp_2")));
+                                                "__mappa_tmp_5",
+                                                right => right.BeIdentifierNameSyntax("__mappa_tmp_4")));
                                     });
                             })
                             .HasNextSyntaxNode(n => n.BeAssignmentExpressionStatement(
-                                left => left.BeMemberAccessExpressionSyntax("__mappa_tmp_1.Left"),
-                                right => right.BeIdentifierNameSyntax("__mappa_tmp_4")))
+                                left => left.BeMemberAccessExpressionSyntax("__mappa_tmp_2.Left"),
+                                right => right.BeIdentifierNameSyntax("__mappa_tmp_5")))
                             .HasNextSyntaxNode(n => n.BeLocalDeclarationStatementSyntax(
                                 NodeSourceType,
-                                "__mappa_tmp_5",
+                                "__mappa_tmp_6",
                                 init => init.BeMemberAccessExpressionSyntax("input.Right")))
-                            .HasNextSyntaxNode(n => n.BeLocalDeclarationStatementSyntax(NodeTargetType, "__mappa_tmp_7"))
+                            .HasNextSyntaxNode(n => n.BeLocalDeclarationStatementSyntax(NodeTargetType, "__mappa_tmp_8"))
                             .HasNextSyntaxNode(n =>
                             {
                                 n.BeIfStatementSyntax(
@@ -839,45 +840,37 @@ public sealed class ReferenceReusingIntegrationTests
                                         condition.BePrefixUnaryExpressionSyntax(
                                             SyntaxKind.ExclamationToken,
                                             operand => operand.BeInvocationExpressionSyntax(
-                                                $"{ReferenceManager}.TryGetReference<{NodeTargetType}>",
-                                                arg => arg.BeIdentifierNameSyntax("__mappa_tmp_5"),
-                                                arg => arg.BeIdentifierNameSyntax("__mappa_tmp_7")));
+                                                $"{MapRootManagerLocal}.TryGetReference<{NodeTargetType}>",
+                                                arg => arg.BeIdentifierNameSyntax("__mappa_tmp_6"),
+                                                arg => arg.BeIdentifierNameSyntax("__mappa_tmp_8")));
                                     },
                                     rightThen =>
                                     {
                                         rightThen
                                             .BeBlockStatement()
                                             .AsBlock()
-                                            .HasSyntaxNodesCount(3)
+                                            .HasSyntaxNodesCount(2)
                                             .HasNextSyntaxNode(map => map.BeLocalDeclarationStatementSyntax(
                                                 NodeTargetType,
-                                                "__mappa_tmp_6",
+                                                "__mappa_tmp_7",
                                                 init => init.BeInvocationExpressionSyntax(
                                                     "this.MapNode",
-                                                    arg => arg.BeIdentifierNameSyntax("__mappa_tmp_5"),
+                                                    arg => arg.BeIdentifierNameSyntax("__mappa_tmp_6"),
                                                     arg => arg.BeIdentifierNameSyntax("context"))))
                                             .HasNextSyntaxNode(map => map.BeAssignmentExpressionStatement(
-                                                "__mappa_tmp_7",
-                                                right => right.BeIdentifierNameSyntax("__mappa_tmp_6")))
-                                            .HasNextSyntaxNode(map => map.BeInvocationExpressionSyntaxStatement(
-                                                $"{ReferenceManager}.AddReferencePair",
-                                                arg => arg.BeIdentifierNameSyntax("__mappa_tmp_7"),
-                                                arg => arg.BeIdentifierNameSyntax("__mappa_tmp_5")));
+                                                "__mappa_tmp_8",
+                                                right => right.BeIdentifierNameSyntax("__mappa_tmp_7")));
                                     });
                             })
                             .HasNextSyntaxNode(n => n.BeAssignmentExpressionStatement(
-                                left => left.BeMemberAccessExpressionSyntax("__mappa_tmp_1.Right"),
-                                right => right.BeIdentifierNameSyntax("__mappa_tmp_7")))
+                                left => left.BeMemberAccessExpressionSyntax("__mappa_tmp_2.Right"),
+                                right => right.BeIdentifierNameSyntax("__mappa_tmp_8")))
                             .HasNextSyntaxNode(n => n.BeAssignmentExpressionStatement(
-                                "__mappa_tmp_8",
-                                right => right.BeIdentifierNameSyntax("__mappa_tmp_1")))
-                            .HasNextSyntaxNode(n => n.BeInvocationExpressionSyntaxStatement(
-                                $"{ReferenceManager}.AddReferencePair",
-                                arg => arg.BeIdentifierNameSyntax("__mappa_tmp_8"),
-                                arg => arg.BeIdentifierNameSyntax("input")));
+                                "__mappa_tmp_9",
+                                right => right.BeIdentifierNameSyntax("__mappa_tmp_2")));
                     });
             })
-            .HasNextSyntaxNode(node => node.BeReturnStatement("__mappa_tmp_8"));
+            .HasNextSyntaxNode(node => node.BeReturnStatement("__mappa_tmp_9"));
     }
 
     private static void AssertAccessorAbsence(GeneratedResults generatedResults)

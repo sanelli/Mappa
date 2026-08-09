@@ -80,7 +80,7 @@ Every `GetStrategy` discovery is wrapped with compile-time depth tracking (`MaxC
 
 ## Reference handling
 
-When `ReferenceReusing` is enabled and the map method declares `MappaContext`, generated code reuses already-mapped reference-type instances via `MappaReferenceManager` (obtained through an `UnsafeAccessor` getter on the context). `MaxRuntimeDepth` (`short`; effective default `0` = unlimited) limits nested reference-type mapping depth at runtime and throws `MappaException` when exceeded. Missing `MappaContext` warns with **MP00074** / **MP00075** and skips runtime reference handling. `ReferenceReusing` / `MaxRuntimeDepth` are rejected on `IQueryable` projection methods (**MP00057**).
+When `ReferenceReusing` is enabled and the map method declares `MappaContext`, generated code caches `MappaReferenceManager` in one local per map method (via an `UnsafeAccessor` getter), looks up pairs with `TryGetReference<TTarget>` (key: source identity + `typeof(TTarget)`), and registers with `AddReferencePair<TTarget, TSource>` early after construction so cycles can resolve. A redundant exit `AddReferencePair` is omitted when early registration already ran or a reusing nested map method already registered. `MaxRuntimeDepth` (`short`; effective default `0` = unlimited) limits nested reference-type mapping depth at runtime and throws `MappaException` when exceeded. Missing `MappaContext` warns with **MP00074** / **MP00075** and skips runtime reference handling. `ReferenceReusing` / `MaxRuntimeDepth` are rejected on `IQueryable` projection methods (**MP00057**).
 
 ## Strategy details
 

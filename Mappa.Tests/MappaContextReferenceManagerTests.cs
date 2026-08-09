@@ -56,7 +56,7 @@ public sealed class MappaContextReferenceManagerTests
 
         // Act
         manager.MaxDepth = 2;
-        manager.AddReferencePair(target, source);
+        manager.AddReferencePair<object, object>(target, source);
         var found = manager.TryGetReference<object>(source, out var retrieved);
         using (manager.IncreaseDepth())
         using (manager.IncreaseDepth())
