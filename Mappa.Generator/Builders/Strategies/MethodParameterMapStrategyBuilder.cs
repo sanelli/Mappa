@@ -35,6 +35,7 @@ internal sealed class MethodParameterMapStrategyBuilder
     /// <inheritdoc/>
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
+        var referenceManagerLocalDeclaration = ReferenceHandlingCodeGenerator.BuildReferenceManagerLocalDeclaration(context);
         var maxRuntimeDepthInitialization = ReferenceHandlingCodeGenerator.BuildMaxRuntimeDepthInitialization(context);
         var beforeMapHooks = this.MethodParameterMapStrategy.BeforeMapHooks;
         var afterMapHooks = this.MethodParameterMapStrategy.AfterMapHooks;
@@ -45,31 +46,38 @@ internal sealed class MethodParameterMapStrategyBuilder
                 source,
                 context,
                 mappaGlobalOptions);
-            return ($"return {strategySource};", JoinHeader(maxRuntimeDepthInitialization, header));
+            return ($"return {strategySource};", JoinHeader(referenceManagerLocalDeclaration, maxRuntimeDepthInitialization, header));
         }
 
         return this.BuildSourceWithMapHooks(
             source,
             context,
             mappaGlobalOptions,
+            referenceManagerLocalDeclaration,
             maxRuntimeDepthInitialization,
             beforeMapHooks,
             afterMapHooks);
     }
 
-    private static string JoinHeader(string? maxRuntimeDepthInitialization, string header)
+    private static string JoinHeader(string? referenceManagerLocalDeclaration, string? maxRuntimeDepthInitialization, string header)
     {
-        if (maxRuntimeDepthInitialization is null)
+        var parts = new List<string>(3);
+        if (referenceManagerLocalDeclaration is not null)
         {
-            return header;
+            parts.Add(referenceManagerLocalDeclaration);
         }
 
-        if (string.IsNullOrWhiteSpace(header))
+        if (maxRuntimeDepthInitialization is not null)
         {
-            return maxRuntimeDepthInitialization;
+            parts.Add(maxRuntimeDepthInitialization);
         }
 
-        return $"{maxRuntimeDepthInitialization}\n{header}";
+        if (!string.IsNullOrWhiteSpace(header))
+        {
+            parts.Add(header);
+        }
+
+        return string.Join("\n", parts);
     }
 
     private static bool RequiresMappedValue(MapHook hook, Compilation compilation)
@@ -136,11 +144,17 @@ internal sealed class MethodParameterMapStrategyBuilder
         string source,
         MappaBuilderContext context,
         MappaGlobalOptions mappaGlobalOptions,
+        string? referenceManagerLocalDeclaration,
         string? maxRuntimeDepthInitialization,
         IReadOnlyList<MapHook> beforeMapHooks,
         IReadOnlyList<MapHook> afterMapHooks)
     {
         var code = new List<string>();
+        if (referenceManagerLocalDeclaration is not null)
+        {
+            code.Add(referenceManagerLocalDeclaration);
+        }
+
         if (maxRuntimeDepthInitialization is not null)
         {
             code.Add(maxRuntimeDepthInitialization);

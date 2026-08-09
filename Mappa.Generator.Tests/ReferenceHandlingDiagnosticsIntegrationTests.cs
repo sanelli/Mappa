@@ -188,7 +188,9 @@ public sealed class ReferenceHandlingDiagnosticsIntegrationTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         // Assert
-        var referenceManager = $"{ReferenceHandlingCodeGenerator.AccessorTypeName}.{ReferenceHandlingCodeGenerator.AccessorMethodName}(context)";
+        const string managerLocal = "__mappa_tmp_1";
+        var accessorGetReferenceManager =
+            $"{ReferenceHandlingCodeGenerator.AccessorTypeName}.{ReferenceHandlingCodeGenerator.AccessorMethodName}";
         generatedResults.Should()
             .HaveDiagnostics(1)
             .HaveDiagnostic(MappaDiagnosticDescriptors.ReferenceHandlingNestedMapWithoutMappaContext, "MapInner")
@@ -203,10 +205,19 @@ public sealed class ReferenceHandlingDiagnosticsIntegrationTests
                 blockSyntaxAssertions =>
                 {
                     blockSyntaxAssertions
-                        .HasSyntaxNodesCount(3)
+                        .HasSyntaxNodesCount(4)
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
-                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(TargetType, "__mappa_tmp_5");
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                "global::Mappa.MappaReferenceManager",
+                                managerLocal,
+                                initializationAssertions => initializationAssertions.BeInvocationExpressionSyntax(
+                                    accessorGetReferenceManager,
+                                    argumentAssertions => argumentAssertions.BeIdentifierNameSyntax("context")));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(TargetType, "__mappa_tmp_6");
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
@@ -216,40 +227,40 @@ public sealed class ReferenceHandlingDiagnosticsIntegrationTests
                                     conditionAssertions.BePrefixUnaryExpressionSyntax(
                                         SyntaxKind.ExclamationToken,
                                         operandAssertions => operandAssertions.BeInvocationExpressionSyntax(
-                                            $"{referenceManager}.TryGetReference<{TargetType}>",
+                                            $"{managerLocal}.TryGetReference<{TargetType}>",
                                             argumentAssertions => argumentAssertions.BeIdentifierNameSyntax("input"),
-                                            argumentAssertions => argumentAssertions.BeIdentifierNameSyntax("__mappa_tmp_5")));
+                                            argumentAssertions => argumentAssertions.BeIdentifierNameSyntax("__mappa_tmp_6")));
                                 },
                                 thenStatementAssertions =>
                                 {
                                     thenStatementAssertions
                                         .BeBlockStatement()
                                         .AsBlock()
-                                        .HasSyntaxNodesCount(8)
+                                        .HasSyntaxNodesCount(7)
                                         .HasNextSyntaxNode(ifSyntaxNodeAssertions =>
                                         {
                                             ifSyntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
                                                 TargetType,
-                                                "__mappa_tmp_1",
+                                                "__mappa_tmp_2",
                                                 initializationAssertions => initializationAssertions.BeObjectCreationExpressionSyntax(TargetType));
                                         })
                                         .HasNextSyntaxNode(ifSyntaxNodeAssertions =>
                                         {
                                             ifSyntaxNodeAssertions.BeInvocationExpressionSyntaxStatement(
-                                                $"{referenceManager}.AddReferencePair",
-                                                argumentAssertions => argumentAssertions.BeIdentifierNameSyntax("__mappa_tmp_1"),
+                                                $"{managerLocal}.AddReferencePair<{TargetType}, {SourceType}>",
+                                                argumentAssertions => argumentAssertions.BeIdentifierNameSyntax("__mappa_tmp_2"),
                                                 argumentAssertions => argumentAssertions.BeIdentifierNameSyntax("input"));
                                         })
                                         .HasNextSyntaxNode(ifSyntaxNodeAssertions =>
                                         {
                                             ifSyntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
                                                 InnerSourceType,
-                                                "__mappa_tmp_2",
+                                                "__mappa_tmp_3",
                                                 initializationAssertions => initializationAssertions.BeMemberAccessExpressionSyntax("input.Child"));
                                         })
                                         .HasNextSyntaxNode(ifSyntaxNodeAssertions =>
                                         {
-                                            ifSyntaxNodeAssertions.BeLocalDeclarationStatementSyntax(InnerTargetType, "__mappa_tmp_4");
+                                            ifSyntaxNodeAssertions.BeLocalDeclarationStatementSyntax(InnerTargetType, "__mappa_tmp_5");
                                         })
                                         .HasNextSyntaxNode(ifSyntaxNodeAssertions =>
                                         {
@@ -259,9 +270,9 @@ public sealed class ReferenceHandlingDiagnosticsIntegrationTests
                                                     conditionAssertions.BePrefixUnaryExpressionSyntax(
                                                         SyntaxKind.ExclamationToken,
                                                         operandAssertions => operandAssertions.BeInvocationExpressionSyntax(
-                                                            $"{referenceManager}.TryGetReference<{InnerTargetType}>",
-                                                            argumentAssertions => argumentAssertions.BeIdentifierNameSyntax("__mappa_tmp_2"),
-                                                            argumentAssertions => argumentAssertions.BeIdentifierNameSyntax("__mappa_tmp_4")));
+                                                            $"{managerLocal}.TryGetReference<{InnerTargetType}>",
+                                                            argumentAssertions => argumentAssertions.BeIdentifierNameSyntax("__mappa_tmp_3"),
+                                                            argumentAssertions => argumentAssertions.BeIdentifierNameSyntax("__mappa_tmp_5")));
                                                 },
                                                 nestedThenAssertions =>
                                                 {
@@ -273,50 +284,43 @@ public sealed class ReferenceHandlingDiagnosticsIntegrationTests
                                                         {
                                                             nestedSyntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
                                                                 InnerTargetType,
-                                                                "__mappa_tmp_3",
+                                                                "__mappa_tmp_4",
                                                                 initializationAssertions => initializationAssertions.BeInvocationExpressionSyntax(
                                                                     "this.MapInner",
-                                                                    argumentAssertions => argumentAssertions.BeIdentifierNameSyntax("__mappa_tmp_2")));
+                                                                    argumentAssertions => argumentAssertions.BeIdentifierNameSyntax("__mappa_tmp_3")));
                                                         })
                                                         .HasNextSyntaxNode(nestedSyntaxNodeAssertions =>
                                                         {
                                                             nestedSyntaxNodeAssertions.BeAssignmentExpressionStatement(
-                                                                "__mappa_tmp_4",
-                                                                rightExpressionAssertions => rightExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_3"));
+                                                                "__mappa_tmp_5",
+                                                                rightExpressionAssertions => rightExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_4"));
                                                         })
                                                         .HasNextSyntaxNode(nestedSyntaxNodeAssertions =>
                                                         {
                                                             nestedSyntaxNodeAssertions.BeInvocationExpressionSyntaxStatement(
-                                                                $"{referenceManager}.AddReferencePair",
-                                                                argumentAssertions => argumentAssertions.BeIdentifierNameSyntax("__mappa_tmp_4"),
-                                                                argumentAssertions => argumentAssertions.BeIdentifierNameSyntax("__mappa_tmp_2"));
+                                                                $"{managerLocal}.AddReferencePair<{InnerTargetType}, {InnerSourceType}>",
+                                                                argumentAssertions => argumentAssertions.BeIdentifierNameSyntax("__mappa_tmp_5"),
+                                                                argumentAssertions => argumentAssertions.BeIdentifierNameSyntax("__mappa_tmp_3"));
                                                         });
                                                 });
                                         })
                                         .HasNextSyntaxNode(ifSyntaxNodeAssertions =>
                                         {
                                             ifSyntaxNodeAssertions.BeAssignmentExpressionStatement(
-                                                leftExpressionAssertions => leftExpressionAssertions.BeMemberAccessExpressionSyntax("__mappa_tmp_1.Child"),
-                                                rightExpressionAssertions => rightExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_4"));
+                                                leftExpressionAssertions => leftExpressionAssertions.BeMemberAccessExpressionSyntax("__mappa_tmp_2.Child"),
+                                                rightExpressionAssertions => rightExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_5"));
                                         })
                                         .HasNextSyntaxNode(ifSyntaxNodeAssertions =>
                                         {
                                             ifSyntaxNodeAssertions.BeAssignmentExpressionStatement(
-                                                "__mappa_tmp_5",
-                                                rightExpressionAssertions => rightExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_1"));
-                                        })
-                                        .HasNextSyntaxNode(ifSyntaxNodeAssertions =>
-                                        {
-                                            ifSyntaxNodeAssertions.BeInvocationExpressionSyntaxStatement(
-                                                $"{referenceManager}.AddReferencePair",
-                                                argumentAssertions => argumentAssertions.BeIdentifierNameSyntax("__mappa_tmp_5"),
-                                                argumentAssertions => argumentAssertions.BeIdentifierNameSyntax("input"));
+                                                "__mappa_tmp_6",
+                                                rightExpressionAssertions => rightExpressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_2"));
                                         });
                                 });
                         })
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
-                            syntaxNodeAssertions.BeReturnStatement("__mappa_tmp_5");
+                            syntaxNodeAssertions.BeReturnStatement("__mappa_tmp_6");
                         });
                 });
     }

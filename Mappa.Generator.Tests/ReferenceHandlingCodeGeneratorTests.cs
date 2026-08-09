@@ -130,6 +130,10 @@ public sealed class ReferenceHandlingCodeGeneratorTests
             }
 
             increaseDepthExpression.ToString().Should().Contain("IncreaseDepth");
+            increaseDepthExpression.ToString().Should().Contain(
+                ReferenceHandlingCodeGenerator.GetReferenceManagerExpression(context));
+            increaseDepthExpression.ToString().Should().NotContain(
+                ReferenceHandlingCodeGenerator.AccessorTypeName);
         }
     }
 
@@ -220,7 +224,17 @@ public sealed class ReferenceHandlingCodeGeneratorTests
                     referenceType,
                     referenceType)
                 .Should()
-                .NotBeNullOrWhiteSpace();
+                .NotBeNullOrWhiteSpace()
+                .And
+                .Contain("AddReferencePair<")
+                .And
+                .Contain(ReferenceHandlingCodeGenerator.GetReferenceManagerExpression(context));
+
+            ReferenceHandlingCodeGenerator.GetReferenceManagerExpression(context)
+                .Should()
+                .StartWith("__mappa_tmp_")
+                .And
+                .NotContain(ReferenceHandlingCodeGenerator.AccessorTypeName);
         }
     }
 

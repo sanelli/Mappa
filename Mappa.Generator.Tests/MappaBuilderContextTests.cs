@@ -200,6 +200,60 @@ public sealed class MappaBuilderContextTests
     }
 
     /// <summary>
+    /// Test that reference-manager local names are allocated once per map method and cleared on push.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetOrCreateReferenceManagerLocalNameIsStableWithinMapMethodAndResetsOnPush()
+    {
+        const string source = """
+                              using Mappa;
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { }
+
+                              public class Target { }
+
+                              [Mappa]
+                              public sealed partial class Mapper
+                              {
+                                  public partial Target Map(Source input, MappaContext context);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var mapMethod = CreateMapMethod(compilation, "Map");
+        mapMethod.SetReferenceReusing(BooleanSetting.Enable);
+        var context = new MappaBuilderContext(compilation);
+
+        using (context.PushMapMethod(mapMethod))
+        {
+            var first = context.GetOrCreateReferenceManagerLocalName();
+            var second = context.GetOrCreateReferenceManagerLocalName();
+            first.Should().Be("__mappa_tmp_1");
+            second.Should().Be(first);
+
+            using (context.PushEarlyReferencePairRegistrationScope())
+            {
+                context.EarlyReferencePairRegistered.Should().BeFalse();
+                context.MarkEarlyReferencePairRegistered();
+                context.EarlyReferencePairRegistered.Should().BeTrue();
+                context.MarkEarlyReferencePairRegistered();
+                context.EarlyReferencePairRegistered.Should().BeTrue();
+            }
+
+            context.EarlyReferencePairRegistered.Should().BeFalse();
+        }
+
+        using (context.PushMapMethod(mapMethod))
+        {
+            context.GetOrCreateReferenceManagerLocalName().Should().Be("__mappa_tmp_2");
+        }
+    }
+
+    /// <summary>
     /// Test <see cref="MappaBuilderContext.PushMapMethod"/> reports UnsafeAccessorNotSupported
     /// when reference handling is requested on an unsupported language version.
     /// </summary>

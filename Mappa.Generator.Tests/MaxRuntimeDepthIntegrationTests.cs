@@ -62,8 +62,8 @@ public sealed class MaxRuntimeDepthIntegrationTests
                                            }
                                            """;
 
-    private static string ReferenceManager
-        => $"{ReferenceHandlingCodeGenerator.AccessorTypeName}.{ReferenceHandlingCodeGenerator.AccessorMethodName}(context)";
+    private static string AccessorGetReferenceManager
+        => $"{ReferenceHandlingCodeGenerator.AccessorTypeName}.{ReferenceHandlingCodeGenerator.AccessorMethodName}";
 
     /// <summary>
     /// Nested reference-type mappings are wrapped in <c>using (IncreaseDepth())</c>
@@ -333,7 +333,7 @@ public sealed class MaxRuntimeDepthIntegrationTests
                     $"{Ns}.ShallowLevel1Source",
                     $"{Ns}.ShallowLevel1Target",
                     shallowLevel0Target,
-                    temporaryOffset: 8));
+                    temporaryOffset: 9));
 
         // Assert runtime on shared context: deep succeeds, shallow throws
         var assembly = CompileToAssembly(generatedResults.OutputCompilation);
@@ -390,14 +390,25 @@ public sealed class MaxRuntimeDepthIntegrationTests
         string level0TargetType,
         int temporaryOffset)
     {
-        string Tmp(int index) => $"__mappa_tmp_{index + temporaryOffset}";
+        // temporaryOffset = temps consumed by prior map methods; manager is next, body temps follow.
+        string Manager() => $"__mappa_tmp_{temporaryOffset + 1}";
+        string Tmp(int index) => $"__mappa_tmp_{index + temporaryOffset + 1}";
 
         blockSyntaxAssertions
-            .HasSyntaxNodesCount(6)
+            .HasSyntaxNodesCount(7)
+            .HasNextSyntaxNode(syntaxNodeAssertions =>
+            {
+                syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                    "global::Mappa.MappaReferenceManager",
+                    Manager(),
+                    initializationAssertions => initializationAssertions.BeInvocationExpressionSyntax(
+                        AccessorGetReferenceManager,
+                        argumentAssertions => argumentAssertions.BeIdentifierNameSyntax("context")));
+            })
             .HasNextSyntaxNode(syntaxNodeAssertions =>
             {
                 syntaxNodeAssertions.BeAssignmentExpressionStatement(
-                    leftExpressionAssertions => leftExpressionAssertions.BeMemberAccessExpressionSyntax($"{ReferenceManager}.MaxDepth"),
+                    leftExpressionAssertions => leftExpressionAssertions.BeMemberAccessExpressionSyntax($"{Manager()}.MaxDepth"),
                     rightExpressionAssertions => rightExpressionAssertions.BeLiteralExpressionSyntax(maxDepth));
             })
             .HasNextSyntaxNode(syntaxNodeAssertions =>
@@ -414,7 +425,7 @@ public sealed class MaxRuntimeDepthIntegrationTests
             .HasNextSyntaxNode(syntaxNodeAssertions =>
             {
                 syntaxNodeAssertions.BeUsingStatementSyntax(
-                    expressionAssertions => expressionAssertions.BeInvocationExpressionSyntax($"{ReferenceManager}.IncreaseDepth"),
+                    expressionAssertions => expressionAssertions.BeInvocationExpressionSyntax($"{Manager()}.IncreaseDepth"),
                     statementAssertions =>
                     {
                         statementAssertions
@@ -435,7 +446,7 @@ public sealed class MaxRuntimeDepthIntegrationTests
                             .HasNextSyntaxNode(outerSyntaxNodeAssertions =>
                             {
                                 outerSyntaxNodeAssertions.BeUsingStatementSyntax(
-                                    expressionAssertions => expressionAssertions.BeInvocationExpressionSyntax($"{ReferenceManager}.IncreaseDepth"),
+                                    expressionAssertions => expressionAssertions.BeInvocationExpressionSyntax($"{Manager()}.IncreaseDepth"),
                                     statementAssertions =>
                                     {
                                         statementAssertions
