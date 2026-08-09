@@ -28,7 +28,7 @@ public sealed class ReferenceNullableToReferenceNullableMapperUnitTest
 
         // Arrange
         target.Should().NotBeNull();
-        target!.ParamA.Should().Be($"{source.ParamA}");
+        target.ParamA.Should().Be($"{source.ParamA}");
         target.ParamB.Should().Be((int)source.ParamB);
     }
 
@@ -65,7 +65,7 @@ public sealed class ReferenceNullableToReferenceNullableMapperUnitTest
 
         // Arrange
         target.Should().NotBeNull();
-        target!.ParamA.Should().Be($"{source.ParamA}");
+        target.ParamA.Should().Be($"{source.ParamA}");
         target.ParamB.Should().Be((int)source.ParamB);
     }
 

@@ -51,7 +51,7 @@ public sealed class ProtobufDurationUnitTests
 
         // Assert
         actual.Should().NotBeNull();
-        actual!.ToTimeSpan().Should().Be(timespan);
+        actual.ToTimeSpan().Should().Be(timespan);
     }
 
     /// <summary>
@@ -124,7 +124,7 @@ public sealed class ProtobufDurationUnitTests
 
         // Assert
         actual.Should().NotBeNull();
-        actual!.Value.Should().Be(expected);
+        actual.Value.Should().Be(expected);
     }
 
     /// <summary>

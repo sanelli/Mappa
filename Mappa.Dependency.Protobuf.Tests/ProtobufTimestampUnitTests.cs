@@ -211,7 +211,7 @@ public sealed class ProtobufTimestampUnitTests
 
         // Assert
         actual.Should().NotBeNull();
-        actual!.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc).Should().Be(expected);
+        actual.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc).Should().Be(expected);
     }
 
     /// <summary>
@@ -284,7 +284,7 @@ public sealed class ProtobufTimestampUnitTests
 
         // Assert
         actual.Should().NotBeNull();
-        DateOnly.FromDateTime(now).ToDateTime(actual!.Value, DateTimeKind.Utc).Should().Be(expected);
+        DateOnly.FromDateTime(now).ToDateTime(actual.Value, DateTimeKind.Utc).Should().Be(expected);
     }
 
     /// <summary>
@@ -337,7 +337,7 @@ public sealed class ProtobufTimestampUnitTests
 
         // Assert
         actual.Should().NotBeNull();
-        actual!.ToDateTime().Should().Be(expected);
+        actual.ToDateTime().Should().Be(expected);
     }
 
     /// <summary>
@@ -392,7 +392,7 @@ public sealed class ProtobufTimestampUnitTests
 
         // Assert
         actual.Should().NotBeNull();
-        actual!.ToDateTimeOffset().Should().Be(expected);
+        actual.ToDateTimeOffset().Should().Be(expected);
     }
 
     /// <summary>
@@ -449,7 +449,7 @@ public sealed class ProtobufTimestampUnitTests
 
         // Assert
         actual.Should().NotBeNull();
-        DateOnly.FromDateTime(actual!.ToDateTime()).Should().Be(dateOnly);
+        DateOnly.FromDateTime(actual.ToDateTime()).Should().Be(dateOnly);
     }
 
     /// <summary>
