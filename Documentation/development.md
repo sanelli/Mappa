@@ -38,7 +38,7 @@ Reports are:
 Runs [BenchmarkDotNet](https://benchmarkdotnet.org/) in **Release** with job **Default** (same job used on `main` merge CI). Default uses more iterations/warmups than Short, so wall-clock time is longer but results are less noisy. Pull requests do not run benchmarks. Outputs land under the gitignored `.mappa-benchmark/` folder:
 
 - `Benchmark.Summary.md` — mean time (ns) and allocated bytes for AutoMapper / Mapster / Mapperly / Mappa
-- `Benchmark.Comparison.md` — winner table for the chart subset (best time / best memory; ties list Mappa first; non-Mappa winners include % delta vs Mappa; sole Mappa wins include smaller side delta + second-best mapper name when values differ)
+- `Benchmark.Comparison.md` — winner table for the chart subset (best time / best memory; ties list Mappa first with no delta; non-Mappa winners include unsigned `% vs Mappa`; sole Mappa wins include unsigned `% vs` second-best mapper when values differ)
 - `MAPPA-BENCHMARK-COMPARISON.svg` — SVG winner table for the same chart subset (memory winners are `n/a` for `StringToEnumBenchmark` / `EnumToStringBenchmark`, matching the memory charts)
 - `MAPPA-BENCHMARK-TIME.svg` / `MAPPA-BENCHMARK-MEMORY.svg` — grouped bar charts for the shared chart subset
 - `MAPPA-BENCHMARK-TIME-PERCENTAGES.svg` / `MAPPA-BENCHMARK-MEMORY-PERCENTAGES.svg` — competitor / Mappa percentage bar charts for the same subset

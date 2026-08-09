@@ -738,7 +738,7 @@ function Format-BenchmarkWinnerDeltaPercent
         return $null
     }
 
-    $delta = (($BestValue / $MappaValue) - 1.0) * 100.0
+    $delta = [Math]::Abs((($BestValue / $MappaValue) - 1.0) * 100.0)
     return $delta.ToString("0.#", [System.Globalization.CultureInfo]::InvariantCulture) + "%"
 }
 
@@ -754,15 +754,8 @@ function Format-BenchmarkSecondBestDeltaPercent
         return $null
     }
 
-    # Positive means the second-best mapper is worse than Mappa (higher time/memory).
-    $delta = (($SecondBestValue / $MappaValue) - 1.0) * 100.0
-    $formatted = $delta.ToString("0.#", [System.Globalization.CultureInfo]::InvariantCulture) + "%"
-    if (-not $formatted.StartsWith("-") -and -not $formatted.StartsWith("+"))
-    {
-        $formatted = "+" + $formatted
-    }
-
-    return $formatted
+    $delta = [Math]::Abs((($SecondBestValue / $MappaValue) - 1.0) * 100.0)
+    return $delta.ToString("0.#", [System.Globalization.CultureInfo]::InvariantCulture) + "%"
 }
 
 function Get-BenchmarkMappersWithMappaFirst
@@ -854,19 +847,13 @@ function Get-BenchmarkWinnerCell
         $mappaEntry = $Mappers["Mappa"]
         $mappaValue = if ($null -eq $mappaEntry) { $null } else { $mappaEntry.$MetricProperty }
         $deltaPercent = Format-BenchmarkWinnerDeltaPercent -BestValue $best.BestValue -MappaValue $mappaValue
+        $secondBestMapper = "Mappa"
     }
 
     $label = ($orderedWinners -join ", ")
-    if ($showDelta -and (-not [string]::IsNullOrWhiteSpace($deltaPercent)))
+    if ($showDelta -and (-not [string]::IsNullOrWhiteSpace($deltaPercent)) -and (-not [string]::IsNullOrWhiteSpace($secondBestMapper)))
     {
-        if (-not [string]::IsNullOrWhiteSpace($secondBestMapper))
-        {
-            $label = "$label ($deltaPercent $secondBestMapper)"
-        }
-        else
-        {
-            $label = "$label ($deltaPercent)"
-        }
+        $label = "$label ($deltaPercent vs $secondBestMapper)"
     }
 
     return [pscustomobject]@{
@@ -963,17 +950,22 @@ function Add-BenchmarkWinnerSvgText
         [void]$Builder.Append("<tspan font-weight=`"bold`" fill=`"$color`">$escapedMapper</tspan>")
     }
 
-    if ($WinnerCell.ShowDelta -and (-not [string]::IsNullOrWhiteSpace([string]$WinnerCell.DeltaPercent)))
+    if ($WinnerCell.ShowDelta -and
+        (-not [string]::IsNullOrWhiteSpace([string]$WinnerCell.DeltaPercent)) -and
+        (-not [string]::IsNullOrWhiteSpace([string]$WinnerCell.SecondBestMapper)))
     {
-        $sideText = " ($($WinnerCell.DeltaPercent)"
-        if (-not [string]::IsNullOrWhiteSpace([string]$WinnerCell.SecondBestMapper))
+        $vsMapper = [string]$WinnerCell.SecondBestMapper
+        $vsColor = "#555555"
+        if ($script:BenchmarkMapperColors.ContainsKey($vsMapper))
         {
-            $sideText += " $($WinnerCell.SecondBestMapper)"
+            $vsColor = $script:BenchmarkMapperColors[$vsMapper]
         }
 
-        $sideText += ")"
-        $escapedDelta = [System.Security.SecurityElement]::Escape($sideText)
-        [void]$Builder.Append("<tspan font-size=`"9`" fill=`"#555555`">$escapedDelta</tspan>")
+        $escapedPrefix = [System.Security.SecurityElement]::Escape(" ($($WinnerCell.DeltaPercent) vs ")
+        $escapedVsMapper = [System.Security.SecurityElement]::Escape($vsMapper)
+        [void]$Builder.Append("<tspan font-size=`"9`" fill=`"#555555`">$escapedPrefix</tspan>")
+        [void]$Builder.Append("<tspan font-size=`"9`" font-weight=`"bold`" fill=`"$vsColor`">$escapedVsMapper</tspan>")
+        [void]$Builder.Append('<tspan font-size="9" fill="#555555">)</tspan>')
     }
 
     [void]$Builder.AppendLine("</text>")
