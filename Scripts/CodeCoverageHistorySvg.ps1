@@ -264,7 +264,8 @@ function New-CodeCoverageHistorySvg
     $yLabelMid = [Math]::Round(($y100 + $y80) / 2, 1)
 
     $svg = @"
-<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="height: 500px; width: 800px;font-family:'Open Sans', sans-serif;background:white" role="img">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="800" height="500" viewBox="0 0 800 500" style="font-family:'Open Sans', sans-serif;" role="img">
+    <rect width="100%" height="100%" fill="#ffffff"/>
     <title id="title">Mappa Code Coverage</title>
     <g style="stroke:#CCCCCC;stroke-width: 2;"><line x1="90" x2="90" y1="$yAxisTop" y2="$y80"></line></g>
     <g style="stroke:#CCCCCC;stroke-width: 2;"><line x1="90" x2="705" y1="$y80" y2="$y80"></line></g>

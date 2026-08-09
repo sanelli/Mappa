@@ -50,7 +50,7 @@ public sealed class MappaContext
     /// <summary>
     /// Gets the keys.
     /// </summary>
-    public IReadOnlyCollection<string> Keys => new List<string>(this.items.Keys);
+    public IReadOnlyCollection<string> Keys => this.items.Keys;
 
     /// <summary>
     /// Gets the reference manager used for reference reuse and runtime depth tracking.

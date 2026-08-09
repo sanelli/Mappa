@@ -462,7 +462,7 @@ try
         -YAxisLabel "Mean time (us)" `
         -Title "Benchmark mean time" `
         -OutputPath $timeSvgPath `
-        -YAxisTickStep 25 `
+        -YAxisTickStep 50 `
         -ValueLabelFormat "0.###"
 
     if ($memoryChartBenchmarks.Count -gt 0)
@@ -524,8 +524,8 @@ try
                 -YAxisLabel "Competitor / Mappa (%)" `
                 -Title "Benchmark mean time vs Mappa" `
                 -OutputPath $timePercentSvgPath `
-                -YAxisTickStep 500 `
-                -YAxisMax 2500 `
+                -YAxisTickStep 250 `
+                -YAxisMax 1500 `
                 -ValueLabelFormat "0.#" `
                 -ValueLabelSuffix "%" `
                 -MapperNames $percentageMappers `

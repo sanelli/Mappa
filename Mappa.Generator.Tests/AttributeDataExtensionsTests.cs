@@ -51,7 +51,7 @@ public sealed class AttributeDataExtensionsTests
         var attribute = attributes.GetMappaTypeMappingDefaultAttribute(compilation);
 
         attribute.Should().NotBeNull();
-        attribute!.MethodName.Should().Be("DefaultMap");
+        attribute.MethodName.Should().Be("DefaultMap");
         attribute.Behavior.Should().Be(MappaTypeMappingDefaultBehavior.InvokeMethod);
     }
 
@@ -88,7 +88,7 @@ public sealed class AttributeDataExtensionsTests
         var attribute = attributes.GetMappaTypeMappingDefaultAttribute(compilation);
 
         attribute.Should().NotBeNull();
-        attribute!.Behavior.Should().Be(MappaTypeMappingDefaultBehavior.Null);
+        attribute.Behavior.Should().Be(MappaTypeMappingDefaultBehavior.Null);
         attribute.MethodName.Should().BeNull();
     }
 
@@ -130,9 +130,9 @@ public sealed class AttributeDataExtensionsTests
         var attribute = attributes.GetMappaTypeMappingDefaultAttribute(compilation);
 
         attribute.Should().NotBeNull();
-        attribute!.MethodName.Should().Be("DefaultMap");
+        attribute.MethodName.Should().Be("DefaultMap");
         attribute.Type.Should().NotBeNull();
-        attribute.Type!.FullName.Should().Be("Mappa.Generator.Tests.UnitTests.SourceCode.Dependency");
+        attribute.Type.FullName.Should().Be("Mappa.Generator.Tests.UnitTests.SourceCode.Dependency");
     }
 
     /// <summary>
@@ -168,9 +168,9 @@ public sealed class AttributeDataExtensionsTests
         var attribute = attributes.GetMappaTypeMappingDefaultAttribute(compilation);
 
         attribute.Should().NotBeNull();
-        attribute!.Behavior.Should().Be(MappaTypeMappingDefaultBehavior.MapSourceType);
+        attribute.Behavior.Should().Be(MappaTypeMappingDefaultBehavior.MapSourceType);
         attribute.Type.Should().NotBeNull();
-        attribute.Type!.FullName.Should().Be("Mappa.Generator.Tests.UnitTests.SourceCode.Target");
+        attribute.Type.FullName.Should().Be("Mappa.Generator.Tests.UnitTests.SourceCode.Target");
     }
 
     /// <summary>
@@ -335,9 +335,9 @@ public sealed class AttributeDataExtensionsTests
         var attribute = attributes.GetMappaTypeMappingDefaultAttribute(compilation);
 
         attribute.Should().NotBeNull();
-        attribute!.Behavior.Should().Be(MappaTypeMappingDefaultBehavior.MapSourceType);
+        attribute.Behavior.Should().Be(MappaTypeMappingDefaultBehavior.MapSourceType);
         attribute.Type.Should().NotBeNull();
-        attribute.Type!.FullName.Should().Be("Mappa.Generator.Tests.UnitTests.SourceCode.DefaultTarget");
+        attribute.Type.FullName.Should().Be("Mappa.Generator.Tests.UnitTests.SourceCode.DefaultTarget");
         attribute.MethodName.Should().BeNull();
     }
 
@@ -561,7 +561,7 @@ public sealed class AttributeDataExtensionsTests
         var attribute = attributes.GetMappaDependencyInjectionAttributeData(compilation);
 
         attribute.Should().NotBeNull();
-        attribute!.ConstructorMethodName.Should().Be("RegisterFromCtor");
+        attribute.ConstructorMethodName.Should().Be("RegisterFromCtor");
         attribute.MethodName.Should().Be("RegisterFromProperty");
         attribute.ExtensionMethod.Should().BeFalse();
         attribute.Accessibility.Should().Be(MappaDependencyInjectionMethodAccessibility.Internal);
@@ -618,7 +618,7 @@ public sealed class AttributeDataExtensionsTests
         var attribute = attributes.GetMappaAllowInaccessibleSourceMembersAttribute(compilation);
 
         attribute.Should().NotBeNull();
-        attribute!.MemberNames.Should().Equal("First", "Second");
+        attribute.MemberNames.Should().Equal("First", "Second");
     }
 
     /// <summary>
@@ -661,7 +661,7 @@ public sealed class AttributeDataExtensionsTests
         var attribute = attributes.GetMappaAllowInaccessibleTargetMembersAttribute(compilation);
 
         attribute.Should().NotBeNull();
-        attribute!.MemberNames.Should().Equal("Allowed");
+        attribute.MemberNames.Should().Equal("Allowed");
     }
 
     /// <summary>
@@ -704,7 +704,7 @@ public sealed class AttributeDataExtensionsTests
         var attribute = attributes.GetMappaAllowInaccessibleSourceMembersAttribute(compilation);
 
         attribute.Should().NotBeNull();
-        attribute!.MemberNames.Should().BeEmpty();
+        attribute.MemberNames.Should().BeEmpty();
     }
 
     /// <summary>
@@ -736,7 +736,7 @@ public sealed class AttributeDataExtensionsTests
         var attribute = attributes.GetMappaDependencyInjectionAttributeData(compilation);
 
         attribute.Should().NotBeNull();
-        attribute!.IgnoreTypes.Should().BeEmpty();
+        attribute.IgnoreTypes.Should().BeEmpty();
         attribute.InjectFromAssemblies.Should().BeEmpty();
     }
 
@@ -1040,7 +1040,7 @@ public sealed class AttributeDataExtensionsTests
         var attribute = attributes.GetMappaAllowInaccessibleTargetMembersAttribute(compilation);
 
         attribute.Should().NotBeNull();
-        attribute!.AllowProperties.Should().BeFalse();
+        attribute.AllowProperties.Should().BeFalse();
         attribute.AllowConstructors.Should().BeFalse();
         attribute.MemberNames.Should().BeEmpty();
     }
@@ -1085,7 +1085,7 @@ public sealed class AttributeDataExtensionsTests
         var attribute = attributes.GetMappaAllowInaccessibleTargetMembersAttribute(compilation);
 
         attribute.Should().NotBeNull();
-        attribute!.MemberNames.Should().Equal("Allowed");
+        attribute.MemberNames.Should().Equal("Allowed");
     }
 
     /// <summary>

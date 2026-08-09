@@ -81,7 +81,8 @@ internal sealed class TypeMapIdentifierWithMapMethodAlgorithm
             return null;
         }
 
-        if (!this.Context.TryGetCompatibleMethod(this.Context.TargetType, this.Context.SourceType, this.Compilation, out var mapMethod))
+        if (!this.Context.TryGetCompatibleMethod(this.Context.TargetType, this.Context.SourceType, this.Compilation, out var mapMethod)
+            || mapMethod is null)
         {
             return null;
         }

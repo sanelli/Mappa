@@ -15,8 +15,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Google.Protobuf" Version="3.33.4" />
-        <PackageReference Include="Grpc.Tools" Version="2.76.0">
+        <PackageReference Include="Google.Protobuf" Version="3.35.1" />
+        <PackageReference Include="Grpc.Tools" Version="2.83.0">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
@@ -32,7 +32,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="SonarAnalyzer.CSharp" Version="10.18.0.131500">
+        <PackageReference Include="SonarAnalyzer.CSharp" Version="10.31.0.145097">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>

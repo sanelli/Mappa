@@ -33,7 +33,7 @@ public sealed class ReferenceHandlingMapperUnitTests
         // Assert
         result.Id.Should().Be(1);
         result.Address.Should().NotBeNull();
-        result.Address!.Id.Should().Be(2);
+        result.Address.Id.Should().Be(2);
         result.Address.Owner.Should().BeSameAs(result);
     }
 
@@ -58,7 +58,7 @@ public sealed class ReferenceHandlingMapperUnitTests
         // Assert
         result.Id.Should().Be(1);
         result.Address.Should().NotBeNull();
-        result.Address!.Id.Should().Be(2);
+        result.Address.Id.Should().Be(2);
         result.Address.Owner.Should().BeNull();
     }
 

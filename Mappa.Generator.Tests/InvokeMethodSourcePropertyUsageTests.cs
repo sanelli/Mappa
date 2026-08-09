@@ -43,10 +43,10 @@ public sealed class InvokeMethodSourcePropertyUsageTests
         var compilation = BuildCompilation(source);
         var mapper = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Mapper");
         mapper.Should().NotBeNull();
-        var method = mapper!.GetMembers("GetValue").OfType<IMethodSymbol>().Single();
+        var method = mapper.GetMembers("GetValue").OfType<IMethodSymbol>().Single();
         var sourceType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Source");
         sourceType.Should().NotBeNull();
-        var fooProperty = sourceType!.GetMembers("Foo").OfType<IPropertySymbol>().Single();
+        var fooProperty = sourceType.GetMembers("Foo").OfType<IPropertySymbol>().Single();
 
         var result = method.UsesSourceProperty(compilation, fooProperty, sourceType, false);
 
@@ -78,10 +78,10 @@ public sealed class InvokeMethodSourcePropertyUsageTests
         var compilation = BuildCompilation(source);
         var mapper = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Mapper");
         mapper.Should().NotBeNull();
-        var method = mapper!.GetMembers("GetValue").OfType<IMethodSymbol>().Single();
+        var method = mapper.GetMembers("GetValue").OfType<IMethodSymbol>().Single();
         var sourceType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Source");
         sourceType.Should().NotBeNull();
-        var fooProperty = sourceType!.GetMembers("Foo").OfType<IPropertySymbol>().Single();
+        var fooProperty = sourceType.GetMembers("Foo").OfType<IPropertySymbol>().Single();
 
         var result = method.UsesSourceProperty(compilation, fooProperty, sourceType, false);
 
@@ -113,11 +113,11 @@ public sealed class InvokeMethodSourcePropertyUsageTests
         var compilation = BuildCompilation(source);
         var mapper = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Mapper");
         mapper.Should().NotBeNull();
-        var method = mapper!.GetMembers("GetValue").OfType<IMethodSymbol>().Single();
+        var method = mapper.GetMembers("GetValue").OfType<IMethodSymbol>().Single();
         var sourceType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Source");
         sourceType.Should().NotBeNull();
 
-        var result = method.UsesSourceProperty(compilation, null, sourceType!, false);
+        var result = method.UsesSourceProperty(compilation, null, sourceType, false);
 
         result.Should().BeFalse();
     }

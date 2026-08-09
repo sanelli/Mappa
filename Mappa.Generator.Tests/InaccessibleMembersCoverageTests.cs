@@ -29,18 +29,18 @@ public sealed class InaccessibleMembersCoverageTests
     {
         var allowAll = InaccessibleTargetMemberOptions.FromAttribute(new MappaAllowInaccessibleTargetMembersAttribute());
         allowAll.Should().NotBeNull();
-        allowAll!.IsPropertyAllowed("Any").Should().BeTrue();
+        allowAll.IsPropertyAllowed("Any").Should().BeTrue();
 
         var whitelist = InaccessibleTargetMemberOptions.FromAttribute(
             new MappaAllowInaccessibleTargetMembersAttribute("Allowed"));
         whitelist.Should().NotBeNull();
-        whitelist!.IsPropertyAllowed("Allowed").Should().BeTrue();
+        whitelist.IsPropertyAllowed("Allowed").Should().BeTrue();
         whitelist.IsPropertyAllowed("Denied").Should().BeFalse();
 
         var propertiesDisabled = InaccessibleTargetMemberOptions.FromAttribute(
             new MappaAllowInaccessibleTargetMembersAttribute { AllowProperties = false });
         propertiesDisabled.Should().NotBeNull();
-        propertiesDisabled!.IsPropertyAllowed("Any").Should().BeFalse();
+        propertiesDisabled.IsPropertyAllowed("Any").Should().BeFalse();
 
         InaccessibleTargetMemberOptions.FromAttribute(null).Should().BeNull();
     }
@@ -54,12 +54,12 @@ public sealed class InaccessibleMembersCoverageTests
     {
         var allowAll = InaccessibleSourceMemberOptions.FromAttribute(new MappaAllowInaccessibleSourceMembersAttribute());
         allowAll.Should().NotBeNull();
-        allowAll!.IsMemberAllowed("Any").Should().BeTrue();
+        allowAll.IsMemberAllowed("Any").Should().BeTrue();
 
         var whitelist = InaccessibleSourceMemberOptions.FromAttribute(
             new MappaAllowInaccessibleSourceMembersAttribute("Allowed"));
         whitelist.Should().NotBeNull();
-        whitelist!.IsMemberAllowed("Allowed").Should().BeTrue();
+        whitelist.IsMemberAllowed("Allowed").Should().BeTrue();
         whitelist.IsMemberAllowed("Denied").Should().BeFalse();
 
         InaccessibleSourceMemberOptions.FromAttribute(null).Should().BeNull();
@@ -121,7 +121,7 @@ public sealed class InaccessibleMembersCoverageTests
         var targetType = compilation.GetTypeByMetadataName("Coverage.Target");
         targetType.Should().NotBeNull();
 
-        var indexer = targetType!.GetMembers().OfType<IPropertySymbol>().Single(property => property.IsIndexer);
+        var indexer = targetType.GetMembers().OfType<IPropertySymbol>().Single(property => property.IsIndexer);
         var getOnly = targetType.GetMembers("GetOnly").OfType<IPropertySymbol>().Single();
         var options = InaccessibleTargetMemberOptions.FromAttribute(new MappaAllowInaccessibleTargetMembersAttribute());
 
@@ -229,8 +229,8 @@ public sealed class InaccessibleMembersCoverageTests
         sourceType.Should().NotBeNull();
         targetType.Should().NotBeNull();
 
-        var sourceProperty = sourceType!.GetMembers("Value").OfType<IPropertySymbol>().Single();
-        var targetProperty = targetType!.GetMembers("Value").OfType<IPropertySymbol>().Single();
+        var sourceProperty = sourceType.GetMembers("Value").OfType<IPropertySymbol>().Single();
+        var targetProperty = targetType.GetMembers("Value").OfType<IPropertySymbol>().Single();
         var constructor = targetType.InstanceConstructors.Single(method => method.Parameters.Length == 0);
 
         var context = new MappaBuilderContext(compilation);

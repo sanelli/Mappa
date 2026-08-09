@@ -117,7 +117,7 @@ public sealed class IQueryableProjectionEntityFrameworkIntegrationTests
         var selectFinder = new SelectExpressionFinder();
         selectFinder.Visit(projectedQueryable.Expression);
         selectFinder.SelectCall.Should().NotBeNull();
-        selectFinder.SelectCall!.Arguments.Count.Should().Be(2);
+        selectFinder.SelectCall.Arguments.Count.Should().Be(2);
         var projectionLambda = selectFinder.SelectCall.Arguments[1] as LambdaExpression
             ?? (selectFinder.SelectCall.Arguments[1] as UnaryExpression)?.Operand as LambdaExpression;
         projectionLambda.Should().NotBeNull();

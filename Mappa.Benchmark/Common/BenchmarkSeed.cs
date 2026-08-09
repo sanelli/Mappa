@@ -16,8 +16,9 @@ internal static class BenchmarkSeed
     /// </summary>
     public static void Apply()
     {
-#pragma warning disable S3010
+        // Deterministic Bogus seed for reproducible benchmarks; not used for security.
+#pragma warning disable S2245, S3010
         Randomizer.Seed = new Random(BenchmarkConstants.RandomSeed);
-#pragma warning restore S3010
+#pragma warning restore S2245, S3010
     }
 }

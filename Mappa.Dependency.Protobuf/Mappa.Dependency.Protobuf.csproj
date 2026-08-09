@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
     <Import Project="$(MSBuildThisFileDirectory)../MappaVersion.targets"/>
     <PropertyGroup>
@@ -35,13 +35,13 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="Google.Protobuf" Version="3.33.4" />
+        <PackageReference Include="Google.Protobuf" Version="3.35.1" />
         <PackageReference Include="Mappa" Version="$(MappaVersion)" />
         <PackageReference Include="StyleCop.Analyzers.Unstable" Version="1.2.0.556">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="SonarAnalyzer.CSharp" Version="10.18.0.131500">
+        <PackageReference Include="SonarAnalyzer.CSharp" Version="10.31.0.145097">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>

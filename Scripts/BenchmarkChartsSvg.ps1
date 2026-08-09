@@ -217,6 +217,9 @@ function New-BenchmarkGroupedBarSvg
         # When set, force the Y-axis maximum (overflowing bars use a broken-top stub).
         [Nullable[double]]$YAxisMax = $null,
 
+        # When set with YAxisMax, continuous scale / break line ends here; YAxisMax is labeled at the overflow top.
+        [Nullable[double]]$YAxisBreakAt = $null,
+
         # When set with overflow stubs, scale stub height by overflow amount (max keeps OverflowStubMaxHeight).
         [switch]$ProportionalOverflowStubs,
 
@@ -282,10 +285,36 @@ function New-BenchmarkGroupedBarSvg
     $overflowStubMinHeight = 4.0
     $breakGap = 8.0
     $useAxisCap = ($null -ne $YAxisMax) -and ([double]$YAxisMax -gt 0)
-    $hasOverflow = $useAxisCap -and ($maxValue -gt [double]$YAxisMax)
-    $scaleHeight = if ($hasOverflow) { $plotHeight - $overflowStubMaxHeight - $breakGap } else { $plotHeight }
+    $useAxisBreak = ($null -ne $YAxisBreakAt) -and ([double]$YAxisBreakAt -gt 0)
+    if ($useAxisBreak -and -not $useAxisCap)
+    {
+        throw "YAxisBreakAt requires YAxisMax."
+    }
 
-    if ($useAxisCap)
+    if ($useAxisBreak -and ([double]$YAxisBreakAt -ge [double]$YAxisMax))
+    {
+        throw "YAxisBreakAt must be less than YAxisMax."
+    }
+
+    # Continuous scale ends at the break (when set) or at YAxisMax / auto max.
+    if ($useAxisBreak)
+    {
+        $axisMax = [double]$YAxisBreakAt
+        $tickCount = [int][Math]::Ceiling($axisMax / $YAxisTickStep)
+        if ($tickCount -lt 1)
+        {
+            $tickCount = 1
+        }
+
+        $axisMax = $tickCount * $YAxisTickStep
+        if ($axisMax -ge [double]$YAxisMax)
+        {
+            throw "YAxisBreakAt snapped to $axisMax which is not below YAxisMax ($([double]$YAxisMax)). Adjust YAxisTickStep."
+        }
+
+        $chartMax = [double]$YAxisMax
+    }
+    elseif ($useAxisCap)
     {
         $axisMax = [double]$YAxisMax
         $tickCount = [int][Math]::Ceiling($axisMax / $YAxisTickStep)
@@ -295,6 +324,7 @@ function New-BenchmarkGroupedBarSvg
         }
 
         $axisMax = $tickCount * $YAxisTickStep
+        $chartMax = $axisMax
     }
     else
     {
@@ -305,12 +335,18 @@ function New-BenchmarkGroupedBarSvg
         }
 
         $axisMax = $tickCount * $YAxisTickStep
+        $chartMax = $axisMax
     }
+
+    $overflowThreshold = $axisMax
+    $hasOverflow = ($useAxisCap -or $useAxisBreak) -and ($maxValue -gt $overflowThreshold)
+    $scaleHeight = if ($hasOverflow) { $plotHeight - $overflowStubMaxHeight - $breakGap } else { $plotHeight }
 
     $maxOverflowAmount = 0.0
     if ($hasOverflow)
     {
-        $maxOverflowAmount = $maxValue - $axisMax
+        $overflowCeiling = [Math]::Max($maxValue, $chartMax)
+        $maxOverflowAmount = $overflowCeiling - $overflowThreshold
         if ($maxOverflowAmount -lt 0)
         {
             $maxOverflowAmount = 0.0
@@ -367,6 +403,19 @@ function New-BenchmarkGroupedBarSvg
             [void]$builder.AppendLine("  <line x1=`"$leftMargin`" y1=`"$([Math]::Round($y, 2))`" x2=`"$([Math]::Round($leftMargin + $plotWidth, 2))`" y2=`"$([Math]::Round($y, 2))`" stroke=`"#dddddd`" stroke-width=`"1`"/>")
             [void]$builder.AppendLine("  <text x=`"$([Math]::Round($leftMargin - 8, 2))`" y=`"$([Math]::Round($y + 4, 2))`" text-anchor=`"end`" font-family=`"Segoe UI, Arial, sans-serif`" font-size=`"11`" fill=`"#555555`">$label</text>")
         }
+    }
+
+    # When the continuous scale breaks below YAxisMax, label the overflow top with the chart max.
+    if ($hasOverflow -and $useAxisBreak -and ($chartMax -gt $axisMax))
+    {
+        $topLabel = if ($YAxisTickStep -ge 1.0) {
+            Format-BenchmarkChartNumber -Value $chartMax -Format "0"
+        } else {
+            Format-BenchmarkChartNumber -Value $chartMax -Format "0.##"
+        }
+
+        [void]$builder.AppendLine("  <line x1=`"$leftMargin`" y1=`"$topMargin`" x2=`"$([Math]::Round($leftMargin + $plotWidth, 2))`" y2=`"$topMargin`" stroke=`"#dddddd`" stroke-width=`"1`"/>")
+        [void]$builder.AppendLine("  <text x=`"$([Math]::Round($leftMargin - 8, 2))`" y=`"$([Math]::Round($topMargin + 4, 2))`" text-anchor=`"end`" font-family=`"Segoe UI, Arial, sans-serif`" font-size=`"11`" fill=`"#555555`">$topLabel</text>")
     }
 
     # Draw EmphasizeGuideAt even when it is not on a tick (e.g. 100% with 500-step ticks).
