@@ -8,6 +8,8 @@ Use this page to discover what Mappa can do. For hands-on examples, see the [tut
 | Feature | Description | Learn more |
 |---------|-------------|------------|
 | Compile-time code generation | Partial classes tagged with `[Mappa]` receive generated map method bodies at build time. | [Tutorial](./tutorial.md), [Algorithm — method eligibility](./mappa-generator-algorithm.md) |
+| Attribute-driven incremental discovery | Mapper and DI pipelines use `ForAttributeWithMetadataName` and require `partial` class declarations, so only relevant attributed types enter generation. | [Algorithm — Incremental discovery](./mappa-generator-algorithm.md#incremental-discovery), [Mappa.Generator README](../Mappa.Generator/README.md#incremental-discovery) |
+| Cooperative generator cancellation | Hot strategy, collection, and DI discovery loops honor `CancellationToken` so IDE/build cancellation stays responsive without changing mapping results. | [Algorithm — CancellationToken convention](./mappa-generator-algorithm.md#cancellationtoken-convention) |
 | Instance mappers | Map methods on instance partial classes. | [Tutorial — Define the mapper](./tutorial.md) |
 | Static mappers | Map methods on static partial classes. | [MapMethodStrategyMapper.cs](../Mappa.Samples/MapMethodStrategyMapper.cs) |
 | Extension-method mappers | Map methods declared as extension methods. | [ExtensionMethodMapper.cs](../Mappa.Samples/ExtensionMethodMapper.cs) |
