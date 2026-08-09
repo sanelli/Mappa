@@ -193,7 +193,7 @@ public sealed class SyntheticMapMethodNamingTests
         var compilation = BuildCompilation("public class Holder { }");
         var dictionaryOpen = compilation.GetTypeByMetadataName("System.Collections.Generic.Dictionary`2");
         dictionaryOpen.Should().NotBeNull();
-        var dictionaryType = dictionaryOpen!.Construct(
+        var dictionaryType = dictionaryOpen.Construct(
             compilation.GetSpecialType(SpecialType.System_String),
             compilation.GetSpecialType(SpecialType.System_Int32));
 

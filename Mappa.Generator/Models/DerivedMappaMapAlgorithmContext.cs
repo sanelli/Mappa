@@ -64,7 +64,7 @@ internal sealed class DerivedMappaMapAlgorithmContext(
         => this.ParentContext.TryGetPolymorphicMethod(targetType, sourceType, mappaUserSettings, out mapMethod);
 
     /// <inheritdoc/>
-    internal override bool TryGetCompatibleMethod(ITypeSymbol targetType, ITypeSymbol sourceType, Compilation compilation, out MapMethod mapMethod)
+    internal override bool TryGetCompatibleMethod(ITypeSymbol targetType, ITypeSymbol sourceType, Compilation compilation, out MapMethod? mapMethod)
         => this.ParentContext.TryGetCompatibleMethod(targetType, sourceType, compilation, out mapMethod);
 
     /// <inheritdoc/>

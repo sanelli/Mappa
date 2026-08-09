@@ -36,7 +36,7 @@ public sealed class ConstructorMapStrategyDetectorPropertyPathContextTests
             ["Address", "City"]);
         var descended = ConstructorMapStrategyDetector.GetNestedTypeMappingPropertyPathContext("Address", remainingContext);
         descended.Should().NotBeNull();
-        descended!.RemainingTargetSegments.Should().Equal("City");
+        descended.RemainingTargetSegments.Should().Equal("City");
         descended.RemainingSourceSegments.Should().Equal("City");
 
         var passThrough = ConstructorMapStrategyDetector.GetNestedTypeMappingPropertyPathContext("ZipCode", remainingContext);
@@ -51,7 +51,7 @@ public sealed class ConstructorMapStrategyDetectorPropertyPathContextTests
             "Address",
             nestedOriginalEmptyRemaining);
         nestedScopeFromEmptyRemaining.Should().NotBeNull();
-        nestedScopeFromEmptyRemaining!.IsNestedAttributeScope.Should().BeTrue();
+        nestedScopeFromEmptyRemaining.IsNestedAttributeScope.Should().BeTrue();
         nestedScopeFromEmptyRemaining.OuterTargetSegment.Should().Be("Address");
 
         var nestedOriginalMismatch = new PropertyPathContext("Address.City", "Address.City", [], []);

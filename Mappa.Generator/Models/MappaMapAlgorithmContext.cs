@@ -111,7 +111,7 @@ internal abstract class MappaMapAlgorithmContext
         ITypeSymbol targetType,
         ITypeSymbol sourceType,
         Compilation compilation,
-        out MapMethod mapMethod);
+        out MapMethod? mapMethod);
 
     /// <summary>
     /// Report a diagnostic.

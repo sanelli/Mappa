@@ -1197,7 +1197,7 @@ internal static class TypeSymbolExtensions
             .Select(sourceEnumValue => (SourceName: sourceEnumValue.Name, TargetName: targetMemberNames.FirstOrDefault(targetName => string.Equals(sourceEnumValue.Name, targetName, StringComparison.OrdinalIgnoreCase))))
             .Where(pair => pair.TargetName is not null)
             .OrderBy(pair => pair.SourceName)
-            .Select(pair => (pair.SourceName, pair.TargetName!))
+            .Select(pair => (pair.SourceName, pair.TargetName))
             .ToArray();
     }
 

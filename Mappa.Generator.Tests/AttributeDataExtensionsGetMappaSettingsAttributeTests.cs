@@ -90,7 +90,7 @@ public sealed class AttributeDataExtensionsGetMappaSettingsAttributeTests
         var settings = attributes.GetMappaSettingsAttribute(compilation);
 
         settings.Should().NotBeNull();
-        settings!.SByteFormat.Should().Be("sb");
+        settings.SByteFormat.Should().Be("sb");
         settings.UShortFormat.Should().Be("us");
         settings.UIntFormat.Should().Be("ui");
         settings.ULongFormat.Should().Be("ul");
@@ -131,7 +131,7 @@ public sealed class AttributeDataExtensionsGetMappaSettingsAttributeTests
         var settings = attributes.GetMappaSettingsAttribute(compilation);
 
         settings.Should().NotBeNull();
-        settings!.DateTimeStyle.Should().Be(MappaSettingsAttribute.UndefinedDateTimeStyle);
+        settings.DateTimeStyle.Should().Be(MappaSettingsAttribute.UndefinedDateTimeStyle);
         settings.IntStyle.Should().Be(MappaSettingsAttribute.UndefinedNumberStyle);
     }
 
@@ -169,7 +169,7 @@ public sealed class AttributeDataExtensionsGetMappaSettingsAttributeTests
         var settings = attributes.GetMappaSettingsAttribute(compilation);
 
         settings.Should().NotBeNull();
-        settings!.IntStyle.Should().Be(NumberStyles.AllowThousands | NumberStyles.AllowParentheses);
+        settings.IntStyle.Should().Be(NumberStyles.AllowThousands | NumberStyles.AllowParentheses);
     }
 
     /// <summary>
@@ -206,7 +206,7 @@ public sealed class AttributeDataExtensionsGetMappaSettingsAttributeTests
         var settings = attributes.GetMappaSettingsAttribute(compilation);
 
         settings.Should().NotBeNull();
-        settings!.PreventEnumerableCount.Should().Be(BooleanSetting.Enable);
+        settings.PreventEnumerableCount.Should().Be(BooleanSetting.Enable);
     }
 
     /// <summary>
@@ -243,7 +243,7 @@ public sealed class AttributeDataExtensionsGetMappaSettingsAttributeTests
         var settings = attributes.GetMappaSettingsAttribute(compilation);
 
         settings.Should().NotBeNull();
-        settings!.BreakCompileTimeCycles.Should().Be(BooleanSetting.Enable);
+        settings.BreakCompileTimeCycles.Should().Be(BooleanSetting.Enable);
     }
 
     /// <summary>
@@ -280,7 +280,7 @@ public sealed class AttributeDataExtensionsGetMappaSettingsAttributeTests
         var settings = attributes.GetMappaSettingsAttribute(compilation);
 
         settings.Should().NotBeNull();
-        settings!.CompatibleMapMethod.Should().Be(BooleanSetting.Enable);
+        settings.CompatibleMapMethod.Should().Be(BooleanSetting.Enable);
     }
 
     /// <summary>
@@ -319,7 +319,7 @@ public sealed class AttributeDataExtensionsGetMappaSettingsAttributeTests
         var settings = attributes.GetMappaSettingsAttribute(compilation);
 
         settings.Should().NotBeNull();
-        settings!.DateTimeStyle.Should().Be((DateTimeStyles)999);
+        settings.DateTimeStyle.Should().Be((DateTimeStyles)999);
         settings.IntStyle.Should().Be((NumberStyles)1048576);
     }
 
@@ -357,7 +357,7 @@ public sealed class AttributeDataExtensionsGetMappaSettingsAttributeTests
         var settings = attributes.GetMappaSettingsAttribute(compilation);
 
         settings.Should().NotBeNull();
-        settings!.DictionaryAssignment.Should().Be(DictionaryAssignmentSetting.Add);
+        settings.DictionaryAssignment.Should().Be(DictionaryAssignmentSetting.Add);
     }
 
     /// <summary>
@@ -393,7 +393,7 @@ public sealed class AttributeDataExtensionsGetMappaSettingsAttributeTests
         var settings = attributes.GetMappaSettingsAttribute(compilation);
 
         settings.Should().NotBeNull();
-        settings!.MaxRuntimeDepth.Should().Be((short)7);
+        settings.MaxRuntimeDepth.Should().Be((short)7);
         settings.MaxCompileTimeDepth.Should().Be((short)3);
     }
 
@@ -436,7 +436,7 @@ public sealed class AttributeDataExtensionsGetMappaSettingsAttributeTests
         var settings = attributes.GetMappaSettingsAttribute(compilation);
 
         settings.Should().NotBeNull();
-        settings!.DateTimeStyle.Should().Be(DateTimeStyles.RoundtripKind);
+        settings.DateTimeStyle.Should().Be(DateTimeStyles.RoundtripKind);
         settings.IntStyle.Should().Be(NumberStyles.Number);
         settings.MaxRuntimeDepth.Should().Be((short)-1);
         settings.MaxRuntimeDepth.Should().Be(MappaSettingsAttribute.UndefinedDepth);
@@ -477,7 +477,7 @@ public sealed class AttributeDataExtensionsGetMappaSettingsAttributeTests
         var settings = attributes.GetMappaSettingsAttribute(compilation);
 
         settings.Should().NotBeNull();
-        settings!.MaxRuntimeDepth.Should().Be((short)9);
+        settings.MaxRuntimeDepth.Should().Be((short)9);
         settings.MaxCompileTimeDepth.Should().Be((short)4);
     }
 }

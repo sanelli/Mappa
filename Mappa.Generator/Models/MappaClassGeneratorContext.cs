@@ -209,7 +209,7 @@ internal sealed class MappaClassGeneratorContext
         ITypeSymbol sourceType,
         bool requireStaticContext,
         Compilation compilation,
-        out MapMethod mapMethod)
+        out MapMethod? mapMethod)
     {
         var foundMethod = this.mapMethods.Find(method =>
         {
@@ -221,7 +221,7 @@ internal sealed class MappaClassGeneratorContext
             return method.IsCompatibleMapFor(targetType, sourceType, compilation);
         });
 
-        mapMethod = foundMethod!;
+        mapMethod = foundMethod;
         return foundMethod is not null;
     }
 
