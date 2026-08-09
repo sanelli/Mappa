@@ -91,9 +91,10 @@ Every call into strategy discovery (`GetStrategy`) is wrapped with compile-time 
 
 When `ReferenceReusing` is `Enable` and the map method declares `MappaContext`:
 
-- Generated code obtains the private `MappaReferenceManager` on the context via an `UnsafeAccessor` getter.
-- For reference-type maps, the mapper tries `TryGetReference` before constructing a new target; on a hit it returns the stored instance.
-- After a new target is created (constructor / factory), the mapper registers the source→target pair with `AddReferencePair` early enough that nested cycles can resolve the in-progress instance.
+- At the start of each map method that uses reference handling, generated code caches the private `MappaReferenceManager` (via an `UnsafeAccessor` getter) in one local and reuses that local for all `TryGetReference` / `AddReferencePair` / `MaxDepth` / `IncreaseDepth` calls in the method.
+- For reference-type maps, the mapper tries `TryGetReference<TTarget>` before constructing a new target; on a hit it returns the stored instance. The runtime key is **(source identity, `typeof(TTarget)`)** — the declared map target type, not `target.GetType()`.
+- After a new target is created (constructor / factory / eligible deep-copy identity), the mapper registers the pair with `AddReferencePair<TTarget, TSource>` **early** enough that nested cycles can resolve the in-progress instance.
+- A second `AddReferencePair` at the end of the reuse wrap is **omitted** when that early registration already ran, or when the wrapped strategy invokes another map method that itself has `ReferenceReusing` enabled (the callee already registered). The exit Add is kept when it is the only registration (for example memberwise-clone-only identity, mapping constructors, or a non-reusing callee).
 - Without `MappaContext`, the generator warns (**MP00074** for the root, **MP00075** for nested invocations lacking context) and does not emit reuse/depth logic for that method.
 
 ### Runtime depth (`MaxRuntimeDepth`)

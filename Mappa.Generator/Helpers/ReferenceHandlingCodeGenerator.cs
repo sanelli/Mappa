@@ -258,7 +258,10 @@ internal static class ReferenceHandlingCodeGenerator
         string source,
         ITypeSymbol targetType,
         ITypeSymbol sourceType)
-        => $"{GetReferenceManagerExpression(context)}.AddReferencePair<{targetType.ToDisplayString()}, {sourceType.ToDisplayString()}>({targetTemporary}, {source});";
+        => $"{GetReferenceManagerExpression(context)}.AddReferencePair<{GetReferenceReuseTypeArgument(targetType)}, {GetReferenceReuseTypeArgument(sourceType)}>({targetTemporary}, {source});";
+
+    private static string GetReferenceReuseTypeArgument(ITypeSymbol type)
+        => type.ToDisplayNameWithoutNullableAnnotation();
 
     private static bool ShouldOmitExitAddReferencePair(MapStrategy strategy, MappaBuilderContext context)
     {
