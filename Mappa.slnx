@@ -1,0 +1,52 @@
+<Solution>
+  <Folder Name="/Documentation/">
+    <File Path="Documentation/development.md" />
+    <File Path="Documentation/error-codes.md" />
+    <File Path="Documentation/mappa-attributes.md" />
+    <File Path="Documentation/mappa-generator-algorithm.md" />
+    <File Path="Documentation/nuget.md" />
+    <File Path="Documentation/README.md" />
+    <File Path="Documentation/tutorial.md" />
+  </Folder>
+  <Folder Name="/Github Workflows/">
+    <File Path=".github/workflows/merge-main.yml" />
+    <File Path=".github/workflows/pr.yml" />
+    <File Path=".github/workflows/release.yml" />
+  </Folder>
+  <Folder Name="/Scripts/">
+    <File Path="Scripts/BuildRelease.ps1" />
+    <File Path="Scripts/CheckReleaseVersion.ps1" />
+    <File Path="Scripts/CheckVersionIncrease.ps1" />
+    <File Path="Scripts/CreateNuGetConfig.ps1" />
+    <File Path="Scripts/ForceTodoErrorForBranch.ps1" />
+    <File Path="Scripts/RebuildUponVersionChange.ps1" />
+    <File Path="Scripts/RunBenchmarks.ps1" />
+    <File Path="Scripts/RunTestsAndReportCoverage.ps1" />
+    <File Path="Scripts/UpdateCodeCoverageGists.ps1" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="global.json" />
+    <File Path="Mappa.targets" />
+    <File Path="MappaVersion.targets" />
+    <File Path="nuget.config" />
+    <File Path="README.md" />
+  </Folder>
+  <Project Path="Mappa.Benchmark/Mappa.Benchmark.csproj" />
+  <Project Path="Mappa.Dependency.Bson.DependencyInjection.Tests/Mappa.Dependency.Bson.DependencyInjection.Tests.csproj" />
+  <Project Path="Mappa.Dependency.Bson.DependencyInjection/Mappa.Dependency.Bson.DependencyInjection.csproj" />
+  <Project Path="Mappa.Dependency.Bson.Tests/Mappa.Dependency.Bson.Tests.csproj" />
+  <Project Path="Mappa.Dependency.Bson/Mappa.Dependency.Bson.csproj" />
+  <Project Path="Mappa.Dependency.Protobuf.DependencyInjection.Tests/Mappa.Dependency.Protobuf.DependencyInjection.Tests.csproj" />
+  <Project Path="Mappa.Dependency.Protobuf.DependencyInjection/Mappa.Dependency.Protobuf.DependencyInjection.csproj" />
+  <Project Path="Mappa.Dependency.Protobuf.Tests/Mappa.Dependency.Protobuf.Tests.csproj" />
+  <Project Path="Mappa.Dependency.Protobuf/Mappa.Dependency.Protobuf.csproj" />
+  <Project Path="Mappa.Generator.Tests/Mappa.Generator.Tests.csproj" />
+  <Project Path="Mappa.Generator/Mappa.Generator.csproj" />
+  <Project Path="Mappa.Samples.Aot/Mappa.Samples.Aot.csproj" />
+  <Project Path="Mappa.Samples.Tests/Mappa.Samples.Tests.csproj" />
+  <Project Path="Mappa.Samples/Mappa.Samples.csproj" />
+  <Project Path="Mappa.Tests/Mappa.Tests.csproj" />
+  <Project Path="Mappa/Mappa.csproj" />
+</Solution>

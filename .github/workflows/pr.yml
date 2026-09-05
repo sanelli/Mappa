@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   build:
-
+    name: PR Build and Test
     runs-on: ubuntu-latest
     environment: production
 
