@@ -6,6 +6,7 @@ on:
 
 jobs:
   code-coverage:
+    name: Main Build Coverage and Benchmarks
     runs-on: ubuntu-latest
     environment: production
     steps:
