@@ -97,26 +97,6 @@ internal static class CommonStrategyDetectors
     }
 
     /// <summary>
-    /// Attempt to identify a strategy for the element type of containers.
-    /// </summary>
-    /// <param name="context">The context of the mapping.</param>
-    /// <param name="compilation">The compilation unit.</param>
-    /// <param name="elementStrategy">The strategy between the source and target types defined in the context.</param>
-    /// <param name="cancellationToken">The cancellation token of the operation.</param>
-    /// <returns><c>true</c> if the mapping exists, <c>false</c> otherwise.</returns>
-    internal static bool TryGetElementStrategy(
-        this MappaMapAlgorithmContext context,
-        Compilation compilation,
-        out MapStrategy elementStrategy,
-        CancellationToken cancellationToken)
-        => context.TryGetElementStrategy(
-            context.TargetType,
-            context.SourceType,
-            compilation,
-            out elementStrategy,
-            cancellationToken);
-
-    /// <summary>
     /// Gets (if possible) the mapping for the Key type and the Value type
     /// of the source and target dictionaries.
     /// </summary>
@@ -218,30 +198,6 @@ internal static class CommonStrategyDetectors
 
         return keyStrategy is not NoMapStrategy && valueStrategy is not NoMapStrategy;
     }
-
-    /// <summary>
-    /// Gets (if possible) the mapping for the Key type and the Value type
-    /// of the source and target dictionaries.
-    /// </summary>
-    /// <param name="context">The mapping context.</param>
-    /// <param name="compilation">The compilation.</param>
-    /// <param name="keyStrategy">The strategy for the key type.</param>
-    /// <param name="valueStrategy">The strategy for the value type.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns><c>true</c> if the mappings exist, <c>false</c> otherwise.</returns>
-    internal static bool TryGetKeyAndValueStrategy(
-            this MappaMapAlgorithmContext context,
-            Compilation compilation,
-            out MapStrategy keyStrategy,
-            out MapStrategy valueStrategy,
-            CancellationToken cancellationToken)
-    => context.TryGetKeyAndValueStrategy(
-        context.TargetType,
-        context.SourceType,
-        compilation,
-        out keyStrategy,
-        out valueStrategy,
-        cancellationToken);
 
     private static bool TryResolvePreferredElementInterfaces(
         MappaMapAlgorithmContext context,

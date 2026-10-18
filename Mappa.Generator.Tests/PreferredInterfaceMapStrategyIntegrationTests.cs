@@ -12,7 +12,7 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Integration tests for preferred collection/dictionary interface resolution.
 /// </summary>
-public sealed class PreferredInterfaceMapStrategyIntegrationTests
+public sealed partial class PreferredInterfaceMapStrategyIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {
     private const string DualEnumerableTypeDefinition = """
