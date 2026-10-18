@@ -62,6 +62,8 @@ internal sealed class MappaUserSettings
     private readonly StackSetting<BooleanSetting> compatibleMapMethod;
     private readonly StackSetting<BooleanSetting> caseInsensitivePropertyMap;
     private readonly StackSetting<BooleanSetting> ignoreUnderscoreForPropertyMap;
+    private readonly StackSetting<BooleanSetting> mapSourceExplicitInterfaceProperties;
+    private readonly StackSetting<BooleanSetting> mapTargetExplicitInterfaceProperties;
     private readonly StackSetting<BooleanSetting> caseInsensitiveEnumMap;
     private readonly StackSetting<EnumStringMapSetting> enumStringMapSetting;
     private readonly StackSetting<EnumToEnumMapSetting> enumToEnumMapSetting;
@@ -124,6 +126,8 @@ internal sealed class MappaUserSettings
             otherSettings.CompatibleMapMethod,
             otherSettings.CaseInsensitivePropertyMap,
             otherSettings.IgnoreUnderscoreForPropertyMap,
+            otherSettings.MapSourceExplicitInterfaceProperties,
+            otherSettings.MapTargetExplicitInterfaceProperties,
             otherSettings.CaseInsensitiveEnumMap,
             otherSettings.EnumStringMapSetting,
             otherSettings.EnumToEnumMapSetting,
@@ -185,6 +189,8 @@ internal sealed class MappaUserSettings
     /// <param name="compatibleMapMethod">Enable or disable compatible map-method reuse for base/interface source parameters and derived return types.</param>
     /// <param name="caseInsensitivePropertyMap">Enable or disable case-insensitive matching when pairing a target member with a source property by name.</param>
     /// <param name="ignoreUnderscoreForPropertyMap">Enable or disable ignoring underscore characters when pairing a target member with a source property by name.</param>
+    /// <param name="mapSourceExplicitInterfaceProperties">Enable or disable reading source properties that are explicitly implemented interface members.</param>
+    /// <param name="mapTargetExplicitInterfaceProperties">Enable or disable writing target properties that are explicitly implemented interface members.</param>
     /// <param name="caseInsensitiveEnumMap">Enable or disable case-insensitive matching when mapping enum members or string values to enums.</param>
     /// <param name="enumStringMapSetting">Defines how enum members are paired with string values.</param>
     /// <param name="enumToEnumMapSetting">Defines how enum members are paired when mapping from one enum to another enum.</param>
@@ -241,6 +247,8 @@ internal sealed class MappaUserSettings
         BooleanSetting compatibleMapMethod,
         BooleanSetting caseInsensitivePropertyMap,
         BooleanSetting ignoreUnderscoreForPropertyMap,
+        BooleanSetting mapSourceExplicitInterfaceProperties,
+        BooleanSetting mapTargetExplicitInterfaceProperties,
         BooleanSetting caseInsensitiveEnumMap,
         EnumStringMapSetting enumStringMapSetting,
         EnumToEnumMapSetting enumToEnumMapSetting,
@@ -297,6 +305,8 @@ internal sealed class MappaUserSettings
         this.compatibleMapMethod = new(compatibleMapMethod);
         this.caseInsensitivePropertyMap = new(caseInsensitivePropertyMap);
         this.ignoreUnderscoreForPropertyMap = new(ignoreUnderscoreForPropertyMap);
+        this.mapSourceExplicitInterfaceProperties = new(mapSourceExplicitInterfaceProperties);
+        this.mapTargetExplicitInterfaceProperties = new(mapTargetExplicitInterfaceProperties);
         this.caseInsensitiveEnumMap = new(caseInsensitiveEnumMap);
         this.enumStringMapSetting = new(enumStringMapSetting);
         this.enumToEnumMapSetting = new(enumToEnumMapSetting);
@@ -447,6 +457,12 @@ internal sealed class MappaUserSettings
 
     /// <inheritdoc/>
     public BooleanSetting IgnoreUnderscoreForPropertyMap => this.ignoreUnderscoreForPropertyMap;
+
+    /// <inheritdoc/>
+    public BooleanSetting MapSourceExplicitInterfaceProperties => this.mapSourceExplicitInterfaceProperties;
+
+    /// <inheritdoc/>
+    public BooleanSetting MapTargetExplicitInterfaceProperties => this.mapTargetExplicitInterfaceProperties;
 
     /// <inheritdoc/>
     public BooleanSetting CaseInsensitiveEnumMap => this.caseInsensitiveEnumMap;
@@ -615,6 +631,8 @@ internal sealed class MappaUserSettings
             this.compatibleMapMethod.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.CompatibleMapMethod, BooleanSetting.Undefined, this.compatibleMapMethod)),
             this.caseInsensitivePropertyMap.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.CaseInsensitivePropertyMap, BooleanSetting.Undefined, this.caseInsensitivePropertyMap)),
             this.ignoreUnderscoreForPropertyMap.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.IgnoreUnderscoreForPropertyMap, BooleanSetting.Undefined, this.ignoreUnderscoreForPropertyMap)),
+            this.mapSourceExplicitInterfaceProperties.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.MapSourceExplicitInterfaceProperties, BooleanSetting.Undefined, this.mapSourceExplicitInterfaceProperties)),
+            this.mapTargetExplicitInterfaceProperties.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.MapTargetExplicitInterfaceProperties, BooleanSetting.Undefined, this.mapTargetExplicitInterfaceProperties)),
             this.caseInsensitiveEnumMap.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.CaseInsensitiveEnumMap, BooleanSetting.Undefined, this.caseInsensitiveEnumMap)),
             this.enumStringMapSetting.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.EnumStringMapSetting, EnumStringMapSetting.Undefined, this.enumStringMapSetting)),
             this.enumToEnumMapSetting.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.EnumToEnumMapSetting, EnumToEnumMapSetting.Undefined, this.enumToEnumMapSetting)),

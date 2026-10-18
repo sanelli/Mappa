@@ -189,6 +189,7 @@ internal sealed class InvokeConstructorMapStrategyBuilder
                         propertyMapStrategy.TargetProperty,
                         initializerPropertyTargetTemporary,
                         propertyMapStrategy.RequiresUnsafeAccessorOnTarget,
+                        propertyMapStrategy.RequiresInterfaceCastOnTarget,
                         context));
                 }
             }
@@ -228,11 +229,13 @@ internal sealed class InvokeConstructorMapStrategyBuilder
 
         var objectInitializerStrategies = this.strategy.InitializerStrategies
             .Where(propertyMapStrategy => !propertyMapStrategy.PostConstructorInitializer
-                                          && !propertyMapStrategy.RequiresUnsafeAccessorOnTarget)
+                                          && !propertyMapStrategy.RequiresUnsafeAccessorOnTarget
+                                          && !propertyMapStrategy.RequiresInterfaceCastOnTarget)
             .ToArray();
         var postConstructorStrategies = this.strategy.InitializerStrategies
             .Where(propertyMapStrategy => propertyMapStrategy.PostConstructorInitializer
-                                          || propertyMapStrategy.RequiresUnsafeAccessorOnTarget)
+                                          || propertyMapStrategy.RequiresUnsafeAccessorOnTarget
+                                          || propertyMapStrategy.RequiresInterfaceCastOnTarget)
             .ToArray();
         return (objectInitializerStrategies, postConstructorStrategies);
     }

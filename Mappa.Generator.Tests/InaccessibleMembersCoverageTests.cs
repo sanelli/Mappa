@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa;
 using Mappa.Attributes;
 using Mappa.Generator.Extensions;
 using Mappa.Generator.Helpers;
@@ -130,18 +131,24 @@ public sealed class InaccessibleMembersCoverageTests
                 compilation,
                 mapMethod,
                 options,
-                out var indexerRequiresUnsafe)
+                BooleanSetting.Undefined,
+                out var indexerRequiresUnsafe,
+                out var indexerRequiresInterfaceCast)
             .Should().BeFalse();
         indexerRequiresUnsafe.Should().BeFalse();
+        indexerRequiresInterfaceCast.Should().BeFalse();
 
         InaccessibleMemberEligibility.TryIsTargetPropertyWritable(
                 getOnly,
                 compilation,
                 mapMethod,
                 options,
-                out var getOnlyRequiresUnsafe)
+                BooleanSetting.Undefined,
+                out var getOnlyRequiresUnsafe,
+                out var getOnlyRequiresInterfaceCast)
             .Should().BeFalse();
         getOnlyRequiresUnsafe.Should().BeFalse();
+        getOnlyRequiresInterfaceCast.Should().BeFalse();
     }
 
     /// <summary>
@@ -193,9 +200,12 @@ public sealed class InaccessibleMembersCoverageTests
                 compilation,
                 mapMethod,
                 options,
-                out var requiresUnsafeAccessor)
+                BooleanSetting.Undefined,
+                out var requiresUnsafeAccessor,
+                out var requiresInterfaceCast)
             .Should().BeFalse();
         requiresUnsafeAccessor.Should().BeFalse();
+        requiresInterfaceCast.Should().BeFalse();
     }
 
     /// <summary>

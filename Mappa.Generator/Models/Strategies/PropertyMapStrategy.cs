@@ -18,6 +18,8 @@ namespace Mappa.Generator.Models.Strategies;
 /// <param name="chainedSourcePropertyPath">The chained source property path to read before mapping, if any.</param>
 /// <param name="requiresUnsafeAccessorOnSource"><c>true</c> when the source property must be read via an unsafe accessor.</param>
 /// <param name="requiresUnsafeAccessorOnTarget"><c>true</c> when the target property must be accessed via an unsafe accessor.</param>
+/// <param name="requiresInterfaceCastOnSource"><c>true</c> when the source property must be read via an interface cast.</param>
+/// <param name="requiresInterfaceCastOnTarget"><c>true</c> when the target property must be written via an interface cast.</param>
 internal sealed class PropertyMapStrategy(
     IPropertySymbol targetProperty,
     IPropertySymbol? sourceProperty,
@@ -25,7 +27,9 @@ internal sealed class PropertyMapStrategy(
     bool postConstructorInitializer,
     ChainedSourcePropertyPathInfo? chainedSourcePropertyPath = null,
     bool requiresUnsafeAccessorOnSource = false,
-    bool requiresUnsafeAccessorOnTarget = false)
+    bool requiresUnsafeAccessorOnTarget = false,
+    bool requiresInterfaceCastOnSource = false,
+    bool requiresInterfaceCastOnTarget = false)
     : MapStrategy(targetProperty.Type, sourceProperty?.Type ?? chainedSourcePropertyPath?.StartingSourceType ?? null!)
 {
     /// <summary>
@@ -62,6 +66,16 @@ internal sealed class PropertyMapStrategy(
     /// Gets a value indicating whether the target property must be accessed via an unsafe accessor.
     /// </summary>
     public bool RequiresUnsafeAccessorOnTarget { get; } = requiresUnsafeAccessorOnTarget;
+
+    /// <summary>
+    /// Gets a value indicating whether the source property must be read via an interface cast.
+    /// </summary>
+    public bool RequiresInterfaceCastOnSource { get; } = requiresInterfaceCastOnSource;
+
+    /// <summary>
+    /// Gets a value indicating whether the target property must be written via an interface cast.
+    /// </summary>
+    public bool RequiresInterfaceCastOnTarget { get; } = requiresInterfaceCastOnTarget;
 
     /// <inheritdoc/>
     internal override IMappaStrategyBuilder GetBuilder() => new PropertyMapStrategyBuilder(this);

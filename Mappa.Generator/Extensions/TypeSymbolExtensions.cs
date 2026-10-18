@@ -1475,22 +1475,29 @@ internal static class TypeSymbolExtensions
     /// <returns>The symbol properties.</returns>
     internal static IEnumerable<IPropertySymbol> GetTypeProperties(this ITypeSymbol typeSymbol)
     {
-        HashSet<string> propertyNames = new();
+        HashSet<string> propertyNames = new(StringComparer.Ordinal);
         List<IPropertySymbol> properties = new();
+
+        // Prefer ordinary (non-explicit) properties when a short name collides with an
+        // explicit interface implementation (Roslyn Name is interface-qualified for those).
+        void AddPreferringNonExplicit(IEnumerable<IPropertySymbol> candidates)
+        {
+            var candidateArray = candidates.ToArray();
+            properties.AddRange(candidateArray
+                .Where(property => property.ExplicitInterfaceImplementations.Length == 0)
+                .Where(property => propertyNames.Add(property.GetMappablePropertyName())));
+            properties.AddRange(candidateArray
+                .Where(property => property.ExplicitInterfaceImplementations.Length > 0)
+                .Where(property => propertyNames.Add(property.GetMappablePropertyName())));
+        }
 
         if (typeSymbol.TypeKind == TypeKind.Interface)
         {
-            properties.AddRange(typeSymbol
-                .GetMembers()
-                .OfType<IPropertySymbol>()
-                .Where(property => propertyNames.Add(property.Name)));
+            AddPreferringNonExplicit(typeSymbol.GetMembers().OfType<IPropertySymbol>());
 
             foreach (var currentType in typeSymbol.AllInterfaces)
             {
-                properties.AddRange(currentType
-                    .GetMembers()
-                    .OfType<IPropertySymbol>()
-                    .Where(property => propertyNames.Add(property.Name)));
+                AddPreferringNonExplicit(currentType.GetMembers().OfType<IPropertySymbol>());
             }
         }
         else
@@ -1498,11 +1505,7 @@ internal static class TypeSymbolExtensions
             ITypeSymbol? currentType = typeSymbol;
             while (currentType is not null)
             {
-                properties.AddRange(currentType
-                    .GetMembers()
-                    .OfType<IPropertySymbol>()
-                    .Where(property => propertyNames.Add(property.Name)));
-
+                AddPreferringNonExplicit(currentType.GetMembers().OfType<IPropertySymbol>());
                 currentType = currentType.BaseType;
             }
         }

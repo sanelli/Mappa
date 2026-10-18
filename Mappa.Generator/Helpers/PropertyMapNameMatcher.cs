@@ -2,6 +2,8 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Extensions;
+
 using Microsoft.CodeAnalysis;
 
 namespace Mappa.Generator.Helpers;
@@ -39,7 +41,7 @@ internal static class PropertyMapNameMatcher
         {
             if (!NamesMatch(
                     expectedName,
-                    property.Name,
+                    property.GetMappablePropertyName(),
                     caseInsensitivePropertyMap,
                     ignoreUnderscoreForPropertyMap,
                     isConstructorParameterPath,

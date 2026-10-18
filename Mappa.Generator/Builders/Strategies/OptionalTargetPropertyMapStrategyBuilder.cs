@@ -55,6 +55,7 @@ internal sealed class OptionalTargetPropertyMapStrategyBuilder
                     this.strategy.TargetProperty,
                     innerStrategyVariableName,
                     context.RequiresUnsafeAccessorOnCurrentTargetProperty,
+                    context.RequiresInterfaceCastOnCurrentTargetProperty,
                     context));
             }
         }
@@ -83,6 +84,7 @@ internal sealed class OptionalTargetPropertyMapStrategyBuilder
                     this.strategy.TargetProperty,
                     innerStrategyVariableName,
                     context.RequiresUnsafeAccessorOnCurrentTargetProperty,
+                    context.RequiresInterfaceCastOnCurrentTargetProperty,
                     context));
             }
         }

@@ -25,34 +25,35 @@ internal sealed partial class ConstructorMapStrategyDetector
             this.context.MapMethod?.GetAttribute<MappaAllowInaccessibleTargetMembersAttribute>());
 
     private IPropertySymbol[] GetReadableSourceProperties(ITypeSymbol sourceType)
-    {
-        var options = this.GetInaccessibleSourceOptions();
-        var rootMapMethod = this.context.GetRootMapMethod();
-        return sourceType.GetTypeProperties()
-            .Where(property => InaccessibleMemberEligibility.TryIsSourcePropertyReadable(
-                property,
-                this.compilation,
-                rootMapMethod,
-                options,
-                out _))
+        => sourceType.GetTypeProperties()
+            .Where(property => this.TryIsSourcePropertyReadable(property, out _, out _))
             .ToArray();
-    }
 
-    private bool TryIsSourcePropertyReadable(IPropertySymbol property, out bool requiresUnsafeAccessor)
+    private bool TryIsSourcePropertyReadable(
+        IPropertySymbol property,
+        out bool requiresUnsafeAccessor,
+        out bool requiresInterfaceCast)
         => InaccessibleMemberEligibility.TryIsSourcePropertyReadable(
             property,
             this.compilation,
             this.context.GetRootMapMethod(),
             this.GetInaccessibleSourceOptions(),
-            out requiresUnsafeAccessor);
+            this.context.MappaUserSettings.MapSourceExplicitInterfaceProperties,
+            out requiresUnsafeAccessor,
+            out requiresInterfaceCast);
 
-    private bool TryIsTargetPropertyWritable(IPropertySymbol property, out bool requiresUnsafeAccessor)
+    private bool TryIsTargetPropertyWritable(
+        IPropertySymbol property,
+        out bool requiresUnsafeAccessor,
+        out bool requiresInterfaceCast)
         => InaccessibleMemberEligibility.TryIsTargetPropertyWritable(
             property,
             this.compilation,
             this.context.GetRootMapMethod(),
             this.GetInaccessibleTargetOptions(),
-            out requiresUnsafeAccessor);
+            this.context.MappaUserSettings.MapTargetExplicitInterfaceProperties,
+            out requiresUnsafeAccessor,
+            out requiresInterfaceCast);
 
     private bool TryIsTargetPropertyGetterReadable(IPropertySymbol property, out bool requiresUnsafeAccessor)
     {
@@ -67,10 +68,16 @@ internal sealed partial class ConstructorMapStrategyDetector
             return true;
         }
 
+        // Explicit interface getters are not UnsafeAccessor candidates.
+        if (InaccessibleMemberEligibility.IsExplicitInterfaceImplementation(property))
+        {
+            return false;
+        }
+
         var options = this.GetInaccessibleTargetOptions();
         if (options is null
             || !this.compilation.IsUnsafeAccessorSupported()
-            || !options.IsPropertyAllowed(property.Name))
+            || !options.IsPropertyAllowed(property.GetMappablePropertyName()))
         {
             return false;
         }

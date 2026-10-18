@@ -14,6 +14,23 @@ namespace Mappa.Generator.Extensions;
 internal static class PropertySymbolExtensions
 {
     /// <summary>
+    /// Gets the property name used for mapping identity (source/target matching, ignore lists, etc.).
+    /// For explicitly implemented interface properties Roslyn's <see cref="ISymbol.Name"/> is
+    /// interface-qualified (e.g. <c>IFoo.Bar</c>); mapping uses the interface member's short name.
+    /// </summary>
+    /// <param name="property">The property.</param>
+    /// <returns>The short mappable property name.</returns>
+    internal static string GetMappablePropertyName(this IPropertySymbol property)
+    {
+        if (property.ExplicitInterfaceImplementations.Length > 0)
+        {
+            return property.ExplicitInterfaceImplementations[0].Name;
+        }
+
+        return property.Name;
+    }
+
+    /// <summary>
     /// Check if a property setter is accessible from inside a method.
     /// </summary>
     /// <param name="property">The property which setter is to investigate.</param>

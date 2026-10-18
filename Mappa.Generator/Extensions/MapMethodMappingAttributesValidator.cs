@@ -567,7 +567,7 @@ internal static partial class MapMethodMappingAttributesValidator
     {
         var typeName = type.ToDisplayString();
         var propertyNames = new HashSet<string>(
-            type.GetTypeProperties().Select(property => property.Name),
+            type.GetTypeProperties().Select(property => property.GetMappablePropertyName()),
             StringComparer.Ordinal);
 
         foreach (var memberName in memberNames

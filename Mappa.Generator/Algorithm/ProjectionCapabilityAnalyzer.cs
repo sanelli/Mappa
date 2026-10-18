@@ -341,7 +341,8 @@ internal static class ProjectionCapabilityAnalyzer
             parameterMapStrategy.TargetParameter,
             parameterMapStrategy.SourceProperty,
             normalizedParameterStrategy,
-            parameterMapStrategy.RequiresUnsafeAccessorOnSource);
+            parameterMapStrategy.RequiresUnsafeAccessorOnSource,
+            parameterMapStrategy.RequiresInterfaceCastOnSource);
         return true;
     }
 
@@ -402,7 +403,8 @@ internal static class ProjectionCapabilityAnalyzer
                 parameterMapStrategy.TargetParameter,
                 parameterMapStrategy.SourceProperty,
                 normalizedParameterStrategy,
-                parameterMapStrategy.RequiresUnsafeAccessorOnSource);
+                parameterMapStrategy.RequiresUnsafeAccessorOnSource,
+                parameterMapStrategy.RequiresInterfaceCastOnSource);
         }
 
         PropertyMapStrategy[] normalizedInitializers = new PropertyMapStrategy[invokeConstructorMapStrategy.InitializerStrategies.Length];
@@ -444,7 +446,8 @@ internal static class ProjectionCapabilityAnalyzer
         failureKind = null;
         failureMember = null;
 
-        if (propertyMapStrategy.PostConstructorInitializer)
+        if (propertyMapStrategy.PostConstructorInitializer
+            || propertyMapStrategy.RequiresInterfaceCastOnTarget)
         {
             failureKind = AnalysisFailureKind.UnsupportedConstruct;
             failureMember = propertyMapStrategy.TargetProperty.Name;
@@ -478,7 +481,9 @@ internal static class ProjectionCapabilityAnalyzer
             propertyMapStrategy.PostConstructorInitializer,
             propertyMapStrategy.ChainedSourcePropertyPath,
             propertyMapStrategy.RequiresUnsafeAccessorOnSource,
-            propertyMapStrategy.RequiresUnsafeAccessorOnTarget);
+            propertyMapStrategy.RequiresUnsafeAccessorOnTarget,
+            propertyMapStrategy.RequiresInterfaceCastOnSource,
+            propertyMapStrategy.RequiresInterfaceCastOnTarget);
         return true;
     }
 

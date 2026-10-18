@@ -296,6 +296,20 @@ internal static class AttributeDataExtensions
                     attribute.IgnoreUnderscoreForPropertyMap = (BooleanSetting)value;
                 }
             },
+            [nameof(MappaSettingsAttribute.MapSourceExplicitInterfaceProperties)] = static (attribute, constant) =>
+            {
+                if (constant.Value is int value)
+                {
+                    attribute.MapSourceExplicitInterfaceProperties = (BooleanSetting)value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.MapTargetExplicitInterfaceProperties)] = static (attribute, constant) =>
+            {
+                if (constant.Value is int value)
+                {
+                    attribute.MapTargetExplicitInterfaceProperties = (BooleanSetting)value;
+                }
+            },
             [nameof(MappaSettingsAttribute.CaseInsensitiveEnumMap)] = static (attribute, constant) =>
             {
                 if (constant.Value is int value)

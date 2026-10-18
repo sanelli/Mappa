@@ -38,6 +38,7 @@ internal sealed class ParameterMapStrategyBuilder
                 source,
                 this.strategy.SourceProperty,
                 this.strategy.RequiresUnsafeAccessorOnSource,
+                this.strategy.RequiresInterfaceCastOnSource,
                 context);
             builder.AppendLine($"{this.strategy.SourceProperty.Type.ToDisplayString()} {sourcePropertyTemporary} = {sourceReadExpression};");
         }
