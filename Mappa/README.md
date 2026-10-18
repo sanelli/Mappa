@@ -59,6 +59,8 @@ Via `MappaSettings` the following settings can be tweaked:
 - `CompatibleMapMethod`: when enabled, nested existing-method reuse may invoke a map method whose parameter is a base type or interface of the required source and whose return type is a derived type of the required target (disabled by default);
 - `CaseInsensitivePropertyMap`: when enabled, source property names are matched case-insensitively when pairing a target property or constructor parameter with a source property by name;
 - `IgnoreUnderscoreForPropertyMap`: when enabled, underscore characters are stripped from names before comparing a target property or constructor parameter with a source property by name;
+- `MapSourceExplicitInterfaceProperties`: when enabled, source properties that are explicitly implemented interface members may be read via a cast to the declaring interface (disabled by default);
+- `MapTargetExplicitInterfaceProperties`: when enabled, target properties that are explicitly implemented interface members may be written via a cast to the declaring interface after construction (disabled by default);
 - `CaseInsensitiveEnumMap`: when enabled, enum member names or `[Description]` values are matched case-insensitively when mapping between enums or from `string` to an enum;
 - `EnumStringMapSetting`: selects whether enum and string mappings match members by name (default) or by `[Description]` attribute value;
 - `EnumToEnumMapSetting`: selects whether enum-to-enum mappings match members by name (default), by underlying numeric value, or by `[Description]` attribute value;

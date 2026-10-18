@@ -319,6 +319,20 @@ public sealed class MappaSettingsAttribute
     public BooleanSetting IgnoreUnderscoreForPropertyMap { get; set; } = BooleanSetting.Undefined;
 
     /// <summary>
+    /// Gets or sets a value indicating whether source properties that are explicitly
+    /// implemented interface members may be read when mapping (via a cast to the
+    /// declaring interface). Disabled by default.
+    /// </summary>
+    public BooleanSetting MapSourceExplicitInterfaceProperties { get; set; } = BooleanSetting.Undefined;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether target properties that are explicitly
+    /// implemented interface members may be written when mapping (via a cast to the
+    /// declaring interface after construction). Disabled by default.
+    /// </summary>
+    public BooleanSetting MapTargetExplicitInterfaceProperties { get; set; } = BooleanSetting.Undefined;
+
+    /// <summary>
     /// Gets or sets a value indicating whether enum member names or
     /// <see cref="System.ComponentModel.DescriptionAttribute"/> values are matched
     /// case-insensitively when mapping between enums or from <see cref="string"/> to an enum.
