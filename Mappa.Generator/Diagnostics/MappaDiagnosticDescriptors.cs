@@ -92,6 +92,13 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? maxCompileTimeDepthReached;
     private static DiagnosticDescriptor? mappingCycleDetected;
     private static DiagnosticDescriptor? mappingCycleAutoBroken;
+    private static DiagnosticDescriptor? preferredInterfaceCannotBeUsed;
+    private static DiagnosticDescriptor? preferredInterfaceImplementingTypeNotConcrete;
+    private static DiagnosticDescriptor? preferredInterfaceNotImplemented;
+    private static DiagnosticDescriptor? preferredInterfaceAttributeNotNeeded;
+    private static DiagnosticDescriptor? duplicatePreferredInterfaceAttribute;
+    private static DiagnosticDescriptor? preferredInterfaceNotClosedGenericInterface;
+    private static DiagnosticDescriptor? preferredInterfaceImplementingTypeInvalid;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -716,6 +723,62 @@ internal static class MappaDiagnosticDescriptors
         => mappingCycleAutoBroken ??= BuildWarning(
             MappaDiagnosticsKind.MappingCycleAutoBroken,
             DiagnosticsResources.MappingCycleAutoBroken);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.PreferredInterfaceCannotBeUsed"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor PreferredInterfaceCannotBeUsed
+        => preferredInterfaceCannotBeUsed ??= BuildError(
+            MappaDiagnosticsKind.PreferredInterfaceCannotBeUsed,
+            DiagnosticsResources.PreferredInterfaceCannotBeUsed);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.PreferredInterfaceImplementingTypeNotConcrete"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor PreferredInterfaceImplementingTypeNotConcrete
+        => preferredInterfaceImplementingTypeNotConcrete ??= BuildError(
+            MappaDiagnosticsKind.PreferredInterfaceImplementingTypeNotConcrete,
+            DiagnosticsResources.PreferredInterfaceImplementingTypeNotConcrete);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.PreferredInterfaceNotImplemented"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor PreferredInterfaceNotImplemented
+        => preferredInterfaceNotImplemented ??= BuildWarning(
+            MappaDiagnosticsKind.PreferredInterfaceNotImplemented,
+            DiagnosticsResources.PreferredInterfaceNotImplemented);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.PreferredInterfaceAttributeNotNeeded"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor PreferredInterfaceAttributeNotNeeded
+        => preferredInterfaceAttributeNotNeeded ??= BuildWarning(
+            MappaDiagnosticsKind.PreferredInterfaceAttributeNotNeeded,
+            DiagnosticsResources.PreferredInterfaceAttributeNotNeeded);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.DuplicatePreferredInterfaceAttribute"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor DuplicatePreferredInterfaceAttribute
+        => duplicatePreferredInterfaceAttribute ??= BuildError(
+            MappaDiagnosticsKind.DuplicatePreferredInterfaceAttribute,
+            DiagnosticsResources.DuplicatePreferredInterfaceAttribute);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.PreferredInterfaceNotClosedGenericInterface"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor PreferredInterfaceNotClosedGenericInterface
+        => preferredInterfaceNotClosedGenericInterface ??= BuildError(
+            MappaDiagnosticsKind.PreferredInterfaceNotClosedGenericInterface,
+            DiagnosticsResources.PreferredInterfaceNotClosedGenericInterface);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.PreferredInterfaceImplementingTypeInvalid"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor PreferredInterfaceImplementingTypeInvalid
+        => preferredInterfaceImplementingTypeInvalid ??= BuildError(
+            MappaDiagnosticsKind.PreferredInterfaceImplementingTypeInvalid,
+            DiagnosticsResources.PreferredInterfaceImplementingTypeInvalid);
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(

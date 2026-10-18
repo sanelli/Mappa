@@ -50,7 +50,7 @@ public sealed class TypeSymbolExtensionsTests
     }
 
     /// <summary>
-    /// Test <see cref="TypeSymbolExtensions.GetKeyAndValueTypes"/> reads dictionary type arguments.
+    /// Test <see cref="TypeSymbolExtensions.GetKeyAndValueTypes(Microsoft.CodeAnalysis.ITypeSymbol, Microsoft.CodeAnalysis.Compilation)"/> reads dictionary type arguments.
     /// </summary>
     [Fact]
     [UnitTest]
@@ -78,7 +78,7 @@ public sealed class TypeSymbolExtensionsTests
     }
 
     /// <summary>
-    /// Test <see cref="TypeSymbolExtensions.GetKeyAndValueTypes"/> resolves key and value types from
+    /// Test <see cref="TypeSymbolExtensions.GetKeyAndValueTypes(Microsoft.CodeAnalysis.ITypeSymbol, Microsoft.CodeAnalysis.Compilation)"/> resolves key and value types from
     /// a non-generic type implementing <see cref="System.Collections.Generic.IDictionary{TKey,TValue}"/>.
     /// </summary>
     [Fact]
@@ -105,7 +105,7 @@ public sealed class TypeSymbolExtensionsTests
     }
 
     /// <summary>
-    /// Test <see cref="TypeSymbolExtensions.GetKeyAndValueTypes"/> throws for unsupported types.
+    /// Test <see cref="TypeSymbolExtensions.GetKeyAndValueTypes(Microsoft.CodeAnalysis.ITypeSymbol, Microsoft.CodeAnalysis.Compilation)"/> throws for unsupported types.
     /// </summary>
     [Fact]
     [UnitTest]
@@ -165,7 +165,7 @@ public sealed class TypeSymbolExtensionsTests
     }
 
     /// <summary>
-    /// Test <see cref="TypeSymbolExtensions.GetElementType"/> returns element types for arrays, generics, and enumerables.
+    /// Test <see cref="TypeSymbolExtensions.GetElementType(Microsoft.CodeAnalysis.ITypeSymbol)"/> returns element types for arrays, generics, and enumerables.
     /// </summary>
     [Fact]
     [UnitTest]
@@ -205,7 +205,7 @@ public sealed class TypeSymbolExtensionsTests
     }
 
     /// <summary>
-    /// Test <see cref="TypeSymbolExtensions.GetElementType"/> throws for unsupported types.
+    /// Test <see cref="TypeSymbolExtensions.GetElementType(Microsoft.CodeAnalysis.ITypeSymbol)"/> throws for unsupported types.
     /// </summary>
     [Fact]
     [UnitTest]

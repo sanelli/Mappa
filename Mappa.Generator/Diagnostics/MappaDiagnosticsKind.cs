@@ -430,4 +430,45 @@ internal enum MappaDiagnosticsKind
     /// (<see cref="Mappa.Attributes.MappaSettingsAttribute.BreakCompileTimeCycles"/>).
     /// </summary>
     MappingCycleAutoBroken,
+
+    /// <summary>
+    /// A preferred collection/dictionary interface from
+    /// <see cref="Mappa.Attributes.MappaSourcePreferredInterfaceImplementationAttribute"/>
+    /// or <see cref="Mappa.Attributes.MappaTargetPreferredInterfaceImplementationAttribute"/>
+    /// cannot be used for the mapping.
+    /// </summary>
+    PreferredInterfaceCannotBeUsed,
+
+    /// <summary>
+    /// The first argument of a preferred-interface attribute is not a concrete implementing type
+    /// (for example an open generic interface family).
+    /// </summary>
+    PreferredInterfaceImplementingTypeNotConcrete,
+
+    /// <summary>
+    /// The preferred closed interface is not implemented by the implementing type.
+    /// </summary>
+    PreferredInterfaceNotImplemented,
+
+    /// <summary>
+    /// A preferred-interface attribute was not needed for any occurrence of its implementing type
+    /// in the mapping strategy tree.
+    /// </summary>
+    PreferredInterfaceAttributeNotNeeded,
+
+    /// <summary>
+    /// Multiple preferred-interface attributes target the same implementing type and open interface
+    /// family on the same side of a map method.
+    /// </summary>
+    DuplicatePreferredInterfaceAttribute,
+
+    /// <summary>
+    /// The second argument of a preferred-interface attribute is not a closed generic interface.
+    /// </summary>
+    PreferredInterfaceNotClosedGenericInterface,
+
+    /// <summary>
+    /// The first argument of a preferred-interface attribute is missing or invalid.
+    /// </summary>
+    PreferredInterfaceImplementingTypeInvalid,
 }

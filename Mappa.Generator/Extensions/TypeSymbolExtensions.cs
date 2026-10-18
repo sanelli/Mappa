@@ -9,6 +9,8 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 
 using Mappa.Generator.Exceptions;
+using Mappa.Generator.Helpers;
+using Mappa.Generator.Models;
 
 using Microsoft.CodeAnalysis;
 
@@ -551,6 +553,23 @@ internal static class TypeSymbolExtensions
             return true;
         }
 
+        if (typeSymbol is INamedTypeSymbol implementingType)
+        {
+            var candidates = implementingType.AllInterfaces
+                .OfType<INamedTypeSymbol>()
+                .Where(queryableInterface => queryableInterface.TypeArguments.Length == 1
+                                             && queryableInterface.IsIQueryable(compilation))
+                .ToArray();
+            var implicitCandidates = candidates
+                .Where(candidate => PreferredInterfaceResolver.IsImplicitImplementation(implementingType, candidate, compilation))
+                .ToArray();
+            if (implicitCandidates.Length == 1)
+            {
+                elementType = implicitCandidates[0].TypeArguments[0];
+                return true;
+            }
+        }
+
         foreach (var @interface in typeSymbol.AllInterfaces)
         {
             if (@interface is INamedTypeSymbol { TypeArguments.Length: 1 } queryableInterface
@@ -675,7 +694,43 @@ internal static class TypeSymbolExtensions
             return namedTypeSymbol.TypeArguments.First();
         }
 
-        if (TryGetElementTypeFromEnumerableInterface(typeSymbol, out var elementTypeFromInterface)
+        if (TryGetElementTypeFromEnumerableInterface(typeSymbol, compilation: null, out var elementTypeFromInterface)
+            && elementTypeFromInterface is not null)
+        {
+            return elementTypeFromInterface;
+        }
+
+        throw new MappaGeneratorException($"Cannot obtain element type of \"{typeSymbol.ToDisplayString()}\"");
+    }
+
+    /// <summary>
+    /// Gets the element type of the container using preferred-interface fallbacks when applicable.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="context">The algorithm context, if any.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <param name="side">The mapping side.</param>
+    /// <returns>The element type of the container.</returns>
+    internal static ITypeSymbol GetElementType(
+        this ITypeSymbol typeSymbol,
+        MappaMapAlgorithmContext? context,
+        Compilation? compilation,
+        PreferredInterfaceSide side)
+    {
+        _ = context;
+        _ = side;
+
+        if (typeSymbol is IArrayTypeSymbol arrayTypeSymbol)
+        {
+            return arrayTypeSymbol.ElementType;
+        }
+
+        if (typeSymbol is INamedTypeSymbol { TypeArguments.Length: 1 } namedTypeSymbol)
+        {
+            return namedTypeSymbol.TypeArguments.First();
+        }
+
+        if (TryGetElementTypeFromEnumerableInterface(typeSymbol, compilation, out var elementTypeFromInterface)
             && elementTypeFromInterface is not null)
         {
             return elementTypeFromInterface;
@@ -692,7 +747,25 @@ internal static class TypeSymbolExtensions
     /// <returns>The element type of the key and value of the container.</returns>
     /// <exception cref="MappaGeneratorException">If <paramref name="typeSymbol"/> is not an array or a generic type.</exception>
     internal static (ITypeSymbol KeyType, ITypeSymbol ValueType) GetKeyAndValueTypes(this ITypeSymbol typeSymbol, Compilation compilation)
+        => typeSymbol.GetKeyAndValueTypes(null, compilation, PreferredInterfaceSide.Source);
+
+    /// <summary>
+    /// Gets the key and value type of the container using preferred-interface fallbacks when applicable.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="context">The algorithm context, if any.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <param name="side">The mapping side.</param>
+    /// <returns>The key and value types of the container.</returns>
+    internal static (ITypeSymbol KeyType, ITypeSymbol ValueType) GetKeyAndValueTypes(
+        this ITypeSymbol typeSymbol,
+        MappaMapAlgorithmContext? context,
+        Compilation compilation,
+        PreferredInterfaceSide side)
     {
+        _ = context;
+        _ = side;
+
         if (TryGetKeyAndValueFromTypeArguments(typeSymbol, out var fromTypeArguments))
         {
             return fromTypeArguments;
@@ -2255,12 +2328,31 @@ internal static class TypeSymbolExtensions
         };
     }
 
-    private static bool TryGetElementTypeFromEnumerableInterface(ITypeSymbol typeSymbol, out ITypeSymbol? elementType)
+    private static bool TryGetElementTypeFromEnumerableInterface(
+        ITypeSymbol typeSymbol,
+        Compilation? compilation,
+        out ITypeSymbol? elementType)
     {
         elementType = null;
         if (typeSymbol is not INamedTypeSymbol nonGenericNamedTypeSymbol)
         {
             return false;
+        }
+
+        if (compilation is not null)
+        {
+            var candidates = nonGenericNamedTypeSymbol.AllInterfaces
+                .Where(@interface => @interface is not null && @interface.IsGenericType && @interface.IsIEnumerable())
+                .OfType<INamedTypeSymbol>()
+                .ToArray();
+            var implicitCandidates = candidates
+                .Where(candidate => PreferredInterfaceResolver.IsImplicitImplementation(nonGenericNamedTypeSymbol, candidate, compilation))
+                .ToArray();
+            if (implicitCandidates.Length == 1)
+            {
+                elementType = implicitCandidates[0].TypeArguments.First();
+                return true;
+            }
         }
 
         foreach (var @interface in nonGenericNamedTypeSymbol.AllInterfaces)
@@ -2352,6 +2444,34 @@ internal static class TypeSymbolExtensions
         {
             keyAndValueTypes = default;
             return false;
+        }
+
+        var dictionaryCandidates = symbol.AllInterfaces
+            .Where(@interface => @interface is not null && @interface.IsGenericType && @interface.IsIDictionary(compilation))
+            .OfType<INamedTypeSymbol>()
+            .ToArray();
+        var implicitDictionaryCandidates = dictionaryCandidates
+            .Where(candidate => PreferredInterfaceResolver.IsImplicitImplementation(symbol, candidate, compilation))
+            .ToArray();
+        if (implicitDictionaryCandidates.Length == 1)
+        {
+            keyAndValueTypes = (
+                implicitDictionaryCandidates[0].TypeArguments.First(),
+                implicitDictionaryCandidates[0].TypeArguments.Last());
+            return true;
+        }
+
+        var enumerableCandidates = symbol.AllInterfaces
+            .Where(@interface => @interface is not null && @interface.IsGenericType && @interface.IsIEnumerableOfKeyValuePairs(compilation))
+            .OfType<INamedTypeSymbol>()
+            .ToArray();
+        var implicitEnumerableCandidates = enumerableCandidates
+            .Where(candidate => PreferredInterfaceResolver.IsImplicitImplementation(symbol, candidate, compilation))
+            .ToArray();
+        if (implicitEnumerableCandidates.Length == 1)
+        {
+            keyAndValueTypes = implicitEnumerableCandidates[0].GetKeyAndValueTypes(compilation);
+            return true;
         }
 
         foreach (var @interface in symbol.AllInterfaces)

@@ -16,12 +16,16 @@ namespace Mappa.Generator.Models.Strategies;
 /// <param name="keyStrategy">The strategy for the keys.</param>
 /// <param name="valueStrategy">The strategy for the values.</param>
 /// <param name="dictionaryAssignment">The dictionary assignment setting.</param>
+/// <param name="preferredSourceInterface">The resolved preferred source interface, if any.</param>
+/// <param name="preferredTargetInterface">The resolved preferred target interface, if any.</param>
 internal sealed class DictionaryToDictionaryMapStrategy(
     ITypeSymbol targetType,
     ITypeSymbol sourceType,
     MapStrategy keyStrategy,
     MapStrategy valueStrategy,
-    DictionaryAssignmentSetting dictionaryAssignment)
+    DictionaryAssignmentSetting dictionaryAssignment,
+    INamedTypeSymbol? preferredSourceInterface = null,
+    INamedTypeSymbol? preferredTargetInterface = null)
         : MapStrategy(targetType, sourceType)
 {
     /// <summary>
@@ -38,6 +42,16 @@ internal sealed class DictionaryToDictionaryMapStrategy(
     /// Gets the dictionary assignment setting.
     /// </summary>
     internal DictionaryAssignmentSetting DictionaryAssignment { get; } = dictionaryAssignment;
+
+    /// <summary>
+    /// Gets the resolved preferred source interface, if any.
+    /// </summary>
+    internal INamedTypeSymbol? PreferredSourceInterface { get; } = preferredSourceInterface;
+
+    /// <summary>
+    /// Gets the resolved preferred target interface, if any.
+    /// </summary>
+    internal INamedTypeSymbol? PreferredTargetInterface { get; } = preferredTargetInterface;
 
     /// <inheritdoc/>
     internal override IMappaStrategyBuilder GetBuilder() => new DictionaryToDictionaryMapStrategyBuilder(this);

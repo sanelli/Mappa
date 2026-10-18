@@ -25,6 +25,7 @@ internal static class DictionaryMapEntryCodeBuilder
     /// <param name="dictionaryExpression">The expression that references the target dictionary.</param>
     /// <param name="targetKeyTemporary">The temporary holding the mapped key.</param>
     /// <param name="targetValueTemporary">The temporary holding the mapped value.</param>
+    /// <param name="preferredTargetDictionaryInterface">The resolved preferred target dictionary interface, if any.</param>
     internal static void AppendEntry(
         PrettyCode.StringBuilder builder,
         MappaBuilderContext context,
@@ -33,10 +34,16 @@ internal static class DictionaryMapEntryCodeBuilder
         DictionaryAssignmentSetting dictionaryAssignment,
         string dictionaryExpression,
         string targetKeyTemporary,
-        string targetValueTemporary)
+        string targetValueTemporary,
+        INamedTypeSymbol? preferredTargetDictionaryInterface = null)
     {
-        var (keyType, valueType) = targetDictionaryType.GetKeyAndValueTypes(compilation);
-        var interfaceTypeName = $"global::System.Collections.Generic.IDictionary<{keyType.ToDisplayString()},{valueType.ToDisplayString()}>";
+        var (keyType, valueType) = preferredTargetDictionaryInterface is { TypeArguments.Length: 2 } preferred
+            ? (preferred.TypeArguments[0], preferred.TypeArguments[1])
+            : targetDictionaryType.GetKeyAndValueTypes(compilation);
+        var interfaceTypeName = preferredTargetDictionaryInterface is not null
+            && preferredTargetDictionaryInterface.OriginalDefinition.IsIDictionary(compilation)
+            ? $"global::{preferredTargetDictionaryInterface.ToDisplayString()}"
+            : $"global::System.Collections.Generic.IDictionary<{keyType.ToDisplayString()},{valueType.ToDisplayString()}>";
 
         if (dictionaryAssignment is DictionaryAssignmentSetting.Add)
         {

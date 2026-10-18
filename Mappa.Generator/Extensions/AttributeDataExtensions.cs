@@ -51,6 +51,17 @@ internal static class AttributeDataExtensions
     private const string MappaMapEnumMemberToEnumAttributeFullName = "Mappa.Attributes.MappaMapEnumMemberAttribute`2";
     private const string MappaMapEnumIgnoreAttributeFullName = "Mappa.Attributes.MappaMapEnumIgnoreAttribute`1";
     private const string MappaMapEnumDefaultAttributeFullName = "Mappa.Attributes.MappaMapEnumDefaultAttribute`1";
+    private const string MappaSourcePreferredInterfaceImplementationAttributeFullName =
+        "Mappa.Attributes.MappaSourcePreferredInterfaceImplementationAttribute";
+
+    private const string MappaSourcePreferredInterfaceImplementationAttributeOfTFullName =
+        "Mappa.Attributes.MappaSourcePreferredInterfaceImplementationAttribute`2";
+
+    private const string MappaTargetPreferredInterfaceImplementationAttributeFullName =
+        "Mappa.Attributes.MappaTargetPreferredInterfaceImplementationAttribute";
+
+    private const string MappaTargetPreferredInterfaceImplementationAttributeOfTFullName =
+        "Mappa.Attributes.MappaTargetPreferredInterfaceImplementationAttribute`2";
 
     private static readonly Dictionary<string, Action<MappaSettingsAttribute, TypedConstant>> MappaSettingsNamedArgumentApplicators =
         new(StringComparer.Ordinal)
@@ -391,6 +402,47 @@ internal static class AttributeDataExtensions
                 [nameof(MappaDependencyInjectionAttribute.InjectFromAssemblies)] = static (values, constant) =>
                     values.InjectFromAssemblies = ReadNamedTypeArray(constant),
             };
+
+    /// <summary>
+    /// Gets parsed source and target preferred-interface implementation attributes.
+    /// </summary>
+    /// <param name="attributes">The attributes.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The parsed attributes in declaration order.</returns>
+    internal static PreferredInterfaceImplementationAttributeData[] GetPreferredInterfaceImplementationAttributes(
+        this ImmutableArray<AttributeData> attributes,
+        Compilation compilation)
+    {
+        var sourceAttributeSymbol = compilation.GetTypeByMetadataName(MappaSourcePreferredInterfaceImplementationAttributeFullName);
+        var sourceAttributeOfTSymbol = compilation.GetTypeByMetadataName(MappaSourcePreferredInterfaceImplementationAttributeOfTFullName);
+        var targetAttributeSymbol = compilation.GetTypeByMetadataName(MappaTargetPreferredInterfaceImplementationAttributeFullName);
+        var targetAttributeOfTSymbol = compilation.GetTypeByMetadataName(MappaTargetPreferredInterfaceImplementationAttributeOfTFullName);
+        var results = new List<PreferredInterfaceImplementationAttributeData>();
+
+        foreach (var attributeData in attributes)
+        {
+            if (TryParsePreferredInterfaceImplementationAttribute(
+                    attributeData,
+                    PreferredInterfaceSide.Source,
+                    sourceAttributeSymbol,
+                    sourceAttributeOfTSymbol) is { } sourceAttribute)
+            {
+                results.Add(sourceAttribute);
+                continue;
+            }
+
+            if (TryParsePreferredInterfaceImplementationAttribute(
+                    attributeData,
+                    PreferredInterfaceSide.Target,
+                    targetAttributeSymbol,
+                    targetAttributeOfTSymbol) is { } targetAttribute)
+            {
+                results.Add(targetAttribute);
+            }
+        }
+
+        return [.. results];
+    }
 
     /// <summary>
     /// Gets the <see cref="MappaMapEnumMemberAttribute{TEnum}"/> and
@@ -1404,6 +1456,88 @@ internal static class AttributeDataExtensions
 
     private static bool IsAttribute(INamedTypeSymbol attributeClass, INamedTypeSymbol? attributeSymbol)
         => SymbolEqualityComparer.Default.Equals(attributeClass.OriginalDefinition, attributeSymbol);
+
+    private static PreferredInterfaceImplementationAttributeData? TryParsePreferredInterfaceImplementationAttribute(
+        AttributeData attributeData,
+        PreferredInterfaceSide side,
+        INamedTypeSymbol? nonGenericAttributeSymbol,
+        INamedTypeSymbol? genericAttributeSymbol)
+    {
+        if (attributeData.AttributeClass is not { } attributeClass)
+        {
+            return null;
+        }
+
+        var location = attributeData.ApplicationSyntaxReference?.GetSyntax().GetLocation();
+        if (IsAttribute(attributeClass, genericAttributeSymbol))
+        {
+            var implementingType = GetEnumTypeArgument(attributeClass, 2, 0);
+            var preferredInterface = GetEnumTypeArgument(attributeClass, 2, 1);
+            return CreatePreferredInterfaceImplementationAttributeData(
+                side,
+                implementingType,
+                preferredInterface,
+                location,
+                implementingType?.ToDisplayString() ?? string.Empty,
+                preferredInterface?.ToDisplayString() ?? string.Empty,
+                hasImplementingType: implementingType is not null,
+                hasPreferredInterface: preferredInterface is not null);
+        }
+
+        if (!SymbolEqualityComparer.Default.Equals(attributeClass, nonGenericAttributeSymbol)
+            || attributeData.ConstructorArguments.Length != 2)
+        {
+            return null;
+        }
+
+        var implementingTypeArgument = attributeData.ConstructorArguments[0];
+        var preferredInterfaceArgument = attributeData.ConstructorArguments[1];
+        var implementingTypeSymbol = implementingTypeArgument.Value as INamedTypeSymbol;
+        var preferredInterfaceSymbol = preferredInterfaceArgument.Value as INamedTypeSymbol;
+        return CreatePreferredInterfaceImplementationAttributeData(
+            side,
+            implementingTypeSymbol,
+            preferredInterfaceSymbol,
+            location,
+            GetTypeDisplayFromTypedConstant(implementingTypeArgument),
+            GetTypeDisplayFromTypedConstant(preferredInterfaceArgument),
+            hasImplementingType: implementingTypeArgument.Value is not null,
+            hasPreferredInterface: preferredInterfaceArgument.Value is not null);
+    }
+
+    private static PreferredInterfaceImplementationAttributeData CreatePreferredInterfaceImplementationAttributeData(
+        PreferredInterfaceSide side,
+        INamedTypeSymbol? implementingType,
+        INamedTypeSymbol? preferredClosedInterface,
+        Location? location,
+        string implementingTypeDisplay,
+        string preferredInterfaceDisplay,
+        bool hasImplementingType,
+        bool hasPreferredInterface)
+        => new(
+            side,
+            implementingType,
+            preferredClosedInterface,
+            location,
+            implementingTypeDisplay,
+            preferredInterfaceDisplay,
+            hasImplementingType,
+            hasPreferredInterface);
+
+    private static string GetTypeDisplayFromTypedConstant(TypedConstant typedConstant)
+    {
+        if (typedConstant.Value is INamedTypeSymbol namedTypeSymbol)
+        {
+            return namedTypeSymbol.ToDisplayString();
+        }
+
+        if (typedConstant.Value is ITypeSymbol typeSymbol)
+        {
+            return typeSymbol.ToDisplayString();
+        }
+
+        return typedConstant.ToString();
+    }
 
     private static INamedTypeSymbol? GetEnumTypeArgument(
         INamedTypeSymbol attributeClass,

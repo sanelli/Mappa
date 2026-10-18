@@ -2,7 +2,10 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using System.Collections.Immutable;
+
 using Mappa.Generator.Exceptions;
+using Mappa.Generator.Helpers;
 
 using Microsoft.CodeAnalysis;
 
@@ -16,6 +19,7 @@ internal abstract class MappaMapAlgorithmContext
 {
     private readonly Stack<(ITypeSymbol TargetType, ITypeSymbol SourceType)> inFlightTypePairs = new();
     private short currentDepth = -1;
+    private PreferredInterfaceSession? preferredInterfaceSession;
 
     /// <summary>
     /// Gets the parent symbol.
@@ -214,6 +218,48 @@ internal abstract class MappaMapAlgorithmContext
 
         classContext = null;
         return false;
+    }
+
+    /// <summary>
+    /// Gets or creates the preferred-interface session for the root map method.
+    /// </summary>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The session.</returns>
+    internal PreferredInterfaceSession GetOrCreatePreferredInterfaceSession(Compilation compilation)
+    {
+        var root = this.GetRootAlgorithmContext();
+        if (root.preferredInterfaceSession is not null)
+        {
+            return root.preferredInterfaceSession;
+        }
+
+        var session = new PreferredInterfaceSession();
+        var mapMethod = root.GetMapMethod();
+        var attributes = mapMethod.MethodSymbol?.GetAttributes() ?? ImmutableArray<AttributeData>.Empty;
+        session.Initialize(attributes, compilation);
+        root.preferredInterfaceSession = session;
+        return session;
+    }
+
+    /// <summary>
+    /// Validates preferred-interface attributes on the root map method.
+    /// </summary>
+    /// <param name="compilation">The compilation.</param>
+    internal void ValidatePreferredInterfaceAttributes(Compilation compilation)
+    {
+        var root = this.GetRootAlgorithmContext();
+        var mapMethod = root.GetMapMethod();
+        var session = root.GetOrCreatePreferredInterfaceSession(compilation);
+        session.ValidateAttributes(root, compilation, mapMethod.MethodName);
+    }
+
+    /// <summary>
+    /// Reports not-needed preferred-interface attribute warnings when mapping succeeded.
+    /// </summary>
+    internal void ReportPreferredInterfaceNotNeededWarnings()
+    {
+        var root = this.GetRootAlgorithmContext();
+        root.preferredInterfaceSession?.ReportNotNeededWarnings(root);
     }
 
     private MappaMapAlgorithmContext GetRootAlgorithmContext()

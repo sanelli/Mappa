@@ -245,4 +245,25 @@
     <data name="MappingCycleAutoBroken" xml:space="preserve">
         <value>Un ciclo di mappatura in compilazione da '{0}' a '{1}' è stato interrotto automaticamente sintetizzando il metodo di mappatura privato '{2}'.</value>
     </data>
+    <data name="PreferredInterfaceCannotBeUsed" xml:space="preserve">
+        <value>L'interfaccia preferita '{0}' per il tipo '{1}' non può essere usata per la mappatura.</value>
+    </data>
+    <data name="PreferredInterfaceImplementingTypeNotConcrete" xml:space="preserve">
+        <value>Il primo argomento '{0}' dell'attributo di interfaccia preferita deve essere un tipo concreto che implementa l'interfaccia, non una famiglia di interfaccia generica aperta.</value>
+    </data>
+    <data name="PreferredInterfaceNotImplemented" xml:space="preserve">
+        <value>Il tipo '{0}' non implementa l'interfaccia preferita '{1}'.</value>
+    </data>
+    <data name="PreferredInterfaceAttributeNotNeeded" xml:space="preserve">
+        <value>L'attributo di interfaccia preferita per il tipo '{0}' e l'interfaccia '{1}' non è necessario perché esiste già un unico candidato utilizzabile.</value>
+    </data>
+    <data name="DuplicatePreferredInterfaceAttribute" xml:space="preserve">
+        <value>Più attributi di interfaccia preferita puntano al tipo '{0}' per la stessa famiglia di interfaccia aperta sullo stesso lato del metodo '{1}'.</value>
+    </data>
+    <data name="PreferredInterfaceNotClosedGenericInterface" xml:space="preserve">
+        <value>Il secondo argomento '{0}' dell'attributo di interfaccia preferita deve essere un'interfaccia generica chiusa.</value>
+    </data>
+    <data name="PreferredInterfaceImplementingTypeInvalid" xml:space="preserve">
+        <value>Il primo argomento dell'attributo di interfaccia preferita manca o non è valido.</value>
+    </data>
 </root>

@@ -196,7 +196,8 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
                 ctx.TargetTypeSymbol,
                 ctx.SourceTypeSymbol,
                 ctx.ContainerCapacityConstructors,
-                ctx.State)),
+                ctx.State,
+                ctx.PreferredTargetInterface)),
         new(
             static ctx => ctx.TargetTypeSymbol.ImplementICollection(),
             static ctx => AppendImplementICollectionTarget(
@@ -207,7 +208,8 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
                 ctx.TargetTypeSymbol,
                 ctx.SourceTypeSymbol,
                 ctx.ContainerCapacityConstructors,
-                ctx.State)),
+                ctx.State,
+                ctx.PreferredTargetInterface)),
     ];
 
     private readonly CollectionToCollectionMapStrategy strategy = strategy;
@@ -244,6 +246,7 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
             this.strategy.ContainerCapacityConstructors,
             this.strategy.PreventEnumerableCount,
             this.strategy.EnumerableConcreteType,
+            this.strategy.PreferredTargetInterface,
             out var targetVariableName,
             out var addMethod,
             out var targetCounterTemporary,
@@ -257,6 +260,7 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
                    context,
                    this.strategy.SourceType,
                    this.strategy.FastCollections,
+                   this.strategy.PreferredSourceInterface,
                    out var loopVariableName,
                    out var loopCounterTemporary))
         {
@@ -534,6 +538,7 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
         BooleanSetting containerCapacityConstructors,
         BooleanSetting preventEnumerableCount,
         EnumerableConcreteTypeSetting enumerableConcreteType,
+        INamedTypeSymbol? preferredTargetInterface,
         out string targetVariableName,
         out InsertionMethod insertionMethod,
         out string? counterVariableName,
@@ -554,6 +559,7 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
             containerCapacityConstructors,
             preventEnumerableCount,
             enumerableConcreteType,
+            preferredTargetInterface,
             state);
 
         foreach (var entry in TargetVariableDispatchEntries)
@@ -830,13 +836,12 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
         ITypeSymbol targetTypeSymbol,
         ITypeSymbol sourceTypeSymbol,
         BooleanSetting containerCapacityConstructors,
-        TargetVariableAppendState state)
+        TargetVariableAppendState state,
+        INamedTypeSymbol? preferredTargetInterface)
     {
         state.InsertionMethod = InsertionMethod.Add;
-        var elementType = targetTypeSymbol.GetElementType();
-
-        // Use ICollection because ISet derive the Add from ICollection
-        state.InterfaceToAccessFrom = $"System.Collections.Generic.ICollection<{TypeSymbolExtensions.NormalizeType(elementType.ToDisplayString())}>";
+        var elementType = GetTargetElementType(targetTypeSymbol, preferredTargetInterface);
+        state.InterfaceToAccessFrom = GetCollectionInterfaceToAccessFrom(elementType, preferredTargetInterface);
         state.InterfaceMethodAccessMode = targetTypeSymbol.GetInterfaceMethodAccessMode(
             "Add",
             "System.Collections.Generic.ICollection",
@@ -864,7 +869,8 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
         ITypeSymbol targetTypeSymbol,
         ITypeSymbol sourceTypeSymbol,
         BooleanSetting containerCapacityConstructors,
-        TargetVariableAppendState state)
+        TargetVariableAppendState state,
+        INamedTypeSymbol? preferredTargetInterface)
     {
         // Here we handle the scenario of a concrete type implementing ICollection<T>.
         // We are sure that is concrete because ICollection<T> is addressed in a different branch
@@ -873,8 +879,8 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
         // must be enabled too).
         state.InsertionMethod = InsertionMethod.Add;
 
-        var elementType = targetTypeSymbol.GetElementType();
-        state.InterfaceToAccessFrom = $"System.Collections.Generic.ICollection<{TypeSymbolExtensions.NormalizeType(elementType.ToDisplayString())}>";
+        var elementType = GetTargetElementType(targetTypeSymbol, preferredTargetInterface);
+        state.InterfaceToAccessFrom = GetCollectionInterfaceToAccessFrom(elementType, preferredTargetInterface);
         state.InterfaceMethodAccessMode = targetTypeSymbol.GetInterfaceMethodAccessMode(
             "Add",
             "System.Collections.Generic.ICollection",
@@ -892,6 +898,23 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
             usePropertyLengthOnly: false,
             allowOptionalIntegerConstructor: targetTypeSymbol.TypeKind != TypeKind.Interface);
         stringBuilder.AppendLine($"global::{targetTypeSymbol.ToDisplayString()} {state.TargetVariableName} = new global::{targetTypeSymbol.ToDisplayString()}({capacity});");
+    }
+
+    private static ITypeSymbol GetTargetElementType(ITypeSymbol targetTypeSymbol, INamedTypeSymbol? preferredTargetInterface)
+        => preferredTargetInterface is { TypeArguments.Length: 1 }
+            ? preferredTargetInterface.TypeArguments[0]
+            : targetTypeSymbol.GetElementType();
+
+    private static string GetCollectionInterfaceToAccessFrom(ITypeSymbol elementType, INamedTypeSymbol? preferredTargetInterface)
+    {
+        if (preferredTargetInterface is not null
+            && (preferredTargetInterface.OriginalDefinition.IsICollection()
+                || preferredTargetInterface.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_ICollection_T))
+        {
+            return preferredTargetInterface.ToDisplayString();
+        }
+
+        return $"System.Collections.Generic.ICollection<{TypeSymbolExtensions.NormalizeType(elementType.ToDisplayString())}>";
     }
 
     /// <summary>
@@ -1115,12 +1138,20 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
         MappaBuilderContext context,
         ITypeSymbol sourceTypeSymbol,
         BooleanSetting fastCollections,
+        INamedTypeSymbol? preferredSourceInterface,
         out string loopVariableName,
         out string? countingVariableName)
     {
         if (!HasIndexer(context, sourceTypeSymbol))
         {
-            return AppendForeachLoopBlock(stringBuilder, source, context, sourceTypeSymbol, out loopVariableName, out countingVariableName);
+            return AppendForeachLoopBlock(
+                stringBuilder,
+                source,
+                context,
+                sourceTypeSymbol,
+                preferredSourceInterface,
+                out loopVariableName,
+                out countingVariableName);
         }
 
         var spanTemporary = TryAppendSpanTemporaryForIndexerLoop(
@@ -1133,10 +1164,11 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
 
         countingVariableName = context.NextTemporary();
         loopVariableName = context.NextTemporary();
+        var elementTypeDisplay = GetSourceElementTypeDisplay(sourceTypeSymbol, preferredSourceInterface);
 
         stringBuilder.AppendLine($"for (int {countingVariableName} = 0; {countingVariableName} < {lengthExpression ?? GetLengthExpression(spanTemporary ?? source, sourceTypeSymbol, context.Compilation)}; ++{countingVariableName})");
         var block = stringBuilder.CurlyBracesBlock();
-        stringBuilder.AppendLine($"{sourceTypeSymbol.GetElementType().ToDisplayString()} {loopVariableName} = {spanTemporary ?? source}[{countingVariableName}];");
+        stringBuilder.AppendLine($"{elementTypeDisplay} {loopVariableName} = {spanTemporary ?? source}[{countingVariableName}];");
         return block;
     }
 
@@ -1145,13 +1177,38 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
         string source,
         MappaBuilderContext context,
         ITypeSymbol sourceTypeSymbol,
+        INamedTypeSymbol? preferredSourceInterface,
         out string loopVariableName,
         out string? countingVariableName)
     {
         countingVariableName = null;
+        var elementTypeDisplay = GetSourceElementTypeDisplay(sourceTypeSymbol, preferredSourceInterface);
+        var enumerableExpression = source;
+        if (preferredSourceInterface is not null
+            && sourceTypeSymbol is INamedTypeSymbol namedSourceType
+            && PreferredInterfaceResolver.IsExplicitlyImplemented(
+                namedSourceType,
+                preferredSourceInterface,
+                context.Compilation))
+        {
+            var preferredInterfaceTemporary = context.NextTemporary();
+            stringBuilder.AppendLine($"{preferredSourceInterface.ToDisplayString()} {preferredInterfaceTemporary} = {source};");
+            enumerableExpression = preferredInterfaceTemporary;
+        }
+
         loopVariableName = context.NextTemporary();
-        stringBuilder.AppendLine($"foreach ({sourceTypeSymbol.GetElementType().ToDisplayString()} {loopVariableName} in {source})");
+        stringBuilder.AppendLine($"foreach ({elementTypeDisplay} {loopVariableName} in {enumerableExpression})");
         return stringBuilder.CurlyBracesBlock();
+    }
+
+    private static string GetSourceElementTypeDisplay(ITypeSymbol sourceTypeSymbol, INamedTypeSymbol? preferredSourceInterface)
+    {
+        if (preferredSourceInterface is { TypeArguments.Length: 1 })
+        {
+            return preferredSourceInterface.TypeArguments[0].ToDisplayString();
+        }
+
+        return sourceTypeSymbol.GetElementType().ToDisplayString();
     }
 
     private static string? TryAppendSpanTemporaryForIndexerLoop(
@@ -1214,6 +1271,7 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
             BooleanSetting containerCapacityConstructors,
             BooleanSetting preventEnumerableCount,
             EnumerableConcreteTypeSetting enumerableConcreteType,
+            INamedTypeSymbol? preferredTargetInterface,
             TargetVariableAppendState state)
         {
             this.StringBuilder = stringBuilder;
@@ -1226,6 +1284,7 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
             this.ContainerCapacityConstructors = containerCapacityConstructors;
             this.PreventEnumerableCount = preventEnumerableCount;
             this.EnumerableConcreteType = enumerableConcreteType;
+            this.PreferredTargetInterface = preferredTargetInterface;
             this.State = state;
         }
 
@@ -1248,6 +1307,8 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
         internal BooleanSetting PreventEnumerableCount { get; }
 
         internal EnumerableConcreteTypeSetting EnumerableConcreteType { get; }
+
+        internal INamedTypeSymbol? PreferredTargetInterface { get; }
 
         internal TargetVariableAppendState State { get; }
     }
