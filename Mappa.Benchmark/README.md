@@ -37,7 +37,7 @@ Outputs are written under `.mappa-benchmark/` (gitignored). See [Documentation/d
 | Fast collections | `FastListToArrayBenchmark` | Mappa with `FastCollections`; others use their default path; fixed Bogus seed |
 | Memory | `MemoryToArrayBenchmark`, `ArrayToMemoryBenchmark` | Fixed Bogus seed |
 | Polymorphism | `PolymorphicBenchmark` | Derived-type maps; fixed Bogus seed |
-| IQueryable | `IQueryableProjectionBenchmark` | In-memory `AsQueryable()` + `.ToList()`; fixed Bogus seed |
+| IQueryable | `IQueryableProjectionBenchmark`, `IQueryableNestedCollectionProjectionBenchmark` | In-memory `AsQueryable()` + `.ToList()`; nested scenario includes child collections; fixed Bogus seed |
 | Nested DTO | `NestedDtoBenchmark` | 5-level graph, polymorphic parties/line items, arrays/lists/sets/dicts/queues/stacks/Memory, get-only notes list, enum↔enum/string/int (~1000 elements); fixed Bogus seed |
 
 ### Chart / CI subset

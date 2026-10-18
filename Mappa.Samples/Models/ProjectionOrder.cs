@@ -2,6 +2,8 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+#pragma warning disable CA1002, CA2227
+
 namespace Mappa.Samples.Models;
 
 /// <summary>
@@ -23,4 +25,19 @@ public sealed class ProjectionOrder
     /// Gets or sets the customer name.
     /// </summary>
     public string CustomerName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the public identifier as a string (projected to <see cref="Guid"/>).
+    /// </summary>
+    public string PublicId { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets a summary tuple (count + label).
+    /// </summary>
+    public (int Count, string Label) Summary { get; set; }
+
+    /// <summary>
+    /// Gets or sets the nested children.
+    /// </summary>
+    public List<ProjectionChild> Children { get; set; } = [];
 }

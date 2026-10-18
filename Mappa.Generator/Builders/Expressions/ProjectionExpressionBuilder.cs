@@ -410,13 +410,29 @@ internal static class ProjectionExpressionBuilder
             elementExpressions[index] = elementExpression;
         }
 
-        var tupleExpression = $"({string.Join(", ", elementExpressions)})";
-        if (!strategy.TargetType.IsTupleType)
+        // Tuple literals are illegal inside expression trees (CS8143); always emit ValueTuple constructors.
+        // Do not use ToDisplayString() for tuple types: it emits `(T1, T2)` which cannot be used with `new` (CS8181).
+        if (strategy.TargetType is INamedTypeSymbol { IsTupleType: true } namedTupleType)
         {
-            return $"new {strategy.TargetType.ToDisplayString()}{tupleExpression}";
+            return $"new {FormatValueTupleTypeName(namedTupleType)}({string.Join(", ", elementExpressions)})";
         }
 
-        return tupleExpression;
+        return $"new {strategy.TargetType.ToDisplayString()}({string.Join(", ", elementExpressions)})";
+    }
+
+    private static string FormatValueTupleTypeName(INamedTypeSymbol tupleType)
+    {
+        var underlyingType = tupleType.TupleUnderlyingType ?? tupleType;
+        var typeArguments = new string[underlyingType.TypeArguments.Length];
+        for (var index = 0; index < underlyingType.TypeArguments.Length; ++index)
+        {
+            var typeArgument = underlyingType.TypeArguments[index];
+            typeArguments[index] = typeArgument is INamedTypeSymbol { IsTupleType: true } nestedTuple
+                ? FormatValueTupleTypeName(nestedTuple)
+                : typeArgument.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        }
+
+        return $"global::System.ValueTuple<{string.Join(", ", typeArguments)}>";
     }
 
     private static string BuildStringToGuidExpression(StringToGuidMapStrategy strategy, string source)

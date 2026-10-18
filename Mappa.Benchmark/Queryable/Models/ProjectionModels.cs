@@ -7,6 +7,38 @@
 namespace Mappa.Benchmark.Queryable.Models;
 
 /// <summary>
+/// Nested child entity for IQueryable projection benchmarks.
+/// </summary>
+public sealed class ProjectionChild
+{
+    /// <summary>
+    /// Gets or sets the identifier.
+    /// </summary>
+    public int Id { get; set; }
+
+    /// <summary>
+    /// Gets or sets the label.
+    /// </summary>
+    public string Label { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// Nested child DTO for IQueryable projection benchmarks.
+/// </summary>
+public sealed class ProjectionChildDto
+{
+    /// <summary>
+    /// Gets or sets the identifier.
+    /// </summary>
+    public int Id { get; set; }
+
+    /// <summary>
+    /// Gets or sets the label.
+    /// </summary>
+    public string Label { get; set; } = string.Empty;
+}
+
+/// <summary>
 /// Source entity for IQueryable projection benchmarks.
 /// </summary>
 public sealed class ProjectionOrder
@@ -25,6 +57,11 @@ public sealed class ProjectionOrder
     /// Gets or sets the customer name.
     /// </summary>
     public string CustomerName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the nested children.
+    /// </summary>
+    public List<ProjectionChild> Children { get; set; } = [];
 }
 
 /// <summary>
@@ -46,4 +83,9 @@ public sealed class ProjectionOrderDto
     /// Gets or sets the customer name.
     /// </summary>
     public string CustomerName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the nested children.
+    /// </summary>
+    public List<ProjectionChildDto> Children { get; set; } = [];
 }

@@ -176,7 +176,8 @@ public sealed partial class IQueryableProjectionMapStrategyIntegrationTests
 
         static void ValuesAssertions(ExpressionSyntaxAssertions values)
         {
-            values.BeTupleExpressionSyntax(
+            values.BeObjectCreationExpressionSyntax(
+                "global::System.ValueTuple<global::System.String, global::System.String>",
                 Item1Assertions,
                 item2 => item2.BeMemberAccessExpressionSyntax($"{LambdaParameterName}.Values.Item2"));
         }

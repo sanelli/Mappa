@@ -272,8 +272,12 @@ When `ReferenceReusing` is `Enable` and the map method declares `MappaContext`:
     - The generator emits `return source.Select(element => /* projection expression */);`,
     - Element mapping is validated by `ProjectionCapabilityAnalyzer` and built by `ProjectionExpressionBuilder` (expression-tree-compatible code, not imperative statements),
 - _Notes_:
-    - Projection is **signature-driven**; no dedicated projection attribute is required,
+    - Projection is **signature-driven** by default; optional `[MappaProjection]` on the class or method opts in (`Enabled = Enable`, default when present) or out (`Enabled = Disable` falls through to the container / eager path),
     - Mapping attributes such as `[MappaUseProperty]` on the projection method participate in element construction,
+    - Nested **collections** (`List<T>` / arrays) are projected via nested `Enumerable.Select` plus `ToList` / `ToArray` as required by the target type; nested `IQueryable` properties remain unsupported (**MP00059**),
+    - Value tuples and common `Guid`↔`string` / `Guid`↔`byte[]` conversions are supported via expression builders (value tuples emit `new System.ValueTuple<...>(...)` because tuple literals are illegal in expression trees; provider translation is not guaranteed for every shape),
+    - `Projection*` settings on `[MappaSettings]` override non-prefixed enum/format/culture settings for the projection element context only (unset values fall back),
+    - When a companion map method is replaced by a re-derived structural strategy, warning **MP00086** is reported; non-inlinable invokes remain **MP00058**,
     - Nested `IQueryable` properties, polymorphic root element maps, non-inlinable invoke methods, and before/after hooks are rejected with dedicated diagnostics (MP00055–MP00060),
     - `[MappaObjectFactory]` on a projection map for the element target is rejected with **MP00064**,
     - `[MappaAllowInaccessibleSourceMembers]` / `[MappaAllowInaccessibleTargetMembers]` on a projection map are rejected with **MP00069**,
@@ -440,7 +444,7 @@ See also: [Mappa attributes — MappaBeforeMap and MappaAfterMap](mappa-attribut
 Currently unsupported features include:
 
 - Generic type parameters on map methods (for example, `TTarget Map<TSource, TTarget>(TSource input)`).
-- Nested `IQueryable` / collection projections inside member initializers (for example projecting `source.Children` as `IQueryable` inside a parent projection).
-- Tuple and `Guid` expression builders inside queryable projections.
+- Nested `IQueryable` properties inside member initializers (nested **collections** are supported; see [§7a](#7a-iqueryable-projection-strategy)).
+- Dictionary projections inside queryable element maps.
 - Provider-specific expression shapes that compile but are not translated by a given LINQ provider at runtime.
 - `ReferenceReusing` / `MaxRuntimeDepth` (and `MappaContext`) on `IQueryable` projection map methods.

@@ -19,6 +19,7 @@ internal sealed class AutomapperMapperProfile
     /// </summary>
     public AutomapperMapperProfile()
     {
+        this.CreateMap<ProjectionChild, ProjectionChildDto>();
         this.CreateMap<ProjectionOrder, ProjectionOrderDto>()
             .ForMember(destination => destination.Title, options => options.MapFrom(source => source.Name));
     }

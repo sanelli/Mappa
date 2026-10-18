@@ -584,7 +584,7 @@ public sealed class ProjectionExpressionBuilderTests
                 expressionContext,
                 out var valueTupleExpression)
             .Should().BeTrue();
-        valueTupleExpression.Should().Be("(source.Item1, source.Item2)");
+        valueTupleExpression.Should().Be("new global::System.ValueTuple<global::System.Int32, global::System.String>(source.Item1, source.Item2)");
 
         ProjectionExpressionBuilder.TryBuildExpression(
                 new TupleToTupleMapStrategy(systemTupleType, systemTupleType, [identityInt, identityString]),
