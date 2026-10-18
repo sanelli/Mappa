@@ -24,32 +24,6 @@ internal static class CommonStrategyDetectors
     /// <param name="sourceType">The source type.</param>
     /// <param name="compilation">The compilation unit.</param>
     /// <param name="elementStrategy">The strategy between the source and target types defined in the context.</param>
-    /// <param name="cancellationToken">The cancellation token of the operation.</param>
-    /// <returns><c>true</c> if the mapping exists, <c>false</c> otherwise.</returns>
-    internal static bool TryGetElementStrategy(
-        this MappaMapAlgorithmContext context,
-        ITypeSymbol targetType,
-        ITypeSymbol sourceType,
-        Compilation compilation,
-        out MapStrategy elementStrategy,
-        CancellationToken cancellationToken)
-        => context.TryGetElementStrategy(
-            targetType,
-            sourceType,
-            compilation,
-            out elementStrategy,
-            out _,
-            out _,
-            cancellationToken);
-
-    /// <summary>
-    /// Attempt to identify a strategy for the element type of containers.
-    /// </summary>
-    /// <param name="context">The context of the mapping.</param>
-    /// <param name="targetType">The target type.</param>
-    /// <param name="sourceType">The source type.</param>
-    /// <param name="compilation">The compilation unit.</param>
-    /// <param name="elementStrategy">The strategy between the source and target types defined in the context.</param>
     /// <param name="preferredSourceInterface">The resolved preferred source interface, if any.</param>
     /// <param name="preferredTargetInterface">The resolved preferred target interface, if any.</param>
     /// <param name="cancellationToken">The cancellation token of the operation.</param>

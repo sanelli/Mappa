@@ -24,6 +24,97 @@ public sealed class PreferredInterfaceResolverUnitTests
     : MappaGeneratorAbstractUnitTests
 {
     /// <summary>
+    /// <see cref="PreferredInterfaceResolver.TryGetFamily"/> recognizes dictionary, collection, and enumerable families.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void TryGetFamilyRecognizesKnownInterfaceFamilies()
+    {
+        var compilation = BuildCompilation("namespace Mappa.Generator.Tests.UnitTests.SourceCode { internal class Placeholder { } }");
+        var intType = compilation.GetSpecialType(SpecialType.System_Int32);
+        var stringType = compilation.GetSpecialType(SpecialType.System_String);
+        var keyValuePair = compilation.GetTypeByMetadataName("System.Collections.Generic.KeyValuePair`2")
+            ?.Construct(intType, stringType)
+            ?? throw new InvalidOperationException("KeyValuePair`2 was not found.");
+
+        var dictionary = compilation.GetTypeByMetadataName("System.Collections.Generic.IDictionary`2")
+            ?? throw new InvalidOperationException("IDictionary`2 was not found.");
+        var readOnlyDictionary = compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlyDictionary`2")
+            ?? throw new InvalidOperationException("IReadOnlyDictionary`2 was not found.");
+        var comparable = compilation.GetTypeByMetadataName("System.IComparable`1")
+            ?? throw new InvalidOperationException("IComparable`1 was not found.");
+
+        PreferredInterfaceResolver.TryGetFamily(dictionary.Construct(intType, stringType), compilation)
+            .Should().Be(PreferredInterfaceFamily.IDictionary);
+        PreferredInterfaceResolver.TryGetFamily(readOnlyDictionary.Construct(intType, stringType), compilation)
+            .Should().Be(PreferredInterfaceFamily.IReadOnlyDictionary);
+        PreferredInterfaceResolver.TryGetFamily(
+                compilation.GetSpecialType(SpecialType.System_Collections_Generic_ICollection_T).Construct(intType),
+                compilation)
+            .Should().Be(PreferredInterfaceFamily.ICollection);
+        PreferredInterfaceResolver.TryGetFamily(
+                compilation.GetSpecialType(SpecialType.System_Collections_Generic_IList_T).Construct(intType),
+                compilation)
+            .Should().Be(PreferredInterfaceFamily.IList);
+        PreferredInterfaceResolver.TryGetFamily(
+                compilation.GetSpecialType(SpecialType.System_Collections_Generic_IReadOnlyList_T).Construct(intType),
+                compilation)
+            .Should().Be(PreferredInterfaceFamily.IReadOnlyList);
+        PreferredInterfaceResolver.TryGetFamily(
+                compilation.GetSpecialType(SpecialType.System_Collections_Generic_IReadOnlyCollection_T).Construct(intType),
+                compilation)
+            .Should().Be(PreferredInterfaceFamily.IReadOnlyCollection);
+        PreferredInterfaceResolver.TryGetFamily(
+                compilation.GetSpecialType(SpecialType.System_Collections_Generic_IEnumerable_T).Construct(intType),
+                compilation)
+            .Should().Be(PreferredInterfaceFamily.IEnumerable);
+        PreferredInterfaceResolver.TryGetFamily(
+                compilation.GetSpecialType(SpecialType.System_Collections_Generic_IEnumerable_T).Construct(keyValuePair),
+                compilation)
+            .Should().Be(PreferredInterfaceFamily.IEnumerableOfKeyValuePair);
+
+        var set = compilation.GetTypeByMetadataName("System.Collections.Generic.ISet`1")
+            ?? throw new InvalidOperationException("ISet`1 was not found.");
+        var readOnlySet = compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlySet`1")
+            ?? throw new InvalidOperationException("IReadOnlySet`1 was not found.");
+        var immutableSet = compilation.GetTypeByMetadataName("System.Collections.Immutable.IImmutableSet`1")
+            ?? throw new InvalidOperationException("IImmutableSet`1 was not found.");
+        var immutableList = compilation.GetTypeByMetadataName("System.Collections.Immutable.IImmutableList`1")
+            ?? throw new InvalidOperationException("IImmutableList`1 was not found.");
+        var immutableQueue = compilation.GetTypeByMetadataName("System.Collections.Immutable.IImmutableQueue`1")
+            ?? throw new InvalidOperationException("IImmutableQueue`1 was not found.");
+        var immutableStack = compilation.GetTypeByMetadataName("System.Collections.Immutable.IImmutableStack`1")
+            ?? throw new InvalidOperationException("IImmutableStack`1 was not found.");
+        var immutableDictionary = compilation.GetTypeByMetadataName("System.Collections.Immutable.IImmutableDictionary`2")
+            ?? throw new InvalidOperationException("IImmutableDictionary`2 was not found.");
+        var producerConsumer = compilation.GetTypeByMetadataName("System.Collections.Concurrent.IProducerConsumerCollection`1")
+            ?? throw new InvalidOperationException("IProducerConsumerCollection`1 was not found.");
+        var queryable = compilation.GetTypeByMetadataName("System.Linq.IQueryable`1")
+            ?? throw new InvalidOperationException("IQueryable`1 was not found.");
+
+        PreferredInterfaceResolver.TryGetFamily(set.Construct(intType), compilation)
+            .Should().Be(PreferredInterfaceFamily.ISet);
+        PreferredInterfaceResolver.TryGetFamily(readOnlySet.Construct(intType), compilation)
+            .Should().Be(PreferredInterfaceFamily.IReadOnlySet);
+        PreferredInterfaceResolver.TryGetFamily(immutableSet.Construct(intType), compilation)
+            .Should().Be(PreferredInterfaceFamily.IImmutableSet);
+        PreferredInterfaceResolver.TryGetFamily(immutableList.Construct(intType), compilation)
+            .Should().Be(PreferredInterfaceFamily.IImmutableList);
+        PreferredInterfaceResolver.TryGetFamily(immutableQueue.Construct(intType), compilation)
+            .Should().Be(PreferredInterfaceFamily.IImmutableQueue);
+        PreferredInterfaceResolver.TryGetFamily(immutableStack.Construct(intType), compilation)
+            .Should().Be(PreferredInterfaceFamily.IImmutableStack);
+        PreferredInterfaceResolver.TryGetFamily(immutableDictionary.Construct(intType, stringType), compilation)
+            .Should().Be(PreferredInterfaceFamily.IImmutableDictionary);
+        PreferredInterfaceResolver.TryGetFamily(producerConsumer.Construct(intType), compilation)
+            .Should().Be(PreferredInterfaceFamily.IProducerConsumerCollection);
+        PreferredInterfaceResolver.TryGetFamily(queryable.Construct(intType), compilation)
+            .Should().Be(PreferredInterfaceFamily.IQueryable);
+        PreferredInterfaceResolver.TryGetFamily(comparable.Construct(intType), compilation)
+            .Should().BeNull();
+    }
+
+    /// <summary>
     /// <see cref="PreferredInterfaceResolver.IsConcreteImplementingType"/> accepts closed generic interfaces.
     /// </summary>
     [Fact]

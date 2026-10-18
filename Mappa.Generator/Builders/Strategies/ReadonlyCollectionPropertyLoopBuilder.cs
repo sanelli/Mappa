@@ -211,14 +211,7 @@ internal static class ReadonlyCollectionPropertyLoopBuilder
         if (methodAccessMode == InterfaceMethodAccessMode.InterfaceExplicit)
         {
             var interfaceTemporary = context.NextTemporary();
-            var interfaceDisplay = preferredTargetInterface is not null
-                && PreferredInterfaceResolver.TryGetFamily(preferredTargetInterface, context.Compilation)
-                    is PreferredInterfaceFamily.ICollection
-                    or PreferredInterfaceFamily.IList
-                    or PreferredInterfaceFamily.ISet
-                ? preferredTargetInterface.ToDisplayString()
-                : $"System.Collections.Generic.ICollection<{elementType.ToDisplayString()}>";
-            stringBuilder.AppendLine($"{interfaceDisplay} {interfaceTemporary} = {targetPropertyAccess};");
+            stringBuilder.AppendLine($"System.Collections.Generic.ICollection<{elementType.ToDisplayString()}> {interfaceTemporary} = {targetPropertyAccess};");
             stringBuilder.AppendLine($"{interfaceTemporary}.Add({targetElementTemporary});");
         }
         else

@@ -3,8 +3,10 @@
 // </copyright>
 
 using System.Globalization;
+using System.Reflection;
 
 using Mappa.Attributes;
+using Mappa.Generator.Exceptions;
 using Mappa.Generator.Helpers;
 
 using Xunit;
@@ -17,6 +19,12 @@ namespace Mappa.Generator.Tests;
 /// </summary>
 public sealed class StyleEnumCodeHelperTests
 {
+    private enum NoZeroValues
+    {
+        A = 1,
+        B = 2,
+    }
+
     /// <summary>
     /// Test <see cref="StyleEnumCodeHelper.IsValidDateTimeStyle"/> accepts <c>None</c> and single flags.
     /// </summary>
@@ -156,5 +164,46 @@ public sealed class StyleEnumCodeHelperTests
     {
         StyleEnumCodeHelper.GetNumberStyleExpression((NumberStyles)1048576)
             .Should().Be("System.Globalization.NumberStyles.None");
+    }
+
+    /// <summary>
+    /// Test <see cref="StyleEnumCodeHelper.GetDateTimeStyleExpression"/> emits <c>None</c> for <see cref="DateTimeStyles.None"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetDateTimeStyleExpressionEmitsNoneForNone()
+    {
+        StyleEnumCodeHelper.GetDateTimeStyleExpression(DateTimeStyles.None)
+            .Should().Be("System.Globalization.DateTimeStyles.None");
+    }
+
+    /// <summary>
+    /// Test <see cref="StyleEnumCodeHelper.GetNumberStyleExpression"/> emits <c>None</c> for <see cref="NumberStyles.None"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetNumberStyleExpressionEmitsNoneForNone()
+    {
+        StyleEnumCodeHelper.GetNumberStyleExpression(NumberStyles.None)
+            .Should().Be("System.Globalization.NumberStyles.None");
+    }
+
+    /// <summary>
+    /// Test zero-valued enum lookup fails when the enum has no zero member.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetNoneValueThrowsWhenEnumHasNoZeroMember()
+    {
+        var method = typeof(StyleEnumCodeHelper).GetMethod(
+            "GetNoneValue",
+            BindingFlags.NonPublic | BindingFlags.Static)
+            ?? throw new InvalidOperationException("GetNoneValue was not found.");
+        var generic = method.MakeGenericMethod(typeof(NoZeroValues));
+
+        var act = () => generic.Invoke(null, null);
+
+        act.Should().Throw<TargetInvocationException>()
+            .WithInnerException<MappaGeneratorException>();
     }
 }

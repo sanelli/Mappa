@@ -74,94 +74,11 @@ internal static class PreferredInterfaceResolver
     internal static PreferredInterfaceFamily? TryGetFamily(INamedTypeSymbol closedInterface, Compilation compilation)
     {
         var definition = closedInterface.OriginalDefinition;
-
-        if (definition.IsIDictionary(compilation))
-        {
-            return PreferredInterfaceFamily.IDictionary;
-        }
-
-        if (definition.IsIReadOnlyDictionary(compilation))
-        {
-            return PreferredInterfaceFamily.IReadOnlyDictionary;
-        }
-
-        if (definition.IsIImmutableDictionary(compilation))
-        {
-            return PreferredInterfaceFamily.IImmutableDictionary;
-        }
-
-        if (definition.IsICollection())
-        {
-            return PreferredInterfaceFamily.ICollection;
-        }
-
-        if (definition.IsIList())
-        {
-            return PreferredInterfaceFamily.IList;
-        }
-
-        if (definition.IsIReadOnlyList())
-        {
-            return PreferredInterfaceFamily.IReadOnlyList;
-        }
-
-        if (definition.IsIReadOnlyCollection())
-        {
-            return PreferredInterfaceFamily.IReadOnlyCollection;
-        }
-
-        if (definition.IsISet(compilation))
-        {
-            return PreferredInterfaceFamily.ISet;
-        }
-
-        if (definition.IsIReadOnlySet(compilation))
-        {
-            return PreferredInterfaceFamily.IReadOnlySet;
-        }
-
-        if (definition.IsIImmutableSet(compilation))
-        {
-            return PreferredInterfaceFamily.IImmutableSet;
-        }
-
-        if (definition.IsIImmutableList(compilation))
-        {
-            return PreferredInterfaceFamily.IImmutableList;
-        }
-
-        if (definition.IsIImmutableQueue(compilation))
-        {
-            return PreferredInterfaceFamily.IImmutableQueue;
-        }
-
-        if (definition.IsIImmutableStack(compilation))
-        {
-            return PreferredInterfaceFamily.IImmutableStack;
-        }
-
-        if (definition.IsIProducerConsumerCollection(compilation))
-        {
-            return PreferredInterfaceFamily.IProducerConsumerCollection;
-        }
-
-        if (definition.IsIQueryable(compilation))
-        {
-            return PreferredInterfaceFamily.IQueryable;
-        }
-
-        if (definition.IsIEnumerable())
-        {
-            if (closedInterface.TypeArguments.Length == 1
-                && closedInterface.TypeArguments[0].IsKeyValuePair(compilation))
-            {
-                return PreferredInterfaceFamily.IEnumerableOfKeyValuePair;
-            }
-
-            return PreferredInterfaceFamily.IEnumerable;
-        }
-
-        return null;
+        return TryGetDictionaryFamily(definition, compilation)
+               ?? TryGetMutableCollectionFamily(definition, compilation)
+               ?? TryGetReadOnlyCollectionFamily(definition, compilation)
+               ?? TryGetImmutableAndProducerFamily(definition, compilation)
+               ?? TryGetEnumerableFamily(closedInterface, definition, compilation);
     }
 
     /// <summary>
@@ -328,6 +245,120 @@ internal static class PreferredInterfaceResolver
 
         outcome = PreferredInterfaceResolutionOutcome.NotResolved;
         return false;
+    }
+
+    private static PreferredInterfaceFamily? TryGetDictionaryFamily(INamedTypeSymbol definition, Compilation compilation)
+    {
+        if (definition.IsIDictionary(compilation))
+        {
+            return PreferredInterfaceFamily.IDictionary;
+        }
+
+        if (definition.IsIReadOnlyDictionary(compilation))
+        {
+            return PreferredInterfaceFamily.IReadOnlyDictionary;
+        }
+
+        if (definition.IsIImmutableDictionary(compilation))
+        {
+            return PreferredInterfaceFamily.IImmutableDictionary;
+        }
+
+        return null;
+    }
+
+    private static PreferredInterfaceFamily? TryGetMutableCollectionFamily(INamedTypeSymbol definition, Compilation compilation)
+    {
+        if (definition.IsICollection())
+        {
+            return PreferredInterfaceFamily.ICollection;
+        }
+
+        if (definition.IsIList())
+        {
+            return PreferredInterfaceFamily.IList;
+        }
+
+        if (definition.IsISet(compilation))
+        {
+            return PreferredInterfaceFamily.ISet;
+        }
+
+        return null;
+    }
+
+    private static PreferredInterfaceFamily? TryGetReadOnlyCollectionFamily(INamedTypeSymbol definition, Compilation compilation)
+    {
+        if (definition.IsIReadOnlyList())
+        {
+            return PreferredInterfaceFamily.IReadOnlyList;
+        }
+
+        if (definition.IsIReadOnlyCollection())
+        {
+            return PreferredInterfaceFamily.IReadOnlyCollection;
+        }
+
+        if (definition.IsIReadOnlySet(compilation))
+        {
+            return PreferredInterfaceFamily.IReadOnlySet;
+        }
+
+        return null;
+    }
+
+    private static PreferredInterfaceFamily? TryGetImmutableAndProducerFamily(INamedTypeSymbol definition, Compilation compilation)
+    {
+        if (definition.IsIImmutableSet(compilation))
+        {
+            return PreferredInterfaceFamily.IImmutableSet;
+        }
+
+        if (definition.IsIImmutableList(compilation))
+        {
+            return PreferredInterfaceFamily.IImmutableList;
+        }
+
+        if (definition.IsIImmutableQueue(compilation))
+        {
+            return PreferredInterfaceFamily.IImmutableQueue;
+        }
+
+        if (definition.IsIImmutableStack(compilation))
+        {
+            return PreferredInterfaceFamily.IImmutableStack;
+        }
+
+        if (definition.IsIProducerConsumerCollection(compilation))
+        {
+            return PreferredInterfaceFamily.IProducerConsumerCollection;
+        }
+
+        if (definition.IsIQueryable(compilation))
+        {
+            return PreferredInterfaceFamily.IQueryable;
+        }
+
+        return null;
+    }
+
+    private static PreferredInterfaceFamily? TryGetEnumerableFamily(
+        INamedTypeSymbol closedInterface,
+        INamedTypeSymbol definition,
+        Compilation compilation)
+    {
+        if (!definition.IsIEnumerable())
+        {
+            return null;
+        }
+
+        if (closedInterface.TypeArguments.Length == 1
+            && closedInterface.TypeArguments[0].IsKeyValuePair(compilation))
+        {
+            return PreferredInterfaceFamily.IEnumerableOfKeyValuePair;
+        }
+
+        return PreferredInterfaceFamily.IEnumerable;
     }
 
     private static bool IsExplicitImplementation(
