@@ -7,6 +7,7 @@ This is the list of attributes provided:
 - `MappaDependency`: Identifies a property or field inside a mapper class that can be used when identifying suitable mappings between two types; fields and properties tagged on **accessible base classes of the mapper** are also considered; methods on the dependency type **and its base classes** are considered when the field or property type is that type or a derived type;
 - `MappaStaticDependency`: Defines a static class whose methods can be used as dependencies while performing mappings;
 - `MappaSettings`: Allows specifying mapping behaviour (for example, culture when parsing or formatting date/time, `Guid`, and numeric types, and format when converting numeric types to `string`);
+- `MappaProjection`: Opt-in/opt-out for `IQueryable<TSource>` → `IQueryable<TTarget>` deferred projection on a mapper class or map method (`Enabled` defaults to `Enable` when the attribute is present; signature-driven projection remains the default when the attribute is absent);
 - `MappaUseProperty`: When mapping structured types (`class`, `struct`, and records) allows specifying which source property to use for a target property or constructor parameter; `TargetPropertyName` and `SourcePropertyName` may be a single name or a dot-separated chain of nested property names (for example `"Address.City"`);
 - `MappaIgnoreTargetProperty`: When mapping structured types via an empty constructor, excludes a target property from property-initializer mapping; has no effect when mapping uses a constructor with parameters; `TargetPropertyName` may be a single name or a dot-separated chain of nested property names;
 - `MappaMustMapTargetProperty`: When mapping structured types via an empty constructor (or empty-constructor-like factory), requires that listed non-required target properties—or all of them when no names are provided—are mapped; otherwise generation fails with **MP00065**;
@@ -29,7 +30,7 @@ This is the list of attributes provided:
 
 This package also provides the `MappaContext` class that can be used to pass contextual values to mappers via the `MappaAssignFromContext` attribute, store mapped values via the `MappaAssignToContext` attribute, supply context to methods invoked via the `MappaInvokeMethodAttribute` attribute, supply context to before/after map hooks, or supply context to object factory methods. When `ReferenceReusing` or `MaxRuntimeDepth` is enabled, `MappaContext` also owns a private `MappaReferenceManager` used by generated code to track mapped references (keyed by source identity and `typeof(TTarget)`) and nesting depth. `MappaContext` is not thread-safe: use one instance per logical mapping operation and do not share a single instance across concurrent mappings without external synchronization.
 
-**Queryable projection:** map methods with signature `IQueryable<TSource>` → `IQueryable<TTarget>` are handled by the generator as deferred `Select` projections for ORM providers. This is signature-driven and does not require a new attribute in this package. Generated projection methods are annotated with `[RequiresDynamicCode]` and are not compatible with Native AOT. See the [tutorial](../Documentation/tutorial.md#iqueryable-projection) and [IQueryableProjectionMapper.cs](../Mappa.Samples/IQueryableProjectionMapper.cs).
+**Queryable projection:** map methods with signature `IQueryable<TSource>` → `IQueryable<TTarget>` are handled by the generator as deferred `Select` projections for ORM providers. Projection is signature-driven by default; use `[MappaProjection]` on a class or method to opt in or out (`Enabled = Disable` skips the projection strategy). Generated projection methods are annotated with `[RequiresDynamicCode]` and are not compatible with Native AOT. See the [tutorial](../Documentation/tutorial.md#iqueryable-projection) and [IQueryableProjectionMapper.cs](../Mappa.Samples/IQueryableProjectionMapper.cs).
 
 Via `MappaSettings` the following settings can be tweaked:
 - `DateTimeFormat`: the format to use when mapping `string`s to and from `System.DateTime`;
@@ -69,6 +70,12 @@ Via `MappaSettings` the following settings can be tweaked:
 - `MaxRuntimeDepth`: maximum runtime nesting depth (`short`; negative/`-1` = unset/inherit; effective default `0` = unlimited). Requires `MappaContext`. Overflow throws `MappaException`.
 - `MaxCompileTimeDepth`: maximum generator strategy-discovery depth (`short`; negative/`-1` = unset/inherit; effective default `50`; `0` disables). Generator-only.
 - `BreakCompileTimeCycles`: when enabled, synthesizes private map methods at compile-time mapping-cycle edges instead of **MP00077**; reports **MP00078**. Generator-only; disabled by default. Pair with `ReferenceReusing` for runtime object cycles.
+- `ProjectionEnumStringMapSetting`: overrides `EnumStringMapSetting` for enum↔string mappings inside `IQueryable` projections (falls back to `EnumStringMapSetting` when unset);
+- `ProjectionEnumToEnumMapSetting`: overrides `EnumToEnumMapSetting` for enum↔enum mappings inside `IQueryable` projections (falls back to `EnumToEnumMapSetting` when unset);
+- `ProjectionCaseInsensitiveEnumMap`: overrides `CaseInsensitiveEnumMap` for enum mappings inside `IQueryable` projections (falls back to `CaseInsensitiveEnumMap` when unset);
+- `ProjectionGuidFormat`: overrides `GuidFormat` for `Guid`↔`string` mappings inside `IQueryable` projections (falls back to `GuidFormat` when unset);
+- `ProjectionCultureInfoSetting`: overrides `CultureInfoSetting` for string parse/format inside `IQueryable` projections (falls back to `CultureInfoSetting` when unset);
+- `ProjectionCultureName`: overrides `CultureName` when `ProjectionCultureInfoSetting` is user-defined (falls back to `CultureName` when unset).
 
 Via `MappaTypeMappingDefault` the following settings can be tweaked:
 - `Undefined`: this setting should never be used;

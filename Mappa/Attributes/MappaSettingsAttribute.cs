@@ -391,4 +391,48 @@ public sealed class MappaSettingsAttribute
     /// It is not enabled by default.
     /// </summary>
     public BooleanSetting BreakCompileTimeCycles { get; set; } = BooleanSetting.Undefined;
+
+    /// <summary>
+    /// Gets or sets how enum members are paired with string values when mapping
+    /// between an enum and <see cref="string"/> inside an <c>IQueryable</c> projection.
+    /// When unset, <see cref="EnumStringMapSetting"/> is used.
+    /// </summary>
+    public EnumStringMapSetting ProjectionEnumStringMapSetting { get; set; } = EnumStringMapSetting.Undefined;
+
+    /// <summary>
+    /// Gets or sets how enum members are paired when mapping from one enum to another enum
+    /// inside an <c>IQueryable</c> projection.
+    /// When unset, <see cref="EnumToEnumMapSetting"/> is used.
+    /// </summary>
+    public EnumToEnumMapSetting ProjectionEnumToEnumMapSetting { get; set; } = EnumToEnumMapSetting.Undefined;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether enum member names or
+    /// <see cref="System.ComponentModel.DescriptionAttribute"/> values are matched
+    /// case-insensitively when mapping between enums or from <see cref="string"/> to an enum
+    /// inside an <c>IQueryable</c> projection.
+    /// When unset, <see cref="CaseInsensitiveEnumMap"/> is used.
+    /// </summary>
+    public BooleanSetting ProjectionCaseInsensitiveEnumMap { get; set; } = BooleanSetting.Undefined;
+
+    /// <summary>
+    /// Gets or sets the format when using <see cref="Guid.ToString(string)"/> or
+    /// <see cref="Guid.ParseExact(string,string)"/> inside an <c>IQueryable</c> projection.
+    /// When unset, <see cref="GuidFormat"/> is used.
+    /// </summary>
+    public string? ProjectionGuidFormat { get; set; }
+
+    /// <summary>
+    /// Gets or sets the <see cref="CultureInfo"/> to use when converting to string or parsing
+    /// from string inside an <c>IQueryable</c> projection.
+    /// When unset, <see cref="CultureInfoSetting"/> is used.
+    /// </summary>
+    public CultureInfoSetting ProjectionCultureInfoSetting { get; set; } = CultureInfoSetting.Undefined;
+
+    /// <summary>
+    /// Gets or sets the culture name when <see cref="ProjectionCultureInfoSetting"/> is
+    /// <see cref="CultureInfoSetting.UserDefined"/> inside an <c>IQueryable</c> projection.
+    /// When unset, <see cref="CultureName"/> is used.
+    /// </summary>
+    public string? ProjectionCultureName { get; set; }
 }
