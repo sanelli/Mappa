@@ -189,6 +189,20 @@ internal static class AotSampleData
     };
 
     /// <summary>
+    /// Gets an <see cref="ExplicitInterfaceSourceModel"/> with Id 1 and Value 42.
+    /// </summary>
+    public static ExplicitInterfaceSourceModel ExplicitInterfaceSourceModel1And42 { get; } = CreateExplicitInterfaceSourceModel(1, 42);
+
+    /// <summary>
+    /// Gets an <see cref="ExplicitInterfacePublicSourceModel"/> with Id 1 and Value 42.
+    /// </summary>
+    public static ExplicitInterfacePublicSourceModel ExplicitInterfacePublicSourceModel1And42 { get; } = new()
+    {
+        Id = 1,
+        Value = 42,
+    };
+
+    /// <summary>
     /// Gets a <see cref="SourceClassModel"/> with ParamA 13 and ParamB One.
     /// </summary>
     public static SourceClassModel SourceClassModel13One { get; } = new()
@@ -818,6 +832,13 @@ internal static class AotSampleData
     /// </summary>
     public static string StringToSystemEntitiesSettingsGuidInput { get; } =
         SampleGuid.ToString(StringToSystemEntitiesSettings.GuidFormat, DateTimeFormatInfo.InvariantInfo);
+
+    private static ExplicitInterfaceSourceModel CreateExplicitInterfaceSourceModel(int id, int value)
+    {
+        var model = new ExplicitInterfaceSourceModel { Id = id };
+        ((IHasExplicitValue)model).Value = value;
+        return model;
+    }
 
     private sealed class DerivedInterfaceSampleModel : IDerivedInterfaceModel
     {

@@ -204,6 +204,14 @@ namespace Mappa.Generator.Models;
 ///         <description>Set the default value to enable or disable ignoring underscore characters when pairing a target property or constructor parameter with a source property by name.</description>
 ///     </item>
 ///     <item>
+///         <term><c>mappa.mapsourceexplicitinterfaceproperties</c></term>
+///         <description>Set the default value to enable or disable reading source properties that are explicitly implemented interface members (via a cast to the declaring interface).</description>
+///     </item>
+///     <item>
+///         <term><c>mappa.maptargetexplicitinterfaceproperties</c></term>
+///         <description>Set the default value to enable or disable writing target properties that are explicitly implemented interface members (via a cast to the declaring interface after construction).</description>
+///     </item>
+///     <item>
 ///         <term><c>mappa.caseinsensitiveenummap</c></term>
 ///         <description>Set the default value to enable or disable case-insensitive matching when mapping enum members or string values to enums.</description>
 ///     </item>
@@ -296,6 +304,8 @@ internal sealed class MappaGlobalOptions
     private const string MappaSettingsCompatibleMapMethod = "compatiblemapmethod";
     private const string MappaSettingsCaseInsensitivePropertyMap = "caseinsensitivepropertymap";
     private const string MappaSettingsIgnoreUnderscoreForPropertyMap = "ignoreunderscoreforpropertymap";
+    private const string MappaSettingsMapSourceExplicitInterfaceProperties = "mapsourceexplicitinterfaceproperties";
+    private const string MappaSettingsMapTargetExplicitInterfaceProperties = "maptargetexplicitinterfaceproperties";
     private const string MappaSettingsCaseInsensitiveEnumMap = "caseinsensitiveenummap";
     private const string MappaSettingsEnumStringMapSetting = "enumstringmapsetting";
     private const string MappaSettingsEnumToEnumMapSetting = "enumtoenummapsetting";
@@ -367,6 +377,8 @@ internal sealed class MappaGlobalOptions
         this.CompatibleMapMethod = ReadBooleanSettingOption(options, MappaSettingsCompatibleMapMethod, BooleanSetting.Undefined);
         this.CaseInsensitivePropertyMap = ReadBooleanSettingOption(options, MappaSettingsCaseInsensitivePropertyMap, BooleanSetting.Undefined);
         this.IgnoreUnderscoreForPropertyMap = ReadBooleanSettingOption(options, MappaSettingsIgnoreUnderscoreForPropertyMap, BooleanSetting.Undefined);
+        this.MapSourceExplicitInterfaceProperties = ReadBooleanSettingOption(options, MappaSettingsMapSourceExplicitInterfaceProperties, BooleanSetting.Undefined);
+        this.MapTargetExplicitInterfaceProperties = ReadBooleanSettingOption(options, MappaSettingsMapTargetExplicitInterfaceProperties, BooleanSetting.Undefined);
         this.CaseInsensitiveEnumMap = ReadBooleanSettingOption(options, MappaSettingsCaseInsensitiveEnumMap, BooleanSetting.Undefined);
         this.EnumStringMapSetting = ReadEnumStringMapSettingOption(options, MappaSettingsEnumStringMapSetting);
         this.EnumToEnumMapSetting = ReadEnumToEnumMapSettingOption(options, MappaSettingsEnumToEnumMapSetting);
@@ -513,6 +525,12 @@ internal sealed class MappaGlobalOptions
 
     /// <inheritdoc/>
     public BooleanSetting IgnoreUnderscoreForPropertyMap { get; }
+
+    /// <inheritdoc/>
+    public BooleanSetting MapSourceExplicitInterfaceProperties { get; }
+
+    /// <inheritdoc/>
+    public BooleanSetting MapTargetExplicitInterfaceProperties { get; }
 
     /// <inheritdoc/>
     public BooleanSetting CaseInsensitiveEnumMap { get; }

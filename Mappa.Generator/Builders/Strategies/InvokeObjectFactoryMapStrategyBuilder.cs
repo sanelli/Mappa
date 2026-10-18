@@ -100,21 +100,22 @@ internal sealed class InvokeObjectFactoryMapStrategyBuilder
             _ => throw new MappaGeneratorException($"Unexpected symbol kind '{fieldOrProperty.Kind}' for field or property '{fieldOrProperty.Name}'."),
         };
 
-    private static List<(IPropertySymbol TargetProperty, string TemporaryName, bool RequiresUnsafeAccessorOnTarget)> BuildPreConstructionInitializerMappings(
+    private static List<(IPropertySymbol TargetProperty, string TemporaryName, bool RequiresUnsafeAccessorOnTarget, bool RequiresInterfaceCastOnTarget)> BuildPreConstructionInitializerMappings(
         string source,
         MappaBuilderContext context,
         MappaGlobalOptions mappaGlobalOptions,
         PrettyCode.StringBuilder builder,
         PropertyMapStrategy[] preConstructionInitializers)
     {
-        var propertyInitializersMappings = new List<(IPropertySymbol TargetProperty, string TemporaryName, bool RequiresUnsafeAccessorOnTarget)>();
+        var propertyInitializersMappings = new List<(IPropertySymbol TargetProperty, string TemporaryName, bool RequiresUnsafeAccessorOnTarget, bool RequiresInterfaceCastOnTarget)>();
         foreach (var propertyMapStrategy in preConstructionInitializers)
         {
             var (initializerPropertyTargetTemporary, initializerPropertyCode) = propertyMapStrategy.GetBuilder().BuildSource(source, context, mappaGlobalOptions);
             propertyInitializersMappings.Add((
                 propertyMapStrategy.TargetProperty,
                 initializerPropertyTargetTemporary,
-                propertyMapStrategy.RequiresUnsafeAccessorOnTarget));
+                propertyMapStrategy.RequiresUnsafeAccessorOnTarget,
+                propertyMapStrategy.RequiresInterfaceCastOnTarget));
             if (!string.IsNullOrWhiteSpace(initializerPropertyCode))
             {
                 builder.AppendLine(initializerPropertyCode);
@@ -128,7 +129,7 @@ internal sealed class InvokeObjectFactoryMapStrategyBuilder
         MappaBuilderContext context,
         PrettyCode.StringBuilder builder,
         string resultTemporary,
-        List<(IPropertySymbol TargetProperty, string TemporaryName, bool RequiresUnsafeAccessorOnTarget)> propertyInitializersMappings,
+        List<(IPropertySymbol TargetProperty, string TemporaryName, bool RequiresUnsafeAccessorOnTarget, bool RequiresInterfaceCastOnTarget)> propertyInitializersMappings,
         bool hasPropertyInitializers)
     {
         if (!hasPropertyInitializers)
@@ -143,6 +144,7 @@ internal sealed class InvokeObjectFactoryMapStrategyBuilder
                 propertyInitializersMapping.TargetProperty,
                 propertyInitializersMapping.TemporaryName,
                 propertyInitializersMapping.RequiresUnsafeAccessorOnTarget,
+                propertyInitializersMapping.RequiresInterfaceCastOnTarget,
                 context));
         }
     }
@@ -173,6 +175,7 @@ internal sealed class InvokeObjectFactoryMapStrategyBuilder
                         propertyMapStrategy.TargetProperty,
                         initializerPropertyTargetTemporary,
                         propertyMapStrategy.RequiresUnsafeAccessorOnTarget,
+                        propertyMapStrategy.RequiresInterfaceCastOnTarget,
                         context));
                 }
             }

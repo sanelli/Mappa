@@ -37,7 +37,8 @@ internal sealed class PropertyMapStrategyBuilder
         string code;
         using (context.PushCurrentTargetPropertyUnsafeAccess(
                    this.strategy.TargetProperty,
-                   this.strategy.RequiresUnsafeAccessorOnTarget))
+                   this.strategy.RequiresUnsafeAccessorOnTarget,
+                   this.strategy.RequiresInterfaceCastOnTarget))
         {
             (targetTemporary, code) = ReferenceHandlingCodeGenerator.BuildNestedSource(
                 this.strategy.PropertyStrategy,
@@ -145,6 +146,7 @@ internal sealed class PropertyMapStrategyBuilder
             source,
             sourceProperty,
             this.strategy.RequiresUnsafeAccessorOnSource,
+            this.strategy.RequiresInterfaceCastOnSource,
             context);
         builder.AppendLine($"{sourceProperty.Type.ToDisplayString()} {sourcePropertyTemporary} = {sourceReadExpression};");
         return sourcePropertyTemporary;

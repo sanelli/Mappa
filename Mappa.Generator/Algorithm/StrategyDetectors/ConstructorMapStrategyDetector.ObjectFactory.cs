@@ -127,8 +127,16 @@ internal sealed partial class ConstructorMapStrategyDetector
                         return (Parameter: targetParameter, Strategy: (MapStrategy)noMapStrategy);
                     }
 
-                    this.TryIsSourcePropertyReadable(sourceProperty, out var requiresUnsafeAccessorOnSourceFromAttribute);
-                    var strategy = new ParameterMapStrategy(targetParameter, sourceProperty, propertyStrategyFromAttribute, requiresUnsafeAccessorOnSourceFromAttribute);
+                    this.TryIsSourcePropertyReadable(
+                        sourceProperty,
+                        out var requiresUnsafeAccessorOnSourceFromAttribute,
+                        out var requiresInterfaceCastOnSourceFromAttribute);
+                    var strategy = new ParameterMapStrategy(
+                        targetParameter,
+                        sourceProperty,
+                        propertyStrategyFromAttribute,
+                        requiresUnsafeAccessorOnSourceFromAttribute,
+                        requiresInterfaceCastOnSourceFromAttribute);
                     return (Parameter: targetParameter, Strategy: (MapStrategy)strategy);
                 }
 
@@ -148,8 +156,16 @@ internal sealed partial class ConstructorMapStrategyDetector
                 if (this.TryGetStrategyBetweenTypes(targetParameterType, sourcePropertyType, true, out var propertyStrategy))
                 {
                     propertyStrategy = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, sourceProperties, propertyStrategy);
-                    this.TryIsSourcePropertyReadable(sourceProperty, out var requiresUnsafeAccessorOnSource);
-                    var parameterMapStrategy = new ParameterMapStrategy(targetParameter, sourceProperty, propertyStrategy, requiresUnsafeAccessorOnSource);
+                    this.TryIsSourcePropertyReadable(
+                        sourceProperty,
+                        out var requiresUnsafeAccessorOnSource,
+                        out var requiresInterfaceCastOnSource);
+                    var parameterMapStrategy = new ParameterMapStrategy(
+                        targetParameter,
+                        sourceProperty,
+                        propertyStrategy,
+                        requiresUnsafeAccessorOnSource,
+                        requiresInterfaceCastOnSource);
                     return (Parameter: targetParameter, Strategy: (MapStrategy)parameterMapStrategy);
                 }
 
@@ -224,8 +240,8 @@ internal sealed partial class ConstructorMapStrategyDetector
 
         var targetProperties = allTargetProperties
             .Where(property => !property.IsIndexer)
-            .Where(property => !ignoredTargetPropertyNames.Contains(property.Name))
-            .Where(property => !this.ShouldIgnoreTargetPropertyAtCurrentLevel(property.Name))
+            .Where(property => !ignoredTargetPropertyNames.Contains(property.GetMappablePropertyName()))
+            .Where(property => !this.ShouldIgnoreTargetPropertyAtCurrentLevel(property.GetMappablePropertyName()))
             .ToArray();
 
         if (targetProperties.Length == 0)
@@ -237,7 +253,7 @@ internal sealed partial class ConstructorMapStrategyDetector
 
         var mappedInitializerStrategies = targetProperties
             .Where(targetProperty => this.context.MappaUserSettings.ProtobufOptional is not BooleanSetting.Enable
-                                     || allTargetProperties.All(otherProperty => !targetProperty.Name.Equals($"Has{otherProperty.Name}", StringComparison.Ordinal)))
+                                     || allTargetProperties.All(otherProperty => !targetProperty.GetMappablePropertyName().Equals($"Has{otherProperty.GetMappablePropertyName()}", StringComparison.Ordinal)))
             .Select(targetProperty => this.TryCreateEmptyCtorPropertyMapStrategy(
                 targetProperty,
                 allTargetProperties,

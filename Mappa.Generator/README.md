@@ -293,8 +293,9 @@ The constructor strategy has four sub-strategies, tried in order:
     - Duplicate factories for the same target type report error **MP00062**; unresolved factories warn with **MP00063** and fall through to constructor strategies; factories on `IQueryable` projection maps report error **MP00064**;
     - Factory location and signature tiers are documented in [Mappa attributes — MappaObjectFactory](../Documentation/mappa-attributes.md#mappaobjectfactory);
     - **Empty-constructor path**: property name matching is case-sensitive by default, configurable via `CaseInsensitivePropertyMap` and `IgnoreUnderscoreForPropertyMap` in `MappaSettings`;
-    - **Parameterized-constructor path**: constructor parameter names are matched to source properties case-insensitively by default, with optional underscore-insensitive matching via `IgnoreUnderscoreForPropertyMap`;
-    - Explicit interface implementation is supported for get-only dictionary and collection properties;
+    - **Parameterized-constructor path**: constructor parameter names are matched to source properties case-insensitively by default, with optional underscore-insensitive matching via `IgnoreUnderscoreForPropertyMap`; when `MapTargetExplicitInterfaceProperties` is enabled, remaining explicitly implemented interface target properties are assigned after construction via an interface cast;
+    - Explicit interface implementation is supported for get-only dictionary and collection properties; scalar explicitly implemented interface properties are mapped when `MapSourceExplicitInterfaceProperties` / `MapTargetExplicitInterfaceProperties` is enabled (via cast to the declaring interface; never via `UnsafeAccessor`);
+    - When both Map\* explicit-interface settings and `[MappaAllowInaccessible*]` are enabled, ordinary private members use `UnsafeAccessor` while explicit interface properties use interface casts;
     - Get-only `Stack<T>`, `Queue<T>`, `ConcurrentStack<T>`, `ConcurrentQueue<T>`, `ConcurrentBag<T>`, and `BlockingCollection<T>` properties are filled post-construction using `Push`, `Enqueue`, or `Add` respectively;
     - The following attributes on the map **method** can override mapping behaviour (see [`Documentation/mappa-attributes.md`](../Documentation/mappa-attributes.md) for details):
         - `[MappaUseProperty]`

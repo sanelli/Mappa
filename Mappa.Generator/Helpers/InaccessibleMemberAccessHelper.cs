@@ -10,7 +10,8 @@ using Microsoft.CodeAnalysis;
 namespace Mappa.Generator.Helpers;
 
 /// <summary>
-/// Builds member-access and construction expressions that may use generated <c>UnsafeAccessor</c> methods.
+/// Builds member-access and construction expressions that may use generated <c>UnsafeAccessor</c> methods
+/// or explicit interface casts.
 /// </summary>
 internal static class InaccessibleMemberAccessHelper
 {
@@ -20,14 +21,23 @@ internal static class InaccessibleMemberAccessHelper
     /// <param name="receiverExpression">The instance expression.</param>
     /// <param name="property">The property to read.</param>
     /// <param name="requiresUnsafeAccessor"><c>true</c> when an unsafe accessor must be used.</param>
+    /// <param name="requiresInterfaceCast"><c>true</c> when an interface cast must be used.</param>
     /// <param name="context">The builder context.</param>
     /// <returns>The read expression.</returns>
     internal static string BuildPropertyReadExpression(
         string receiverExpression,
         IPropertySymbol property,
         bool requiresUnsafeAccessor,
+        bool requiresInterfaceCast,
         MappaBuilderContext context)
     {
+        if (requiresInterfaceCast
+            && InaccessibleMemberEligibility.TryGetExplicitInterfaceType(property, out var interfaceType))
+        {
+            var interfacePropertyName = property.ExplicitInterfaceImplementations[0].Name;
+            return $"(({interfaceType.ToDisplayNameWithoutNullableAnnotation()}){receiverExpression}).{interfacePropertyName}";
+        }
+
         if (!requiresUnsafeAccessor)
         {
             return $"{receiverExpression}.{property.Name}";
@@ -48,6 +58,7 @@ internal static class InaccessibleMemberAccessHelper
     /// <param name="property">The property to write.</param>
     /// <param name="valueExpression">The value expression.</param>
     /// <param name="requiresUnsafeAccessor"><c>true</c> when an unsafe accessor must be used.</param>
+    /// <param name="requiresInterfaceCast"><c>true</c> when an interface cast must be used.</param>
     /// <param name="context">The builder context.</param>
     /// <returns>The assignment statement without a trailing newline.</returns>
     internal static string BuildPropertyAssignmentStatement(
@@ -55,8 +66,16 @@ internal static class InaccessibleMemberAccessHelper
         IPropertySymbol property,
         string valueExpression,
         bool requiresUnsafeAccessor,
+        bool requiresInterfaceCast,
         MappaBuilderContext context)
     {
+        if (requiresInterfaceCast
+            && InaccessibleMemberEligibility.TryGetExplicitInterfaceType(property, out var interfaceType))
+        {
+            var interfacePropertyName = property.ExplicitInterfaceImplementations[0].Name;
+            return $"(({interfaceType.ToDisplayNameWithoutNullableAnnotation()}){receiverExpression}).{interfacePropertyName} = {valueExpression};";
+        }
+
         if (!requiresUnsafeAccessor)
         {
             return $"{receiverExpression}.{property.Name} = {valueExpression};";
@@ -94,7 +113,7 @@ internal static class InaccessibleMemberAccessHelper
     }
 
     /// <summary>
-    /// Builds a target property read expression, honouring the current builder-context unsafe-access flag
+    /// Builds a target property read expression, honouring the current builder-context access flags
     /// when the property matches the active target property.
     /// </summary>
     /// <param name="receiverExpression">The instance expression.</param>
@@ -106,8 +125,14 @@ internal static class InaccessibleMemberAccessHelper
         IPropertySymbol property,
         MappaBuilderContext context)
     {
-        var requiresUnsafeAccessor = context.RequiresUnsafeAccessorOnCurrentTargetProperty
-            && SymbolEqualityComparer.Default.Equals(context.CurrentTargetPropertyForUnsafeAccess, property);
-        return BuildPropertyReadExpression(receiverExpression, property, requiresUnsafeAccessor, context);
+        var isCurrentTarget = SymbolEqualityComparer.Default.Equals(context.CurrentTargetPropertyForUnsafeAccess, property);
+        var requiresUnsafeAccessor = context.RequiresUnsafeAccessorOnCurrentTargetProperty && isCurrentTarget;
+        var requiresInterfaceCast = context.RequiresInterfaceCastOnCurrentTargetProperty && isCurrentTarget;
+        return BuildPropertyReadExpression(
+            receiverExpression,
+            property,
+            requiresUnsafeAccessor,
+            requiresInterfaceCast,
+            context);
     }
 }

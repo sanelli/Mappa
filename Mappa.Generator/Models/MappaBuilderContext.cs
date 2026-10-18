@@ -20,6 +20,7 @@ internal sealed class MappaBuilderContext
     private readonly StackSetting<MapMethod> mapMethodBeingBuilt = new(null!);
     private readonly StackSetting<IPropertySymbol?> currentTargetPropertyForUnsafeAccess = new(null);
     private readonly StackSetting<bool> requiresUnsafeAccessorOnCurrentTargetProperty = new(false);
+    private readonly StackSetting<bool> requiresInterfaceCastOnCurrentTargetProperty = new(false);
     private readonly StackSetting<bool> maxRuntimeDepthActive = new(false);
     private readonly StackSetting<short> effectiveMaxRuntimeDepth = new(0);
     private readonly StackSetting<bool> referenceReusingActive = new(false);
@@ -96,6 +97,12 @@ internal sealed class MappaBuilderContext
     /// </summary>
     internal bool RequiresUnsafeAccessorOnCurrentTargetProperty
         => this.requiresUnsafeAccessorOnCurrentTargetProperty.CurrentValue;
+
+    /// <summary>
+    /// Gets a value indicating whether the current target property access requires an interface cast.
+    /// </summary>
+    internal bool RequiresInterfaceCastOnCurrentTargetProperty
+        => this.requiresInterfaceCastOnCurrentTargetProperty.CurrentValue;
 
     /// <summary>
     /// Gets a new unique temporary value.
@@ -228,16 +235,22 @@ internal sealed class MappaBuilderContext
         ?? throw new MappaGeneratorException("Cannot obtain the map method.");
 
     /// <summary>
-    /// Pushes the target property that nested builders may need to access via an unsafe accessor.
+    /// Pushes the target property that nested builders may need to access via an unsafe accessor
+    /// or an interface cast.
     /// </summary>
     /// <param name="property">The target property.</param>
     /// <param name="requiresUnsafeAccessor"><c>true</c> when an unsafe accessor is required.</param>
+    /// <param name="requiresInterfaceCast"><c>true</c> when an interface cast is required.</param>
     /// <returns>Disposable value used to restore the previous values.</returns>
-    internal IDisposable PushCurrentTargetPropertyUnsafeAccess(IPropertySymbol property, bool requiresUnsafeAccessor)
+    internal IDisposable PushCurrentTargetPropertyUnsafeAccess(
+        IPropertySymbol property,
+        bool requiresUnsafeAccessor,
+        bool requiresInterfaceCast = false)
     {
         var propertyScope = this.currentTargetPropertyForUnsafeAccess.Apply(property);
-        var flagScope = this.requiresUnsafeAccessorOnCurrentTargetProperty.Apply(requiresUnsafeAccessor);
-        return new CombinedDisposable(propertyScope, flagScope);
+        var unsafeScope = this.requiresUnsafeAccessorOnCurrentTargetProperty.Apply(requiresUnsafeAccessor);
+        var castScope = this.requiresInterfaceCastOnCurrentTargetProperty.Apply(requiresInterfaceCast);
+        return new CombinedDisposable(propertyScope, new CombinedDisposable(unsafeScope, castScope));
     }
 
     /// <summary>

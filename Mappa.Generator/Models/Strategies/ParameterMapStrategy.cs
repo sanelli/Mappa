@@ -15,11 +15,13 @@ namespace Mappa.Generator.Models.Strategies;
 /// <param name="sourceProperty">The source property.</param>
 /// <param name="parameterStrategy">The strategy to map from source to target.</param>
 /// <param name="requiresUnsafeAccessorOnSource"><c>true</c> when the source property must be read via an unsafe accessor.</param>
+/// <param name="requiresInterfaceCastOnSource"><c>true</c> when the source property must be read via an interface cast.</param>
 internal sealed class ParameterMapStrategy(
     IParameterSymbol targetParameter,
     IPropertySymbol? sourceProperty,
     MapStrategy parameterStrategy,
-    bool requiresUnsafeAccessorOnSource = false)
+    bool requiresUnsafeAccessorOnSource = false,
+    bool requiresInterfaceCastOnSource = false)
     : MapStrategy(targetParameter.Type, sourceProperty?.Type ?? null!)
 {
     /// <summary>
@@ -41,6 +43,11 @@ internal sealed class ParameterMapStrategy(
     /// Gets a value indicating whether the source property must be read via an unsafe accessor.
     /// </summary>
     internal bool RequiresUnsafeAccessorOnSource { get; } = requiresUnsafeAccessorOnSource;
+
+    /// <summary>
+    /// Gets a value indicating whether the source property must be read via an interface cast.
+    /// </summary>
+    internal bool RequiresInterfaceCastOnSource { get; } = requiresInterfaceCastOnSource;
 
     /// <inheritdoc/>
     internal override IMappaStrategyBuilder GetBuilder() => new ParameterMapStrategyBuilder(this);

@@ -177,10 +177,22 @@ internal sealed partial class ConstructorMapStrategyDetector
                                         out var propertyStrategyFromAttribute))
                                 {
                                     propertyStrategyFromAttribute = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, sourceProperties, propertyStrategyFromAttribute);
-                                    var requiresUnsafeAccessorOnSource = sourceProperty is not null
-                                        && this.TryIsSourcePropertyReadable(sourceProperty, out var sourceRequiresUnsafe)
-                                        && sourceRequiresUnsafe;
-                                    var strategy = new ParameterMapStrategy(targetParameter, sourceProperty!, propertyStrategyFromAttribute, requiresUnsafeAccessorOnSource);
+                                    var requiresUnsafeAccessorOnSource = false;
+                                    var requiresInterfaceCastOnSource = false;
+                                    if (sourceProperty is not null)
+                                    {
+                                        this.TryIsSourcePropertyReadable(
+                                            sourceProperty,
+                                            out requiresUnsafeAccessorOnSource,
+                                            out requiresInterfaceCastOnSource);
+                                    }
+
+                                    var strategy = new ParameterMapStrategy(
+                                        targetParameter,
+                                        sourceProperty!,
+                                        propertyStrategyFromAttribute,
+                                        requiresUnsafeAccessorOnSource,
+                                        requiresInterfaceCastOnSource);
                                     return (targetParameter, sourceProperty!, strategy);
                                 }
 
@@ -203,8 +215,16 @@ internal sealed partial class ConstructorMapStrategyDetector
                                 if (this.TryGetStrategyBetweenTypes(targetParameterType, sourcePropertyType, true, out var propertyStrategy))
                                 {
                                     propertyStrategy = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, sourceProperties, propertyStrategy);
-                                    this.TryIsSourcePropertyReadable(sourceProperty, out var requiresUnsafeAccessorOnSource);
-                                    var parameterMapStrategy = new ParameterMapStrategy(targetParameter, sourceProperty, propertyStrategy, requiresUnsafeAccessorOnSource);
+                                    this.TryIsSourcePropertyReadable(
+                                        sourceProperty,
+                                        out var requiresUnsafeAccessorOnSource,
+                                        out var requiresInterfaceCastOnSource);
+                                    var parameterMapStrategy = new ParameterMapStrategy(
+                                        targetParameter,
+                                        sourceProperty,
+                                        propertyStrategy,
+                                        requiresUnsafeAccessorOnSource,
+                                        requiresInterfaceCastOnSource);
                                     return (targetParameter, sourceProperty, parameterMapStrategy);
                                 }
 
@@ -226,14 +246,19 @@ internal sealed partial class ConstructorMapStrategyDetector
             if (constructorsWithMappings.Length > 0)
             {
                 var selectedConstructor = constructorsWithMappings[0].methodSymbol;
+                var parameterMapStrategies = constructorsWithMappings[0].strategiesForEachParameter
+                    .Select(parameterAndStrategy => (ParameterMapStrategy)parameterAndStrategy.Strategy)
+                    .ToArray();
+                var leftoverInitializerStrategies = this.TryBuildExplicitInterfaceLeftoverInitializersAfterParameterizedConstructor(
+                    selectedConstructor,
+                    sourceProperties,
+                    noMapStrategy);
                 strategy = new InvokeConstructorMapStrategy(
                     this.context.TargetType,
                     this.context.SourceType,
                     selectedConstructor,
-                    constructorsWithMappings[0].strategiesForEachParameter
-                        .Select(parameterAndStrategy => (ParameterMapStrategy)parameterAndStrategy.Strategy)
-                        .ToArray(),
-                    [],
+                    parameterMapStrategies,
+                    leftoverInitializerStrategies,
                     [],
                     null,
                     this.RequiresUnsafeAccessorForConstructor(selectedConstructor));
@@ -241,6 +266,38 @@ internal sealed partial class ConstructorMapStrategyDetector
         }
 
         return strategy is not NoMapStrategy;
+    }
+
+    private PropertyMapStrategy[] TryBuildExplicitInterfaceLeftoverInitializersAfterParameterizedConstructor(
+        IMethodSymbol selectedConstructor,
+        IPropertySymbol[] sourceProperties,
+        NoMapStrategy noMapStrategy)
+    {
+        if (this.context.MappaUserSettings.MapTargetExplicitInterfaceProperties is not BooleanSetting.Enable)
+        {
+            return [];
+        }
+
+        var constructorParameterNames = new HashSet<string>(
+            selectedConstructor.Parameters.Select(parameter => parameter.Name),
+            StringComparer.OrdinalIgnoreCase);
+        var ignoredTargetPropertyNames = this.GetIgnoredTargetPropertyNames();
+
+        var allTargetProperties = this.context.TargetType.GetTypeProperties().ToArray();
+        return allTargetProperties
+            .Where(targetProperty => !targetProperty.IsIndexer)
+            .Where(targetProperty => InaccessibleMemberEligibility.IsExplicitInterfaceImplementation(targetProperty))
+            .Where(targetProperty => !constructorParameterNames.Contains(targetProperty.GetMappablePropertyName()))
+            .Where(targetProperty => !ignoredTargetPropertyNames.Contains(targetProperty.GetMappablePropertyName()))
+            .Where(targetProperty => !this.ShouldIgnoreTargetPropertyAtCurrentLevel(targetProperty.GetMappablePropertyName()))
+            .Select(targetProperty => this.TryCreateEmptyCtorPropertyMapStrategy(
+                targetProperty,
+                allTargetProperties,
+                sourceProperties,
+                noMapStrategy))
+            .Where(propertyMapStrategy => propertyMapStrategy.PropertyStrategy is not NoMapStrategy)
+            .Where(propertyMapStrategy => propertyMapStrategy.RequiresInterfaceCastOnTarget)
+            .ToArray();
     }
 
     private MapStrategy EncapsulateMapStrategyForSourceOptional(
@@ -258,7 +315,10 @@ internal sealed partial class ConstructorMapStrategyDetector
             return inputStrategy;
         }
 
-        IPropertySymbol? hasProperty = Array.Find(sourceProperties, property => property.Name.Equals($"Has{sourceProperty.Name}", StringComparison.Ordinal));
+        var sourcePropertyName = sourceProperty.GetMappablePropertyName();
+        IPropertySymbol? hasProperty = Array.Find(
+            sourceProperties,
+            property => property.GetMappablePropertyName().Equals($"Has{sourcePropertyName}", StringComparison.Ordinal));
         if (hasProperty is null)
         {
             return inputStrategy;
@@ -294,7 +354,10 @@ internal sealed partial class ConstructorMapStrategyDetector
             return inputStrategy;
         }
 
-        IPropertySymbol? hasProperty = Array.Find(allTargetProperties, property => property.Name.Equals($"Has{targetProperty.Name}", StringComparison.Ordinal));
+        var targetPropertyName = targetProperty.GetMappablePropertyName();
+        IPropertySymbol? hasProperty = Array.Find(
+            allTargetProperties,
+            property => property.GetMappablePropertyName().Equals($"Has{targetPropertyName}", StringComparison.Ordinal));
         if (hasProperty is null)
         {
             return inputStrategy;

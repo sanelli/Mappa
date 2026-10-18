@@ -272,6 +272,20 @@ internal interface IMappaUserSettings
     BooleanSetting IgnoreUnderscoreForPropertyMap { get; }
 
     /// <summary>
+    /// Gets a value indicating whether source properties that are explicitly
+    /// implemented interface members may be read when mapping (via a cast to the
+    /// declaring interface). Disabled by default.
+    /// </summary>
+    BooleanSetting MapSourceExplicitInterfaceProperties { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether target properties that are explicitly
+    /// implemented interface members may be written when mapping (via a cast to the
+    /// declaring interface after construction). Disabled by default.
+    /// </summary>
+    BooleanSetting MapTargetExplicitInterfaceProperties { get; }
+
+    /// <summary>
     /// Gets a value indicating whether enum member names or Description attribute values
     /// are matched case-insensitively when mapping between enums or from string to an enum.
     /// </summary>

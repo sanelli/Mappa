@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa;
 using Mappa.Attributes;
 using Mappa.Generator.Extensions;
 using Mappa.Generator.Helpers;
@@ -130,18 +131,24 @@ public sealed class InaccessibleMembersCoverageTests
                 compilation,
                 mapMethod,
                 options,
-                out var indexerRequiresUnsafe)
+                BooleanSetting.Undefined,
+                out var indexerRequiresUnsafe,
+                out var indexerRequiresInterfaceCast)
             .Should().BeFalse();
         indexerRequiresUnsafe.Should().BeFalse();
+        indexerRequiresInterfaceCast.Should().BeFalse();
 
         InaccessibleMemberEligibility.TryIsTargetPropertyWritable(
                 getOnly,
                 compilation,
                 mapMethod,
                 options,
-                out var getOnlyRequiresUnsafe)
+                BooleanSetting.Undefined,
+                out var getOnlyRequiresUnsafe,
+                out var getOnlyRequiresInterfaceCast)
             .Should().BeFalse();
         getOnlyRequiresUnsafe.Should().BeFalse();
+        getOnlyRequiresInterfaceCast.Should().BeFalse();
     }
 
     /// <summary>
@@ -193,9 +200,12 @@ public sealed class InaccessibleMembersCoverageTests
                 compilation,
                 mapMethod,
                 options,
-                out var requiresUnsafeAccessor)
+                BooleanSetting.Undefined,
+                out var requiresUnsafeAccessor,
+                out var requiresInterfaceCast)
             .Should().BeFalse();
         requiresUnsafeAccessor.Should().BeFalse();
+        requiresInterfaceCast.Should().BeFalse();
     }
 
     /// <summary>
@@ -283,5 +293,170 @@ public sealed class InaccessibleMembersCoverageTests
         var compilation = CSharpCompilation.Create("NoUnsafeAccessorMetadata");
 
         compilation.IsUnsafeAccessorSupported().Should().BeFalse();
+    }
+
+    /// <summary>
+    /// Test target eligibility rejects explicit interface properties when the MapTarget setting is disabled.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void TargetEligibilityReturnsFalseForExplicitInterfaceWhenMapTargetSettingDisabled()
+    {
+        const string source = """
+                              namespace Coverage;
+                              public interface IHasValue
+                              {
+                                  int Value { get; set; }
+                              }
+
+                              public class Source
+                              {
+                                  public int Value { get; set; }
+                              }
+
+                              public class Target : IHasValue
+                              {
+                                  int IHasValue.Value { get; set; }
+                              }
+
+                              public sealed class Mapper
+                              {
+                                  public Target Map(Source input) => new Target();
+                              }
+                              """;
+
+        var (compilation, mapMethod, targetProperty) = BuildMapMethodAndTargetProperty(source, "Coverage.Target", "Value");
+        var options = InaccessibleTargetMemberOptions.FromAttribute(new MappaAllowInaccessibleTargetMembersAttribute());
+
+        InaccessibleMemberEligibility.TryIsTargetPropertyWritable(
+                targetProperty,
+                compilation,
+                mapMethod,
+                options,
+                BooleanSetting.Disable,
+                out var requiresUnsafeAccessor,
+                out var requiresInterfaceCast)
+            .Should().BeFalse();
+        requiresUnsafeAccessor.Should().BeFalse();
+        requiresInterfaceCast.Should().BeFalse();
+    }
+
+    /// <summary>
+    /// Test source eligibility rejects explicit interface properties when the MapSource setting is disabled.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void SourceEligibilityReturnsFalseForExplicitInterfaceWhenMapSourceSettingDisabled()
+    {
+        const string source = """
+                              namespace Coverage;
+                              public interface IHasValue
+                              {
+                                  int Value { get; set; }
+                              }
+
+                              public class Source : IHasValue
+                              {
+                                  int IHasValue.Value { get; set; }
+                              }
+
+                              public class Target
+                              {
+                                  public int Value { get; set; }
+                              }
+
+                              public sealed class Mapper
+                              {
+                                  public Target Map(Source input) => new Target();
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var tree = compilation.SyntaxTrees.Single();
+        var model = compilation.GetSemanticModel(tree);
+        var mapMethodSyntax = tree.GetRoot(TestContext.Current.CancellationToken).DescendantNodes().OfType<MethodDeclarationSyntax>()
+            .Single(method => method.Identifier.Text == "Map");
+        var mapMethod = new MapMethod(
+            mapMethodSyntax,
+            model,
+            nullableEnabled: true,
+            TestContext.Current.CancellationToken);
+
+        var sourceProperty = compilation.GetTypeByMetadataName("Coverage.Source")!
+            .GetMembers()
+            .OfType<IPropertySymbol>()
+            .Single(property => property.ExplicitInterfaceImplementations.Length > 0);
+        var options = InaccessibleSourceMemberOptions.FromAttribute(new MappaAllowInaccessibleSourceMembersAttribute());
+
+        InaccessibleMemberEligibility.TryIsSourcePropertyReadable(
+                sourceProperty,
+                compilation,
+                mapMethod,
+                options,
+                BooleanSetting.Disable,
+                out var requiresUnsafeAccessor,
+                out var requiresInterfaceCast)
+            .Should().BeFalse();
+        requiresUnsafeAccessor.Should().BeFalse();
+        requiresInterfaceCast.Should().BeFalse();
+    }
+
+    /// <summary>
+    /// Test <see cref="InaccessibleMemberEligibility.TryGetExplicitInterfaceType"/> returns <c>false</c>
+    /// for ordinary (non-explicit) properties.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void TryGetExplicitInterfaceTypeReturnsFalseForOrdinaryProperty()
+    {
+        const string source = """
+                              namespace Coverage;
+                              public class Source
+                              {
+                                  public int Value { get; set; }
+                              }
+
+                              public class Target
+                              {
+                                  public int Value { get; set; }
+                              }
+
+                              public sealed class Mapper
+                              {
+                                  public Target Map(Source input) => new Target();
+                              }
+                              """;
+
+        var (_, _, targetProperty) = BuildMapMethodAndTargetProperty(source, "Coverage.Target", "Value");
+
+        InaccessibleMemberEligibility.TryGetExplicitInterfaceType(targetProperty, out _)
+            .Should().BeFalse();
+    }
+
+    private static (Compilation Compilation, MapMethod MapMethod, IPropertySymbol TargetProperty) BuildMapMethodAndTargetProperty(
+        string source,
+        string targetMetadataName,
+        string propertyName)
+    {
+        var compilation = BuildCompilation(source);
+        var tree = compilation.SyntaxTrees.Single();
+        var model = compilation.GetSemanticModel(tree);
+        var mapMethodSyntax = tree.GetRoot(TestContext.Current.CancellationToken).DescendantNodes().OfType<MethodDeclarationSyntax>()
+            .Single(method => method.Identifier.Text == "Map");
+        var mapMethod = new MapMethod(
+            mapMethodSyntax,
+            model,
+            nullableEnabled: true,
+            TestContext.Current.CancellationToken);
+
+        var targetType = compilation.GetTypeByMetadataName(targetMetadataName);
+        targetType.Should().NotBeNull();
+
+        var targetProperty = targetType.GetMembers()
+            .OfType<IPropertySymbol>()
+            .Single(property => property.Name == propertyName
+                                || property.ExplicitInterfaceImplementations.Any(implemented => implemented.Name == propertyName));
+
+        return (compilation, mapMethod, targetProperty);
     }
 }
