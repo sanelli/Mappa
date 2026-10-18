@@ -342,8 +342,73 @@ internal static class PreferredInterfaceResolver
         }
 
         var implementation = type.FindImplementationForInterfaceMember(member);
-        return implementation is IMethodSymbol { MethodKind: MethodKind.ExplicitInterfaceImplementation }
-               or IPropertySymbol { ExplicitInterfaceImplementations.Length: > 0 };
+        if (implementation is IMethodSymbol { MethodKind: MethodKind.Ordinary })
+        {
+            return false;
+        }
+
+        if (implementation is IMethodSymbol { MethodKind: MethodKind.ExplicitInterfaceImplementation } explicitMethod)
+        {
+            // Types such as Queue<T>/Stack<T> expose a public GetEnumerator() and also an explicit
+            // IEnumerable<T>.GetEnumerator(). Foreach can use the public method without a cast when
+            // it yields the preferred element type (unlike DualEnumerable's string interface).
+            if (member is IMethodSymbol { Name: "GetEnumerator" }
+                && closedInterface.TypeArguments.Length == 1
+                && HasPublicEnumeratorForElementType(type, closedInterface.TypeArguments[0]))
+            {
+                return false;
+            }
+
+            return explicitMethod.ExplicitInterfaceImplementations.Any(implementedMember =>
+                SymbolEqualityComparer.Default.Equals(implementedMember.ContainingType, closedInterface));
+        }
+
+        return implementation is IPropertySymbol { ExplicitInterfaceImplementations.Length: > 0 };
+    }
+
+    private static bool HasPublicEnumeratorForElementType(INamedTypeSymbol type, ITypeSymbol elementType)
+    {
+        for (INamedTypeSymbol? current = type; current is not null; current = current.BaseType)
+        {
+            foreach (var method in current.GetMembers("GetEnumerator").OfType<IMethodSymbol>())
+            {
+                if (method.MethodKind != MethodKind.Ordinary
+                    || method.DeclaredAccessibility != Accessibility.Public
+                    || method.Parameters.Length != 0)
+                {
+                    continue;
+                }
+
+                if (EnumeratorYieldsElementType(method.ReturnType, elementType))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static bool EnumeratorYieldsElementType(ITypeSymbol enumeratorType, ITypeSymbol elementType)
+    {
+        if (enumeratorType is INamedTypeSymbol { TypeArguments.Length: 1 } namedEnumerator
+            && namedEnumerator.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerator_T
+            && SymbolEqualityComparer.Default.Equals(namedEnumerator.TypeArguments[0], elementType))
+        {
+            return true;
+        }
+
+        foreach (var @interface in enumeratorType.AllInterfaces)
+        {
+            if (@interface is INamedTypeSymbol { TypeArguments.Length: 1 } enumeratorInterface
+                && enumeratorInterface.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerator_T
+                && SymbolEqualityComparer.Default.Equals(enumeratorInterface.TypeArguments[0], elementType))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static ISymbol? GetRepresentativeInterfaceMember(INamedTypeSymbol closedInterface, Compilation compilation)

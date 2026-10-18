@@ -56,8 +56,10 @@ public sealed partial class CollectionToCollectionMapStrategyIntegrationTests
                 NullableAnnotation.NotAnnotated,
                 blockSyntaxAssertions =>
                 {
+                    // BlockingCollection<T> only implements IEnumerable<T> explicitly (no public
+                    // GetEnumerator), so foreach requires a cast to the preferred interface.
                     blockSyntaxAssertions
-                        .HasSyntaxNodesCount(3)
+                        .HasSyntaxNodesCount(4)
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                             syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
                                 typeof(List<string>).ToString(),
@@ -66,10 +68,15 @@ public sealed partial class CollectionToCollectionMapStrategyIntegrationTests
                                     typeof(List<string>).ToString(),
                                     parameterAssertions => parameterAssertions.BeMemberAccessExpressionSyntax("input.Count"))))
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(IEnumerable<int>).ToString(),
+                                "__mappa_tmp_2",
+                                initializerAssertions => initializerAssertions.BeIdentifierNameSyntax("input")))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
                             syntaxNodeAssertions.BeForEachStatementSyntax(
                                 typeof(int).ToString(),
-                                "__mappa_tmp_2",
-                                expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("input"),
+                                "__mappa_tmp_3",
+                                expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_2"),
                                 statementAssertions =>
                                     statementAssertions
                                         .BeBlockStatement()
@@ -78,12 +85,12 @@ public sealed partial class CollectionToCollectionMapStrategyIntegrationTests
                                         .HasNextSyntaxNode(foreachStatementAssertions =>
                                             foreachStatementAssertions.BeLocalDeclarationStatementSyntax(
                                                 typeof(string).ToString(),
-                                                "__mappa_tmp_3",
-                                                initializerAssertions => initializerAssertions.BeInvocationExpressionSyntax("__mappa_tmp_2.ToString")))
+                                                "__mappa_tmp_4",
+                                                initializerAssertions => initializerAssertions.BeInvocationExpressionSyntax("__mappa_tmp_3.ToString")))
                                         .HasNextSyntaxNode(foreachStatementAssertions =>
                                             foreachStatementAssertions.BeInvocationExpressionSyntaxStatement(
                                                 "__mappa_tmp_1.Add",
-                                                firstParameterAssertions => firstParameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_3")))))
+                                                firstParameterAssertions => firstParameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_4")))))
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                             syntaxNodeAssertions.BeReturnStatement(expressionAssertions => expressionAssertions
                                 .BeIdentifierNameSyntax("__mappa_tmp_1")));

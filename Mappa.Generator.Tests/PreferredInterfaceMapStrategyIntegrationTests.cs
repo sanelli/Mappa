@@ -227,15 +227,11 @@ public sealed class PreferredInterfaceMapStrategyIntegrationTests
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
         generatedResults.Should()
-            .HaveDiagnostics(2)
+            .HaveDiagnostics(1)
             .HaveDiagnostic(
                 MappaDiagnosticDescriptors.PreferredInterfaceCannotBeUsed,
                 "System.Collections.Generic.IEnumerable<Mappa.Generator.Tests.UnitTests.SourceCode.Unmappable>",
-                "Mappa.Generator.Tests.UnitTests.SourceCode.DualEnumerable")
-            .HaveDiagnostic(
-                MappaDiagnosticDescriptors.CannotIdentifyStrategy,
-                "Mappa.Generator.Tests.UnitTests.SourceCode.Unmappable",
-                "int");
+                "Mappa.Generator.Tests.UnitTests.SourceCode.DualEnumerable");
     }
 
     /// <summary>

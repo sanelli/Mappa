@@ -19,6 +19,7 @@ internal abstract class MappaMapAlgorithmContext
 {
     private readonly Stack<(ITypeSymbol TargetType, ITypeSymbol SourceType)> inFlightTypePairs = new();
     private short currentDepth = -1;
+    private int usabilityProbeDepth;
     private PreferredInterfaceSession? preferredInterfaceSession;
 
     /// <summary>
@@ -67,6 +68,12 @@ internal abstract class MappaMapAlgorithmContext
     /// <see cref="IMappaUserSettings.MaxCompileTimeDepth"/> is greater than zero.
     /// </summary>
     internal short CurrentDepth => this.GetRootAlgorithmContext().currentDepth;
+
+    /// <summary>
+    /// Gets a value indicating whether preferred-interface usability probing is active.
+    /// While active, strategy-discovery diagnostics must not be reported.
+    /// </summary>
+    internal bool IsUsabilityProbeActive => this.GetRootAlgorithmContext().usabilityProbeDepth > 0;
 
     /// <summary>
     /// Gets a value indicating whether the nullable flag
@@ -139,6 +146,17 @@ internal abstract class MappaMapAlgorithmContext
         var root = this.GetRootAlgorithmContext();
         root.currentDepth++;
         return new CompileTimeDepthScope(root);
+    }
+
+    /// <summary>
+    /// Marks nested strategy discovery as a preferred-interface usability probe so diagnostics are suppressed.
+    /// </summary>
+    /// <returns>An <see cref="IDisposable"/> that ends the probe when disposed.</returns>
+    internal IDisposable EnterUsabilityProbe()
+    {
+        var root = this.GetRootAlgorithmContext();
+        root.usabilityProbeDepth++;
+        return new UsabilityProbeScope(root);
     }
 
     /// <summary>
@@ -278,6 +296,11 @@ internal abstract class MappaMapAlgorithmContext
         this.currentDepth--;
     }
 
+    private void DecreaseUsabilityProbeDepth()
+    {
+        this.usabilityProbeDepth--;
+    }
+
     private void PopMappingTypePair()
     {
         this.inFlightTypePairs.Pop();
@@ -302,6 +325,29 @@ internal abstract class MappaMapAlgorithmContext
             }
 
             this.context.DecreaseCompileTimeDepth();
+            this.disposed = true;
+        }
+    }
+
+    private sealed class UsabilityProbeScope
+        : IDisposable
+    {
+        private readonly MappaMapAlgorithmContext context;
+        private bool disposed;
+
+        public UsabilityProbeScope(MappaMapAlgorithmContext context)
+        {
+            this.context = context;
+        }
+
+        public void Dispose()
+        {
+            if (this.disposed)
+            {
+                return;
+            }
+
+            this.context.DecreaseUsabilityProbeDepth();
             this.disposed = true;
         }
     }

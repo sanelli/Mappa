@@ -614,9 +614,12 @@ internal static class CommonStrategyDetectors
         Compilation compilation,
         CancellationToken cancellationToken)
     {
-        var derivedContext = new DerivedMappaMapAlgorithmContext(context, targetType, sourceType);
-        var algorithm = new TypeMapIdentifierWithMapMethodAlgorithm(derivedContext, compilation, cancellationToken);
-        return algorithm.GetStrategy() is not NoMapStrategy;
+        using (context.EnterUsabilityProbe())
+        {
+            var derivedContext = new DerivedMappaMapAlgorithmContext(context, targetType, sourceType);
+            var algorithm = new TypeMapIdentifierWithMapMethodAlgorithm(derivedContext, compilation, cancellationToken);
+            return algorithm.GetStrategy() is not NoMapStrategy;
+        }
     }
 
     private sealed class DictionaryKeyValuePairComparer : IEqualityComparer<(ITypeSymbol KeyType, ITypeSymbol ValueType)>
