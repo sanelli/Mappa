@@ -3,7 +3,6 @@
 // </copyright>
 
 using System.Collections;
-using System.Reflection;
 
 using Mappa.Generator.Tests.Abstractions;
 using Mappa.Generator.Tests.Assertions;
@@ -11,7 +10,6 @@ using Mappa.Generator.Tests.Assertions.Extensions;
 using Mappa.Generator.Tests.Helpers;
 using Mappa.Generator.Tests.Models;
 
-using Microsoft.CodeAnalysis;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 

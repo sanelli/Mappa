@@ -2,16 +2,9 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using Mappa;
-using Mappa.Attributes;
 using Mappa.Generator.Models;
 using Mappa.Generator.Tests.Abstractions;
 using Mappa.Generator.Tests.Helpers;
-
-using Microsoft.CodeAnalysis.CSharp;
-
-using Xunit;
-using Xunit.OpenCategories.V3;
 
 namespace Mappa.Generator.Tests;
 
