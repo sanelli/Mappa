@@ -188,6 +188,43 @@ internal static class ProjectionExpressionBuilder
         return expression;
     }
 
+    /// <summary>
+    /// Builds a nested-collection projection expression.
+    /// </summary>
+    /// <param name="strategy">The collection mapping strategy.</param>
+    /// <param name="source">The source expression.</param>
+    /// <param name="context">The expression build context.</param>
+    /// <returns>The projection expression.</returns>
+    internal static string BuildCollectionExpression(
+        CollectionToCollectionMapStrategy strategy,
+        string source,
+        ExpressionBuildContext context)
+    {
+        var lambdaParameter = context.BuilderContext.NextTemporary();
+        if (!TryBuildExpression(strategy.ElementStrategy, lambdaParameter, context, out var elementExpression))
+        {
+            throw new MappaGeneratorException("Collection projection element strategy is not supported.");
+        }
+
+        var selectExpression =
+            $"global::System.Linq.Enumerable.Select({source}, {lambdaParameter} => {elementExpression})";
+
+        if (strategy.TargetType.IsArray())
+        {
+            return $"global::System.Linq.Enumerable.ToArray({selectExpression})";
+        }
+
+        if (strategy.TargetType.IsIEnumerable()
+            && !strategy.TargetType.IsList(context.BuilderContext.Compilation)
+            && !strategy.TargetType.IsOrImplementICollection()
+            && !strategy.TargetType.IsOrImplementIList())
+        {
+            return selectExpression;
+        }
+
+        return $"global::System.Linq.Enumerable.ToList({selectExpression})";
+    }
+
     private static string BuildIdentityExpression(string source)
         => source;
 
@@ -362,36 +399,6 @@ internal static class ProjectionExpressionBuilder
             CultureInfoSetting.UserDefined => $"System.Globalization.CultureInfo.GetCultureInfo({CSharpLiteralHelper.ToStringLiteral(cultureName ?? string.Empty)})",
             _ => throw new ArgumentOutOfRangeException(nameof(cultureInfoSettings), cultureInfoSettings, null),
         };
-
-    private static string BuildCollectionExpression(
-        CollectionToCollectionMapStrategy strategy,
-        string source,
-        ExpressionBuildContext context)
-    {
-        var lambdaParameter = context.BuilderContext.NextTemporary();
-        if (!TryBuildExpression(strategy.ElementStrategy, lambdaParameter, context, out var elementExpression))
-        {
-            throw new MappaGeneratorException("Collection projection element strategy is not supported.");
-        }
-
-        var selectExpression =
-            $"global::System.Linq.Enumerable.Select({source}, {lambdaParameter} => {elementExpression})";
-
-        if (strategy.TargetType.IsArray())
-        {
-            return $"global::System.Linq.Enumerable.ToArray({selectExpression})";
-        }
-
-        if (strategy.TargetType.IsIEnumerable()
-            && !strategy.TargetType.IsList(context.BuilderContext.Compilation)
-            && !strategy.TargetType.IsOrImplementICollection()
-            && !strategy.TargetType.IsOrImplementIList())
-        {
-            return selectExpression;
-        }
-
-        return $"global::System.Linq.Enumerable.ToList({selectExpression})";
-    }
 
     private static string BuildTupleExpression(
         TupleToTupleMapStrategy strategy,

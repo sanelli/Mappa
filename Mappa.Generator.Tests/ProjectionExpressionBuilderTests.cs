@@ -584,7 +584,7 @@ public sealed class ProjectionExpressionBuilderTests
                 expressionContext,
                 out var valueTupleExpression)
             .Should().BeTrue();
-        valueTupleExpression.Should().Be("new global::System.ValueTuple<global::System.Int32, global::System.String>(source.Item1, source.Item2)");
+        valueTupleExpression.Should().Be("new global::System.ValueTuple<int, string>(source.Item1, source.Item2)");
 
         ProjectionExpressionBuilder.TryBuildExpression(
                 new TupleToTupleMapStrategy(systemTupleType, systemTupleType, [identityInt, identityString]),
@@ -684,6 +684,8 @@ public sealed class ProjectionExpressionBuilderTests
             new MappaBuilderContext(compilation),
             new MappaGlobalOptions(TestAnalyzerConfigOptionsProvider.FromEditorConfig("root = true"), compilation.SyntaxTrees[0]));
 
+        var listType = compilation.GetTypeByMetadataName(typeof(List<>).FullName!)!.Construct(intType);
+
         var nullableAct = () => ProjectionExpressionBuilder.BuildNullableExpression(
             new NullableStrategy(intType, intType, unsupported),
             "source",
@@ -696,6 +698,18 @@ public sealed class ProjectionExpressionBuilderTests
             new PropertyMapStrategy(targetProperty, sourceProperty, unsupported, postConstructorInitializer: false),
             "source",
             expressionContext);
+        var collectionAct = () => ProjectionExpressionBuilder.BuildCollectionExpression(
+            new CollectionToCollectionMapStrategy(
+                listType,
+                listType,
+                unsupported,
+                methodSymbol: null,
+                BooleanSetting.Undefined,
+                BooleanSetting.Undefined,
+                BooleanSetting.Undefined,
+                EnumerableConcreteTypeSetting.Undefined),
+            "source",
+            expressionContext);
 
         nullableAct.Should().Throw<MappaGeneratorException>()
             .WithMessage("Nullable projection element strategy is not supported.");
@@ -703,6 +717,62 @@ public sealed class ProjectionExpressionBuilderTests
             .WithMessage("Parameter projection strategy is not supported.");
         propertyAct.Should().Throw<MappaGeneratorException>()
             .WithMessage("Property projection strategy is not supported.");
+        collectionAct.Should().Throw<MappaGeneratorException>()
+            .WithMessage("Collection projection element strategy is not supported.");
+    }
+
+    /// <summary>
+    /// Test nested value-tuple type arguments are formatted recursively for expression trees.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void TryBuildExpressionFormatsNestedValueTupleTypeArguments()
+    {
+        const string source = """
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Holder
+                              {
+                                  public ((int Left, string Right) Inner, int Outer) Values { get; set; }
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var holderType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Holder")
+                         ?? throw new InvalidOperationException("Holder type was not found.");
+        var valuesType = holderType.GetMembers("Values").OfType<IPropertySymbol>().Single().Type;
+        var intType = compilation.GetSpecialType(SpecialType.System_Int32);
+        var stringType = compilation.GetSpecialType(SpecialType.System_String);
+        var identityInt = new IdentityMapStrategy(
+            intType,
+            intType,
+            IdentityMapDeepCopySetting.ShallowCopy,
+            requiresMemberwiseClone: false,
+            nestedFieldStrategies: []);
+        var identityString = new IdentityMapStrategy(
+            stringType,
+            stringType,
+            IdentityMapDeepCopySetting.ShallowCopy,
+            requiresMemberwiseClone: false,
+            nestedFieldStrategies: []);
+        var nestedTupleType = ((INamedTypeSymbol)valuesType).TypeArguments[0];
+        var nestedIdentity = new TupleToTupleMapStrategy(
+            nestedTupleType,
+            nestedTupleType,
+            [identityInt, identityString]);
+        var expressionContext = new ExpressionBuildContext(
+            new MappaBuilderContext(compilation),
+            new MappaGlobalOptions(TestAnalyzerConfigOptionsProvider.FromEditorConfig("root = true"), compilation.SyntaxTrees[0]));
+
+        ProjectionExpressionBuilder.TryBuildExpression(
+                new TupleToTupleMapStrategy(valuesType, valuesType, [nestedIdentity, identityInt]),
+                "source",
+                expressionContext,
+                out var expression)
+            .Should().BeTrue();
+
+        expression.Should().Be(
+            "new global::System.ValueTuple<global::System.ValueTuple<int, string>, int>(new global::System.ValueTuple<int, string>(source.Item1.Item1, source.Item1.Item2), source.Item2)");
     }
 
     /// <summary>
