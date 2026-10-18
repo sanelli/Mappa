@@ -16,14 +16,16 @@ namespace Mappa.Samples;
 /// <list type="bullet">
 /// <item><description>No <see cref="MappaBeforeMapAttribute"/> / <see cref="MappaAfterMapAttribute"/> hooks.</description></item>
 /// <item><description>No <c>MappaContext</c> parameter.</description></item>
-/// <item><description>No nested <c>IQueryable</c> properties inside the element map.</description></item>
+/// <item><description>No nested <c>IQueryable</c> properties inside the element map (nested <c>List&lt;T&gt;</c> / arrays are supported).</description></item>
 /// <item><description>No polymorphic root element mapping.</description></item>
 /// <item><description>Prefer numeric or description enum mappings over case-insensitive member-name matching.</description></item>
 /// </list>
 /// Mapping attributes such as <see cref="MappaUsePropertyAttribute"/> can be declared on the projection method
-/// and on a private companion element map (Mapperly-style).
+/// and on a private companion element map (Mapperly-style). Companion maps are inlined structurally into the
+/// projection expression and may report warning <c>MP00086</c>.
 /// </remarks>
 [Mappa]
+[MappaProjection]
 public static partial class IQueryableProjectionMapper
 {
     /// <summary>
@@ -31,8 +33,10 @@ public static partial class IQueryableProjectionMapper
     /// </summary>
     /// <param name="query">The source queryable.</param>
     /// <returns>The projected queryable.</returns>
+#pragma warning disable MP00086 // Companion MapOrder is inlined into the Select expression by design.
     [MappaUseProperty(nameof(ProjectionOrderDto.Title), nameof(ProjectionOrder.Name))]
     public static partial IQueryable<ProjectionOrderDto> ProjectToDto(this IQueryable<ProjectionOrder> query);
+#pragma warning restore MP00086
 
     /// <summary>
     /// Maps a single <see cref="ProjectionOrder"/> to <see cref="ProjectionOrderDto"/> (Mapperly-style companion element map).

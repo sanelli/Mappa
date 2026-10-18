@@ -61,6 +61,12 @@ internal static class MethodSymbolExtensions
             result.Add(mappaSettingAttribute);
         }
 
+        // Mappa Projection Attribute
+        if (attributes.GetMappaProjectionAttribute(compilation) is { } mappaProjectionAttribute)
+        {
+            result.Add(mappaProjectionAttribute);
+        }
+
         // Mappa Use Property Attribute
         var usePropertyAttributes = attributes.GetMappaUsePropertyAttributes(compilation);
         result.AddRange(usePropertyAttributes);

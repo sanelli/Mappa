@@ -35,6 +35,7 @@ internal static class AttributeDataExtensions
     private const string MappaAssignFromContextAttributeFullName = "Mappa.Attributes.MappaAssignFromContextAttribute";
     private const string MappaAssignToContextAttributeFullName = "Mappa.Attributes.MappaAssignToContextAttribute";
     private const string MappaSettingsAttributeFullName = "Mappa.Attributes.MappaSettingsAttribute";
+    private const string MappaProjectionAttributeFullName = "Mappa.Attributes.MappaProjectionAttribute";
     private const string MappaUsePropertyAttributeFullName = "Mappa.Attributes.MappaUsePropertyAttribute";
     private const string MappaDependencyAttributeFullName = "Mappa.Attributes.MappaDependencyAttribute";
     private const string MappaStaticDependencyAttributeFullName = "Mappa.Attributes.MappaStaticDependencyAttribute";
@@ -368,6 +369,48 @@ internal static class AttributeDataExtensions
                 if (constant.Value is int value)
                 {
                     attribute.BreakCompileTimeCycles = (BooleanSetting)value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.ProjectionEnumStringMapSetting)] = static (attribute, constant) =>
+            {
+                if (constant.Value is int value)
+                {
+                    attribute.ProjectionEnumStringMapSetting = (EnumStringMapSetting)value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.ProjectionEnumToEnumMapSetting)] = static (attribute, constant) =>
+            {
+                if (constant.Value is int value)
+                {
+                    attribute.ProjectionEnumToEnumMapSetting = (EnumToEnumMapSetting)value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.ProjectionCaseInsensitiveEnumMap)] = static (attribute, constant) =>
+            {
+                if (constant.Value is int value)
+                {
+                    attribute.ProjectionCaseInsensitiveEnumMap = (BooleanSetting)value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.ProjectionGuidFormat)] = static (attribute, constant) =>
+            {
+                if (constant.Value is string value)
+                {
+                    attribute.ProjectionGuidFormat = value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.ProjectionCultureInfoSetting)] = static (attribute, constant) =>
+            {
+                if (constant.Value is int value)
+                {
+                    attribute.ProjectionCultureInfoSetting = (CultureInfoSetting)value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.ProjectionCultureName)] = static (attribute, constant) =>
+            {
+                if (constant.Value is string value)
+                {
+                    attribute.ProjectionCultureName = value;
                 }
             },
         };
@@ -796,6 +839,64 @@ internal static class AttributeDataExtensions
         }
 
         return attribute;
+    }
+
+    /// <summary>
+    /// Gets the <see cref="MappaProjectionAttribute"/> applied, if any.
+    /// </summary>
+    /// <param name="attributes">The attributes.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The <see cref="MappaProjectionAttribute"/> applied, or <c>null</c> if it does not exist.</returns>
+    internal static MappaProjectionAttribute? GetMappaProjectionAttribute(this ImmutableArray<AttributeData> attributes, Compilation compilation)
+    {
+        var mappaProjectionAttributeSymbol = compilation.GetTypeByMetadataName(MappaProjectionAttributeFullName);
+        var attributeData = attributes
+            .SingleOrDefault(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, mappaProjectionAttributeSymbol));
+        if (attributeData is null)
+        {
+            return null;
+        }
+
+        var attribute = new MappaProjectionAttribute();
+        foreach (var namedArgument in attributeData.NamedArguments)
+        {
+            if (namedArgument.Key.Equals(nameof(MappaProjectionAttribute.Enabled), StringComparison.Ordinal)
+                && namedArgument.Value.Value is int value)
+            {
+                attribute.Enabled = (BooleanSetting)value;
+            }
+        }
+
+        return attribute;
+    }
+
+    /// <summary>
+    /// Resolves whether queryable projection is enabled for a map method.
+    /// Method-level <see cref="MappaProjectionAttribute"/> wins over class-level;
+    /// when absent or <see cref="BooleanSetting.Undefined"/>, projection remains signature-driven (enabled).
+    /// </summary>
+    /// <param name="methodAttributes">The method attributes.</param>
+    /// <param name="classAttributes">The class attributes.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> when projection should be attempted for an <c>IQueryable</c> map method.</returns>
+    internal static bool IsQueryableProjectionEnabled(
+        ImmutableArray<AttributeData> methodAttributes,
+        ImmutableArray<AttributeData> classAttributes,
+        Compilation compilation)
+    {
+        var methodProjection = methodAttributes.GetMappaProjectionAttribute(compilation);
+        if (methodProjection is not null && methodProjection.Enabled is not BooleanSetting.Undefined)
+        {
+            return methodProjection.Enabled is BooleanSetting.Enable;
+        }
+
+        var classProjection = classAttributes.GetMappaProjectionAttribute(compilation);
+        if (classProjection is not null && classProjection.Enabled is not BooleanSetting.Undefined)
+        {
+            return classProjection.Enabled is BooleanSetting.Enable;
+        }
+
+        return true;
     }
 
     /// <summary>

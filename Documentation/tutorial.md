@@ -648,14 +648,17 @@ The same path syntax works on `[MappaInvokeMethod]`, `[MappaAssignFromConstant]`
 See also: [Mappa attributes — Nested property paths](./mappa-attributes.md#nested-property-paths), [algorithm](./mappa-generator-algorithm.md#nested-property-paths), and [NestedPropertyPathAttributeMapper.cs](../Mappa.Samples/NestedPropertyPathAttributeMapper.cs).
 
 ### IQueryable projection
-Map methods that take `IQueryable<TSource>` and return `IQueryable<TTarget>` emit deferred `Select` projections suitable for ORM providers such as EF Core. No dedicated attribute is required — the signature selects the strategy:
+Map methods that take `IQueryable<TSource>` and return `IQueryable<TTarget>` emit deferred `Select` projections suitable for ORM providers such as EF Core. Projection is signature-driven by default. Optionally apply `[MappaProjection]` on the mapper class or method (`Enabled` defaults to `Enable`; use `Enabled = Disable` to fall through to the eager container path).
 
 ```csharp
 [Mappa]
+[MappaProjection]
 public static partial class OrderMapper
 {
+#pragma warning disable MP00086 // Companion MapOrder is inlined into the Select expression by design.
     [MappaUseProperty(nameof(OrderDto.Title), nameof(Order.Name))]
     public static partial IQueryable<OrderDto> ProjectToDto(this IQueryable<Order> query);
+#pragma warning restore MP00086
 
     [MappaUseProperty(nameof(OrderDto.Title), nameof(Order.Name))]
     private static partial OrderDto MapOrder(Order order);
@@ -665,15 +668,20 @@ public static partial class OrderMapper
 var dtos = await context.Orders.ProjectToDto().ToListAsync();
 ```
 
+Element maps may include nested collections (`List<T>` / arrays via nested `Select` + `ToList`/`ToArray`), value tuples, and common `Guid`↔`string` / `Guid`↔`byte[]` conversions. Projection-specific `[MappaSettings]` overrides (`ProjectionGuidFormat`, `ProjectionEnumStringMapSetting`, `ProjectionEnumToEnumMapSetting`, `ProjectionCaseInsensitiveEnumMap`, `ProjectionCultureInfoSetting`, `ProjectionCultureName`) apply only inside projection element strategies and fall back to the non-prefixed settings when unset.
+
+When a private companion element map is replaced by a re-derived structural expression, the generator reports warning **MP00086** (suppress with `#pragma` when the companion is intentional).
+
 Projection limitations:
 
 - No `[MappaBeforeMap]` / `[MappaAfterMap]` hooks and no `MappaContext` parameter on the projection method.
-- Nested `IQueryable` properties and polymorphic root element maps are not supported.
+- Nested `IQueryable` properties and polymorphic root element maps are not supported (nested **collections** are supported).
 - Prefer numeric or description enum mappings over case-insensitive member-name matching for provider translation.
 - Mapping `IQueryable<TSource>` to a concrete collection (for example `List<TTarget>`) materializes eagerly and may emit warning MP00061.
 - Generated projection methods are annotated with `[RequiresDynamicCode]` because they build expression trees at runtime; they are **not compatible with [Native AOT](https://learn.microsoft.com/dotnet/core/deploying/native-aot)** deployment.
+- Provider translation is not guaranteed for every expression (for example some `Guid`↔`byte[]` shapes); verify against your ORM.
 
-See also: [algorithm — IQueryable projection](./mappa-generator-algorithm.md#7a-iqueryable-projection-strategy), [error codes MP00055–MP00061](./error-codes.md), and [IQueryableProjectionMapper.cs](../Mappa.Samples/IQueryableProjectionMapper.cs).
+See also: [algorithm — IQueryable projection](./mappa-generator-algorithm.md#7a-iqueryable-projection-strategy), [error codes MP00055–MP00061 / MP00086](./error-codes.md), [IQueryableProjectionMapper.cs](../Mappa.Samples/IQueryableProjectionMapper.cs), and [IQueryableProjectionSqliteMapper.cs](../Mappa.Samples/IQueryableProjectionSqliteMapper.cs).
 
 ### MappaAssignFromConstant attribute
 Assign a compile-time constant to a target property or constructor parameter:

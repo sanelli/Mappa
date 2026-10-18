@@ -471,4 +471,10 @@ internal enum MappaDiagnosticsKind
     /// The first argument of a preferred-interface attribute is missing or invalid.
     /// </summary>
     PreferredInterfaceImplementingTypeInvalid,
+
+    /// <summary>
+    /// A queryable projection replaced a map method with a re-derived structural strategy;
+    /// the original map method body is not invoked.
+    /// </summary>
+    ProjectionMethodMapReplacedByStructuralStrategy,
 }

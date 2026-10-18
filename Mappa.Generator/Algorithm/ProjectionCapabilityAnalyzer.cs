@@ -27,6 +27,9 @@ internal static class ProjectionCapabilityAnalyzer
         typeof(InvokeParseStringWithFormatForDateOnlyAndTimeOnlyMapStrategy),
         typeof(StringToNumberMapStrategy),
         typeof(StringToUriMapStrategy),
+        typeof(StringToGuidMapStrategy),
+        typeof(GuidToArrayLikeStrategy),
+        typeof(ArrayLikeToGuidStrategy),
         typeof(DateOnlyToDateTimeMapStrategy),
         typeof(DateOnlyToLongMapStrategy),
         typeof(DateTimeOffsetToDateOnlyMapStrategy),
@@ -212,6 +215,18 @@ internal static class ProjectionCapabilityAnalyzer
         if (strategy is InvokeConstructorMapStrategy invokeConstructorMapStrategy)
         {
             handled = TryAnalyzeConstructor(invokeConstructorMapStrategy, analysisContext, out normalizedStrategy, out failureKind, out failureMember);
+            return true;
+        }
+
+        if (strategy is CollectionToCollectionMapStrategy collectionToCollectionMapStrategy)
+        {
+            handled = TryAnalyzeCollection(collectionToCollectionMapStrategy, analysisContext, out normalizedStrategy, out failureKind, out failureMember);
+            return true;
+        }
+
+        if (strategy is TupleToTupleMapStrategy tupleToTupleMapStrategy)
+        {
+            handled = TryAnalyzeTuple(tupleToTupleMapStrategy, analysisContext, out normalizedStrategy, out failureKind, out failureMember);
             return true;
         }
 
@@ -517,6 +532,15 @@ internal static class ProjectionCapabilityAnalyzer
             return false;
         }
 
+        if (analysisContext is not null)
+        {
+            analysisContext.AlgorithmContext.ReportDiagnostic(
+                MappaDiagnostics.ProjectionMethodMapReplacedByStructuralStrategy(
+                    analysisContext.Location,
+                    analysisContext.MethodName,
+                    methodMapStrategy.MapMethod.MethodName));
+        }
+
         return TryAnalyzeCore(inlinableStrategy, analysisContext, out normalizedStrategy, out failureKind, out failureMember);
     }
 
@@ -589,6 +613,75 @@ internal static class ProjectionCapabilityAnalyzer
         => identityMapStrategy.IdentityMapDeepCopySetting is IdentityMapDeepCopySetting.ShallowCopy
            && !identityMapStrategy.RequiresMemberwiseClone
            && identityMapStrategy.NestedFieldStrategies.Count == 0;
+
+    private static bool TryAnalyzeCollection(
+        CollectionToCollectionMapStrategy collectionToCollectionMapStrategy,
+        ProjectionCapabilityAnalysisContext? analysisContext,
+        out MapStrategy normalizedStrategy,
+        out AnalysisFailureKind? failureKind,
+        out string? failureMember)
+    {
+        normalizedStrategy = collectionToCollectionMapStrategy;
+        failureKind = null;
+        failureMember = null;
+
+        if (!TryAnalyzeCore(
+                collectionToCollectionMapStrategy.ElementStrategy,
+                analysisContext,
+                out var normalizedElementStrategy,
+                out failureKind,
+                out failureMember))
+        {
+            return false;
+        }
+
+        normalizedStrategy = new CollectionToCollectionMapStrategy(
+            collectionToCollectionMapStrategy.TargetType,
+            collectionToCollectionMapStrategy.SourceType,
+            normalizedElementStrategy,
+            collectionToCollectionMapStrategy.MethodSymbol,
+            collectionToCollectionMapStrategy.FastCollections,
+            collectionToCollectionMapStrategy.ContainerCapacityConstructors,
+            collectionToCollectionMapStrategy.PreventEnumerableCount,
+            collectionToCollectionMapStrategy.EnumerableConcreteType,
+            collectionToCollectionMapStrategy.PreferredSourceInterface,
+            collectionToCollectionMapStrategy.PreferredTargetInterface);
+        return true;
+    }
+
+    private static bool TryAnalyzeTuple(
+        TupleToTupleMapStrategy tupleToTupleMapStrategy,
+        ProjectionCapabilityAnalysisContext? analysisContext,
+        out MapStrategy normalizedStrategy,
+        out AnalysisFailureKind? failureKind,
+        out string? failureMember)
+    {
+        normalizedStrategy = tupleToTupleMapStrategy;
+        failureKind = null;
+        failureMember = null;
+
+        var normalizedElementStrategies = new MapStrategy[tupleToTupleMapStrategy.ElementStrategies.Length];
+        for (var index = 0; index < tupleToTupleMapStrategy.ElementStrategies.Length; ++index)
+        {
+            if (!TryAnalyzeCore(
+                    tupleToTupleMapStrategy.ElementStrategies[index],
+                    analysisContext,
+                    out var normalizedElementStrategy,
+                    out failureKind,
+                    out failureMember))
+            {
+                return false;
+            }
+
+            normalizedElementStrategies[index] = normalizedElementStrategy;
+        }
+
+        normalizedStrategy = new TupleToTupleMapStrategy(
+            tupleToTupleMapStrategy.TargetType,
+            tupleToTupleMapStrategy.SourceType,
+            normalizedElementStrategies);
+        return true;
+    }
 
     private static bool IsNestedQueryableType(ITypeSymbol typeSymbol, Compilation compilation)
         => typeSymbol.IsOrImplementIQueryable(compilation);

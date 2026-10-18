@@ -2,22 +2,14 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using System.Globalization;
-
 using Mappa.Generator.Builders.Expressions;
 using Mappa.Generator.Exceptions;
-using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 using Mappa.Generator.Tests.Abstractions;
 using Mappa.Generator.Tests.Helpers;
 
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-
-using Xunit;
-using Xunit.OpenCategories.V3;
 
 namespace Mappa.Generator.Tests;
 
@@ -464,15 +456,7 @@ public sealed class ProjectionExpressionBuilderTests
     {
         var compilation = CSharpCompilation.Create("TestAssembly");
         var intType = compilation.GetSpecialType(SpecialType.System_Int32);
-        var strategy = new CollectionToCollectionMapStrategy(
-            intType,
-            intType,
-            new IdentityMapStrategy(intType, intType, IdentityMapDeepCopySetting.ShallowCopy, requiresMemberwiseClone: false, nestedFieldStrategies: Array.Empty<IdentityMapNestedFieldStrategy>()),
-            null,
-            BooleanSetting.Undefined,
-            BooleanSetting.Undefined,
-            BooleanSetting.Undefined,
-            EnumerableConcreteTypeSetting.Undefined);
+        var strategy = new IdentityMapStrategy(intType, intType, IdentityMapDeepCopySetting.DeepCopy);
         var expressionContext = new ExpressionBuildContext(
             new MappaBuilderContext(compilation),
             new MappaGlobalOptions(TestAnalyzerConfigOptionsProvider.FromEditorConfig("root = true"), CSharpSyntaxTree.ParseText(string.Empty, cancellationToken: TestContext.Current.CancellationToken)));
@@ -481,6 +465,166 @@ public sealed class ProjectionExpressionBuilderTests
 
         built.Should().BeFalse();
         expression.Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// Test collection projection expressions emit nested Select with materialization.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void TryBuildExpressionBuildsCollectionSelectExpression()
+    {
+        var compilation = CSharpCompilation.Create(
+            "TestAssembly",
+            references:
+            [
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(List<>).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
+            ]);
+        var intType = compilation.GetSpecialType(SpecialType.System_Int32);
+        var listType = compilation.GetTypeByMetadataName(typeof(List<>).FullName!)!.Construct(intType);
+        var arrayType = compilation.CreateArrayTypeSymbol(intType);
+        var enumerableType = compilation.GetTypeByMetadataName(typeof(IEnumerable<>).FullName!)!.Construct(intType);
+        var elementStrategy = new IdentityMapStrategy(
+            intType,
+            intType,
+            IdentityMapDeepCopySetting.ShallowCopy,
+            requiresMemberwiseClone: false,
+            nestedFieldStrategies: []);
+        var listStrategy = new CollectionToCollectionMapStrategy(
+            listType,
+            listType,
+            elementStrategy,
+            methodSymbol: null,
+            BooleanSetting.Undefined,
+            BooleanSetting.Undefined,
+            BooleanSetting.Undefined,
+            EnumerableConcreteTypeSetting.Undefined);
+        var arrayStrategy = new CollectionToCollectionMapStrategy(
+            arrayType,
+            listType,
+            elementStrategy,
+            methodSymbol: null,
+            BooleanSetting.Undefined,
+            BooleanSetting.Undefined,
+            BooleanSetting.Undefined,
+            EnumerableConcreteTypeSetting.Undefined);
+        var enumerableStrategy = new CollectionToCollectionMapStrategy(
+            enumerableType,
+            listType,
+            elementStrategy,
+            methodSymbol: null,
+            BooleanSetting.Undefined,
+            BooleanSetting.Undefined,
+            BooleanSetting.Undefined,
+            EnumerableConcreteTypeSetting.Undefined);
+        var expressionContext = new ExpressionBuildContext(
+            new MappaBuilderContext(compilation),
+            new MappaGlobalOptions(TestAnalyzerConfigOptionsProvider.FromEditorConfig("root = true"), CSharpSyntaxTree.ParseText(string.Empty, cancellationToken: TestContext.Current.CancellationToken)));
+
+        ProjectionExpressionBuilder.TryBuildExpression(listStrategy, "source", expressionContext, out var listExpression)
+            .Should().BeTrue();
+        listExpression.Should().StartWith("global::System.Linq.Enumerable.ToList(global::System.Linq.Enumerable.Select(source,");
+
+        ProjectionExpressionBuilder.TryBuildExpression(arrayStrategy, "source", expressionContext, out var arrayExpression)
+            .Should().BeTrue();
+        arrayExpression.Should().StartWith("global::System.Linq.Enumerable.ToArray(global::System.Linq.Enumerable.Select(source,");
+
+        ProjectionExpressionBuilder.TryBuildExpression(enumerableStrategy, "source", expressionContext, out var enumerableExpression)
+            .Should().BeTrue();
+        enumerableExpression.Should().StartWith("global::System.Linq.Enumerable.Select(source,");
+        enumerableExpression.Should().NotContain("ToList");
+        enumerableExpression.Should().NotContain("ToArray");
+    }
+
+    /// <summary>
+    /// Test tuple, Guid and Memory-based projection expression builders.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void TryBuildExpressionSupportsTupleAndGuidProjectionStrategies()
+    {
+        var compilation = CSharpCompilation.Create(
+            "TestAssembly",
+            references:
+            [
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Guid).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Memory<>).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
+            ]);
+        var intType = compilation.GetSpecialType(SpecialType.System_Int32);
+        var stringType = compilation.GetSpecialType(SpecialType.System_String);
+        var guidType = compilation.GetTypeByMetadataName(typeof(Guid).FullName!)!;
+        var byteType = compilation.GetSpecialType(SpecialType.System_Byte);
+        var byteArrayType = compilation.CreateArrayTypeSymbol(byteType);
+        var memoryType = compilation.GetTypeByMetadataName(typeof(Memory<>).FullName!)!.Construct(byteType);
+        var valueTupleType = compilation.GetTypeByMetadataName(typeof(ValueTuple<,>).FullName!)!.Construct(intType, stringType);
+        var systemTupleType = compilation.GetTypeByMetadataName(typeof(Tuple<,>).FullName!)!.Construct(intType, stringType);
+        var identityInt = new IdentityMapStrategy(
+            intType,
+            intType,
+            IdentityMapDeepCopySetting.ShallowCopy,
+            requiresMemberwiseClone: false,
+            nestedFieldStrategies: []);
+        var identityString = new IdentityMapStrategy(
+            stringType,
+            stringType,
+            IdentityMapDeepCopySetting.ShallowCopy,
+            requiresMemberwiseClone: false,
+            nestedFieldStrategies: []);
+        var expressionContext = new ExpressionBuildContext(
+            new MappaBuilderContext(compilation),
+            new MappaGlobalOptions(TestAnalyzerConfigOptionsProvider.FromEditorConfig("root = true"), CSharpSyntaxTree.ParseText(string.Empty, cancellationToken: TestContext.Current.CancellationToken)));
+
+        ProjectionExpressionBuilder.TryBuildExpression(
+                new TupleToTupleMapStrategy(valueTupleType, valueTupleType, [identityInt, identityString]),
+                "source",
+                expressionContext,
+                out var valueTupleExpression)
+            .Should().BeTrue();
+        valueTupleExpression.Should().Be("new global::System.ValueTuple<int, string>(source.Item1, source.Item2)");
+
+        ProjectionExpressionBuilder.TryBuildExpression(
+                new TupleToTupleMapStrategy(systemTupleType, systemTupleType, [identityInt, identityString]),
+                "source",
+                expressionContext,
+                out var systemTupleExpression)
+            .Should().BeTrue();
+        systemTupleExpression.Should().StartWith("new System.Tuple<int, string>(");
+
+        ProjectionExpressionBuilder.TryBuildExpression(
+                new StringToGuidMapStrategy(guidType, stringType, format: null, CultureInfoSetting.InvariantCulture, cultureName: null),
+                "source",
+                expressionContext,
+                out var cultureGuidExpression)
+            .Should().BeTrue();
+        cultureGuidExpression.Should().Contain("Parse(source, System.Globalization.CultureInfo.InvariantCulture)");
+
+        ProjectionExpressionBuilder.TryBuildExpression(
+                new GuidToArrayLikeStrategy(byteArrayType, guidType),
+                "source",
+                expressionContext,
+                out var guidToArrayExpression)
+            .Should().BeTrue();
+        guidToArrayExpression.Should().Be("source.ToByteArray()");
+
+        ProjectionExpressionBuilder.TryBuildExpression(
+                new ArrayLikeToGuidStrategy(guidType, memoryType),
+                "source",
+                expressionContext,
+                out var memoryGuidExpression)
+            .Should().BeTrue();
+        memoryGuidExpression.Should().Be("new global::System.Guid(source.Span)");
+
+        ProjectionExpressionBuilder.TryBuildExpression(
+                new ArrayLikeToGuidStrategy(guidType, byteArrayType),
+                "source",
+                expressionContext,
+                out var arrayGuidExpression)
+            .Should().BeTrue();
+        arrayGuidExpression.Should().Be("new global::System.Guid(source)");
     }
 
     /// <summary>
@@ -535,18 +679,12 @@ public sealed class ProjectionExpressionBuilderTests
         var targetProperty = targetType.GetMembers("Value").OfType<IPropertySymbol>().Single();
         var parameter = targetType.InstanceConstructors.Single(candidate => candidate.Parameters.Length == 1).Parameters[0];
         var intType = compilation.GetSpecialType(SpecialType.System_Int32);
-        var unsupported = new CollectionToCollectionMapStrategy(
-            intType,
-            intType,
-            new IdentityMapStrategy(intType, intType, IdentityMapDeepCopySetting.ShallowCopy, requiresMemberwiseClone: false, nestedFieldStrategies: []),
-            null,
-            BooleanSetting.Undefined,
-            BooleanSetting.Undefined,
-            BooleanSetting.Undefined,
-            EnumerableConcreteTypeSetting.Undefined);
+        var unsupported = new IdentityMapStrategy(intType, intType, IdentityMapDeepCopySetting.DeepCopy);
         var expressionContext = new ExpressionBuildContext(
             new MappaBuilderContext(compilation),
             new MappaGlobalOptions(TestAnalyzerConfigOptionsProvider.FromEditorConfig("root = true"), compilation.SyntaxTrees[0]));
+
+        var listType = compilation.GetTypeByMetadataName(typeof(List<>).FullName!)!.Construct(intType);
 
         var nullableAct = () => ProjectionExpressionBuilder.BuildNullableExpression(
             new NullableStrategy(intType, intType, unsupported),
@@ -560,6 +698,18 @@ public sealed class ProjectionExpressionBuilderTests
             new PropertyMapStrategy(targetProperty, sourceProperty, unsupported, postConstructorInitializer: false),
             "source",
             expressionContext);
+        var collectionAct = () => ProjectionExpressionBuilder.BuildCollectionExpression(
+            new CollectionToCollectionMapStrategy(
+                listType,
+                listType,
+                unsupported,
+                methodSymbol: null,
+                BooleanSetting.Undefined,
+                BooleanSetting.Undefined,
+                BooleanSetting.Undefined,
+                EnumerableConcreteTypeSetting.Undefined),
+            "source",
+            expressionContext);
 
         nullableAct.Should().Throw<MappaGeneratorException>()
             .WithMessage("Nullable projection element strategy is not supported.");
@@ -567,6 +717,62 @@ public sealed class ProjectionExpressionBuilderTests
             .WithMessage("Parameter projection strategy is not supported.");
         propertyAct.Should().Throw<MappaGeneratorException>()
             .WithMessage("Property projection strategy is not supported.");
+        collectionAct.Should().Throw<MappaGeneratorException>()
+            .WithMessage("Collection projection element strategy is not supported.");
+    }
+
+    /// <summary>
+    /// Test nested value-tuple type arguments are formatted recursively for expression trees.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void TryBuildExpressionFormatsNestedValueTupleTypeArguments()
+    {
+        const string source = """
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Holder
+                              {
+                                  public ((int Left, string Right) Inner, int Outer) Values { get; set; }
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var holderType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Holder")
+                         ?? throw new InvalidOperationException("Holder type was not found.");
+        var valuesType = holderType.GetMembers("Values").OfType<IPropertySymbol>().Single().Type;
+        var intType = compilation.GetSpecialType(SpecialType.System_Int32);
+        var stringType = compilation.GetSpecialType(SpecialType.System_String);
+        var identityInt = new IdentityMapStrategy(
+            intType,
+            intType,
+            IdentityMapDeepCopySetting.ShallowCopy,
+            requiresMemberwiseClone: false,
+            nestedFieldStrategies: []);
+        var identityString = new IdentityMapStrategy(
+            stringType,
+            stringType,
+            IdentityMapDeepCopySetting.ShallowCopy,
+            requiresMemberwiseClone: false,
+            nestedFieldStrategies: []);
+        var nestedTupleType = ((INamedTypeSymbol)valuesType).TypeArguments[0];
+        var nestedIdentity = new TupleToTupleMapStrategy(
+            nestedTupleType,
+            nestedTupleType,
+            [identityInt, identityString]);
+        var expressionContext = new ExpressionBuildContext(
+            new MappaBuilderContext(compilation),
+            new MappaGlobalOptions(TestAnalyzerConfigOptionsProvider.FromEditorConfig("root = true"), compilation.SyntaxTrees[0]));
+
+        ProjectionExpressionBuilder.TryBuildExpression(
+                new TupleToTupleMapStrategy(valuesType, valuesType, [nestedIdentity, identityInt]),
+                "source",
+                expressionContext,
+                out var expression)
+            .Should().BeTrue();
+
+        expression.Should().Be(
+            "new global::System.ValueTuple<global::System.ValueTuple<int, string>, int>(new global::System.ValueTuple<int, string>(source.Item1.Item1, source.Item1.Item2), source.Item2)");
     }
 
     /// <summary>

@@ -14,12 +14,14 @@ namespace Mappa.Benchmark.Queryable.Mappers;
 internal sealed partial class MappaMapper
 {
     /// <summary>
-    /// Projects orders to DTOs.
+    /// Projects orders to DTOs (including nested children).
     /// </summary>
     /// <param name="query">The source queryable.</param>
     /// <returns>The projected queryable.</returns>
+#pragma warning disable MP00086 // Companion MapOrder is inlined into the Select expression by design.
     [MappaUseProperty(nameof(ProjectionOrderDto.Title), nameof(ProjectionOrder.Name))]
     public partial IQueryable<ProjectionOrderDto> Project(IQueryable<ProjectionOrder> query);
+#pragma warning restore MP00086
 
     /// <summary>
     /// Companion element map for projection.

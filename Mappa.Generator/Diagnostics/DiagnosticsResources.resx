@@ -273,4 +273,7 @@
     <data name="PreferredInterfaceImplementingTypeInvalid" xml:space="preserve">
         <value>The preferred-interface attribute first argument is missing or invalid.</value>
     </data>
+    <data name="ProjectionMethodMapReplacedByStructuralStrategy" xml:space="preserve">
+        <value>Method '{0}' inlines map method '{1}' using a re-derived structural strategy; the map method body is not invoked in the queryable projection.</value>
+    </data>
 </root>

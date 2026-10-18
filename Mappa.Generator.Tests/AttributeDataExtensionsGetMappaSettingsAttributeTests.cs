@@ -4,13 +4,9 @@
 
 using System.Globalization;
 
-using Mappa.Attributes;
 using Mappa.Generator.Extensions;
 using Mappa.Generator.Tests.Abstractions;
 using Mappa.Generator.Tests.Helpers;
-
-using Xunit;
-using Xunit.OpenCategories.V3;
 
 namespace Mappa.Generator.Tests;
 
@@ -521,5 +517,53 @@ public sealed class AttributeDataExtensionsGetMappaSettingsAttributeTests
         settings.Should().NotBeNull();
         settings.MaxRuntimeDepth.Should().Be((short)9);
         settings.MaxCompileTimeDepth.Should().Be((short)4);
+    }
+
+    /// <summary>
+    /// Test <see cref="AttributeDataExtensions.GetMappaSettingsAttribute"/> reads projection-specific overrides.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetMappaSettingsAttributeReadsProjectionOverrides()
+    {
+        const string source = """
+                              using Mappa;
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { }
+
+                              public class Target { }
+
+                              [Mappa]
+                              public sealed partial class TestMapper
+                              {
+                                  [MappaSettings(
+                                      ProjectionEnumStringMapSetting = EnumStringMapSetting.Description,
+                                      ProjectionEnumToEnumMapSetting = EnumToEnumMapSetting.NumericValue,
+                                      ProjectionCaseInsensitiveEnumMap = BooleanSetting.Enable,
+                                      ProjectionGuidFormat = "N",
+                                      ProjectionCultureInfoSetting = CultureInfoSetting.InvariantCulture,
+                                      ProjectionCultureName = "en-GB")]
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetMethodAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.MapperMetadataName,
+            "Map");
+
+        var settings = attributes.GetMappaSettingsAttribute(compilation);
+
+        settings.Should().NotBeNull();
+        settings.ProjectionEnumStringMapSetting.Should().Be(EnumStringMapSetting.Description);
+        settings.ProjectionEnumToEnumMapSetting.Should().Be(EnumToEnumMapSetting.NumericValue);
+        settings.ProjectionCaseInsensitiveEnumMap.Should().Be(BooleanSetting.Enable);
+        settings.ProjectionGuidFormat.Should().Be("N");
+        settings.ProjectionCultureInfoSetting.Should().Be(CultureInfoSetting.InvariantCulture);
+        settings.ProjectionCultureName.Should().Be("en-GB");
     }
 }
