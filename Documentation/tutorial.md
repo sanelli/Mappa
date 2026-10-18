@@ -255,6 +255,25 @@ public sealed partial class Mapper
 
 See also: [PropertyMapNameSettingsMapper.cs](../Mappa.Samples/PropertyMapNameSettingsMapper.cs).
 
+### Explicit interface property mapping
+
+By default, properties that are explicitly implemented interface members are ignored. Enable `MapSourceExplicitInterfaceProperties` and/or `MapTargetExplicitInterfaceProperties` to map them via a cast to the declaring interface. Target writes always happen after construction (never in an object initializer). After a parameterized constructor, remaining explicit-interface target properties are also assigned when the target setting is enabled:
+
+```csharp
+[Mappa]
+[MappaSettings(
+    MapSourceExplicitInterfaceProperties = BooleanSetting.Enable,
+    MapTargetExplicitInterfaceProperties = BooleanSetting.Enable)]
+public sealed partial class Mapper
+{
+    public partial Target Map(Source input);
+}
+```
+
+These settings are independent of `[MappaAllowInaccessibleSourceMembers]` / `[MappaAllowInaccessibleTargetMembers]`: ordinary private members use `UnsafeAccessor` when opted in, while explicit interface properties always use an interface cast when the Map\* settings are enabled.
+
+See also: [ExplicitInterfacePropertiesMapper.cs](../Mappa.Samples/ExplicitInterfacePropertiesMapper.cs).
+
 ### Enum matching settings
 
 #### Case-insensitive matching

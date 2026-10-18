@@ -357,8 +357,10 @@ The constructor strategy has four sub-strategies, tried in order:
     - Duplicate factories for the same target type report error **MP00062**; unresolved factories warn with **MP00063** and fall through to constructor strategies; factories on `IQueryable` projection maps report error **MP00064**;
     - Factory location and signature tiers are documented in [Mappa attributes — MappaObjectFactory](mappa-attributes.md#mappaobjectfactory);
     - **Empty-constructor path**: property name matching is case-sensitive by default, configurable via `CaseInsensitivePropertyMap` and `IgnoreUnderscoreForPropertyMap` in `MappaSettings`;
-    - **Parameterized-constructor path**: constructor parameter names are matched to source properties case-insensitively by default, with optional underscore-insensitive matching via `IgnoreUnderscoreForPropertyMap`;
-    - Explicit interface implementation is supported for get-only dictionary and collection properties;
+    - **Parameterized-constructor path**: constructor parameter names are matched to source properties case-insensitively by default, with optional underscore-insensitive matching via `IgnoreUnderscoreForPropertyMap`; when `MapTargetExplicitInterfaceProperties` is enabled, remaining explicitly implemented interface target properties are assigned after construction via an interface cast;
+    - Explicit interface implementation is supported for get-only dictionary and collection properties; scalar explicitly implemented interface properties are mapped when `MapSourceExplicitInterfaceProperties` / `MapTargetExplicitInterfaceProperties` is enabled (via cast to the declaring interface; never via `UnsafeAccessor`);
+    - Eligibility precedence for a property: accessible members first; else explicit-interface + matching Map\* setting → interface cast; else `[MappaAllowInaccessible*]` → `UnsafeAccessor`. Explicit interface properties are never claimed by AllowInaccessible / UnsafeAccessor;
+    - When both Map\* explicit-interface settings and `[MappaAllowInaccessible*]` are enabled, ordinary private members use `UnsafeAccessor` while explicit interface properties use interface casts;
     - Get-only `Stack<T>`, `Queue<T>`, `ConcurrentStack<T>`, `ConcurrentQueue<T>`, `ConcurrentBag<T>`, and `BlockingCollection<T>` properties are filled post-construction using `Push`, `Enqueue`, or `Add` respectively;
     - The following attributes on the map **method** can override mapping behaviour (see [`Documentation/mappa-attributes.md`](mappa-attributes.md) for details):
         - `[MappaUseProperty]`
@@ -371,7 +373,7 @@ The constructor strategy has four sub-strategies, tried in order:
         - `[MappaInvokeMethod]` — optionally accepts `SourcePropertyName` to select the source property passed to the invoked method
         - `[MappaAssignToContext]` *(post-construction context writes; requires the caller to provide `MappaContext`)*
     - Those attributes accept flat names or [dot-separated nested property paths](#nested-property-paths) *(except the inaccessible-member attributes, which accept flat names only)*;
-    - When inaccessible setters or unsafe-accessor constructors are used, property assignments that would normally use an object initializer are emitted **after** construction; helpers are generated in a file-local `__MappaInaccessibleAccessors` type in the mapper's namespace;
+    - When inaccessible setters or unsafe-accessor constructors are used, property assignments that would normally use an object initializer are emitted **after** construction; helpers are generated in a file-local `__MappaInaccessibleAccessors` type in the mapper's namespace; explicit-interface target writes also emit after construction (via cast);
     - When `MappaSettings.ProtobufOptional` is enabled, optional protobuf members are handled via companion `Has*` properties on the source and target types.
 
 ### Nested property paths
