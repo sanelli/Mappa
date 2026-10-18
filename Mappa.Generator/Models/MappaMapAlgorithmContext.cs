@@ -2,7 +2,10 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using System.Collections.Immutable;
+
 using Mappa.Generator.Exceptions;
+using Mappa.Generator.Helpers;
 
 using Microsoft.CodeAnalysis;
 
@@ -16,6 +19,8 @@ internal abstract class MappaMapAlgorithmContext
 {
     private readonly Stack<(ITypeSymbol TargetType, ITypeSymbol SourceType)> inFlightTypePairs = new();
     private short currentDepth = -1;
+    private int usabilityProbeDepth;
+    private PreferredInterfaceSession? preferredInterfaceSession;
 
     /// <summary>
     /// Gets the parent symbol.
@@ -63,6 +68,12 @@ internal abstract class MappaMapAlgorithmContext
     /// <see cref="IMappaUserSettings.MaxCompileTimeDepth"/> is greater than zero.
     /// </summary>
     internal short CurrentDepth => this.GetRootAlgorithmContext().currentDepth;
+
+    /// <summary>
+    /// Gets a value indicating whether preferred-interface usability probing is active.
+    /// While active, strategy-discovery diagnostics must not be reported.
+    /// </summary>
+    internal bool IsUsabilityProbeActive => this.GetRootAlgorithmContext().usabilityProbeDepth > 0;
 
     /// <summary>
     /// Gets a value indicating whether the nullable flag
@@ -135,6 +146,17 @@ internal abstract class MappaMapAlgorithmContext
         var root = this.GetRootAlgorithmContext();
         root.currentDepth++;
         return new CompileTimeDepthScope(root);
+    }
+
+    /// <summary>
+    /// Marks nested strategy discovery as a preferred-interface usability probe so diagnostics are suppressed.
+    /// </summary>
+    /// <returns>An <see cref="IDisposable"/> that ends the probe when disposed.</returns>
+    internal IDisposable EnterUsabilityProbe()
+    {
+        var root = this.GetRootAlgorithmContext();
+        root.usabilityProbeDepth++;
+        return new UsabilityProbeScope(root);
     }
 
     /// <summary>
@@ -216,6 +238,48 @@ internal abstract class MappaMapAlgorithmContext
         return false;
     }
 
+    /// <summary>
+    /// Gets or creates the preferred-interface session for the root map method.
+    /// </summary>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The session.</returns>
+    internal PreferredInterfaceSession GetOrCreatePreferredInterfaceSession(Compilation compilation)
+    {
+        var root = this.GetRootAlgorithmContext();
+        if (root.preferredInterfaceSession is not null)
+        {
+            return root.preferredInterfaceSession;
+        }
+
+        var session = new PreferredInterfaceSession();
+        var mapMethod = root.GetMapMethod();
+        var attributes = mapMethod.MethodSymbol?.GetAttributes() ?? ImmutableArray<AttributeData>.Empty;
+        session.Initialize(attributes, compilation);
+        root.preferredInterfaceSession = session;
+        return session;
+    }
+
+    /// <summary>
+    /// Validates preferred-interface attributes on the root map method.
+    /// </summary>
+    /// <param name="compilation">The compilation.</param>
+    internal void ValidatePreferredInterfaceAttributes(Compilation compilation)
+    {
+        var root = this.GetRootAlgorithmContext();
+        var mapMethod = root.GetMapMethod();
+        var session = root.GetOrCreatePreferredInterfaceSession(compilation);
+        session.ValidateAttributes(root, compilation, mapMethod.MethodName);
+    }
+
+    /// <summary>
+    /// Reports not-needed preferred-interface attribute warnings when mapping succeeded.
+    /// </summary>
+    internal void ReportPreferredInterfaceNotNeededWarnings()
+    {
+        var root = this.GetRootAlgorithmContext();
+        root.preferredInterfaceSession?.ReportNotNeededWarnings(root);
+    }
+
     private MappaMapAlgorithmContext GetRootAlgorithmContext()
     {
         MappaMapAlgorithmContext context = this;
@@ -230,6 +294,11 @@ internal abstract class MappaMapAlgorithmContext
     private void DecreaseCompileTimeDepth()
     {
         this.currentDepth--;
+    }
+
+    private void DecreaseUsabilityProbeDepth()
+    {
+        this.usabilityProbeDepth--;
     }
 
     private void PopMappingTypePair()
@@ -256,6 +325,29 @@ internal abstract class MappaMapAlgorithmContext
             }
 
             this.context.DecreaseCompileTimeDepth();
+            this.disposed = true;
+        }
+    }
+
+    private sealed class UsabilityProbeScope
+        : IDisposable
+    {
+        private readonly MappaMapAlgorithmContext context;
+        private bool disposed;
+
+        public UsabilityProbeScope(MappaMapAlgorithmContext context)
+        {
+            this.context = context;
+        }
+
+        public void Dispose()
+        {
+            if (this.disposed)
+            {
+                return;
+            }
+
+            this.context.DecreaseUsabilityProbeDepth();
             this.disposed = true;
         }
     }

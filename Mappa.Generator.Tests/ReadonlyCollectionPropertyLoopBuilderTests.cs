@@ -2,7 +2,10 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using System.Reflection;
+
 using Mappa.Generator.Builders.Strategies;
+using Mappa.Generator.Exceptions;
 using Mappa.Generator.Extensions;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
@@ -140,9 +143,181 @@ public sealed class ReadonlyCollectionPropertyLoopBuilderTests
         code.Should().Contain("< __mappa_tmp_1.Length");
     }
 
+    /// <summary>
+    /// Preferred source interface forces an explicit cast before <c>foreach</c>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void BuildSourceCastsToPreferredExplicitSourceInterfaceBeforeForeach()
+    {
+        const string source = """
+                              using System.Collections;
+                              using System.Collections.Generic;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public sealed class DualEnumerable : IEnumerable<int>, IEnumerable<string>
+                              {
+                                  public IEnumerator<int> GetEnumerator()
+                                  {
+                                      yield return 1;
+                                  }
+
+                                  IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
+
+                                  IEnumerator<string> IEnumerable<string>.GetEnumerator()
+                                  {
+                                      yield return "a";
+                                  }
+                              }
+
+                              public class Source
+                              {
+                                  public DualEnumerable Items { get; }
+                              }
+
+                              public class Target
+                              {
+                                  public List<string> Items { get; }
+                              }
+                              """;
+
+        var code = BuildLoop(
+            source,
+            ReadonlyCollectionPropertyLoopBuilder.InsertionMethod.Add,
+            preferEnumerableOfString: true);
+
+        code.Should().Contain("System.Collections.Generic.IEnumerable<string>");
+        code.Should().Contain("foreach (string __mappa_tmp_");
+    }
+
+    /// <summary>
+    /// Preferred implicit source interface does not emit a cast before <c>foreach</c>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void BuildSourceDoesNotCastWhenPreferredSourceInterfaceIsImplicit()
+    {
+        const string source = """
+                              using System.Collections;
+                              using System.Collections.Generic;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public sealed class DualEnumerable : IEnumerable<int>, IEnumerable<string>
+                              {
+                                  public IEnumerator<int> GetEnumerator()
+                                  {
+                                      yield return 1;
+                                  }
+
+                                  IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
+
+                                  IEnumerator<string> IEnumerable<string>.GetEnumerator()
+                                  {
+                                      yield return "a";
+                                  }
+                              }
+
+                              public class Source
+                              {
+                                  public DualEnumerable Items { get; }
+                              }
+
+                              public class Target
+                              {
+                                  public List<int> Items { get; }
+                              }
+                              """;
+
+        var code = BuildLoop(
+            source,
+            ReadonlyCollectionPropertyLoopBuilder.InsertionMethod.Add,
+            preferEnumerableOfInt: true);
+
+        code.Should().Contain("foreach (int __mappa_tmp_");
+        code.Should().NotContain("IEnumerable<int> __mappa_tmp_");
+    }
+
+    /// <summary>
+    /// <see cref="ReadonlyCollectionPropertyLoopBuilder"/> rejects unsupported length sources.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetLengthPropertyNameThrowsForUnsupportedSourceType()
+    {
+        var compilation = BuildCompilation("namespace Mappa.Generator.Tests.UnitTests.SourceCode { internal class Placeholder { } }");
+        var intType = compilation.GetSpecialType(SpecialType.System_Int32);
+        var method = typeof(ReadonlyCollectionPropertyLoopBuilder).GetMethod(
+            "GetLengthPropertyName",
+            BindingFlags.NonPublic | BindingFlags.Static)
+            ?? throw new InvalidOperationException("GetLengthPropertyName was not found.");
+
+        var act = () => method.Invoke(null, [intType]);
+
+        act.Should().Throw<TargetInvocationException>()
+            .WithInnerException<MappaGeneratorException>();
+    }
+
+    /// <summary>
+    /// <see cref="ReadonlyCollectionPropertyLoopBuilder"/> rejects unexpected insertion methods.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void AppendElementThrowsForUnexpectedInsertionMethod()
+    {
+        const string source = """
+                              using System.Collections.Generic;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source
+                              {
+                                  public IEnumerable<int> Items { get; }
+                              }
+
+                              public class Target
+                              {
+                                  public List<int> Items { get; }
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var targetType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Target")
+            ?? throw new InvalidOperationException("Target was not found.");
+        var targetProperty = targetType.GetMembers("Items").OfType<IPropertySymbol>().Single();
+        var builderContext = new MappaBuilderContext(compilation);
+        var stringBuilder = new PrettyCode.StringBuilder();
+        var method = typeof(ReadonlyCollectionPropertyLoopBuilder).GetMethod(
+            "AppendElement",
+            BindingFlags.NonPublic | BindingFlags.Static)
+            ?? throw new InvalidOperationException("AppendElement was not found.");
+        var invalidInsertion = (ReadonlyCollectionPropertyLoopBuilder.InsertionMethod)999;
+
+        using (builderContext.PushCurrentCompositeTypeTargetName("target"))
+        {
+            var act = () => method.Invoke(
+                null,
+                [
+                    stringBuilder,
+                    builderContext,
+                    targetProperty.Type,
+                    targetProperty,
+                    "element",
+                    invalidInsertion,
+                    null,
+                ]);
+
+            act.Should().Throw<TargetInvocationException>()
+                .WithInnerException<MappaGeneratorException>();
+        }
+    }
+
     private static string BuildLoop(
         string source,
-        ReadonlyCollectionPropertyLoopBuilder.InsertionMethod insertionMethod)
+        ReadonlyCollectionPropertyLoopBuilder.InsertionMethod insertionMethod,
+        bool preferEnumerableOfString = false,
+        bool preferEnumerableOfInt = false)
     {
         var compilation = BuildCompilation(source);
         var sourceType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Source");
@@ -156,9 +331,28 @@ public sealed class ReadonlyCollectionPropertyLoopBuilderTests
         var targetProperty = targetType.GetMembers("Items").OfType<IPropertySymbol>().Single();
         var sourceCollectionType = sourceProperty.Type;
         var targetCollectionType = targetProperty.Type;
-        var elementStrategy = new IdentityMapStrategy(
-            targetCollectionType.GetElementType(),
-            sourceCollectionType.GetElementType());
+        INamedTypeSymbol? preferredSourceInterface = null;
+        INamedTypeSymbol? preferredTargetInterface = null;
+        if (preferEnumerableOfString)
+        {
+            preferredSourceInterface = compilation.GetSpecialType(SpecialType.System_Collections_Generic_IEnumerable_T)
+                .Construct(compilation.GetSpecialType(SpecialType.System_String));
+            preferredTargetInterface = preferredSourceInterface;
+        }
+        else if (preferEnumerableOfInt)
+        {
+            preferredSourceInterface = compilation.GetSpecialType(SpecialType.System_Collections_Generic_IEnumerable_T)
+                .Construct(compilation.GetSpecialType(SpecialType.System_Int32));
+            preferredTargetInterface = preferredSourceInterface;
+        }
+
+        var sourceElementType = preferredSourceInterface is { TypeArguments.Length: 1 }
+            ? preferredSourceInterface.TypeArguments[0]
+            : sourceCollectionType.GetElementType();
+        var targetElementType = preferredTargetInterface is { TypeArguments.Length: 1 }
+            ? preferredTargetInterface.TypeArguments[0]
+            : targetCollectionType.GetElementType();
+        var elementStrategy = new IdentityMapStrategy(targetElementType, sourceElementType);
         var builderContext = new MappaBuilderContext(compilation);
         var globalOptions = new MappaGlobalOptions(
             TestAnalyzerConfigOptionsProvider.FromEditorConfig("root = true"),
@@ -175,7 +369,9 @@ public sealed class ReadonlyCollectionPropertyLoopBuilderTests
                 insertionMethod,
                 sourceTemporary,
                 builderContext,
-                globalOptions);
+                globalOptions,
+                preferredSourceInterface,
+                preferredTargetInterface);
 
             return code;
         }

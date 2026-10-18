@@ -157,18 +157,27 @@ internal sealed class ContainerMapStrategyDetector
         mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
 
         // 01. Dictionary -> Dictionary strategy.
-        if (this.CanMapDictionaryToDictionary(out var dictionaryKeyStrategy, out var dictionaryValueStrategy))
+        if (this.CanMapDictionaryToDictionary(
+                out var dictionaryKeyStrategy,
+                out var dictionaryValueStrategy,
+                out var preferredDictionarySourceInterface,
+                out var preferredDictionaryTargetInterface))
         {
             mapStrategy = new DictionaryToDictionaryMapStrategy(
                 this.context.TargetType,
                 this.context.SourceType,
                 dictionaryKeyStrategy,
                 dictionaryValueStrategy,
-                DictionaryAssignmentSettingHelper.GetEffective(this.context.MappaUserSettings.DictionaryAssignment));
+                DictionaryAssignmentSettingHelper.GetEffective(this.context.MappaUserSettings.DictionaryAssignment),
+                preferredDictionarySourceInterface,
+                preferredDictionaryTargetInterface);
         }
 
         // 02. Collection -> Collection strategy.
-        else if (this.CanMapCollectionToCollection(out var elementStrategy))
+        else if (this.CanMapCollectionToCollection(
+                     out var elementStrategy,
+                     out var preferredCollectionSourceInterface,
+                     out var preferredCollectionTargetInterface))
         {
             mapStrategy = new CollectionToCollectionMapStrategy(
                 this.context.TargetType,
@@ -178,7 +187,9 @@ internal sealed class ContainerMapStrategyDetector
                 this.context.MappaUserSettings.FastCollections,
                 this.context.MappaUserSettings.ContainerCapacityConstructors,
                 this.context.MappaUserSettings.PreventEnumerableCount,
-                GetEffectiveEnumerableConcreteType(this.context.MappaUserSettings.EnumerableConcreteType));
+                GetEffectiveEnumerableConcreteType(this.context.MappaUserSettings.EnumerableConcreteType),
+                preferredCollectionSourceInterface,
+                preferredCollectionTargetInterface);
         }
 
         return mapStrategy is not NoMapStrategy;
@@ -202,10 +213,16 @@ internal sealed class ContainerMapStrategyDetector
     private static bool IsSupportedCollectionTargetType(ITypeSymbol type, Compilation compilation)
         => MatchesAnyPredicate(type, compilation, SupportedCollectionTargetTypePredicates);
 
-    private bool CanMapDictionaryToDictionary(out MapStrategy keyStrategy, out MapStrategy valueStrategy)
+    private bool CanMapDictionaryToDictionary(
+        out MapStrategy keyStrategy,
+        out MapStrategy valueStrategy,
+        out INamedTypeSymbol? preferredSourceInterface,
+        out INamedTypeSymbol? preferredTargetInterface)
     {
         keyStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
         valueStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
+        preferredSourceInterface = null;
+        preferredTargetInterface = null;
 
         if (!this.IsDictionaryMappingSourceSideEligible())
         {
@@ -219,9 +236,13 @@ internal sealed class ContainerMapStrategyDetector
         }
 
         return this.context.TryGetKeyAndValueStrategy(
+            this.context.TargetType,
+            this.context.SourceType,
             this.compilation,
             out keyStrategy,
             out valueStrategy,
+            out preferredSourceInterface,
+            out preferredTargetInterface,
             this.cancellationToken);
     }
 
@@ -251,9 +272,14 @@ internal sealed class ContainerMapStrategyDetector
         return this.context.TargetType.HasSymbolAccessibleZeroParametersConstructor(this.compilation, this.context.MapMethod?.MethodSymbol);
     }
 
-    private bool CanMapCollectionToCollection(out MapStrategy elementStrategy)
+    private bool CanMapCollectionToCollection(
+        out MapStrategy elementStrategy,
+        out INamedTypeSymbol? preferredSourceInterface,
+        out INamedTypeSymbol? preferredTargetInterface)
     {
         elementStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
+        preferredSourceInterface = null;
+        preferredTargetInterface = null;
 
         if (this.RejectQueryableCollectionToCollectionMapping())
         {
@@ -276,8 +302,12 @@ internal sealed class ContainerMapStrategyDetector
         }
 
         return this.context.TryGetElementStrategy(
+            this.context.TargetType,
+            this.context.SourceType,
             this.compilation,
             out elementStrategy,
+            out preferredSourceInterface,
+            out preferredTargetInterface,
             this.cancellationToken);
     }
 

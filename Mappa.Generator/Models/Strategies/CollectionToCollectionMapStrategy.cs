@@ -19,6 +19,8 @@ namespace Mappa.Generator.Models.Strategies;
 /// <param name="containerCapacityConstructors">Enable or disable support for custom collection with capacity constructor.</param>
 /// <param name="preventEnumerableCount">Enable or disable avoiding <c>Enumerable.Count</c> when mapping to fixed-size collection targets.</param>
 /// <param name="enumerableConcreteType">Defines the concrete type used for sequence-like collection interface targets.</param>
+/// <param name="preferredSourceInterface">The resolved preferred source interface, if any.</param>
+/// <param name="preferredTargetInterface">The resolved preferred target interface, if any.</param>
 internal sealed class CollectionToCollectionMapStrategy(
     ITypeSymbol targetType,
     ITypeSymbol sourceType,
@@ -27,7 +29,9 @@ internal sealed class CollectionToCollectionMapStrategy(
     BooleanSetting fastCollections,
     BooleanSetting containerCapacityConstructors,
     BooleanSetting preventEnumerableCount,
-    EnumerableConcreteTypeSetting enumerableConcreteType)
+    EnumerableConcreteTypeSetting enumerableConcreteType,
+    INamedTypeSymbol? preferredSourceInterface = null,
+    INamedTypeSymbol? preferredTargetInterface = null)
         : MapStrategy(targetType, sourceType)
 {
     /// <summary>
@@ -61,6 +65,16 @@ internal sealed class CollectionToCollectionMapStrategy(
     /// Gets the concrete type used for sequence-like collection interface targets.
     /// </summary>
     internal EnumerableConcreteTypeSetting EnumerableConcreteType { get; } = enumerableConcreteType;
+
+    /// <summary>
+    /// Gets the resolved preferred source interface, if any.
+    /// </summary>
+    internal INamedTypeSymbol? PreferredSourceInterface { get; } = preferredSourceInterface;
+
+    /// <summary>
+    /// Gets the resolved preferred target interface, if any.
+    /// </summary>
+    internal INamedTypeSymbol? PreferredTargetInterface { get; } = preferredTargetInterface;
 
     /// <inheritdoc/>
     internal override IMappaStrategyBuilder GetBuilder() => new CollectionToCollectionMapStrategyBuilder(this);

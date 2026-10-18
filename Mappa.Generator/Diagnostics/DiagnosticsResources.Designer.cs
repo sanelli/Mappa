@@ -512,5 +512,47 @@ namespace Mappa.Generator.Diagnostics {
                 return ResourceManager.GetString("MappingCycleAutoBroken", resourceCulture);
             }
         }
+
+        internal static string PreferredInterfaceCannotBeUsed {
+            get {
+                return ResourceManager.GetString("PreferredInterfaceCannotBeUsed", resourceCulture);
+            }
+        }
+
+        internal static string PreferredInterfaceImplementingTypeNotConcrete {
+            get {
+                return ResourceManager.GetString("PreferredInterfaceImplementingTypeNotConcrete", resourceCulture);
+            }
+        }
+
+        internal static string PreferredInterfaceNotImplemented {
+            get {
+                return ResourceManager.GetString("PreferredInterfaceNotImplemented", resourceCulture);
+            }
+        }
+
+        internal static string PreferredInterfaceAttributeNotNeeded {
+            get {
+                return ResourceManager.GetString("PreferredInterfaceAttributeNotNeeded", resourceCulture);
+            }
+        }
+
+        internal static string DuplicatePreferredInterfaceAttribute {
+            get {
+                return ResourceManager.GetString("DuplicatePreferredInterfaceAttribute", resourceCulture);
+            }
+        }
+
+        internal static string PreferredInterfaceNotClosedGenericInterface {
+            get {
+                return ResourceManager.GetString("PreferredInterfaceNotClosedGenericInterface", resourceCulture);
+            }
+        }
+
+        internal static string PreferredInterfaceImplementingTypeInvalid {
+            get {
+                return ResourceManager.GetString("PreferredInterfaceImplementingTypeInvalid", resourceCulture);
+            }
+        }
     }
 }

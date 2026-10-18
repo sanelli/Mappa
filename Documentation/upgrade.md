@@ -1,5 +1,16 @@
 # Upgrade guide
 
+## 10.2.0 → 10.3.0
+
+### Breaking changes
+
+- **Deterministic selection among multiple collection/dictionary interface implementations**
+  - When a type implements more than one closed version of the same open interface family (for example both `IEnumerable<int>` and `IEnumerable<string>`), Mappa no longer uses an unspecified first-match walk of `AllInterfaces` for element / key / value typing.
+  - Selection order is: matching `[MappaSourcePreferredInterfaceImplementation]` / `[MappaTargetPreferredInterfaceImplementation]` attribute (when usable) → unique usable **implicit** implementation → unique usable **explicit** implementation → fall-through.
+  - Generated `foreach` casts, `Add` / indexer access, and nested get-only collection property population follow the resolved closed interface.
+  - Mappings that previously depended on incidental first-match order may change which element or key/value types (and which interface cast) are used. Add an explicit preference attribute when you need a specific closed interface.
+  - See [Preferred interface implementations](./mappa-attributes.md#preferred-interface-implementations), [algorithm — container strategy](./mappa-generator-algorithm.md#7-container-strategy), and diagnostics **MP00079–MP00085**.
+
 ## 10.1.0 → 10.2.0
 
 ### Breaking changes

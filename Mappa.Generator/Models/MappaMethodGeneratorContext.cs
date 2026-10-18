@@ -72,7 +72,14 @@ internal sealed class MappaMethodGeneratorContext
 
     /// <inheritdoc/>
     internal override void ReportDiagnostic(Diagnostic diagnostic)
-        => this.ClassContext.ReportDiagnostic(diagnostic);
+    {
+        if (this.IsUsabilityProbeActive)
+        {
+            return;
+        }
+
+        this.ClassContext.ReportDiagnostic(diagnostic);
+    }
 
     /// <inheritdoc/>
     internal override Location? GetLocation()

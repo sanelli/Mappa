@@ -1352,6 +1352,112 @@ internal static class MappaDiagnostics
             targetType.ToDisplayString(),
             syntheticMethodName);
 
+    /// <summary>
+    /// Diagnostic to report that a preferred interface from an attribute cannot be used.
+    /// </summary>
+    /// <param name="location">The attribute location.</param>
+    /// <param name="preferredInterface">The preferred interface.</param>
+    /// <param name="implementingType">The implementing type.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic PreferredInterfaceCannotBeUsed(
+        Location? location,
+        ITypeSymbol preferredInterface,
+        ITypeSymbol implementingType)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.PreferredInterfaceCannotBeUsed,
+            location,
+            preferredInterface.ToDisplayString(),
+            implementingType.ToDisplayString());
+
+    /// <summary>
+    /// Diagnostic to report that the implementing type argument is not concrete.
+    /// </summary>
+    /// <param name="location">The attribute location.</param>
+    /// <param name="implementingType">The invalid implementing type display string.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic PreferredInterfaceImplementingTypeNotConcrete(
+        Location? location,
+        string implementingType)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.PreferredInterfaceImplementingTypeNotConcrete,
+            location,
+            implementingType);
+
+    /// <summary>
+    /// Diagnostic to report that the preferred interface is not implemented.
+    /// </summary>
+    /// <param name="location">The attribute location.</param>
+    /// <param name="implementingType">The implementing type.</param>
+    /// <param name="preferredInterface">The preferred interface.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic PreferredInterfaceNotImplemented(
+        Location? location,
+        ITypeSymbol implementingType,
+        ITypeSymbol preferredInterface)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.PreferredInterfaceNotImplemented,
+            location,
+            implementingType.ToDisplayString(),
+            preferredInterface.ToDisplayString());
+
+    /// <summary>
+    /// Diagnostic to report that a preferred-interface attribute was not needed.
+    /// </summary>
+    /// <param name="location">The attribute location.</param>
+    /// <param name="implementingType">The implementing type.</param>
+    /// <param name="preferredInterface">The preferred interface.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic PreferredInterfaceAttributeNotNeeded(
+        Location? location,
+        ITypeSymbol implementingType,
+        ITypeSymbol preferredInterface)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.PreferredInterfaceAttributeNotNeeded,
+            location,
+            implementingType.ToDisplayString(),
+            preferredInterface.ToDisplayString());
+
+    /// <summary>
+    /// Diagnostic to report duplicate preferred-interface attributes.
+    /// </summary>
+    /// <param name="location">The attribute location.</param>
+    /// <param name="implementingType">The implementing type.</param>
+    /// <param name="methodName">The map method name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic DuplicatePreferredInterfaceAttribute(
+        Location? location,
+        ITypeSymbol implementingType,
+        string methodName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.DuplicatePreferredInterfaceAttribute,
+            location,
+            implementingType.ToDisplayString(),
+            methodName);
+
+    /// <summary>
+    /// Diagnostic to report that the preferred interface is not a closed generic interface.
+    /// </summary>
+    /// <param name="location">The attribute location.</param>
+    /// <param name="preferredInterface">The invalid preferred interface display string.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic PreferredInterfaceNotClosedGenericInterface(
+        Location? location,
+        string preferredInterface)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.PreferredInterfaceNotClosedGenericInterface,
+            location,
+            preferredInterface);
+
+    /// <summary>
+    /// Diagnostic to report that the implementing type argument is missing or invalid.
+    /// </summary>
+    /// <param name="location">The attribute location.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic PreferredInterfaceImplementingTypeInvalid(Location? location)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.PreferredInterfaceImplementingTypeInvalid,
+            location);
+
     private static Location? GetSyntaxLocation(SyntaxNode? syntaxNode)
         => syntaxNode?.GetLocation();
 }

@@ -245,4 +245,25 @@
     <data name="MappingCycleAutoBroken" xml:space="preserve">
         <value>A compile-time mapping cycle from '{0}' to '{1}' was automatically broken by synthesizing private map method '{2}'.</value>
     </data>
+    <data name="PreferredInterfaceCannotBeUsed" xml:space="preserve">
+        <value>The preferred interface '{0}' for type '{1}' cannot be used for the mapping.</value>
+    </data>
+    <data name="PreferredInterfaceImplementingTypeNotConcrete" xml:space="preserve">
+        <value>The preferred-interface attribute first argument '{0}' must be a concrete implementing type, not an open generic interface family.</value>
+    </data>
+    <data name="PreferredInterfaceNotImplemented" xml:space="preserve">
+        <value>Type '{0}' does not implement the preferred interface '{1}'.</value>
+    </data>
+    <data name="PreferredInterfaceAttributeNotNeeded" xml:space="preserve">
+        <value>The preferred-interface attribute for type '{0}' and interface '{1}' is not needed because a unique usable candidate already exists.</value>
+    </data>
+    <data name="DuplicatePreferredInterfaceAttribute" xml:space="preserve">
+        <value>Multiple preferred-interface attributes target type '{0}' for the same open interface family on the same side of method '{1}'.</value>
+    </data>
+    <data name="PreferredInterfaceNotClosedGenericInterface" xml:space="preserve">
+        <value>The preferred-interface attribute second argument '{0}' must be a closed generic interface type.</value>
+    </data>
+    <data name="PreferredInterfaceImplementingTypeInvalid" xml:space="preserve">
+        <value>The preferred-interface attribute first argument is missing or invalid.</value>
+    </data>
 </root>

@@ -450,6 +450,29 @@ public sealed partial class BreakCompileTimeCyclesMapper
 
 See also: [ReferenceHandlingMapper.cs](../Mappa.Samples/ReferenceHandlingMapper.cs), [BreakCompileTimeCyclesMapper.cs](../Mappa.Samples/BreakCompileTimeCyclesMapper.cs), [algorithm — reference handling](./mappa-generator-algorithm.md#reference-handling-and-compile-time-guards), [error codes](./error-codes.md).
 
+#### Preferred collection/dictionary interfaces
+
+When a type implements more than one closed version of the same open interface (for example both `IEnumerable<int>` and `IEnumerable<string>`), Mappa picks which closed interface to use. Without attributes, it prefers the unique usable **implicit** implementation, then the unique usable **explicit** one. Use method-level preference attributes to force a specific closed interface:
+
+```csharp
+[Mappa]
+public sealed partial class PreferredInterfaceMapper
+{
+    // Unique usable implicit IEnumerable<int>
+    public partial List<int> MapImplicitInt(DualEnumerable input);
+
+    // Force explicit IEnumerable<string>
+    [MappaSourcePreferredInterfaceImplementation(typeof(DualEnumerable), typeof(IEnumerable<string>))]
+    public partial List<string> MapExplicitString(DualEnumerable input);
+
+    // Force string side on a multi-interface target (otherwise unique usable implicit is IEnumerable<int>)
+    [MappaTargetPreferredInterfaceImplementation(typeof(DualCollection), typeof(IEnumerable<string>))]
+    public partial DualCollection MapToDualCollectionStrings(List<int> input);
+}
+```
+
+See also: [PreferredInterfaceMapper.cs](../Mappa.Samples/PreferredInterfaceMapper.cs), [attributes — preferred interfaces](./mappa-attributes.md#preferred-interface-implementations), [algorithm — container strategy](./mappa-generator-algorithm.md#7-container-strategy), [upgrade guide](./upgrade.md).
+
 #### Enumerable concrete type settings
 
 `EnumerableConcreteType` controls the concrete buffer used when a collection mapping targets a sequence-like interface. The default is `List` (`List<T>` with `Add`). Set `Array` to allocate `T[]` instead (indexer insertion). Concrete `List<T>` return types always remain lists. The setting applies to interface targets such as `IEnumerable<T>`, `IList<T>`, `ICollection<T>`, `IReadOnlyList<T>`, and `IReadOnlyCollection<T>`:

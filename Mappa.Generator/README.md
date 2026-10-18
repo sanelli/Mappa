@@ -249,7 +249,8 @@ When `ReferenceReusing` is enabled and the map method declares `MappaContext`, g
     - When `MappaSettings.EnumerableConcreteType` is `Array` (or the corresponding `.editorconfig` setting), sequence-like interface targets such as `IEnumerable<T>`, `IList<T>`, `ICollection<T>`, `IReadOnlyList<T>`, and `IReadOnlyCollection<T>` use a `T[]` buffer instead of `List<T>`; concrete `List<T>` targets are unchanged;
     - When `MappaSettings.DictionaryAssignment` is `Add` (or the corresponding `.editorconfig` setting), dictionary-to-dictionary mappings insert entries with `IDictionary<TKey, TValue>.Add(key, value)` instead of the indexer; explicit `IDictionary<K, V>` implementations use a typed interface temporary when required; the default is indexer assignment;
     - Explicit interface implementation is supported;
-    - Types with an empty constructor are supported if they are derived from any of the supported interfaces or classes.
+    - Types with an empty constructor are supported if they are derived from any of the supported interfaces or classes;
+    - When a type implements multiple closed versions of the same collection/dictionary interface family, preferred-interface resolution (attribute → unique usable implicit → unique usable explicit) selects element/key/value types and codegen access; see [Documentation/mappa-attributes.md — Preferred interface implementations](../Documentation/mappa-attributes.md#preferred-interface-implementations) and diagnostics **MP00079–MP00085**.
 
 ### 8. Tuple strategy
 

@@ -19,6 +19,8 @@ This is the list of attributes provided:
 - `MappaBeforeMap`: Invokes a named hook immediately before the generated root mapping body; applies to mapper classes and mapping methods;
 - `MappaAfterMap`: Invokes a named hook immediately after the generated root mapping body and before returning the target; applies to mapper classes and mapping methods;
 - `MappaObjectFactory`: Forces construction of a target type via a named factory method instead of `new`; applies to mapper classes and mapping methods;
+- `MappaSourcePreferredInterfaceImplementation`: When a source type implements multiple closed versions of the same collection/dictionary interface family, forces which closed interface to use (method-only; exact match on implementing type and interface family); also available as `MappaSourcePreferredInterfaceImplementation<TImplementingType, TClosedInterface>`;
+- `MappaTargetPreferredInterfaceImplementation`: Same preference for concrete multi-interface **target** types (method-only); mainly needed when element/key/value types and `Add`/indexer access must be discovered via those interfaces; also available as `MappaTargetPreferredInterfaceImplementation<TImplementingType, TClosedInterface>`;
 - `MappaTypeMapping`: When mapping structured types or interfaces, allows defining the target type depending on the source type; also available as `MappaTypeMapping<TTarget, TSource>`;
 - `MappaTypeMappingDefault`: Describes the default behaviour for polymorphic methods defined via `MappaTypeMapping`; also available as `MappaTypeMappingDefault<TDefault>` for `MapSourceType` with an explicit target type.
 - `MappaMapEnumMember`: Configures explicit enum↔integral, enum↔string, or enum↔enum member pairings;

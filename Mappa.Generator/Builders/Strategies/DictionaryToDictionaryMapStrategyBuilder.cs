@@ -73,7 +73,8 @@ internal sealed class DictionaryToDictionaryMapStrategyBuilder
                 this.strategy.DictionaryAssignment,
                 dictionaryTemporary,
                 targetKeyTemporary,
-                targetValueTemporary);
+                targetValueTemporary,
+                this.strategy.PreferredTargetInterface);
         }
 
         if (this.strategy.TargetType.IsReadOnlyDictionary(context.Compilation))
