@@ -852,4 +852,173 @@ public sealed class ExplicitInterfacePropertiesIntegrationTests
                         });
                 });
     }
+
+    /// <summary>
+    /// Does not map an explicit interface target property when <c>MapTargetExplicitInterfaceProperties</c> is disabled
+    /// (getter-backed fill is also rejected for explicit interface getters).
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task DoesNotMapExplicitInterfaceTargetWhenMapTargetSettingDisabled()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public interface IHasValue
+                                  {
+                                      int Value { get; set; }
+                                  }
+
+                                  public class Source
+                                  {
+                                      public int Id { get; set; }
+
+                                      public int Value { get; set; }
+                                  }
+
+                                  public class Target : IHasValue
+                                  {
+                                      public int Id { get; set; }
+
+                                      int IHasValue.Value { get; set; }
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial Target Map(Source input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Unmapped explicit-interface targets are not reported when not writable (IsReportableEmptyCtorUnmappedProperty).
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                TargetTypeName,
+                NullableAnnotation.NotAnnotated,
+                SourceTypeName,
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(3)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(int).ToString(),
+                                "__mappa_tmp_1",
+                                initializationAssertions => initializationAssertions.BeMemberAccessExpressionSyntax("input.Id"));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                TargetTypeName,
+                                "__mappa_tmp_2",
+                                initializationAssertions =>
+                                {
+                                    initializationAssertions.BeObjectCreationExpressionSyntax(
+                                        TargetTypeName,
+                                        ("Id", initAssertions => initAssertions.BeIdentifierNameSyntax("__mappa_tmp_1")));
+                                });
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_2"));
+                        });
+                });
+    }
+
+    /// <summary>
+    /// Does not map a write-only target property via getter-backed fill when the setter is inaccessible.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task DoesNotMapWriteOnlyInaccessibleTargetPropertyViaGetterPath()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class Source
+                                  {
+                                      public int Id { get; set; }
+
+                                      public int Value { get; set; }
+                                  }
+
+                                  public class Target
+                                  {
+                                      private int valueField;
+
+                                      public int Id { get; set; }
+
+                                      public int Value
+                                      {
+                                          private set => this.valueField = value;
+                                      }
+                                  }
+
+                                  [Mappa]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial Target Map(Source input);
+                                  }
+                                  #nullable restore
+                                  """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Write-only inaccessible setters are not reportable as unmapped when not writable.
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                TargetTypeName,
+                NullableAnnotation.NotAnnotated,
+                SourceTypeName,
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(3)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                typeof(int).ToString(),
+                                "__mappa_tmp_1",
+                                initializationAssertions => initializationAssertions.BeMemberAccessExpressionSyntax("input.Id"));
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                TargetTypeName,
+                                "__mappa_tmp_2",
+                                initializationAssertions =>
+                                {
+                                    initializationAssertions.BeObjectCreationExpressionSyntax(
+                                        TargetTypeName,
+                                        ("Id", initAssertions => initAssertions.BeIdentifierNameSyntax("__mappa_tmp_1")));
+                                });
+                        })
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                        {
+                            syntaxNodeAssertions.BeReturnStatement(assertion => assertion.BeIdentifierNameSyntax("__mappa_tmp_2"));
+                        });
+                });
+    }
 }
