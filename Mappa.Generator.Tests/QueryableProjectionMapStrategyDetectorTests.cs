@@ -70,6 +70,57 @@ public sealed class QueryableProjectionMapStrategyDetectorTests
     public void TryDetectReturnsFalseWhenElementProjectionIsNotSupported()
     {
         const string source = """
+                              using System.Linq;
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public abstract class Source
+                              {
+                              }
+
+                              public sealed class SourceDog : Source
+                              {
+                                  public int Id { get; set; }
+                              }
+
+                              public abstract class Target
+                              {
+                              }
+
+                              public sealed class TargetDog : Target
+                              {
+                                  public int Id { get; set; }
+                              }
+
+                              [Mappa]
+                              [MappaTypeMapping(typeof(TargetDog), typeof(SourceDog))]
+                              public static partial class Mapper
+                              {
+                                  public static partial IQueryable<Target> ProjectToDto(this IQueryable<Source> query);
+                              }
+                              """;
+
+        var (methodContext, compilation) = CreateMethodContext(source, "ProjectToDto");
+        var detector = new QueryableProjectionMapStrategyDetector(
+            methodContext,
+            compilation,
+            TestContext.Current.CancellationToken);
+
+        var detected = detector.TryDetect(out var mapStrategy);
+
+        detected.Should().BeFalse();
+        mapStrategy.Should().BeOfType<NoMapStrategy>();
+    }
+
+    /// <summary>
+    /// Test the detector accepts nested collection projections.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void TryDetectReturnsTrueWhenNestedCollectionProjectionIsSupported()
+    {
+        const string source = """
                               using System.Collections.Generic;
                               using System.Linq;
                               using Mappa.Attributes;
@@ -113,8 +164,8 @@ public sealed class QueryableProjectionMapStrategyDetectorTests
 
         var detected = detector.TryDetect(out var mapStrategy);
 
-        detected.Should().BeFalse();
-        mapStrategy.Should().BeOfType<NoMapStrategy>();
+        detected.Should().BeTrue();
+        mapStrategy.Should().BeOfType<QueryableProjectionMapStrategy>();
     }
 
     /// <summary>

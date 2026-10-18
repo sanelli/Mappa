@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa;
 using Mappa.Attributes;
 using Mappa.Generator.Extensions;
 using Mappa.Generator.Tests.Abstractions;
@@ -1260,5 +1261,107 @@ public sealed class AttributeDataExtensionsTests
         defaults.Should().HaveCount(1);
         defaults[0].Behavior.Should().Be(MappaMapEnumDefaultBehavior.UseDefaultValue);
         defaults[0].StringDefaultValue.Should().Be("fallback");
+    }
+
+    /// <summary>
+    /// Test <see cref="AttributeDataExtensions.GetMappaProjectionAttribute"/> and
+    /// <see cref="AttributeDataExtensions.IsQueryableProjectionEnabled"/> resolve enablement.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetMappaProjectionAttributeAndIsQueryableProjectionEnabledResolveEnablement()
+    {
+        const string source = """
+                              using System.Linq;
+                              using Mappa;
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Order { public int Id { get; set; } }
+                              public class OrderDto { public int Id { get; set; } }
+
+                              [Mappa]
+                              [MappaProjection(Enabled = BooleanSetting.Disable)]
+                              public static partial class ClassDisabledMapper
+                              {
+                                  public static partial IQueryable<OrderDto> Project(this IQueryable<Order> query);
+
+                                  [MappaProjection(Enabled = BooleanSetting.Enable)]
+                                  public static partial IQueryable<OrderDto> ProjectEnabled(this IQueryable<Order> query);
+                              }
+
+                              [Mappa]
+                              [MappaProjection(Enabled = BooleanSetting.Enable)]
+                              public static partial class ClassEnabledMapper
+                              {
+                                  public static partial IQueryable<OrderDto> Project(this IQueryable<Order> query);
+                              }
+
+                              [Mappa]
+                              public static partial class NoProjectionAttributeMapper
+                              {
+                                  [MappaProjection(Enabled = BooleanSetting.Disable)]
+                                  public static partial IQueryable<OrderDto> ProjectDisabled(this IQueryable<Order> query);
+
+                                  public static partial IQueryable<OrderDto> Project(this IQueryable<Order> query);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+
+        var classDisabled = AttributeDataExtensionsTestHelper.GetTypeAttributes(
+            compilation,
+            $"{AttributeDataExtensionsTestHelper.NamespaceName}.ClassDisabledMapper");
+        var classEnabled = AttributeDataExtensionsTestHelper.GetTypeAttributes(
+            compilation,
+            $"{AttributeDataExtensionsTestHelper.NamespaceName}.ClassEnabledMapper");
+        var noAttributeClass = AttributeDataExtensionsTestHelper.GetTypeAttributes(
+            compilation,
+            $"{AttributeDataExtensionsTestHelper.NamespaceName}.NoProjectionAttributeMapper");
+
+        classDisabled.GetMappaProjectionAttribute(compilation)!.Enabled.Should().Be(BooleanSetting.Disable);
+        classEnabled.GetMappaProjectionAttribute(compilation)!.Enabled.Should().Be(BooleanSetting.Enable);
+        noAttributeClass.GetMappaProjectionAttribute(compilation).Should().BeNull();
+
+        AttributeDataExtensions.IsQueryableProjectionEnabled(
+            AttributeDataExtensionsTestHelper.GetMethodAttributes(
+                compilation,
+                $"{AttributeDataExtensionsTestHelper.NamespaceName}.ClassDisabledMapper",
+                "Project"),
+            classDisabled,
+            compilation).Should().BeFalse();
+
+        AttributeDataExtensions.IsQueryableProjectionEnabled(
+            AttributeDataExtensionsTestHelper.GetMethodAttributes(
+                compilation,
+                $"{AttributeDataExtensionsTestHelper.NamespaceName}.ClassDisabledMapper",
+                "ProjectEnabled"),
+            classDisabled,
+            compilation).Should().BeTrue();
+
+        AttributeDataExtensions.IsQueryableProjectionEnabled(
+            AttributeDataExtensionsTestHelper.GetMethodAttributes(
+                compilation,
+                $"{AttributeDataExtensionsTestHelper.NamespaceName}.ClassEnabledMapper",
+                "Project"),
+            classEnabled,
+            compilation).Should().BeTrue();
+
+        AttributeDataExtensions.IsQueryableProjectionEnabled(
+            AttributeDataExtensionsTestHelper.GetMethodAttributes(
+                compilation,
+                $"{AttributeDataExtensionsTestHelper.NamespaceName}.NoProjectionAttributeMapper",
+                "ProjectDisabled"),
+            noAttributeClass,
+            compilation).Should().BeFalse();
+
+        AttributeDataExtensions.IsQueryableProjectionEnabled(
+            AttributeDataExtensionsTestHelper.GetMethodAttributes(
+                compilation,
+                $"{AttributeDataExtensionsTestHelper.NamespaceName}.NoProjectionAttributeMapper",
+                "Project"),
+            noAttributeClass,
+            compilation).Should().BeTrue();
     }
 }

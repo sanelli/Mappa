@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa;
 using Mappa.Attributes;
 using Mappa.Generator.Algorithm;
 using Mappa.Generator.Diagnostics;
@@ -90,6 +91,53 @@ public sealed class ProjectionCapabilityAnalyzerTests
             EnumerableConcreteTypeSetting.Undefined);
 
         ProjectionCapabilityAnalyzer.IsSupported(strategy).Should().BeTrue();
+    }
+
+    /// <summary>
+    /// Test nested collection/tuple strategies fail when their element strategies are unsupported,
+    /// and dictionary strategies are unsupported.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void IsSupportedReturnsFalseForUnsupportedNestedAndDictionaryStrategies()
+    {
+        var compilation = CSharpCompilation.Create(
+            "TestAssembly",
+            references: [MetadataReference.CreateFromFile(typeof(object).Assembly.Location)]);
+        var intType = compilation.GetSpecialType(SpecialType.System_Int32);
+        var stringType = compilation.GetSpecialType(SpecialType.System_String);
+        var unsupportedElement = new IdentityMapStrategy(intType, intType, IdentityMapDeepCopySetting.DeepCopy);
+        var supportedElement = new IdentityMapStrategy(
+            intType,
+            intType,
+            IdentityMapDeepCopySetting.ShallowCopy,
+            requiresMemberwiseClone: false,
+            nestedFieldStrategies: []);
+        var valueTupleType = compilation.GetTypeByMetadataName(typeof(ValueTuple<,>).FullName!)!.Construct(intType, intType);
+
+        ProjectionCapabilityAnalyzer.IsSupported(new CollectionToCollectionMapStrategy(
+            intType,
+            intType,
+            unsupportedElement,
+            methodSymbol: null,
+            BooleanSetting.Undefined,
+            BooleanSetting.Undefined,
+            BooleanSetting.Undefined,
+            EnumerableConcreteTypeSetting.Undefined)).Should().BeFalse();
+
+        ProjectionCapabilityAnalyzer.IsSupported(new TupleToTupleMapStrategy(
+            valueTupleType,
+            valueTupleType,
+            [unsupportedElement, supportedElement])).Should().BeFalse();
+
+        ProjectionCapabilityAnalyzer.IsSupported(new DictionaryToDictionaryMapStrategy(
+            intType,
+            intType,
+            supportedElement,
+            supportedElement,
+            DictionaryAssignmentSetting.Undefined)).Should().BeFalse();
+
+        ProjectionCapabilityAnalyzer.IsSupported(new NoMapStrategy(intType, stringType)).Should().BeFalse();
     }
 
     /// <summary>
