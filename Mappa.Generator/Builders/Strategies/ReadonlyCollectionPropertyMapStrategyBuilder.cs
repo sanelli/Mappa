@@ -23,5 +23,7 @@ internal sealed class ReadonlyCollectionPropertyMapStrategyBuilder(ReadonlyColle
             ReadonlyCollectionPropertyLoopBuilder.InsertionMethod.Add,
             source,
             context,
-            mappaGlobalOptions);
-}
+            mappaGlobalOptions,
+            strategy.PreferredSourceInterface,
+            strategy.PreferredTargetInterface);
+}

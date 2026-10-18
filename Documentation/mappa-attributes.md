@@ -25,6 +25,8 @@ This is the list of attributes provided:
 - `MappaMapEnumMember`: Configures explicit enum↔integral, enum↔string, or enum↔enum member pairings (see [MappaMapEnumMember, MappaMapEnumIgnore, and MappaMapEnumDefault](#mappamapenummember-mappamapenumignore-and-mappamapenumdefault));
 - `MappaMapEnumIgnore`: Excludes a specific enum member from mapping;
 - `MappaMapEnumDefault`: Configures fallback behaviour when an enum value cannot be mapped;
+- `MappaSourcePreferredInterfaceImplementation`: When a source type implements multiple closed versions of the same collection/dictionary interface family, forces which closed interface to use (method-only; see [Preferred interface implementations](#preferred-interface-implementations)); also available as `MappaSourcePreferredInterfaceImplementation<TImplementingType, TClosedInterface>`;
+- `MappaTargetPreferredInterfaceImplementation`: Same preference for concrete multi-interface **target** types (method-only; see [Preferred interface implementations](#preferred-interface-implementations)); also available as `MappaTargetPreferredInterfaceImplementation<TImplementingType, TClosedInterface>`;
 
 The [Mappa](https://www.nuget.org/packages/Mappa/) package also provides the `MappaContext` class that can be used to pass contextual values to mappers via the `MappaAssignFromContext` attribute, store mapped values via the `MappaAssignToContext` attribute, supply context to methods invoked via the `MappaInvokeMethodAttribute` attribute, supply context to before/after map hooks, or supply context to object factory methods. When `ReferenceReusing` or `MaxRuntimeDepth` is enabled, `MappaContext` also owns a private `MappaReferenceManager` used by generated code (via `UnsafeAccessor`) to track mapped references (keyed by source identity and `typeof(TTarget)`) and nesting depth. `MappaContext` is not thread-safe: use one instance per logical mapping operation and do not share a single instance across concurrent mappings without external synchronization.
 
@@ -382,6 +384,58 @@ For `MapSourceType` with an explicit target type, the following forms are equiva
 
 - `[MappaTypeMappingDefault(MappaTypeMappingDefaultBehavior.MapSourceType, typeof(TDefault))]`
 - `[MappaTypeMappingDefault<TDefault>]`
+
+## Preferred interface implementations
+
+When a concrete type implements **multiple closed versions** of the same open collection or dictionary interface family (for example both `IEnumerable<int>` and `IEnumerable<string>`), Mappa selects which closed interface drives element / key / value typing and codegen access (`foreach` casts, `Add`, indexer).
+
+### Attributes
+
+Both attributes are **method-only**, allow multiple instances, and take two type arguments:
+
+| Attribute | Side |
+|-----------|------|
+| `[MappaSourcePreferredInterfaceImplementation(typeof(TImplementing), typeof(TClosedInterface))]` | Source |
+| `[MappaTargetPreferredInterfaceImplementation(typeof(TImplementing), typeof(TClosedInterface))]` | Target |
+
+Generic forms `MappaSourcePreferredInterfaceImplementation<TImplementing, TClosedInterface>` and `MappaTargetPreferredInterfaceImplementation<TImplementing, TClosedInterface>` are equivalent.
+
+- **`TImplementing`** must be a concrete implementing type (not an open generic interface family).
+- **`TClosedInterface`** must be a closed generic interface that `TImplementing` actually implements (exact match), and must belong to a recognized collection/dictionary family (`IEnumerable<T>`, `ICollection<T>`, `IDictionary<TKey,TValue>`, and related families).
+
+Matching is by **implementing type + open interface family + side**. At most one attribute per key is allowed on a map method (**MP00083**).
+
+### Selection order
+
+For each side and family, Mappa resolves in this order:
+
+1. A matching preference attribute whose closed interface is **usable** for the current mapping (nested element/key/value strategies exist);
+2. Otherwise the unique usable **implicit** implementation;
+3. Otherwise the unique usable **explicit** implementation;
+4. Otherwise fall through (legacy first-match helpers are not used for type-argument extraction).
+
+Usability is probed recursively with a recursion guard so dual-interface graphs cannot loop forever.
+
+### Source vs target
+
+- Prefer **source** attributes when the multi-interface type is enumerated or read (element / key / value extraction, `foreach` casts).
+- Prefer **target** attributes when the multi-interface type is written (`Add` / indexer) and more than one closed interface could accept mapped elements.
+
+Use the family that strategy detection actually consults. Collection element mapping resolves the **`IEnumerable<T>`** family; dictionary mapping resolves `IDictionary` / `IReadOnlyDictionary` / `IEnumerable<KeyValuePair<,>>` as applicable. Preferring `ICollection<string>` does not match an `IEnumerable`-family resolution.
+
+### Diagnostics
+
+| Code | When |
+|------|------|
+| **MP00079** | Matching attribute interface cannot be used for the mapping |
+| **MP00080** | First argument is not a concrete implementing type |
+| **MP00081** | Implementing type does not implement the preferred closed interface |
+| **MP00082** | Attribute was never needed (unique usable candidate already exists, or the type never appears) |
+| **MP00083** | Duplicate attribute for the same implementing type, family, and side |
+| **MP00084** | Second argument is not a closed generic interface in a known family |
+| **MP00085** | First argument missing or invalid |
+
+See [error codes](./error-codes.md), [algorithm — container strategy](./mappa-generator-algorithm.md#7-container-strategy), and [PreferredInterfaceMapper.cs](../Mappa.Samples/PreferredInterfaceMapper.cs).
 
 ## MappaMapEnumMember, MappaMapEnumIgnore, and MappaMapEnumDefault
 

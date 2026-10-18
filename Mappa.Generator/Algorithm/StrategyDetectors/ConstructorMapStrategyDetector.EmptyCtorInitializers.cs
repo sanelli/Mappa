@@ -453,12 +453,19 @@ internal sealed partial class ConstructorMapStrategyDetector
                 sourceProperty.Type,
                 this.compilation,
                 out var stackElementStrategy,
+                out var preferredSourceInterfaceForStack,
+                out var preferredTargetInterfaceForStack,
                 this.cancellationToken))
         {
             return false;
         }
 
-        var stackPropertyStrategy = new ReadonlyStackPropertyMapStrategy(targetProperty, sourceProperty, stackElementStrategy);
+        var stackPropertyStrategy = new ReadonlyStackPropertyMapStrategy(
+            targetProperty,
+            sourceProperty,
+            stackElementStrategy,
+            preferredSourceInterfaceForStack,
+            preferredTargetInterfaceForStack);
         this.TryIsSourcePropertyReadable(sourceProperty, out var requiresUnsafeAccessorOnSourceStack);
         propertyMapStrategy = new PropertyMapStrategy(
             targetProperty,
@@ -485,12 +492,19 @@ internal sealed partial class ConstructorMapStrategyDetector
                 sourceProperty.Type,
                 this.compilation,
                 out var queueElementStrategy,
+                out var preferredSourceInterfaceForQueue,
+                out var preferredTargetInterfaceForQueue,
                 this.cancellationToken))
         {
             return false;
         }
 
-        var queuePropertyStrategy = new ReadonlyQueuePropertyMapStrategy(targetProperty, sourceProperty, queueElementStrategy);
+        var queuePropertyStrategy = new ReadonlyQueuePropertyMapStrategy(
+            targetProperty,
+            sourceProperty,
+            queueElementStrategy,
+            preferredSourceInterfaceForQueue,
+            preferredTargetInterfaceForQueue);
         this.TryIsSourcePropertyReadable(sourceProperty, out var requiresUnsafeAccessorOnSourceQueue);
         propertyMapStrategy = new PropertyMapStrategy(
             targetProperty,
@@ -517,6 +531,8 @@ internal sealed partial class ConstructorMapStrategyDetector
                 sourceProperty.Type,
                 this.compilation,
                 out var addCollectionElementStrategy,
+                out var preferredSourceInterfaceForAddCollection,
+                out var preferredTargetInterfaceForAddCollection,
                 this.cancellationToken))
         {
             return false;
@@ -525,7 +541,9 @@ internal sealed partial class ConstructorMapStrategyDetector
         var addCollectionPropertyStrategy = new ReadonlyAddCollectionPropertyMapStrategy(
             targetProperty,
             sourceProperty,
-            addCollectionElementStrategy);
+            addCollectionElementStrategy,
+            preferredSourceInterfaceForAddCollection,
+            preferredTargetInterfaceForAddCollection);
         this.TryIsSourcePropertyReadable(sourceProperty, out var requiresUnsafeAccessorOnSourceAddCollection);
         propertyMapStrategy = new PropertyMapStrategy(
             targetProperty,
@@ -551,6 +569,8 @@ internal sealed partial class ConstructorMapStrategyDetector
                 sourceProperty.Type,
                 this.compilation,
                 out var elementStrategy,
+                out var preferredSourceInterfaceForCollection,
+                out var preferredTargetInterfaceForCollection,
                 this.cancellationToken))
         {
             return false;
@@ -559,7 +579,9 @@ internal sealed partial class ConstructorMapStrategyDetector
         var collectionPropertyStrategy = new ReadonlyCollectionPropertyMapStrategy(
             targetProperty,
             sourceProperty,
-            elementStrategy);
+            elementStrategy,
+            preferredSourceInterfaceForCollection,
+            preferredTargetInterfaceForCollection);
         this.TryIsSourcePropertyReadable(sourceProperty, out var requiresUnsafeAccessorOnSourceCollection);
         propertyMapStrategy = new PropertyMapStrategy(
             targetProperty,

@@ -49,6 +49,8 @@ internal static class ReadonlyCollectionPropertyLoopBuilder
     /// <param name="source">The source variable name.</param>
     /// <param name="context">The builder context.</param>
     /// <param name="mappaGlobalOptions">The global options.</param>
+    /// <param name="preferredSourceInterface">The resolved preferred source interface, if any.</param>
+    /// <param name="preferredTargetInterface">The resolved preferred target interface, if any.</param>
     /// <returns>The generated code.</returns>
     internal static (string VariableName, string Code) BuildSource(
         ITypeSymbol sourceType,
@@ -58,7 +60,9 @@ internal static class ReadonlyCollectionPropertyLoopBuilder
         InsertionMethod insertionMethod,
         string source,
         MappaBuilderContext context,
-        MappaGlobalOptions mappaGlobalOptions)
+        MappaGlobalOptions mappaGlobalOptions,
+        INamedTypeSymbol? preferredSourceInterface = null,
+        INamedTypeSymbol? preferredTargetInterface = null)
     {
         var stringBuilder = new PrettyCode.StringBuilder();
         var counterTemporary = context.NextTemporary();
@@ -69,7 +73,7 @@ internal static class ReadonlyCollectionPropertyLoopBuilder
             using (stringBuilder.CurlyBracesBlock())
             {
                 var elementTemporary = context.NextTemporary();
-                stringBuilder.AppendLine($"{sourceType.GetElementType().ToDisplayString()} {elementTemporary} = {source}[{counterTemporary}];");
+                stringBuilder.AppendLine($"{GetSourceElementTypeDisplay(sourceType, preferredSourceInterface)} {elementTemporary} = {source}[{counterTemporary}];");
                 var (targetElementTemporary, targetElementCode) = ReferenceHandlingCodeGenerator.BuildNestedSource(
                     elementStrategy,
                     elementTemporary,
@@ -80,12 +84,32 @@ internal static class ReadonlyCollectionPropertyLoopBuilder
                     stringBuilder.AppendLine(targetElementCode);
                 }
 
-                AppendElement(stringBuilder, context, targetType, targetProperty, targetElementTemporary, insertionMethod);
+                AppendElement(
+                    stringBuilder,
+                    context,
+                    targetType,
+                    targetProperty,
+                    targetElementTemporary,
+                    insertionMethod,
+                    preferredTargetInterface);
             }
         }
         else
         {
-            stringBuilder.AppendLine($"foreach ({sourceType.GetElementType().ToDisplayString()} {counterTemporary} in {source})");
+            var enumerableExpression = source;
+            if (preferredSourceInterface is not null
+                && sourceType is INamedTypeSymbol namedSourceType
+                && PreferredInterfaceResolver.IsExplicitlyImplemented(
+                    namedSourceType,
+                    preferredSourceInterface,
+                    context.Compilation))
+            {
+                var preferredInterfaceTemporary = context.NextTemporary();
+                stringBuilder.AppendLine($"{preferredSourceInterface.ToDisplayString()} {preferredInterfaceTemporary} = {source};");
+                enumerableExpression = preferredInterfaceTemporary;
+            }
+
+            stringBuilder.AppendLine($"foreach ({GetSourceElementTypeDisplay(sourceType, preferredSourceInterface)} {counterTemporary} in {enumerableExpression})");
             using (stringBuilder.CurlyBracesBlock())
             {
                 var (targetElementTemporary, targetElementCode) = ReferenceHandlingCodeGenerator.BuildNestedSource(
@@ -98,11 +122,38 @@ internal static class ReadonlyCollectionPropertyLoopBuilder
                     stringBuilder.AppendLine(targetElementCode);
                 }
 
-                AppendElement(stringBuilder, context, targetType, targetProperty, targetElementTemporary, insertionMethod);
+                AppendElement(
+                    stringBuilder,
+                    context,
+                    targetType,
+                    targetProperty,
+                    targetElementTemporary,
+                    insertionMethod,
+                    preferredTargetInterface);
             }
         }
 
         return (string.Empty, stringBuilder.ToString());
+    }
+
+    private static string GetSourceElementTypeDisplay(ITypeSymbol sourceTypeSymbol, INamedTypeSymbol? preferredSourceInterface)
+    {
+        if (preferredSourceInterface is { TypeArguments.Length: 1 })
+        {
+            return preferredSourceInterface.TypeArguments[0].ToDisplayString();
+        }
+
+        return sourceTypeSymbol.GetElementType().ToDisplayString();
+    }
+
+    private static ITypeSymbol GetTargetElementType(ITypeSymbol targetType, INamedTypeSymbol? preferredTargetInterface)
+    {
+        if (preferredTargetInterface is { TypeArguments.Length: 1 })
+        {
+            return preferredTargetInterface.TypeArguments[0];
+        }
+
+        return targetType.GetElementType();
     }
 
     private static void AppendElement(
@@ -111,7 +162,8 @@ internal static class ReadonlyCollectionPropertyLoopBuilder
         ITypeSymbol targetType,
         IPropertySymbol targetProperty,
         string targetElementTemporary,
-        InsertionMethod insertionMethod)
+        InsertionMethod insertionMethod,
+        INamedTypeSymbol? preferredTargetInterface)
     {
         var targetPropertyAccess = InaccessibleMemberAccessHelper.BuildTargetPropertyReadExpression(
             context.GetCompositeTypeTargetName(),
@@ -127,7 +179,13 @@ internal static class ReadonlyCollectionPropertyLoopBuilder
                 stringBuilder.AppendLine($"{targetPropertyAccess}.Enqueue({targetElementTemporary});");
                 break;
             case InsertionMethod.Add:
-                AppendAdd(stringBuilder, context, targetType, targetElementTemporary, targetPropertyAccess);
+                AppendAdd(
+                    stringBuilder,
+                    context,
+                    targetType,
+                    targetElementTemporary,
+                    targetPropertyAccess,
+                    preferredTargetInterface);
                 break;
             default:
                 throw new MappaGeneratorException($"Unexpected insertion method {insertionMethod}.");
@@ -139,9 +197,10 @@ internal static class ReadonlyCollectionPropertyLoopBuilder
         MappaBuilderContext context,
         ITypeSymbol targetType,
         string targetElementTemporary,
-        string targetPropertyAccess)
+        string targetPropertyAccess,
+        INamedTypeSymbol? preferredTargetInterface)
     {
-        var elementType = targetType.GetElementType();
+        var elementType = GetTargetElementType(targetType, preferredTargetInterface);
         var methodAccessMode = targetType.GetInterfaceMethodAccessMode(
             "Add",
             "System.Collections.Generic.ICollection",
@@ -152,7 +211,14 @@ internal static class ReadonlyCollectionPropertyLoopBuilder
         if (methodAccessMode == InterfaceMethodAccessMode.InterfaceExplicit)
         {
             var interfaceTemporary = context.NextTemporary();
-            stringBuilder.AppendLine($"System.Collections.Generic.ICollection<{elementType}> {interfaceTemporary} = {targetPropertyAccess};");
+            var interfaceDisplay = preferredTargetInterface is not null
+                && PreferredInterfaceResolver.TryGetFamily(preferredTargetInterface, context.Compilation)
+                    is PreferredInterfaceFamily.ICollection
+                    or PreferredInterfaceFamily.IList
+                    or PreferredInterfaceFamily.ISet
+                ? preferredTargetInterface.ToDisplayString()
+                : $"System.Collections.Generic.ICollection<{elementType.ToDisplayString()}>";
+            stringBuilder.AppendLine($"{interfaceDisplay} {interfaceTemporary} = {targetPropertyAccess};");
             stringBuilder.AppendLine($"{interfaceTemporary}.Add({targetElementTemporary});");
         }
         else

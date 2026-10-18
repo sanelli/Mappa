@@ -272,4 +272,94 @@ public sealed partial class PreferredInterfaceMapStrategyIntegrationTests
                 "Mappa.Generator.Tests.UnitTests.SourceCode.DualEnumerable",
                 "Map");
     }
+
+    /// <summary>
+    /// A source preferred-interface attribute applies when mapping into a get-only nested collection property.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task SourceAttributeForcesExplicitIEnumerableOfStringOnReadonlyNestedCollectionProperty()
+    {
+        const string sourceCode = $$"""
+                                    #nullable enable
+
+                                    using Mappa.Attributes;
+                                    using System.Collections.Generic;
+
+                                    namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                    {{DualEnumerableTypeDefinition}}
+
+                                    public sealed class Source
+                                    {
+                                        public DualEnumerable Items { get; set; } = new();
+                                    }
+
+                                    public sealed class Target
+                                    {
+                                        public IList<string> Items { get; } = new List<string>();
+                                    }
+
+                                    [Mappa]
+                                    public sealed partial class Mapper
+                                    {
+                                        [MappaSourcePreferredInterfaceImplementation(typeof(DualEnumerable), typeof(IEnumerable<string>))]
+                                        public partial Target Map(Source input);
+                                    }
+
+                                    #nullable restore
+                                    """;
+
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                NullableAnnotation.NotAnnotated,
+                "Mappa.Generator.Tests.UnitTests.SourceCode.Source",
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(5)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.Target",
+                                "__mappa_tmp_1",
+                                initializerAssertions => initializerAssertions.BeObjectCreationExpressionSyntax(
+                                    "Mappa.Generator.Tests.UnitTests.SourceCode.Target")))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                "Mappa.Generator.Tests.UnitTests.SourceCode.DualEnumerable",
+                                "__mappa_tmp_2",
+                                initializerAssertions => initializerAssertions.BeMemberAccessExpressionSyntax("input.Items")))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                "System.Collections.Generic.IEnumerable<string>",
+                                "__mappa_tmp_4",
+                                initializerAssertions => initializerAssertions.BeIdentifierNameSyntax("__mappa_tmp_2")))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeForEachStatementSyntax(
+                                typeof(string).ToString(),
+                                "__mappa_tmp_3",
+                                expressionAssertions => expressionAssertions.BeIdentifierNameSyntax("__mappa_tmp_4"),
+                                statementAssertions =>
+                                    statementAssertions
+                                        .BeBlockStatement()
+                                        .AsBlock()
+                                        .HasSyntaxNodesCount(1)
+                                        .HasNextSyntaxNode(foreachStatementAssertions =>
+                                            foreachStatementAssertions.BeInvocationExpressionSyntaxStatement(
+                                                "__mappa_tmp_1.Items.Add",
+                                                firstParameterAssertions => firstParameterAssertions.BeIdentifierNameSyntax("__mappa_tmp_3")))))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeReturnStatement(expressionAssertions => expressionAssertions
+                                .BeIdentifierNameSyntax("__mappa_tmp_1")));
+                });
+    }
 }

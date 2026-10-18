@@ -23,5 +23,7 @@ internal sealed class ReadonlyQueuePropertyMapStrategyBuilder(ReadonlyQueuePrope
             ReadonlyCollectionPropertyLoopBuilder.InsertionMethod.Enqueue,
             source,
             context,
-            mappaGlobalOptions);
+            mappaGlobalOptions,
+            strategy.PreferredSourceInterface,
+            strategy.PreferredTargetInterface);
 }
