@@ -65,11 +65,11 @@ public sealed class ProjectionCapabilityAnalyzerTests
     }
 
     /// <summary>
-    /// Test collection-to-collection strategies are not supported for projections.
+    /// Test collection-to-collection strategies are supported for projections when the element strategy is supported.
     /// </summary>
     [Fact]
     [UnitTest]
-    public void IsSupportedReturnsFalseForCollectionToCollectionMapStrategy()
+    public void IsSupportedReturnsTrueForCollectionToCollectionMapStrategy()
     {
         var compilation = CSharpCompilation.Create("TestAssembly");
         var intType = compilation.GetSpecialType(SpecialType.System_Int32);
@@ -89,7 +89,7 @@ public sealed class ProjectionCapabilityAnalyzerTests
             BooleanSetting.Undefined,
             EnumerableConcreteTypeSetting.Undefined);
 
-        ProjectionCapabilityAnalyzer.IsSupported(strategy).Should().BeFalse();
+        ProjectionCapabilityAnalyzer.IsSupported(strategy).Should().BeTrue();
     }
 
     /// <summary>
@@ -442,15 +442,10 @@ public sealed class ProjectionCapabilityAnalyzerTests
         var constructor = targetType.InstanceConstructors.Single(candidate => candidate.Parameters.Length == 1);
         var parameter = constructor.Parameters[0];
         var intType = compilation.GetSpecialType(SpecialType.System_Int32);
-        var collectionStrategy = new CollectionToCollectionMapStrategy(
+        var unsupportedElementStrategy = new IdentityMapStrategy(
             intType,
             intType,
-            CreateShallowIdentity(intType, intType),
-            methodSymbol: null,
-            BooleanSetting.Undefined,
-            BooleanSetting.Undefined,
-            BooleanSetting.Undefined,
-            EnumerableConcreteTypeSetting.Undefined);
+            IdentityMapDeepCopySetting.DeepCopy);
         var assignToContextStrategy = new InvokeConstructorMapStrategy(
             targetType,
             sourceType,
@@ -499,7 +494,7 @@ public sealed class ProjectionCapabilityAnalyzerTests
         var unsupportedPropertyElement = new PropertyMapStrategy(
             targetProperty,
             sourceProperty,
-            collectionStrategy,
+            unsupportedElementStrategy,
             postConstructorInitializer: false);
         var unsupportedConstructorInitializer = new InvokeConstructorMapStrategy(
             targetType,
@@ -510,7 +505,7 @@ public sealed class ProjectionCapabilityAnalyzerTests
             [],
             contextParameterName: null);
 
-        ProjectionCapabilityAnalyzer.TryAnalyze(collectionStrategy, analysisContext, out _).Should().BeFalse();
+        ProjectionCapabilityAnalyzer.TryAnalyze(unsupportedElementStrategy, analysisContext, out _).Should().BeFalse();
         ProjectionCapabilityAnalyzer.TryAnalyze(assignToContextStrategy, analysisContext, out _).Should().BeFalse();
         ProjectionCapabilityAnalyzer.TryAnalyze(contextParameterStrategy, analysisContext, out _).Should().BeFalse();
         ProjectionCapabilityAnalyzer.TryAnalyze(postConstructorProperty, analysisContext, out _).Should().BeFalse();
@@ -522,7 +517,7 @@ public sealed class ProjectionCapabilityAnalyzerTests
 
         classContext.Diagnostics.Should().OnlyContain(diagnostic =>
             diagnostic.Descriptor.Equals(MappaDiagnosticDescriptors.ProjectionMappingNotSupported));
-        classContext.Diagnostics.Should().HaveCountGreaterThanOrEqualTo(5);
+        classContext.Diagnostics.Should().HaveCountGreaterThanOrEqualTo(4);
     }
 
     /// <summary>
@@ -739,6 +734,9 @@ public sealed class ProjectionCapabilityAnalyzerTests
             .BeTrue();
         normalized.Should().NotBeOfType<MethodMapStrategy>();
         ProjectionCapabilityAnalyzer.TryAnalyze(invokeWithoutContext, analysisContext, out _).Should().BeTrue();
+        classContext.Diagnostics.Should().HaveCount(2);
+        classContext.Diagnostics.Should().OnlyContain(diagnostic =>
+            diagnostic.Descriptor.Equals(MappaDiagnosticDescriptors.ProjectionMethodMapReplacedByStructuralStrategy));
     }
 
     /// <summary>

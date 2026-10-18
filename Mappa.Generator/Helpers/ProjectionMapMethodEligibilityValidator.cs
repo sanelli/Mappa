@@ -49,6 +49,13 @@ internal static class ProjectionMapMethodEligibilityValidator
             return true;
         }
 
+        var methodAttributes = mapMethod.MethodSymbol.GetAttributes();
+        var classAttributes = classContext.ClassSymbol.GetAttributes();
+        if (!AttributeDataExtensions.IsQueryableProjectionEnabled(methodAttributes, classAttributes, compilation))
+        {
+            return true;
+        }
+
         return ValidateProjectionQueryableMethod(
             mapMethod,
             compilation,

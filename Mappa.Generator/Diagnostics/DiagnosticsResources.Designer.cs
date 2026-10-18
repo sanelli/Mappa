@@ -554,5 +554,11 @@ namespace Mappa.Generator.Diagnostics {
                 return ResourceManager.GetString("PreferredInterfaceImplementingTypeInvalid", resourceCulture);
             }
         }
+
+        internal static string ProjectionMethodMapReplacedByStructuralStrategy {
+            get {
+                return ResourceManager.GetString("ProjectionMethodMapReplacedByStructuralStrategy", resourceCulture);
+            }
+        }
     }
 }

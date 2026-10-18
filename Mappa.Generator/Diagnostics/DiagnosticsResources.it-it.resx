@@ -266,4 +266,7 @@
     <data name="PreferredInterfaceImplementingTypeInvalid" xml:space="preserve">
         <value>Il primo argomento dell'attributo di interfaccia preferita manca o non è valido.</value>
     </data>
+    <data name="ProjectionMethodMapReplacedByStructuralStrategy" xml:space="preserve">
+        <value>Il metodo '{0}' incorpora il metodo di mapping '{1}' usando una strategia strutturale ridefinita; il corpo del metodo di mapping non viene invocato nella proiezione IQueryable.</value>
+    </data>
 </root>

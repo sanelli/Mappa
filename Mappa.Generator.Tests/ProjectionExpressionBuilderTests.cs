@@ -464,11 +464,45 @@ public sealed class ProjectionExpressionBuilderTests
     {
         var compilation = CSharpCompilation.Create("TestAssembly");
         var intType = compilation.GetSpecialType(SpecialType.System_Int32);
+        var strategy = new IdentityMapStrategy(intType, intType, IdentityMapDeepCopySetting.DeepCopy);
+        var expressionContext = new ExpressionBuildContext(
+            new MappaBuilderContext(compilation),
+            new MappaGlobalOptions(TestAnalyzerConfigOptionsProvider.FromEditorConfig("root = true"), CSharpSyntaxTree.ParseText(string.Empty, cancellationToken: TestContext.Current.CancellationToken)));
+
+        var built = ProjectionExpressionBuilder.TryBuildExpression(strategy, "source", expressionContext, out var expression);
+
+        built.Should().BeFalse();
+        expression.Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// Test collection projection expressions emit nested Select with materialization.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void TryBuildExpressionBuildsCollectionSelectExpression()
+    {
+        var compilation = CSharpCompilation.Create(
+            "TestAssembly",
+            references:
+            [
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(List<>).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
+            ]);
+        var intType = compilation.GetSpecialType(SpecialType.System_Int32);
+        var listType = compilation.GetTypeByMetadataName(typeof(List<>).FullName!)!.Construct(intType);
+        var elementStrategy = new IdentityMapStrategy(
+            intType,
+            intType,
+            IdentityMapDeepCopySetting.ShallowCopy,
+            requiresMemberwiseClone: false,
+            nestedFieldStrategies: []);
         var strategy = new CollectionToCollectionMapStrategy(
-            intType,
-            intType,
-            new IdentityMapStrategy(intType, intType, IdentityMapDeepCopySetting.ShallowCopy, requiresMemberwiseClone: false, nestedFieldStrategies: Array.Empty<IdentityMapNestedFieldStrategy>()),
-            null,
+            listType,
+            listType,
+            elementStrategy,
+            methodSymbol: null,
             BooleanSetting.Undefined,
             BooleanSetting.Undefined,
             BooleanSetting.Undefined,
@@ -479,8 +513,8 @@ public sealed class ProjectionExpressionBuilderTests
 
         var built = ProjectionExpressionBuilder.TryBuildExpression(strategy, "source", expressionContext, out var expression);
 
-        built.Should().BeFalse();
-        expression.Should().BeEmpty();
+        built.Should().BeTrue();
+        expression.Should().StartWith("global::System.Linq.Enumerable.ToList(global::System.Linq.Enumerable.Select(source,");
     }
 
     /// <summary>
@@ -535,15 +569,7 @@ public sealed class ProjectionExpressionBuilderTests
         var targetProperty = targetType.GetMembers("Value").OfType<IPropertySymbol>().Single();
         var parameter = targetType.InstanceConstructors.Single(candidate => candidate.Parameters.Length == 1).Parameters[0];
         var intType = compilation.GetSpecialType(SpecialType.System_Int32);
-        var unsupported = new CollectionToCollectionMapStrategy(
-            intType,
-            intType,
-            new IdentityMapStrategy(intType, intType, IdentityMapDeepCopySetting.ShallowCopy, requiresMemberwiseClone: false, nestedFieldStrategies: []),
-            null,
-            BooleanSetting.Undefined,
-            BooleanSetting.Undefined,
-            BooleanSetting.Undefined,
-            EnumerableConcreteTypeSetting.Undefined);
+        var unsupported = new IdentityMapStrategy(intType, intType, IdentityMapDeepCopySetting.DeepCopy);
         var expressionContext = new ExpressionBuildContext(
             new MappaBuilderContext(compilation),
             new MappaGlobalOptions(TestAnalyzerConfigOptionsProvider.FromEditorConfig("root = true"), compilation.SyntaxTrees[0]));

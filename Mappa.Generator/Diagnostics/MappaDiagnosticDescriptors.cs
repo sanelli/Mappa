@@ -99,6 +99,7 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? duplicatePreferredInterfaceAttribute;
     private static DiagnosticDescriptor? preferredInterfaceNotClosedGenericInterface;
     private static DiagnosticDescriptor? preferredInterfaceImplementingTypeInvalid;
+    private static DiagnosticDescriptor? projectionMethodMapReplacedByStructuralStrategy;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -779,6 +780,14 @@ internal static class MappaDiagnosticDescriptors
         => preferredInterfaceImplementingTypeInvalid ??= BuildError(
             MappaDiagnosticsKind.PreferredInterfaceImplementingTypeInvalid,
             DiagnosticsResources.PreferredInterfaceImplementingTypeInvalid);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.ProjectionMethodMapReplacedByStructuralStrategy"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor ProjectionMethodMapReplacedByStructuralStrategy
+        => projectionMethodMapReplacedByStructuralStrategy ??= BuildWarning(
+            MappaDiagnosticsKind.ProjectionMethodMapReplacedByStructuralStrategy,
+            DiagnosticsResources.ProjectionMethodMapReplacedByStructuralStrategy);
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(

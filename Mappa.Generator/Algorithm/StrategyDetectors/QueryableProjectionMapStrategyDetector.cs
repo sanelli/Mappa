@@ -2,6 +2,9 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using System.Collections.Immutable;
+
+using Mappa.Attributes;
 using Mappa.Generator.Extensions;
 using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
@@ -53,6 +56,11 @@ internal sealed class QueryableProjectionMapStrategyDetector
             return false;
         }
 
+        if (!this.IsProjectionEnabled(mapMethod))
+        {
+            return false;
+        }
+
         if (!this.context.SourceType.IsOrImplementIQueryable(this.compilation)
             || !this.context.TargetType.IsOrImplementIQueryable(this.compilation))
         {
@@ -89,6 +97,13 @@ internal sealed class QueryableProjectionMapStrategyDetector
         return true;
     }
 
+    private bool IsProjectionEnabled(MapMethod mapMethod)
+    {
+        var methodAttributes = mapMethod.MethodSymbol?.GetAttributes() ?? ImmutableArray<AttributeData>.Empty;
+        var classAttributes = this.context.ParentSymbol.GetAttributes();
+        return AttributeDataExtensions.IsQueryableProjectionEnabled(methodAttributes, classAttributes, this.compilation);
+    }
+
     private bool TryGetDistinctQueryableElementTypes(
         out ITypeSymbol sourceElementType,
         out ITypeSymbol targetElementType)
@@ -113,28 +128,35 @@ internal sealed class QueryableProjectionMapStrategyDetector
     {
         normalizedElementStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
 
-        var derivedContext = new DerivedMappaMapAlgorithmContext(
-            this.context,
-            targetElementType,
-            sourceElementType);
-        var elementAlgorithm = new TypeMapIdentifierWithMapMethodAlgorithm(
-            derivedContext,
-            this.compilation,
-            this.cancellationToken);
-        var elementStrategy = elementAlgorithm.GetStrategy();
-        if (elementStrategy is NoMapStrategy)
-        {
-            return false;
-        }
+        var classSettings = this.context.ParentSymbol.GetAttributes().GetMappaSettingsAttribute(this.compilation);
+        var methodSettings = mapMethod.GetAttribute<MappaSettingsAttribute>();
 
-        return ProjectionCapabilityAnalyzer.TryAnalyze(
-            elementStrategy,
-            new ProjectionCapabilityAnalysisContext(
+        using (this.context.MappaUserSettings.ApplyProjectionOverrides(classSettings))
+        using (this.context.MappaUserSettings.ApplyProjectionOverrides(methodSettings))
+        {
+            var derivedContext = new DerivedMappaMapAlgorithmContext(
                 this.context,
+                targetElementType,
+                sourceElementType);
+            var elementAlgorithm = new TypeMapIdentifierWithMapMethodAlgorithm(
+                derivedContext,
                 this.compilation,
-                mapMethod.MethodName,
-                mapMethod.MethodDeclarationSyntax?.GetLocation(),
-                this.cancellationToken),
-            out normalizedElementStrategy);
+                this.cancellationToken);
+            var elementStrategy = elementAlgorithm.GetStrategy();
+            if (elementStrategy is NoMapStrategy)
+            {
+                return false;
+            }
+
+            return ProjectionCapabilityAnalyzer.TryAnalyze(
+                elementStrategy,
+                new ProjectionCapabilityAnalysisContext(
+                    this.context,
+                    this.compilation,
+                    mapMethod.MethodName,
+                    mapMethod.MethodDeclarationSyntax?.GetLocation(),
+                    this.cancellationToken),
+                out normalizedElementStrategy);
+        }
     }
 }

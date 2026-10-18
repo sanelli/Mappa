@@ -70,6 +70,15 @@ internal static class ProjectionExpressionBuilder
             [typeof(LongToDateTimeOffsetMapStrategy)] = static (_, source, _) =>
                 $"System.DateTimeOffset.FromUnixTimeSeconds({source})",
             [typeof(TimeSpanToDoubleMapStrategy)] = static (_, source, _) => $"{source}.TotalDays",
+            [typeof(CollectionToCollectionMapStrategy)] = static (strategy, source, context) =>
+                BuildCollectionExpression((CollectionToCollectionMapStrategy)strategy, source, context),
+            [typeof(TupleToTupleMapStrategy)] = static (strategy, source, context) =>
+                BuildTupleExpression((TupleToTupleMapStrategy)strategy, source, context),
+            [typeof(StringToGuidMapStrategy)] = static (strategy, source, _) =>
+                BuildStringToGuidExpression((StringToGuidMapStrategy)strategy, source),
+            [typeof(GuidToArrayLikeStrategy)] = static (_, source, _) => $"{source}.ToByteArray()",
+            [typeof(ArrayLikeToGuidStrategy)] = static (strategy, source, context) =>
+                BuildArrayLikeToGuidExpression((ArrayLikeToGuidStrategy)strategy, source, context),
         };
 
     /// <summary>
@@ -353,4 +362,91 @@ internal static class ProjectionExpressionBuilder
             CultureInfoSetting.UserDefined => $"System.Globalization.CultureInfo.GetCultureInfo({CSharpLiteralHelper.ToStringLiteral(cultureName ?? string.Empty)})",
             _ => throw new ArgumentOutOfRangeException(nameof(cultureInfoSettings), cultureInfoSettings, null),
         };
+
+    private static string BuildCollectionExpression(
+        CollectionToCollectionMapStrategy strategy,
+        string source,
+        ExpressionBuildContext context)
+    {
+        var lambdaParameter = context.BuilderContext.NextTemporary();
+        if (!TryBuildExpression(strategy.ElementStrategy, lambdaParameter, context, out var elementExpression))
+        {
+            throw new MappaGeneratorException("Collection projection element strategy is not supported.");
+        }
+
+        var selectExpression =
+            $"global::System.Linq.Enumerable.Select({source}, {lambdaParameter} => {elementExpression})";
+
+        if (strategy.TargetType.IsArray())
+        {
+            return $"global::System.Linq.Enumerable.ToArray({selectExpression})";
+        }
+
+        if (strategy.TargetType.IsIEnumerable()
+            && !strategy.TargetType.IsList(context.BuilderContext.Compilation)
+            && !strategy.TargetType.IsOrImplementICollection()
+            && !strategy.TargetType.IsOrImplementIList())
+        {
+            return selectExpression;
+        }
+
+        return $"global::System.Linq.Enumerable.ToList({selectExpression})";
+    }
+
+    private static string BuildTupleExpression(
+        TupleToTupleMapStrategy strategy,
+        string source,
+        ExpressionBuildContext context)
+    {
+        var elementExpressions = new string[strategy.ElementStrategies.Length];
+        for (var index = 0; index < strategy.ElementStrategies.Length; ++index)
+        {
+            var elementSource = $"{source}.Item{index + 1}";
+            if (!TryBuildExpression(strategy.ElementStrategies[index], elementSource, context, out var elementExpression))
+            {
+                throw new MappaGeneratorException("Tuple projection element strategy is not supported.");
+            }
+
+            elementExpressions[index] = elementExpression;
+        }
+
+        var tupleExpression = $"({string.Join(", ", elementExpressions)})";
+        if (!strategy.TargetType.IsTupleType)
+        {
+            return $"new {strategy.TargetType.ToDisplayString()}{tupleExpression}";
+        }
+
+        return tupleExpression;
+    }
+
+    private static string BuildStringToGuidExpression(StringToGuidMapStrategy strategy, string source)
+    {
+        var parameters = source;
+        var parseMethod = nameof(Guid.Parse);
+        if (!string.IsNullOrWhiteSpace(strategy.Format))
+        {
+            parseMethod = nameof(Guid.ParseExact);
+            parameters = $"{parameters}, {CSharpLiteralHelper.ToRequiredStringLiteral(strategy.Format)}";
+        }
+        else if (strategy.CultureInfoSetting is not CultureInfoSetting.Undefined
+                 && strategy.CultureInfoSetting is not CultureInfoSetting.None)
+        {
+            parameters = $"{parameters}, {GetCulture(strategy.CultureInfoSetting, strategy.CultureName)}";
+        }
+
+        return $"{strategy.TargetType.ToDisplayString()}.{parseMethod}({parameters})";
+    }
+
+    private static string BuildArrayLikeToGuidExpression(
+        ArrayLikeToGuidStrategy strategy,
+        string source,
+        ExpressionBuildContext context)
+    {
+        var spanSuffix = strategy.SourceType.IsMemory(context.BuilderContext.Compilation)
+                         || strategy.SourceType.IsReadOnlyMemory(context.BuilderContext.Compilation)
+            ? ".Span"
+            : string.Empty;
+
+        return $"new global::System.Guid({source}{spanSuffix})";
+    }
 }

@@ -1458,6 +1458,23 @@ internal static class MappaDiagnostics
             MappaDiagnosticDescriptors.PreferredInterfaceImplementingTypeInvalid,
             location);
 
+    /// <summary>
+    /// Diagnostic to report that a queryable projection replaced a map method with a re-derived structural strategy.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="methodName">The projection mapping method name.</param>
+    /// <param name="mapMethodName">The map method that was replaced.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic ProjectionMethodMapReplacedByStructuralStrategy(
+        Location? location,
+        string methodName,
+        string mapMethodName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.ProjectionMethodMapReplacedByStructuralStrategy,
+            location,
+            methodName,
+            mapMethodName);
+
     private static Location? GetSyntaxLocation(SyntaxNode? syntaxNode)
         => syntaxNode?.GetLocation();
 }

@@ -57,20 +57,10 @@ public sealed class QueryableProjectionMapStrategyBuilderTests
         var orderDtoType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.OrderDto")
                            ?? throw new InvalidOperationException("OrderDto type was not found.");
         var mapMethod = CreateMapMethod(compilation, "ProjectToDto");
-        var unsupportedElementStrategy = new CollectionToCollectionMapStrategy(
+        var unsupportedElementStrategy = new IdentityMapStrategy(
             orderDtoType,
             orderType,
-            new IdentityMapStrategy(
-                orderDtoType,
-                orderType,
-                IdentityMapDeepCopySetting.ShallowCopy,
-                requiresMemberwiseClone: false,
-                nestedFieldStrategies: []),
-            methodSymbol: null,
-            BooleanSetting.Undefined,
-            BooleanSetting.Undefined,
-            BooleanSetting.Undefined,
-            EnumerableConcreteTypeSetting.Undefined);
+            IdentityMapDeepCopySetting.DeepCopy);
         var methodSymbol = mapMethod.MethodSymbol;
         methodSymbol.Should().NotBeNull();
         var strategy = new QueryableProjectionMapStrategy(

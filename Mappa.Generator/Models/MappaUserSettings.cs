@@ -505,6 +505,22 @@ internal sealed class MappaUserSettings
         return new PopActionDisposable(this.CollectApplyDisposables(mappaSettingsAttribute));
     }
 
+    /// <summary>
+    /// Push projection-specific overrides from <paramref name="mappaSettingsAttribute"/> onto the existing
+    /// settings stacks. Unset <c>Projection*</c> values leave the current (non-projection) settings in place.
+    /// </summary>
+    /// <param name="mappaSettingsAttribute">The settings that may contain projection overrides.</param>
+    /// <returns>A disposable object that will pop the values from the stack.</returns>
+    internal IDisposable ApplyProjectionOverrides(MappaSettingsAttribute? mappaSettingsAttribute)
+    {
+        if (mappaSettingsAttribute is null)
+        {
+            return new NoActionDisposable();
+        }
+
+        return new PopActionDisposable(this.CollectProjectionOverrideApplyDisposables(mappaSettingsAttribute));
+    }
+
     private static T ApplyDefinedOrKeep<T>(T candidate, T undefinedSentinel, StackSetting<T> current)
         where T : struct
         => !EqualityComparer<T>.Default.Equals(candidate, undefinedSentinel) ? candidate : current;
@@ -650,6 +666,21 @@ internal sealed class MappaUserSettings
             this.maxRuntimeDepth.Apply(GetDepth(mappaSettingsAttribute.MaxRuntimeDepth, this.maxRuntimeDepth)),
             this.maxCompileTimeDepth.Apply(GetDepth(mappaSettingsAttribute.MaxCompileTimeDepth, this.maxCompileTimeDepth)),
             this.breakCompileTimeCycles.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.BreakCompileTimeCycles, BooleanSetting.Undefined, this.breakCompileTimeCycles)),
+        ];
+#pragma warning restore CA2000
+    }
+
+    private IDisposable[] CollectProjectionOverrideApplyDisposables(MappaSettingsAttribute mappaSettingsAttribute)
+    {
+#pragma warning disable CA2000
+        return
+        [
+            this.guidFormat.Apply(mappaSettingsAttribute.ProjectionGuidFormat ?? this.guidFormat),
+            this.cultureInfoSetting.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.ProjectionCultureInfoSetting, CultureInfoSetting.Undefined, this.cultureInfoSetting)),
+            this.cultureName.Apply(mappaSettingsAttribute.ProjectionCultureName ?? this.cultureName),
+            this.caseInsensitiveEnumMap.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.ProjectionCaseInsensitiveEnumMap, BooleanSetting.Undefined, this.caseInsensitiveEnumMap)),
+            this.enumStringMapSetting.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.ProjectionEnumStringMapSetting, EnumStringMapSetting.Undefined, this.enumStringMapSetting)),
+            this.enumToEnumMapSetting.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.ProjectionEnumToEnumMapSetting, EnumToEnumMapSetting.Undefined, this.enumToEnumMapSetting)),
         ];
 #pragma warning restore CA2000
     }
