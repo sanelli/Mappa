@@ -269,4 +269,22 @@
     <data name="ProjectionMethodMapReplacedByStructuralStrategy" xml:space="preserve">
         <value>Il metodo '{0}' incorpora il metodo di mapping '{1}' usando una strategia strutturale ridefinita; il corpo del metodo di mapping non viene invocato nella proiezione IQueryable.</value>
     </data>
+    <data name="MappaUseConstructorNoEmptyConstructor" xml:space="preserve">
+        <value>Il metodo '{0}' definisce [MappaUseConstructor] con ConstructorType.NoParameters per il tipo '{1}', ma non esiste un costruttore senza parametri invocabile.</value>
+    </data>
+    <data name="MappaUseConstructorNoMatchingParameterizedConstructor" xml:space="preserve">
+        <value>Il metodo '{0}' definisce [MappaUseConstructor] con ConstructorType.WithParameters per il tipo '{1}', ma nessun costruttore invocabile corrisponde ai tipi di parametro specificati.</value>
+    </data>
+    <data name="MappaUseConstructorInvalidConfiguration" xml:space="preserve">
+        <value>Il metodo '{0}' definisce un [MappaUseConstructor] non valido per il tipo '{1}': {2}.</value>
+    </data>
+    <data name="MappaUseConstructorCannotMap" xml:space="preserve">
+        <value>Il metodo '{0}' definisce [MappaUseConstructor] per il tipo '{1}', ma il costruttore selezionato non può essere mappato dalla sorgente.</value>
+    </data>
+    <data name="DuplicateMappaUseConstructorForTargetType" xml:space="preserve">
+        <value>Il metodo '{0}' definisce più di un [MappaUseConstructor] per il tipo '{1}'.</value>
+    </data>
+    <data name="MappaUseConstructorAttributeNotUsed" xml:space="preserve">
+        <value>Il metodo '{0}' definisce [MappaUseConstructor] per il tipo '{1}', ma quel tipo non viene costruito usando il costruttore selezionato nel mapping.</value>
+    </data>
 </root>

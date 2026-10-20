@@ -560,5 +560,41 @@ namespace Mappa.Generator.Diagnostics {
                 return ResourceManager.GetString("ProjectionMethodMapReplacedByStructuralStrategy", resourceCulture);
             }
         }
+
+        internal static string MappaUseConstructorNoEmptyConstructor {
+            get {
+                return ResourceManager.GetString("MappaUseConstructorNoEmptyConstructor", resourceCulture);
+            }
+        }
+
+        internal static string MappaUseConstructorNoMatchingParameterizedConstructor {
+            get {
+                return ResourceManager.GetString("MappaUseConstructorNoMatchingParameterizedConstructor", resourceCulture);
+            }
+        }
+
+        internal static string MappaUseConstructorInvalidConfiguration {
+            get {
+                return ResourceManager.GetString("MappaUseConstructorInvalidConfiguration", resourceCulture);
+            }
+        }
+
+        internal static string MappaUseConstructorCannotMap {
+            get {
+                return ResourceManager.GetString("MappaUseConstructorCannotMap", resourceCulture);
+            }
+        }
+
+        internal static string DuplicateMappaUseConstructorForTargetType {
+            get {
+                return ResourceManager.GetString("DuplicateMappaUseConstructorForTargetType", resourceCulture);
+            }
+        }
+
+        internal static string MappaUseConstructorAttributeNotUsed {
+            get {
+                return ResourceManager.GetString("MappaUseConstructorAttributeNotUsed", resourceCulture);
+            }
+        }
     }
 }

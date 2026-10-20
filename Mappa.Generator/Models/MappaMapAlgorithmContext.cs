@@ -21,6 +21,7 @@ internal abstract class MappaMapAlgorithmContext
     private short currentDepth = -1;
     private int usabilityProbeDepth;
     private PreferredInterfaceSession? preferredInterfaceSession;
+    private MappaUseConstructorSession? useConstructorSession;
 
     /// <summary>
     /// Gets the parent symbol.
@@ -278,6 +279,49 @@ internal abstract class MappaMapAlgorithmContext
     {
         var root = this.GetRootAlgorithmContext();
         root.preferredInterfaceSession?.ReportNotNeededWarnings(root);
+    }
+
+    /// <summary>
+    /// Gets or creates the <see cref="MappaUseConstructorSession"/> for the root map method.
+    /// </summary>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The session.</returns>
+    internal MappaUseConstructorSession GetOrCreateMappaUseConstructorSession(Compilation compilation)
+    {
+        var root = this.GetRootAlgorithmContext();
+        if (root.useConstructorSession is not null)
+        {
+            return root.useConstructorSession;
+        }
+
+        var session = new MappaUseConstructorSession();
+        var mapMethod = root.GetMapMethod();
+        var attributes = mapMethod.MethodSymbol?.GetAttributes() ?? ImmutableArray<AttributeData>.Empty;
+        session.Initialize(attributes, compilation, mapMethod.TargetType);
+        root.useConstructorSession = session;
+        return session;
+    }
+
+    /// <summary>
+    /// Validates <see cref="Mappa.Attributes.MappaUseConstructorAttribute"/> on the root map method.
+    /// </summary>
+    /// <param name="compilation">The compilation.</param>
+    internal void ValidateMappaUseConstructorAttributes(Compilation compilation)
+    {
+        var root = this.GetRootAlgorithmContext();
+        var mapMethod = root.GetMapMethod();
+        var session = root.GetOrCreateMappaUseConstructorSession(compilation);
+        session.ValidateAttributes(root, mapMethod.MethodName);
+    }
+
+    /// <summary>
+    /// Reports unused <see cref="Mappa.Attributes.MappaUseConstructorAttribute"/> warnings when mapping succeeded.
+    /// </summary>
+    internal void ReportMappaUseConstructorUnusedWarnings()
+    {
+        var root = this.GetRootAlgorithmContext();
+        var mapMethod = root.GetMapMethod();
+        root.useConstructorSession?.ReportUnusedWarnings(root, mapMethod.MethodName);
     }
 
     private MappaMapAlgorithmContext GetRootAlgorithmContext()

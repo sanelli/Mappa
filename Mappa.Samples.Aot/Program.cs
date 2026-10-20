@@ -65,6 +65,7 @@ internal static class Program
         MappaIgnoreTargetPropertyAttributeMapperRunner.Run(report);
         MappaMustMapTargetPropertyAttributeMapperRunner.Run(report);
         MappaInvokeMethodAttributeMappersRunner.Run(report);
+        MappaUseConstructorMapperRunner.Run(report);
         MappaUsePropertyAttributeMapperRunner.Run(report);
         NestedPropertyPathAttributeMapperRunner.Run(report);
         NullableToNullableMapperRunner.Run(report);

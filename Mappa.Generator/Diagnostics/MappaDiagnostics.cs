@@ -1475,6 +1475,111 @@ internal static class MappaDiagnostics
             methodName,
             mapMethodName);
 
+    /// <summary>
+    /// Diagnostic when NoParameters is requested but no empty constructor exists.
+    /// </summary>
+    /// <param name="location">The attribute location.</param>
+    /// <param name="methodName">The map method name.</param>
+    /// <param name="targetType">The target type.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappaUseConstructorNoEmptyConstructor(
+        Location? location,
+        string methodName,
+        ITypeSymbol targetType)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappaUseConstructorNoEmptyConstructor,
+            location,
+            methodName,
+            targetType.ToDisplayString());
+
+    /// <summary>
+    /// Diagnostic when WithParameters signature does not match any invokable constructor.
+    /// </summary>
+    /// <param name="location">The attribute location.</param>
+    /// <param name="methodName">The map method name.</param>
+    /// <param name="targetType">The target type.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappaUseConstructorNoMatchingParameterizedConstructor(
+        Location? location,
+        string methodName,
+        ITypeSymbol targetType)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappaUseConstructorNoMatchingParameterizedConstructor,
+            location,
+            methodName,
+            targetType.ToDisplayString());
+
+    /// <summary>
+    /// Diagnostic when ConstructorType and parameter types are an invalid combination.
+    /// </summary>
+    /// <param name="location">The attribute location.</param>
+    /// <param name="methodName">The map method name.</param>
+    /// <param name="targetType">The target type.</param>
+    /// <param name="reason">The configuration error reason.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappaUseConstructorInvalidConfiguration(
+        Location? location,
+        string methodName,
+        ITypeSymbol targetType,
+        string reason)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappaUseConstructorInvalidConfiguration,
+            location,
+            methodName,
+            targetType.ToDisplayString(),
+            reason);
+
+    /// <summary>
+    /// Diagnostic when the selected constructor cannot be mapped.
+    /// </summary>
+    /// <param name="location">The attribute location.</param>
+    /// <param name="methodName">The map method name.</param>
+    /// <param name="targetType">The target type.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappaUseConstructorCannotMap(
+        Location? location,
+        string methodName,
+        ITypeSymbol targetType)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappaUseConstructorCannotMap,
+            location,
+            methodName,
+            targetType.ToDisplayString());
+
+    /// <summary>
+    /// Diagnostic when multiple UseConstructor attributes target the same type.
+    /// </summary>
+    /// <param name="location">The attribute location.</param>
+    /// <param name="methodName">The map method name.</param>
+    /// <param name="targetType">The target type.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic DuplicateMappaUseConstructorForTargetType(
+        Location? location,
+        string methodName,
+        ITypeSymbol targetType)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.DuplicateMappaUseConstructorForTargetType,
+            location,
+            methodName,
+            targetType.ToDisplayString());
+
+    /// <summary>
+    /// Diagnostic when a UseConstructor attribute is unused.
+    /// </summary>
+    /// <param name="location">The attribute location.</param>
+    /// <param name="methodName">The map method name.</param>
+    /// <param name="targetType">The target type.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappaUseConstructorAttributeNotUsed(
+        Location? location,
+        string methodName,
+        ITypeSymbol targetType)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappaUseConstructorAttributeNotUsed,
+            location,
+            methodName,
+            targetType.ToDisplayString());
+
     private static Location? GetSyntaxLocation(SyntaxNode? syntaxNode)
         => syntaxNode?.GetLocation();
 }

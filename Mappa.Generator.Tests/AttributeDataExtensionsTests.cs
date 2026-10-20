@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa;
 using Mappa.Generator.Extensions;
 using Mappa.Generator.Tests.Abstractions;
 using Mappa.Generator.Tests.Helpers;
@@ -1358,5 +1359,318 @@ public sealed class AttributeDataExtensionsTests
                 "Project"),
             noAttributeClass,
             compilation).Should().BeTrue();
+    }
+
+    /// <summary>
+    /// Test <see cref="AttributeDataExtensions.GetMappaUseConstructorAttributes"/> reads root NoParameters.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetMappaUseConstructorAttributesReadsNoParameters()
+    {
+        const string source = """
+                              using Mappa;
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { }
+
+                              public class Target { }
+
+                              [Mappa]
+                              public sealed partial class TestMapper
+                              {
+                                  [MappaUseConstructor(ConstructorType.NoParameters)]
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetMethodAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.MapperMetadataName,
+            "Map");
+
+        var parsed = attributes.GetMappaUseConstructorAttributes(compilation);
+
+        parsed.Should().ContainSingle();
+        parsed[0].DeclaredTargetType.Should().BeNull();
+        parsed[0].ConstructorType.Should().Be(ConstructorType.NoParameters);
+        parsed[0].ParameterTypes.Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// Test <see cref="AttributeDataExtensions.GetMappaUseConstructorAttributes"/> reads typed WithParameters signature.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetMappaUseConstructorAttributesReadsTypedWithParametersSignature()
+    {
+        const string source = """
+                              using Mappa;
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { }
+
+                              public class Target { }
+
+                              public class Nested { }
+
+                              [Mappa]
+                              public sealed partial class TestMapper
+                              {
+                                  [MappaUseConstructor(typeof(Nested), ConstructorType.WithParameters, typeof(int), typeof(string))]
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetMethodAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.MapperMetadataName,
+            "Map");
+
+        var parsed = attributes.GetMappaUseConstructorAttributes(compilation);
+
+        parsed.Should().ContainSingle();
+        parsed[0].DeclaredTargetType.Should().NotBeNull();
+        parsed[0].DeclaredTargetType!.Name.Should().Be("Nested");
+        parsed[0].ConstructorType.Should().Be(ConstructorType.WithParameters);
+        parsed[0].ParameterTypes.Should().HaveCount(2);
+        parsed[0].ParameterTypes[0].SpecialType.Should().Be(SpecialType.System_Int32);
+        parsed[0].ParameterTypes[1].SpecialType.Should().Be(SpecialType.System_String);
+    }
+
+    /// <summary>
+    /// Test <see cref="AttributeDataExtensions.GetMappaUseConstructorAttributes"/> reads generic form with target type.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetMappaUseConstructorAttributesReadsGenericFormWithTargetType()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { }
+
+                              public class Target { }
+
+                              public class Nested { }
+
+                              [Mappa]
+                              public sealed partial class TestMapper
+                              {
+                                  [MappaUseConstructor<int, string>(typeof(Nested))]
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetMethodAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.MapperMetadataName,
+            "Map");
+
+        var parsed = attributes.GetMappaUseConstructorAttributes(compilation);
+
+        parsed.Should().ContainSingle();
+        parsed[0].DeclaredTargetType.Should().NotBeNull();
+        parsed[0].DeclaredTargetType!.Name.Should().Be("Nested");
+        parsed[0].ConstructorType.Should().Be(ConstructorType.WithParameters);
+        parsed[0].ParameterTypes.Should().HaveCount(2);
+    }
+
+    /// <summary>
+    /// Test <see cref="Mappa.Generator.Helpers.MappaUseConstructorAttributeParser.TryParse"/> returns null when the attribute symbol is missing.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void TryParseMappaUseConstructorAttributeReturnsNullWhenAttributeSymbolIsMissing()
+    {
+        const string source = """
+                              using Mappa;
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { }
+
+                              public class Target { }
+
+                              [Mappa]
+                              public sealed partial class TestMapper
+                              {
+                                  [MappaUseConstructor(ConstructorType.NoParameters)]
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetMethodAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.MapperMetadataName,
+            "Map");
+
+        Mappa.Generator.Helpers.MappaUseConstructorAttributeParser
+            .TryParse(attributes[0], null)
+            .Should()
+            .BeNull();
+    }
+
+    /// <summary>
+    /// Test <see cref="AttributeDataExtensions.GetMappaUseConstructorAttributes"/> ignores unrelated attributes.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetMappaUseConstructorAttributesIgnoresUnrelatedAttributes()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { }
+
+                              public class Target { }
+
+                              [Mappa]
+                              public sealed partial class TestMapper
+                              {
+                                  [MappaIgnoreTargetProperty("PropertyA")]
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetMethodAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.MapperMetadataName,
+            "Map");
+
+        attributes.GetMappaUseConstructorAttributes(compilation).Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// Test <see cref="AttributeDataExtensions.GetMappaUseConstructorAttributes"/> reads generic form without target type.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetMappaUseConstructorAttributesReadsGenericFormWithoutTargetType()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { }
+
+                              public class Target { }
+
+                              [Mappa]
+                              public sealed partial class TestMapper
+                              {
+                                  [MappaUseConstructor<int, string, bool>]
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetMethodAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.MapperMetadataName,
+            "Map");
+
+        var parsed = attributes.GetMappaUseConstructorAttributes(compilation);
+
+        parsed.Should().ContainSingle();
+        parsed[0].DeclaredTargetType.Should().BeNull();
+        parsed[0].ConstructorType.Should().Be(ConstructorType.WithParameters);
+        parsed[0].ParameterTypes.Should().HaveCount(3);
+    }
+
+    /// <summary>
+    /// Test <see cref="AttributeDataExtensions.GetMappaUseConstructorAttributes"/> reads null target type first form.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetMappaUseConstructorAttributesReadsNullTargetTypeFirstForm()
+    {
+        const string source = """
+                              using Mappa;
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { }
+
+                              public class Target { }
+
+                              [Mappa]
+                              public sealed partial class TestMapper
+                              {
+                                  [MappaUseConstructor(null, ConstructorType.NoParameters)]
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetMethodAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.MapperMetadataName,
+            "Map");
+
+        var parsed = attributes.GetMappaUseConstructorAttributes(compilation);
+
+        parsed.Should().ContainSingle();
+        parsed[0].DeclaredTargetType.Should().BeNull();
+        parsed[0].ConstructorType.Should().Be(ConstructorType.NoParameters);
+        parsed[0].ParameterTypes.Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// Test <see cref="AttributeDataExtensions.GetMappaUseConstructorAttributes"/> reads typed NoParameters form.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetMappaUseConstructorAttributesReadsTypedNoParametersForm()
+    {
+        const string source = """
+                              using Mappa;
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { }
+
+                              public class Target { }
+
+                              public class Nested { }
+
+                              [Mappa]
+                              public sealed partial class TestMapper
+                              {
+                                  [MappaUseConstructor(typeof(Nested), ConstructorType.NoParameters)]
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetMethodAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.MapperMetadataName,
+            "Map");
+
+        var parsed = attributes.GetMappaUseConstructorAttributes(compilation);
+
+        parsed.Should().ContainSingle();
+        parsed[0].DeclaredTargetType.Should().NotBeNull();
+        parsed[0].DeclaredTargetType!.Name.Should().Be("Nested");
+        parsed[0].ConstructorType.Should().Be(ConstructorType.NoParameters);
+        parsed[0].ParameterTypes.Should().BeEmpty();
     }
 }

@@ -477,4 +477,38 @@ internal enum MappaDiagnosticsKind
     /// the original map method body is not invoked.
     /// </summary>
     ProjectionMethodMapReplacedByStructuralStrategy,
+
+    /// <summary>
+    /// <see cref="Mappa.Attributes.MappaUseConstructorAttribute"/> requests a parameterless constructor
+    /// but none is invokable on the target type.
+    /// </summary>
+    MappaUseConstructorNoEmptyConstructor,
+
+    /// <summary>
+    /// <see cref="Mappa.Attributes.MappaUseConstructorAttribute"/> requests a parameterized constructor
+    /// signature that does not exist (or is not invokable) on the target type.
+    /// </summary>
+    MappaUseConstructorNoMatchingParameterizedConstructor,
+
+    /// <summary>
+    /// <see cref="Mappa.Attributes.MappaUseConstructorAttribute"/> has an invalid combination of
+    /// <see cref="Mappa.ConstructorType"/> and parameter types.
+    /// </summary>
+    MappaUseConstructorInvalidConfiguration,
+
+    /// <summary>
+    /// The constructor selected by <see cref="Mappa.Attributes.MappaUseConstructorAttribute"/> cannot be mapped.
+    /// </summary>
+    MappaUseConstructorCannotMap,
+
+    /// <summary>
+    /// Multiple <see cref="Mappa.Attributes.MappaUseConstructorAttribute"/> declarations target the same type.
+    /// </summary>
+    DuplicateMappaUseConstructorForTargetType,
+
+    /// <summary>
+    /// A <see cref="Mappa.Attributes.MappaUseConstructorAttribute"/> was not used for any construction
+    /// of its target type in the mapping.
+    /// </summary>
+    MappaUseConstructorAttributeNotUsed,
 }
