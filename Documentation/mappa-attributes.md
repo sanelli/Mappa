@@ -21,6 +21,7 @@ This is the list of attributes provided:
 - `MappaBeforeMap`: Invokes a named hook immediately before the generated root mapping body (see [MappaBeforeMap and MappaAfterMap](#mappabeforemap-and-mappaaftermap));
 - `MappaAfterMap`: Invokes a named hook immediately after the generated root mapping body and before returning the target (see [MappaBeforeMap and MappaAfterMap](#mappabeforemap-and-mappaaftermap));
 - `MappaObjectFactory`: Forces construction of a target type via a named factory method instead of `new` (see [MappaObjectFactory](#mappaobjectfactory));
+- `MappaUseConstructor`: Forces empty or parameterized constructor selection for the map method return type or a nested target type (see [MappaUseConstructor](#mappauseconstructor)); also available as `MappaUseConstructorAttribute<T1>` … `<T1, …, T8>` for exact signatures;
 - `MappaTypeMapping`: When mapping structured types or interfaces, allows defining the target type depending on the source type; also available as `MappaTypeMapping<TTarget, TSource>`;
 - `MappaTypeMappingDefault`: Describes the default behaviour for polymorphic methods defined via `MappaTypeMapping`; also available as `MappaTypeMappingDefault<TDefault>` for `MapSourceType` with an explicit target type.
 - `MappaMapEnumMember`: Configures explicit enum↔integral, enum↔string, or enum↔enum member pairings (see [MappaMapEnumMember, MappaMapEnumIgnore, and MappaMapEnumDefault](#mappamapenummember-mappamapenumignore-and-mappamapenumdefault));
@@ -338,6 +339,24 @@ Context-aware signatures (tiers 1 and 3) are considered only when the map method
 - If a factory cannot be resolved to an accessible method with a supported signature, the generator reports warning **MP00063** and falls back to the normal constructor strategies.
 
 See also: [tutorial](./tutorial.md#mappaobjectfactory-attribute), [algorithm](./mappa-generator-algorithm.md#10-constructor-strategy), and [MappaObjectFactoryMapper.cs](../Mappa.Samples/MappaObjectFactoryMapper.cs).
+
+## MappaUseConstructor
+
+`[MappaUseConstructor]` forces the generator to construct a target type (the map method return type, or a nested type when `typeof(T)` / `targetType` is supplied) using a specific constructor kind or exact signature. Apply it to mapping methods only (`AllowMultiple = true`). Object factories still win when registered for the same type; an unused attribute warns with **MP00092**.
+
+### Forms
+
+| Form | Meaning |
+|------|---------|
+| `[MappaUseConstructor(ConstructorType.NoParameters)]` | Force the empty-constructor path for the map method return type (suppresses mapping-constructor auto-selection for that type). |
+| `[MappaUseConstructor(ConstructorType.WithParameters, typeof(T1), …)]` | Force the exact parameterized signature `(T1, …)` for the return type. |
+| `[MappaUseConstructor(typeof(TTarget), ConstructorType.NoParameters)]` | Same as empty, but for nested (or otherwise explicit) `TTarget`. |
+| `[MappaUseConstructor(typeof(TTarget), ConstructorType.WithParameters, typeof(T1), …)]` | Exact signature for nested/explicit `TTarget`. |
+| `[MappaUseConstructor<T1, …, T8>]` / `[MappaUseConstructor<T1, …>(typeof(TTarget))]` | Generic shorthand for `WithParameters` with those parameter types (optional `targetType`). |
+
+`ConstructorType.WithParameters` without parameter types is invalid (**MP00089**). `NoParameters` must not list parameter types (**MP00089**). Missing empty or matching parameterized constructors report **MP00087** / **MP00088**. A selected constructor that cannot be mapped reports **MP00090**. Duplicate attributes for the same effective target type report **MP00091**.
+
+See also: [tutorial](./tutorial.md#mappauseconstructor-attribute), [algorithm](./mappa-generator-algorithm.md#10-constructor-strategy), and [MappaUseConstructorMapper.cs](../Mappa.Samples/MappaUseConstructorMapper.cs).
 
 ## MappaSettings
 

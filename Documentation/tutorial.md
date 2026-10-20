@@ -614,6 +614,31 @@ Signature tiers (first match wins): `(Source, MappaContext)` or `(Source)` retur
 
 See also: [MappaObjectFactoryMapper.cs](../Mappa.Samples/MappaObjectFactoryMapper.cs) and [Mappa attributes](./mappa-attributes.md#mappaobjectfactory).
 
+### MappaUseConstructor attribute
+`[MappaUseConstructor]` forces empty or parameterized constructor selection when both would otherwise compete, or picks an exact signature among several parameterized constructors. Omit `typeof(T)` to target the map method return type; pass `typeof(TTarget)` (or the optional generic `targetType`) for a nested type.
+
+```csharp
+[Mappa]
+public sealed partial class Mapper
+{
+    [MappaUseConstructor(ConstructorType.NoParameters)]
+    public partial Target MapForceEmpty(Source input);
+
+    [MappaUseConstructor(ConstructorType.WithParameters, typeof(string))]
+    public partial Target MapForceParameterized(Source input);
+
+    [MappaUseConstructor<int, string>]
+    public partial Target MapExact(Source input);
+
+    [MappaUseConstructor(typeof(NestedTarget), ConstructorType.WithParameters, typeof(string))]
+    public partial OuterTarget MapNested(OuterSource input);
+}
+```
+
+Object factories still take precedence for a registered target type. Diagnostics **MP00087–MP00092** cover missing constructors, invalid configuration, unmappable selections, duplicates, and unused attributes.
+
+See also: [MappaUseConstructorMapper.cs](../Mappa.Samples/MappaUseConstructorMapper.cs) and [Mappa attributes](./mappa-attributes.md#mappauseconstructor).
+
 ### MappaUseProperty attribute
 When source and target property names differ, `[MappaUseProperty]` selects which source property supplies a target member:
 

@@ -343,23 +343,26 @@ When `ReferenceReusing` is `Enable` and the map method declares `MappaContext`:
 
 ### 10. Constructor strategy
 
-The constructor strategy has four sub-strategies, tried in order:
+The constructor strategy tries sub-strategies in order. When a valid `[MappaUseConstructor]` applies to the current target type, the detector **forces** empty or exact parameterized construction (after object factories) instead of the default mapping/empty/parameterized precedence:
 
 | Sub-strategy | When |
 |--------------|------|
 | **Object factory** | A `[MappaObjectFactory]` registration on the root map method (class ∪ method attributes) resolves to an accessible factory for the exact target type |
+| **Forced use-constructor** | A valid `[MappaUseConstructor]` on the root map method targets this type (`ConstructorType.NoParameters` or exact `WithParameters` signature); mapping-constructor auto-selection is skipped for `NoParameters` |
 | **Mapping constructor** | An accessible constructor `TTarget(TSource input)` exists where the single parameter type matches the source type *(or an inaccessible matching constructor when `[MappaAllowInaccessibleTargetMembers]` allows constructors)* |
 | **Empty constructor + property init** | An accessible zero-argument constructor exists; settable properties (and get-only collections per the notes below) can be mapped from the source *(or an inaccessible empty constructor when allowed)* |
 | **Parameterized constructor** | No suitable empty-constructor path; the accessible constructor with the **most** mappable parameters is chosen (parameter names are matched to source properties case-insensitively by default) *(inaccessible parameterized constructors participate when allowed)* |
 
 - _What_:
     - **Object factory**: invoke the resolved factory; depending on signature tier, either return the factory result as-is, fill properties like the empty-constructor path after the call, or map factory parameters like the parameterized-constructor path;
+    - **Forced use-constructor**: build via the empty-constructor path (`NoParameters`, allowing zero mapped properties) or the matching parameterized / mapping-constructor path for the exact signature; failures report **MP00087–MP00090** and do not fall through;
     - Otherwise each property, constructor argument, or mapping-constructor parameter is mapped and a new instance of `TTarget` is generated with `new` *(or via a generated `UnsafeAccessor` constructor helper when the selected constructor is inaccessible)*;
     - Get-only dictionary or collection properties for which a mapper exists are filled with mapped values from the corresponding source;
 - _Notes_:
     - Object factories are keyed by exact target type and apply to nested mappings whose target type matches a registration on the **root** map method;
     - Duplicate factories for the same target type report error **MP00062**; unresolved factories warn with **MP00063** and fall through to constructor strategies; factories on `IQueryable` projection maps report error **MP00064**;
     - Factory location and signature tiers are documented in [Mappa attributes — MappaObjectFactory](mappa-attributes.md#mappaobjectfactory);
+    - `[MappaUseConstructor]` is method-only; omit `typeof(T)` for the map return type, or pass `typeof(TTarget)` / generic `targetType` for nested types. Duplicates for the same effective target report **MP00091**; unused attributes warn **MP00092**. See [Mappa attributes — MappaUseConstructor](mappa-attributes.md#mappauseconstructor);
     - **Empty-constructor path**: property name matching is case-sensitive by default, configurable via `CaseInsensitivePropertyMap` and `IgnoreUnderscoreForPropertyMap` in `MappaSettings`;
     - **Parameterized-constructor path**: constructor parameter names are matched to source properties case-insensitively by default, with optional underscore-insensitive matching via `IgnoreUnderscoreForPropertyMap`; when `MapTargetExplicitInterfaceProperties` is enabled, remaining explicitly implemented interface target properties are assigned after construction via an interface cast;
     - Explicit interface implementation is supported for get-only dictionary and collection properties; scalar explicitly implemented interface properties are mapped when `MapSourceExplicitInterfaceProperties` / `MapTargetExplicitInterfaceProperties` is enabled (via cast to the declaring interface; never via `UnsafeAccessor`);
