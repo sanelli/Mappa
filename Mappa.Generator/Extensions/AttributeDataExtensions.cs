@@ -6,6 +6,7 @@ using System.Collections.Immutable;
 using System.Globalization;
 
 using Mappa.Attributes;
+using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 
 using Microsoft.CodeAnalysis;
@@ -63,6 +64,8 @@ internal static class AttributeDataExtensions
 
     private const string MappaTargetPreferredInterfaceImplementationAttributeOfTFullName =
         "Mappa.Attributes.MappaTargetPreferredInterfaceImplementationAttribute`2";
+
+    private const string MappaUseConstructorAttributeFullName = "Mappa.Attributes.MappaUseConstructorAttribute";
 
     private static readonly Dictionary<string, Action<MappaSettingsAttribute, TypedConstant>> MappaSettingsNamedArgumentApplicators =
         new(StringComparer.Ordinal)
@@ -495,6 +498,30 @@ internal static class AttributeDataExtensions
                     targetAttributeOfTSymbol) is { } targetAttribute)
             {
                 results.Add(targetAttribute);
+            }
+        }
+
+        return [.. results];
+    }
+
+    /// <summary>
+    /// Gets parsed <see cref="MappaUseConstructorAttribute"/> declarations.
+    /// </summary>
+    /// <param name="attributes">The attributes.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The parsed attributes in declaration order.</returns>
+    internal static MappaUseConstructorAttributeData[] GetMappaUseConstructorAttributes(
+        this ImmutableArray<AttributeData> attributes,
+        Compilation compilation)
+    {
+        var nonGenericAttributeSymbol = compilation.GetTypeByMetadataName(MappaUseConstructorAttributeFullName);
+        var results = new List<MappaUseConstructorAttributeData>();
+
+        foreach (var attributeData in attributes)
+        {
+            if (MappaUseConstructorAttributeParser.TryParse(attributeData, nonGenericAttributeSymbol) is { } parsed)
+            {
+                results.Add(parsed);
             }
         }
 

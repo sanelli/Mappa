@@ -121,6 +121,81 @@ public sealed class MappaUseConstructorAttributeTests
     }
 
     /// <summary>
+    /// Tests the three-parameter generic form initializes the root exact signature.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GenericThreeParametersInitializesAttribute()
+    {
+        // Act
+        var attribute = new MappaUseConstructorAttribute<int, string, bool>();
+
+        // Assert
+        attribute.TargetType.Should().BeNull();
+        attribute.ConstructorType.Should().Be(ConstructorType.WithParameters);
+        attribute.ParameterTypes.Should().Equal(typeof(int), typeof(string), typeof(bool));
+    }
+
+    /// <summary>
+    /// Tests the four-parameter generic form initializes the root exact signature.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GenericFourParametersInitializesAttribute()
+    {
+        // Act
+        var attribute = new MappaUseConstructorAttribute<int, string, bool, double>();
+
+        // Assert
+        attribute.ParameterTypes.Should().Equal(typeof(int), typeof(string), typeof(bool), typeof(double));
+    }
+
+    /// <summary>
+    /// Tests the five-parameter generic form initializes the root exact signature.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GenericFiveParametersInitializesAttribute()
+    {
+        // Act
+        var attribute = new MappaUseConstructorAttribute<int, string, bool, double, float>();
+
+        // Assert
+        attribute.ParameterTypes.Should().HaveCount(5);
+        attribute.ParameterTypes[^1].Should().Be<float>();
+    }
+
+    /// <summary>
+    /// Tests the six-parameter generic form initializes the root exact signature.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GenericSixParametersInitializesAttribute()
+    {
+        // Act
+        var attribute = new MappaUseConstructorAttribute<int, string, bool, double, float, long>();
+
+        // Assert
+        attribute.ParameterTypes.Should().HaveCount(6);
+        attribute.ParameterTypes[^1].Should().Be<long>();
+    }
+
+    /// <summary>
+    /// Tests the seven-parameter generic form initializes the root exact signature.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GenericSevenParametersInitializesAttribute()
+    {
+        // Act
+        var attribute = new MappaUseConstructorAttribute<int, string, bool, double, float, long, short>();
+
+        // Assert
+        attribute.ParameterTypes.Should().HaveCount(7);
+        attribute.ParameterTypes[^1].Should().Be<short>();
+    }
+
+    /// <summary>
     /// Tests the eight-parameter generic form initializes the root exact signature.
     /// </summary>
     [Fact]
@@ -198,6 +273,47 @@ public sealed class MappaUseConstructorAttributeTests
             typeof(uint),
             typeof(long),
             typeof(ulong));
+    }
+
+    /// <summary>
+    /// Tests null parameterTypes arrays are normalized to empty.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void NullParameterTypesAreNormalizedToEmpty()
+    {
+        // Act
+        var rootForm = new MappaUseConstructorAttribute(ConstructorType.WithParameters, null!);
+        var typedForm = new MappaUseConstructorAttribute(typeof(List<int>), ConstructorType.WithParameters, null!);
+
+        // Assert
+        rootForm.ParameterTypes.Should().BeEmpty();
+        typedForm.TargetType.Should().Be<List<int>>();
+        typedForm.ParameterTypes.Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// Tests the three-to-seven parameter generics accept an explicit target type.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GenericThreeToSevenParametersWithTargetTypeInitializeAttribute()
+    {
+        // Act
+        var three = new MappaUseConstructorAttribute<int, string, bool>(typeof(Uri));
+        var four = new MappaUseConstructorAttribute<int, string, bool, double>(typeof(Uri));
+        var five = new MappaUseConstructorAttribute<int, string, bool, double, float>(typeof(Uri));
+        var six = new MappaUseConstructorAttribute<int, string, bool, double, float, long>(typeof(Uri));
+        var seven = new MappaUseConstructorAttribute<int, string, bool, double, float, long, short>(typeof(Uri));
+
+        // Assert
+        three.TargetType.Should().Be<Uri>();
+        three.ParameterTypes.Should().HaveCount(3);
+        four.ParameterTypes.Should().HaveCount(4);
+        five.ParameterTypes.Should().HaveCount(5);
+        six.ParameterTypes.Should().HaveCount(6);
+        seven.ParameterTypes.Should().HaveCount(7);
+        seven.TargetType.Should().Be<Uri>();
     }
 
     /// <summary>

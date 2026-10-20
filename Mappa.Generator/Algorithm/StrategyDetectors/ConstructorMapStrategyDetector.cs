@@ -59,6 +59,12 @@ internal sealed partial class ConstructorMapStrategyDetector
             mapStrategy = objectFactoryStrategy;
         }
 
+        // 00b. [MappaUseConstructor] forces empty / mapping / parameterized constructor for TargetType
+        else if (this.TryDetectForcedUseConstructor(out var forcedConstructorStrategy))
+        {
+            mapStrategy = forcedConstructorStrategy;
+        }
+
         // 01. Constructor TargetType(SourceType input) exists -> InvokeMappingConstructorStrategy ( IMapStrategy(T.InputParameterType, S) )
         else if (this.CanInvokeMappingConstructor(out var invokeConstructor, out var argumentStrategy))
         {

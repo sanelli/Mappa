@@ -269,4 +269,22 @@
     <data name="ProjectionMethodMapReplacedByStructuralStrategy" xml:space="preserve">
         <value>Method '{0}' inlines map method '{1}' using a re-derived structural strategy; the map method body is not invoked in the queryable projection.</value>
     </data>
+    <data name="MappaUseConstructorNoEmptyConstructor" xml:space="preserve">
+        <value>Method '{0}' defines [MappaUseConstructor] with ConstructorType.NoParameters for type '{1}', but no invokable parameterless constructor exists.</value>
+    </data>
+    <data name="MappaUseConstructorNoMatchingParameterizedConstructor" xml:space="preserve">
+        <value>Method '{0}' defines [MappaUseConstructor] with ConstructorType.WithParameters for type '{1}', but no invokable constructor matches the specified parameter types.</value>
+    </data>
+    <data name="MappaUseConstructorInvalidConfiguration" xml:space="preserve">
+        <value>Method '{0}' defines an invalid [MappaUseConstructor] for type '{1}': {2}.</value>
+    </data>
+    <data name="MappaUseConstructorCannotMap" xml:space="preserve">
+        <value>Method '{0}' defines [MappaUseConstructor] for type '{1}', but the selected constructor cannot be mapped from the source.</value>
+    </data>
+    <data name="DuplicateMappaUseConstructorForTargetType" xml:space="preserve">
+        <value>Method '{0}' defines more than one [MappaUseConstructor] targeting type '{1}'.</value>
+    </data>
+    <data name="MappaUseConstructorAttributeNotUsed" xml:space="preserve">
+        <value>Method '{0}' defines [MappaUseConstructor] for type '{1}', but that type is not constructed using the selected constructor in the mapping.</value>
+    </data>
 </root>

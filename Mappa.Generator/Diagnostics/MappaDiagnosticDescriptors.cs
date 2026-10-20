@@ -100,6 +100,12 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? preferredInterfaceNotClosedGenericInterface;
     private static DiagnosticDescriptor? preferredInterfaceImplementingTypeInvalid;
     private static DiagnosticDescriptor? projectionMethodMapReplacedByStructuralStrategy;
+    private static DiagnosticDescriptor? mappaUseConstructorNoEmptyConstructor;
+    private static DiagnosticDescriptor? mappaUseConstructorNoMatchingParameterizedConstructor;
+    private static DiagnosticDescriptor? mappaUseConstructorInvalidConfiguration;
+    private static DiagnosticDescriptor? mappaUseConstructorCannotMap;
+    private static DiagnosticDescriptor? duplicateMappaUseConstructorForTargetType;
+    private static DiagnosticDescriptor? mappaUseConstructorAttributeNotUsed;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -788,6 +794,54 @@ internal static class MappaDiagnosticDescriptors
         => projectionMethodMapReplacedByStructuralStrategy ??= BuildWarning(
             MappaDiagnosticsKind.ProjectionMethodMapReplacedByStructuralStrategy,
             DiagnosticsResources.ProjectionMethodMapReplacedByStructuralStrategy);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MappaUseConstructorNoEmptyConstructor"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MappaUseConstructorNoEmptyConstructor
+        => mappaUseConstructorNoEmptyConstructor ??= BuildError(
+            MappaDiagnosticsKind.MappaUseConstructorNoEmptyConstructor,
+            DiagnosticsResources.MappaUseConstructorNoEmptyConstructor);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MappaUseConstructorNoMatchingParameterizedConstructor"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MappaUseConstructorNoMatchingParameterizedConstructor
+        => mappaUseConstructorNoMatchingParameterizedConstructor ??= BuildError(
+            MappaDiagnosticsKind.MappaUseConstructorNoMatchingParameterizedConstructor,
+            DiagnosticsResources.MappaUseConstructorNoMatchingParameterizedConstructor);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MappaUseConstructorInvalidConfiguration"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MappaUseConstructorInvalidConfiguration
+        => mappaUseConstructorInvalidConfiguration ??= BuildError(
+            MappaDiagnosticsKind.MappaUseConstructorInvalidConfiguration,
+            DiagnosticsResources.MappaUseConstructorInvalidConfiguration);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MappaUseConstructorCannotMap"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MappaUseConstructorCannotMap
+        => mappaUseConstructorCannotMap ??= BuildError(
+            MappaDiagnosticsKind.MappaUseConstructorCannotMap,
+            DiagnosticsResources.MappaUseConstructorCannotMap);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.DuplicateMappaUseConstructorForTargetType"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor DuplicateMappaUseConstructorForTargetType
+        => duplicateMappaUseConstructorForTargetType ??= BuildError(
+            MappaDiagnosticsKind.DuplicateMappaUseConstructorForTargetType,
+            DiagnosticsResources.DuplicateMappaUseConstructorForTargetType);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MappaUseConstructorAttributeNotUsed"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MappaUseConstructorAttributeNotUsed
+        => mappaUseConstructorAttributeNotUsed ??= BuildWarning(
+            MappaDiagnosticsKind.MappaUseConstructorAttributeNotUsed,
+            DiagnosticsResources.MappaUseConstructorAttributeNotUsed);
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(

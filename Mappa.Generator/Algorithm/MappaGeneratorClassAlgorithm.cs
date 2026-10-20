@@ -166,6 +166,7 @@ internal sealed class MappaGeneratorClassAlgorithm
 
                 var methodContext = new MappaMethodGeneratorContext(classContext, mappaUserSettings, mapMethod);
                 methodContext.ValidatePreferredInterfaceAttributes(this.Compilation);
+                methodContext.ValidateMappaUseConstructorAttributes(this.Compilation);
                 var typeIdentifierAlgorithm = new TypeMapIdentifierAlgorithm(
                     methodContext,
                     this.Compilation,
@@ -174,6 +175,7 @@ internal sealed class MappaGeneratorClassAlgorithm
                 if (strategy is not NoMapStrategy && !methodContext.HasErrorDiagnostics)
                 {
                     methodContext.ReportPreferredInterfaceNotNeededWarnings();
+                    methodContext.ReportMappaUseConstructorUnusedWarnings();
                 }
 
                 var mapHookResolver = new MapHookResolver(this.Compilation, classContext, mapMethod);
