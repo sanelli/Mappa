@@ -59,7 +59,8 @@ internal static class Program
         MappaAssignToContextAttributeMapperRunner.Run(report);
         MappaBeforeAfterMapHooksAttributeMapperRunner.Run(report);
         MappaDependencyInjectionRegistrarRunner.Run(report);
-        MappaDependencyProtobufMapperRunner.Run(report);
+        ProtobufWellKnownTypesMapperRunner.Run(report);
+        BsonWellKnownTypesMapperRunner.Run(report);
         MappaIgnoreMappersRunner.Run(report);
         MappaObjectFactoryMapperRunner.Run(report);
         MappaIgnoreTargetPropertyAttributeMapperRunner.Run(report);

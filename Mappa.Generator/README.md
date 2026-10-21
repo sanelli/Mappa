@@ -72,6 +72,8 @@ When no existing method applies (or for root methods), `TypeMapIdentifierAlgorit
 2. Nullable
 3. Polymorphic *(only at the root, or immediately after nullable unwrapping — not at every nested level)*
 4. Enum
+4b. Bson well-known types *(only when `BsonWellKnownTypes` is `Enable`)*
+4c. Protobuf well-known types *(only when `ProtobufWellKnownTypes` is `Enable`)*
 5. String
 6. Date & time
 7a. IQueryable projection *(root methods with `IQueryable<TSource>` → `IQueryable<TTarget>` only)*
@@ -153,6 +155,18 @@ When `ReferenceReusing` is enabled and the map method declares `MappaContext`, g
     - **String → enum** and **enum → enum** member-name matching is case-sensitive by default; enable `CaseInsensitiveEnumMap` for case-insensitive member name or Description matching;
     - Warning **MP00039** is suppressed for members excluded via `[MappaMapEnumIgnore]` and when `[MappaMapEnumDefault]` is configured with `UseDefaultValue`;
     - Errors **MP00047**–**MP00054** halt mapping generation when enum configuration attribute validation fails (see [enum mapping configuration attributes](../Documentation/mappa-attributes.md#mappamapenummember-mappamapenumignore-and-mappamapenumdefault)).
+
+### 4b. Bson well-known types strategy
+
+- _When_: `BsonWellKnownTypes` is `Enable` and `MongoDB.Bson` types are available — `string`/`byte[]` ↔ `ObjectId`, or `Decimal128` → `decimal`.
+- _What_: Emits `ObjectId.Parse` / `new ObjectId` / `ToString` / `ToByteArray` / `Decimal128.ToDecimal` as appropriate.
+- _Notes_: Opt-in; consumer references `MongoDB.Bson`. Runs before the string strategy. See [algorithm §4b](../Documentation/mappa-generator-algorithm.md#4b-bson-well-known-types-strategy).
+
+### 4c. Protobuf well-known types strategy
+
+- _When_: `ProtobufWellKnownTypes` is `Enable` and well-known protobuf types are available — Timestamp/Duration and scalar wrappers.
+- _What_: Emits library helpers (`FromDateTime`, `ToTimeSpan`, wrapper `.Value`, etc.).
+- _Notes_: Opt-in; consumer references `Google.Protobuf`. Distinct from `ProtobufOptional`. See [algorithm §4c](../Documentation/mappa-generator-algorithm.md#4c-protobuf-well-known-types-strategy).
 
 ### 5. String strategy
 
@@ -337,11 +351,9 @@ Currently unsupported features include:
 - `ReferenceReusing` / `MaxRuntimeDepth` (and `MappaContext`) on `IQueryable` projection map methods.
 
 Other relevant packages:
-- [Mappa](https://www.nuget.org/packages/Mappa/): attributes and `MappaContext` used to drive the source generator;
-- [Mappa Protobuf](https://www.nuget.org/packages/Mappa.Dependency.Protobuf/): methods to map `Google.Protobuf.WellKnownTypes` objects from [Google.Protobuf](https://www.nuget.org/packages/Google.Protobuf) package into common objects.
-- [Mappa Protobuf dependency](https://www.nuget.org/packages/Mappa.Dependency.Protobuf.DependencyInjection/): utility methods to register the Protobuf mapper.
-- [Mappa Bson](https://www.nuget.org/packages/Mappa.Dependency.Bson/): methods to map `MongoDB.Bson` objects from [MongoDB.Bson](https://www.nuget.org/packages/MongoDB.Bson) package into common objects.
-- [Mappa Bson dependency](https://www.nuget.org/packages/Mappa.Dependency.Bson.DependencyInjection/): utility methods to register the Bson mapper.
+- [Mappa](https://www.nuget.org/packages/Mappa/): attributes and `MappaContext` used to drive the source generator.
+
+For Bson/Protobuf well-known types, enable `BsonWellKnownTypes` / `ProtobufWellKnownTypes` and reference [MongoDB.Bson](https://www.nuget.org/packages/MongoDB.Bson/) or [Google.Protobuf](https://www.nuget.org/packages/Google.Protobuf/).
 
 You can find [samples](https://github.com/sanelli/Mappa/tree/main/Mappa.Samples) here.
 Visit the Mappa [documentation](https://github.com/sanelli/Mappa/blob/main/Documentation/README.md) to learn more.

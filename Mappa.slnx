@@ -34,14 +34,6 @@
     <File Path="README.md" />
   </Folder>
   <Project Path="Mappa.Benchmark/Mappa.Benchmark.csproj" />
-  <Project Path="Mappa.Dependency.Bson.DependencyInjection.Tests/Mappa.Dependency.Bson.DependencyInjection.Tests.csproj" />
-  <Project Path="Mappa.Dependency.Bson.DependencyInjection/Mappa.Dependency.Bson.DependencyInjection.csproj" />
-  <Project Path="Mappa.Dependency.Bson.Tests/Mappa.Dependency.Bson.Tests.csproj" />
-  <Project Path="Mappa.Dependency.Bson/Mappa.Dependency.Bson.csproj" />
-  <Project Path="Mappa.Dependency.Protobuf.DependencyInjection.Tests/Mappa.Dependency.Protobuf.DependencyInjection.Tests.csproj" />
-  <Project Path="Mappa.Dependency.Protobuf.DependencyInjection/Mappa.Dependency.Protobuf.DependencyInjection.csproj" />
-  <Project Path="Mappa.Dependency.Protobuf.Tests/Mappa.Dependency.Protobuf.Tests.csproj" />
-  <Project Path="Mappa.Dependency.Protobuf/Mappa.Dependency.Protobuf.csproj" />
   <Project Path="Mappa.Ext.Alpha/Mappa.Ext.Alpha.csproj" />
   <Project Path="Mappa.Ext.Beta/Mappa.Ext.Beta.csproj" />
   <Project Path="Mappa.Generator.Tests/Mappa.Generator.Tests.csproj" />

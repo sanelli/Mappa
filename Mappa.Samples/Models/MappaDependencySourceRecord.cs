@@ -5,7 +5,7 @@
 namespace Mappa.Samples.Models;
 
 /// <summary>
-/// Target model to use for mapping using the <see cref="Mappa.Dependency.Protobuf.MappaProtobufMapper"/>.
+/// Source model used with <see cref="ProtobufWellKnownTypesMapper"/> for Timestamp mapping.
 /// </summary>
 /// <param name="TimeStamp">A timestamp.</param>
 public sealed record MappaDependencySourceRecord(DateTime TimeStamp);

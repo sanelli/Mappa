@@ -2,12 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using Mappa.Dependency.Bson;
-using Mappa.Dependency.Protobuf;
-
 using Microsoft.Extensions.DependencyInjection;
-
-using MongoDB.Bson;
 
 namespace Mappa.Samples.Tests;
 
@@ -37,11 +32,11 @@ public sealed class MappaDependencyInjectionRegistrarUnitTests
     }
 
     /// <summary>
-    /// <c>RegisterMappaSamples</c> registers <see cref="MappaBsonMapper"/> via <c>InjectFromAssemblies</c>.
+    /// <c>RegisterMappaSamples</c> registers well-known settings sample mappers.
     /// </summary>
     [Fact]
     [UnitTest]
-    public void RegisterMappaSamplesRegistersBsonMapperFromInjectFromAssemblies()
+    public void RegisterMappaSamplesRegistersWellKnownTypesMappers()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -49,29 +44,10 @@ public sealed class MappaDependencyInjectionRegistrarUnitTests
         // Act
         services.RegisterMappaSamples();
         using var provider = services.BuildServiceProvider();
-        var mapper = provider.GetRequiredService<MappaBsonMapper>();
 
         // Assert
-        mapper.MapToString(ObjectId.Empty).Should().Be(ObjectId.Empty.ToString());
-    }
-
-    /// <summary>
-    /// <c>RegisterMappaSamples</c> registers <see cref="MappaProtobufMapper"/> via <c>InjectFromAssemblies</c>.
-    /// </summary>
-    [Fact]
-    [UnitTest]
-    public void RegisterMappaSamplesRegistersProtobufMapperFromInjectFromAssemblies()
-    {
-        // Arrange
-        var services = new ServiceCollection();
-
-        // Act
-        services.RegisterMappaSamples();
-        using var provider = services.BuildServiceProvider();
-        var mapper = provider.GetRequiredService<MappaProtobufMapper>();
-
-        // Assert
-        mapper.Should().NotBeNull();
+        provider.GetRequiredService<ProtobufWellKnownTypesMapper>().Should().NotBeNull();
+        provider.GetRequiredService<BsonWellKnownTypesMapper>().Should().NotBeNull();
     }
 
     /// <summary>
@@ -110,25 +86,6 @@ public sealed class MappaDependencyInjectionRegistrarUnitTests
 
         // Assert
         mapper.MapFromGuidToArray(Guid.Empty).Should().Equal(Guid.Empty.ToByteArray());
-    }
-
-    /// <summary>
-    /// <c>RegisterMappaSamplesSameAssembly</c> does not discover mappers from referenced assemblies.
-    /// </summary>
-    [Fact]
-    [UnitTest]
-    public void RegisterMappaSamplesSameAssemblyDoesNotRegisterExternalMappers()
-    {
-        // Arrange
-        var services = new ServiceCollection();
-
-        // Act
-        services.RegisterMappaSamplesSameAssembly();
-        using var provider = services.BuildServiceProvider();
-
-        // Assert
-        provider.GetService<MappaBsonMapper>().Should().BeNull();
-        provider.GetService<MappaProtobufMapper>().Should().BeNull();
     }
 
     /// <summary>

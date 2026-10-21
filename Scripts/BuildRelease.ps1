@@ -1,7 +1,5 @@
 foreach ($project in $(
-        "Mappa", "Mappa.Generator",
-        "Mappa.Dependency.Protobuf", "Mappa.Dependency.Protobuf.DependencyInjection",
-        "Mappa.Dependency.Bson", "Mappa.Dependency.Bson.DependencyInjection"))
+        "Mappa", "Mappa.Generator"))
 {
     dotnet clean -c Release $project
     dotnet build -c Release $project

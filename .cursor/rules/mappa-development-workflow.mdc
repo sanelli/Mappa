@@ -52,15 +52,7 @@ The development environment uses **PowerShell**. All commands run in the termina
    7. Mappa.Samples.Tests
    8. Mappa.Samples.Aot
    9. Mappa.Benchmark
-   10. Mappa.Dependency.Bson
-   11. Mappa.Dependency.Bson.DependencyInjection
-   12. Mappa.Dependency.Bson.Tests
-   13. Mappa.Dependency.Bson.DependencyInjection.Tests
-   14. Mappa.Dependency.Protobuf
-   15. Mappa.Dependency.Protobuf.DependencyInjection
-   16. Mappa.Dependency.Protobuf.Tests
-   17. Mappa.Dependency.Protobuf.DependencyInjection.Tests
-   18. Documentation
+   10. Documentation
 - The post-generator **Versioning** bump (after **Mappa.Generator** is complete and tests pass) still runs **after** the post–generator-tests coverage checkpoint (and any developer-requested gap fixes), and **before** **Mappa.Samples**.
 
 ## Coding Standards

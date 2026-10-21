@@ -2,12 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using Mappa.Dependency.Bson;
-using Mappa.Dependency.Protobuf;
-
 using Microsoft.Extensions.DependencyInjection;
-
-using MongoDB.Bson;
 
 namespace Mappa.Samples.Aot.Runners;
 
@@ -22,11 +17,11 @@ internal static class MappaDependencyInjectionRegistrarRunner
     /// <param name="report">The AOT report.</param>
     public static void Run(AotReport report)
     {
-        RunInjectFromAssembliesRegistrar(report);
+        RunRegisterMappaSamplesRegistrar(report);
         RunSameAssemblyRegistrar(report);
     }
 
-    private static void RunInjectFromAssembliesRegistrar(AotReport report)
+    private static void RunRegisterMappaSamplesRegistrar(AotReport report)
     {
         report.BeginMapper(nameof(MappaDependencyInjectionRegistrar));
 
@@ -34,8 +29,8 @@ internal static class MappaDependencyInjectionRegistrarRunner
         services.RegisterMappaSamples();
         using var provider = services.BuildServiceProvider();
         var mapper = provider.GetRequiredService<MappaDependencyInjectionMapper>();
-        var bsonMapper = provider.GetRequiredService<MappaBsonMapper>();
-        var protobufMapper = provider.GetRequiredService<MappaProtobufMapper>();
+        var protobufMapper = provider.GetRequiredService<ProtobufWellKnownTypesMapper>();
+        var bsonMapper = provider.GetRequiredService<BsonWellKnownTypesMapper>();
 
         report.RecordInvocation(
             nameof(MappaDependencyInjectionMapper.Map),
@@ -44,17 +39,17 @@ internal static class MappaDependencyInjectionRegistrarRunner
             42,
             mapper.Map(42));
         report.RecordInvocation(
-            nameof(MappaBsonMapper.MapToString),
-            "ObjectId",
-            "string",
-            ObjectId.Empty,
-            bsonMapper.MapToString(ObjectId.Empty));
-        report.RecordInvocation(
-            nameof(MappaProtobufMapper),
+            nameof(ProtobufWellKnownTypesMapper),
             "resolved",
-            "MappaProtobufMapper",
-            "InjectFromAssemblies",
+            "ProtobufWellKnownTypesMapper",
+            "same-assembly",
             protobufMapper.GetType().Name);
+        report.RecordInvocation(
+            nameof(BsonWellKnownTypesMapper),
+            "resolved",
+            "BsonWellKnownTypesMapper",
+            "same-assembly",
+            bsonMapper.GetType().Name);
         report.RecordInvocation(
             "IgnoreType",
             "IdentityStrategyMapper",
@@ -96,17 +91,5 @@ internal static class MappaDependencyInjectionRegistrarRunner
             "null",
             "excluded",
             provider.GetService<IdentityStrategyMapper>() is null);
-        report.RecordInvocation(
-            "NoInjectFromAssemblies",
-            "MappaBsonMapper",
-            "null",
-            "not-discovered",
-            provider.GetService<MappaBsonMapper>() is null);
-        report.RecordInvocation(
-            "NoInjectFromAssemblies",
-            "MappaProtobufMapper",
-            "null",
-            "not-discovered",
-            provider.GetService<MappaProtobufMapper>() is null);
     }
 }

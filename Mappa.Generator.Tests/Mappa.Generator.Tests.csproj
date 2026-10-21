@@ -14,6 +14,7 @@
 	</PropertyGroup>
 	<ItemGroup>
         <PackageReference Include="Google.Protobuf" Version="3.35.1" />
+        <PackageReference Include="MongoDB.Bson" Version="3.10.0" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.10" />
         <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.14" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.8.1" />
@@ -44,8 +45,6 @@
 	<ItemGroup>
         <ProjectReference Include="..\Mappa.Generator\Mappa.Generator.csproj" />
 		<ProjectReference Include="..\Mappa\Mappa.csproj" />
-        <ProjectReference Include="..\Mappa.Dependency.Bson\Mappa.Dependency.Bson.csproj" />
-        <ProjectReference Include="..\Mappa.Dependency.Protobuf\Mappa.Dependency.Protobuf.csproj" />
         <ProjectReference Include="..\Mappa.Ext.Alpha\Mappa.Ext.Alpha.csproj" />
         <ProjectReference Include="..\Mappa.Ext.Beta\Mappa.Ext.Beta.csproj" />
 	</ItemGroup>
