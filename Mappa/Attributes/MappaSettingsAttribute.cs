@@ -240,6 +240,20 @@ public sealed class MappaSettingsAttribute
     public BooleanSetting ProtobufOptional { get; set; } = BooleanSetting.Undefined;
 
     /// <summary>
+    /// Gets or sets a value indicating whether well-known <c>MongoDB.Bson.ObjectId</c> type-pair
+    /// mappings are enabled when performing mapping.
+    /// It is not enabled by default.
+    /// </summary>
+    public BooleanSetting BsonWellKnownTypes { get; set; } = BooleanSetting.Undefined;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether well-known <c>Google.Protobuf.WellKnownTypes</c>
+    /// (Timestamp / Duration) type-pair mappings are enabled when performing mapping.
+    /// It is not enabled by default.
+    /// </summary>
+    public BooleanSetting ProtobufWellKnownTypes { get; set; } = BooleanSetting.Undefined;
+
+    /// <summary>
     /// Gets or sets a value indicating whether the mapping method should be surrounded
     /// by <c>#pragma warning disable</c>.
     /// </summary>
