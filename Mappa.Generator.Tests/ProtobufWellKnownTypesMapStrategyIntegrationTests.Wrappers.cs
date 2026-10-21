@@ -931,6 +931,205 @@ public sealed partial class ProtobufWellKnownTypesMapStrategyIntegrationTests
     }
 
     /// <summary>
+    /// Maps root <c>sbyte</c> to <c>Int32Value</c>.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapSByteToInt32ValueWhenProtobufWellKnownTypesEnabled()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  [Mappa]
+                                  [MappaSettings(ProtobufWellKnownTypes = BooleanSetting.Enable)]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial Google.Protobuf.WellKnownTypes.Int32Value Map(sbyte input);
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                Int32ValueTypeName,
+                NullableAnnotation.NotAnnotated,
+                typeof(sbyte).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(2)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                Int32ValueTypeName,
+                                "__mappa_tmp_1",
+                                assertInitialization => assertInitialization.BeObjectCreationExpressionSyntax(
+                                    Int32ValueTypeName,
+                                    ("Value", a => a.BeIdentifierNameSyntax("input")))))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeReturnStatement(expression => expression.BeIdentifierNameSyntax("__mappa_tmp_1")));
+                });
+    }
+
+    /// <summary>
+    /// Maps root <c>short</c> to <c>Int32Value</c>.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapShortToInt32ValueWhenProtobufWellKnownTypesEnabled()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  [Mappa]
+                                  [MappaSettings(ProtobufWellKnownTypes = BooleanSetting.Enable)]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial Google.Protobuf.WellKnownTypes.Int32Value Map(short input);
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                Int32ValueTypeName,
+                NullableAnnotation.NotAnnotated,
+                typeof(short).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(2)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                Int32ValueTypeName,
+                                "__mappa_tmp_1",
+                                assertInitialization => assertInitialization.BeObjectCreationExpressionSyntax(
+                                    Int32ValueTypeName,
+                                    ("Value", a => a.BeIdentifierNameSyntax("input")))))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeReturnStatement(expression => expression.BeIdentifierNameSyntax("__mappa_tmp_1")));
+                });
+    }
+
+    /// <summary>
+    /// Maps root <see cref="float"/> to <c>DoubleValue</c>.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapFloatToDoubleValueWhenProtobufWellKnownTypesEnabled()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  [Mappa]
+                                  [MappaSettings(ProtobufWellKnownTypes = BooleanSetting.Enable)]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial Google.Protobuf.WellKnownTypes.DoubleValue Map(float input);
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                DoubleValueTypeName,
+                NullableAnnotation.NotAnnotated,
+                typeof(float).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(2)
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                DoubleValueTypeName,
+                                "__mappa_tmp_1",
+                                assertInitialization => assertInitialization.BeObjectCreationExpressionSyntax(
+                                    DoubleValueTypeName,
+                                    ("Value", a => a.BeIdentifierNameSyntax("input")))))
+                        .HasNextSyntaxNode(syntaxNodeAssertions =>
+                            syntaxNodeAssertions.BeReturnStatement(expression => expression.BeIdentifierNameSyntax("__mappa_tmp_1")));
+                });
+    }
+
+    /// <summary>
+    /// When <c>ProtobufWellKnownTypes</c> is enabled, <see cref="long"/> to <c>Int32Value</c> cannot use the wrapper strategy
+    /// (source type is outside the Int32Value widening set).
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CannotMapLongToInt32ValueWhenProtobufWellKnownTypesEnabled()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  [Mappa]
+                                  [MappaSettings(ProtobufWellKnownTypes = BooleanSetting.Enable)]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial Google.Protobuf.WellKnownTypes.Int32Value Map(long input);
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(
+                MappaDiagnosticDescriptors.CannotIdentifyStrategy,
+                "long",
+                Int32ValueTypeName);
+    }
+
+    /// <summary>
     /// Maps root <c>Int64Value</c> to <see cref="long"/>.
     /// </summary>
     /// <returns>The async task.</returns>

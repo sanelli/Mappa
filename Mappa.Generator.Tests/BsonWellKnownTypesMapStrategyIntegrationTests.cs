@@ -332,60 +332,6 @@ public sealed class BsonWellKnownTypesMapStrategyIntegrationTests
     }
 
     /// <summary>
-    /// Maps root <see cref="decimal"/> to <see cref="Decimal128"/> via constructor.
-    /// </summary>
-    /// <returns>The async task.</returns>
-    [Fact]
-    [IntegrationTest]
-    public async Task CanMapDecimalToDecimal128WhenBsonWellKnownTypesEnabled()
-    {
-        // Arrange
-        const string sourceCode = """
-                                  #nullable enable
-                                  using Mappa;
-                                  using Mappa.Attributes;
-
-                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
-
-                                  [Mappa]
-                                  [MappaSettings(BsonWellKnownTypes = BooleanSetting.Enable)]
-                                  public sealed partial class Mapper
-                                  {
-                                      public partial MongoDB.Bson.Decimal128 Map(decimal input);
-                                  }
-                                  """;
-
-        // Act
-        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
-
-        // Assert
-        generatedResults.Should()
-            .NotHaveDiagnostics()
-            .HaveGeneratedSourceCode()
-            .WithCompilationUnit()
-            .NotBeNull().And
-            .HaveDefaultMapMethod(
-                Decimal128TypeName,
-                NullableAnnotation.NotAnnotated,
-                typeof(decimal).ToString(),
-                NullableAnnotation.NotAnnotated,
-                blockSyntaxAssertions =>
-                {
-                    blockSyntaxAssertions
-                        .HasSyntaxNodesCount(2)
-                        .HasNextSyntaxNode(syntaxNodeAssertions =>
-                            syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
-                                Decimal128TypeName,
-                                "__mappa_tmp_1",
-                                assertInitialization => assertInitialization.BeObjectCreationExpressionSyntax(
-                                    Decimal128TypeName,
-                                    parameter => parameter.BeIdentifierNameSyntax("input"))))
-                        .HasNextSyntaxNode(syntaxNodeAssertions =>
-                            syntaxNodeAssertions.BeReturnStatement(expression => expression.BeIdentifierNameSyntax("__mappa_tmp_1")));
-                });
-    }
-
-    /// <summary>
     /// Maps root <see cref="Decimal128"/> to <see cref="decimal"/> via <c>ToDecimal</c>.
     /// </summary>
     /// <returns>The async task.</returns>
@@ -505,6 +451,57 @@ public sealed class BsonWellKnownTypesMapStrategyIntegrationTests
         generatedResults.Should()
             .HaveDiagnostics(1)
             .NotHaveGeneratedAnySourceCode();
+    }
+
+    /// <summary>
+    /// When <c>BsonWellKnownTypes</c> is enabled, <see cref="int"/> to <see cref="ObjectId"/> still cannot be mapped
+    /// (no candidate matches; detector returns without a strategy).
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CannotMapIntToObjectIdWhenBsonWellKnownTypesEnabled()
+    {
+        // Arrange
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  [Mappa]
+                                  [MappaSettings(BsonWellKnownTypes = BooleanSetting.Enable)]
+                                  public sealed partial class Mapper
+                                  {
+                                      public partial MongoDB.Bson.ObjectId Map(int input);
+                                  }
+                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(
+                MappaDiagnosticDescriptors.CannotIdentifyStrategy,
+                "int",
+                ObjectIdTypeName)
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                ObjectIdTypeName,
+                NullableAnnotation.NotAnnotated,
+                typeof(int).ToString(),
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(1)
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement());
+                });
     }
 
     /// <summary>

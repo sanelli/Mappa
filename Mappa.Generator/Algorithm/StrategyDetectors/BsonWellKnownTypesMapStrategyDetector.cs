@@ -66,7 +66,6 @@ internal sealed class BsonWellKnownTypesMapStrategyDetector
         yield return (this.CanMapObjectIdToString, () => new ObjectIdToStringMapStrategy(targetType, sourceType));
         yield return (this.CanMapByteArrayToObjectId, () => new ByteArrayToObjectIdMapStrategy(targetType, sourceType));
         yield return (this.CanMapObjectIdToByteArray, () => new ObjectIdToByteArrayMapStrategy(targetType, sourceType));
-        yield return (this.CanMapDecimalToDecimal128, () => new DecimalToDecimal128MapStrategy(targetType, sourceType));
         yield return (this.CanMapDecimal128ToDecimal, () => new Decimal128ToDecimalMapStrategy(targetType, sourceType));
     }
 
@@ -85,9 +84,6 @@ internal sealed class BsonWellKnownTypesMapStrategyDetector
         => this.context.SourceType.IsObjectId(this.compilation)
            && this.context.TargetType.IsArray()
            && this.context.TargetType.GetElementType().IsByte();
-
-    private bool CanMapDecimalToDecimal128()
-        => this.context.SourceType.IsDecimal() && this.context.TargetType.IsDecimal128(this.compilation);
 
     private bool CanMapDecimal128ToDecimal()
         => this.context.SourceType.IsDecimal128(this.compilation) && this.context.TargetType.IsDecimal();

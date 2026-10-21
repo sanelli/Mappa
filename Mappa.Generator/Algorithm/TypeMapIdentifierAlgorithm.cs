@@ -131,23 +131,23 @@ internal class TypeMapIdentifierAlgorithm
     {
         IMapStrategyDetector[] detectors = [
 
-            // 01. BSON well-known type strategies (before identity so Enable overrides implicit conversions such as decimal → Decimal128).
-            new BsonWellKnownTypesMapStrategyDetector(this.Context, this.Compilation),
-
-            // 02. Protobuf well-known type strategies.
-            new ProtobufWellKnownTypesMapStrategyDetector(this.Context, this.Compilation),
-
-            // 03. Identity strategy.
+            // 01. Identity strategy.
             new IdentityMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
 
-            // 04. Nullable related strategies.
+            // 02. Nullable related strategies.
             new NullableMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
 
-            // 05. Type mapping.
+            // 03. Type mapping.
             new PolymorphismMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
 
-            // 06. Enum related strategies.
+            // 04. Enum related strategies.
             new EnumMapStrategyDetector(this.Context, this.Compilation),
+
+            // 05. BSON well-known type strategies.
+            new BsonWellKnownTypesMapStrategyDetector(this.Context, this.Compilation),
+
+            // 06. Protobuf well-known type strategies.
+            new ProtobufWellKnownTypesMapStrategyDetector(this.Context, this.Compilation),
 
             // 07. String related strategies.
             new StringMapStrategyDetector(this.Context, this.Compilation),
