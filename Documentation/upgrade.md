@@ -4,6 +4,12 @@
 
 ### Breaking changes
 
+- **`Mappa.Dependency.Bson` / `Mappa.Dependency.Protobuf` packages removed**
+  - The NuGet packages `Mappa.Dependency.Bson`, `Mappa.Dependency.Protobuf`, and their `.DependencyInjection` companions are no longer published.
+  - Reference [MongoDB.Bson](https://www.nuget.org/packages/MongoDB.Bson/) and/or [Google.Protobuf](https://www.nuget.org/packages/Google.Protobuf/) directly, then enable `BsonWellKnownTypes` / `ProtobufWellKnownTypes` on `[MappaSettings]` (or via `.editorconfig`).
+  - Remove `[MappaDependency]` fields that pointed at `MappaBsonMapper` / `MappaProtobufMapper`, and stop calling `RegisterMappaBson` / `RegisterMappaProtobuf`.
+  - Well-known mappings are **opt-in** (default off). See [tutorial — Bson and Protobuf well-known types](./tutorial.md#bson-and-protobuf-well-known-types) and [algorithm §4b / §4c](./mappa-generator-algorithm.md#4b-bson-well-known-types-strategy).
+
 - **Deterministic selection among multiple collection/dictionary interface implementations**
   - When a type implements more than one closed version of the same open interface family (for example both `IEnumerable<int>` and `IEnumerable<string>`), Mappa no longer uses an unspecified first-match walk of `AllInterfaces` for element / key / value typing.
   - Selection order is: matching `[MappaSourcePreferredInterfaceImplementation]` / `[MappaTargetPreferredInterfaceImplementation]` attribute (when usable) → unique usable **implicit** implementation → unique usable **explicit** implementation → fall-through.
