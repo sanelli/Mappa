@@ -45,6 +45,8 @@
 		<ProjectReference Include="..\Mappa\Mappa.csproj" />
         <ProjectReference Include="..\Mappa.Dependency.Bson\Mappa.Dependency.Bson.csproj" />
         <ProjectReference Include="..\Mappa.Dependency.Protobuf\Mappa.Dependency.Protobuf.csproj" />
+        <ProjectReference Include="..\Mappa.Ext.Alpha\Mappa.Ext.Alpha.csproj" />
+        <ProjectReference Include="..\Mappa.Ext.Beta\Mappa.Ext.Beta.csproj" />
 	</ItemGroup>
 	<ItemGroup>
 		<AdditionalFiles Include="../stylecop.json" />

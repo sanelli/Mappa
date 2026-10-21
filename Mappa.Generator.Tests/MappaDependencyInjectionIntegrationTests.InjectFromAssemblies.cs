@@ -13,8 +13,8 @@ namespace Mappa.Generator.Tests;
 /// </summary>
 public sealed partial class MappaDependencyInjectionIntegrationTests
 {
-    private const string GlobalProtobufMapper = "global::Mappa.Dependency.Protobuf.MappaProtobufMapper";
-    private const string GlobalBsonMapper = "global::Mappa.Dependency.Bson.MappaBsonMapper";
+    private const string GlobalExternalMapperAlpha = "global::Mappa.Ext.Alpha.ExternalMapperAlpha";
+    private const string GlobalExternalMapperBeta = "global::Mappa.Ext.Beta.ExternalMapperBeta";
 
     /// <summary>
     /// When <c>InjectFromAssemblies</c> is unset, only same-assembly mappers are registered.
@@ -91,8 +91,8 @@ public sealed partial class MappaDependencyInjectionIntegrationTests
         // Arrange
         const string sourceCode = """
                                   using Mappa.Attributes;
-                                  using Mappa.Dependency.Bson;
-                                  using Mappa.Dependency.Protobuf;
+                                  using Mappa.Ext.Alpha;
+                                  using Mappa.Ext.Beta;
 
                                   namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
@@ -103,8 +103,8 @@ public sealed partial class MappaDependencyInjectionIntegrationTests
 
                                   [MappaDependencyInjection(InjectFromAssemblies = new[]
                                   {
-                                      typeof(MappaProtobufMapper),
-                                      typeof(MappaBsonMapper),
+                                      typeof(ExternalMapperAlpha),
+                                      typeof(ExternalMapperBeta),
                                   })]
                                   public static partial class Registrar
                                   {
@@ -114,7 +114,7 @@ public sealed partial class MappaDependencyInjectionIntegrationTests
         // Act
         var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
 
-        // Assert — assemblies ordered by Identity.GetDisplayName(): Bson, Protobuf, then test assembly.
+        // Assert — assemblies ordered by Identity.GetDisplayName(): Alpha, Beta, then test assembly.
         generatedResults.Should()
             .NotHaveDiagnostics()
             .HaveGeneratedSourceCode()
@@ -140,10 +140,10 @@ public sealed partial class MappaDependencyInjectionIntegrationTests
                                     .HasSyntaxNodesCount(4)
                                     .HasNextSyntaxNode(nodeAssertions =>
                                         nodeAssertions.BeInvocationExpressionSyntaxStatement(
-                                            $"services.AddSingleton<{GlobalBsonMapper}>"))
+                                            $"services.AddSingleton<{GlobalExternalMapperAlpha}>"))
                                     .HasNextSyntaxNode(nodeAssertions =>
                                         nodeAssertions.BeInvocationExpressionSyntaxStatement(
-                                            $"services.AddSingleton<{GlobalProtobufMapper}>"))
+                                            $"services.AddSingleton<{GlobalExternalMapperBeta}>"))
                                     .HasNextSyntaxNode(nodeAssertions =>
                                         nodeAssertions.BeInvocationExpressionSyntaxStatement(
                                             $"services.AddSingleton<{GlobalMapperA}>"))
@@ -166,7 +166,7 @@ public sealed partial class MappaDependencyInjectionIntegrationTests
         // Arrange
         const string sourceCode = """
                                   using Mappa.Attributes;
-                                  using Mappa.Dependency.Protobuf;
+                                  using Mappa.Ext.Alpha;
 
                                   namespace Mappa.Generator.Tests.UnitTests.SourceCode;
 
@@ -176,8 +176,8 @@ public sealed partial class MappaDependencyInjectionIntegrationTests
                                   }
 
                                   [MappaDependencyInjection(
-                                      InjectFromAssemblies = new[] { typeof(MappaProtobufMapper) },
-                                      IgnoreType = new[] { typeof(MappaProtobufMapper) })]
+                                      InjectFromAssemblies = new[] { typeof(ExternalMapperAlpha) },
+                                      IgnoreType = new[] { typeof(ExternalMapperAlpha) })]
                                   public static partial class Registrar
                                   {
                                   }

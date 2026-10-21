@@ -198,6 +198,8 @@ public sealed class MappaGlobalOptionsTests
                                     [*.cs]
                                     mappa.cultureinfosettings = NotACulture
                                     mappa.protobufoptional = NotABoolean
+                                    mappa.bsonwellknowntypes = NotABoolean
+                                    mappa.protobufwellknowntypes = Enable
                                     mappa.enumtoenummapsetting = Undefined
                                     mappa.identitymapdeepcopy = NestedDeepCopy
                                     mappa.enumerableconcretetype = Undefined
@@ -215,6 +217,8 @@ public sealed class MappaGlobalOptionsTests
 
         options.CultureInfoSetting.Should().Be(CultureInfoSetting.None);
         options.ProtobufOptional.Should().Be(BooleanSetting.Undefined);
+        options.BsonWellKnownTypes.Should().Be(BooleanSetting.Undefined);
+        options.ProtobufWellKnownTypes.Should().Be(BooleanSetting.Enable);
         options.EnumToEnumMapSetting.Should().Be(EnumToEnumMapSetting.Undefined);
         options.IdentityMapDeepCopy.Should().Be(IdentityMapDeepCopySetting.NestedDeepCopy);
         options.EnumerableConcreteType.Should().Be(EnumerableConcreteTypeSetting.Undefined);

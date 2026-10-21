@@ -55,6 +55,9 @@ internal static class TypeSymbolExtensions
     private const string TimeSpanFullName = "System.TimeSpan";
     private const string UriFullName = "System.Uri";
     private const string GuidFullName = "System.Guid";
+    private const string ObjectIdFullName = "MongoDB.Bson.ObjectId";
+    private const string ProtobufTimestampFullName = "Google.Protobuf.WellKnownTypes.Timestamp";
+    private const string ProtobufDurationFullName = "Google.Protobuf.WellKnownTypes.Duration";
     private const string DateTimeOffsetFullName = "System.DateTimeOffset";
     private const string KeyValuePairFullName = "System.Collections.Generic.KeyValuePair`2";
     private const string SetInterfaceFullName = "System.Collections.Generic.ISet`1";
@@ -1603,6 +1606,60 @@ internal static class TypeSymbolExtensions
         var guidType = compilation.GetTypeByMetadataName(GuidFullName);
         var isGuid = SymbolEqualityComparer.Default.Equals(guidType, typeSymbol.OriginalDefinition);
         return isGuid;
+    }
+
+    /// <summary>
+    /// Check if the type is MongoDB.Bson.ObjectId.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is MongoDB.Bson.ObjectId.</returns>
+    internal static bool IsObjectId(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var objectIdType = compilation.GetTypeByMetadataName(ObjectIdFullName);
+        if (objectIdType is null)
+        {
+            return false;
+        }
+
+        var isObjectId = SymbolEqualityComparer.Default.Equals(objectIdType, typeSymbol.OriginalDefinition);
+        return isObjectId;
+    }
+
+    /// <summary>
+    /// Check if the type is Google.Protobuf.WellKnownTypes.Timestamp.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is Google.Protobuf.WellKnownTypes.Timestamp.</returns>
+    internal static bool IsProtobufTimestamp(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var timestampType = compilation.GetTypeByMetadataName(ProtobufTimestampFullName);
+        if (timestampType is null)
+        {
+            return false;
+        }
+
+        var isTimestamp = SymbolEqualityComparer.Default.Equals(timestampType, typeSymbol.OriginalDefinition);
+        return isTimestamp;
+    }
+
+    /// <summary>
+    /// Check if the type is Google.Protobuf.WellKnownTypes.Duration.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is Google.Protobuf.WellKnownTypes.Duration.</returns>
+    internal static bool IsProtobufDuration(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var durationType = compilation.GetTypeByMetadataName(ProtobufDurationFullName);
+        if (durationType is null)
+        {
+            return false;
+        }
+
+        var isDuration = SymbolEqualityComparer.Default.Equals(durationType, typeSymbol.OriginalDefinition);
+        return isDuration;
     }
 
     /// <summary>
