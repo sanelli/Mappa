@@ -7,13 +7,6 @@ using System.Globalization;
 using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Tests.Abstractions;
 
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-
-using Xunit;
-using Xunit.OpenCategories.V3;
-
 namespace Mappa.Generator.Tests;
 
 /// <summary>

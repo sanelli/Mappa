@@ -4,7 +4,6 @@
 
 using Mappa.Dependency.Bson;
 using Mappa.Dependency.Protobuf;
-using Mappa.Samples;
 
 using Microsoft.Extensions.DependencyInjection;
 

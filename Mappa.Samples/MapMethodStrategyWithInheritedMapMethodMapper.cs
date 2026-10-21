@@ -81,7 +81,7 @@ public sealed partial class MapMethodStrategyWithDependencyPropertyBaseClass
 public sealed partial class MapMethodStrategyWithDependencyFieldBaseClass
 {
     [MappaDependency]
-    private MapMethodStrategyInheritedDerivedDependency dependencyField = new();
+    private readonly MapMethodStrategyInheritedDerivedDependency dependencyField = new();
 
     /// <summary>
     /// Map from <see cref="SourceClassWithInnerClassModel"/> to <see cref="TargetClassWithInnerClassModel"/>.

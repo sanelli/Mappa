@@ -8,11 +8,6 @@ using Mappa.Generator.Models.Strategies;
 using Mappa.Generator.Tests.Abstractions;
 using Mappa.Generator.Tests.Helpers;
 
-using Microsoft.CodeAnalysis;
-
-using Xunit;
-using Xunit.OpenCategories.V3;
-
 namespace Mappa.Generator.Tests;
 
 /// <summary>

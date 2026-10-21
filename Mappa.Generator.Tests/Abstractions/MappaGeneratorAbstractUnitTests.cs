@@ -4,7 +4,6 @@
 
 using Google.Protobuf.WellKnownTypes;
 
-using Mappa.Attributes;
 using Mappa.Dependency.Bson;
 using Mappa.Dependency.Protobuf;
 using Mappa.Ext.Alpha;

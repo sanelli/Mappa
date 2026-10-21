@@ -3,7 +3,6 @@
 // </copyright>
 
 using Mappa.Generator.Tests.Assertions;
-using Mappa.Generator.Tests.Assertions.Extensions;
 
 namespace Mappa.Generator.Tests;
 

@@ -5,7 +5,6 @@
 #pragma warning disable SA1402 // File may only contain a single type
 #pragma warning disable S1118 // Utility classes should not have public constructors
 
-using Mappa;
 using Mappa.Attributes;
 using Mappa.Samples.Models;
 
@@ -417,7 +416,7 @@ public sealed partial class MapEmptyConstructorWithTypeLocatedMethodWithSourceCl
 [Mappa]
 public sealed partial class MapEmptyConstructorWithFieldLocatedMethodWithSourceClassAndPropertyInput
 {
-    private MapperDependencyHelper helper = new();
+    private readonly MapperDependencyHelper helper = new();
 
     /// <summary>
     /// Map from <see cref="SourceClassModel"/> to <see cref="TargetClassModel"/>
@@ -510,7 +509,7 @@ public sealed partial class MapEmptyConstructorWithStaticPropertyAndStaticMapMet
 [Mappa]
 public sealed partial class MapEmptyConstructorWithStaticFieldAndStaticMapMethodMapper
 {
-    private static MapperDependencyHelper helper = new();
+    private static readonly MapperDependencyHelper Helper = new();
 
     /// <summary>
     /// Map from <see cref="SourceClassModel"/> to <see cref="TargetClassModel"/>
@@ -524,7 +523,7 @@ public sealed partial class MapEmptyConstructorWithStaticFieldAndStaticMapMethod
     /// </summary>
     /// <param name="source">The source model to map.</param>
     /// <returns>The mapped object.</returns>
-    [MappaInvokeMethod(nameof(TargetClassModel.ParamA), nameof(helper), nameof(MapperDependencyHelper.Map))]
+    [MappaInvokeMethod(nameof(TargetClassModel.ParamA), nameof(Helper), nameof(MapperDependencyHelper.Map))]
     public static partial TargetClassModel Map(SourceClassModel source);
 }
 

@@ -7,8 +7,6 @@ using Mappa.Generator.Tests.Abstractions;
 using Mappa.Generator.Tests.Assertions;
 using Mappa.Generator.Tests.Assertions.Extensions;
 
-using Microsoft.CodeAnalysis;
-
 using MongoDB.Bson;
 
 namespace Mappa.Generator.Tests;

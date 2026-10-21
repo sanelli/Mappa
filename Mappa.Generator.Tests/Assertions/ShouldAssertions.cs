@@ -6,8 +6,6 @@ using System.Diagnostics;
 
 using Mappa.Generator.Tests.Models;
 
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-
 namespace Mappa.Generator.Tests.Assertions;
 
 /// <summary>

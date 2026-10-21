@@ -14,7 +14,7 @@ namespace Mappa.Samples;
 public partial class MappaDependencyProtobufMapper
 {
     [MappaDependency]
-    private Mappa.Dependency.Protobuf.MappaProtobufMapper dependency = new();
+    private readonly Mappa.Dependency.Protobuf.MappaProtobufMapper dependency = new();
 
     /// <summary>
     /// Map from <see cref="MappaDependencySourceRecord"/> to <see cref="MappaDependencyTargetModel"/>.

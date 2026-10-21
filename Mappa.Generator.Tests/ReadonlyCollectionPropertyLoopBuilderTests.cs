@@ -2,8 +2,6 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using System.Reflection;
-
 using Mappa.Generator.Builders.Strategies;
 using Mappa.Generator.Exceptions;
 using Mappa.Generator.Extensions;
@@ -11,11 +9,6 @@ using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 using Mappa.Generator.Tests.Abstractions;
 using Mappa.Generator.Tests.Helpers;
-
-using Microsoft.CodeAnalysis;
-
-using Xunit;
-using Xunit.OpenCategories.V3;
 
 namespace Mappa.Generator.Tests;
 

@@ -2,8 +2,6 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using Mappa.Samples;
-
 namespace Mappa.Samples.Aot.Runners;
 
 /// <summary>

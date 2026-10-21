@@ -2,8 +2,6 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using Mappa.Samples.Models;
-
 using Microsoft.EntityFrameworkCore;
 
 namespace Mappa.Samples.Tests;

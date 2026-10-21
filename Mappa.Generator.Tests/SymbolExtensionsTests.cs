@@ -5,11 +5,6 @@
 using Mappa.Generator.Extensions;
 using Mappa.Generator.Tests.Abstractions;
 
-using Microsoft.CodeAnalysis;
-
-using Xunit;
-using Xunit.OpenCategories.V3;
-
 namespace Mappa.Generator.Tests;
 
 /// <summary>

@@ -4,7 +4,6 @@
 
 #pragma warning disable SA1402 // File may only contain a single type
 
-using Mappa;
 using Mappa.Attributes;
 using Mappa.Samples.Models;
 

@@ -4,8 +4,6 @@
 
 using System.Collections.Immutable;
 
-using Microsoft.CodeAnalysis;
-
 namespace Mappa.Generator.Tests.Helpers;
 
 /// <summary>

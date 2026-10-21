@@ -6,9 +6,6 @@ using Mappa.Generator.Extensions;
 using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 
-using Xunit;
-using Xunit.OpenCategories.V3;
-
 namespace Mappa.Generator.Tests;
 
 /// <summary>
