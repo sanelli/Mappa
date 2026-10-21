@@ -2,9 +2,12 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Tests.Abstractions;
 using Mappa.Generator.Tests.Assertions;
 using Mappa.Generator.Tests.Assertions.Extensions;
+
+using Microsoft.CodeAnalysis;
 
 using MongoDB.Bson;
 
@@ -507,12 +510,13 @@ public sealed class BsonWellKnownTypesMapStrategyIntegrationTests
     }
 
     /// <summary>
-    /// When <c>BsonWellKnownTypes</c> is disabled, <see cref="decimal"/> to <see cref="Decimal128"/> cannot use the well-known strategy.
+    /// When <c>BsonWellKnownTypes</c> is disabled, <see cref="Decimal128"/> to <see cref="decimal"/> cannot be mapped
+    /// (no well-known strategy; constructor detection does not apply to <see cref="decimal"/>).
     /// </summary>
     /// <returns>The async task.</returns>
     [Fact]
     [IntegrationTest]
-    public async Task CannotMapDecimalToDecimal128WhenBsonWellKnownTypesDisabled()
+    public async Task CannotMapDecimal128ToDecimalWhenBsonWellKnownTypesDisabled()
     {
         // Arrange
         const string sourceCode = """
@@ -526,7 +530,7 @@ public sealed class BsonWellKnownTypesMapStrategyIntegrationTests
                                   [MappaSettings(BsonWellKnownTypes = BooleanSetting.Disable)]
                                   public sealed partial class Mapper
                                   {
-                                      public partial MongoDB.Bson.Decimal128 Map(decimal input);
+                                      public partial decimal Map(MongoDB.Bson.Decimal128 input);
                                   }
                                   """;
 
@@ -536,6 +540,23 @@ public sealed class BsonWellKnownTypesMapStrategyIntegrationTests
         // Assert
         generatedResults.Should()
             .HaveDiagnostics(1)
-            .NotHaveGeneratedAnySourceCode();
+            .HaveDiagnostic(
+                MappaDiagnosticDescriptors.CannotIdentifyStrategy,
+                Decimal128TypeName,
+                "decimal")
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                typeof(decimal).ToString(),
+                NullableAnnotation.NotAnnotated,
+                Decimal128TypeName,
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(1)
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement());
+                });
     }
 }
