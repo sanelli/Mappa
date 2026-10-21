@@ -2,16 +2,12 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using Mappa;
 using Mappa.Generator.Builders.Strategies;
 using Mappa.Generator.Exceptions;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 using Mappa.Generator.Tests.Abstractions;
 using Mappa.Generator.Tests.Helpers;
-
-using Xunit;
-using Xunit.OpenCategories.V3;
 
 namespace Mappa.Generator.Tests;
 

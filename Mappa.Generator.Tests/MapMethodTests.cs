@@ -2,17 +2,12 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using Mappa.Attributes;
 using Mappa.Generator.Exceptions;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 using Mappa.Generator.Tests.Abstractions;
 
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-
-using Xunit;
-using Xunit.OpenCategories.V3;
 
 namespace Mappa.Generator.Tests;
 

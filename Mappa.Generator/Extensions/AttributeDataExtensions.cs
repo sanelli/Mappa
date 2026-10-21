@@ -244,6 +244,20 @@ internal static class AttributeDataExtensions
                     attribute.ProtobufOptional = (BooleanSetting)value;
                 }
             },
+            [nameof(MappaSettingsAttribute.BsonWellKnownTypes)] = static (attribute, constant) =>
+            {
+                if (constant.Value is int value)
+                {
+                    attribute.BsonWellKnownTypes = (BooleanSetting)value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.ProtobufWellKnownTypes)] = static (attribute, constant) =>
+            {
+                if (constant.Value is int value)
+                {
+                    attribute.ProtobufWellKnownTypes = (BooleanSetting)value;
+                }
+            },
             [nameof(MappaSettingsAttribute.PragmaWarning)] = static (attribute, constant) =>
             {
                 if (constant.Value is int value)

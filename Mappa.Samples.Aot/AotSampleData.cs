@@ -5,8 +5,6 @@
 using System.Collections.Concurrent;
 using System.Globalization;
 
-using Mappa;
-using Mappa.Samples;
 using Mappa.Samples.Models;
 
 using PolymorphismOne = Mappa.Samples.Models.Polymorphism.One;

@@ -172,6 +172,14 @@ namespace Mappa.Generator.Models;
 ///         <description>Set the default value to enable or disable the (protobuf) optional setting. Valid values are the values from the <see cref="BooleanSetting"/> <c>enum</c>.</description>
 ///     </item>
 ///     <item>
+///         <term><c>mappa.bsonwellknowntypes</c></term>
+///         <description>Set the default value to enable or disable well-known <c>MongoDB.Bson.ObjectId</c> type-pair mappings. Valid values are the values from the <see cref="BooleanSetting"/> <c>enum</c>.</description>
+///     </item>
+///     <item>
+///         <term><c>mappa.protobufwellknowntypes</c></term>
+///         <description>Set the default value to enable or disable well-known <c>Google.Protobuf.WellKnownTypes</c> (Timestamp / Duration) type-pair mappings. Valid values are the values from the <see cref="BooleanSetting"/> <c>enum</c>.</description>
+///     </item>
+///     <item>
 ///         <term><c>mappa.pragmawarning</c></term>
 ///         <description>Set the default value disable or not apply the <c>#pragma warning</c> around the mapping method. Valid values are the values from the <see cref="PragmaWarningSetting"/> <c>enum</c>.</description>
 ///     </item>
@@ -296,6 +304,8 @@ internal sealed class MappaGlobalOptions
     private const string MappaSettingsCultureInfoSettings = "cultureinfosettings";
     private const string MappaSettingsCultureName = "culturename";
     private const string MappaSettingsProtobufOptional = "protobufoptional";
+    private const string MappaSettingsBsonWellKnownTypes = "bsonwellknowntypes";
+    private const string MappaSettingsProtobufWellKnownTypes = "protobufwellknowntypes";
     private const string MappaSettingsPragmaWarning = "pragmawarning";
     private const string MappaSettingsFastCollections = "fastcollections";
     private const string MappaSettingsContainerCapacityConstructors = "containercapacityconstructors";
@@ -369,6 +379,8 @@ internal sealed class MappaGlobalOptions
         this.CultureName = ReadFormatOption(options, MappaSettingsCultureName);
         this.CultureInfoSetting = ReadCultureInfoSettingOption(options, MappaSettingsCultureInfoSettings);
         this.ProtobufOptional = ReadBooleanSettingOption(options, MappaSettingsProtobufOptional, BooleanSetting.Undefined);
+        this.BsonWellKnownTypes = ReadBooleanSettingOption(options, MappaSettingsBsonWellKnownTypes, BooleanSetting.Undefined);
+        this.ProtobufWellKnownTypes = ReadBooleanSettingOption(options, MappaSettingsProtobufWellKnownTypes, BooleanSetting.Undefined);
         this.PragmaWarning = ReadPragmaWarningSettingOption(options, MappaSettingsPragmaWarning);
         this.FastCollections = ReadBooleanSettingOption(options, MappaSettingsFastCollections, BooleanSetting.Undefined);
         this.ContainerCapacityConstructors = ReadBooleanSettingOption(options, MappaSettingsContainerCapacityConstructors, BooleanSetting.Undefined);
@@ -501,6 +513,12 @@ internal sealed class MappaGlobalOptions
 
     /// <inheritdoc/>
     public BooleanSetting ProtobufOptional { get; }
+
+    /// <inheritdoc/>
+    public BooleanSetting BsonWellKnownTypes { get; }
+
+    /// <inheritdoc/>
+    public BooleanSetting ProtobufWellKnownTypes { get; }
 
     /// <inheritdoc/>
     public PragmaWarningSetting PragmaWarning { get; }

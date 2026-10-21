@@ -840,7 +840,6 @@ Use `[MappaDependencyInjection]` on a **separate** partial registrar class to ge
 
 ```csharp
 using Mappa.Attributes;
-using Mappa.Dependency.Bson;
 using Microsoft.Extensions.DependencyInjection;
 
 [Mappa]
@@ -849,9 +848,13 @@ public sealed partial class PersonMapper
     public partial PersonDto Map(Person source);
 }
 
+// Marker type from another assembly that contains [Mappa] mappers:
+// using Other.Company.Mappers;
+
 [MappaDependencyInjection(
     "RegisterMappers",
-    InjectFromAssemblies = new[] { typeof(MappaBsonMapper) })]
+    InjectFromAssemblies = new[] { typeof(Other.Company.Mappers.ExternalMapperMarker) },
+    IgnoreType = new[] { typeof(LegacyMapper) })]
 public static partial class MapperRegistrar
 {
 }
@@ -860,12 +863,11 @@ public static partial class MapperRegistrar
 var services = new ServiceCollection();
 services.RegisterMappers();
 var mapper = services.BuildServiceProvider().GetRequiredService<PersonMapper>();
-var bson = services.BuildServiceProvider().GetRequiredService<MappaBsonMapper>();
 ```
 
 Reference `Microsoft.Extensions.DependencyInjection` in the project. Configure lifetime, interface injection, method name, accessibility, exclusions (`IgnoreType`), and cross-assembly discovery (`InjectFromAssemblies`) via attribute properties. See [Mappa attributes — MappaDependencyInjection](./mappa-attributes.md#mappadependencyinjection) for defaults and diagnostics **MP00070**–**MP00073**.
 
-See also: [MappaDependencyInjectionRegistrar.cs](../Mappa.Samples/MappaDependencyInjectionRegistrar.cs) (with `InjectFromAssemblies`), [MappaDependencyInjectionSameAssemblyRegistrar.cs](../Mappa.Samples/MappaDependencyInjectionSameAssemblyRegistrar.cs), and [MappaDependencyInjectionMapper.cs](../Mappa.Samples/MappaDependencyInjectionMapper.cs).
+See also: [MappaDependencyInjectionRegistrar.cs](../Mappa.Samples/MappaDependencyInjectionRegistrar.cs) (`IgnoreType`), [MappaDependencyInjectionSameAssemblyRegistrar.cs](../Mappa.Samples/MappaDependencyInjectionSameAssemblyRegistrar.cs), and [MappaDependencyInjectionMapper.cs](../Mappa.Samples/MappaDependencyInjectionMapper.cs).
 
 ### Polymorphism support
 Use `[MappaTypeMapping]` to map different concrete source types to different target types. Use `[MappaTypeMappingDefault]` to define the fallback behaviour. The generic helpers `[MappaTypeMapping<TTarget, TSource>]` and `[MappaTypeMappingDefault<TDefault>]` (for `MapSourceType` with an explicit target) are equivalent to the `typeof` forms:
@@ -916,32 +918,34 @@ public sealed partial class Mapper
 
 See also: [ProtobufOptionalMapper.cs](../Mappa.Samples/ProtobufOptionalMapper.cs).
 
-### Protobuf and Bson dependency packages
-Install the dependency packages and register their mappers on your mapper class:
+### Bson and Protobuf well-known types
+The generator can emit mappings for common MongoDB Bson and Google Protobuf well-known types when you opt in with `[MappaSettings]`. Reference the library packages yourself — there are no separate `Mappa.Dependency.*` packages.
+
+**Migration from removed dependency packages**
+
+1. Remove package references to `Mappa.Dependency.Bson`, `Mappa.Dependency.Protobuf`, and their `.DependencyInjection` companions.
+2. Add [MongoDB.Bson](https://www.nuget.org/packages/MongoDB.Bson/) and/or [Google.Protobuf](https://www.nuget.org/packages/Google.Protobuf/) as needed.
+3. Enable `BsonWellKnownTypes` and/or `ProtobufWellKnownTypes` on `[MappaSettings]` (class or method).
+4. Delete `[MappaDependency]` fields that pointed at `MappaBsonMapper` / `MappaProtobufMapper`, and stop calling `RegisterMappaBson` / `RegisterMappaProtobuf`.
 
 ```csharp
 using Mappa.Attributes;
-using Mappa.Dependency.Protobuf;
+using Google.Protobuf.WellKnownTypes;
+using MongoDB.Bson;
 
 [Mappa]
+[MappaSettings(
+    BsonWellKnownTypes = BooleanSetting.Enable,
+    ProtobufWellKnownTypes = BooleanSetting.Enable)]
 public sealed partial class Mapper
 {
-    [MappaDependency]
-    private readonly MappaProtobufMapper protobufMapper = new();
-
-    public partial Target Map(SourceWithTimestamp source);
+    public partial ObjectId MapToObjectId(string source);
+    public partial Timestamp MapToTimestamp(DateTime source);
 }
 ```
 
-For Bson, use `Mappa.Dependency.Bson.MappaBsonMapper` in the same way to map `ObjectId` to and from `string` or `byte[]`.
+Supported pairs (when the setting is `Enable` and the type is in the compilation) include `ObjectId` ↔ `string`/`byte[]`, `Decimal128` → `decimal`, `Timestamp`/`Duration` date-time conversions, and protobuf scalar wrappers. See [algorithm §4b](./mappa-generator-algorithm.md#4b-bson-well-known-types-strategy) and [§4c](./mappa-generator-algorithm.md#4c-protobuf-well-known-types-strategy).
 
-With dependency injection, register the mappers via `RegisterMappaProtobuf` or `RegisterMappaBson`:
-
-```csharp
-services.RegisterMappaProtobuf();
-services.RegisterMappaBson();
-```
-
-See also: [MappaDependencyProtobufMapper.cs](../Mappa.Samples/MappaDependencyProtobufMapper.cs), [Mappa.Dependency.Protobuf](../Mappa.Dependency.Protobuf/README.md), and [Mappa.Dependency.Bson](../Mappa.Dependency.Bson/README.md).
+See also: [BsonWellKnownTypesMapper.cs](../Mappa.Samples/BsonWellKnownTypesMapper.cs) and [ProtobufWellKnownTypesMapper.cs](../Mappa.Samples/ProtobufWellKnownTypesMapper.cs).
 
 For a complete catalog of samples, see [Mappa.Samples](../Mappa.Samples/README.md).

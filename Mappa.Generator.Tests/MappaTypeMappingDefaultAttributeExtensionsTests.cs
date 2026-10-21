@@ -2,12 +2,9 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
-using Mappa.Attributes;
 using Mappa.Generator.Exceptions;
 using Mappa.Generator.Extensions;
 using Mappa.Generator.Tests.Abstractions;
-
-using Microsoft.CodeAnalysis;
 
 namespace Mappa.Generator.Tests;
 

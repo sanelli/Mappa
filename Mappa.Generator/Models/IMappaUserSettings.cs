@@ -199,6 +199,18 @@ internal interface IMappaUserSettings
     BooleanSetting ProtobufOptional { get; }
 
     /// <summary>
+    /// Gets a value indicating whether well-known <c>MongoDB.Bson.ObjectId</c> type-pair
+    /// mappings are enabled when performing mapping.
+    /// </summary>
+    BooleanSetting BsonWellKnownTypes { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether well-known <c>Google.Protobuf.WellKnownTypes</c>
+    /// (Timestamp / Duration) type-pair mappings are enabled when performing mapping.
+    /// </summary>
+    BooleanSetting ProtobufWellKnownTypes { get; }
+
+    /// <summary>
     /// Gets a value indicating whether the mapping method should be surrounded
     /// by <c>#pragma warning disable</c>.
     /// </summary>

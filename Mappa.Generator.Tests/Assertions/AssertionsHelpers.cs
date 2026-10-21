@@ -106,7 +106,7 @@ internal static partial class AssertionsHelpers
 
         return namedTypeSymbol;
 
-        string[] SplitWithBoundaries(string s, char separator, char open, char close)
+        static string[] SplitWithBoundaries(string s, char separator, char open, char close)
         {
             var parts = new List<string>();
             int opened = 0;

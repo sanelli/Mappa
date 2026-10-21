@@ -4,12 +4,8 @@
 
 using System.Globalization;
 
-using Mappa;
 using Mappa.Generator.Exceptions;
 using Mappa.Generator.Helpers;
-
-using Xunit;
-using Xunit.OpenCategories.V3;
 
 namespace Mappa.Generator.Tests;
 

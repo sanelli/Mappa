@@ -64,12 +64,13 @@ See the [tutorial](../Documentation/tutorial.md) for a guided introduction, or b
 | [`MapMethodStrategyMapper.cs`](MapMethodStrategyMapper.cs) | Existing-method strategy on the mapper class |
 | [`MapMethodStrategyWithUserCustomInstanceMethodMapper.cs`](MapMethodStrategyWithUserCustomInstanceMethodMapper.cs) | Custom instance mapping methods |
 | [`MapMethodStrategyWithUserCustomStaticMethodMapper.cs`](MapMethodStrategyWithUserCustomStaticMethodMapper.cs) | Custom static mapping methods |
-| [`MappaDependencyProtobufMapper.cs`](MappaDependencyProtobufMapper.cs) | `[MappaDependency]` with Protobuf mapper |
-| [`MappaDependencyInjectionRegistrar.cs`](MappaDependencyInjectionRegistrar.cs) / [`MappaDependencyInjectionMapper.cs`](MappaDependencyInjectionMapper.cs) | `[MappaDependencyInjection]` registers all `[Mappa]` mappers in the assembly |
+| [`MappaDependencyInjectionRegistrar.cs`](MappaDependencyInjectionRegistrar.cs) / [`MappaDependencyInjectionMapper.cs`](MappaDependencyInjectionMapper.cs) | `[MappaDependencyInjection]` registers `[Mappa]` mappers (`IgnoreType`) |
 
-## Protobuf and collections
+## Bson, Protobuf, and collections
 | Sample | Demonstrates |
 |--------|--------------|
+| [`BsonWellKnownTypesMapper.cs`](BsonWellKnownTypesMapper.cs) | `BsonWellKnownTypes` for `ObjectId` and `Decimal128` |
+| [`ProtobufWellKnownTypesMapper.cs`](ProtobufWellKnownTypesMapper.cs) | `ProtobufWellKnownTypes` for Timestamp/Duration and scalar wrappers |
 | [`ProtobufOptionalMapper.cs`](ProtobufOptionalMapper.cs) | `ProtobufOptional` setting for optional protobuf fields |
 | [`ReadOnlyTargetCollectionMapper.cs`](ReadOnlyTargetCollectionMapper.cs) | Get-only collection properties and protobuf collections |
 

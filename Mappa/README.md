@@ -51,6 +51,8 @@ Via `MappaSettings` the following settings can be tweaked:
 - `CultureInfoSetting`: defines which culture to use when mapping any of the above types and numeric types (current culture, invariant culture, or user-defined culture);
 - `CultureName`: defines the culture to use when user-defined culture is selected by `CultureInfoSetting`;
 - `ProtobufOptional`: enables or disables the ability of the [Mappa source generator](https://www.nuget.org/packages/Mappa.Generator/) to handle `optional` fields in protobuf models;
+- `BsonWellKnownTypes`: when `Enable`, maps `MongoDB.Bson` well-known types (`ObjectId` ↔ `string`/`byte[]`, `Decimal128` → `decimal`) inline (disabled by default; reference `MongoDB.Bson`);
+- `ProtobufWellKnownTypes`: when `Enable`, maps `Google.Protobuf.WellKnownTypes` (`Timestamp`, `Duration`, scalar wrappers) inline (disabled by default; reference `Google.Protobuf`);
 - `PragmaWarning`: allows surrounding the generated methods with a `#pragma warning disable` block;
 - `FastCollections`: uses `Span<T>` to make mappings involving arrays and `System.Collections.Generic.List<T>` faster;
 - `ContainerCapacityConstructors`: supports mapping custom containers using (if available) a constructor accepting an integer value representing the initial capacity of the container;
@@ -91,11 +93,9 @@ Via `MappaMapEnumDefaultBehavior` the following settings can be tweaked:
 - `UseDefaultValue`: returns the default value provided via `[MappaMapEnumDefault]` when an enum value cannot be mapped.
 
 Relevant packages:
-- [Mappa source generator](https://www.nuget.org/packages/Mappa.Generator/): source generator that automatically generates mappings between classes and value types;
-- [Mappa Protobuf](https://www.nuget.org/packages/Mappa.Dependency.Protobuf/): methods to map `Google.Protobuf.WellKnownTypes` objects from the [Google.Protobuf](https://www.nuget.org/packages/Google.Protobuf) package into common objects;
-- [Mappa Protobuf dependency](https://www.nuget.org/packages/Mappa.Dependency.Protobuf.DependencyInjection/): utility methods to register the Protobuf mapper;
-- [Mappa Bson](https://www.nuget.org/packages/Mappa.Dependency.Bson/): methods to map `MongoDB.Bson` objects from the [MongoDB.Bson](https://www.nuget.org/packages/MongoDB.Bson) package into common objects;
-- [Mappa Bson dependency](https://www.nuget.org/packages/Mappa.Dependency.Bson.DependencyInjection/): utility methods to register the Bson mapper.
+- [Mappa source generator](https://www.nuget.org/packages/Mappa.Generator/): source generator that automatically generates mappings between classes and value types.
+
+For Bson/Protobuf well-known types, enable `BsonWellKnownTypes` / `ProtobufWellKnownTypes` and reference [MongoDB.Bson](https://www.nuget.org/packages/MongoDB.Bson/) or [Google.Protobuf](https://www.nuget.org/packages/Google.Protobuf/).
 
 You can find [samples](https://github.com/sanelli/Mappa/tree/main/Mappa.Samples) here.
 Visit the Mappa [documentation](https://github.com/sanelli/Mappa/blob/main/Documentation/README.md) to learn more.

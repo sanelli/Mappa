@@ -4,7 +4,6 @@
 
 using System.Collections;
 using System.Linq.Expressions;
-using System.Reflection;
 
 using Mappa.Generator.Tests.Abstractions;
 using Mappa.Generator.Tests.Assertions;

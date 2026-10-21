@@ -4,8 +4,6 @@
 
 using System.Globalization;
 
-using Mappa.Samples;
-
 namespace Mappa.Samples.Aot.Runners;
 
 /// <summary>

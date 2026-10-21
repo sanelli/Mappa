@@ -47,8 +47,7 @@ message TargetProtobufClassWithCollections
   map<string, int32> PropertyG = 2;
 }
 
-// Source model containing common types that can be mapped
-// using Protobuf mappa dependency package.
+// Target model containing a Timestamp field mapped via ProtobufWellKnownTypes.
 message MappaDependencyTargetModel
 {
     // A timestamp.

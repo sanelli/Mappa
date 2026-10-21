@@ -3,6 +3,7 @@
     <Import Project="$(MSBuildThisFileDirectory)../MappaVersion.targets"/>
 
     <PropertyGroup>
+        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
@@ -21,9 +22,8 @@
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.10" />
+        <PackageReference Include="MongoDB.Bson" Version="3.10.0" />
         <PackageReference Include="Mappa" Version="$(MappaVersion)" />
-        <PackageReference Include="Mappa.Dependency.Bson" Version="$(MappaVersion)" />
-        <PackageReference Include="Mappa.Dependency.Protobuf" Version="$(MappaVersion)" />
         <PackageReference Include="Mappa.Generator" Version="$(MappaVersion)">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

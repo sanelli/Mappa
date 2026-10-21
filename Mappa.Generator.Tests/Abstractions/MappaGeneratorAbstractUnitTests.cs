@@ -4,9 +4,8 @@
 
 using Google.Protobuf.WellKnownTypes;
 
-using Mappa.Attributes;
-using Mappa.Dependency.Bson;
-using Mappa.Dependency.Protobuf;
+using Mappa.Ext.Alpha;
+using Mappa.Ext.Beta;
 using Mappa.Generator.Tests.Helpers;
 using Mappa.Generator.Tests.Models;
 
@@ -117,8 +116,8 @@ public abstract class MappaGeneratorAbstractUnitTests
         var metadataReferences = new List<PortableExecutableReference>
         {
             MetadataReference.CreateFromFile(typeof(MappaAttribute).GetTypeInfo().Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(MappaProtobufMapper).GetTypeInfo().Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(MappaBsonMapper).GetTypeInfo().Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ExternalMapperAlpha).GetTypeInfo().Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ExternalMapperBeta).GetTypeInfo().Assembly.Location),
             MetadataReference.CreateFromFile(typeof(Timestamp).GetTypeInfo().Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ObjectId).GetTypeInfo().Assembly.Location),
             MetadataReference.CreateFromFile(typeof(object).GetTypeInfo().Assembly.Location),

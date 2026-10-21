@@ -5,9 +5,6 @@
 using Mappa.Generator.Algorithm.StrategyDetectors;
 using Mappa.Generator.Models;
 
-using Xunit;
-using Xunit.OpenCategories.V3;
-
 namespace Mappa.Generator.Tests;
 
 /// <summary>

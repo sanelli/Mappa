@@ -100,6 +100,8 @@ When no existing method applies (or for root methods), `TypeMapIdentifierAlgorit
 2. Nullable
 3. Polymorphic *(only at the root, or immediately after nullable unwrapping — not at every nested level)*
 4. Enum
+4b. Bson well-known types *(only when `BsonWellKnownTypes` is `Enable` and `MongoDB.Bson` types are in the compilation)*
+4c. Protobuf well-known types *(only when `ProtobufWellKnownTypes` is `Enable` and `Google.Protobuf.WellKnownTypes` types are in the compilation)*
 5. String
 6. Date & time
 7a. IQueryable projection *(root methods with `IQueryable<TSource>` → `IQueryable<TTarget>` only)*
@@ -217,6 +219,40 @@ When `ReferenceReusing` is `Enable` and the map method declares `MappaContext`:
     - **String → enum** and **enum → enum** member-name matching is case-sensitive by default; enable `CaseInsensitiveEnumMap` for case-insensitive member name or Description matching;
     - Warning **MP00039** is suppressed for members excluded via `[MappaMapEnumIgnore]` and when `[MappaMapEnumDefault]` is configured with `UseDefaultValue`;
     - Errors **MP00047**–**MP00054** halt mapping generation when enum configuration attribute validation fails (see [enum mapping configuration attributes](mappa-attributes.md#mappamapenummember-mappamapenumignore-and-mappamapenumdefault)).
+
+### 4b. Bson well-known types strategy
+
+- _When_:
+    - `MappaSettings.BsonWellKnownTypes` is `BooleanSetting.Enable` AND
+    - The relevant `MongoDB.Bson` type is present in the compilation AND one of:
+        - `string` ↔ `ObjectId`, or `byte[]` ↔ `ObjectId`;
+        - `Decimal128` → `decimal`;
+- _What_:
+    - **`string` → `ObjectId`**: `ObjectId.Parse(source)`;
+    - **`byte[]` → `ObjectId`**: `new ObjectId(source)`;
+    - **`ObjectId` → `string`**: `source.ToString()`;
+    - **`ObjectId` → `byte[]`**: `source.ToByteArray()`;
+    - **`Decimal128` → `decimal`**: `Decimal128.ToDecimal(source)`;
+- _Notes_:
+    - Disabled by default (`Undefined` / `Disable`); the consumer must reference [MongoDB.Bson](https://www.nuget.org/packages/MongoDB.Bson/);
+    - Nullable variants are handled by the nullable strategy wrapping these pairs;
+    - Placed before the string strategy so `string` ↔ `ObjectId` uses these dedicated mappings when enabled.
+
+### 4c. Protobuf well-known types strategy
+
+- _When_:
+    - `MappaSettings.ProtobufWellKnownTypes` is `BooleanSetting.Enable` AND
+    - The relevant `Google.Protobuf.WellKnownTypes` type is present in the compilation AND one of:
+        - `Timestamp` ↔ `DateTime` / `DateTimeOffset` / `DateOnly` / `TimeOnly` (no `TimeOnly` → `Timestamp`);
+        - `Duration` ↔ `TimeSpan`;
+        - Scalar wrappers (`StringValue`, `BoolValue`, `BytesValue`, `Int32Value`, `Int64Value`, `UInt32Value`, `UInt64Value`, `FloatValue`, `DoubleValue`) ↔ matching BCL scalars;
+- _What_:
+    - Timestamp/Duration use the library helpers (`ToDateTime`, `FromDateTime`, `ToTimeSpan`, `FromTimeSpan`, and related overloads);
+    - Wrappers map via `.Value` / object initializers (and `ByteString.CopyFrom` / `ToByteArray` for bytes);
+- _Notes_:
+    - Disabled by default; the consumer must reference [Google.Protobuf](https://www.nuget.org/packages/Google.Protobuf/);
+    - Nullable variants are handled by the nullable strategy;
+    - Distinct from `ProtobufOptional`, which only affects optional protobuf message fields.
 
 ### 5. String strategy
 
