@@ -14,7 +14,7 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Integration tests for Protobuf well-known type mapping strategies.
 /// </summary>
-public sealed class ProtobufWellKnownTypesMapStrategyIntegrationTests
+public sealed partial class ProtobufWellKnownTypesMapStrategyIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {
     private const string TimestampTypeName = "Google.Protobuf.WellKnownTypes.Timestamp";

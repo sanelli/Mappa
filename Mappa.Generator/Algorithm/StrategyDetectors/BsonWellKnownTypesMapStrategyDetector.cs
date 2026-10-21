@@ -66,33 +66,29 @@ internal sealed class BsonWellKnownTypesMapStrategyDetector
         yield return (this.CanMapObjectIdToString, () => new ObjectIdToStringMapStrategy(targetType, sourceType));
         yield return (this.CanMapByteArrayToObjectId, () => new ByteArrayToObjectIdMapStrategy(targetType, sourceType));
         yield return (this.CanMapObjectIdToByteArray, () => new ObjectIdToByteArrayMapStrategy(targetType, sourceType));
+        yield return (this.CanMapDecimalToDecimal128, () => new DecimalToDecimal128MapStrategy(targetType, sourceType));
+        yield return (this.CanMapDecimal128ToDecimal, () => new Decimal128ToDecimalMapStrategy(targetType, sourceType));
     }
 
     private bool CanMapStringToObjectId()
-    {
-        var sourceIsString = this.context.SourceType.IsString();
-        var targetIsObjectId = this.context.TargetType.IsObjectId(this.compilation);
-        return sourceIsString && targetIsObjectId;
-    }
+        => this.context.SourceType.IsString() && this.context.TargetType.IsObjectId(this.compilation);
 
     private bool CanMapObjectIdToString()
-    {
-        var sourceIsObjectId = this.context.SourceType.IsObjectId(this.compilation);
-        var targetIsString = this.context.TargetType.IsString();
-        return sourceIsObjectId && targetIsString;
-    }
+        => this.context.SourceType.IsObjectId(this.compilation) && this.context.TargetType.IsString();
 
     private bool CanMapByteArrayToObjectId()
-    {
-        var sourceIsByteArray = this.context.SourceType.IsArray() && this.context.SourceType.GetElementType().IsByte();
-        var targetIsObjectId = this.context.TargetType.IsObjectId(this.compilation);
-        return sourceIsByteArray && targetIsObjectId;
-    }
+        => this.context.SourceType.IsArray()
+           && this.context.SourceType.GetElementType().IsByte()
+           && this.context.TargetType.IsObjectId(this.compilation);
 
     private bool CanMapObjectIdToByteArray()
-    {
-        var sourceIsObjectId = this.context.SourceType.IsObjectId(this.compilation);
-        var targetIsByteArray = this.context.TargetType.IsArray() && this.context.TargetType.GetElementType().IsByte();
-        return sourceIsObjectId && targetIsByteArray;
-    }
+        => this.context.SourceType.IsObjectId(this.compilation)
+           && this.context.TargetType.IsArray()
+           && this.context.TargetType.GetElementType().IsByte();
+
+    private bool CanMapDecimalToDecimal128()
+        => this.context.SourceType.IsDecimal() && this.context.TargetType.IsDecimal128(this.compilation);
+
+    private bool CanMapDecimal128ToDecimal()
+        => this.context.SourceType.IsDecimal128(this.compilation) && this.context.TargetType.IsDecimal();
 }

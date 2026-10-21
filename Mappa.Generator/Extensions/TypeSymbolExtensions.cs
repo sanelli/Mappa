@@ -56,8 +56,18 @@ internal static class TypeSymbolExtensions
     private const string UriFullName = "System.Uri";
     private const string GuidFullName = "System.Guid";
     private const string ObjectIdFullName = "MongoDB.Bson.ObjectId";
+    private const string Decimal128FullName = "MongoDB.Bson.Decimal128";
     private const string ProtobufTimestampFullName = "Google.Protobuf.WellKnownTypes.Timestamp";
     private const string ProtobufDurationFullName = "Google.Protobuf.WellKnownTypes.Duration";
+    private const string ProtobufStringValueFullName = "Google.Protobuf.WellKnownTypes.StringValue";
+    private const string ProtobufBoolValueFullName = "Google.Protobuf.WellKnownTypes.BoolValue";
+    private const string ProtobufBytesValueFullName = "Google.Protobuf.WellKnownTypes.BytesValue";
+    private const string ProtobufInt32ValueFullName = "Google.Protobuf.WellKnownTypes.Int32Value";
+    private const string ProtobufInt64ValueFullName = "Google.Protobuf.WellKnownTypes.Int64Value";
+    private const string ProtobufUInt32ValueFullName = "Google.Protobuf.WellKnownTypes.UInt32Value";
+    private const string ProtobufUInt64ValueFullName = "Google.Protobuf.WellKnownTypes.UInt64Value";
+    private const string ProtobufFloatValueFullName = "Google.Protobuf.WellKnownTypes.FloatValue";
+    private const string ProtobufDoubleValueFullName = "Google.Protobuf.WellKnownTypes.DoubleValue";
     private const string DateTimeOffsetFullName = "System.DateTimeOffset";
     private const string KeyValuePairFullName = "System.Collections.Generic.KeyValuePair`2";
     private const string SetInterfaceFullName = "System.Collections.Generic.ISet`1";
@@ -907,6 +917,22 @@ internal static class TypeSymbolExtensions
     }
 
     /// <summary>
+    /// Check if the type is <see cref="decimal"/> type.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <returns><c>true</c> if the type symbol is <see cref="decimal"/>, <c>false</c> otherwise.</returns>
+    internal static bool IsDecimal(this ITypeSymbol typeSymbol)
+    {
+        switch (typeSymbol.SpecialType)
+        {
+            case SpecialType.System_Decimal:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /// <summary>
     /// Check if the type is <see cref="double"/> type
     /// or a numeric type implicitly convertible.
     /// </summary>
@@ -1661,6 +1687,105 @@ internal static class TypeSymbolExtensions
         var isDuration = SymbolEqualityComparer.Default.Equals(durationType, typeSymbol.OriginalDefinition);
         return isDuration;
     }
+
+    /// <summary>
+    /// Check if the type is MongoDB.Bson.Decimal128.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is MongoDB.Bson.Decimal128.</returns>
+    internal static bool IsDecimal128(this ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var decimal128Type = compilation.GetTypeByMetadataName(Decimal128FullName);
+        if (decimal128Type is null)
+        {
+            return false;
+        }
+
+        var isDecimal128 = SymbolEqualityComparer.Default.Equals(decimal128Type, typeSymbol.OriginalDefinition);
+        return isDecimal128;
+    }
+
+    /// <summary>
+    /// Check if the type is Google.Protobuf.WellKnownTypes.StringValue.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is Google.Protobuf.WellKnownTypes.StringValue.</returns>
+    internal static bool IsProtobufStringValue(this ITypeSymbol typeSymbol, Compilation compilation)
+        => IsWellKnownType(typeSymbol, compilation, ProtobufStringValueFullName);
+
+    /// <summary>
+    /// Check if the type is Google.Protobuf.WellKnownTypes.BoolValue.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is Google.Protobuf.WellKnownTypes.BoolValue.</returns>
+    internal static bool IsProtobufBoolValue(this ITypeSymbol typeSymbol, Compilation compilation)
+        => IsWellKnownType(typeSymbol, compilation, ProtobufBoolValueFullName);
+
+    /// <summary>
+    /// Check if the type is Google.Protobuf.WellKnownTypes.BytesValue.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is Google.Protobuf.WellKnownTypes.BytesValue.</returns>
+    internal static bool IsProtobufBytesValue(this ITypeSymbol typeSymbol, Compilation compilation)
+        => IsWellKnownType(typeSymbol, compilation, ProtobufBytesValueFullName);
+
+    /// <summary>
+    /// Check if the type is Google.Protobuf.WellKnownTypes.Int32Value.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is Google.Protobuf.WellKnownTypes.Int32Value.</returns>
+    internal static bool IsProtobufInt32Value(this ITypeSymbol typeSymbol, Compilation compilation)
+        => IsWellKnownType(typeSymbol, compilation, ProtobufInt32ValueFullName);
+
+    /// <summary>
+    /// Check if the type is Google.Protobuf.WellKnownTypes.Int64Value.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is Google.Protobuf.WellKnownTypes.Int64Value.</returns>
+    internal static bool IsProtobufInt64Value(this ITypeSymbol typeSymbol, Compilation compilation)
+        => IsWellKnownType(typeSymbol, compilation, ProtobufInt64ValueFullName);
+
+    /// <summary>
+    /// Check if the type is Google.Protobuf.WellKnownTypes.UInt32Value.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is Google.Protobuf.WellKnownTypes.UInt32Value.</returns>
+    internal static bool IsProtobufUInt32Value(this ITypeSymbol typeSymbol, Compilation compilation)
+        => IsWellKnownType(typeSymbol, compilation, ProtobufUInt32ValueFullName);
+
+    /// <summary>
+    /// Check if the type is Google.Protobuf.WellKnownTypes.UInt64Value.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is Google.Protobuf.WellKnownTypes.UInt64Value.</returns>
+    internal static bool IsProtobufUInt64Value(this ITypeSymbol typeSymbol, Compilation compilation)
+        => IsWellKnownType(typeSymbol, compilation, ProtobufUInt64ValueFullName);
+
+    /// <summary>
+    /// Check if the type is Google.Protobuf.WellKnownTypes.FloatValue.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is Google.Protobuf.WellKnownTypes.FloatValue.</returns>
+    internal static bool IsProtobufFloatValue(this ITypeSymbol typeSymbol, Compilation compilation)
+        => IsWellKnownType(typeSymbol, compilation, ProtobufFloatValueFullName);
+
+    /// <summary>
+    /// Check if the type is Google.Protobuf.WellKnownTypes.DoubleValue.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the type symbol is Google.Protobuf.WellKnownTypes.DoubleValue.</returns>
+    internal static bool IsProtobufDoubleValue(this ITypeSymbol typeSymbol, Compilation compilation)
+        => IsWellKnownType(typeSymbol, compilation, ProtobufDoubleValueFullName);
 
     /// <summary>
     /// Check if the type is <see cref="KeyValuePair{TKey,TValue}"/>.
@@ -2556,5 +2681,16 @@ internal static class TypeSymbolExtensions
 
         keyAndValueTypes = default;
         return false;
+    }
+
+    private static bool IsWellKnownType(ITypeSymbol typeSymbol, Compilation compilation, string metadataName)
+    {
+        var wellKnownType = compilation.GetTypeByMetadataName(metadataName);
+        if (wellKnownType is null)
+        {
+            return false;
+        }
+
+        return SymbolEqualityComparer.Default.Equals(wellKnownType, typeSymbol.OriginalDefinition);
     }
 }
