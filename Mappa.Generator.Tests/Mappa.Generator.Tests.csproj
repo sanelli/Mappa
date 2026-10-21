@@ -45,10 +45,16 @@
 	<ItemGroup>
         <ProjectReference Include="..\Mappa.Generator\Mappa.Generator.csproj" />
 		<ProjectReference Include="..\Mappa\Mappa.csproj" />
-        <ProjectReference Include="..\Mappa.Ext.Alpha\Mappa.Ext.Alpha.csproj" />
-        <ProjectReference Include="..\Mappa.Ext.Beta\Mappa.Ext.Beta.csproj" />
+        <ProjectReference Include="Dependency\Mappa.Ext.Alpha\Mappa.Ext.Alpha.csproj" />
+        <ProjectReference Include="Dependency\Mappa.Ext.Beta\Mappa.Ext.Beta.csproj" />
 	</ItemGroup>
 	<ItemGroup>
 		<AdditionalFiles Include="../stylecop.json" />
 	</ItemGroup>
+	<ItemGroup>
+		<!-- Nested fixture projects under Dependency/ are referenced, not compiled here. -->
+		<Compile Remove="Dependency\**\*.cs" />
+		<None Include="Dependency\**\*" Exclude="Dependency\**\bin\**;Dependency\**\obj\**" />
+	</ItemGroup>
 </Project>
+

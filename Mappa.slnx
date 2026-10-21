@@ -34,8 +34,6 @@
     <File Path="README.md" />
   </Folder>
   <Project Path="Mappa.Benchmark/Mappa.Benchmark.csproj" />
-  <Project Path="Mappa.Ext.Alpha/Mappa.Ext.Alpha.csproj" />
-  <Project Path="Mappa.Ext.Beta/Mappa.Ext.Beta.csproj" />
   <Project Path="Mappa.Generator.Tests/Mappa.Generator.Tests.csproj" />
 
   <Project Path="Mappa.Generator/Mappa.Generator.csproj" />

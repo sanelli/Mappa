@@ -2,6 +2,8 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Google.Protobuf.WellKnownTypes;
+
 namespace Mappa.Samples.Tests;
 
 /// <summary>

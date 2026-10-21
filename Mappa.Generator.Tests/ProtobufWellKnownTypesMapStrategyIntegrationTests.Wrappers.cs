@@ -1582,4 +1582,63 @@ public sealed partial class ProtobufWellKnownTypesMapStrategyIntegrationTests
                 "string",
                 StringValueTypeName);
     }
+
+    /// <summary>
+    /// Incompatible BCL sources do not map to protobuf numeric wrappers even when the setting is enabled.
+    /// </summary>
+    /// <param name="sourceType">The incompatible source type name.</param>
+    /// <param name="targetType">The protobuf wrapper target type name.</param>
+    /// <returns>The async task.</returns>
+    [Theory]
+    [IntegrationTest]
+    [InlineData("bool", "Google.Protobuf.WellKnownTypes.Int64Value")]
+    [InlineData("decimal", "Google.Protobuf.WellKnownTypes.UInt32Value")]
+    [InlineData("System.Guid", "Google.Protobuf.WellKnownTypes.UInt64Value")]
+    [InlineData("System.DateTime", "Google.Protobuf.WellKnownTypes.DoubleValue")]
+    public async Task CannotMapIncompatibleSourceToNumericWrapperWhenProtobufWellKnownTypesEnabled(
+        string sourceType,
+        string targetType)
+    {
+        // Arrange
+        var sourceCode = $$"""
+                           #nullable enable
+                           using System;
+                           using Mappa;
+                           using Mappa.Attributes;
+
+                           namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                           [Mappa]
+                           [MappaSettings(ProtobufWellKnownTypes = BooleanSetting.Enable)]
+                           public sealed partial class Mapper
+                           {
+                               public partial {{targetType}} Map({{sourceType}} input);
+                           }
+                           """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(
+                MappaDiagnosticDescriptors.CannotIdentifyStrategy,
+                sourceType,
+                targetType)
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                targetType,
+                NullableAnnotation.NotAnnotated,
+                sourceType,
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(1)
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement());
+                });
+    }
 }
