@@ -359,4 +359,65 @@ public sealed partial class ProtobufPolymorphismMapStrategyIntegrationTests
                         .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement("__mappa_tmp_1"));
                 });
     }
+
+    /// <summary>
+    /// Maps a POCO to a protobuf message using only <see cref="MappaProtobufTypeMappingDefaultBehavior.MapTo"/>
+    /// with a source value that is already of the arm message type: no mapping code is needed for the arm.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanMapPocoToProtoOneofWithMapToBehaviorAndIdentityArm()
+    {
+        // Arrange
+        const string sourceCode = ProtobufStubs + """
+                                                  [Mappa]
+                                                  public sealed partial class Mapper
+                                                  {
+                                                      [MappaProtobufPolymorphismSetup("PayloadCase")]
+                                                      [MappaProtobufTypeMappingDefault(MappaProtobufTypeMappingDefaultBehavior.MapTo, "Ok")]
+                                                      public partial EnvelopeMessage Map(OkReplyMessage input);
+                                                  }
+                                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                EnvelopeMessageType,
+                NullableAnnotation.NotAnnotated,
+                OkReplyMessageType,
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(3)
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
+                                EnvelopeMessageType,
+                                "__mappa_tmp_1",
+                                initializationAssertions => initializationAssertions.BeObjectCreationExpressionSyntax(EnvelopeMessageType)))
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeSwitchStatementSyntax(
+                            switchExpression => switchExpression.BeIdentifierNameSyntax("input"),
+                            (labelAssertions, caseBodyAssertions) =>
+                            {
+                                labelAssertions.Should().HaveCount(1);
+                                labelAssertions[0].IsDefault();
+
+                                caseBodyAssertions.Should().HaveCount(1);
+                                caseBodyAssertions[0].BeBlockStatement();
+                                caseBodyAssertions[0]
+                                    .AsBlock()
+                                    .HasSyntaxNodesCount(2)
+                                    .HasNextSyntaxNode(statementAssertions => statementAssertions.BeAssignmentExpressionStatement(left => left.BeMemberAccessExpressionSyntax("__mappa_tmp_1.Ok"), right => right.BeIdentifierNameSyntax("input")))
+                                    .HasNextSyntaxNode(statementAssertions => statementAssertions.BeBreakStatement());
+                            }))
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement("__mappa_tmp_1"));
+                });
+    }
 }

@@ -97,6 +97,14 @@ Via `MappaProtobufTypeMappingDefault` / `MappaProtobufTypeMappingDefaultBehavior
 - `NoMap`: leave the target oneof unset (`None`); only valid when the target is a protobuf message;
 - `MapTo`: map the unmatched source into a specific target oneof arm's message type; only valid when the target is a protobuf message.
 
+Protobuf `oneof` polymorphism supports message-typed arms only. All constructors use the (target, source) order:
+
+- proto → POCO: `[MappaProtobufPolymorphismSetup("ResultCase")]` + `[MappaProtobufTypeMapping(typeof(TTarget), "Ok")]`;
+- POCO → proto: `[MappaProtobufPolymorphismSetup("ResultCase")]` + `[MappaProtobufTypeMapping("Ok", typeof(TSource))]`;
+- proto → proto: `[MappaProtobufPolymorphismSetup("TargetCase", "SourceCase")]` + `[MappaProtobufTypeMapping("TargetOk", "SourceOk")]`.
+
+The protobuf attributes cannot be combined with `MappaTypeMapping` / `MappaTypeMappingDefault` on the same method. See the [Mappa attributes documentation](https://github.com/sanelli/Mappa/blob/main/Documentation/mappa-attributes.md#protobuf-oneof-polymorphism) for details.
+
 Via `MappaMapEnumDefaultBehavior` the following settings can be tweaked:
 - `Throw`: throws `ArgumentOutOfRangeException` when an enum value cannot be mapped (default);
 - `UseDefaultValue`: returns the default value provided via `[MappaMapEnumDefault]` when an enum value cannot be mapped.

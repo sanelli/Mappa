@@ -78,6 +78,7 @@ internal static class Program
         PragmaWarningSettingMapperRunner.Run(report);
         PreferredInterfaceMapperRunner.Run(report);
         PreventEnumerableCountMapperRunner.Run(report);
+        ProtobufOneofPolymorphismMappersRunner.Run(report);
         ProtobufOptionalMapperRunner.Run(report);
         ReadOnlyTargetCollectionMapperRunner.Run(report);
         BreakCompileTimeCyclesMapperRunner.Run(report);

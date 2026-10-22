@@ -891,6 +891,61 @@ The non-generic form remains supported:
 
 See also: [PolymorphismMappers.cs](../Mappa.Samples/PolymorphismMappers.cs) and [Mappa attributes](./mappa-attributes.md#mappatypemapping-and-mappatypemappingdefault).
 
+### Protobuf oneof polymorphism
+Protobuf `oneof` fields with **message-typed** arms can be mapped polymorphically. Use `[MappaProtobufPolymorphismSetup]` to name the generated `{Oneof}Case` property, one `[MappaProtobufTypeMapping]` per arm and, optionally, `[MappaProtobufTypeMappingDefault]` for the fallback (`Throw` by default, `NoMap`, or `MapTo` a named target arm). All arguments use the (target, source) order.
+
+Given this protobuf definition:
+
+```proto
+message OkPayload { string Value = 1; }
+message ErrorPayload { int32 Code = 1; }
+message ResultMessage
+{
+  oneof Result
+  {
+    OkPayload Ok = 1;
+    ErrorPayload Error = 2;
+  }
+}
+```
+
+Protobuf to POCO (dispatches on `source.ResultCase`):
+
+```csharp
+[Mappa]
+public sealed partial class Mapper
+{
+    [MappaProtobufPolymorphismSetup("ResultCase")]
+    [MappaProtobufTypeMapping(typeof(OkModel), "Ok")]
+    [MappaProtobufTypeMapping(typeof(ErrorModel), "Error")]
+    public partial ResultModel Map(ResultMessage source);
+}
+```
+
+POCO to protobuf (dispatches on the runtime type of the source; unlisted POCOs leave the oneof unset):
+
+```csharp
+[MappaProtobufPolymorphismSetup("ResultCase")]
+[MappaProtobufTypeMapping("Ok", typeof(OkModel))]
+[MappaProtobufTypeMapping("Error", typeof(ErrorModel))]
+[MappaProtobufTypeMappingDefault(MappaProtobufTypeMappingDefaultBehavior.NoMap)]
+public partial ResultMessage Map(ResultModel source);
+```
+
+Protobuf to protobuf (the two-argument setup is (target case property, source case property); unmatched sources, including an unset oneof, are mapped into the `Fallback` arm of the target):
+
+```csharp
+[MappaProtobufPolymorphismSetup("ReplyCase", "ResultCase")]
+[MappaProtobufTypeMapping("Ok", "Ok")]
+[MappaProtobufTypeMapping("Error", "Error")]
+[MappaProtobufTypeMappingDefault(MappaProtobufTypeMappingDefaultBehavior.MapTo, "Fallback")]
+public partial ReplyMessage Map(ResultMessage source);
+```
+
+`NoMap` and `MapTo` require a protobuf target; proto→POCO supports only `Throw`. The protobuf attributes cannot be combined with `[MappaTypeMapping]` on the same method.
+
+See also: [ProtobufOneofPolymorphismMappers.cs](../Mappa.Samples/ProtobufOneofPolymorphismMappers.cs) and [Mappa attributes](./mappa-attributes.md#protobuf-oneof-polymorphism).
+
 ### Get-only collection properties
 Mappa can populate get-only collection and dictionary properties after constructing the target object. This also applies to specialized collection types such as `Stack<T>`, `Queue<T>`, and protobuf repeated fields:
 

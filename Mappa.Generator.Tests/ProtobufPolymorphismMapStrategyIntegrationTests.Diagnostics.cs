@@ -310,6 +310,49 @@ public sealed partial class ProtobufPolymorphismMapStrategyIntegrationTests
     }
 
     /// <summary>
+    /// The two arguments setup reports both case properties when neither exists on the protobuf messages.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task TestDiagnosticsAreReturnedWhenBothCasePropertiesOfTwoArgumentsSetupDoNotExist()
+    {
+        // Arrange
+        const string sourceCode = ProtobufStubs + """
+                                                  [Mappa]
+                                                  public sealed partial class Mapper
+                                                  {
+                                                      [MappaProtobufPolymorphismSetup("MissingTargetCase", "MissingSourceCase")]
+                                                      [MappaProtobufTypeMapping("Ok", "Ok")]
+                                                      public partial EnvelopeMessage Map(ResultMessage input);
+                                                  }
+                                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(2)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.ProtobufPolymorphismCasePropertyNotFound, "Map", "MissingSourceCase", ResultMessageType)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.ProtobufPolymorphismCasePropertyNotFound, "Map", "MissingTargetCase", EnvelopeMessageType)
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                EnvelopeMessageType,
+                NullableAnnotation.NotAnnotated,
+                ResultMessageType,
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(1)
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement());
+                });
+    }
+
+    /// <summary>
     /// The oneof case property named in the setup must exist on the message type.
     /// </summary>
     /// <returns>The async task.</returns>
@@ -1313,6 +1356,902 @@ public sealed partial class ProtobufPolymorphismMapStrategyIntegrationTests
                                     .HasNextSyntaxNode(statementAssertions => statementAssertions.BeBreakStatement());
                             }))
                         .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement("__mappa_tmp_1"));
+                });
+    }
+
+    /// <summary>
+    /// The constructor form of <see cref="MappaProtobufTypeMappingAttribute"/> must match the POCO to protobuf scenario.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task TestDiagnosticIsReturnedWhenPocoToProtoTypeMappingUsesTheWrongConstructor()
+    {
+        // Arrange
+        const string sourceCode = ProtobufStubs + """
+                                                  [Mappa]
+                                                  public sealed partial class Mapper
+                                                  {
+                                                      [MappaProtobufPolymorphismSetup("PayloadCase")]
+                                                      [MappaProtobufTypeMapping("Ok", "Ok")]
+                                                      public partial EnvelopeMessage Map(ResultDto input);
+                                                  }
+                                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.ProtobufPolymorphismArmFormMismatch, "Map", "POCO to protobuf", "(string targetOneOfCaseName, Type sourceType)")
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                EnvelopeMessageType,
+                NullableAnnotation.NotAnnotated,
+                ResultDtoType,
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(1)
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement());
+                });
+    }
+
+    /// <summary>
+    /// The constructor form of <see cref="MappaProtobufTypeMappingAttribute"/> must match the protobuf to protobuf scenario.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task TestDiagnosticIsReturnedWhenProtoToProtoTypeMappingUsesTheWrongConstructor()
+    {
+        // Arrange
+        const string sourceCode = ProtobufStubs + """
+                                                  [Mappa]
+                                                  public sealed partial class Mapper
+                                                  {
+                                                      [MappaProtobufPolymorphismSetup("PayloadCase", "ResultCase")]
+                                                      [MappaProtobufTypeMapping(typeof(OkDto), "Ok")]
+                                                      public partial EnvelopeMessage Map(ResultMessage input);
+                                                  }
+                                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.ProtobufPolymorphismArmFormMismatch, "Map", "protobuf to protobuf", "(string targetOneOfCaseName, string sourceOneOfCaseName)")
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                EnvelopeMessageType,
+                NullableAnnotation.NotAnnotated,
+                ResultMessageType,
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(1)
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement());
+                });
+    }
+
+    /// <summary>
+    /// When a protobuf to POCO arm cannot be mapped the algorithm reports that no strategy can be identified.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task TestDiagnosticIsReturnedWhenProtoToPocoArmMessageCannotBeMapped()
+    {
+        // Arrange
+        const string sourceCode = ProtobufStubs + """
+                                                  public sealed class LockedDto : ResultDto { private LockedDto() { } }
+
+                                                  [Mappa]
+                                                  public sealed partial class Mapper
+                                                  {
+                                                      [MappaProtobufPolymorphismSetup("ResultCase")]
+                                                      [MappaProtobufTypeMapping(typeof(LockedDto), "Ok")]
+                                                      public partial ResultDto Map(ResultMessage input);
+                                                  }
+                                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.CannotIdentifyStrategy, OkMessageType, Namespace + ".LockedDto")
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                ResultDtoType,
+                NullableAnnotation.NotAnnotated,
+                ResultMessageType,
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(1)
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement());
+                });
+    }
+
+    /// <summary>
+    /// The source oneof case name of a protobuf to protobuf arm must be a member of the source oneof case enum.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task TestDiagnosticIsReturnedWhenProtoToProtoSourceCaseIsUnknown()
+    {
+        // Arrange
+        const string sourceCode = ProtobufStubs + """
+                                                  [Mappa]
+                                                  public sealed partial class Mapper
+                                                  {
+                                                      [MappaProtobufPolymorphismSetup("PayloadCase", "ResultCase")]
+                                                      [MappaProtobufTypeMapping("Ok", "Missing")]
+                                                      public partial EnvelopeMessage Map(ResultMessage input);
+                                                  }
+                                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.ProtobufPolymorphismCaseNameUnknown, "Map", "Missing", ResultMessageType)
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                EnvelopeMessageType,
+                NullableAnnotation.NotAnnotated,
+                ResultMessageType,
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(1)
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement());
+                });
+    }
+
+    /// <summary>
+    /// When a protobuf to protobuf arm cannot be mapped the algorithm reports that no strategy can be identified.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task TestDiagnosticIsReturnedWhenProtoToProtoArmMessageCannotBeMapped()
+    {
+        // Arrange
+        const string sourceCode = ProtobufStubs + """
+                                                  [Mappa]
+                                                  public sealed partial class Mapper
+                                                  {
+                                                      [MappaProtobufPolymorphismSetup("PayloadCase", "ResultCase")]
+                                                      [MappaProtobufTypeMapping("Locked", "Ok")]
+                                                      public partial EnvelopeMessage Map(ResultMessage input);
+                                                  }
+                                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.CannotIdentifyStrategy, OkMessageType, Namespace + ".LockedMessage")
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                EnvelopeMessageType,
+                NullableAnnotation.NotAnnotated,
+                ResultMessageType,
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(1)
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement());
+                });
+    }
+
+    /// <summary>
+    /// The source case property of a two arguments setup must be typed with a nested <c>*OneofCase</c> enum.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task TestDiagnosticIsReturnedWhenTwoArgumentsSetupSourceCasePropertyIsNotAOneofCaseEnum()
+    {
+        // Arrange
+        const string sourceCode = ProtobufStubs + """
+                                                  [Mappa]
+                                                  public sealed partial class Mapper
+                                                  {
+                                                      [MappaProtobufPolymorphismSetup("PayloadCase", "Count")]
+                                                      [MappaProtobufTypeMapping("Ok", "Ok")]
+                                                      public partial EnvelopeMessage Map(ResultMessage input);
+                                                  }
+                                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.ProtobufPolymorphismCasePropertyNotOneofCaseEnum, "Map", "Count", ResultMessageType)
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                EnvelopeMessageType,
+                NullableAnnotation.NotAnnotated,
+                ResultMessageType,
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(1)
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement());
+                });
+    }
+
+    /// <summary>
+    /// The target case property of a two arguments setup must be typed with a nested <c>*OneofCase</c> enum.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task TestDiagnosticIsReturnedWhenTwoArgumentsSetupTargetCasePropertyIsNotAOneofCaseEnum()
+    {
+        // Arrange
+        const string sourceCode = ProtobufStubs + """
+                                                  [Mappa]
+                                                  public sealed partial class Mapper
+                                                  {
+                                                      [MappaProtobufPolymorphismSetup("Raw", "ResultCase")]
+                                                      [MappaProtobufTypeMapping("Ok", "Ok")]
+                                                      public partial EnvelopeMessage Map(ResultMessage input);
+                                                  }
+                                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.ProtobufPolymorphismCasePropertyNotOneofCaseEnum, "Map", "Raw", EnvelopeMessageType)
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                EnvelopeMessageType,
+                NullableAnnotation.NotAnnotated,
+                ResultMessageType,
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(1)
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement());
+                });
+    }
+
+    /// <summary>
+    /// The two arguments setup reports the source case property when it does not exist on the source protobuf message.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task TestDiagnosticIsReturnedWhenTwoArgumentsSetupSourceCasePropertyDoesNotExist()
+    {
+        // Arrange
+        const string sourceCode = ProtobufStubs + """
+                                                  [Mappa]
+                                                  public sealed partial class Mapper
+                                                  {
+                                                      [MappaProtobufPolymorphismSetup("PayloadCase", "MissingSourceCase")]
+                                                      [MappaProtobufTypeMapping("Ok", "Ok")]
+                                                      public partial EnvelopeMessage Map(ResultMessage input);
+                                                  }
+                                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.ProtobufPolymorphismCasePropertyNotFound, "Map", "MissingSourceCase", ResultMessageType)
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                EnvelopeMessageType,
+                NullableAnnotation.NotAnnotated,
+                ResultMessageType,
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(1)
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement());
+                });
+    }
+
+    /// <summary>
+    /// The two arguments setup reports the target case property when it does not exist on the target protobuf message.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task TestDiagnosticIsReturnedWhenTwoArgumentsSetupTargetCasePropertyDoesNotExist()
+    {
+        // Arrange
+        const string sourceCode = ProtobufStubs + """
+                                                  [Mappa]
+                                                  public sealed partial class Mapper
+                                                  {
+                                                      [MappaProtobufPolymorphismSetup("MissingTargetCase", "ResultCase")]
+                                                      [MappaProtobufTypeMapping("Ok", "Ok")]
+                                                      public partial EnvelopeMessage Map(ResultMessage input);
+                                                  }
+                                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.ProtobufPolymorphismCasePropertyNotFound, "Map", "MissingTargetCase", EnvelopeMessageType)
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                EnvelopeMessageType,
+                NullableAnnotation.NotAnnotated,
+                ResultMessageType,
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(1)
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement());
+                });
+    }
+
+    /// <summary>
+    /// The two arguments setup is for protobuf to protobuf mappings only: a POCO source is reported as a wrong arity.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task TestDiagnosticIsReturnedWhenTwoArgumentsSetupIsUsedForPocoToProtoMapping()
+    {
+        // Arrange
+        const string sourceCode = ProtobufStubs + """
+                                                  [Mappa]
+                                                  public sealed partial class Mapper
+                                                  {
+                                                      [MappaProtobufPolymorphismSetup("PayloadCase", "ResultCase")]
+                                                      [MappaProtobufTypeMapping("Ok", typeof(OkDto))]
+                                                      public partial EnvelopeMessage Map(ResultDto input);
+                                                  }
+                                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.ProtobufPolymorphismSetupWrongArity, "Map", "only the target type defines a oneof case property; use [MappaProtobufPolymorphismSetup(oneOfCasePropertyName)] for protobuf to POCO or POCO to protobuf mappings.")
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                EnvelopeMessageType,
+                NullableAnnotation.NotAnnotated,
+                ResultDtoType,
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(1)
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement());
+                });
+    }
+
+    /// <summary>
+    /// The oneof case property named in the setup must exist on the protobuf target when the source is a POCO.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task TestDiagnosticIsReturnedWhenOneofCasePropertyDoesNotExistOnTheProtobufTarget()
+    {
+        // Arrange
+        const string sourceCode = ProtobufStubs + """
+                                                  [Mappa]
+                                                  public sealed partial class Mapper
+                                                  {
+                                                      [MappaProtobufPolymorphismSetup("MissingCase")]
+                                                      [MappaProtobufTypeMapping("Ok", typeof(OkDto))]
+                                                      public partial EnvelopeMessage Map(ResultDto input);
+                                                  }
+                                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.ProtobufPolymorphismCasePropertyNotFound, "Map", "MissingCase", EnvelopeMessageType)
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                EnvelopeMessageType,
+                NullableAnnotation.NotAnnotated,
+                ResultDtoType,
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(1)
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement());
+                });
+    }
+
+    /// <summary>
+    /// The exception type is not used by <see cref="MappaProtobufTypeMappingDefaultBehavior.MapTo"/>: a warning is reported, together with the missing target case error.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task TestWarningAndDiagnosticAreReturnedWhenMapToBehaviorSpecifiesAnExceptionTypeAndNoCase()
+    {
+        // Arrange
+        const string sourceCode = ProtobufStubs + """
+                                                  [Mappa]
+                                                  public sealed partial class Mapper
+                                                  {
+                                                      [MappaProtobufPolymorphismSetup("PayloadCase")]
+                                                      [MappaProtobufTypeMapping("Ok", typeof(OkDto))]
+                                                      [MappaProtobufTypeMappingDefault(MappaProtobufTypeMappingDefaultBehavior.MapTo, typeof(CustomException))]
+                                                      public partial EnvelopeMessage Map(ResultDto input);
+                                                  }
+                                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(2)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.ProtobufPolymorphismDefaultArgumentUnused, "Map", "exception type", "MapTo")
+            .HaveDiagnostic(MappaDiagnosticDescriptors.ProtobufPolymorphismMapToCaseMissing, "Map")
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                EnvelopeMessageType,
+                NullableAnnotation.NotAnnotated,
+                ResultDtoType,
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(1)
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement());
+                });
+    }
+
+    /// <summary>
+    /// The oneof case property must be typed with an enum whose name ends with <c>OneofCase</c>.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task TestDiagnosticIsReturnedWhenOneofCasePropertyIsAnEnumNotNamedAsAOneofCase()
+    {
+        // Arrange
+        const string sourceCode = ProtobufStubs + """
+                                                  public enum SomeKind { None = 0, A = 1 }
+                                                  public sealed class PlainEnumMessage { public SomeKind KindCase { get; set; } }
+
+                                                  [Mappa]
+                                                  public sealed partial class Mapper
+                                                  {
+                                                      [MappaProtobufPolymorphismSetup("KindCase")]
+                                                      [MappaProtobufTypeMapping(typeof(OkDto), "A")]
+                                                      public partial ResultDto Map(PlainEnumMessage input);
+                                                  }
+                                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.ProtobufPolymorphismCasePropertyNotOneofCaseEnum, "Map", "KindCase", Namespace + ".PlainEnumMessage")
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                ResultDtoType,
+                NullableAnnotation.NotAnnotated,
+                Namespace + ".PlainEnumMessage",
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(1)
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement());
+                });
+    }
+
+    /// <summary>
+    /// The oneof case property must be typed with a <c>*OneofCase</c> enum nested in the message type.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task TestDiagnosticIsReturnedWhenOneofCasePropertyIsAOneofCaseEnumNotNestedInTheMessage()
+    {
+        // Arrange
+        const string sourceCode = ProtobufStubs + """
+                                                  public enum OuterOneofCase { None = 0, A = 1 }
+                                                  public sealed class OuterEnumMessage { public OuterOneofCase KindCase { get; set; } }
+
+                                                  [Mappa]
+                                                  public sealed partial class Mapper
+                                                  {
+                                                      [MappaProtobufPolymorphismSetup("KindCase")]
+                                                      [MappaProtobufTypeMapping(typeof(OkDto), "A")]
+                                                      public partial ResultDto Map(OuterEnumMessage input);
+                                                  }
+                                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.ProtobufPolymorphismCasePropertyNotOneofCaseEnum, "Map", "KindCase", Namespace + ".OuterEnumMessage")
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                ResultDtoType,
+                NullableAnnotation.NotAnnotated,
+                Namespace + ".OuterEnumMessage",
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(1)
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement());
+                });
+    }
+
+    /// <summary>
+    /// The CLR type of a POCO to protobuf arm must derive from the source type of the map method.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task TestDiagnosticIsReturnedWhenPocoToProtoArmClrTypeDoesNotDeriveFromTheSourceType()
+    {
+        // Arrange
+        const string sourceCode = ProtobufStubs + """
+                                                  [Mappa]
+                                                  public sealed partial class Mapper
+                                                  {
+                                                      [MappaProtobufPolymorphismSetup("PayloadCase")]
+                                                      [MappaProtobufTypeMapping("Ok", typeof(UnrelatedDto))]
+                                                      public partial EnvelopeMessage Map(ResultDto input);
+                                                  }
+                                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.ProtobufPolymorphismClrTypeNotCompatible, "Map", Namespace + ".UnrelatedDto", ResultDtoType)
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                EnvelopeMessageType,
+                NullableAnnotation.NotAnnotated,
+                ResultDtoType,
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(1)
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement());
+                });
+    }
+
+    /// <summary>
+    /// The same source oneof case cannot be mapped twice in a protobuf to protobuf mapping.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task TestDiagnosticIsReturnedWhenTheSameSourceOneofCaseIsMappedTwiceInProtoToProtoMapping()
+    {
+        // Arrange
+        const string sourceCode = ProtobufStubs + """
+                                                  [Mappa]
+                                                  public sealed partial class Mapper
+                                                  {
+                                                      [MappaProtobufPolymorphismSetup("PayloadCase", "ResultCase")]
+                                                      [MappaProtobufTypeMapping("Ok", "Ok")]
+                                                      [MappaProtobufTypeMapping("Error", "Ok")]
+                                                      public partial EnvelopeMessage Map(ResultMessage input);
+                                                  }
+                                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.ProtobufPolymorphismDuplicateArm, "Map", "Ok")
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                EnvelopeMessageType,
+                NullableAnnotation.NotAnnotated,
+                ResultMessageType,
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(1)
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement());
+                });
+    }
+
+    /// <summary>
+    /// The target arm property of a protobuf to protobuf arm must be writable.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task TestDiagnosticIsReturnedWhenProtoToProtoTargetArmPropertyIsNotWritable()
+    {
+        // Arrange
+        const string sourceCode = ProtobufStubs + """
+                                                  [Mappa]
+                                                  public sealed partial class Mapper
+                                                  {
+                                                      [MappaProtobufPolymorphismSetup("ChoiceCase", "ResultCase")]
+                                                      [MappaProtobufTypeMapping("Ok", "Ok")]
+                                                      public partial ReadOnlyArmMessage Map(ResultMessage input);
+                                                  }
+                                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.ProtobufPolymorphismArmPropertyNotWritable, "Map", "Ok", Namespace + ".ReadOnlyArmMessage")
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                Namespace + ".ReadOnlyArmMessage",
+                NullableAnnotation.NotAnnotated,
+                ResultMessageType,
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(1)
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement());
+                });
+    }
+
+    /// <summary>
+    /// The oneof case property named in the setup is reported on the source type when neither type is a protobuf message.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task TestDiagnosticIsReturnedWhenOneofCasePropertyDoesNotExistOnPocoToPocoMapping()
+    {
+        // Arrange
+        const string sourceCode = ProtobufStubs + """
+                                                  [Mappa]
+                                                  public sealed partial class Mapper
+                                                  {
+                                                      [MappaProtobufPolymorphismSetup("MissingCase")]
+                                                      [MappaProtobufTypeMapping(typeof(OkDto), "Ok")]
+                                                      public partial OkDto Map(ResultDto input);
+                                                  }
+                                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.ProtobufPolymorphismCasePropertyNotFound, "Map", "MissingCase", ResultDtoType)
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                OkDtoType,
+                NullableAnnotation.NotAnnotated,
+                ResultDtoType,
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(1)
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement());
+                });
+    }
+
+    /// <summary>
+    /// The oneof case property must be typed with a named enum type.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task TestDiagnosticIsReturnedWhenOneofCasePropertyIsAnArray()
+    {
+        // Arrange
+        const string sourceCode = ProtobufStubs + """
+                                                  public sealed class ArrayCaseMessage { public int[] KindCase { get; set; } }
+
+                                                  [Mappa]
+                                                  public sealed partial class Mapper
+                                                  {
+                                                      [MappaProtobufPolymorphismSetup("KindCase")]
+                                                      [MappaProtobufTypeMapping(typeof(OkDto), "A")]
+                                                      public partial ResultDto Map(ArrayCaseMessage input);
+                                                  }
+                                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.ProtobufPolymorphismCasePropertyNotOneofCaseEnum, "Map", "KindCase", Namespace + ".ArrayCaseMessage")
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                ResultDtoType,
+                NullableAnnotation.NotAnnotated,
+                Namespace + ".ArrayCaseMessage",
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(1)
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement());
+                });
+    }
+
+    /// <summary>
+    /// A setup attribute whose case property name cannot be read is ignored, so the setup is reported as missing.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task TestDiagnosticIsReturnedWhenTheSetupAttributeHasANullCasePropertyName()
+    {
+        // Arrange
+        const string sourceCode = ProtobufStubs + """
+                                                  [Mappa]
+                                                  public sealed partial class Mapper
+                                                  {
+                                                      [MappaProtobufPolymorphismSetup(null)]
+                                                      [MappaProtobufTypeMapping(typeof(OkDto), "Ok")]
+                                                      public partial ResultDto Map(ResultMessage input);
+                                                  }
+                                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.ProtobufPolymorphismSetupMissing, "Map")
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                ResultDtoType,
+                NullableAnnotation.NotAnnotated,
+                ResultMessageType,
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(1)
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement());
+                });
+    }
+
+    /// <summary>
+    /// Type mapping and default attributes with unreadable arguments are ignored: only the undefined default behavior is reported.
+    /// </summary>
+    /// <returns>The async task.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task TestDiagnosticIsReturnedWhenMalformedTypeMappingAndDefaultAttributesAreIgnored()
+    {
+        // Arrange
+        const string sourceCode = ProtobufStubs + """
+                                                  [Mappa]
+                                                  public sealed partial class Mapper
+                                                  {
+                                                      [MappaProtobufPolymorphismSetup("ResultCase")]
+                                                      [MappaProtobufTypeMapping((string)null, "Ok")]
+                                                      [MappaProtobufTypeMappingDefault(MappaProtobufTypeMappingDefaultBehavior.Undefined, (string)null)]
+                                                      public partial ResultDto Map(ResultMessage input);
+                                                  }
+                                                  """;
+
+        // Act
+        var generatedResults = await RunMappaGeneratorAsync(sourceCode, CancellationToken.None).ConfigureAwait(true);
+
+        // Assert
+        generatedResults.Should()
+            .HaveDiagnostics(1)
+            .HaveDiagnostic(MappaDiagnosticDescriptors.ProtobufPolymorphismDefaultBehaviorUndefined, "Map")
+            .HaveGeneratedSourceCode()
+            .WithCompilationUnit()
+            .NotBeNull().And
+            .HaveDefaultMapMethod(
+                ResultDtoType,
+                NullableAnnotation.NotAnnotated,
+                ResultMessageType,
+                NullableAnnotation.NotAnnotated,
+                blockSyntaxAssertions =>
+                {
+                    blockSyntaxAssertions
+                        .HasSyntaxNodesCount(1)
+                        .HasNextSyntaxNode(syntaxNodeAssertions => syntaxNodeAssertions.BeReturnStatement());
                 });
     }
 }
