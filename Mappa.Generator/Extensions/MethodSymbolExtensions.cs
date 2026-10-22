@@ -106,6 +106,11 @@ internal static class MethodSymbolExtensions
             result.Add(mappaTypeMappingDefaultAttribute);
         }
 
+        // Mappa protobuf oneof polymorphism attributes
+        result.AddRange(attributes.GetMappaProtobufPolymorphismSetupAttributes(compilation));
+        result.AddRange(attributes.GetMappaProtobufTypeMappingAttributes(compilation));
+        result.AddRange(attributes.GetMappaProtobufTypeMappingDefaultAttributes(compilation));
+
         // Mappa enum mapping configuration attributes
         result.AddRange(attributes.GetEnumMapMemberAttributes(compilation));
         result.AddRange(attributes.GetEnumMapIgnoreAttributes(compilation));

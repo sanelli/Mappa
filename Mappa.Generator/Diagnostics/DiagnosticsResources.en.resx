@@ -287,4 +287,55 @@
     <data name="MappaUseConstructorAttributeNotUsed" xml:space="preserve">
         <value>Method '{0}' defines [MappaUseConstructor] for type '{1}', but that type is not constructed using the selected constructor in the mapping.</value>
     </data>
+    <data name="ProtobufPolymorphismMixedWithTypeMapping" xml:space="preserve">
+        <value>Method '{0}' cannot combine protobuf oneof polymorphism attributes ([MappaProtobufTypeMapping], [MappaProtobufTypeMappingDefault], [MappaProtobufPolymorphismSetup]) with [MappaTypeMapping] or [MappaTypeMappingDefault].</value>
+    </data>
+    <data name="ProtobufPolymorphismSetupMissing" xml:space="preserve">
+        <value>Method '{0}' defines [MappaProtobufTypeMapping] or [MappaProtobufTypeMappingDefault] but the required [MappaProtobufPolymorphismSetup] attribute is missing.</value>
+    </data>
+    <data name="ProtobufPolymorphismMultipleSetups" xml:space="preserve">
+        <value>Method '{0}' defines more than one [MappaProtobufPolymorphismSetup]; exactly one is required.</value>
+    </data>
+    <data name="ProtobufPolymorphismSetupWrongArity" xml:space="preserve">
+        <value>Method '{0}' defines [MappaProtobufPolymorphismSetup] with the wrong arguments for this mapping: {1}</value>
+    </data>
+    <data name="ProtobufPolymorphismCasePropertyNotFound" xml:space="preserve">
+        <value>Method '{0}': the oneof case property '{1}' was not found on type '{2}'.</value>
+    </data>
+    <data name="ProtobufPolymorphismCasePropertyNotOneofCaseEnum" xml:space="preserve">
+        <value>Method '{0}': property '{1}' of type '{2}' must be of a nested enum type whose name ends with 'OneofCase'.</value>
+    </data>
+    <data name="ProtobufPolymorphismCaseNameUnknown" xml:space="preserve">
+        <value>Method '{0}': '{1}' is not a valid oneof case of type '{2}'.</value>
+    </data>
+    <data name="ProtobufPolymorphismCaseNameNone" xml:space="preserve">
+        <value>Method '{0}': the oneof case 'None' cannot be used as an explicit arm; unmatched values are handled by the default behavior.</value>
+    </data>
+    <data name="ProtobufPolymorphismScalarArm" xml:space="preserve">
+        <value>Method '{0}': oneof case '{1}' of type '{2}' has the non-message type '{3}'; only message-typed oneof arms are supported.</value>
+    </data>
+    <data name="ProtobufPolymorphismDuplicateArm" xml:space="preserve">
+        <value>Method '{0}' maps '{1}' more than once.</value>
+    </data>
+    <data name="ProtobufPolymorphismDefaultRequiresProtobufTarget" xml:space="preserve">
+        <value>Method '{0}': the default behavior '{1}' requires the target type '{2}' to be a protobuf message with a oneof; use Throw instead.</value>
+    </data>
+    <data name="ProtobufPolymorphismMapToCaseMissing" xml:space="preserve">
+        <value>Method '{0}': the default behavior MapTo requires the name of a target oneof case.</value>
+    </data>
+    <data name="ProtobufPolymorphismDefaultBehaviorUndefined" xml:space="preserve">
+        <value>Method '{0}': the behavior of [MappaProtobufTypeMappingDefault] is undefined.</value>
+    </data>
+    <data name="ProtobufPolymorphismDefaultArgumentUnused" xml:space="preserve">
+        <value>Method '{0}': the {1} specified in [MappaProtobufTypeMappingDefault] is not used by the behavior '{2}'.</value>
+    </data>
+    <data name="ProtobufPolymorphismClrTypeNotCompatible" xml:space="preserve">
+        <value>Method '{0}': type '{1}' must be, derive from or implement type '{2}'.</value>
+    </data>
+    <data name="ProtobufPolymorphismArmPropertyNotWritable" xml:space="preserve">
+        <value>Method '{0}': the oneof arm property '{1}' of type '{2}' cannot be assigned.</value>
+    </data>
+    <data name="ProtobufPolymorphismArmFormMismatch" xml:space="preserve">
+        <value>Method '{0}': the [MappaProtobufTypeMapping] arguments do not match a {1} mapping; expected {2}.</value>
+    </data>
 </root>

@@ -32,6 +32,7 @@ internal static class ReferenceHandlingCodeGenerator
         typeof(NullableStrategy),
         typeof(TupleToTupleMapStrategy),
         typeof(PolymorphismMapStrategy),
+        typeof(ProtobufPolymorphismMapStrategy),
         typeof(OptionalTargetPropertyMapStrategy),
         typeof(OptionalSourcePropertyMapStrategy),
         typeof(ReadonlyDictionaryPropertyMapStrategy),

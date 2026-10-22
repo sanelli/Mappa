@@ -70,6 +70,39 @@ internal sealed class PolymorphismMapStrategyBuilder(PolymorphismMapStrategy str
         return (targetTemporary, builder.ToString());
     }
 
+    /// <summary>
+    /// Appends a <c>throw new ...</c> statement for the unmatched default branch of a polymorphic mapping.
+    /// </summary>
+    /// <param name="exceptionType">The exception type, or <c>null</c> for <see cref="ArgumentOutOfRangeException"/>.</param>
+    /// <param name="source">The source expression.</param>
+    /// <param name="context">The builder context.</param>
+    /// <param name="builder">The builder to append to.</param>
+    internal static void AppendThrowStatement(
+        Type? exceptionType,
+        string source,
+        MappaBuilderContext context,
+        PrettyCode.StringBuilder builder)
+    {
+        var exceptionToThrow = exceptionType is not null
+            ? (exceptionType.FullName ?? throw new MappaGeneratorException("Cannot obtain exception type name"))
+            : "System.ArgumentOutOfRangeException";
+
+        var exceptionSymbol = context.Compilation.GetTypeByMetadataName(exceptionToThrow)
+            ?? throw new MappaGeneratorException("Cannot obtain exception type by name");
+        var parameters = string.Empty;
+
+        if (exceptionSymbol.HasNamedTypeSymbolAccessibleSingleStringParametersConstructor(context.Compilation))
+        {
+            parameters = $"nameof({source})";
+        }
+        else if (!exceptionSymbol.HasNamedTypeSymbolAccessibleZeroParametersConstructor(context.Compilation))
+        {
+            throw new MappaGeneratorException("Cannot identify a suitable constructor to generate the exception");
+        }
+
+        builder.AppendLine($"throw new global::{exceptionToThrow}({parameters});");
+    }
+
     private static void AppendDefaultCode(
         MappaTypeMappingDefaultAttribute attribute,
         string source,
@@ -123,26 +156,7 @@ internal sealed class PolymorphismMapStrategyBuilder(PolymorphismMapStrategy str
         string source,
         MappaBuilderContext context,
         PrettyCode.StringBuilder builder)
-    {
-        var exceptionToThrow = attribute.Type is { } exceptionType
-            ? (exceptionType.FullName ?? throw new MappaGeneratorException("Cannot obtain exception type name"))
-            : "System.ArgumentOutOfRangeException";
-
-        var exceptionSymbol = context.Compilation.GetTypeByMetadataName(exceptionToThrow)
-            ?? throw new MappaGeneratorException("Cannot obtain exception type by name");
-        var parameters = string.Empty;
-
-        if (exceptionSymbol.HasNamedTypeSymbolAccessibleSingleStringParametersConstructor(context.Compilation))
-        {
-            parameters = $"nameof({source})";
-        }
-        else if (!exceptionSymbol.HasNamedTypeSymbolAccessibleZeroParametersConstructor(context.Compilation))
-        {
-            throw new MappaGeneratorException("Cannot identify a suitable constructor to generate the exception");
-        }
-
-        builder.AppendLine($"throw new global::{exceptionToThrow}({parameters});");
-    }
+        => AppendThrowStatement(attribute.Type, source, context, builder);
 
     private static void AppendAssignDefaultAndBreak(string targetTemporary, PrettyCode.StringBuilder builder)
     {

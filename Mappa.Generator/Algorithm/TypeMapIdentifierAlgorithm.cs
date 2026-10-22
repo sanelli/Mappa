@@ -140,34 +140,37 @@ internal class TypeMapIdentifierAlgorithm
             // 03. Type mapping.
             new PolymorphismMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
 
-            // 04. Enum related strategies.
+            // 04. Protobuf oneof type mapping.
+            new ProtobufPolymorphismMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
+
+            // 05. Enum related strategies.
             new EnumMapStrategyDetector(this.Context, this.Compilation),
 
-            // 05. BSON well-known type strategies.
+            // 06. BSON well-known type strategies.
             new BsonWellKnownTypesMapStrategyDetector(this.Context, this.Compilation),
 
-            // 06. Protobuf well-known type strategies.
+            // 07. Protobuf well-known type strategies.
             new ProtobufWellKnownTypesMapStrategyDetector(this.Context, this.Compilation),
 
-            // 07. String related strategies.
+            // 08. String related strategies.
             new StringMapStrategyDetector(this.Context, this.Compilation),
 
-            // 08. Date and time related strategies.
+            // 09. Date and time related strategies.
             new DateAndTimeMapStrategyDetector(this.Context, this.Compilation),
 
-            // 09. IQueryable projection strategies.
+            // 10. IQueryable projection strategies.
             new QueryableProjectionMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
 
-            // 10. Container related strategies.
+            // 11. Container related strategies.
             new ContainerMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
 
-            // 11. Tuple related strategies.
+            // 12. Tuple related strategies.
             new TupleMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
 
-            // 12. Guid related strategies.
+            // 13. Guid related strategies.
             new GuidStrategyDetector(this.Context, this.Compilation),
 
-            // 13. Constructor related strategies.
+            // 14. Constructor related strategies.
             new ConstructorMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
         ];
 
@@ -224,7 +227,21 @@ internal class TypeMapIdentifierAlgorithm
     }
 
     private static bool CanExecutePolymorphismMapStrategyDetector(StackSetting<Type> detectorsStack, MapMethod mapMethod)
-        => mapMethod.HasAnyAttribute<MappaTypeMappingAttribute>() && detectorsStack.Count switch
+        => mapMethod.HasAnyAttribute<MappaTypeMappingAttribute>()
+           && !HasProtobufPolymorphismAttributes(mapMethod)
+           && IsDetectorsStackCompatibleWithPolymorphism(detectorsStack);
+
+    private static bool CanExecuteProtobufPolymorphismMapStrategyDetector(StackSetting<Type> detectorsStack, MapMethod mapMethod)
+        => HasProtobufPolymorphismAttributes(mapMethod)
+           && IsDetectorsStackCompatibleWithPolymorphism(detectorsStack);
+
+    private static bool HasProtobufPolymorphismAttributes(MapMethod mapMethod)
+        => mapMethod.HasAnyAttribute<MappaProtobufTypeMappingAttribute>()
+           || mapMethod.HasAnyAttribute<MappaProtobufTypeMappingDefaultAttribute>()
+           || mapMethod.HasAnyAttribute<MappaProtobufPolymorphismSetupAttribute>();
+
+    private static bool IsDetectorsStackCompatibleWithPolymorphism(StackSetting<Type> detectorsStack)
+        => detectorsStack.Count switch
         {
             // If only one item is present on the stack then
             // there is actually nothing on the stack beside
@@ -253,9 +270,17 @@ internal class TypeMapIdentifierAlgorithm
             return !CanExecutePolymorphismMapStrategyDetector(this.Context.AlgorithmSettings.Detectors, this.Context.GetRootMapMethod());
         }
 
+        if (detector is ProtobufPolymorphismMapStrategyDetector)
+        {
+            return !CanExecuteProtobufPolymorphismMapStrategyDetector(this.Context.AlgorithmSettings.Detectors, this.Context.GetRootMapMethod());
+        }
+
         if (detector is IdentityMapStrategyDetector)
         {
-            return CanExecutePolymorphismMapStrategyDetector(this.Context.AlgorithmSettings.Detectors, this.Context.GetRootMapMethod());
+            var detectorsStack = this.Context.AlgorithmSettings.Detectors;
+            var rootMapMethod = this.Context.GetRootMapMethod();
+            return CanExecutePolymorphismMapStrategyDetector(detectorsStack, rootMapMethod)
+                   || CanExecuteProtobufPolymorphismMapStrategyDetector(detectorsStack, rootMapMethod);
         }
 
         return false;

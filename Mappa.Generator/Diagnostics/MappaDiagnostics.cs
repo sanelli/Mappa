@@ -1580,6 +1580,307 @@ internal static class MappaDiagnostics
             methodName,
             targetType.ToDisplayString());
 
+    /// <summary>
+    /// Diagnostic: Protobuf oneof polymorphism attributes are mixed with the classic type mapping attributes.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="methodName">The map method name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic ProtobufPolymorphismMixedWithTypeMapping(
+        Location? location,
+        string methodName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.ProtobufPolymorphismMixedWithTypeMapping,
+            location,
+            methodName);
+
+    /// <summary>
+    /// Diagnostic: Protobuf oneof type mapping attributes are used without the required setup attribute.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="methodName">The map method name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic ProtobufPolymorphismSetupMissing(
+        Location? location,
+        string methodName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.ProtobufPolymorphismSetupMissing,
+            location,
+            methodName);
+
+    /// <summary>
+    /// Diagnostic: More than one protobuf polymorphism setup attribute is applied to the same method.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="methodName">The map method name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic ProtobufPolymorphismMultipleSetups(
+        Location? location,
+        string methodName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.ProtobufPolymorphismMultipleSetups,
+            location,
+            methodName);
+
+    /// <summary>
+    /// Diagnostic: The protobuf polymorphism setup attribute arity does not match the mapping scenario.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="methodName">The map method name.</param>
+    /// <param name="reason">The reason.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic ProtobufPolymorphismSetupWrongArity(
+        Location? location,
+        string methodName,
+        string reason)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.ProtobufPolymorphismSetupWrongArity,
+            location,
+            methodName,
+            reason);
+
+    /// <summary>
+    /// Diagnostic: The oneof case property named in the setup attribute does not exist on the message type.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="methodName">The map method name.</param>
+    /// <param name="propertyName">The propertyName.</param>
+    /// <param name="typeName">The typeName.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic ProtobufPolymorphismCasePropertyNotFound(
+        Location? location,
+        string methodName,
+        string propertyName,
+        string typeName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.ProtobufPolymorphismCasePropertyNotFound,
+            location,
+            methodName,
+            propertyName,
+            typeName);
+
+    /// <summary>
+    /// Diagnostic: The oneof case property is not typed with a nested *OneofCase enum.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="methodName">The map method name.</param>
+    /// <param name="propertyName">The propertyName.</param>
+    /// <param name="typeName">The typeName.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic ProtobufPolymorphismCasePropertyNotOneofCaseEnum(
+        Location? location,
+        string methodName,
+        string propertyName,
+        string typeName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.ProtobufPolymorphismCasePropertyNotOneofCaseEnum,
+            location,
+            methodName,
+            propertyName,
+            typeName);
+
+    /// <summary>
+    /// Diagnostic: The oneof case name does not identify an arm of the message type.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="methodName">The map method name.</param>
+    /// <param name="caseName">The caseName.</param>
+    /// <param name="typeName">The typeName.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic ProtobufPolymorphismCaseNameUnknown(
+        Location? location,
+        string methodName,
+        string caseName,
+        string typeName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.ProtobufPolymorphismCaseNameUnknown,
+            location,
+            methodName,
+            caseName,
+            typeName);
+
+    /// <summary>
+    /// Diagnostic: The oneof case 'None' is used as an explicit arm.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="methodName">The map method name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic ProtobufPolymorphismCaseNameNone(
+        Location? location,
+        string methodName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.ProtobufPolymorphismCaseNameNone,
+            location,
+            methodName);
+
+    /// <summary>
+    /// Diagnostic: The oneof arm is not a message type (scalar, string or bytes).
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="methodName">The map method name.</param>
+    /// <param name="caseName">The caseName.</param>
+    /// <param name="typeName">The typeName.</param>
+    /// <param name="armTypeName">The armTypeName.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic ProtobufPolymorphismScalarArm(
+        Location? location,
+        string methodName,
+        string caseName,
+        string typeName,
+        string armTypeName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.ProtobufPolymorphismScalarArm,
+            location,
+            methodName,
+            caseName,
+            typeName,
+            armTypeName);
+
+    /// <summary>
+    /// Diagnostic: The same oneof case or source type is mapped by more than one arm.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="methodName">The map method name.</param>
+    /// <param name="armName">The armName.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic ProtobufPolymorphismDuplicateArm(
+        Location? location,
+        string methodName,
+        string armName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.ProtobufPolymorphismDuplicateArm,
+            location,
+            methodName,
+            armName);
+
+    /// <summary>
+    /// Diagnostic: NoMap or MapTo default behavior is used when the target is not a protobuf message.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="methodName">The map method name.</param>
+    /// <param name="behavior">The behavior.</param>
+    /// <param name="targetTypeName">The targetTypeName.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic ProtobufPolymorphismDefaultRequiresProtobufTarget(
+        Location? location,
+        string methodName,
+        string behavior,
+        string targetTypeName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.ProtobufPolymorphismDefaultRequiresProtobufTarget,
+            location,
+            methodName,
+            behavior,
+            targetTypeName);
+
+    /// <summary>
+    /// Diagnostic: The MapTo default behavior does not specify the target oneof case.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="methodName">The map method name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic ProtobufPolymorphismMapToCaseMissing(
+        Location? location,
+        string methodName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.ProtobufPolymorphismMapToCaseMissing,
+            location,
+            methodName);
+
+    /// <summary>
+    /// Diagnostic: The protobuf type mapping default behavior is undefined.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="methodName">The map method name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic ProtobufPolymorphismDefaultBehaviorUndefined(
+        Location? location,
+        string methodName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.ProtobufPolymorphismDefaultBehaviorUndefined,
+            location,
+            methodName);
+
+    /// <summary>
+    /// Diagnostic: An argument of the protobuf type mapping default attribute is not used by its behavior.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="methodName">The map method name.</param>
+    /// <param name="argumentName">The argumentName.</param>
+    /// <param name="behavior">The behavior.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic ProtobufPolymorphismDefaultArgumentUnused(
+        Location? location,
+        string methodName,
+        string argumentName,
+        string behavior)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.ProtobufPolymorphismDefaultArgumentUnused,
+            location,
+            methodName,
+            argumentName,
+            behavior);
+
+    /// <summary>
+    /// Diagnostic: The CLR type of an arm is not compatible with the map method type.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="methodName">The map method name.</param>
+    /// <param name="typeName">The typeName.</param>
+    /// <param name="baseTypeName">The baseTypeName.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic ProtobufPolymorphismClrTypeNotCompatible(
+        Location? location,
+        string methodName,
+        string typeName,
+        string baseTypeName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.ProtobufPolymorphismClrTypeNotCompatible,
+            location,
+            methodName,
+            typeName,
+            baseTypeName);
+
+    /// <summary>
+    /// Diagnostic: The target oneof arm property is not publicly writable.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="methodName">The map method name.</param>
+    /// <param name="propertyName">The propertyName.</param>
+    /// <param name="typeName">The typeName.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic ProtobufPolymorphismArmPropertyNotWritable(
+        Location? location,
+        string methodName,
+        string propertyName,
+        string typeName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.ProtobufPolymorphismArmPropertyNotWritable,
+            location,
+            methodName,
+            propertyName,
+            typeName);
+
+    /// <summary>
+    /// Diagnostic: The constructor form of the protobuf type mapping attribute does not match the mapping scenario.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="methodName">The map method name.</param>
+    /// <param name="scenario">The scenario.</param>
+    /// <param name="expected">The expected.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic ProtobufPolymorphismArmFormMismatch(
+        Location? location,
+        string methodName,
+        string scenario,
+        string expected)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.ProtobufPolymorphismArmFormMismatch,
+            location,
+            methodName,
+            scenario,
+            expected);
+
     private static Location? GetSyntaxLocation(SyntaxNode? syntaxNode)
         => syntaxNode?.GetLocation();
 }
