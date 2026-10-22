@@ -49,6 +49,9 @@ internal static class AttributeDataExtensions
     private const string MappaTypeMappingAttributeOfTFullName = "Mappa.Attributes.MappaTypeMappingAttribute`2";
     private const string MappaTypeMappingDefaultAttributeFullName = "Mappa.Attributes.MappaTypeMappingDefaultAttribute";
     private const string MappaTypeMappingDefaultAttributeOfTFullName = "Mappa.Attributes.MappaTypeMappingDefaultAttribute`1";
+    private const string MappaProtobufPolymorphismSetupAttributeFullName = "Mappa.Attributes.MappaProtobufPolymorphismSetupAttribute";
+    private const string MappaProtobufTypeMappingAttributeFullName = "Mappa.Attributes.MappaProtobufTypeMappingAttribute";
+    private const string MappaProtobufTypeMappingDefaultAttributeFullName = "Mappa.Attributes.MappaProtobufTypeMappingDefaultAttribute";
     private const string MappaMapEnumMemberAttributeFullName = "Mappa.Attributes.MappaMapEnumMemberAttribute`1";
     private const string MappaMapEnumMemberToEnumAttributeFullName = "Mappa.Attributes.MappaMapEnumMemberAttribute`2";
     private const string MappaMapEnumIgnoreAttributeFullName = "Mappa.Attributes.MappaMapEnumIgnoreAttribute`1";
@@ -678,6 +681,87 @@ internal static class AttributeDataExtensions
                     mappaTypeMappingAttributeOfTSymbol) is { } typeMapping)
             {
                 results.Add(typeMapping);
+            }
+        }
+
+        return [.. results];
+    }
+
+    /// <summary>
+    /// Gets the <see cref="MappaProtobufPolymorphismSetupAttribute"/>s applied to the method.
+    /// </summary>
+    /// <param name="attributes">The attributes.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The parsed setup attributes in declaration order.</returns>
+    internal static MappaProtobufPolymorphismSetupAttribute[] GetMappaProtobufPolymorphismSetupAttributes(this ImmutableArray<AttributeData> attributes, Compilation compilation)
+    {
+        var attributeSymbol = compilation.GetTypeByMetadataName(MappaProtobufPolymorphismSetupAttributeFullName);
+        var results = new List<MappaProtobufPolymorphismSetupAttribute>();
+
+        foreach (var attributeData in attributes)
+        {
+            if (!SymbolEqualityComparer.Default.Equals(attributeData.AttributeClass, attributeSymbol))
+            {
+                continue;
+            }
+
+            if (TryParseProtobufPolymorphismSetupAttribute(attributeData.ConstructorArguments) is { } setup)
+            {
+                results.Add(setup);
+            }
+        }
+
+        return [.. results];
+    }
+
+    /// <summary>
+    /// Gets the <see cref="MappaProtobufTypeMappingAttribute"/>s applied to the method.
+    /// </summary>
+    /// <param name="attributes">The attributes.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The parsed protobuf type mapping attributes in declaration order.</returns>
+    internal static MappaProtobufTypeMappingAttribute[] GetMappaProtobufTypeMappingAttributes(this ImmutableArray<AttributeData> attributes, Compilation compilation)
+    {
+        var attributeSymbol = compilation.GetTypeByMetadataName(MappaProtobufTypeMappingAttributeFullName);
+        var results = new List<MappaProtobufTypeMappingAttribute>();
+
+        foreach (var attributeData in attributes)
+        {
+            if (!SymbolEqualityComparer.Default.Equals(attributeData.AttributeClass, attributeSymbol))
+            {
+                continue;
+            }
+
+            if (TryParseProtobufTypeMappingAttribute(attributeData.ConstructorArguments) is { } typeMapping)
+            {
+                results.Add(typeMapping);
+            }
+        }
+
+        return [.. results];
+    }
+
+    /// <summary>
+    /// Gets the <see cref="MappaProtobufTypeMappingDefaultAttribute"/>s applied to the method.
+    /// </summary>
+    /// <param name="attributes">The attributes.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The parsed protobuf type mapping default attributes in declaration order.</returns>
+    internal static MappaProtobufTypeMappingDefaultAttribute[] GetMappaProtobufTypeMappingDefaultAttributes(this ImmutableArray<AttributeData> attributes, Compilation compilation)
+    {
+        var attributeSymbol = compilation.GetTypeByMetadataName(MappaProtobufTypeMappingDefaultAttributeFullName);
+        var results = new List<MappaProtobufTypeMappingDefaultAttribute>();
+
+        foreach (var attributeData in attributes)
+        {
+            if (!SymbolEqualityComparer.Default.Equals(attributeData.AttributeClass, attributeSymbol))
+            {
+                continue;
+            }
+
+            if (TryParseProtobufTypeMappingDefaultAttribute(attributeData.ConstructorArguments) is { } typeMappingDefault)
+            {
+                results.Add(typeMappingDefault);
             }
         }
 
@@ -1413,6 +1497,67 @@ internal static class AttributeDataExtensions
         return new MappaTypeMappingAttribute(
             new FakeType(targetType.ToDisplayString()),
             new FakeType(sourceType.ToDisplayString()));
+    }
+
+    private static MappaProtobufPolymorphismSetupAttribute? TryParseProtobufPolymorphismSetupAttribute(
+        ImmutableArray<TypedConstant> constructorArguments)
+    {
+        switch (constructorArguments.Length)
+        {
+            case 1 when constructorArguments[0].Value is string oneOfCasePropertyName:
+                return new MappaProtobufPolymorphismSetupAttribute(oneOfCasePropertyName);
+
+            case 2 when constructorArguments[0].Value is string targetOneOfCasePropertyName
+                        && constructorArguments[1].Value is string sourceOneOfCasePropertyName:
+                return new MappaProtobufPolymorphismSetupAttribute(targetOneOfCasePropertyName, sourceOneOfCasePropertyName);
+
+            default:
+                return null;
+        }
+    }
+
+    private static MappaProtobufTypeMappingAttribute? TryParseProtobufTypeMappingAttribute(
+        ImmutableArray<TypedConstant> constructorArguments)
+    {
+        if (constructorArguments.Length != 2)
+        {
+            return null;
+        }
+
+        var first = constructorArguments[0].Value;
+        var second = constructorArguments[1].Value;
+        return (first, second) switch
+        {
+            (INamedTypeSymbol targetType, string sourceOneOfCaseName)
+                => new MappaProtobufTypeMappingAttribute(new FakeType(targetType.ToDisplayString()), sourceOneOfCaseName),
+            (string targetOneOfCaseName, INamedTypeSymbol sourceType)
+                => new MappaProtobufTypeMappingAttribute(targetOneOfCaseName, new FakeType(sourceType.ToDisplayString())),
+            (string targetOneOfCaseName, string sourceOneOfCaseName)
+                => new MappaProtobufTypeMappingAttribute(targetOneOfCaseName, sourceOneOfCaseName),
+            _ => null,
+        };
+    }
+
+    private static MappaProtobufTypeMappingDefaultAttribute? TryParseProtobufTypeMappingDefaultAttribute(
+        ImmutableArray<TypedConstant> constructorArguments)
+    {
+        if (constructorArguments.Length is < 1 or > 2 || constructorArguments[0].Value is not int behaviorValue)
+        {
+            return null;
+        }
+
+        var behavior = (MappaProtobufTypeMappingDefaultBehavior)behaviorValue;
+        if (constructorArguments.Length == 1)
+        {
+            return new MappaProtobufTypeMappingDefaultAttribute(behavior);
+        }
+
+        return constructorArguments[1].Value switch
+        {
+            INamedTypeSymbol exceptionType => new MappaProtobufTypeMappingDefaultAttribute(behavior, new FakeType(exceptionType.ToDisplayString())),
+            string targetOneOfCaseName => new MappaProtobufTypeMappingDefaultAttribute(behavior, targetOneOfCaseName),
+            _ => new MappaProtobufTypeMappingDefaultAttribute(behavior),
+        };
     }
 
     private static MappaInvokeMethodAttribute? TryCreateInvokeMethodAttribute(AttributeData attributeData)

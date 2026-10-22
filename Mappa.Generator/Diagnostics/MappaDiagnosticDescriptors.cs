@@ -106,6 +106,23 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? mappaUseConstructorCannotMap;
     private static DiagnosticDescriptor? duplicateMappaUseConstructorForTargetType;
     private static DiagnosticDescriptor? mappaUseConstructorAttributeNotUsed;
+    private static DiagnosticDescriptor? protobufPolymorphismMixedWithTypeMapping;
+    private static DiagnosticDescriptor? protobufPolymorphismSetupMissing;
+    private static DiagnosticDescriptor? protobufPolymorphismMultipleSetups;
+    private static DiagnosticDescriptor? protobufPolymorphismSetupWrongArity;
+    private static DiagnosticDescriptor? protobufPolymorphismCasePropertyNotFound;
+    private static DiagnosticDescriptor? protobufPolymorphismCasePropertyNotOneofCaseEnum;
+    private static DiagnosticDescriptor? protobufPolymorphismCaseNameUnknown;
+    private static DiagnosticDescriptor? protobufPolymorphismCaseNameNone;
+    private static DiagnosticDescriptor? protobufPolymorphismScalarArm;
+    private static DiagnosticDescriptor? protobufPolymorphismDuplicateArm;
+    private static DiagnosticDescriptor? protobufPolymorphismDefaultRequiresProtobufTarget;
+    private static DiagnosticDescriptor? protobufPolymorphismMapToCaseMissing;
+    private static DiagnosticDescriptor? protobufPolymorphismDefaultBehaviorUndefined;
+    private static DiagnosticDescriptor? protobufPolymorphismDefaultArgumentUnused;
+    private static DiagnosticDescriptor? protobufPolymorphismClrTypeNotCompatible;
+    private static DiagnosticDescriptor? protobufPolymorphismArmPropertyNotWritable;
+    private static DiagnosticDescriptor? protobufPolymorphismArmFormMismatch;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -842,6 +859,142 @@ internal static class MappaDiagnosticDescriptors
         => mappaUseConstructorAttributeNotUsed ??= BuildWarning(
             MappaDiagnosticsKind.MappaUseConstructorAttributeNotUsed,
             DiagnosticsResources.MappaUseConstructorAttributeNotUsed);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.ProtobufPolymorphismMixedWithTypeMapping"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor ProtobufPolymorphismMixedWithTypeMapping
+        => protobufPolymorphismMixedWithTypeMapping ??= BuildError(
+            MappaDiagnosticsKind.ProtobufPolymorphismMixedWithTypeMapping,
+            DiagnosticsResources.ProtobufPolymorphismMixedWithTypeMapping);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.ProtobufPolymorphismSetupMissing"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor ProtobufPolymorphismSetupMissing
+        => protobufPolymorphismSetupMissing ??= BuildError(
+            MappaDiagnosticsKind.ProtobufPolymorphismSetupMissing,
+            DiagnosticsResources.ProtobufPolymorphismSetupMissing);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.ProtobufPolymorphismMultipleSetups"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor ProtobufPolymorphismMultipleSetups
+        => protobufPolymorphismMultipleSetups ??= BuildError(
+            MappaDiagnosticsKind.ProtobufPolymorphismMultipleSetups,
+            DiagnosticsResources.ProtobufPolymorphismMultipleSetups);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.ProtobufPolymorphismSetupWrongArity"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor ProtobufPolymorphismSetupWrongArity
+        => protobufPolymorphismSetupWrongArity ??= BuildError(
+            MappaDiagnosticsKind.ProtobufPolymorphismSetupWrongArity,
+            DiagnosticsResources.ProtobufPolymorphismSetupWrongArity);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.ProtobufPolymorphismCasePropertyNotFound"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor ProtobufPolymorphismCasePropertyNotFound
+        => protobufPolymorphismCasePropertyNotFound ??= BuildError(
+            MappaDiagnosticsKind.ProtobufPolymorphismCasePropertyNotFound,
+            DiagnosticsResources.ProtobufPolymorphismCasePropertyNotFound);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.ProtobufPolymorphismCasePropertyNotOneofCaseEnum"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor ProtobufPolymorphismCasePropertyNotOneofCaseEnum
+        => protobufPolymorphismCasePropertyNotOneofCaseEnum ??= BuildError(
+            MappaDiagnosticsKind.ProtobufPolymorphismCasePropertyNotOneofCaseEnum,
+            DiagnosticsResources.ProtobufPolymorphismCasePropertyNotOneofCaseEnum);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.ProtobufPolymorphismCaseNameUnknown"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor ProtobufPolymorphismCaseNameUnknown
+        => protobufPolymorphismCaseNameUnknown ??= BuildError(
+            MappaDiagnosticsKind.ProtobufPolymorphismCaseNameUnknown,
+            DiagnosticsResources.ProtobufPolymorphismCaseNameUnknown);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.ProtobufPolymorphismCaseNameNone"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor ProtobufPolymorphismCaseNameNone
+        => protobufPolymorphismCaseNameNone ??= BuildError(
+            MappaDiagnosticsKind.ProtobufPolymorphismCaseNameNone,
+            DiagnosticsResources.ProtobufPolymorphismCaseNameNone);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.ProtobufPolymorphismScalarArm"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor ProtobufPolymorphismScalarArm
+        => protobufPolymorphismScalarArm ??= BuildError(
+            MappaDiagnosticsKind.ProtobufPolymorphismScalarArm,
+            DiagnosticsResources.ProtobufPolymorphismScalarArm);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.ProtobufPolymorphismDuplicateArm"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor ProtobufPolymorphismDuplicateArm
+        => protobufPolymorphismDuplicateArm ??= BuildError(
+            MappaDiagnosticsKind.ProtobufPolymorphismDuplicateArm,
+            DiagnosticsResources.ProtobufPolymorphismDuplicateArm);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.ProtobufPolymorphismDefaultRequiresProtobufTarget"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor ProtobufPolymorphismDefaultRequiresProtobufTarget
+        => protobufPolymorphismDefaultRequiresProtobufTarget ??= BuildError(
+            MappaDiagnosticsKind.ProtobufPolymorphismDefaultRequiresProtobufTarget,
+            DiagnosticsResources.ProtobufPolymorphismDefaultRequiresProtobufTarget);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.ProtobufPolymorphismMapToCaseMissing"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor ProtobufPolymorphismMapToCaseMissing
+        => protobufPolymorphismMapToCaseMissing ??= BuildError(
+            MappaDiagnosticsKind.ProtobufPolymorphismMapToCaseMissing,
+            DiagnosticsResources.ProtobufPolymorphismMapToCaseMissing);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.ProtobufPolymorphismDefaultBehaviorUndefined"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor ProtobufPolymorphismDefaultBehaviorUndefined
+        => protobufPolymorphismDefaultBehaviorUndefined ??= BuildError(
+            MappaDiagnosticsKind.ProtobufPolymorphismDefaultBehaviorUndefined,
+            DiagnosticsResources.ProtobufPolymorphismDefaultBehaviorUndefined);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.ProtobufPolymorphismDefaultArgumentUnused"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor ProtobufPolymorphismDefaultArgumentUnused
+        => protobufPolymorphismDefaultArgumentUnused ??= BuildWarning(
+            MappaDiagnosticsKind.ProtobufPolymorphismDefaultArgumentUnused,
+            DiagnosticsResources.ProtobufPolymorphismDefaultArgumentUnused);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.ProtobufPolymorphismClrTypeNotCompatible"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor ProtobufPolymorphismClrTypeNotCompatible
+        => protobufPolymorphismClrTypeNotCompatible ??= BuildError(
+            MappaDiagnosticsKind.ProtobufPolymorphismClrTypeNotCompatible,
+            DiagnosticsResources.ProtobufPolymorphismClrTypeNotCompatible);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.ProtobufPolymorphismArmPropertyNotWritable"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor ProtobufPolymorphismArmPropertyNotWritable
+        => protobufPolymorphismArmPropertyNotWritable ??= BuildError(
+            MappaDiagnosticsKind.ProtobufPolymorphismArmPropertyNotWritable,
+            DiagnosticsResources.ProtobufPolymorphismArmPropertyNotWritable);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.ProtobufPolymorphismArmFormMismatch"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor ProtobufPolymorphismArmFormMismatch
+        => protobufPolymorphismArmFormMismatch ??= BuildError(
+            MappaDiagnosticsKind.ProtobufPolymorphismArmFormMismatch,
+            DiagnosticsResources.ProtobufPolymorphismArmFormMismatch);
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(

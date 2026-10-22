@@ -53,3 +53,76 @@ message MappaDependencyTargetModel
     // A timestamp.
     google.protobuf.Timestamp TimeStamp = 1;
 }
+
+// Payload of the "Ok" arm of the result oneof.
+message ProtobufOneofOkPayload
+{
+  // A value.
+  string Value = 1;
+
+  // A description.
+  string Description = 2;
+}
+
+// Payload of the "Error" arm of the result oneof.
+message ProtobufOneofErrorPayload
+{
+  // An error code.
+  int32 Code = 1;
+
+  // A description.
+  string Description = 2;
+}
+
+// Source protobuf message with a message-typed oneof (no scalar arms).
+message ProtobufOneofResult
+{
+  // A description shared by all the arms.
+  string Description = 1;
+
+  // The result: either ok or error.
+  oneof Result
+  {
+    ProtobufOneofOkPayload Ok = 2;
+    ProtobufOneofErrorPayload Error = 3;
+  }
+}
+
+// Payload of the "Ok" arm of the reply oneof.
+message ProtobufOneofReplyOkPayload
+{
+  // A value.
+  string Value = 1;
+
+  // A description.
+  string Description = 2;
+}
+
+// Payload of the "Error" arm of the reply oneof.
+message ProtobufOneofReplyErrorPayload
+{
+  // An error code.
+  int32 Code = 1;
+
+  // A description.
+  string Description = 2;
+}
+
+// Payload of the "Fallback" arm of the reply oneof.
+message ProtobufOneofReplyFallbackPayload
+{
+  // A description.
+  string Description = 1;
+}
+
+// Target protobuf message with a message-typed oneof (no scalar arms).
+message ProtobufOneofReply
+{
+  // The reply: ok, error or fallback.
+  oneof Reply
+  {
+    ProtobufOneofReplyOkPayload Ok = 1;
+    ProtobufOneofReplyErrorPayload Error = 2;
+    ProtobufOneofReplyFallbackPayload Fallback = 3;
+  }
+}

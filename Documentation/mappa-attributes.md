@@ -24,6 +24,9 @@ This is the list of attributes provided:
 - `MappaUseConstructor`: Forces empty or parameterized constructor selection for the map method return type or a nested target type (see [MappaUseConstructor](#mappauseconstructor)); also available as `MappaUseConstructorAttribute<T1>` … `<T1, …, T8>` for exact signatures;
 - `MappaTypeMapping`: When mapping structured types or interfaces, allows defining the target type depending on the source type; also available as `MappaTypeMapping<TTarget, TSource>`;
 - `MappaTypeMappingDefault`: Describes the default behaviour for polymorphic methods defined via `MappaTypeMapping`; also available as `MappaTypeMappingDefault<TDefault>` for `MapSourceType` with an explicit target type.
+- `MappaProtobufPolymorphismSetup`: Identifies the protobuf `oneof` case property (`{Oneof}Case`) that drives protobuf polymorphism on a map method; single-property form for proto→POCO and POCO→proto, `(target, source)` form for proto→proto (see [Protobuf oneof polymorphism](#protobuf-oneof-polymorphism));
+- `MappaProtobufTypeMapping`: Defines one arm of a protobuf `oneof` polymorphism mapping; three constructors for proto→POCO, POCO→proto and proto→proto (no generic form);
+- `MappaProtobufTypeMappingDefault`: Describes the default behaviour of protobuf `oneof` polymorphism (`Throw`, `NoMap`, `MapTo`).
 - `MappaMapEnumMember`: Configures explicit enum↔integral, enum↔string, or enum↔enum member pairings (see [MappaMapEnumMember, MappaMapEnumIgnore, and MappaMapEnumDefault](#mappamapenummember-mappamapenumignore-and-mappamapenumdefault));
 - `MappaMapEnumIgnore`: Excludes a specific enum member from mapping;
 - `MappaMapEnumDefault`: Configures fallback behaviour when an enum value cannot be mapped;
@@ -432,6 +435,69 @@ For `MapSourceType` with an explicit target type, the following forms are equiva
 
 - `[MappaTypeMappingDefault(MappaTypeMappingDefaultBehavior.MapSourceType, typeof(TDefault))]`
 - `[MappaTypeMappingDefault<TDefault>]`
+
+## Protobuf oneof polymorphism
+
+Protobuf `oneof` fields are exposed by `protoc` as a `{Oneof}Case` property (for example `ResultCase`), a nested `{Oneof}OneofCase` enum (`ResultOneofCase`, whose first member is `None`) and one property per arm. Mappa can dispatch on that case (or on the CLR runtime type when the source is a POCO) with three method-only attributes. Only **message-typed** arms are supported; scalar arms are rejected.
+
+| Attribute | Purpose |
+|-----------|---------|
+| `[MappaProtobufPolymorphismSetup]` | **Required**, exactly one per method. Names the oneof case property. |
+| `[MappaProtobufTypeMapping]` | One per arm (`AllowMultiple`). |
+| `[MappaProtobufTypeMappingDefault]` | Optional. Behaviour when no arm matches. |
+
+All constructors use the **(target, source)** order, like `[MappaTypeMapping]`.
+
+| Direction | Setup | Arm |
+|-----------|-------|-----|
+| proto → POCO | `[MappaProtobufPolymorphismSetup("ResultCase")]` (source case property) | `[MappaProtobufTypeMapping(typeof(TTargetPoco), "Ok")]` (target type, source case name) |
+| POCO → proto | `[MappaProtobufPolymorphismSetup("ResultCase")]` (target case property) | `[MappaProtobufTypeMapping("Ok", typeof(TSourcePoco))]` (target case name, source type) |
+| proto → proto | `[MappaProtobufPolymorphismSetup("TargetCase", "SourceCase")]` | `[MappaProtobufTypeMapping("TargetOk", "SourceOk")]` (target case name, source case name) |
+
+How the mapping is generated:
+
+- **proto source**: `switch` on the source `{Oneof}Case`; each arm reads the arm property (a message), maps it, and produces the target. The source case `None` and any unlisted case follow the default behaviour.
+- **POCO source**: `switch` on the runtime type of the source (type patterns), one `case` per arm.
+- **proto target**: an empty target message is created and the selected oneof property is assigned inside the arm; other (non-oneof) fields of the target message are not mapped by this strategy.
+- The arm message/POCO types are mapped with the regular strategies (including existing map methods), so no extra map method is needed.
+- Exactly one `[MappaProtobufPolymorphismSetup]` is required; a setup without arms is allowed and generates only the default branch.
+- Like `[MappaTypeMapping]`, the strategy runs only at the root of the map method (or immediately after nullable unwrapping). The protobuf attributes cannot be mixed with `[MappaTypeMapping]` / `[MappaTypeMappingDefault]` on the same method (**MP00093**).
+- The case `None` cannot be used as an explicit arm (**MP00100**); an arm cannot be repeated (**MP00102**).
+
+`MappaProtobufTypeMappingDefaultBehavior` (via `[MappaProtobufTypeMappingDefault]`):
+
+- `Undefined`: this setting should never be used (**MP00105**);
+- `Throw`: throws `ArgumentOutOfRangeException` or the exception type given in the attribute (must derive from `Exception`, **MP00021**). This is also the behaviour when the attribute is missing;
+- `NoMap`: leaves the target oneof unset (`None`). Only valid when the target is a protobuf message (**MP00103** otherwise); an exception type argument is ignored with warning **MP00106**;
+- `MapTo`: maps the unmatched source (including source case `None`) into the message of a named target arm and assigns that arm: `[MappaProtobufTypeMappingDefault(MappaProtobufTypeMappingDefaultBehavior.MapTo, "Fallback")]`. Only valid when the target is a protobuf message (**MP00103**), and the case name is required (**MP00104**).
+
+```csharp
+[Mappa]
+public sealed partial class Mapper
+{
+    // proto -> POCO
+    [MappaProtobufPolymorphismSetup("ResultCase")]
+    [MappaProtobufTypeMapping(typeof(OkModel), "Ok")]
+    [MappaProtobufTypeMapping(typeof(ErrorModel), "Error")]
+    public partial ResultModel Map(ResultMessage source);
+
+    // POCO -> proto
+    [MappaProtobufPolymorphismSetup("ReplyCase")]
+    [MappaProtobufTypeMapping("Ok", typeof(OkModel))]
+    [MappaProtobufTypeMapping("Error", typeof(ErrorModel))]
+    [MappaProtobufTypeMappingDefault(MappaProtobufTypeMappingDefaultBehavior.NoMap)]
+    public partial ReplyMessage Map(ResultModel source);
+
+    // proto -> proto: (target, source)
+    [MappaProtobufPolymorphismSetup("ReplyCase", "ResultCase")]
+    [MappaProtobufTypeMapping("Ok", "Ok")]
+    [MappaProtobufTypeMapping("Error", "Error")]
+    [MappaProtobufTypeMappingDefault(MappaProtobufTypeMappingDefaultBehavior.MapTo, "Fallback")]
+    public partial ReplyMessage Map(ResultMessage source);
+}
+```
+
+Diagnostics **MP00093–MP00109** cover the invalid configurations (see [Errors and warnings](./error-codes.md)). See also: [ProtobufOneofPolymorphismMappers.cs](../Mappa.Samples/ProtobufOneofPolymorphismMappers.cs).
 
 ## Preferred interface implementations
 

@@ -287,4 +287,55 @@
     <data name="MappaUseConstructorAttributeNotUsed" xml:space="preserve">
         <value>Il metodo '{0}' definisce [MappaUseConstructor] per il tipo '{1}', ma quel tipo non viene costruito usando il costruttore selezionato nel mapping.</value>
     </data>
+    <data name="ProtobufPolymorphismMixedWithTypeMapping" xml:space="preserve">
+        <value>Il metodo '{0}' non può combinare gli attributi di polimorfismo protobuf oneof ([MappaProtobufTypeMapping], [MappaProtobufTypeMappingDefault], [MappaProtobufPolymorphismSetup]) con [MappaTypeMapping] o [MappaTypeMappingDefault].</value>
+    </data>
+    <data name="ProtobufPolymorphismSetupMissing" xml:space="preserve">
+        <value>Il metodo '{0}' definisce [MappaProtobufTypeMapping] o [MappaProtobufTypeMappingDefault] ma manca l'attributo obbligatorio [MappaProtobufPolymorphismSetup].</value>
+    </data>
+    <data name="ProtobufPolymorphismMultipleSetups" xml:space="preserve">
+        <value>Il metodo '{0}' definisce più di un [MappaProtobufPolymorphismSetup]; ne è richiesto esattamente uno.</value>
+    </data>
+    <data name="ProtobufPolymorphismSetupWrongArity" xml:space="preserve">
+        <value>Il metodo '{0}' definisce [MappaProtobufPolymorphismSetup] con argomenti errati per questo mapping: {1}</value>
+    </data>
+    <data name="ProtobufPolymorphismCasePropertyNotFound" xml:space="preserve">
+        <value>Metodo '{0}': la proprietà oneof case '{1}' non è stata trovata sul tipo '{2}'.</value>
+    </data>
+    <data name="ProtobufPolymorphismCasePropertyNotOneofCaseEnum" xml:space="preserve">
+        <value>Metodo '{0}': la proprietà '{1}' del tipo '{2}' deve essere di un tipo enum annidato il cui nome termina con 'OneofCase'.</value>
+    </data>
+    <data name="ProtobufPolymorphismCaseNameUnknown" xml:space="preserve">
+        <value>Metodo '{0}': '{1}' non è un oneof case valido del tipo '{2}'.</value>
+    </data>
+    <data name="ProtobufPolymorphismCaseNameNone" xml:space="preserve">
+        <value>Metodo '{0}': il oneof case 'None' non può essere usato come ramo esplicito; i valori non corrispondenti sono gestiti dal comportamento di default.</value>
+    </data>
+    <data name="ProtobufPolymorphismScalarArm" xml:space="preserve">
+        <value>Metodo '{0}': il oneof case '{1}' del tipo '{2}' ha il tipo non-messaggio '{3}'; sono supportati solo rami oneof di tipo messaggio.</value>
+    </data>
+    <data name="ProtobufPolymorphismDuplicateArm" xml:space="preserve">
+        <value>Il metodo '{0}' mappa '{1}' più di una volta.</value>
+    </data>
+    <data name="ProtobufPolymorphismDefaultRequiresProtobufTarget" xml:space="preserve">
+        <value>Metodo '{0}': il comportamento di default '{1}' richiede che il tipo di destinazione '{2}' sia un messaggio protobuf con un oneof; usare Throw.</value>
+    </data>
+    <data name="ProtobufPolymorphismMapToCaseMissing" xml:space="preserve">
+        <value>Metodo '{0}': il comportamento di default MapTo richiede il nome di un oneof case di destinazione.</value>
+    </data>
+    <data name="ProtobufPolymorphismDefaultBehaviorUndefined" xml:space="preserve">
+        <value>Metodo '{0}': il comportamento di [MappaProtobufTypeMappingDefault] è Undefined.</value>
+    </data>
+    <data name="ProtobufPolymorphismDefaultArgumentUnused" xml:space="preserve">
+        <value>Metodo '{0}': {1} specificato in [MappaProtobufTypeMappingDefault] non viene usato dal comportamento '{2}'.</value>
+    </data>
+    <data name="ProtobufPolymorphismClrTypeNotCompatible" xml:space="preserve">
+        <value>Metodo '{0}': il tipo '{1}' deve essere, derivare da o implementare il tipo '{2}'.</value>
+    </data>
+    <data name="ProtobufPolymorphismArmPropertyNotWritable" xml:space="preserve">
+        <value>Metodo '{0}': la proprietà del ramo oneof '{1}' del tipo '{2}' non può essere assegnata.</value>
+    </data>
+    <data name="ProtobufPolymorphismArmFormMismatch" xml:space="preserve">
+        <value>Metodo '{0}': gli argomenti di [MappaProtobufTypeMapping] non corrispondono a un mapping {1}; atteso {2}.</value>
+    </data>
 </root>

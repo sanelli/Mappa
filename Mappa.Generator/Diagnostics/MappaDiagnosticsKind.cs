@@ -511,4 +511,89 @@ internal enum MappaDiagnosticsKind
     /// of its target type in the mapping.
     /// </summary>
     MappaUseConstructorAttributeNotUsed,
+
+    /// <summary>
+    /// Protobuf oneof polymorphism attributes are mixed with the classic type mapping attributes.
+    /// </summary>
+    ProtobufPolymorphismMixedWithTypeMapping,
+
+    /// <summary>
+    /// Protobuf oneof type mapping attributes are used without the required setup attribute.
+    /// </summary>
+    ProtobufPolymorphismSetupMissing,
+
+    /// <summary>
+    /// More than one protobuf polymorphism setup attribute is applied to the same method.
+    /// </summary>
+    ProtobufPolymorphismMultipleSetups,
+
+    /// <summary>
+    /// The protobuf polymorphism setup attribute arity does not match the mapping scenario.
+    /// </summary>
+    ProtobufPolymorphismSetupWrongArity,
+
+    /// <summary>
+    /// The oneof case property named in the setup attribute does not exist on the message type.
+    /// </summary>
+    ProtobufPolymorphismCasePropertyNotFound,
+
+    /// <summary>
+    /// The oneof case property is not typed with a nested *OneofCase enum.
+    /// </summary>
+    ProtobufPolymorphismCasePropertyNotOneofCaseEnum,
+
+    /// <summary>
+    /// The oneof case name does not identify an arm of the message type.
+    /// </summary>
+    ProtobufPolymorphismCaseNameUnknown,
+
+    /// <summary>
+    /// The oneof case 'None' is used as an explicit arm.
+    /// </summary>
+    ProtobufPolymorphismCaseNameNone,
+
+    /// <summary>
+    /// The oneof arm is not a message type (scalar, string or bytes).
+    /// </summary>
+    ProtobufPolymorphismScalarArm,
+
+    /// <summary>
+    /// The same oneof case or source type is mapped by more than one arm.
+    /// </summary>
+    ProtobufPolymorphismDuplicateArm,
+
+    /// <summary>
+    /// NoMap or MapTo default behavior is used when the target is not a protobuf message.
+    /// </summary>
+    ProtobufPolymorphismDefaultRequiresProtobufTarget,
+
+    /// <summary>
+    /// The MapTo default behavior does not specify the target oneof case.
+    /// </summary>
+    ProtobufPolymorphismMapToCaseMissing,
+
+    /// <summary>
+    /// The protobuf type mapping default behavior is undefined.
+    /// </summary>
+    ProtobufPolymorphismDefaultBehaviorUndefined,
+
+    /// <summary>
+    /// An argument of the protobuf type mapping default attribute is not used by its behavior.
+    /// </summary>
+    ProtobufPolymorphismDefaultArgumentUnused,
+
+    /// <summary>
+    /// The CLR type of an arm is not compatible with the map method type.
+    /// </summary>
+    ProtobufPolymorphismClrTypeNotCompatible,
+
+    /// <summary>
+    /// The target oneof arm property is not publicly writable.
+    /// </summary>
+    ProtobufPolymorphismArmPropertyNotWritable,
+
+    /// <summary>
+    /// The constructor form of the protobuf type mapping attribute does not match the mapping scenario.
+    /// </summary>
+    ProtobufPolymorphismArmFormMismatch,
 }

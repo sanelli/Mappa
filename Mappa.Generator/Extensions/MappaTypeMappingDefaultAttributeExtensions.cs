@@ -78,13 +78,21 @@ internal static class MappaTypeMappingDefaultAttributeExtensions
         }
     }
 
-    private static bool ValidateThrowBehavior(
-        MappaTypeMappingDefaultAttribute attribute,
+    /// <summary>
+    /// Validates the exception type used by a <c>Throw</c> default behavior.
+    /// </summary>
+    /// <param name="exceptionType">The exception type, or <c>null</c> to use the default exception.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <param name="location">The location on which the diagnostic should be pointing to.</param>
+    /// <param name="diagnostics">The generated diagnostic in case of error.</param>
+    /// <returns><c>true</c> if the exception type can be thrown, <c>false</c> otherwise.</returns>
+    internal static bool ValidateExceptionType(
+        Type? exceptionType,
         Compilation compilation,
         Location? location,
         ICollection<Diagnostic> diagnostics)
     {
-        if (attribute.Type is not { } attributeType || string.IsNullOrWhiteSpace(attributeType.FullName))
+        if (exceptionType is not { } attributeType || string.IsNullOrWhiteSpace(attributeType.FullName))
         {
             return true;
         }
@@ -116,6 +124,13 @@ internal static class MappaTypeMappingDefaultAttributeExtensions
 
         return true;
     }
+
+    private static bool ValidateThrowBehavior(
+        MappaTypeMappingDefaultAttribute attribute,
+        Compilation compilation,
+        Location? location,
+        ICollection<Diagnostic> diagnostics)
+        => ValidateExceptionType(attribute.Type, compilation, location, diagnostics);
 
     private static void ValidateDefaultOrNullBehavior(
         MappaTypeMappingDefaultAttribute attribute,

@@ -596,5 +596,107 @@ namespace Mappa.Generator.Diagnostics {
                 return ResourceManager.GetString("MappaUseConstructorAttributeNotUsed", resourceCulture);
             }
         }
+
+        internal static string ProtobufPolymorphismMixedWithTypeMapping {
+            get {
+                return ResourceManager.GetString("ProtobufPolymorphismMixedWithTypeMapping", resourceCulture);
+            }
+        }
+
+        internal static string ProtobufPolymorphismSetupMissing {
+            get {
+                return ResourceManager.GetString("ProtobufPolymorphismSetupMissing", resourceCulture);
+            }
+        }
+
+        internal static string ProtobufPolymorphismMultipleSetups {
+            get {
+                return ResourceManager.GetString("ProtobufPolymorphismMultipleSetups", resourceCulture);
+            }
+        }
+
+        internal static string ProtobufPolymorphismSetupWrongArity {
+            get {
+                return ResourceManager.GetString("ProtobufPolymorphismSetupWrongArity", resourceCulture);
+            }
+        }
+
+        internal static string ProtobufPolymorphismCasePropertyNotFound {
+            get {
+                return ResourceManager.GetString("ProtobufPolymorphismCasePropertyNotFound", resourceCulture);
+            }
+        }
+
+        internal static string ProtobufPolymorphismCasePropertyNotOneofCaseEnum {
+            get {
+                return ResourceManager.GetString("ProtobufPolymorphismCasePropertyNotOneofCaseEnum", resourceCulture);
+            }
+        }
+
+        internal static string ProtobufPolymorphismCaseNameUnknown {
+            get {
+                return ResourceManager.GetString("ProtobufPolymorphismCaseNameUnknown", resourceCulture);
+            }
+        }
+
+        internal static string ProtobufPolymorphismCaseNameNone {
+            get {
+                return ResourceManager.GetString("ProtobufPolymorphismCaseNameNone", resourceCulture);
+            }
+        }
+
+        internal static string ProtobufPolymorphismScalarArm {
+            get {
+                return ResourceManager.GetString("ProtobufPolymorphismScalarArm", resourceCulture);
+            }
+        }
+
+        internal static string ProtobufPolymorphismDuplicateArm {
+            get {
+                return ResourceManager.GetString("ProtobufPolymorphismDuplicateArm", resourceCulture);
+            }
+        }
+
+        internal static string ProtobufPolymorphismDefaultRequiresProtobufTarget {
+            get {
+                return ResourceManager.GetString("ProtobufPolymorphismDefaultRequiresProtobufTarget", resourceCulture);
+            }
+        }
+
+        internal static string ProtobufPolymorphismMapToCaseMissing {
+            get {
+                return ResourceManager.GetString("ProtobufPolymorphismMapToCaseMissing", resourceCulture);
+            }
+        }
+
+        internal static string ProtobufPolymorphismDefaultBehaviorUndefined {
+            get {
+                return ResourceManager.GetString("ProtobufPolymorphismDefaultBehaviorUndefined", resourceCulture);
+            }
+        }
+
+        internal static string ProtobufPolymorphismDefaultArgumentUnused {
+            get {
+                return ResourceManager.GetString("ProtobufPolymorphismDefaultArgumentUnused", resourceCulture);
+            }
+        }
+
+        internal static string ProtobufPolymorphismClrTypeNotCompatible {
+            get {
+                return ResourceManager.GetString("ProtobufPolymorphismClrTypeNotCompatible", resourceCulture);
+            }
+        }
+
+        internal static string ProtobufPolymorphismArmPropertyNotWritable {
+            get {
+                return ResourceManager.GetString("ProtobufPolymorphismArmPropertyNotWritable", resourceCulture);
+            }
+        }
+
+        internal static string ProtobufPolymorphismArmFormMismatch {
+            get {
+                return ResourceManager.GetString("ProtobufPolymorphismArmFormMismatch", resourceCulture);
+            }
+        }
     }
 }

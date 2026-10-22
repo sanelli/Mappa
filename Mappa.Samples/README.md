@@ -57,6 +57,7 @@ See the [tutorial](../Documentation/tutorial.md) for a guided introduction, or b
 |--------|--------------|
 | [`PolymorphismMappers.cs`](PolymorphismMappers.cs) | `[MappaTypeMapping]`, `[MappaTypeMappingDefault]` |
 | [`PolymorphicMethodMapMapper.cs`](PolymorphicMethodMapMapper.cs) | Polymorphic method resolution via existing-method strategy |
+| [`ProtobufOneofPolymorphismMappers.cs`](ProtobufOneofPolymorphismMappers.cs) | Protobuf `oneof` polymorphism (message-typed arms): `[MappaProtobufPolymorphismSetup]`, `[MappaProtobufTypeMapping]`, `[MappaProtobufTypeMappingDefault]` (`Throw`, `NoMap`, `MapTo`) for proto→POCO, POCO→proto and proto→proto |
 
 ## Dependencies
 | Sample | Demonstrates |

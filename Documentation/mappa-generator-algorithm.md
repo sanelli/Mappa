@@ -96,9 +96,10 @@ Before the detector chain, `TypeMapIdentifierWithMapMethodAlgorithm` checks whet
 
 When no existing method applies (or for root methods), `TypeMapIdentifierAlgorithm` tries the following strategies **in order**:
 
-1. Identity *(skipped when the root method has one or more `[MappaTypeMapping]` attributes)*
+1. Identity *(skipped when the root method has one or more `[MappaTypeMapping]` or protobuf polymorphism attributes)*
 2. Nullable
 3. Polymorphic *(only at the root, or immediately after nullable unwrapping — not at every nested level)*
+3b. Protobuf oneof polymorphic *(only at the root, or immediately after nullable unwrapping; when the root method has protobuf polymorphism attributes)*
 4. Enum
 4b. Bson well-known types *(only when `BsonWellKnownTypes` is `Enable` and `MongoDB.Bson` types are in the compilation)*
 4c. Protobuf well-known types *(only when `ProtobufWellKnownTypes` is `Enable` and `Google.Protobuf.WellKnownTypes` types are in the compilation)*
@@ -196,6 +197,20 @@ When `ReferenceReusing` is `Enable` and the map method declares `MappaContext`:
     - The default mapping when the actual parameter type does not match any source type from the `[MappaTypeMapping]` attributes is determined by the `[MappaTypeMappingDefault]` attribute — if the attribute is not present, the default behaviour throws an exception;
 - _Notes_:
     - The polymorphic detector does not run at every nested level; it runs only at the root or immediately after nullable unwrapping.
+
+### 3b. Protobuf oneof polymorphic mapping
+
+- _When_:
+    - The root method has any of `[MappaProtobufPolymorphismSetup]`, `[MappaProtobufTypeMapping]` or `[MappaProtobufTypeMappingDefault]`, and the detector is allowed to run (at the root, or immediately after the nullable detector). The classic polymorphic detector does not run for such a method;
+- _What_:
+    - Validates the attributes: no `[MappaTypeMapping]` / `[MappaTypeMappingDefault]` on the same method, exactly one setup, the case property exists on the protobuf side(s) and is of a nested `*OneofCase` enum type, arm case names are valid (not `None`, no duplicates), arm properties are message-typed (scalar arms are rejected) and arm CLR types are compatible with the method types;
+    - Resolves the scenario: proto→POCO (switch on the source `{Oneof}Case`), POCO→proto (switch on the runtime type of the source) or proto→proto (switch on the source case, assign the target arm);
+    - For every `[MappaProtobufTypeMapping]` an arm strategy is resolved for the arm message/POCO types with the regular detector chain;
+    - Proto targets are created with the empty constructor and the selected oneof property is assigned inside the arm; other fields of the target message are not mapped;
+    - The `default` branch is determined by `[MappaProtobufTypeMappingDefault]`: `Throw` (default when absent), `NoMap` (leave the target oneof unset, protobuf targets only) or `MapTo` (map the unmatched source into the message of a named target arm, protobuf targets only);
+- _Notes_:
+    - The source case `None` is handled by the default branch;
+    - Failures are reported with diagnostics **MP00093–MP00109**, plus **MP00006** when an arm (or the `MapTo` message) cannot be mapped and **MP00021** when the `Throw` exception type is not an exception.
 
 ### 4. Enum strategy
 

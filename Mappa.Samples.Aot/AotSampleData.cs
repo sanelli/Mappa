@@ -10,6 +10,7 @@ using Mappa.Samples.Models;
 using PolymorphismOne = Mappa.Samples.Models.Polymorphism.One;
 using PolymorphismThree = Mappa.Samples.Models.Polymorphism.Three;
 using PolymorphismTwo = Mappa.Samples.Models.Polymorphism.Two;
+using ProtobufOneof = Mappa.Samples.Models.ProtobufOneof;
 
 namespace Mappa.Samples.Aot;
 
@@ -371,6 +372,58 @@ internal static class AotSampleData
     {
         ParamA = 33,
         ParamB = ProtobufCountingValues.Three,
+    };
+
+    /// <summary>
+    /// Gets a protobuf oneof source message with the <c>Ok</c> arm set.
+    /// </summary>
+    public static ProtobufOneofResult ProtobufOneofResultOk { get; } = new()
+    {
+        Description = "result",
+        Ok = new ProtobufOneofOkPayload { Value = "value", Description = "ok description" },
+    };
+
+    /// <summary>
+    /// Gets a protobuf oneof source message with the <c>Error</c> arm set.
+    /// </summary>
+    public static ProtobufOneofResult ProtobufOneofResultError { get; } = new()
+    {
+        Description = "result",
+        Error = new ProtobufOneofErrorPayload { Code = 42, Description = "error description" },
+    };
+
+    /// <summary>
+    /// Gets a protobuf oneof source message without any arm set.
+    /// </summary>
+    public static ProtobufOneofResult ProtobufOneofResultUnset { get; } = new()
+    {
+        Description = "nothing",
+    };
+
+    /// <summary>
+    /// Gets a POCO sample for the protobuf oneof <c>Ok</c> arm.
+    /// </summary>
+    public static ProtobufOneof.ProtobufOneofOkResultModel ProtobufOneofOkResultModel { get; } = new()
+    {
+        Value = "value",
+        Description = "ok description",
+    };
+
+    /// <summary>
+    /// Gets a POCO sample for the protobuf oneof <c>Error</c> arm.
+    /// </summary>
+    public static ProtobufOneof.ProtobufOneofErrorResultModel ProtobufOneofErrorResultModel { get; } = new()
+    {
+        Code = 42,
+        Description = "error description",
+    };
+
+    /// <summary>
+    /// Gets a POCO sample that is not covered by any protobuf oneof arm.
+    /// </summary>
+    public static ProtobufOneof.ProtobufOneofUnknownResultModel ProtobufOneofUnknownResultModel { get; } = new()
+    {
+        Description = "unknown",
     };
 
     /// <summary>
