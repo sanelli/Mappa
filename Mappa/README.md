@@ -24,7 +24,10 @@ This is the list of attributes provided:
 - `MappaSourcePreferredInterfaceImplementation`: When a source type implements multiple closed versions of the same collection/dictionary interface family, forces which closed interface to use (method-only; exact match on implementing type and interface family); also available as `MappaSourcePreferredInterfaceImplementation<TImplementingType, TClosedInterface>`;
 - `MappaTargetPreferredInterfaceImplementation`: Same preference for concrete multi-interface **target** types (method-only); mainly needed when element/key/value types and `Add`/indexer access must be discovered via those interfaces; also available as `MappaTargetPreferredInterfaceImplementation<TImplementingType, TClosedInterface>`;
 - `MappaTypeMapping`: When mapping structured types or interfaces, allows defining the target type depending on the source type; also available as `MappaTypeMapping<TTarget, TSource>`;
-- `MappaTypeMappingDefault`: Describes the default behaviour for polymorphic methods defined via `MappaTypeMapping`; also available as `MappaTypeMappingDefault<TDefault>` for `MapSourceType` with an explicit target type.
+- `MappaTypeMappingDefault`: Describes the default behaviour for polymorphic methods defined via `MappaTypeMapping`; also available as `MappaTypeMappingDefault<TDefault>` for `MapSourceType` with an explicit target type;
+- `MappaProtobufPolymorphismSetup`: Identifies which protobuf `oneof` case property drives protobuf polymorphism on a map method (single-property or target+source forms);
+- `MappaProtobufTypeMapping`: Defines one arm of a protobuf `oneof` polymorphism mapping (constructors for proto→POCO, POCO→proto, and proto→proto; no generics);
+- `MappaProtobufTypeMappingDefault`: Describes the default behaviour for protobuf `oneof` polymorphism (`Throw`, `NoMap`, `MapTo`);
 - `MappaMapEnumMember`: Configures explicit enum↔integral, enum↔string, or enum↔enum member pairings;
 - `MappaMapEnumIgnore`: Excludes a specific enum member from mapping;
 - `MappaMapEnumDefault`: Configures fallback behaviour when an enum value cannot be mapped;
@@ -87,6 +90,12 @@ Via `MappaTypeMappingDefault` the following settings can be tweaked:
 - `Null`: returns `null`;
 - `MapSourceType`: maps the source type to the target type of the method or the type specified in the `MappaTypeMappingDefault` attribute;
 - `InvokeMethod`: invokes a method in the mapper with the name specified in `MappaTypeMappingDefault` to perform the mapping; `MappaTypeMappingDefault` can also specify the type on which the method is defined—in that case the method must be `static`. The method can optionally accept a `MappaContext` parameter.
+
+Via `MappaProtobufTypeMappingDefault` / `MappaProtobufTypeMappingDefaultBehavior` the following settings can be tweaked:
+- `Undefined`: this setting should never be used;
+- `Throw`: if no protobuf oneof arm matches (including source case `None`), throws `ArgumentOutOfRangeException` or the exception defined in the attribute (default when the attribute is missing);
+- `NoMap`: leave the target oneof unset (`None`); only valid when the target is a protobuf message;
+- `MapTo`: map the unmatched source into a specific target oneof arm's message type; only valid when the target is a protobuf message.
 
 Via `MappaMapEnumDefaultBehavior` the following settings can be tweaked:
 - `Throw`: throws `ArgumentOutOfRangeException` when an enum value cannot be mapped (default);
