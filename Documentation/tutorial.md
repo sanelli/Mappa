@@ -596,6 +596,44 @@ Hooks must return `void` and may accept no parameters, `MappaContext`, `ref T` (
 
 See also: [MappaBeforeAfterMapHooksAttributeMapper.cs](../Mappa.Samples/MappaBeforeAfterMapHooksAttributeMapper.cs) and [Mappa attributes](./mappa-attributes.md#mappabeforemap-and-mappaaftermap).
 
+### MappaTransformer and MappaApplyTransformer attributes
+Value transformers rewrite a value of a type into another value of the same type while mapping. `[MappaTransformer]` registers a transformer for every map method of the mapper; `[MappaApplyTransformer]` applies a named transformer to one map method, optionally only to one source member. Transformers run on the source value before it is mapped and on the mapped value before it is assigned or returned, at the root and at every nested site of the matching type:
+
+```csharp
+[Mappa]
+[MappaStaticDependency(typeof(SpaceCollapser))]
+public sealed partial class Mapper
+{
+    // Trims every string. Applied to all the map methods of this mapper.
+    [MappaTransformer]
+    [MappaIgnore]
+    private static string Trim(string value) => value.Trim();
+
+    // Upper-cases only the Code member; runs before the class-level Trim.
+    [MappaApplyTransformer(nameof(Source.Code), nameof(ToUpper))]
+    public partial Target Map(Source input);
+
+    // Transformers may take a MappaContext when the map method has one.
+    [MappaApplyTransformer(nameof(Source.Note), nameof(Truncate))]
+    public partial NoteTarget MapNote(Source input, MappaContext context);
+
+    // Transformers of dependencies are ignored unless explicitly enabled.
+    [MappaSettings(MappaTransformerFromDependency = BooleanSetting.Enable)]
+    public partial LabelTarget MapLabel(Source input);
+
+    [MappaIgnore]
+    private static string ToUpper(string value) => value.ToUpperInvariant();
+
+    [MappaIgnore]
+    private static string Truncate(string value, MappaContext context) { /* ... */ }
+}
+```
+
+A transformer must have the same input and output type (nullability included) and may be `T Method(T)`, `T Method(in T)`, `T Method(T, MappaContext)` or `T Method(in T, MappaContext)`. Per site the order is: `[MappaApplyTransformer]` attributes, local `[MappaTransformer]` methods, base-class transformers, then dependency transformers when `MappaTransformerFromDependency` is enabled. Invalid signatures warn with **MP00110**, unresolved apply-transformer methods with **MP00111**, unknown source members are errors (**MP00112**), `ClassType` together with `FieldName` warns with **MP00113**, and `[MappaApplyTransformer]` on an `IQueryable` projection method is an error (**MP00114**). Class-level transformers are not applied inside projections but do not invalidate them.
+
+See also: [MappaValueTransformerMapper.cs](../Mappa.Samples/MappaValueTransformerMapper.cs) and [Mappa attributes](./mappa-attributes.md#mappatransformer-and-mappaapplytransformer).
+
+
 ### MappaObjectFactory attribute
 `[MappaObjectFactory]` creates a target instance by invoking a named factory instead of `new`. Register factories on the mapper class and/or map method (class and method registrations are unioned). Location overloads match before/after hooks: mapper-local method, static type, or field/property member type.
 
