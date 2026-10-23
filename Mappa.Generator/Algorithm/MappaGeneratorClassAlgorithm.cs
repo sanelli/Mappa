@@ -118,6 +118,7 @@ internal sealed class MappaGeneratorClassAlgorithm
         MapHookAttributeData[] classBeforeMapAttributes,
         MapHookAttributeData[] classAfterMapAttributes,
         MappaObjectFactoryAttributeData[] classObjectFactoryAttributes,
+        ValueTransformerResolver valueTransformerResolver,
         CancellationToken cancellationToken)
     {
         // Snapshot: strategy discovery may TryAddMethod synthetic map methods mid-enumeration.
@@ -165,6 +166,7 @@ internal sealed class MappaGeneratorClassAlgorithm
                 }
 
                 var methodContext = new MappaMethodGeneratorContext(classContext, mappaUserSettings, mapMethod);
+                methodContext.SetValueTransformerCatalog(valueTransformerResolver.Resolve(mapMethod, mappaUserSettings));
                 methodContext.ValidatePreferredInterfaceAttributes(this.Compilation);
                 methodContext.ValidateMappaUseConstructorAttributes(this.Compilation);
                 var typeIdentifierAlgorithm = new TypeMapIdentifierAlgorithm(
@@ -442,6 +444,7 @@ internal sealed class MappaGeneratorClassAlgorithm
         var classObjectFactoryAttributes = classAttributes.GetMappaObjectFactoryAttributes(this.Compilation);
         var mappaUserSettings = new MappaUserSettings(options);
         var mappaSettingsAttribute = classAttributes.GetMappaSettingsAttribute(this.Compilation);
+        var valueTransformerResolver = new ValueTransformerResolver(this.Compilation, classContext);
 
         using (mappaUserSettings.Apply(mappaSettingsAttribute))
         {
@@ -457,6 +460,7 @@ internal sealed class MappaGeneratorClassAlgorithm
                     classBeforeMapAttributes,
                     classAfterMapAttributes,
                     classObjectFactoryAttributes,
+                    valueTransformerResolver,
                     cancellationToken);
             }
         }

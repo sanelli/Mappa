@@ -319,6 +319,17 @@ public sealed class MappaSettingsAttribute
     public BooleanSetting CompatibleMapMethod { get; set; } = BooleanSetting.Undefined;
 
     /// <summary>
+    /// Gets or sets a value indicating whether methods marked with
+    /// <see cref="MappaTransformerAttribute"/> on types introduced via
+    /// <see cref="MappaDependencyAttribute"/> or <see cref="MappaStaticDependencyAttribute"/>
+    /// are discovered as value transformers. Disabled by default. When enabled, dependency
+    /// transformers apply to every generated map in scope the same way as local
+    /// <see cref="MappaTransformerAttribute"/> methods (subject to accessibility and
+    /// <c>static</c>/instance rules). May be set at class or method level.
+    /// </summary>
+    public BooleanSetting MappaTransformerFromDependency { get; set; } = BooleanSetting.Undefined;
+
+    /// <summary>
     /// Gets or sets a value indicating whether source property names are matched
     /// case-insensitively when pairing a target property or constructor parameter
     /// with a source property by name.

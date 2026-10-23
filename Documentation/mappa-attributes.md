@@ -20,6 +20,8 @@ This is the list of attributes provided:
 - `MappaAssignFromConstant`: When mapping structured types, allows specifying a constant value for a target property or constructor parameter; `TargetPropertyName` may be a single name or a [dot-separated nested property path](#nested-property-paths);
 - `MappaBeforeMap`: Invokes a named hook immediately before the generated root mapping body (see [MappaBeforeMap and MappaAfterMap](#mappabeforemap-and-mappaaftermap));
 - `MappaAfterMap`: Invokes a named hook immediately after the generated root mapping body and before returning the target (see [MappaBeforeMap and MappaAfterMap](#mappabeforemap-and-mappaaftermap));
+- `MappaTransformer`: Marks a method as a value transformer (`T` → `T`) that is applied at every matching mapping site of the mapper class — to the source value before it is mapped and to the mapped value before it is assigned or returned (see [MappaTransformer and MappaApplyTransformer](#mappatransformer-and-mappaapplytransformer));
+- `MappaApplyTransformer`: Applies a named transformer to the annotated map method, optionally limited to one source member or nested path; the transformer may live on the mapper, on a `static` class type, or on a mapper field/property (see [MappaTransformer and MappaApplyTransformer](#mappatransformer-and-mappaapplytransformer));
 - `MappaObjectFactory`: Forces construction of a target type via a named factory method instead of `new` (see [MappaObjectFactory](#mappaobjectfactory));
 - `MappaUseConstructor`: Forces empty or parameterized constructor selection for the map method return type or a nested target type (see [MappaUseConstructor](#mappauseconstructor)); also available as `MappaUseConstructorAttribute<T1>` … `<T1, …, T8>` for exact signatures;
 - `MappaTypeMapping`: When mapping structured types or interfaces, allows defining the target type depending on the source type; also available as `MappaTypeMapping<TTarget, TSource>`;
@@ -306,6 +308,58 @@ Because `ref` is invariant, the `ref` parameter type must match the mapping sour
 
 See also: [tutorial](./tutorial.md#mappabeforemap-and-mappaaftermap-attributes), [algorithm](./mappa-generator-algorithm.md#before-and-after-map-hooks), and [MappaBeforeAfterMapHooksAttributeMapper.cs](../Mappa.Samples/MappaBeforeAfterMapHooksAttributeMapper.cs).
 
+## MappaTransformer and MappaApplyTransformer
+
+Value transformers rewrite a value of type `T` into another value of the same type `T` (for example trimming or upper-casing a `string`) while a mapping is being generated.
+
+- `[MappaTransformer]` marks a method of the mapper class (or of an accessible base class) as a transformer for **every** map method of the mapper.
+- `[MappaApplyTransformer]` is placed on a single map method, may be repeated, and selects a transformer by name. The selected method does not need `[MappaTransformer]`.
+
+Transformers run at every mapping site whose type matches exactly (including nullability): the root source and root return value, and also nested sites such as property initializers, constructor parameters, collection elements, dictionary keys/values, and tuple items. At each site the source value is transformed before it is mapped and the mapped value is transformed before it is assigned or returned.
+
+### Transformer location
+
+`[MappaApplyTransformer]` resolves the method as follows:
+
+- `(methodName)`: a `static` or instance method declared on the mapper class or an accessible base class. When the map method is `static`, only `static` transformers are considered.
+- `(classType, methodName)`: a `static` method declared on `classType` or one of its base classes.
+- `(sourcePropertyName, methodName)` and `(sourcePropertyName, classType, methodName)`: same lookup as above, but the transformer only runs when the source member identified by `sourcePropertyName` (a single name or a [dot-separated nested path](#nested-property-paths)) is mapped. A name that does not exist on the map source type reports error **MP00112**.
+- `FieldName` (named property, not a constructor argument): the method is resolved on the declared type of a mapper field or property and invoked through it (instance methods) or through its declared type (`static` methods). Using `ClassType` together with `FieldName` reports warning **MP00113** and skips that attribute instance.
+
+An unresolved or inaccessible method reports warning **MP00111** and the attribute is skipped; the core mapping is still generated.
+
+### Supported signatures
+
+| Parameters | Notes |
+|------------|-------|
+| `T Transform(T value)` | Always considered. |
+| `T Transform(in T value)` | `in` is allowed on the value parameter. |
+| `T Transform(T value, MappaContext context)` | Considered only when the map method has a `MappaContext` parameter. |
+| `T Transform(in T value, MappaContext context)` | Same as above. |
+
+The return type must equal the parameter type, nullability included (`string` and `string?` are different sites). `ref`/`out` parameters, by-reference returns and `async` methods are not allowed. Open generic transformers are allowed when `T` can be bound exactly to the site type and the constraints are satisfied. A `[MappaTransformer]` method with an invalid signature reports warning **MP00110** and is ignored. Transformers may be `static` or instance methods with any accessibility, as long as they are accessible from the mapper. Because same-type `T` → `T` transformers also look like map methods, mark them with `[MappaIgnore]` when you do not want them to be discovered as mapping methods.
+
+### Ordering
+
+When several transformers match the same site, they all run, in this order (declaration order is kept inside each tier):
+
+1. `[MappaApplyTransformer]` attributes, in attribute order;
+2. `[MappaTransformer]` methods declared on the mapper class;
+3. `[MappaTransformer]` methods of base classes, most derived type first;
+4. `[MappaTransformer]` methods of dependencies, only when `MappaTransformerFromDependency` is enabled (see below).
+
+The same transformer is never applied twice to the same value on the same side. When a map method calls another method generated by Mappa for the same type, the callee already applies the class-level transformers, so they are not applied again around the call.
+
+### Dependencies
+
+`[MappaTransformer]` methods declared on types registered with `[MappaDependency]` (fields/properties) or `[MappaStaticDependency]` are **ignored by default**. Set `MappaTransformerFromDependency = BooleanSetting.Enable` in `[MappaSettings]` on the mapper class or on a map method to include them (a method-level value overrides the class-level one; `mappa.transformerfromdependency` can set the global default). A dependency that only exposes transformers does not provide any map method, so it reports **MP00016**; suppress it with `#pragma warning disable MP00016` and an explanatory comment, as done in the sample.
+
+### Projections
+
+Value transformers are never emitted inside `IQueryable` projection generation. `[MappaApplyTransformer]` on a projection map method is an error (**MP00114**). Unlike before/after map hooks, class-level `[MappaTransformer]` methods alone do **not** invalidate a projection method: they are simply not applied.
+
+See also: [tutorial](./tutorial.md#mappatransformer-and-mappaapplytransformer-attributes), [algorithm](./mappa-generator-algorithm.md#value-transformers), and [MappaValueTransformerMapper.cs](../Mappa.Samples/MappaValueTransformerMapper.cs).
+
 ## MappaObjectFactory
 
 `[MappaObjectFactory]` forces Mappa to create a target instance by invoking a named factory method instead of calling a constructor with `new`. The attribute may be applied to the mapper class and/or to individual mapping methods, and allows multiple instances. Class-scope and method-scope registrations are unioned for each map method.
@@ -393,6 +447,7 @@ The following settings are available:
 - `DictionaryAssignment`: selects whether dictionary-to-dictionary mappings insert entries with the indexer (`target[key] = value`, default) or `IDictionary<TKey, TValue>.Add(key, value)`; applies to dictionary return types and get-only dictionary properties;
 - `PolymorphicMapMethodWithMatchingDefaultAttribute`: when enabled, `MappaTypeMappingDefault` can be used to locate an appropriate polymorphic method when looking for the mapping between two types;
 - `CompatibleMapMethod`: when enabled, nested existing-method reuse may invoke a map method whose parameter is a base type or interface of the required source and whose return type is a derived type of the required target (disabled by default);
+- `MappaTransformerFromDependency`: when enabled, `[MappaTransformer]` methods declared on `[MappaDependency]` / `[MappaStaticDependency]` types are applied as value transformers (disabled by default). See [MappaTransformer and MappaApplyTransformer](#mappatransformer-and-mappaapplytransformer);
 - `CaseInsensitivePropertyMap`: when enabled, source property names are matched case-insensitively when pairing a target property or constructor parameter with a source property by name;
 - `IgnoreUnderscoreForPropertyMap`: when enabled, underscore characters are stripped from names before comparing a target property or constructor parameter with a source property by name;
 - `MapSourceExplicitInterfaceProperties`: when enabled, source properties that are explicitly implemented interface members may be read via a cast to the declaring interface (disabled by default). Explicit interface properties use this setting and an interface cast — not `[MappaAllowInaccessibleSourceMembers]` / `UnsafeAccessor`;
@@ -654,6 +709,7 @@ Global configuration can be set up via the `.editorconfig` file. The following v
 | `mappa.dictionaryassignment`                             | `Indexer`, `Add`, `Undefined`                                                                                                                                                                                                              | `Indexer`   | Selects whether dictionary-to-dictionary mappings use indexer assignment or `Add`.                                                                      |
 | `mappa.polymorphicmapmethodwithmatchingdefaultattribute` | `Enable`, `Disable`, `Undefined`                                                                                                                                                                                                         | `Undefined` | When enabled, `MappaTypeMappingDefault` can be used to locate an appropriate polymorphic method when looking for the mapping between two types.        |
 | `mappa.compatiblemapmethod`                              | `Enable`, `Disable`, `Undefined`                                                                                                                                                                                                         | `Undefined` | When enabled, nested existing-method reuse may invoke a map method with a base/interface source parameter and/or a derived return type.                |
+| `mappa.transformerfromdependency`                        | `Enable`, `Disable`, `Undefined`                                                                                                                                                                                                         | `Undefined` | When enabled, `[MappaTransformer]` methods of `[MappaDependency]` / `[MappaStaticDependency]` types are applied as value transformers.               |
 | `mappa.caseinsensitivepropertymap`                       | `Enable`, `Disable`, `Undefined`                                                                                                                                                                                                         | `Undefined` | When enabled, source property names are matched case-insensitively when pairing a target property or constructor parameter with a source property by name. |
 | `mappa.ignoreunderscoreforpropertymap`                   | `Enable`, `Disable`, `Undefined`                                                                                                                                                                                                         | `Undefined` | When enabled, underscore characters are stripped from names before comparing a target property or constructor parameter with a source property by name. |
 | `mappa.mapsourceexplicitinterfaceproperties`             | `Enable`, `Disable`, `Undefined`                                                                                                                                                                                                         | `Undefined` | When enabled, source properties that are explicitly implemented interface members may be read via a cast to the declaring interface. |

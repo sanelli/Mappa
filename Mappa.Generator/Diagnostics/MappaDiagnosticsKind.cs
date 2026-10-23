@@ -596,4 +596,29 @@ internal enum MappaDiagnosticsKind
     /// The constructor form of the protobuf type mapping attribute does not match the mapping scenario.
     /// </summary>
     ProtobufPolymorphismArmFormMismatch,
+
+    /// <summary>
+    /// A method marked with the transformer attribute has an invalid signature and is ignored.
+    /// </summary>
+    InvalidTransformerSignature,
+
+    /// <summary>
+    /// The method referenced by an apply-transformer attribute cannot be resolved.
+    /// </summary>
+    ApplyTransformerMethodNotFound,
+
+    /// <summary>
+    /// The source property name or path of an apply-transformer attribute does not exist on the map source type.
+    /// </summary>
+    ApplyTransformerSourceMemberNotFound,
+
+    /// <summary>
+    /// An apply-transformer attribute specifies both a class type and a field name.
+    /// </summary>
+    ApplyTransformerClassTypeAndFieldNameConflict,
+
+    /// <summary>
+    /// A projection map method is decorated with an apply-transformer attribute.
+    /// </summary>
+    ProjectionMethodHasApplyTransformer,
 }

@@ -363,6 +363,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         ITypeSymbol sourceType,
         bool useConstructorMapStrategyDetector,
         PropertyPathContext? propertyPathContext,
+        string? sourceMemberPath,
         out MapStrategy elementStrategy)
     {
         using (this.context.AlgorithmSettings.UseConstructorMapStrategyDetector.Apply(useConstructorMapStrategyDetector))
@@ -377,7 +378,8 @@ internal sealed partial class ConstructorMapStrategyDetector
                     this.context,
                     targetType,
                     sourceType,
-                    propertyPathContext);
+                    propertyPathContext,
+                    sourceMemberPath);
                 var algorithm = new TypeMapIdentifierWithMapMethodAlgorithm(derivedContext, this.compilation, this.cancellationToken);
                 elementStrategy = algorithm.GetStrategy();
                 return elementStrategy is not NoMapStrategy;

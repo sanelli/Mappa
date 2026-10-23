@@ -342,4 +342,11 @@ internal interface IMappaUserSettings
     /// mapping cycles by synthesizing private map methods.
     /// </summary>
     BooleanSetting BreakCompileTimeCycles { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether <c>[MappaTransformer]</c> methods exposed by
+    /// <c>[MappaDependency]</c> members and <c>[MappaStaticDependency]</c> types are
+    /// also considered when discovering value transformers.
+    /// </summary>
+    BooleanSetting MappaTransformerFromDependency { get; }
 }

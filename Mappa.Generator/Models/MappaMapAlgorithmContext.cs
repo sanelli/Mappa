@@ -49,6 +49,17 @@ internal abstract class MappaMapAlgorithmContext
     internal virtual PropertyPathContext? PropertyPathContext => null;
 
     /// <summary>
+    /// Gets the dotted path, from the root source type, of the source member whose value is being mapped,
+    /// or <c>null</c> when the mapping is not tied to a source member (for example at the root).
+    /// </summary>
+    internal virtual string? SourceMemberPath => null;
+
+    /// <summary>
+    /// Gets the value transformers resolved for the root map method, if any.
+    /// </summary>
+    internal virtual ValueTransformerCatalog? ValueTransformerCatalog => null;
+
+    /// <summary>
     /// Gets the context settings.
     /// </summary>
     internal abstract MappaMapAlgorithmContextSettings AlgorithmSettings { get; }

@@ -355,6 +355,12 @@ Leaf source chains use conditional access based on each **receiver** type, reuse
 
 Root mapping methods may declare `[MappaBeforeMap]` and `[MappaAfterMap]` on the mapper class and/or method. Hooks apply only to generated root methods. Resolution prefers `ref T` + context, then `ref T`, then context, then parameterless (`T` is source for before hooks and target for after hooks). Before hooks run class-then-method; after hooks run method-then-class. Unresolved hooks warn with **MP00045**; class/method duplicates warn with **MP00046** and invoke once. After hooks force materialization of the core mapping result into a local before the after-hook calls and return. Details: [Documentation/mappa-generator-algorithm.md — Before and after map hooks](../Documentation/mappa-generator-algorithm.md#before-and-after-map-hooks).
 
+## Value transformers
+
+Methods marked with `[MappaTransformer]` (and methods selected by `[MappaApplyTransformer]`) rewrite a value of type `T` into another `T`. After a strategy is selected for a mapping site it is wrapped in a `ValueTransformerMapStrategy`, so the source value is transformed before the inner strategy runs and the mapped value is transformed before it is assigned or returned, at the root and at every nested site (properties, constructor parameters, collection elements, dictionary keys/values, tuple items). Order per side: `[MappaApplyTransformer]` attributes, local `[MappaTransformer]` methods, base-class transformers, then dependency transformers when `MappaTransformerFromDependency` is `Enable` (class, method or `mappa.transformerfromdependency`). Transformers must match the site type exactly (nullability included) and may be `T Method(T)`, `T Method(in T)` or either with a trailing `MappaContext` (only when the map method has context). Diagnostics: **MP00110** (invalid signature), **MP00111** (unresolved apply-transformer method), **MP00112** (missing source member), **MP00113** (`ClassType` with `FieldName`), **MP00114** (`[MappaApplyTransformer]` on a projection). Transformers are never applied inside `IQueryable` projections; class-level `[MappaTransformer]` alone does not invalidate a projection.
+
+See [the algorithm](../Documentation/mappa-generator-algorithm.md#value-transformers) for the full description.
+
 ## Limitations
 
 Currently unsupported features include:

@@ -12,6 +12,8 @@ namespace Mappa.Generator.Models;
 internal sealed class MappaMethodGeneratorContext
     : MappaMapAlgorithmContext
 {
+    private ValueTransformerCatalog valueTransformerCatalog = ValueTransformerCatalog.Empty;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaMethodGeneratorContext"/> class.
     /// </summary>
@@ -35,6 +37,9 @@ internal sealed class MappaMethodGeneratorContext
 
     /// <inheritdoc/>
     internal override MapMethod? MapMethod { get; }
+
+    /// <inheritdoc/>
+    internal override ValueTransformerCatalog? ValueTransformerCatalog => this.valueTransformerCatalog;
 
     /// <inheritdoc/>
     internal override ISymbol ParentSymbol => this.GetMapMethod().ContainingType;
@@ -84,4 +89,11 @@ internal sealed class MappaMethodGeneratorContext
     /// <inheritdoc/>
     internal override Location? GetLocation()
         => this.GetMapMethod().Location;
+
+    /// <summary>
+    /// Sets the value transformers resolved for the map method.
+    /// </summary>
+    /// <param name="catalog">The resolved catalog.</param>
+    internal void SetValueTransformerCatalog(ValueTransformerCatalog catalog)
+        => this.valueTransformerCatalog = catalog;
 }

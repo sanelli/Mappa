@@ -274,8 +274,18 @@ internal static class ReferenceHandlingCodeGenerator
         return GetInvokedMapMethod(strategy) is { ReferenceReusing: BooleanSetting.Enable };
     }
 
+    private static MapStrategy UnwrapValueTransformers(MapStrategy strategy)
+    {
+        while (strategy is ValueTransformerMapStrategy valueTransformerStrategy)
+        {
+            strategy = valueTransformerStrategy.InnerStrategy;
+        }
+
+        return strategy;
+    }
+
     private static MapMethod? GetInvokedMapMethod(MapStrategy strategy)
-        => strategy switch
+        => UnwrapValueTransformers(strategy) switch
         {
             MethodMapStrategy methodMap => methodMap.MapMethod,
             CompatibleMethodMapStrategy compatibleMethodMap => compatibleMethodMap.MapMethod,
@@ -335,7 +345,10 @@ internal static class ReferenceHandlingCodeGenerator
     }
 
     private static bool IsContainerOrWrapperStrategy(MapStrategy strategy)
-        => ContainerOrWrapperStrategyTypes.Any(strategyType => strategyType.IsInstanceOfType(strategy));
+    {
+        var unwrappedStrategy = UnwrapValueTransformers(strategy);
+        return ContainerOrWrapperStrategyTypes.Any(strategyType => strategyType.IsInstanceOfType(unwrappedStrategy));
+    }
 
     private static bool ShouldIncreaseDepth(MapStrategy strategy, MappaBuilderContext context)
     {
@@ -353,7 +366,7 @@ internal static class ReferenceHandlingCodeGenerator
     }
 
     private static bool IsIdentityStrategyIneligibleForReferenceHandling(MapStrategy strategy)
-        => strategy is IdentityMapStrategy identity
+        => UnwrapValueTransformers(strategy) is IdentityMapStrategy identity
            && (identity.NestedFieldStrategies.Count > 0 || !identity.RequiresMemberwiseClone);
 
     private static bool IsReferenceTypeEligibleForRuntimeDepth(ITypeSymbol targetType)

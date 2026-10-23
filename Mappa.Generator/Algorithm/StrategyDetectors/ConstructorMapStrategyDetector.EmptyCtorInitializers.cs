@@ -659,6 +659,7 @@ internal sealed partial class ConstructorMapStrategyDetector
                 ConstructorMapStrategyDetector.GetNestedTypeMappingPropertyPathContext(
                     targetProperty.Name,
                     nestedPropertyPathContext),
+                this.GetSourceMemberPath(sourceProperty, nestedPropertyPathContext),
                 out var propertyStrategy))
         {
             return new PropertyMapStrategy(targetProperty, null, noMapStrategy, false);
