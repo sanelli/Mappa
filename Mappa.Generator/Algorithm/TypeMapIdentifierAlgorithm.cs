@@ -69,58 +69,8 @@ internal class TypeMapIdentifierAlgorithm
     /// </returns>
     protected MapStrategy WithGetStrategyGuards(Func<MapStrategy> computeStrategy)
     {
-        this.CancellationToken.ThrowIfCancellationRequested();
-
-        IDisposable? typePairScope = null;
-        try
-        {
-            typePairScope = this.Context.TryPushMappingTypePair(
-                this.Context.TargetType,
-                this.Context.SourceType);
-            if (typePairScope is null)
-            {
-                // Detectors may intentionally re-enter GetStrategy for the same type pair while one of
-                // the recursive-guard settings is disabled (nullable unwrap, constructor single-arg,
-                // identity nested fields) or while DetectMappingCycles is disabled (e.g. polymorphism
-                // MapSourceType defaults). Those paths already prevent unbounded recursion.
-                if (this.ShouldReportMappingCycle())
-                {
-                    // Prefer an existing map method for the cycling pair (user or synthetic) so a
-                    // synthetic method body can self-invoke even when BreakCompileTimeCycles is no
-                    // longer Enable on the settings stack (e.g. method-level Enable only).
-                    if (this.Context.TryGetMethod(
-                            this.Context.TargetType,
-                            this.Context.SourceType,
-                            out var existingMapMethodOnCycle))
-                    {
-                        var rootMapMethod = this.Context.GetRootMapMethod();
-                        return this.WrapIfNullableReferenceSource(
-                            new MethodMapStrategy(
-                                existingMapMethodOnCycle,
-                                rootMapMethod.MaybeGetMappaContextParameterName()));
-                    }
-
-                    if (this.Context.MappaUserSettings.BreakCompileTimeCycles is BooleanSetting.Enable)
-                    {
-                        return this.BreakCompileTimeCycleWithSyntheticOrExistingMethod();
-                    }
-
-                    this.Context.ReportDiagnostic(MappaDiagnostics.MappingCycleDetected(
-                        this.Context.GetLocation(),
-                        this.Context.SourceType,
-                        this.Context.TargetType));
-                    return new NoMapStrategy(this.Context.TargetType, this.Context.SourceType);
-                }
-
-                return this.WithCompileTimeDepthGuard(computeStrategy);
-            }
-
-            return this.WithCompileTimeDepthGuard(computeStrategy);
-        }
-        finally
-        {
-            typePairScope?.Dispose();
-        }
+        var strategy = this.RunStrategyGuards(computeStrategy);
+        return ValueTransformerStrategyWrapper.Wrap(this.Context, strategy, this.Compilation);
     }
 
     /// <summary>
@@ -256,6 +206,67 @@ internal class TypeMapIdentifierAlgorithm
             // cannot be used.
             _ => false,
         };
+
+    /// <summary>
+    /// Runs <paramref name="computeStrategy"/> under the compile-time mapping-cycle stack and depth guards.
+    /// </summary>
+    /// <param name="computeStrategy">The strategy identification callback.</param>
+    /// <returns>The strategy computed.</returns>
+    private MapStrategy RunStrategyGuards(Func<MapStrategy> computeStrategy)
+    {
+        this.CancellationToken.ThrowIfCancellationRequested();
+
+        IDisposable? typePairScope = null;
+        try
+        {
+            typePairScope = this.Context.TryPushMappingTypePair(
+                this.Context.TargetType,
+                this.Context.SourceType);
+            if (typePairScope is null)
+            {
+                // Detectors may intentionally re-enter GetStrategy for the same type pair while one of
+                // the recursive-guard settings is disabled (nullable unwrap, constructor single-arg,
+                // identity nested fields) or while DetectMappingCycles is disabled (e.g. polymorphism
+                // MapSourceType defaults). Those paths already prevent unbounded recursion.
+                if (this.ShouldReportMappingCycle())
+                {
+                    // Prefer an existing map method for the cycling pair (user or synthetic) so a
+                    // synthetic method body can self-invoke even when BreakCompileTimeCycles is no
+                    // longer Enable on the settings stack (e.g. method-level Enable only).
+                    if (this.Context.TryGetMethod(
+                            this.Context.TargetType,
+                            this.Context.SourceType,
+                            out var existingMapMethodOnCycle))
+                    {
+                        var rootMapMethod = this.Context.GetRootMapMethod();
+                        return this.WrapIfNullableReferenceSource(
+                            new MethodMapStrategy(
+                                existingMapMethodOnCycle,
+                                rootMapMethod.MaybeGetMappaContextParameterName()));
+                    }
+
+                    if (this.Context.MappaUserSettings.BreakCompileTimeCycles is BooleanSetting.Enable)
+                    {
+                        return this.BreakCompileTimeCycleWithSyntheticOrExistingMethod();
+                    }
+
+                    this.Context.ReportDiagnostic(MappaDiagnostics.MappingCycleDetected(
+                        this.Context.GetLocation(),
+                        this.Context.SourceType,
+                        this.Context.TargetType));
+                    return new NoMapStrategy(this.Context.TargetType, this.Context.SourceType);
+                }
+
+                return this.WithCompileTimeDepthGuard(computeStrategy);
+            }
+
+            return this.WithCompileTimeDepthGuard(computeStrategy);
+        }
+        finally
+        {
+            typePairScope?.Dispose();
+        }
+    }
 
     private bool ShouldSkipDetector(IMapStrategyDetector detector)
     {

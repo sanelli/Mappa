@@ -30,6 +30,8 @@ internal static class AttributeDataExtensions
 
     private const string MappaAfterMapAttributeFullName = "Mappa.Attributes.MappaAfterMapAttribute";
     private const string MappaBeforeMapAttributeFullName = "Mappa.Attributes.MappaBeforeMapAttribute";
+    private const string MappaTransformerAttributeFullName = "Mappa.Attributes.MappaTransformerAttribute";
+    private const string MappaApplyTransformerAttributeFullName = "Mappa.Attributes.MappaApplyTransformerAttribute";
     private const string MappaObjectFactoryAttributeFullName = "Mappa.Attributes.MappaObjectFactoryAttribute";
     private const string MappaInvokeMethodAttributeFullName = "Mappa.Attributes.MappaInvokeMethodAttribute";
     private const string MappaIgnoreAttributeFullName = "Mappa.Attributes.MappaIgnoreAttribute";
@@ -301,6 +303,13 @@ internal static class AttributeDataExtensions
                 if (constant.Value is int value)
                 {
                     attribute.CompatibleMapMethod = (BooleanSetting)value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.MappaTransformerFromDependency)] = static (attribute, constant) =>
+            {
+                if (constant.Value is int value)
+                {
+                    attribute.MappaTransformerFromDependency = (BooleanSetting)value;
                 }
             },
             [nameof(MappaSettingsAttribute.CaseInsensitivePropertyMap)] = static (attribute, constant) =>
@@ -815,6 +824,46 @@ internal static class AttributeDataExtensions
             attributes,
             compilation,
             MappaAfterMapAttributeFullName);
+
+    /// <summary>
+    /// Determines whether the <see cref="MappaTransformerAttribute"/> is applied.
+    /// </summary>
+    /// <param name="attributes">The attributes.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns><c>true</c> if the attribute is applied; otherwise, <c>false</c>.</returns>
+    internal static bool HasMappaTransformerAttribute(this ImmutableArray<AttributeData> attributes, Compilation compilation)
+    {
+        var mappaTransformerAttributeSymbol = compilation.GetTypeByMetadataName(MappaTransformerAttributeFullName);
+        return mappaTransformerAttributeSymbol is not null
+               && attributes.Any(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, mappaTransformerAttributeSymbol));
+    }
+
+    /// <summary>
+    /// Gets the <see cref="MappaApplyTransformerAttribute"/>s applied to a mapping method.
+    /// </summary>
+    /// <param name="attributes">The attributes.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The parsed attributes in declaration order.</returns>
+    internal static MappaApplyTransformerAttributeData[] GetMappaApplyTransformerAttributes(this ImmutableArray<AttributeData> attributes, Compilation compilation)
+    {
+        var attributeSymbol = compilation.GetTypeByMetadataName(MappaApplyTransformerAttributeFullName);
+        if (attributeSymbol is null)
+        {
+            return [];
+        }
+
+        var results = new List<MappaApplyTransformerAttributeData>();
+        foreach (var attributeData in attributes
+                     .Where(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, attributeSymbol)))
+        {
+            if (TryCreateMappaApplyTransformerAttributeData(attributeData) is { } applyTransformer)
+            {
+                results.Add(applyTransformer);
+            }
+        }
+
+        return [.. results];
+    }
 
     /// <summary>
     /// Gets the <see cref="MappaObjectFactoryAttribute"/>s applied to a mapper class or mapping method.
@@ -1663,6 +1712,63 @@ internal static class AttributeDataExtensions
                 location),
             _ => null,
         };
+    }
+
+    private static MappaApplyTransformerAttributeData? TryCreateMappaApplyTransformerAttributeData(AttributeData attributeData)
+    {
+        var constructorArguments = attributeData.ConstructorArguments;
+        if (constructorArguments.Length is < 1 or > 3
+            || constructorArguments[constructorArguments.Length - 1].Value is not string methodName
+            || !TryReadApplyTransformerLocators(constructorArguments, out var sourcePropertyName, out var classType))
+        {
+            return null;
+        }
+
+        var fieldName = ReadApplyTransformerFieldName(attributeData.NamedArguments);
+        var location = attributeData.ApplicationSyntaxReference?.GetSyntax().GetLocation();
+        return new MappaApplyTransformerAttributeData(methodName, classType, sourcePropertyName, fieldName, location);
+    }
+
+    private static bool TryReadApplyTransformerLocators(
+        ImmutableArray<TypedConstant> constructorArguments,
+        out string? sourcePropertyName,
+        out INamedTypeSymbol? classType)
+    {
+        sourcePropertyName = null;
+        classType = null;
+
+        // Every argument but the last one (the method name) is either the source path or the class type.
+        for (var index = 0; index < constructorArguments.Length - 1; index++)
+        {
+            switch (constructorArguments[index].Value)
+            {
+                case INamedTypeSymbol namedTypeSymbol:
+                    classType = namedTypeSymbol;
+                    break;
+                case string sourcePath:
+                    sourcePropertyName = sourcePath;
+                    break;
+                default:
+                    return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static string? ReadApplyTransformerFieldName(ImmutableArray<KeyValuePair<string, TypedConstant>> namedArguments)
+    {
+        string? fieldName = null;
+        foreach (var namedArgument in namedArguments)
+        {
+            if (namedArgument.Key == nameof(MappaApplyTransformerAttribute.FieldName)
+                && namedArgument.Value.Value is string value)
+            {
+                fieldName = value;
+            }
+        }
+
+        return fieldName;
     }
 
     private static MapHookAttributeData? TryCreateMapHookAttributeData(AttributeData attributeData)

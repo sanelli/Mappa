@@ -165,6 +165,45 @@ internal sealed class SyntaxNodeAssertions
     }
 
     /// <summary>
+    /// Validate that the syntax node is an implicitly typed (<c>var</c>) local declaration
+    /// of a single variable whose inferred type is <paramref name="type"/>.
+    /// </summary>
+    /// <param name="type">The inferred type of the variable (nullability annotations are ignored).</param>
+    /// <param name="name">The name of the variable declared.</param>
+    /// <param name="assertInitialization">Assert the initialization expression.</param>
+    /// <returns>The assertion.</returns>
+    internal SyntaxNodeAssertions BeImplicitlyTypedLocalDeclarationStatementSyntax(
+        string type,
+        string name,
+        Action<ExpressionSyntaxAssertions> assertInitialization)
+    {
+        ArgumentNullException.ThrowIfNull(type);
+        ArgumentNullException.ThrowIfNull(name);
+        ArgumentNullException.ThrowIfNull(assertInitialization);
+
+        this.Subject.Should().BeOfType<LocalDeclarationStatementSyntax>();
+        var localDeclarationStatementSyntax = (LocalDeclarationStatementSyntax)this.Subject;
+        localDeclarationStatementSyntax.Declaration.Type.IsVar.Should().BeTrue();
+        localDeclarationStatementSyntax.Declaration.Variables.Should().HaveCount(1);
+
+        var variable = localDeclarationStatementSyntax.Declaration.Variables[0];
+        variable.Identifier.Text.Should().Be(name);
+
+        var localSymbol = this.semanticModel.GetDeclaredSymbol(variable) as ILocalSymbol;
+        localSymbol.Should().NotBeNull();
+
+        SymbolEqualityComparer
+            .Default
+            .Equals(localSymbol.Type, this.compilation.GetTypeSymbol(type))
+            .Should().BeTrue();
+
+        variable.Initializer.Should().NotBeNull();
+        assertInitialization(new ExpressionSyntaxAssertions(variable.Initializer!.Value, this.semanticModel, this.compilation));
+
+        return this;
+    }
+
+    /// <summary>
     /// Assert that the syntax node is a switch statement.
     /// </summary>
     /// <param name="assertExpression">Assertions on the expression of the switch statement.</param>

@@ -698,5 +698,35 @@ namespace Mappa.Generator.Diagnostics {
                 return ResourceManager.GetString("ProtobufPolymorphismArmFormMismatch", resourceCulture);
             }
         }
+
+        internal static string InvalidTransformerSignature {
+            get {
+                return ResourceManager.GetString("InvalidTransformerSignature", resourceCulture);
+            }
+        }
+
+        internal static string ApplyTransformerMethodNotFound {
+            get {
+                return ResourceManager.GetString("ApplyTransformerMethodNotFound", resourceCulture);
+            }
+        }
+
+        internal static string ApplyTransformerSourceMemberNotFound {
+            get {
+                return ResourceManager.GetString("ApplyTransformerSourceMemberNotFound", resourceCulture);
+            }
+        }
+
+        internal static string ApplyTransformerClassTypeAndFieldNameConflict {
+            get {
+                return ResourceManager.GetString("ApplyTransformerClassTypeAndFieldNameConflict", resourceCulture);
+            }
+        }
+
+        internal static string ProjectionMethodHasApplyTransformer {
+            get {
+                return ResourceManager.GetString("ProjectionMethodHasApplyTransformer", resourceCulture);
+            }
+        }
     }
 }

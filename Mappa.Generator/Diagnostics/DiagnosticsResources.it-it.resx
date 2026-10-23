@@ -338,4 +338,19 @@
     <data name="ProtobufPolymorphismArmFormMismatch" xml:space="preserve">
         <value>Metodo '{0}': gli argomenti di [MappaProtobufTypeMapping] non corrispondono a un mapping {1}; atteso {2}.</value>
     </data>
+    <data name="InvalidTransformerSignature" xml:space="preserve">
+        <value>Il metodo '{0}' è marcato con [MappaTransformer] ma la sua firma non è valida ({1}); il transformer viene ignorato.</value>
+    </data>
+    <data name="ApplyTransformerMethodNotFound" xml:space="preserve">
+        <value>Metodo '{0}': il metodo transformer '{1}' referenziato da [MappaApplyTransformer] non è stato trovato o non è accessibile; l'attributo viene saltato.</value>
+    </data>
+    <data name="ApplyTransformerSourceMemberNotFound" xml:space="preserve">
+        <value>Metodo '{0}': il membro sorgente '{1}' referenziato da [MappaApplyTransformer] non esiste sul tipo '{2}'.</value>
+    </data>
+    <data name="ApplyTransformerClassTypeAndFieldNameConflict" xml:space="preserve">
+        <value>Metodo '{0}': [MappaApplyTransformer] per '{1}' specifica sia un tipo di classe sia un nome di campo; l'attributo viene saltato.</value>
+    </data>
+    <data name="ProjectionMethodHasApplyTransformer" xml:space="preserve">
+        <value>Metodo '{0}': i metodi di proiezione non possono essere decorati con [MappaApplyTransformer].</value>
+    </data>
 </root>

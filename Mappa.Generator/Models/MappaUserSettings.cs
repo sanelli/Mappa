@@ -74,6 +74,7 @@ internal sealed class MappaUserSettings
     private readonly StackSetting<short> maxRuntimeDepth;
     private readonly StackSetting<short> maxCompileTimeDepth;
     private readonly StackSetting<BooleanSetting> breakCompileTimeCycles;
+    private readonly StackSetting<BooleanSetting> mappaTransformerFromDependency;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaUserSettings"/> class.
@@ -139,7 +140,8 @@ internal sealed class MappaUserSettings
             otherSettings.ReferenceReusing,
             otherSettings.MaxRuntimeDepth,
             otherSettings.MaxCompileTimeDepth,
-            otherSettings.BreakCompileTimeCycles)
+            otherSettings.BreakCompileTimeCycles,
+            otherSettings.MappaTransformerFromDependency)
     {
     }
 
@@ -205,6 +207,7 @@ internal sealed class MappaUserSettings
     /// <param name="maxRuntimeDepth">The maximum nesting depth allowed while executing a mapping.</param>
     /// <param name="maxCompileTimeDepth">The maximum nesting depth allowed while discovering mapping strategies.</param>
     /// <param name="breakCompileTimeCycles">Enable or disable breaking compile-time mapping cycles by synthesizing private map methods.</param>
+    /// <param name="mappaTransformerFromDependency">Enable or disable discovering value transformers exposed by mapper dependencies.</param>
     private MappaUserSettings(
         string? dateTimeFormat,
         string? dateTimeOffsetFormat,
@@ -264,7 +267,8 @@ internal sealed class MappaUserSettings
         BooleanSetting referenceReusing,
         short maxRuntimeDepth,
         short maxCompileTimeDepth,
-        BooleanSetting breakCompileTimeCycles)
+        BooleanSetting breakCompileTimeCycles,
+        BooleanSetting mappaTransformerFromDependency)
     {
         this.dateTimeFormat = new(dateTimeFormat);
         this.dateTimeOffsetFormat = new(dateTimeOffsetFormat);
@@ -325,6 +329,7 @@ internal sealed class MappaUserSettings
         this.maxRuntimeDepth = new(maxRuntimeDepth);
         this.maxCompileTimeDepth = new(maxCompileTimeDepth);
         this.breakCompileTimeCycles = new(breakCompileTimeCycles);
+        this.mappaTransformerFromDependency = new(mappaTransformerFromDependency);
     }
 
     /// <inheritdoc />
@@ -504,6 +509,9 @@ internal sealed class MappaUserSettings
     /// <inheritdoc/>
     public BooleanSetting BreakCompileTimeCycles => this.breakCompileTimeCycles;
 
+    /// <inheritdoc/>
+    public BooleanSetting MappaTransformerFromDependency => this.mappaTransformerFromDependency;
+
     /// <summary>
     /// Push the changes required by the <paramref name="mappaSettingsAttribute"/> on the stack.
     /// If <paramref name="mappaSettingsAttribute"/> is <c>null</c>
@@ -672,6 +680,7 @@ internal sealed class MappaUserSettings
             this.enumToEnumMapSetting.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.EnumToEnumMapSetting, EnumToEnumMapSetting.Undefined, this.enumToEnumMapSetting)),
             this.identityMapDeepCopy.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.IdentityMapDeepCopy, IdentityMapDeepCopySetting.Undefined, this.identityMapDeepCopy)),
             this.referenceReusing.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.ReferenceReusing, BooleanSetting.Undefined, this.referenceReusing)),
+            this.mappaTransformerFromDependency.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.MappaTransformerFromDependency, BooleanSetting.Undefined, this.mappaTransformerFromDependency)),
         ];
 #pragma warning restore CA2000
     }

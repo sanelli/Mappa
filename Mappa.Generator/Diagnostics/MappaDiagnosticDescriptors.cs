@@ -123,6 +123,11 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? protobufPolymorphismClrTypeNotCompatible;
     private static DiagnosticDescriptor? protobufPolymorphismArmPropertyNotWritable;
     private static DiagnosticDescriptor? protobufPolymorphismArmFormMismatch;
+    private static DiagnosticDescriptor? invalidTransformerSignature;
+    private static DiagnosticDescriptor? applyTransformerMethodNotFound;
+    private static DiagnosticDescriptor? applyTransformerSourceMemberNotFound;
+    private static DiagnosticDescriptor? applyTransformerClassTypeAndFieldNameConflict;
+    private static DiagnosticDescriptor? projectionMethodHasApplyTransformer;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -995,6 +1000,46 @@ internal static class MappaDiagnosticDescriptors
         => protobufPolymorphismArmFormMismatch ??= BuildError(
             MappaDiagnosticsKind.ProtobufPolymorphismArmFormMismatch,
             DiagnosticsResources.ProtobufPolymorphismArmFormMismatch);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.InvalidTransformerSignature"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor InvalidTransformerSignature
+        => invalidTransformerSignature ??= BuildWarning(
+            MappaDiagnosticsKind.InvalidTransformerSignature,
+            DiagnosticsResources.InvalidTransformerSignature);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.ApplyTransformerMethodNotFound"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor ApplyTransformerMethodNotFound
+        => applyTransformerMethodNotFound ??= BuildWarning(
+            MappaDiagnosticsKind.ApplyTransformerMethodNotFound,
+            DiagnosticsResources.ApplyTransformerMethodNotFound);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.ApplyTransformerSourceMemberNotFound"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor ApplyTransformerSourceMemberNotFound
+        => applyTransformerSourceMemberNotFound ??= BuildError(
+            MappaDiagnosticsKind.ApplyTransformerSourceMemberNotFound,
+            DiagnosticsResources.ApplyTransformerSourceMemberNotFound);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.ApplyTransformerClassTypeAndFieldNameConflict"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor ApplyTransformerClassTypeAndFieldNameConflict
+        => applyTransformerClassTypeAndFieldNameConflict ??= BuildWarning(
+            MappaDiagnosticsKind.ApplyTransformerClassTypeAndFieldNameConflict,
+            DiagnosticsResources.ApplyTransformerClassTypeAndFieldNameConflict);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.ProjectionMethodHasApplyTransformer"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor ProjectionMethodHasApplyTransformer
+        => projectionMethodHasApplyTransformer ??= BuildError(
+            MappaDiagnosticsKind.ProjectionMethodHasApplyTransformer,
+            DiagnosticsResources.ProjectionMethodHasApplyTransformer);
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(

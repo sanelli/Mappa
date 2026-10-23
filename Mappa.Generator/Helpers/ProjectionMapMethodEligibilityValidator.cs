@@ -126,7 +126,17 @@ internal static class ProjectionMapMethodEligibilityValidator
             return false;
         }
 
-        return ValidateProjectionQueryableHasNoAllowInaccessibleMembers(mapMethod, classContext, methodDeclarationSyntax, methodName);
+        if (!ValidateProjectionQueryableHasNoAllowInaccessibleMembers(mapMethod, classContext, methodDeclarationSyntax, methodName))
+        {
+            return false;
+        }
+
+        return ValidateProjectionQueryableHasNoApplyTransformers(
+            methodSymbol,
+            compilation,
+            classContext,
+            methodDeclarationSyntax,
+            methodName);
     }
 
     private static bool ValidateProjectionQueryableHasNoMappaContextParameter(
@@ -220,6 +230,26 @@ internal static class ProjectionMapMethodEligibilityValidator
 
         classContext.ReportDiagnostic(
             MappaDiagnostics.ProjectionMethodHasAllowInaccessibleMembers(methodDeclarationSyntax, methodName));
+        return false;
+    }
+
+    private static bool ValidateProjectionQueryableHasNoApplyTransformers(
+        IMethodSymbol methodSymbol,
+        Compilation compilation,
+        MappaClassGeneratorContext classContext,
+        MethodDeclarationSyntax? methodDeclarationSyntax,
+        string methodName)
+    {
+        var applyTransformerAttributes = methodSymbol.GetAttributes().GetMappaApplyTransformerAttributes(compilation);
+        if (applyTransformerAttributes.Length == 0)
+        {
+            return true;
+        }
+
+        classContext.ReportDiagnostic(
+            MappaDiagnostics.ProjectionMethodHasApplyTransformer(
+                applyTransformerAttributes[0].Location ?? methodDeclarationSyntax?.GetLocation(),
+                methodName));
         return false;
     }
 

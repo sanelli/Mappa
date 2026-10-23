@@ -123,6 +123,37 @@ public sealed class MappaGlobalOptionsTests
         options.MaxRuntimeDepth.Should().Be((short)0);
         options.MaxCompileTimeDepth.Should().Be((short)50);
         options.BreakCompileTimeCycles.Should().Be(BooleanSetting.Undefined);
+        options.MappaTransformerFromDependency.Should().Be(BooleanSetting.Undefined);
+    }
+
+    /// <summary>
+    /// Test <see cref="MappaGlobalOptions"/> reads <c>mappa.transformerfromdependency</c> from <c>.editorconfig</c>.
+    /// </summary>
+    /// <param name="value">The value in <c>.editorconfig</c>.</param>
+    /// <param name="expected">The expected setting.</param>
+    [Theory]
+    [UnitTest]
+    [InlineData("enable", BooleanSetting.Enable)]
+    [InlineData("Enable", BooleanSetting.Enable)]
+    [InlineData("disable", BooleanSetting.Disable)]
+    [InlineData("DISABLE", BooleanSetting.Disable)]
+    [InlineData("undefined", BooleanSetting.Undefined)]
+    [InlineData("not-a-valid-value", BooleanSetting.Undefined)]
+    public void ReadsTransformerFromDependencyFromEditorConfig(string value, BooleanSetting expected)
+    {
+        var editorConfig = $"""
+                            root = true
+
+                            [*.cs]
+                            mappa.transformerfromdependency = {value}
+                            """;
+
+        var compilation = BuildCompilation("namespace Mappa.Generator.Tests.UnitTests.SourceCode { internal class Placeholder { } }");
+        var options = new MappaGlobalOptions(
+            TestAnalyzerConfigOptionsProvider.FromEditorConfig(editorConfig),
+            compilation.SyntaxTrees[0]);
+
+        options.MappaTransformerFromDependency.Should().Be(expected);
     }
 
     /// <summary>

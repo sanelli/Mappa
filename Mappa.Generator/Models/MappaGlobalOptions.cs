@@ -324,6 +324,7 @@ internal sealed class MappaGlobalOptions
     private const string MappaSettingsMaxRuntimeDepth = "maxruntimedepth";
     private const string MappaSettingsMaxCompileTimeDepth = "maxcompiletimedepth";
     private const string MappaSettingsBreakCompileTimeCycles = "breakcompiletimecycles";
+    private const string MappaSettingsMappaTransformerFromDependency = "transformerfromdependency";
     private const string MappaSettingsEnumerableConcreteType = "enumerableconcretetype";
     private const string MappaSettingsDictionaryAssignment = "dictionaryassignment";
 
@@ -399,6 +400,7 @@ internal sealed class MappaGlobalOptions
         this.MaxRuntimeDepth = ReadDepthOption(options, MappaSettingsMaxRuntimeDepth, DefaultMaxRuntimeDepth);
         this.MaxCompileTimeDepth = ReadDepthOption(options, MappaSettingsMaxCompileTimeDepth, DefaultMaxCompileTimeDepth);
         this.BreakCompileTimeCycles = ReadBooleanSettingOption(options, MappaSettingsBreakCompileTimeCycles, BooleanSetting.Undefined);
+        this.MappaTransformerFromDependency = ReadBooleanSettingOption(options, MappaSettingsMappaTransformerFromDependency, BooleanSetting.Undefined);
         this.EnumerableConcreteType = ReadEnumerableConcreteTypeSettingOption(options, MappaSettingsEnumerableConcreteType);
         this.DictionaryAssignment = ReadDictionaryAssignmentSettingOption(options, MappaSettingsDictionaryAssignment);
     }
@@ -573,6 +575,9 @@ internal sealed class MappaGlobalOptions
 
     /// <inheritdoc/>
     public BooleanSetting BreakCompileTimeCycles { get; }
+
+    /// <inheritdoc/>
+    public BooleanSetting MappaTransformerFromDependency { get; }
 
     /// <inheritdoc/>
     public EnumerableConcreteTypeSetting EnumerableConcreteType { get; }

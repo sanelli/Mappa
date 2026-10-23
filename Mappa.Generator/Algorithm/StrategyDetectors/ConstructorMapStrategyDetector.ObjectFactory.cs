@@ -146,14 +146,13 @@ internal sealed partial class ConstructorMapStrategyDetector
                 }
 
                 var targetParameterType = targetParameter.Type;
-                var sourcePropertyType = sourceProperty.Type;
 
                 if (SymbolEqualityComparer.Default.Equals(targetParameterType, this.context.TargetType))
                 {
                     return (Parameter: targetParameter, Strategy: (MapStrategy)noMapStrategy);
                 }
 
-                if (this.TryGetStrategyBetweenTypes(targetParameterType, sourcePropertyType, true, out var propertyStrategy))
+                if (this.TryGetStrategyForSourceProperty(targetParameterType, sourceProperty, true, out var propertyStrategy))
                 {
                     propertyStrategy = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, sourceProperties, propertyStrategy);
                     this.TryIsSourcePropertyReadable(

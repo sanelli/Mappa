@@ -1881,6 +1881,91 @@ internal static class MappaDiagnostics
             scenario,
             expected);
 
+    /// <summary>
+    /// Diagnostic: A method marked with [MappaTransformer] has an invalid signature and is ignored.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="transformerName">The transformer method name.</param>
+    /// <param name="reason">The reason the signature is invalid.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic InvalidTransformerSignature(
+        Location? location,
+        string transformerName,
+        string reason)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.InvalidTransformerSignature,
+            location,
+            transformerName,
+            reason);
+
+    /// <summary>
+    /// Diagnostic: The method referenced by [MappaApplyTransformer] cannot be resolved.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="methodName">The map method name.</param>
+    /// <param name="transformerName">The transformer method name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic ApplyTransformerMethodNotFound(
+        Location? location,
+        string methodName,
+        string transformerName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.ApplyTransformerMethodNotFound,
+            location,
+            methodName,
+            transformerName);
+
+    /// <summary>
+    /// Diagnostic: The source property name or path of [MappaApplyTransformer] does not exist on the map source type.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="methodName">The map method name.</param>
+    /// <param name="sourcePath">The source property name or path.</param>
+    /// <param name="sourceTypeName">The map source type name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic ApplyTransformerSourceMemberNotFound(
+        Location? location,
+        string methodName,
+        string sourcePath,
+        string sourceTypeName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.ApplyTransformerSourceMemberNotFound,
+            location,
+            methodName,
+            sourcePath,
+            sourceTypeName);
+
+    /// <summary>
+    /// Diagnostic: [MappaApplyTransformer] specifies both a class type and a field name.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="methodName">The map method name.</param>
+    /// <param name="transformerName">The transformer method name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic ApplyTransformerClassTypeAndFieldNameConflict(
+        Location? location,
+        string methodName,
+        string transformerName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.ApplyTransformerClassTypeAndFieldNameConflict,
+            location,
+            methodName,
+            transformerName);
+
+    /// <summary>
+    /// Diagnostic: A projection map method is decorated with [MappaApplyTransformer].
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="methodName">The map method name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic ProjectionMethodHasApplyTransformer(
+        Location? location,
+        string methodName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.ProjectionMethodHasApplyTransformer,
+            location,
+            methodName);
+
     private static Location? GetSyntaxLocation(SyntaxNode? syntaxNode)
         => syntaxNode?.GetLocation();
 }

@@ -208,7 +208,6 @@ internal sealed partial class ConstructorMapStrategyDetector
                                 }
 
                                 var targetParameterType = targetParameter.Type;
-                                var sourcePropertyType = sourceProperty.Type;
 
                                 // Prevent circular mapping if the target type of the parameter
                                 // is the same type of the current type being mapped.
@@ -218,7 +217,7 @@ internal sealed partial class ConstructorMapStrategyDetector
                                 }
 
                                 // Get a strategy from source to target
-                                if (this.TryGetStrategyBetweenTypes(targetParameterType, sourcePropertyType, true, out var propertyStrategy))
+                                if (this.TryGetStrategyForSourceProperty(targetParameterType, sourceProperty, true, out var propertyStrategy))
                                 {
                                     propertyStrategy = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, sourceProperties, propertyStrategy);
                                     this.TryIsSourcePropertyReadable(
@@ -567,17 +566,31 @@ internal sealed partial class ConstructorMapStrategyDetector
             StringComparer.Ordinal);
     }
 
-    private bool TryGetStrategyBetweenTypes(
+    private bool TryGetStrategyForSourceProperty(
         ITypeSymbol targetType,
-        ITypeSymbol sourceType,
+        IPropertySymbol sourceProperty,
         bool useConstructorMapStrategyDetector,
         out MapStrategy elementStrategy)
         => this.TryGetStrategyBetweenTypes(
             targetType,
-            sourceType,
+            sourceProperty.Type,
             useConstructorMapStrategyDetector,
             null,
+            this.GetSourceMemberPath(sourceProperty, this.context.PropertyPathContext),
             out elementStrategy);
+
+    private string GetSourceMemberPath(IPropertySymbol sourceProperty, PropertyPathContext? propertyPathContext)
+    {
+        if (propertyPathContext is { IsLeafTargetMapping: true, OriginalSourcePath: { Length: > 0 } originalSourcePath })
+        {
+            return originalSourcePath;
+        }
+
+        var parentPath = this.context.SourceMemberPath;
+        return string.IsNullOrEmpty(parentPath)
+            ? sourceProperty.Name
+            : $"{parentPath}.{sourceProperty.Name}";
+    }
 
     private bool TryGetStrategyForPropertyOrArgumentUsingAttributesOnMethod(
         string targetName,

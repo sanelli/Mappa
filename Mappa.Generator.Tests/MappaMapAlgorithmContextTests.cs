@@ -51,6 +51,19 @@ public sealed class MappaMapAlgorithmContextTests
     }
 
     /// <summary>
+    /// Test the value transformer related members of <see cref="MappaMapAlgorithmContext"/> are empty by default.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void ValueTransformerMembersAreEmptyByDefault()
+    {
+        var (context, _) = CreateRecordingContext();
+
+        context.ValueTransformerCatalog.Should().BeNull();
+        context.SourceMemberPath.Should().BeNull();
+    }
+
+    /// <summary>
     /// Test <see cref="MappaMapAlgorithmContext.TryGetClassGeneratorContext"/> returns the class context
     /// when the root is a <see cref="MappaMethodGeneratorContext"/>.
     /// </summary>
