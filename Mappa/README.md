@@ -59,6 +59,7 @@ Via `MappaSettings` the following settings can be tweaked:
 - `ProtobufOptional`: enables or disables the ability of the [Mappa source generator](https://www.nuget.org/packages/Mappa.Generator/) to handle `optional` fields in protobuf models;
 - `BsonWellKnownTypes`: when `Enable`, maps `MongoDB.Bson` well-known types (`ObjectId` ↔ `string`/`byte[]`, `Decimal128` → `decimal`) inline (disabled by default; reference `MongoDB.Bson`);
 - `ProtobufWellKnownTypes`: when `Enable`, maps `Google.Protobuf.WellKnownTypes` (`Timestamp`, `Duration`, scalar wrappers) inline (disabled by default; reference `Google.Protobuf`);
+- `OneOfWellKnownTypes`: when `Enable`, maps [OneOf](https://www.nuget.org/packages/OneOf/) / `OneOfBase` shapes (including Option `OneOf<T, None>`) inline (disabled by default; reference `OneOf`). Exact-arm `T → OneOf<…, T, …>` via identity/implicit conversion remains available regardless of this setting;
 - `PragmaWarning`: allows surrounding the generated methods with a `#pragma warning disable` block;
 - `FastCollections`: uses `Span<T>` to make mappings involving arrays and `System.Collections.Generic.List<T>` faster;
 - `ReplaceNullWithEmptyContainer`: when enabled, a null source collection or dictionary is mapped to an empty target container instead of producing `null` or throwing (disabled by default);
@@ -119,7 +120,7 @@ Via `MappaMapEnumDefaultBehavior` the following settings can be tweaked:
 Relevant packages:
 - [Mappa source generator](https://www.nuget.org/packages/Mappa.Generator/): source generator that automatically generates mappings between classes and value types.
 
-For Bson/Protobuf well-known types, enable `BsonWellKnownTypes` / `ProtobufWellKnownTypes` and reference [MongoDB.Bson](https://www.nuget.org/packages/MongoDB.Bson/) or [Google.Protobuf](https://www.nuget.org/packages/Google.Protobuf/).
+For Bson/Protobuf/OneOf well-known types, enable `BsonWellKnownTypes` / `ProtobufWellKnownTypes` / `OneOfWellKnownTypes` and reference [MongoDB.Bson](https://www.nuget.org/packages/MongoDB.Bson/), [Google.Protobuf](https://www.nuget.org/packages/Google.Protobuf/), or [OneOf](https://www.nuget.org/packages/OneOf/) as needed.
 
 You can find [samples](https://github.com/sanelli/Mappa/tree/main/Mappa.Samples) here.
 Visit the Mappa [documentation](https://github.com/sanelli/Mappa/blob/main/Documentation/README.md) to learn more.

@@ -254,6 +254,15 @@ public sealed class MappaSettingsAttribute
     public BooleanSetting ProtobufWellKnownTypes { get; set; } = BooleanSetting.Undefined;
 
     /// <summary>
+    /// Gets or sets a value indicating whether well-known <c>OneOf</c> / <c>OneOfBase</c>
+    /// type-pair mappings (including the Option shape <c>OneOf&lt;T, None&gt;</c>) are enabled
+    /// when performing mapping. It is not enabled by default; the consumer must reference
+    /// the <c>OneOf</c> package. Exact-arm <c>T → OneOf&lt;…, T, …&gt;</c> via identity/implicit
+    /// conversion remains available regardless of this setting.
+    /// </summary>
+    public BooleanSetting OneOfWellKnownTypes { get; set; } = BooleanSetting.Undefined;
+
+    /// <summary>
     /// Gets or sets a value indicating whether the mapping method should be surrounded
     /// by <c>#pragma warning disable</c>.
     /// </summary>
