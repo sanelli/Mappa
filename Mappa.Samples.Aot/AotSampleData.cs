@@ -266,6 +266,19 @@ internal static class AotSampleData
     };
 
     /// <summary>
+    /// Gets an empty source model for empty-to-empty mapping samples.
+    /// </summary>
+    public static EmptySourceModel EmptySourceModel { get; } = new();
+
+    /// <summary>
+    /// Gets a source model with a nested empty type for empty-to-empty mapping samples.
+    /// </summary>
+    public static SourceWithEmptyNestedModel SourceWithEmptyNestedModel { get; } = new()
+    {
+        Nested = new NestedEmptySourceModel(),
+    };
+
+    /// <summary>
     /// Gets a <see cref="SourceClassWithInnerClassModel"/> with inner ParamA 33 and ParamB One.
     /// </summary>
     public static SourceClassWithInnerClassModel SourceClassWithInnerClassModel33One { get; } = new()

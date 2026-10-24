@@ -329,9 +329,21 @@ internal sealed partial class ConstructorMapStrategyDetector
             .Concat(mappedFieldStrategies)
             .ToArray();
 
+        // No candidates after filters. Empty-ctor-like factory / [MappaUseConstructor(NoParameters)]
+        // already allow zero initializers. Automatic empty-ctor allows that only for truly empty
+        // targets: no remaining properties and no eligible instance fields on the type (even when
+        // MapTargetFields is off — otherwise field-only types would be discarded via new T()).
+        // All-ignored properties with no fields still count as empty. When candidates exist but
+        // none map, requireAtLeastOneMappedProperty still fails below.
         if (targetProperties.Length == 0 && mappedFieldStrategies.Length == 0)
         {
-            return !requireAtLeastOneMappedProperty;
+            if (!requireAtLeastOneMappedProperty)
+            {
+                return true;
+            }
+
+            var hasEligibleInstanceFields = this.context.TargetType.GetTypeFields().Any();
+            return !hasEligibleInstanceFields;
         }
 
         if (Array.Exists(mappedInitializerStrategies, propertyStrategy => propertyStrategy.IsRequiredTarget && propertyStrategy.PropertyStrategy is NoMapStrategy))
