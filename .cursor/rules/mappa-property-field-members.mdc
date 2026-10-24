@@ -1,0 +1,61 @@
+    ---
+description: When mapping uses properties, also support instance fields (MapSourceFields / MapTargetFields from #73)
+alwaysApply: true
+---
+
+# Property and field mapping parity
+
+Instance **fields** are first-class mapping members alongside **properties** when opted in. Any new or changed mapping path that reads, writes, matches, or documents a **property** must also handle **fields** under the same rules (issue [#73](https://github.com/sanelli/Mappa/issues/73)).
+
+## Settings (default off)
+
+- `MapSourceFields` / `mappa.mapsourcefields` — read source instance fields when pairing.
+- `MapTargetFields` / `mappa.maptargetfields` — write / initialize target instance fields when pairing.
+- `BooleanSetting.Undefined` (and unset editorconfig) means **disabled**. Method-level `[MappaSettings]` overrides class-level overrides editorconfig.
+
+## Where fields must participate (when the matching setting is `Enable`)
+
+Treat fields like properties in all of these surfaces:
+
+- Name matching to target members and constructor parameters (including `CaseInsensitivePropertyMap` / `IgnoreUnderscoreForPropertyMap`).
+- Empty-constructor / object-factory initializers and post-construction assignment.
+- Parameterized / mapping constructors.
+- Nested / dotted paths and attribute `TargetPropertyName` / `SourcePropertyName` (and related “Property” parameter names).
+- Use / ignore / must-map / assign-from-* / invoke / null-substitute / transformers’ source member selection, as applicable.
+- Accessible fields inside `IQueryable` projections.
+
+Do **not** invent field-only parallel strategy trees when a shared member path exists (`MappableMember`, shared helpers). Prefer extending the property pipeline.
+
+## Precedence and API names
+
+- If both a **property** and a **field** remain eligible for the same normalized name, **prefer the property**.
+- Public attribute and setting names may keep saying “Property”; behaviourally they mean **property or field when field mapping is enabled**. Do **not** rename those APIs solely for fields. Clarify in XML docs and `Documentation/mappa-attributes.md` when touching them.
+
+## Eligibility exclusions
+
+- Never map compiler-generated / implicitly declared auto-property **backing fields**.
+- Ignore `static` / `const` / `ref` / `fixed` for source and target.
+- Never assign `readonly` **target** fields.
+- Include instance fields from base types (same hierarchy walk as properties).
+- Protobuf `Has*` optional handling remains **property-oriented**; do not invent `Has` companions for fields.
+
+## Inaccessible members
+
+- Private / protected fields use `[MappaAllowInaccessibleSourceMembers]` / `[MappaAllowInaccessibleTargetMembers]` + `UnsafeAccessor`, same flat-name rules as properties.
+- Target: `AllowFields` (default `true`) gates inaccessible field writes; listing names filters properties and fields.
+- Projection methods that carry either allow-inaccessible attribute remain invalid; inaccessible fields stay projection-forbidden.
+
+## Implementation and emission
+
+- Detectors choose types and build strategies; strategies hold typed data only. **Emission strings stay in builders** (`IMappaStrategyBuilder`), including property vs field access differences.
+- Prefer `ISymbol` / `MappableMember` (or equivalent) over duplicated `*Property*` / `*Field*` detector stacks.
+
+## When extending the product
+
+If you add or change a feature that maps, selects, ignores, or documents a **source/target property**, you **must** also:
+
+1. Support the same behaviour for fields when `MapSourceFields` / `MapTargetFields` apply (or document an explicit exclusion with rationale).
+2. Cover fields in generator integration tests (happy + negative) when the feature is property-facing.
+3. Update tutorial / attributes / algorithm / features docs so “property” wording does not imply fields are unsupported.
+
+**Out of scope for this parity rule (already separate):** mapper-side fields for `[MappaDependency]` / hooks / factories; `IdentityMapDeepCopy` nested field walking.
