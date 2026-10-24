@@ -14,6 +14,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 using MongoDB.Bson;
 
+using OneOf;
+
 namespace Mappa.Generator.Tests.Abstractions;
 
 /// <summary>
@@ -120,6 +122,7 @@ public abstract class MappaGeneratorAbstractUnitTests
             MetadataReference.CreateFromFile(typeof(ExternalMapperBeta).GetTypeInfo().Assembly.Location),
             MetadataReference.CreateFromFile(typeof(Timestamp).GetTypeInfo().Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ObjectId).GetTypeInfo().Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(OneOf<,>).GetTypeInfo().Assembly.Location),
             MetadataReference.CreateFromFile(typeof(object).GetTypeInfo().Assembly.Location),
             MetadataReference.CreateFromFile(typeof(Uri).GetTypeInfo().Assembly.Location),
             MetadataReference.CreateFromFile(dateTimeStylesAssembly.Location),

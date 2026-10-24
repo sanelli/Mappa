@@ -17,6 +17,11 @@ namespace Mappa.Generator.Builders.Strategies;
 internal sealed class OneOfOptionToValueMapStrategyBuilder
     : IMappaStrategyBuilder
 {
+    private static readonly SymbolDisplayFormat FullyQualifiedTypeNameFormat =
+        SymbolDisplayFormat.FullyQualifiedFormat.WithMiscellaneousOptions(
+            SymbolDisplayFormat.FullyQualifiedFormat.MiscellaneousOptions
+            | SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier);
+
     private readonly OneOfOptionToValueMapStrategy strategy;
 
     /// <summary>
@@ -32,7 +37,7 @@ internal sealed class OneOfOptionToValueMapStrategyBuilder
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
         var temporary = context.NextTemporary();
-        var targetTypeName = this.strategy.TargetType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        var targetTypeName = this.strategy.TargetType.ToDisplayString(FullyQualifiedTypeNameFormat);
         var whenSome = $"{source}.AsT0";
         var whenNone = this.BuildAbsentExpression();
         var code = $"{targetTypeName} {temporary} = {source}.IsT0 ? {whenSome} : {whenNone};";

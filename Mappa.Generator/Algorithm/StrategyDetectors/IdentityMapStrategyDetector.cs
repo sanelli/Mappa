@@ -3,6 +3,7 @@
 // </copyright>
 
 using Mappa.Generator.Extensions;
+using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -296,7 +297,14 @@ internal sealed class IdentityMapStrategyDetector
 
     private bool CanMapUsingImplicitConversion()
     {
-        var hasImplicitConversion = this.compilation.HasImplicitConversion(this.context.SourceType, this.context.TargetType);
-        return hasImplicitConversion;
+        // When OneOf well-known strategies are enabled, leave Option-shaped targets
+        // (OneOf/OneOfBase<T, None>) to that detector so NRT-off default→None wrap can apply.
+        if (this.context.MappaUserSettings.OneOfWellKnownTypes is BooleanSetting.Enable
+            && OneOfWellKnownHelper.IsOneOfOptionShape(this.context.TargetType, this.compilation, out _))
+        {
+            return false;
+        }
+
+        return this.compilation.HasImplicitConversion(this.context.SourceType, this.context.TargetType);
     }
 }
