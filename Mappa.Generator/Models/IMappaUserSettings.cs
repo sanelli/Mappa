@@ -304,6 +304,18 @@ internal interface IMappaUserSettings
     BooleanSetting MapTargetExplicitInterfaceProperties { get; }
 
     /// <summary>
+    /// Gets a value indicating whether accessible instance fields on the source type
+    /// may be read when pairing members by name. Disabled by default.
+    /// </summary>
+    BooleanSetting MapSourceFields { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether accessible instance fields on the target type
+    /// may be written or initialized when pairing members by name. Disabled by default.
+    /// </summary>
+    BooleanSetting MapTargetFields { get; }
+
+    /// <summary>
     /// Gets a value indicating whether enum member names or Description attribute values
     /// are matched case-insensitively when mapping between enums or from string to an enum.
     /// </summary>

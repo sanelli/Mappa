@@ -327,6 +327,48 @@ public sealed class AttributeDataExtensionsGetMappaSettingsAttributeTests
     }
 
     /// <summary>
+    /// Test <see cref="AttributeDataExtensions.GetMappaSettingsAttribute"/> reads
+    /// <see cref="MappaSettingsAttribute.MapSourceFields"/> and
+    /// <see cref="MappaSettingsAttribute.MapTargetFields"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetMappaSettingsAttributeReadsMapSourceAndTargetFields()
+    {
+        const string source = """
+                              using Mappa;
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { }
+
+                              public class Target { }
+
+                              [Mappa]
+                              public sealed partial class TestMapper
+                              {
+                                  [MappaSettings(
+                                      MapSourceFields = BooleanSetting.Enable,
+                                      MapTargetFields = BooleanSetting.Disable)]
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetMethodAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.MapperMetadataName,
+            "Map");
+
+        var settings = attributes.GetMappaSettingsAttribute(compilation);
+
+        settings.Should().NotBeNull();
+        settings.MapSourceFields.Should().Be(BooleanSetting.Enable);
+        settings.MapTargetFields.Should().Be(BooleanSetting.Disable);
+    }
+
+    /// <summary>
     /// Test <see cref="AttributeDataExtensions.GetMappaSettingsAttribute"/> reads <see cref="MappaSettingsAttribute.BreakCompileTimeCycles"/>.
     /// </summary>
     [Fact]

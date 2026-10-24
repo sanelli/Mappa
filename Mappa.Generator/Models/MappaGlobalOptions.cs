@@ -321,6 +321,8 @@ internal sealed class MappaGlobalOptions
     private const string MappaSettingsIgnoreUnderscoreForPropertyMap = "ignoreunderscoreforpropertymap";
     private const string MappaSettingsMapSourceExplicitInterfaceProperties = "mapsourceexplicitinterfaceproperties";
     private const string MappaSettingsMapTargetExplicitInterfaceProperties = "maptargetexplicitinterfaceproperties";
+    private const string MappaSettingsMapSourceFields = "mapsourcefields";
+    private const string MappaSettingsMapTargetFields = "maptargetfields";
     private const string MappaSettingsCaseInsensitiveEnumMap = "caseinsensitiveenummap";
     private const string MappaSettingsEnumStringMapSetting = "enumstringmapsetting";
     private const string MappaSettingsEnumToEnumMapSetting = "enumtoenummapsetting";
@@ -398,6 +400,8 @@ internal sealed class MappaGlobalOptions
         this.IgnoreUnderscoreForPropertyMap = ReadBooleanSettingOption(options, MappaSettingsIgnoreUnderscoreForPropertyMap, BooleanSetting.Undefined);
         this.MapSourceExplicitInterfaceProperties = ReadBooleanSettingOption(options, MappaSettingsMapSourceExplicitInterfaceProperties, BooleanSetting.Undefined);
         this.MapTargetExplicitInterfaceProperties = ReadBooleanSettingOption(options, MappaSettingsMapTargetExplicitInterfaceProperties, BooleanSetting.Undefined);
+        this.MapSourceFields = ReadBooleanSettingOption(options, MappaSettingsMapSourceFields, BooleanSetting.Undefined);
+        this.MapTargetFields = ReadBooleanSettingOption(options, MappaSettingsMapTargetFields, BooleanSetting.Undefined);
         this.CaseInsensitiveEnumMap = ReadBooleanSettingOption(options, MappaSettingsCaseInsensitiveEnumMap, BooleanSetting.Undefined);
         this.EnumStringMapSetting = ReadEnumStringMapSettingOption(options, MappaSettingsEnumStringMapSetting);
         this.EnumToEnumMapSetting = ReadEnumToEnumMapSettingOption(options, MappaSettingsEnumToEnumMapSetting);
@@ -560,6 +564,12 @@ internal sealed class MappaGlobalOptions
 
     /// <inheritdoc/>
     public BooleanSetting MapTargetExplicitInterfaceProperties { get; }
+
+    /// <inheritdoc/>
+    public BooleanSetting MapSourceFields { get; }
+
+    /// <inheritdoc/>
+    public BooleanSetting MapTargetFields { get; }
 
     /// <inheritdoc/>
     public BooleanSetting CaseInsensitiveEnumMap { get; }

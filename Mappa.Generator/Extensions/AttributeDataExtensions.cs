@@ -348,6 +348,20 @@ internal static class AttributeDataExtensions
                     attribute.MapTargetExplicitInterfaceProperties = (BooleanSetting)value;
                 }
             },
+            [nameof(MappaSettingsAttribute.MapSourceFields)] = static (attribute, constant) =>
+            {
+                if (constant.Value is int value)
+                {
+                    attribute.MapSourceFields = (BooleanSetting)value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.MapTargetFields)] = static (attribute, constant) =>
+            {
+                if (constant.Value is int value)
+                {
+                    attribute.MapTargetFields = (BooleanSetting)value;
+                }
+            },
             [nameof(MappaSettingsAttribute.CaseInsensitiveEnumMap)] = static (attribute, constant) =>
             {
                 if (constant.Value is int value)
