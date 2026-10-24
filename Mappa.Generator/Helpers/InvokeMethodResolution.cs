@@ -577,32 +577,15 @@ internal static class InvokeMethodResolution
         bool nullableEnabled,
         bool rootProvidesMappaContext)
     {
-        if (candidate.MethodKind is not MethodKind.Ordinary
-            || candidate.IsAsync
-            || candidate.ReturnsAnyTaskType(compilation)
-            || candidate.IsVoid()
-            || candidate.ReturnsByRef
-            || candidate.ReturnsByRefReadonly)
+        if (HasForbiddenNullSubstituteMethodShape(candidate, compilation))
         {
             return false;
         }
 
-        if (candidate.Parameters.Length is not (1 or 2))
-        {
-            return false;
-        }
-
-        if (candidate.Parameters[0].RefKind is not (RefKind.None or RefKind.In))
-        {
-            return false;
-        }
-
-        if (!candidate.ReturnType.IsEqualTo(expectedReturnType, nullableEnabled))
-        {
-            return false;
-        }
-
-        if (!IsNullSubstituteValueParameterType(candidate.Parameters[0].Type, sourceMemberType, expectedReturnType, nullableEnabled))
+        if (candidate.Parameters.Length is not (1 or 2)
+            || candidate.Parameters[0].RefKind is not (RefKind.None or RefKind.In)
+            || !candidate.ReturnType.IsEqualTo(expectedReturnType, nullableEnabled)
+            || !IsNullSubstituteValueParameterType(candidate.Parameters[0].Type, sourceMemberType, expectedReturnType, nullableEnabled))
         {
             return false;
         }
@@ -612,10 +595,24 @@ internal static class InvokeMethodResolution
             return true;
         }
 
-        return rootProvidesMappaContext
-               && candidate.ParameterIsMappaContext(compilation, 1)
-               && candidate.Parameters[1].RefKind is (RefKind.None or RefKind.In);
+        return IsValidNullSubstituteContextParameter(candidate, compilation, rootProvidesMappaContext);
     }
+
+    private static bool HasForbiddenNullSubstituteMethodShape(IMethodSymbol candidate, Compilation compilation)
+        => candidate.MethodKind is not MethodKind.Ordinary
+           || candidate.IsAsync
+           || candidate.ReturnsAnyTaskType(compilation)
+           || candidate.IsVoid()
+           || candidate.ReturnsByRef
+           || candidate.ReturnsByRefReadonly;
+
+    private static bool IsValidNullSubstituteContextParameter(
+        IMethodSymbol candidate,
+        Compilation compilation,
+        bool rootProvidesMappaContext)
+        => rootProvidesMappaContext
+           && candidate.ParameterIsMappaContext(compilation, 1)
+           && candidate.Parameters[1].RefKind is (RefKind.None or RefKind.In);
 
     private static bool IsNullSubstituteValueParameterType(
         ITypeSymbol parameterType,

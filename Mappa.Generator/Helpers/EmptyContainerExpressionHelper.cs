@@ -81,7 +81,6 @@ internal static class EmptyContainerExpressionHelper
 
         if (nonNullTarget.TypeKind is TypeKind.Class or TypeKind.Struct
             && nonNullTarget is not INamedTypeSymbol { IsAbstract: true }
-            && nonNullTarget.TypeKind is not TypeKind.Interface
             && nonNullTarget.HasSymbolAccessibleZeroParametersConstructor(compilation, mapMethodSymbol))
         {
             emptyExpression = $"new {nonNullTarget.ToDisplayNameWithoutNullableAnnotation()}()";
@@ -102,66 +101,95 @@ internal static class EmptyContainerExpressionHelper
         ITypeSymbol targetType,
         Compilation compilation,
         out string emptyExpression)
+        => TryGetImmutableQueueOrStackEmptyExpression(targetType, compilation, out emptyExpression)
+           || TryGetImmutableListArrayOrSetEmptyExpression(targetType, compilation, out emptyExpression)
+           || TryGetImmutableDictionaryEmptyExpression(targetType, compilation, out emptyExpression)
+           || TryGetFrozenEmptyExpression(targetType, compilation, out emptyExpression)
+           || TryGetReadOnlyWrapperEmptyExpression(targetType, compilation, out emptyExpression);
+
+    private static bool TryGetImmutableQueueOrStackEmptyExpression(
+        ITypeSymbol targetType,
+        Compilation compilation,
+        out string emptyExpression)
     {
         emptyExpression = string.Empty;
         if (targetType.IsIImmutableQueue(compilation) || targetType.IsImmutableQueue(compilation))
         {
-            var elementType = targetType.GetElementType().ToDisplayString();
-            emptyExpression = $"global::System.Collections.Immutable.ImmutableQueue<{elementType}>.Empty";
+            emptyExpression = BuildImmutableEmptyMemberAccess("ImmutableQueue", targetType.GetElementType());
             return true;
         }
 
         if (targetType.IsIImmutableStack(compilation) || targetType.IsImmutableStack(compilation))
         {
-            var elementType = targetType.GetElementType().ToDisplayString();
-            emptyExpression = $"global::System.Collections.Immutable.ImmutableStack<{elementType}>.Empty";
+            emptyExpression = BuildImmutableEmptyMemberAccess("ImmutableStack", targetType.GetElementType());
             return true;
         }
 
+        return false;
+    }
+
+    private static bool TryGetImmutableListArrayOrSetEmptyExpression(
+        ITypeSymbol targetType,
+        Compilation compilation,
+        out string emptyExpression)
+    {
+        emptyExpression = string.Empty;
         if (targetType.IsImmutableList(compilation))
         {
-            var elementType = targetType.GetElementType().ToDisplayString();
-            emptyExpression = $"global::System.Collections.Immutable.ImmutableList<{elementType}>.Empty";
+            emptyExpression = BuildImmutableEmptyMemberAccess("ImmutableList", targetType.GetElementType());
             return true;
         }
 
         if (targetType.IsImmutableArray(compilation))
         {
-            var elementType = targetType.GetElementType().ToDisplayString();
-            emptyExpression = $"global::System.Collections.Immutable.ImmutableArray<{elementType}>.Empty";
+            emptyExpression = BuildImmutableEmptyMemberAccess("ImmutableArray", targetType.GetElementType());
             return true;
         }
 
         if (targetType.IsImmutableHashSet(compilation))
         {
-            var elementType = targetType.GetElementType().ToDisplayString();
-            emptyExpression = $"global::System.Collections.Immutable.ImmutableHashSet<{elementType}>.Empty";
+            emptyExpression = BuildImmutableEmptyMemberAccess("ImmutableHashSet", targetType.GetElementType());
             return true;
         }
 
         if (targetType.IsImmutableSortedSet(compilation))
         {
-            var elementType = targetType.GetElementType().ToDisplayString();
-            emptyExpression = $"global::System.Collections.Immutable.ImmutableSortedSet<{elementType}>.Empty";
+            emptyExpression = BuildImmutableEmptyMemberAccess("ImmutableSortedSet", targetType.GetElementType());
             return true;
         }
 
+        return false;
+    }
+
+    private static bool TryGetImmutableDictionaryEmptyExpression(
+        ITypeSymbol targetType,
+        Compilation compilation,
+        out string emptyExpression)
+    {
+        emptyExpression = string.Empty;
         if (targetType.IsImmutableDictionary(compilation) || targetType.IsIImmutableDictionary(compilation))
         {
             var (keyType, valueType) = targetType.GetKeyAndValueTypes(compilation);
-            emptyExpression =
-                $"global::System.Collections.Immutable.ImmutableDictionary<{keyType.ToDisplayString()}, {valueType.ToDisplayString()}>.Empty";
+            emptyExpression = BuildImmutableDictionaryEmptyMemberAccess("ImmutableDictionary", keyType, valueType);
             return true;
         }
 
         if (targetType.IsImmutableSortedDictionary(compilation))
         {
             var (keyType, valueType) = targetType.GetKeyAndValueTypes(compilation);
-            emptyExpression =
-                $"global::System.Collections.Immutable.ImmutableSortedDictionary<{keyType.ToDisplayString()}, {valueType.ToDisplayString()}>.Empty";
+            emptyExpression = BuildImmutableDictionaryEmptyMemberAccess("ImmutableSortedDictionary", keyType, valueType);
             return true;
         }
 
+        return false;
+    }
+
+    private static bool TryGetFrozenEmptyExpression(
+        ITypeSymbol targetType,
+        Compilation compilation,
+        out string emptyExpression)
+    {
+        emptyExpression = string.Empty;
         if (targetType.IsFrozenSet(compilation))
         {
             var elementType = targetType.GetElementType().ToDisplayString();
@@ -177,6 +205,15 @@ internal static class EmptyContainerExpressionHelper
             return true;
         }
 
+        return false;
+    }
+
+    private static bool TryGetReadOnlyWrapperEmptyExpression(
+        ITypeSymbol targetType,
+        Compilation compilation,
+        out string emptyExpression)
+    {
+        emptyExpression = string.Empty;
         if (targetType.IsReadOnlyCollection(compilation))
         {
             var elementType = targetType.GetElementType().ToDisplayString();
@@ -204,30 +241,45 @@ internal static class EmptyContainerExpressionHelper
         return false;
     }
 
+    private static string BuildImmutableEmptyMemberAccess(string typeName, ITypeSymbol elementType)
+        => $"global::System.Collections.Immutable.{typeName}<{elementType.ToDisplayString()}>.Empty";
+
+    private static string BuildImmutableDictionaryEmptyMemberAccess(string typeName, ITypeSymbol keyType, ITypeSymbol valueType)
+        => $"global::System.Collections.Immutable.{typeName}<{keyType.ToDisplayString()}, {valueType.ToDisplayString()}>.Empty";
+
     private static bool TryGetAllowListedInterfaceOrArrayEmptyExpression(
         ITypeSymbol targetType,
         Compilation compilation,
         out string emptyExpression)
     {
         emptyExpression = string.Empty;
-        if (targetType.IsArray()
-            || targetType.IsIEnumerable()
-            || targetType.IsICollection()
-            || targetType.IsIReadOnlyCollection()
-            || targetType.IsIList()
-            || targetType.IsIReadOnlyList()
-            || targetType.IsISet(compilation)
-            || targetType.IsIReadOnlySet(compilation)
-            || targetType.IsIImmutableList(compilation)
-            || targetType.IsIImmutableSet(compilation)
-            || targetType.IsIDictionary(compilation)
-            || targetType.IsIReadOnlyDictionary(compilation)
-            || targetType.IsIEnumerableOfKeyValuePairs(compilation))
+        if (!IsAllowListedEmptyCollectionTarget(targetType, compilation))
         {
-            emptyExpression = "[]";
-            return true;
+            return false;
         }
 
-        return false;
+        emptyExpression = "[]";
+        return true;
     }
+
+    private static bool IsAllowListedEmptyCollectionTarget(ITypeSymbol targetType, Compilation compilation)
+        => IsAllowListedSequenceEmptyTarget(targetType, compilation)
+           || IsAllowListedDictionaryEmptyTarget(targetType, compilation);
+
+    private static bool IsAllowListedSequenceEmptyTarget(ITypeSymbol targetType, Compilation compilation)
+        => targetType.IsArray()
+           || targetType.IsIEnumerable()
+           || targetType.IsICollection()
+           || targetType.IsIReadOnlyCollection()
+           || targetType.IsIList()
+           || targetType.IsIReadOnlyList()
+           || targetType.IsISet(compilation)
+           || targetType.IsIReadOnlySet(compilation)
+           || targetType.IsIImmutableList(compilation)
+           || targetType.IsIImmutableSet(compilation);
+
+    private static bool IsAllowListedDictionaryEmptyTarget(ITypeSymbol targetType, Compilation compilation)
+        => targetType.IsIDictionary(compilation)
+           || targetType.IsIReadOnlyDictionary(compilation)
+           || targetType.IsIEnumerableOfKeyValuePairs(compilation);
 }

@@ -228,8 +228,16 @@ internal sealed class ExpressionSyntaxAssertions
 
         this.Subject.Should().BeOfType<InvocationExpressionSyntax>();
         var invocationExpressionSyntax = (InvocationExpressionSyntax)this.Subject;
-        new ExpressionSyntaxAssertions(invocationExpressionSyntax.Expression, this.semanticModel, this.compilation)
-            .BeMemberAccessExpressionSyntax(memberAccess);
+        if (invocationExpressionSyntax.Expression is IdentifierNameSyntax identifierNameSyntax)
+        {
+            identifierNameSyntax.Identifier.Text.Should().Be(memberAccess);
+        }
+        else
+        {
+            new ExpressionSyntaxAssertions(invocationExpressionSyntax.Expression, this.semanticModel, this.compilation)
+                .BeMemberAccessExpressionSyntax(memberAccess);
+        }
+
         invocationExpressionSyntax.ArgumentList.Arguments.Should().HaveCount(assertArguments.Length);
 
         for (int index = 0; index < assertArguments.Length; ++index)

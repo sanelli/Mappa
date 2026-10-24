@@ -65,6 +65,7 @@ internal static class Program
         MappaObjectFactoryMapperRunner.Run(report);
         MappaIgnoreTargetPropertyAttributeMapperRunner.Run(report);
         MappaMustMapTargetPropertyAttributeMapperRunner.Run(report);
+        MappaNullSubstituteMapperRunner.Run(report);
         MappaInvokeMethodAttributeMappersRunner.Run(report);
         MappaUseConstructorMapperRunner.Run(report);
         MappaUsePropertyAttributeMapperRunner.Run(report);
@@ -82,6 +83,7 @@ internal static class Program
         ProtobufOneofPolymorphismMappersRunner.Run(report);
         ProtobufOptionalMapperRunner.Run(report);
         ReadOnlyTargetCollectionMapperRunner.Run(report);
+        ReplaceNullWithEmptyContainerMapperRunner.Run(report);
         BreakCompileTimeCyclesMapperRunner.Run(report);
         ReferenceHandlingMapperRunner.Run(report);
         ReferenceNullableToReferenceNullableMapperRunner.Run(report);

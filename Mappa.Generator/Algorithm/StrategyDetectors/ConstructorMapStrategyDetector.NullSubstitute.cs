@@ -66,34 +66,12 @@ internal sealed partial class ConstructorMapStrategyDetector
         IPropertySymbol? sourceProperty,
         MapStrategy strategy)
     {
-        if (strategy is NoMapStrategy
-            or MappaAssignFromConstantAttributeStrategy
-            or MappaInvokeMethodAttributeStrategy
-            or MappaAssignFromContextAttributeStrategy)
+        if (this.ShouldSkipNullSubstituteWrap(strategy, targetName, stringComparison))
         {
             return strategy;
         }
 
-        if (this.HasMatchingAssignFromConstantAttribute(targetName, stringComparison))
-        {
-            return strategy;
-        }
-
-        var nullSubstituteAttributes = this.GetMatchingNullSubstituteAttributes(targetName, stringComparison);
-        if (nullSubstituteAttributes.Length != 1)
-        {
-            return strategy;
-        }
-
-        var nullSubstituteAttribute = nullSubstituteAttributes[0];
-        var hasInvokeMethod = !string.IsNullOrWhiteSpace(nullSubstituteAttribute.InvokeMethod);
-
-        // Exactly one mode must be set; validation reports the diagnostic when neither or both are present.
-        if (nullSubstituteAttribute.HasAssignValue == hasInvokeMethod)
-        {
-            return strategy;
-        }
-
+        var nullSubstituteAttribute = this.GetMatchingNullSubstituteAttributes(targetName, stringComparison)[0];
         var sourceType = sourceProperty?.Type ?? strategy.SourceType;
         var elementStrategy = UnwrapNullableStrategies(strategy);
 
@@ -111,6 +89,33 @@ internal sealed partial class ConstructorMapStrategyDetector
             sourceType,
             nullSubstituteAttribute,
             elementStrategy);
+    }
+
+    private bool ShouldSkipNullSubstituteWrap(
+        MapStrategy strategy,
+        string targetName,
+        StringComparison stringComparison)
+    {
+        if (strategy is NoMapStrategy
+            or MappaAssignFromConstantAttributeStrategy
+            or MappaInvokeMethodAttributeStrategy
+            or MappaAssignFromContextAttributeStrategy
+            || this.HasMatchingAssignFromConstantAttribute(targetName, stringComparison))
+        {
+            return true;
+        }
+
+        var nullSubstituteAttributes = this.GetMatchingNullSubstituteAttributes(targetName, stringComparison);
+        if (nullSubstituteAttributes.Length != 1)
+        {
+            return true;
+        }
+
+        var nullSubstituteAttribute = nullSubstituteAttributes[0];
+        var hasInvokeMethod = !string.IsNullOrWhiteSpace(nullSubstituteAttribute.InvokeMethod);
+
+        // Exactly one mode must be set; validation reports the diagnostic when neither or both are present.
+        return nullSubstituteAttribute.HasAssignValue == hasInvokeMethod;
     }
 
     private MapStrategy TryWrapWithNullSubstituteInvokeMethod(

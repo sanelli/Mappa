@@ -324,7 +324,8 @@ When `ReferenceReusing` is `Enable` and the map method declares `MappaContext`:
     - Element mapping is validated by `ProjectionCapabilityAnalyzer` and built by `ProjectionExpressionBuilder` (expression-tree-compatible code, not imperative statements),
 - _Notes_:
     - Projection is **signature-driven** by default; optional `[MappaProjection]` on the class or method opts in (`Enabled = Enable`, default when present) or out (`Enabled = Disable` falls through to the container / eager path),
-    - Mapping attributes such as `[MappaUseProperty]` on the projection method participate in element construction,
+    - Mapping attributes such as `[MappaUseProperty]` on the projection method participate in element construction; `[MappaNullSubstitute]` with `AssignValue` is supported, but `InvokeMethod` is rejected (**MP00119**),
+    - When `ReplaceNullWithEmptyContainer` is enabled, null nested collections/dictionaries in the projection use the same empty-container forms as the eager container strategy,
     - Nested **collections** (`List<T>` / arrays) are projected via nested `Enumerable.Select` plus `ToList` / `ToArray` as required by the target type; nested `IQueryable` properties remain unsupported (**MP00059**),
     - Value tuples and common `Guid`↔`string` / `Guid`↔`byte[]` conversions are supported via expression builders (value tuples emit `new System.ValueTuple<...>(...)` because tuple literals are illegal in expression trees; provider translation is not guaranteed for every shape),
     - `Projection*` settings on `[MappaSettings]` override non-prefixed enum/format/culture settings for the projection element context only (unset values fall back),
@@ -364,6 +365,7 @@ When `ReferenceReusing` is `Enable` and the map method declares `MappaContext`:
 - _Notes_:
     - When possible for some types (e.g. `List<T>`), the constructor accepting capacity is preferred to reduce allocations (`ContainerCapacityConstructors`);
     - When `MappaSettings.FastCollections` (or the corresponding `.editorconfig` setting) is enabled, collection mapping may use span-based iteration for array and `List<T>` sources and may allocate target arrays with a known capacity;
+    - When `MappaSettings.ReplaceNullWithEmptyContainer` (or `mappa.replacenullwithemptycontainer`) is enabled, a null source collection or dictionary maps to an empty target (parameterless ctor, allow-listed `[]`, or well-known `.Empty` wrappers) instead of `null` / throw; Span/Memory family and `IProducerConsumerCollection<T>` are excluded; the same empties apply inside `IQueryable` projections when the setting is on;
     - When `MappaSettings.PreventEnumerableCount` (or the corresponding `.editorconfig` setting) is enabled, mapping from a source without `Count` or `Length` to a fixed-size target such as `T[]`, `Span<T>`, `ReadOnlySpan<T>`, `Memory<T>`, or `ReadOnlyMemory<T>` uses a growable `List<T>` buffer instead of calling `Enumerable.Count`, so the source is enumerated only once;
     - When `MappaSettings.EnumerableConcreteType` is `Array` (or the corresponding `.editorconfig` setting), sequence-like interface targets such as `IEnumerable<T>`, `IList<T>`, `ICollection<T>`, `IReadOnlyList<T>`, and `IReadOnlyCollection<T>` use a `T[]` buffer instead of `List<T>`; concrete `List<T>` targets are unchanged;
     - When `MappaSettings.DictionaryAssignment` is `Add` (or the corresponding `.editorconfig` setting), dictionary-to-dictionary mappings insert entries with `IDictionary<TKey, TValue>.Add(key, value)` instead of the indexer; explicit `IDictionary<K, V>` implementations use a typed interface temporary when required; the default is indexer assignment;
@@ -428,6 +430,7 @@ The constructor strategy tries sub-strategies in order. When a valid `[MappaUseC
         - `[MappaAllowInaccessibleTargetMembers]` *(opt-in private/protected target property writes and/or inaccessible constructors via `UnsafeAccessor`; `AllowProperties` / `AllowConstructors`; **MP00067**–**MP00069**)*
         - `[MappaAssignFromContext]`
         - `[MappaAssignFromConstant]`
+        - `[MappaNullSubstitute]` — substitutes a null source member with `AssignValue` or `InvokeMethod` before mapping continues; optional `SourcePropertyName`; enables `T?` → non-nullable `T` for that member; **MP00115–MP00119**
         - `[MappaInvokeMethod]` — optionally accepts `SourcePropertyName` to select the source property passed to the invoked method
         - `[MappaAssignToContext]` *(post-construction context writes; requires the caller to provide `MappaContext`)*
     - Those attributes accept flat names or [dot-separated nested property paths](#nested-property-paths) *(except the inaccessible-member attributes, which accept flat names only)*;

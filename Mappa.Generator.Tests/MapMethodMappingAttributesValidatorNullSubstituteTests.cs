@@ -91,15 +91,121 @@ public sealed class MapMethodMappingAttributesValidatorNullSubstituteTests
             diagnostic.Descriptor.Equals(MappaDiagnosticDescriptors.NullSubstituteIgnoredBecauseAssignFromConstant));
     }
 
+    /// <summary>
+    /// Test validation is a no-op when the map method is missing or attribute use is disabled.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void ValidateMappaNullSubstituteAttributesIsNoOpWhenMapMethodMissingOrAttributesDisabled()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source
+                              {
+                                  public string? Value { get; set; }
+                              }
+
+                              public class Target
+                              {
+                                  public string Value { get; set; }
+                              }
+
+                              [Mappa]
+                              public sealed partial class Mapper
+                              {
+                                  [MappaNullSubstitute(nameof(Target.Value), AssignValue = "Other")]
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var syntaxTree = compilation.SyntaxTrees[0];
+        var methodDeclarationSyntax = syntaxTree.GetRoot(TestContext.Current.CancellationToken)
+            .DescendantNodes()
+            .OfType<MethodDeclarationSyntax>()
+            .Single(method => method.Identifier.Text == "Map");
+        var semanticModel = compilation.GetSemanticModel(syntaxTree);
+        var mapMethod = new MapMethod(methodDeclarationSyntax, semanticModel, nullableEnabled: true, TestContext.Current.CancellationToken);
+
+        var withoutMapMethod = new RecordingMapAlgorithmContext(mapMethod, syntaxTree, includeMapMethod: false);
+        withoutMapMethod.ValidateMappaNullSubstituteAttributes();
+        withoutMapMethod.Diagnostics.Should().BeEmpty();
+
+        var disabledAttributes = new RecordingMapAlgorithmContext(
+            mapMethod,
+            syntaxTree,
+            includeMapMethod: true,
+            disableConstructorAttributes: true);
+        disabledAttributes.ValidateMappaNullSubstituteAttributes();
+        disabledAttributes.Diagnostics.Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// Test validation is a no-op when no <c>[MappaNullSubstitute]</c> attributes are present.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void ValidateMappaNullSubstituteAttributesIsNoOpWhenNoAttributesArePresent()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source
+                              {
+                                  public string? Value { get; set; }
+                              }
+
+                              public class Target
+                              {
+                                  public string Value { get; set; }
+                              }
+
+                              [Mappa]
+                              public sealed partial class Mapper
+                              {
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var syntaxTree = compilation.SyntaxTrees[0];
+        var methodDeclarationSyntax = syntaxTree.GetRoot(TestContext.Current.CancellationToken)
+            .DescendantNodes()
+            .OfType<MethodDeclarationSyntax>()
+            .Single(method => method.Identifier.Text == "Map");
+        var semanticModel = compilation.GetSemanticModel(syntaxTree);
+        var mapMethod = new MapMethod(methodDeclarationSyntax, semanticModel, nullableEnabled: true, TestContext.Current.CancellationToken);
+        var context = new RecordingMapAlgorithmContext(mapMethod, syntaxTree);
+
+        context.ValidateMappaNullSubstituteAttributes();
+
+        context.Diagnostics.Should().BeEmpty();
+    }
+
     private sealed class RecordingMapAlgorithmContext : MappaMapAlgorithmContext
     {
-        public RecordingMapAlgorithmContext(MapMethod mapMethod, SyntaxTree syntaxTree)
+        public RecordingMapAlgorithmContext(
+            MapMethod mapMethod,
+            SyntaxTree syntaxTree,
+            bool includeMapMethod = true,
+            bool disableConstructorAttributes = false)
         {
-            this.MapMethod = mapMethod;
+            this.MapMethod = includeMapMethod ? mapMethod : null;
             this.SourceType = mapMethod.SourceType;
             this.TargetType = mapMethod.TargetType;
             this.ParentSymbol = mapMethod.TargetType;
             this.AlgorithmSettings = new MappaMapAlgorithmContextSettings();
+            if (disableConstructorAttributes)
+            {
+                this.AlgorithmSettings.UseAttributesForConstructorDetectorSettings.Push(
+                    MappaMapAlgorithmContextSettings.MappaAttributesForConstructorDetectorSettings.Disable);
+            }
+
             var globalOptions = new MappaGlobalOptions(
                 TestAnalyzerConfigOptionsProvider.FromEditorConfig("root = true"),
                 syntaxTree);
