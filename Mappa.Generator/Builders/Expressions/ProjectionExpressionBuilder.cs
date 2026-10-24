@@ -24,6 +24,8 @@ internal static class ProjectionExpressionBuilder
             [typeof(IdentityMapStrategy)] = static (_, source, _) => BuildIdentityExpression(source),
             [typeof(NullableStrategy)] = static (strategy, source, context) =>
                 BuildNullableExpression((NullableStrategy)strategy, source, context),
+            [typeof(NullSubstituteMapStrategy)] = static (strategy, source, context) =>
+                BuildNullSubstituteExpression((NullSubstituteMapStrategy)strategy, source, context),
             [typeof(InvokeConstructorMapStrategy)] = static (strategy, source, context) =>
                 BuildConstructorExpression((InvokeConstructorMapStrategy)strategy, source, context),
             [typeof(ParameterMapStrategy)] = static (strategy, source, context) =>
@@ -108,6 +110,28 @@ internal static class ProjectionExpressionBuilder
 
         expression = builder(strategy, source, context);
         return true;
+    }
+
+    /// <summary>
+    /// Builds a null-substitute (AssignValue) projection expression.
+    /// </summary>
+    /// <param name="strategy">The null-substitute strategy.</param>
+    /// <param name="source">The source expression.</param>
+    /// <param name="context">The expression build context.</param>
+    /// <returns>The projection expression.</returns>
+    internal static string BuildNullSubstituteExpression(
+        NullSubstituteMapStrategy strategy,
+        string source,
+        ExpressionBuildContext context)
+    {
+        var literal = AttributeConstantValueHelper.ToCode(strategy.AssignValue);
+        var substitutedSource = $"({source} ?? {literal})";
+        if (!TryBuildExpression(strategy.ElementStrategy, substitutedSource, context, out var expression))
+        {
+            throw new MappaGeneratorException("Unable to build projection expression for null-substitute element strategy.");
+        }
+
+        return expression;
     }
 
     /// <summary>

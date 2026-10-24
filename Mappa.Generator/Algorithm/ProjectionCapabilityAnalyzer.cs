@@ -212,6 +212,12 @@ internal static class ProjectionCapabilityAnalyzer
             return true;
         }
 
+        if (strategy is NullSubstituteMapStrategy nullSubstituteMapStrategy)
+        {
+            handled = TryAnalyzeNullSubstituteStrategy(nullSubstituteMapStrategy, analysisContext, out normalizedStrategy, out failureKind, out failureMember);
+            return true;
+        }
+
         if (strategy is InvokeConstructorMapStrategy invokeConstructorMapStrategy)
         {
             handled = TryAnalyzeConstructor(invokeConstructorMapStrategy, analysisContext, out normalizedStrategy, out failureKind, out failureMember);
@@ -330,6 +336,32 @@ internal static class ProjectionCapabilityAnalyzer
         normalizedStrategy = new NullableStrategy(
             nullableStrategy.TargetType,
             nullableStrategy.SourceType,
+            normalizedElementStrategy);
+        return true;
+    }
+
+    private static bool TryAnalyzeNullSubstituteStrategy(
+        NullSubstituteMapStrategy nullSubstituteMapStrategy,
+        ProjectionCapabilityAnalysisContext? analysisContext,
+        out MapStrategy normalizedStrategy,
+        out AnalysisFailureKind? failureKind,
+        out string? failureMember)
+    {
+        if (!TryAnalyzeCore(
+                nullSubstituteMapStrategy.ElementStrategy,
+                analysisContext,
+                out var normalizedElementStrategy,
+                out failureKind,
+                out failureMember))
+        {
+            normalizedStrategy = nullSubstituteMapStrategy;
+            return false;
+        }
+
+        normalizedStrategy = new NullSubstituteMapStrategy(
+            nullSubstituteMapStrategy.TargetType,
+            nullSubstituteMapStrategy.SourceType,
+            nullSubstituteMapStrategy.AssignValue,
             normalizedElementStrategy);
         return true;
     }

@@ -69,7 +69,7 @@ public sealed class MappaAssignFromConstantAttributeStrategyBuilderTests
 
         act.Should()
             .Throw<MappaGeneratorException>()
-            .WithMessage("Unexpected MappaAssignFromConstant attribute value.");
+            .WithMessage("Unexpected attribute constant value.");
     }
 
     /// <summary>
