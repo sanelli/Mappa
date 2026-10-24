@@ -64,10 +64,16 @@ internal static class InaccessibleMemberAccessHelper
         bool requiresUnsafeAccessor,
         MappaBuilderContext context)
     {
-        // Inaccessible field UnsafeAccessor emission is wired in a later step.
-        _ = requiresUnsafeAccessor;
-        _ = context;
-        return $"{receiverExpression}.{field.Name}";
+        if (!requiresUnsafeAccessor)
+        {
+            return $"{receiverExpression}.{field.Name}";
+        }
+
+        var accessor = context.InaccessibleAccessors.GetOrAddField(
+            field.ContainingType,
+            field,
+            context);
+        return $"{accessor}({receiverExpression})";
     }
 
     /// <summary>
@@ -125,10 +131,16 @@ internal static class InaccessibleMemberAccessHelper
         bool requiresUnsafeAccessor,
         MappaBuilderContext context)
     {
-        // Inaccessible field UnsafeAccessor emission is wired in a later step.
-        _ = requiresUnsafeAccessor;
-        _ = context;
-        return $"{receiverExpression}.{field.Name} = {valueExpression};";
+        if (!requiresUnsafeAccessor)
+        {
+            return $"{receiverExpression}.{field.Name} = {valueExpression};";
+        }
+
+        var accessor = context.InaccessibleAccessors.GetOrAddField(
+            field.ContainingType,
+            field,
+            context);
+        return $"{accessor}({receiverExpression}) = {valueExpression};";
     }
 
     /// <summary>

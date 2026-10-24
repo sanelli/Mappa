@@ -158,6 +158,10 @@ internal sealed partial class ConstructorMapStrategyDetector
                             out requiresUnsafeAccessorOnSourceFromAttribute,
                             out requiresInterfaceCastOnSourceFromAttribute);
                     }
+                    else if (sourceField is not null)
+                    {
+                        this.TryIsSourceFieldReadable(sourceField, out requiresUnsafeAccessorOnSourceFromAttribute);
+                    }
 
                     var strategy = new ParameterMapStrategy(
                         targetParameter,
@@ -206,11 +210,12 @@ internal sealed partial class ConstructorMapStrategyDetector
                 if (sourceField is not null
                     && this.TryGetStrategyForSourceField(targetParameterType, sourceField, true, out var fieldStrategy))
                 {
+                    this.TryIsSourceFieldReadable(sourceField, out var requiresUnsafeAccessorOnSourceField);
                     var parameterMapStrategy = new ParameterMapStrategy(
                         targetParameter,
                         sourceProperty: null,
                         fieldStrategy,
-                        requiresUnsafeAccessorOnSource: false,
+                        requiresUnsafeAccessorOnSource: requiresUnsafeAccessorOnSourceField,
                         requiresInterfaceCastOnSource: false,
                         sourceField: sourceField);
                     return (Parameter: targetParameter, Strategy: (MapStrategy)parameterMapStrategy);

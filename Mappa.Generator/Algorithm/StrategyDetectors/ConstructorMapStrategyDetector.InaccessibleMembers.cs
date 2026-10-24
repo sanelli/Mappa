@@ -36,9 +36,8 @@ internal sealed partial class ConstructorMapStrategyDetector
             return [];
         }
 
-        // Inaccessible field UnsafeAccessor emission is wired in a later step; collect accessible fields only.
         return sourceType.GetTypeFields()
-            .Where(field => this.TryIsSourceFieldReadable(field, out var requiresUnsafeAccessor) && !requiresUnsafeAccessor)
+            .Where(field => this.TryIsSourceFieldReadable(field, out _))
             .ToArray();
     }
 
@@ -49,15 +48,8 @@ internal sealed partial class ConstructorMapStrategyDetector
             return [];
         }
 
-        // Inaccessible field UnsafeAccessor emission is wired in a later step; collect accessible fields only.
         return targetType.GetTypeFields()
-            .Where(field => InaccessibleMemberEligibility.TryIsTargetFieldWritable(
-                field,
-                this.compilation,
-                this.context.GetRootMapMethod(),
-                this.GetInaccessibleTargetOptions(),
-                out var requiresUnsafeAccessor)
-                && !requiresUnsafeAccessor)
+            .Where(field => this.TryIsTargetFieldWritable(field, out _))
             .ToArray();
     }
 
@@ -93,6 +85,14 @@ internal sealed partial class ConstructorMapStrategyDetector
             this.compilation,
             this.context.GetRootMapMethod(),
             this.GetInaccessibleSourceOptions(),
+            out requiresUnsafeAccessor);
+
+    private bool TryIsTargetFieldWritable(IFieldSymbol field, out bool requiresUnsafeAccessor)
+        => InaccessibleMemberEligibility.TryIsTargetFieldWritable(
+            field,
+            this.compilation,
+            this.context.GetRootMapMethod(),
+            this.GetInaccessibleTargetOptions(),
             out requiresUnsafeAccessor);
 
     private bool TryIsTargetPropertyGetterReadable(IPropertySymbol property, out bool requiresUnsafeAccessor)

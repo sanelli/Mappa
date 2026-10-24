@@ -746,6 +746,10 @@ internal sealed partial class ConstructorMapStrategyDetector
                     out requiresUnsafeAccessorOnSourceFromAttribute,
                     out requiresInterfaceCastOnSourceFromAttribute);
             }
+            else if (sourceField is not null)
+            {
+                this.TryIsSourceFieldReadable(sourceField, out requiresUnsafeAccessorOnSourceFromAttribute);
+            }
 
             return new PropertyMapStrategy(
                 targetProperty: null,
@@ -820,26 +824,19 @@ internal sealed partial class ConstructorMapStrategyDetector
                 targetField: targetField);
         }
 
+        this.TryIsSourceFieldReadable(sourceField!, out var requiresUnsafeAccessorOnSourceField);
         return new PropertyMapStrategy(
             targetProperty: null,
             sourceProperty: null,
             fieldPropertyStrategy,
             postConstructorInitializer: false,
-            requiresUnsafeAccessorOnSource: false,
+            requiresUnsafeAccessorOnSource: requiresUnsafeAccessorOnSourceField,
             requiresUnsafeAccessorOnTarget: requiresUnsafeAccessorOnTarget,
             requiresInterfaceCastOnSource: false,
             requiresInterfaceCastOnTarget: false,
             sourceField: sourceField,
             targetField: targetField);
     }
-
-    private bool TryIsTargetFieldWritable(IFieldSymbol field, out bool requiresUnsafeAccessor)
-        => InaccessibleMemberEligibility.TryIsTargetFieldWritable(
-            field,
-            this.compilation,
-            this.context.GetRootMapMethod(),
-            this.GetInaccessibleTargetOptions(),
-            out requiresUnsafeAccessor);
 
     private PropertyMapStrategy TryCreateWritableEmptyCtorPropertyMapStrategy(
         IPropertySymbol targetProperty,
@@ -917,12 +914,13 @@ internal sealed partial class ConstructorMapStrategyDetector
             allTargetProperties,
             fieldPropertyStrategy,
             out var fieldPostConstructorInitializer);
+        this.TryIsSourceFieldReadable(sourceField, out var requiresUnsafeAccessorOnSourceField);
         return new PropertyMapStrategy(
             targetProperty,
             sourceProperty: null,
             fieldPropertyStrategy,
             fieldPostConstructorInitializer,
-            requiresUnsafeAccessorOnSource: false,
+            requiresUnsafeAccessorOnSource: requiresUnsafeAccessorOnSourceField,
             requiresUnsafeAccessorOnTarget: requiresUnsafeAccessorOnTargetSetter,
             requiresInterfaceCastOnSource: false,
             requiresInterfaceCastOnTarget: requiresInterfaceCastOnTargetSetter,
