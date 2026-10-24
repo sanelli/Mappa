@@ -284,6 +284,17 @@ public sealed class MappaSettingsAttribute
     public BooleanSetting PreventEnumerableCount { get; set; } = BooleanSetting.Undefined;
 
     /// <summary>
+    /// Gets or sets a value indicating whether a null source container is replaced with an empty
+    /// target container instead of mapping to <c>null</c> or throwing. Disabled by default.
+    /// When enabled, applies while mapping containers (types implementing <c>IEnumerable{T}</c>,
+    /// excluding <c>Span</c>/<c>Memory</c> families): concrete types with an accessible
+    /// parameterless constructor use <c>new T()</c>; arrays and allow-listed interfaces use
+    /// <c>[]</c> or type-specific empty values (for example <c>ImmutableQueue{T}.Empty</c>).
+    /// May be set at class or method level.
+    /// </summary>
+    public BooleanSetting ReplaceNullWithEmptyContainer { get; set; } = BooleanSetting.Undefined;
+
+    /// <summary>
     /// Gets or sets the concrete type used when mapping to sequence-like collection interfaces
     /// such as <see cref="System.Collections.Generic.IEnumerable{T}"/>.
     /// When unset, <see cref="EnumerableConcreteTypeSetting.List"/> is used.
