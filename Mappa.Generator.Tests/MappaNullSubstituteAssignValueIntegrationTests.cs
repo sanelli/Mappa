@@ -15,7 +15,8 @@ public sealed class MappaNullSubstituteAssignValueIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {
     /// <summary>
-    /// Test AssignValue emits a null-coalescing substitute before identity mapping.
+    /// Test AssignValue with optional source name (name-matched) maps <c>string?</c> to <c>string</c>
+    /// via null-coalescing substitute before identity mapping.
     /// </summary>
     /// <returns>The async task.</returns>
     [Fact]
@@ -42,7 +43,7 @@ public sealed class MappaNullSubstituteAssignValueIntegrationTests
                                   [Mappa]
                                   public sealed partial class Mapper
                                   {
-                                      [MappaNullSubstitute(nameof(Target.Value), nameof(Source.Value), AssignValue = "Other")]
+                                      [MappaNullSubstitute(nameof(Target.Value), AssignValue = "Other")]
                                       public partial Target Map(Source input);
                                   }
                                   #nullable restore

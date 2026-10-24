@@ -415,14 +415,20 @@ internal sealed partial class ConstructorMapStrategyDetector
         nestedPropertyPathContext = null;
         chainedSourcePropertyPath = null;
 
+        if (nullSubstituteAttribute.SourcePropertyName is not string sourcePropertyName
+            || string.IsNullOrWhiteSpace(sourcePropertyName))
+        {
+            return false;
+        }
+
         var targetPath = PropertyPath.Parse(nullSubstituteAttribute.TargetPropertyName);
-        var sourcePath = PropertyPath.Parse(nullSubstituteAttribute.SourcePropertyName);
+        var sourcePath = PropertyPath.Parse(sourcePropertyName);
         var activePropertyPathContext = this.GetActivePropertyPathContextForSourcePath(
             nullSubstituteAttribute.TargetPropertyName,
-            nullSubstituteAttribute.SourcePropertyName);
+            sourcePropertyName);
 
         if (this.TryCreateChainedSourceFromRootNestedSourcePath(
-                nullSubstituteAttribute.SourcePropertyName,
+                sourcePropertyName,
                 targetPath,
                 sourcePath,
                 out chainedSourcePropertyPath))
@@ -431,7 +437,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         }
 
         if (this.TryCreateChainedSourceForLeafTargetMappingPath(
-                nullSubstituteAttribute.SourcePropertyName,
+                sourcePropertyName,
                 sourcePath,
                 activePropertyPathContext,
                 isLeafTargetMapping,
@@ -441,7 +447,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         }
 
         var expectedSegment = PropertyPathAttributeMatching.GetExpectedSourcePropertyNameForCurrentLevel(
-            nullSubstituteAttribute.SourcePropertyName,
+            sourcePropertyName,
             activePropertyPathContext,
             isLeafTargetMapping);
 
@@ -454,7 +460,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         nestedPropertyPathContext = targetPath.IsNested
             ? PropertyPathAttributeMatching.CreatePropertyPathContext(
                 nullSubstituteAttribute.TargetPropertyName,
-                nullSubstituteAttribute.SourcePropertyName)
+                sourcePropertyName)
             : null;
         return true;
     }

@@ -7,8 +7,13 @@ namespace Mappa.Attributes;
 /// <summary>
 /// Substitutes a null source member value before mapping or conversion to the target member.
 /// <para>
-/// Both <see cref="TargetPropertyName"/> and <see cref="SourcePropertyName"/> may be a single property name
-/// or a dot-separated chain of nested property names (for example <c>"Address.City"</c>).
+/// <see cref="TargetPropertyName"/> may be a single property name or a dot-separated chain of nested property names
+/// (for example <c>"Address.City"</c>).
+/// </para>
+/// <para>
+/// <see cref="SourcePropertyName"/> is optional. When omitted, the generator uses the usual name-based source
+/// property match for the target member (and any <see cref="MappaUsePropertyAttribute"/> override).
+/// When set, it may be a single name or a dot-separated nested source path and overrides the default match.
 /// </para>
 /// <para>
 /// Exactly one of <see cref="AssignValue"/> or <see cref="InvokeMethod"/> must be set:
@@ -25,6 +30,10 @@ namespace Mappa.Attributes;
 /// </description></item>
 /// </list>
 /// <para>
+/// After substitution the source value is non-null <c>T</c>, so a mapping from <c>T?</c> to non-nullable <c>T</c>
+/// is allowed for that member (the substitute replaces the null branch that would otherwise throw).
+/// </para>
+/// <para>
 /// Locate the invoke method as follows:
 /// </para>
 /// <list type="bullet">
@@ -37,9 +46,8 @@ namespace Mappa.Attributes;
 /// </para>
 /// </summary>
 /// <param name="targetPropertyName">The name of the target property or constructor parameter, or a dot-separated chain of nested target property names.</param>
-/// <param name="sourcePropertyName">The name of the source property, or a dot-separated chain of nested source property names, whose null value is substituted.</param>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-public sealed class MappaNullSubstituteAttribute(string targetPropertyName, string sourcePropertyName)
+public sealed class MappaNullSubstituteAttribute(string targetPropertyName)
         : Attribute, IMappaTargetPropertyNameAttribute
 {
     /// <summary>
@@ -48,9 +56,10 @@ public sealed class MappaNullSubstituteAttribute(string targetPropertyName, stri
     public string TargetPropertyName { get; } = targetPropertyName;
 
     /// <summary>
-    /// Gets the source property name, which may be a single name or a dot-separated chain of nested property names.
+    /// Gets or sets the source property name, which may be a single name or a dot-separated chain of nested property names.
+    /// When unset or whitespace, the generator uses the usual name-based source property match for <see cref="TargetPropertyName"/>.
     /// </summary>
-    public string SourcePropertyName { get; } = sourcePropertyName;
+    public string? SourcePropertyName { get; set; }
 
     /// <summary>
     /// Gets or sets the constant substitute value of the source member type.

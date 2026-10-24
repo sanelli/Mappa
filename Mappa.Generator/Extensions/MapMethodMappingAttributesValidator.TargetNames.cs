@@ -102,6 +102,13 @@ internal static partial class MapMethodMappingAttributesValidator
                 validationContext.ConstructorParameterNames,
                 validationContext.TargetType,
                 validationContext.PropertyPathContext);
+
+            if (attribute.SourcePropertyName is not string sourcePropertyName
+                || string.IsNullOrWhiteSpace(sourcePropertyName))
+            {
+                continue;
+            }
+
             ValidateSourcePropertyPath(
                 context,
                 validationContext.MethodDeclarationSyntax,
@@ -109,7 +116,7 @@ internal static partial class MapMethodMappingAttributesValidator
                 validationContext.SourceTypeName,
                 nameof(MappaNullSubstituteAttribute),
                 attribute.TargetPropertyName,
-                attribute.SourcePropertyName,
+                sourcePropertyName,
                 validationContext.SourceType,
                 validationContext.PropertyPathContext);
         }

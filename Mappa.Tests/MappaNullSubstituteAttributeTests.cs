@@ -17,23 +17,41 @@ namespace Mappa.Tests;
 public sealed class MappaNullSubstituteAttributeTests
 {
     /// <summary>
-    /// Tests the constructor initializes target and source property names.
+    /// Tests the constructor initializes the target and leaves the source unset.
     /// </summary>
     [Fact]
     [UnitTest]
-    public void ConstructorInitializesTargetAndSourcePropertyNames()
+    public void ConstructorInitializesTargetPropertyNameWithOptionalSourceUnset()
     {
         // Act
-        var attribute = new MappaNullSubstituteAttribute("Target.Value", "Source.Value");
+        var attribute = new MappaNullSubstituteAttribute("Target.Value");
 
         // Assert
         attribute.TargetPropertyName.Should().Be("Target.Value");
-        attribute.SourcePropertyName.Should().Be("Source.Value");
+        attribute.SourcePropertyName.Should().BeNull();
         attribute.AssignValue.Should().BeNull();
         attribute.HasAssignValue.Should().BeFalse();
         attribute.InvokeMethod.Should().BeNull();
         attribute.InvokeMethodType.Should().BeNull();
         attribute.InvokeMethodSource.Should().BeNull();
+    }
+
+    /// <summary>
+    /// Tests <see cref="MappaNullSubstituteAttribute.SourcePropertyName"/> can be set via object initializer.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void SourcePropertyNameCanBeSetViaObjectInitializer()
+    {
+        // Act
+        var attribute = new MappaNullSubstituteAttribute("Target.Value")
+        {
+            SourcePropertyName = "Source.Value",
+        };
+
+        // Assert
+        attribute.TargetPropertyName.Should().Be("Target.Value");
+        attribute.SourcePropertyName.Should().Be("Source.Value");
     }
 
     /// <summary>
@@ -44,8 +62,9 @@ public sealed class MappaNullSubstituteAttributeTests
     public void AssignValueCanBeSetViaObjectInitializer()
     {
         // Act
-        var attribute = new MappaNullSubstituteAttribute("Value", "Value")
+        var attribute = new MappaNullSubstituteAttribute("Value")
         {
+            SourcePropertyName = "Value",
             AssignValue = "Other Value",
             HasAssignValue = true,
         };
@@ -64,8 +83,9 @@ public sealed class MappaNullSubstituteAttributeTests
     public void InvokeMethodAndLocatorsCanBeSetViaObjectInitializer()
     {
         // Act
-        var attribute = new MappaNullSubstituteAttribute("Value", "Value")
+        var attribute = new MappaNullSubstituteAttribute("Value")
         {
+            SourcePropertyName = "Value",
             InvokeMethod = "Substitute",
             InvokeMethodType = typeof(string),
             InvokeMethodSource = "helper",
@@ -86,7 +106,10 @@ public sealed class MappaNullSubstituteAttributeTests
     public void ImplementsIMappaTargetPropertyNameAttribute()
     {
         // Act
-        var attribute = new MappaNullSubstituteAttribute("Target", "Source");
+        var attribute = new MappaNullSubstituteAttribute("Target")
+        {
+            SourcePropertyName = "Source",
+        };
 
         // Assert
         attribute.Should().BeAssignableTo<IMappaTargetPropertyNameAttribute>();

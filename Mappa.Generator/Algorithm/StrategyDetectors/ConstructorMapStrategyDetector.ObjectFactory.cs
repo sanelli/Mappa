@@ -88,9 +88,11 @@ internal sealed partial class ConstructorMapStrategyDetector
 
                 string expectedSourcePropertyName;
                 var useExactNameFromAttribute = false;
-                if (nullSubstituteAttributesForParameter.Length == 1)
+                if (nullSubstituteAttributesForParameter.Length == 1
+                    && nullSubstituteAttributesForParameter[0].SourcePropertyName is string nullSubstituteSourcePropertyName
+                    && !string.IsNullOrWhiteSpace(nullSubstituteSourcePropertyName))
                 {
-                    expectedSourcePropertyName = nullSubstituteAttributesForParameter[0].SourcePropertyName;
+                    expectedSourcePropertyName = nullSubstituteSourcePropertyName;
                     useExactNameFromAttribute = true;
                 }
                 else

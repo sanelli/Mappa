@@ -39,8 +39,8 @@ public sealed class AttributeDataExtensionsGetMappaNullSubstituteAttributeTests
                               [Mappa]
                               public sealed partial class TestMapper
                               {
-                                  [MappaNullSubstitute(nameof(Target.Value), nameof(Source.Value), AssignValue = "Other")]
-                                  [MappaNullSubstitute("Other", "Other", AssignValue = null)]
+                                  [MappaNullSubstitute(nameof(Target.Value), SourcePropertyName = nameof(Source.Value), AssignValue = "Other")]
+                                  [MappaNullSubstitute("Other", SourcePropertyName = "Other", AssignValue = null)]
                                   public partial Target Map(Source input);
                               }
                               """;
@@ -104,9 +104,9 @@ public sealed class AttributeDataExtensionsGetMappaNullSubstituteAttributeTests
                               {
                                   private readonly Helper helper = new();
 
-                                  [MappaNullSubstitute(nameof(Target.Value), nameof(Source.Value), InvokeMethod = nameof(Substitute))]
-                                  [MappaNullSubstitute("Typed", "Typed", InvokeMethod = "Substitute", InvokeMethodType = typeof(Helpers))]
-                                  [MappaNullSubstitute("Sourced", "Sourced", InvokeMethod = "Substitute", InvokeMethodSource = "helper")]
+                                  [MappaNullSubstitute(nameof(Target.Value), SourcePropertyName = nameof(Source.Value), InvokeMethod = nameof(Substitute))]
+                                  [MappaNullSubstitute("Typed", SourcePropertyName = "Typed", InvokeMethod = "Substitute", InvokeMethodType = typeof(Helpers))]
+                                  [MappaNullSubstitute("Sourced", SourcePropertyName = "Sourced", InvokeMethod = "Substitute", InvokeMethodSource = "helper")]
                                   public partial Target Map(Source input);
 
                                   private static string Substitute(string? value) => value ?? string.Empty;
@@ -162,7 +162,7 @@ public sealed class AttributeDataExtensionsGetMappaNullSubstituteAttributeTests
                               [Mappa]
                               public sealed partial class TestMapper
                               {
-                                  [MappaNullSubstitute(nameof(Target.Value), nameof(Source.Value))]
+                                  [MappaNullSubstitute(nameof(Target.Value), SourcePropertyName = nameof(Source.Value))]
                                   public partial Target Map(Source input);
                               }
                               """;
@@ -179,5 +179,56 @@ public sealed class AttributeDataExtensionsGetMappaNullSubstituteAttributeTests
         nullSubstitutes[0].HasAssignValue.Should().BeFalse();
         nullSubstitutes[0].AssignValue.Should().BeNull();
         nullSubstitutes[0].InvokeMethod.Should().BeNull();
+    }
+
+    /// <summary>
+    /// Test that the single-argument constructor leaves <c>SourcePropertyName</c> unset,
+    /// and that a named <c>SourcePropertyName</c> argument is applied when present.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetMappaNullSubstituteAttributesSupportsOptionalSourcePropertyName()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source
+                              {
+                                  public string? Value { get; set; }
+                                  public string? Other { get; set; }
+                              }
+
+                              public class Target
+                              {
+                                  public string Value { get; set; }
+                              }
+
+                              [Mappa]
+                              public sealed partial class TestMapper
+                              {
+                                  [MappaNullSubstitute(nameof(Target.Value), AssignValue = "Default")]
+                                  [MappaNullSubstitute("Named", SourcePropertyName = "Other", AssignValue = "NamedDefault")]
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetMethodAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.MapperMetadataName,
+            "Map");
+
+        var nullSubstitutes = attributes.GetMappaNullSubstituteAttributes(compilation);
+
+        nullSubstitutes.Should().HaveCount(2);
+        nullSubstitutes[0].TargetPropertyName.Should().Be("Value");
+        nullSubstitutes[0].SourcePropertyName.Should().BeNull();
+        nullSubstitutes[0].HasAssignValue.Should().BeTrue();
+
+        nullSubstitutes[1].TargetPropertyName.Should().Be("Named");
+        nullSubstitutes[1].SourcePropertyName.Should().Be("Other");
+        nullSubstitutes[1].HasAssignValue.Should().BeTrue();
     }
 }

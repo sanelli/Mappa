@@ -120,7 +120,8 @@ internal sealed partial class ConstructorMapStrategyDetector
         var nullSubstituteAttributes = this.GetMatchingNullSubstituteAttributes(
             mappableTargetPropertyName,
             StringComparison.Ordinal);
-        if (nullSubstituteAttributes.Length == 1)
+        if (nullSubstituteAttributes.Length == 1
+            && !string.IsNullOrWhiteSpace(nullSubstituteAttributes[0].SourcePropertyName))
         {
             return this.ResolveEmptyCtorPropertySourceNamingFromNullSubstituteAttribute(
                 targetProperty,

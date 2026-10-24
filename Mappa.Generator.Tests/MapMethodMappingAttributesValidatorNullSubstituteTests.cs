@@ -58,13 +58,13 @@ public sealed class MapMethodMappingAttributesValidatorNullSubstituteTests
                               {
                                   private readonly object helper = new();
 
-                                  [MappaNullSubstitute(nameof(Target.Value), nameof(Source.Value))]
-                                  [MappaNullSubstitute(nameof(Target.Both), nameof(Source.Both), AssignValue = "A", InvokeMethod = "Substitute")]
-                                  [MappaNullSubstitute(nameof(Target.Other), nameof(Source.Other), InvokeMethod = "Substitute", InvokeMethodType = typeof(Helpers), InvokeMethodSource = "helper")]
-                                  [MappaNullSubstitute(nameof(Target.Duplicate), nameof(Source.Duplicate), AssignValue = "A")]
-                                  [MappaNullSubstitute(nameof(Target.Duplicate), nameof(Source.Duplicate), AssignValue = "B")]
+                                  [MappaNullSubstitute(nameof(Target.Value), SourcePropertyName = nameof(Source.Value))]
+                                  [MappaNullSubstitute(nameof(Target.Both), SourcePropertyName = nameof(Source.Both), AssignValue = "A", InvokeMethod = "Substitute")]
+                                  [MappaNullSubstitute(nameof(Target.Other), SourcePropertyName = nameof(Source.Other), InvokeMethod = "Substitute", InvokeMethodType = typeof(Helpers), InvokeMethodSource = "helper")]
+                                  [MappaNullSubstitute(nameof(Target.Duplicate), SourcePropertyName = nameof(Source.Duplicate), AssignValue = "A")]
+                                  [MappaNullSubstitute(nameof(Target.Duplicate), SourcePropertyName = nameof(Source.Duplicate), AssignValue = "B")]
                                   [MappaAssignFromConstant(nameof(Target.Constant), "C")]
-                                  [MappaNullSubstitute(nameof(Target.Constant), nameof(Source.Constant), AssignValue = "D")]
+                                  [MappaNullSubstitute(nameof(Target.Constant), SourcePropertyName = nameof(Source.Constant), AssignValue = "D")]
                                   public partial Target Map(Source input);
                               }
                               """;

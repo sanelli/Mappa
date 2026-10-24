@@ -47,7 +47,7 @@ public sealed class MappaNullSubstituteInvokeMethodIntegrationTests
                                   [Mappa]
                                   public sealed partial class Mapper
                                   {
-                                      [MappaNullSubstitute(nameof(Target.Value), nameof(Source.Value), InvokeMethod = nameof(NullSubstituteHelpers.WhenNull), InvokeMethodType = typeof(NullSubstituteHelpers))]
+                                      [MappaNullSubstitute(nameof(Target.Value), InvokeMethod = nameof(NullSubstituteHelpers.WhenNull), InvokeMethodType = typeof(NullSubstituteHelpers))]
                                       public partial Target Map(Source input);
                                   }
                                   #nullable restore

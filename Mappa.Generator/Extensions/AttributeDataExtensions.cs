@@ -1642,14 +1642,13 @@ internal static class AttributeDataExtensions
     private static MappaNullSubstituteAttribute? TryCreateMappaNullSubstituteAttribute(AttributeData attributeData)
     {
         var constructorArguments = attributeData.ConstructorArguments;
-        if (constructorArguments.Length != 2
-            || constructorArguments[0].Value is not string targetPropertyName
-            || constructorArguments[1].Value is not string sourcePropertyName)
+        if (constructorArguments.Length != 1
+            || constructorArguments[0].Value is not string targetPropertyName)
         {
             return null;
         }
 
-        var attribute = new MappaNullSubstituteAttribute(targetPropertyName, sourcePropertyName);
+        var attribute = new MappaNullSubstituteAttribute(targetPropertyName);
         ApplyMappaNullSubstituteNamedArguments(attribute, attributeData.NamedArguments);
         return attribute;
     }
@@ -1660,7 +1659,12 @@ internal static class AttributeDataExtensions
     {
         foreach (var namedArgument in namedArguments)
         {
-            if (namedArgument.Key.Equals(nameof(MappaNullSubstituteAttribute.AssignValue), StringComparison.Ordinal))
+            if (namedArgument.Key.Equals(nameof(MappaNullSubstituteAttribute.SourcePropertyName), StringComparison.Ordinal)
+                && namedArgument.Value.Value is string sourcePropertyName)
+            {
+                attribute.SourcePropertyName = sourcePropertyName;
+            }
+            else if (namedArgument.Key.Equals(nameof(MappaNullSubstituteAttribute.AssignValue), StringComparison.Ordinal))
             {
                 attribute.HasAssignValue = true;
                 attribute.AssignValue = namedArgument.Value;
