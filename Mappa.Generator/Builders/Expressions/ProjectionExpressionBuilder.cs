@@ -124,6 +124,11 @@ internal static class ProjectionExpressionBuilder
         string source,
         ExpressionBuildContext context)
     {
+        if (!strategy.IsAssignValueMode)
+        {
+            throw new MappaGeneratorException("NullSubstitute InvokeMethod mode is not supported in projections.");
+        }
+
         var literal = AttributeConstantValueHelper.ToCode(strategy.AssignValue);
         var substitutedSource = $"({source} ?? {literal})";
         if (!TryBuildExpression(strategy.ElementStrategy, substitutedSource, context, out var expression))

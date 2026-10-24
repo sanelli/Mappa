@@ -347,6 +347,17 @@ internal static class ProjectionCapabilityAnalyzer
         out AnalysisFailureKind? failureKind,
         out string? failureMember)
     {
+        normalizedStrategy = nullSubstituteMapStrategy;
+        failureKind = null;
+        failureMember = null;
+
+        if (!nullSubstituteMapStrategy.IsAssignValueMode)
+        {
+            failureKind = AnalysisFailureKind.InvokeMethodNotInlinable;
+            failureMember = nullSubstituteMapStrategy.Method?.Name;
+            return false;
+        }
+
         if (!TryAnalyzeCore(
                 nullSubstituteMapStrategy.ElementStrategy,
                 analysisContext,
@@ -354,11 +365,10 @@ internal static class ProjectionCapabilityAnalyzer
                 out failureKind,
                 out failureMember))
         {
-            normalizedStrategy = nullSubstituteMapStrategy;
             return false;
         }
 
-        normalizedStrategy = new NullSubstituteMapStrategy(
+        normalizedStrategy = NullSubstituteMapStrategy.ForAssignValue(
             nullSubstituteMapStrategy.TargetType,
             nullSubstituteMapStrategy.SourceType,
             nullSubstituteMapStrategy.AssignValue,

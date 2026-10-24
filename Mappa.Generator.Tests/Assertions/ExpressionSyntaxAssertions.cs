@@ -598,6 +598,32 @@ internal sealed class ExpressionSyntaxAssertions
     }
 
     /// <summary>
+    /// Assert that the expression is a conditional (ternary) expression.
+    /// </summary>
+    /// <param name="conditionAssertions">Assertions on the condition.</param>
+    /// <param name="whenTrueAssertions">Assertions on the <c>when true</c> expression.</param>
+    /// <param name="whenFalseAssertions">Assertions on the <c>when false</c> expression.</param>
+    /// <returns>The assertions.</returns>
+    internal ExpressionSyntaxAssertions BeConditionalExpressionSyntax(
+        Action<ExpressionSyntaxAssertions> conditionAssertions,
+        Action<ExpressionSyntaxAssertions> whenTrueAssertions,
+        Action<ExpressionSyntaxAssertions> whenFalseAssertions)
+    {
+        ArgumentNullException.ThrowIfNull(conditionAssertions);
+        ArgumentNullException.ThrowIfNull(whenTrueAssertions);
+        ArgumentNullException.ThrowIfNull(whenFalseAssertions);
+
+        this.Subject.Should().BeOfType<ConditionalExpressionSyntax>();
+        var conditionalExpressionSyntax = (ConditionalExpressionSyntax)this.Subject;
+
+        conditionAssertions(new ExpressionSyntaxAssertions(conditionalExpressionSyntax.Condition, this.semanticModel, this.compilation));
+        whenTrueAssertions(new ExpressionSyntaxAssertions(conditionalExpressionSyntax.WhenTrue, this.semanticModel, this.compilation));
+        whenFalseAssertions(new ExpressionSyntaxAssertions(conditionalExpressionSyntax.WhenFalse, this.semanticModel, this.compilation));
+
+        return this;
+    }
+
+    /// <summary>
     /// Assert that an expression is a tuple expression syntax.
     /// </summary>
     /// <param name="argumentAssertions">The arguments of the tuple.</param>

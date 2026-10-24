@@ -76,7 +76,7 @@ public sealed class MappaNullSubstituteAssignValueIntegrationTests
                         .HasNextSyntaxNode(syntaxNodeAssertions =>
                         {
                             syntaxNodeAssertions.BeLocalDeclarationStatementSyntax(
-                                "string?",
+                                typeof(string).ToString(),
                                 "__mappa_tmp_2",
                                 initializationAssertions => initializationAssertions.BeBinaryExpressionSyntax(
                                     left => left.BeIdentifierNameSyntax("__mappa_tmp_1"),

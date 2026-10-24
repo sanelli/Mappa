@@ -3,12 +3,15 @@
 // </copyright>
 
 using Mappa.Attributes;
+using Mappa.Generator.Diagnostics;
+using Mappa.Generator.Exceptions;
 using Mappa.Generator.Extensions;
 using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Mappa.Generator.Algorithm.StrategyDetectors;
 
@@ -17,6 +20,16 @@ namespace Mappa.Generator.Algorithm.StrategyDetectors;
 /// </summary>
 internal sealed partial class ConstructorMapStrategyDetector
 {
+    private static MapStrategy UnwrapNullableStrategies(MapStrategy strategy)
+    {
+        while (strategy is NullableStrategy nullableStrategy)
+        {
+            strategy = nullableStrategy.ElementStrategy;
+        }
+
+        return strategy;
+    }
+
     private MappaNullSubstituteAttribute[] GetMatchingNullSubstituteAttributes(
         string targetMemberName,
         StringComparison stringComparison)
@@ -82,18 +95,311 @@ internal sealed partial class ConstructorMapStrategyDetector
         }
 
         var nullSubstituteAttribute = nullSubstituteAttributes[0];
-        if (!nullSubstituteAttribute.HasAssignValue)
+        var sourceType = sourceProperty?.Type ?? strategy.SourceType;
+        var elementStrategy = UnwrapNullableStrategies(strategy);
+
+        if (nullSubstituteAttribute.HasAssignValue)
         {
-            // InvokeMethod mode is handled in a later step.
+            return NullSubstituteMapStrategy.ForAssignValue(
+                strategy.TargetType,
+                sourceType,
+                nullSubstituteAttribute.AssignValue,
+                elementStrategy);
+        }
+
+        if (string.IsNullOrWhiteSpace(nullSubstituteAttribute.InvokeMethod))
+        {
             return strategy;
         }
 
-        var sourceType = sourceProperty?.Type ?? strategy.SourceType;
-        return new NullSubstituteMapStrategy(
+        return this.TryWrapWithNullSubstituteInvokeMethod(
+            targetName,
+            sourceType,
+            nullSubstituteAttribute,
+            elementStrategy);
+    }
+
+    private MapStrategy TryWrapWithNullSubstituteInvokeMethod(
+        string targetName,
+        ITypeSymbol sourceType,
+        MappaNullSubstituteAttribute nullSubstituteAttribute,
+        MapStrategy strategy)
+    {
+        var mapMethod = this.GetAttributeMapMethod();
+        var mapMethodMethodDeclarationSyntax = mapMethod.MethodDeclarationSyntax
+            ?? throw new MappaGeneratorException("Method declaration syntax has not been defined.");
+        var mapMethodClass = mapMethod.ContainingType;
+        var rootMethod = this.context.GetRootMapMethod();
+        var methodName = nullSubstituteAttribute.InvokeMethod!;
+
+        if (!this.TryResolveNullSubstituteInvokeMethodSymbol(
+                targetName,
+                nullSubstituteAttribute,
+                methodName,
+                mapMethodClass,
+                rootMethod,
+                mapMethodMethodDeclarationSyntax,
+                sourceType,
+                out var fieldOrProperty,
+                out var method)
+            || method is null)
+        {
+            return strategy;
+        }
+
+        var contextParameterName = method.MethodHasMappaContextParameter(this.compilation)
+            ? rootMethod.MaybeGetMappaContextParameterName()
+            : null;
+
+        return NullSubstituteMapStrategy.ForInvokeMethod(
             strategy.TargetType,
             sourceType,
-            nullSubstituteAttribute.AssignValue,
+            method,
+            fieldOrProperty,
+            nullSubstituteAttribute.InvokeMethodType,
+            mapMethod.NullableEnabled,
+            contextParameterName,
             strategy);
+    }
+
+    private bool TryResolveNullSubstituteInvokeMethodSymbol(
+        string targetName,
+        MappaNullSubstituteAttribute nullSubstituteAttribute,
+        string methodName,
+        INamedTypeSymbol mapMethodClass,
+        MapMethod rootMethod,
+        MethodDeclarationSyntax mapMethodMethodDeclarationSyntax,
+        ITypeSymbol sourceMemberType,
+        out ISymbol? fieldOrProperty,
+        out IMethodSymbol? method)
+    {
+        fieldOrProperty = null;
+
+        if (!string.IsNullOrWhiteSpace(nullSubstituteAttribute.InvokeMethodSource))
+        {
+            return this.TryResolveNullSubstituteInvokeMethodFromSource(
+                targetName,
+                nullSubstituteAttribute.InvokeMethodSource!,
+                methodName,
+                mapMethodClass,
+                rootMethod,
+                mapMethodMethodDeclarationSyntax,
+                sourceMemberType,
+                out fieldOrProperty,
+                out method);
+        }
+
+        if (nullSubstituteAttribute.InvokeMethodType is not null)
+        {
+            return this.TryResolveNullSubstituteInvokeMethodFromType(
+                targetName,
+                nullSubstituteAttribute.InvokeMethodType,
+                methodName,
+                mapMethodClass,
+                rootMethod,
+                mapMethodMethodDeclarationSyntax,
+                sourceMemberType,
+                out method);
+        }
+
+        return this.TryResolveNullSubstituteInvokeMethodFromMapper(
+            targetName,
+            methodName,
+            mapMethodClass,
+            rootMethod,
+            mapMethodMethodDeclarationSyntax,
+            sourceMemberType,
+            out method);
+    }
+
+    private bool TryResolveNullSubstituteInvokeMethodFromSource(
+        string targetName,
+        string invokeMethodSource,
+        string methodName,
+        INamedTypeSymbol mapMethodClass,
+        MapMethod rootMethod,
+        MethodDeclarationSyntax mapMethodMethodDeclarationSyntax,
+        ITypeSymbol sourceMemberType,
+        out ISymbol? fieldOrProperty,
+        out IMethodSymbol? method)
+    {
+        fieldOrProperty = this.compilation.LocateAccessibleFieldOrPropertyInTypeHierarchy(
+            mapMethodClass,
+            invokeMethodSource,
+            mapMethodClass);
+
+        if (fieldOrProperty is null)
+        {
+            this.context.ReportDiagnostic(MappaDiagnostics.CannotFindFieldOrProperty(
+                mapMethodMethodDeclarationSyntax,
+                invokeMethodSource));
+            method = null;
+            return false;
+        }
+
+        if (rootMethod.CanBeUsedByStaticMethod && !fieldOrProperty.IsStatic)
+        {
+            this.context.ReportDiagnostic(MappaDiagnostics.FieldOrPropertyMustBeStatic(
+                fieldOrProperty.Name,
+                rootMethod.Location));
+            method = null;
+            return false;
+        }
+
+        var fieldOrPropertyType = GetFieldOrPropertyType(fieldOrProperty);
+        var resolutionResult = this.TryResolveNullSubstituteInvokeMethodCandidates(
+            mapMethodClass,
+            fieldOrPropertyType.ToDisplayString(),
+            fieldOrPropertyType.LocateMethods(methodName),
+            methodName,
+            sourceMemberType,
+            InvokeMethodStaticRequirement.NotStatic,
+            rootMethod,
+            mapMethodMethodDeclarationSyntax,
+            out method);
+
+        return this.IsSuccessfulNullSubstituteInvokeMethodResolution(
+            resolutionResult,
+            method,
+            targetName,
+            fieldOrPropertyType.ToDisplayString(),
+            methodName,
+            mapMethodMethodDeclarationSyntax);
+    }
+
+    private bool TryResolveNullSubstituteInvokeMethodFromType(
+        string targetName,
+        Type invokeMethodType,
+        string methodName,
+        INamedTypeSymbol mapMethodClass,
+        MapMethod rootMethod,
+        MethodDeclarationSyntax mapMethodMethodDeclarationSyntax,
+        ITypeSymbol sourceMemberType,
+        out IMethodSymbol? method)
+    {
+        var classTypeFullName = invokeMethodType.FullName
+            ?? throw new MappaGeneratorException("Cannot detect type full name");
+        var className = this.compilation.GetTypeByMetadataName(classTypeFullName);
+        if (className is null)
+        {
+            this.context.ReportDiagnostic(MappaDiagnostics.CannotDetectType(
+                mapMethodMethodDeclarationSyntax,
+                classTypeFullName));
+            method = null;
+            return false;
+        }
+
+        var resolutionResult = this.TryResolveNullSubstituteInvokeMethodCandidates(
+            mapMethodClass,
+            className.ToDisplayString(),
+            className.LocateMethods(methodName),
+            methodName,
+            sourceMemberType,
+            InvokeMethodStaticRequirement.Static,
+            rootMethod,
+            mapMethodMethodDeclarationSyntax,
+            out method);
+
+        return this.IsSuccessfulNullSubstituteInvokeMethodResolution(
+            resolutionResult,
+            method,
+            targetName,
+            className.ToDisplayString(),
+            methodName,
+            mapMethodMethodDeclarationSyntax);
+    }
+
+    private bool TryResolveNullSubstituteInvokeMethodFromMapper(
+        string targetName,
+        string methodName,
+        INamedTypeSymbol mapMethodClass,
+        MapMethod rootMethod,
+        MethodDeclarationSyntax mapMethodMethodDeclarationSyntax,
+        ITypeSymbol sourceMemberType,
+        out IMethodSymbol? method)
+    {
+        var staticRequirement = rootMethod.CanBeUsedByStaticMethod
+            ? InvokeMethodStaticRequirement.Static
+            : InvokeMethodStaticRequirement.StaticOrNotStatic;
+
+        var resolutionResult = this.TryResolveNullSubstituteInvokeMethodCandidates(
+            mapMethodClass,
+            mapMethodClass.ToDisplayString(),
+            mapMethodClass.LocateMethods(methodName),
+            methodName,
+            sourceMemberType,
+            staticRequirement,
+            rootMethod,
+            mapMethodMethodDeclarationSyntax,
+            out method);
+
+        return this.IsSuccessfulNullSubstituteInvokeMethodResolution(
+            resolutionResult,
+            method,
+            targetName,
+            mapMethodClass.ToDisplayString(),
+            methodName,
+            mapMethodMethodDeclarationSyntax);
+    }
+
+    private InvokeMethodResolutionResult TryResolveNullSubstituteInvokeMethodCandidates(
+        ITypeSymbol mapClass,
+        string lookupTypeDisplayName,
+        IMethodSymbol[] methods,
+        string methodName,
+        ITypeSymbol sourceMemberType,
+        InvokeMethodStaticRequirement staticRequirement,
+        MapMethod rootMapMethod,
+        MethodDeclarationSyntax mapMethodMethodDeclarationSyntax,
+        out IMethodSymbol? method)
+    {
+        var resolutionResult = InvokeMethodResolution.TryResolveNullSubstituteInvokeMethod(
+            this.compilation,
+            mapClass,
+            lookupTypeDisplayName,
+            methods,
+            methodName,
+            sourceMemberType,
+            this.context.IsNullableEnabled(),
+            staticRequirement,
+            rootMapMethod,
+            out method,
+            out var ambiguityDetails);
+
+        if (resolutionResult is InvokeMethodResolutionResult.Ambiguous)
+        {
+            this.context.ReportDiagnostic(MappaDiagnostics.AmbiguousInvokeMethodResolution(
+                mapMethodMethodDeclarationSyntax.GetLocation(),
+                ambiguityDetails));
+        }
+
+        return resolutionResult;
+    }
+
+    private bool IsSuccessfulNullSubstituteInvokeMethodResolution(
+        InvokeMethodResolutionResult resolutionResult,
+        IMethodSymbol? method,
+        string targetName,
+        string typeDisplayName,
+        string methodName,
+        MethodDeclarationSyntax mapMethodMethodDeclarationSyntax)
+    {
+        if (resolutionResult is InvokeMethodResolutionResult.Ambiguous)
+        {
+            return false;
+        }
+
+        if (resolutionResult is InvokeMethodResolutionResult.Success && method is not null)
+        {
+            return true;
+        }
+
+        this.context.ReportDiagnostic(MappaDiagnostics.CannotDetectSuitableMethodToInvokeForParameter(
+            mapMethodMethodDeclarationSyntax,
+            targetName,
+            methodName,
+            typeDisplayName));
+        return false;
     }
 
     private bool TryResolveNullSubstituteSourceNaming(

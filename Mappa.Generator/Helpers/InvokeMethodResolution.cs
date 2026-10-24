@@ -208,6 +208,79 @@ internal static class InvokeMethodResolution
     }
 
     /// <summary>
+    /// Resolves an invoke method for <see cref="Mappa.Attributes.MappaNullSubstituteAttribute"/> InvokeMethod mode.
+    /// Eligible signatures are <c>T Method(T?)</c> / <c>T Method(T)</c> / <c>T Method(in T)</c>
+    /// and the same with a trailing <c>MappaContext</c> when the map method provides context.
+    /// </summary>
+    /// <param name="compilation">The compilation.</param>
+    /// <param name="mapClass">The mapper class (for accessibility).</param>
+    /// <param name="lookupTypeDisplayName">Display name used in ambiguity messages.</param>
+    /// <param name="methods">Candidate methods located by name.</param>
+    /// <param name="methodName">The method name.</param>
+    /// <param name="sourceMemberType">The source member type <c>T</c> being substituted.</param>
+    /// <param name="nullableEnabled"><c>true</c> when nullable is enabled.</param>
+    /// <param name="staticRequirement">The static requirement.</param>
+    /// <param name="rootMapMethod">The root map method.</param>
+    /// <param name="method">The resolved method when successful.</param>
+    /// <param name="ambiguityDetails">Ambiguity details when resolution is ambiguous.</param>
+    /// <returns>The resolution result.</returns>
+    internal static InvokeMethodResolutionResult TryResolveNullSubstituteInvokeMethod(
+        Compilation compilation,
+        ITypeSymbol mapClass,
+        string lookupTypeDisplayName,
+        IMethodSymbol[] methods,
+        string methodName,
+        ITypeSymbol sourceMemberType,
+        bool nullableEnabled,
+        InvokeMethodStaticRequirement staticRequirement,
+        MapMethod rootMapMethod,
+        out IMethodSymbol? method,
+        out string ambiguityDetails)
+    {
+        method = null;
+        ambiguityDetails = string.Empty;
+
+        var rootProvidesMappaContext = rootMapMethod.ProvideMappaContextWhenInvoked();
+        var expectedReturnType = GetNullSubstituteExpectedReturnType(sourceMemberType);
+        var candidates = methods
+            .Where(candidate =>
+                candidate.Name.Equals(methodName, StringComparison.Ordinal) &&
+                compilation.IsSymbolAccessibleWithin(candidate, mapClass) &&
+                MatchesStaticRequirement(candidate, staticRequirement) &&
+                IsNullSubstituteInvokeMethodSignature(
+                    candidate,
+                    compilation,
+                    sourceMemberType,
+                    expectedReturnType,
+                    nullableEnabled,
+                    rootProvidesMappaContext))
+            .ToArray();
+
+        // Prefer most-derived declaring type, then prefer overloads with MappaContext when available.
+        if (rootProvidesMappaContext)
+        {
+            var withContext = PickFromTier(
+                candidates,
+                methodName,
+                lookupTypeDisplayName,
+                candidate => candidate.Parameters.Length == 2);
+            if (withContext.Status is not InvokeMethodResolutionResult.NotFound)
+            {
+                method = withContext.Method;
+                ambiguityDetails = withContext.AmbiguityDetails;
+                return withContext.Status;
+            }
+        }
+
+        return ResolveUniqueCandidate(
+            candidates.Where(candidate => candidate.Parameters.Length == 1).ToArray(),
+            methodName,
+            lookupTypeDisplayName,
+            out method,
+            out ambiguityDetails);
+    }
+
+    /// <summary>
     /// Resolves an invoke method for <see cref="Mappa.Attributes.MappaInvokeMethodAttribute"/>.
     /// </summary>
     /// <param name="compilation">The compilation.</param>
@@ -480,6 +553,95 @@ internal static class InvokeMethodResolution
             InvokeMethodStaticRequirement.NotStatic => !candidate.IsStatic,
             _ => false,
         };
+
+    private static ITypeSymbol GetNullSubstituteExpectedReturnType(ITypeSymbol sourceMemberType)
+    {
+        if (sourceMemberType.IsValueTypeNullable())
+        {
+            return sourceMemberType.GetTypeInsideNullable();
+        }
+
+        if (sourceMemberType is { IsReferenceType: true, NullableAnnotation: NullableAnnotation.Annotated })
+        {
+            return sourceMemberType.WithNullableAnnotation(NullableAnnotation.NotAnnotated);
+        }
+
+        return sourceMemberType;
+    }
+
+    private static bool IsNullSubstituteInvokeMethodSignature(
+        IMethodSymbol candidate,
+        Compilation compilation,
+        ITypeSymbol sourceMemberType,
+        ITypeSymbol expectedReturnType,
+        bool nullableEnabled,
+        bool rootProvidesMappaContext)
+    {
+        if (candidate.MethodKind is not MethodKind.Ordinary
+            || candidate.IsAsync
+            || candidate.ReturnsAnyTaskType(compilation)
+            || candidate.IsVoid()
+            || candidate.ReturnsByRef
+            || candidate.ReturnsByRefReadonly)
+        {
+            return false;
+        }
+
+        if (candidate.Parameters.Length is not (1 or 2))
+        {
+            return false;
+        }
+
+        if (candidate.Parameters[0].RefKind is not (RefKind.None or RefKind.In))
+        {
+            return false;
+        }
+
+        if (!candidate.ReturnType.IsEqualTo(expectedReturnType, nullableEnabled))
+        {
+            return false;
+        }
+
+        if (!IsNullSubstituteValueParameterType(candidate.Parameters[0].Type, sourceMemberType, expectedReturnType, nullableEnabled))
+        {
+            return false;
+        }
+
+        if (candidate.Parameters.Length == 1)
+        {
+            return true;
+        }
+
+        return rootProvidesMappaContext
+               && candidate.ParameterIsMappaContext(compilation, 1)
+               && candidate.Parameters[1].RefKind is (RefKind.None or RefKind.In);
+    }
+
+    private static bool IsNullSubstituteValueParameterType(
+        ITypeSymbol parameterType,
+        ITypeSymbol sourceMemberType,
+        ITypeSymbol expectedReturnType,
+        bool nullableEnabled)
+    {
+        if (parameterType.IsEqualTo(sourceMemberType, nullableEnabled))
+        {
+            return true;
+        }
+
+        // Accept T when the source is T?, and T? when matching without requiring NRT annotations.
+        if (parameterType.IsEqualTo(expectedReturnType, nullableEnabled))
+        {
+            return true;
+        }
+
+        if (!nullableEnabled)
+        {
+            return false;
+        }
+
+        var annotatedReturn = expectedReturnType.WithNullableAnnotation(NullableAnnotation.Annotated);
+        return parameterType.IsEqualTo(annotatedReturn, isNullableEnabled: true);
+    }
 
     private static TierPickResult PickFromTier(
         IMethodSymbol[] pool,
