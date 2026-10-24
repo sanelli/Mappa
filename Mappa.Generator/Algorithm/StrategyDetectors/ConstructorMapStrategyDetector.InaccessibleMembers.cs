@@ -42,6 +42,25 @@ internal sealed partial class ConstructorMapStrategyDetector
             .ToArray();
     }
 
+    private IFieldSymbol[] GetWritableTargetFields(ITypeSymbol targetType)
+    {
+        if (this.context.MappaUserSettings.MapTargetFields is not BooleanSetting.Enable)
+        {
+            return [];
+        }
+
+        // Inaccessible field UnsafeAccessor emission is wired in a later step; collect accessible fields only.
+        return targetType.GetTypeFields()
+            .Where(field => InaccessibleMemberEligibility.TryIsTargetFieldWritable(
+                field,
+                this.compilation,
+                this.context.GetRootMapMethod(),
+                this.GetInaccessibleTargetOptions(),
+                out var requiresUnsafeAccessor)
+                && !requiresUnsafeAccessor)
+            .ToArray();
+    }
+
     private bool TryIsSourcePropertyReadable(
         IPropertySymbol property,
         out bool requiresUnsafeAccessor,

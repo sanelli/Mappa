@@ -297,7 +297,7 @@ internal static class ProjectionExpressionBuilder
             .Select(propertyMapStrategy =>
             {
                 var propertyExpression = BuildPropertyExpression(propertyMapStrategy, source, context);
-                return $"{propertyMapStrategy.TargetProperty.Name} = {propertyExpression}";
+                return $"{propertyMapStrategy.TargetMemberName} = {propertyExpression}";
             })
             .ToArray();
 
@@ -331,6 +331,7 @@ internal static class ProjectionExpressionBuilder
                 chainSource = rootParameterName;
             }
 
+            var includeFields = context.MappaGlobalOptions.MapSourceFields is BooleanSetting.Enable;
             return PropertyPathExpressionBuilder.BuildChainedAccessExpression(
                 chainSource,
                 receiverPathPrefix,
@@ -338,6 +339,7 @@ internal static class ProjectionExpressionBuilder
                 chainedSourcePropertyPath.StartingSourceType,
                 mapMethod.NullableEnabled,
                 sourceProperty?.Type ?? sourceField?.Type ?? chainedSourcePropertyPath.StartingSourceType,
+                includeFields,
                 out _,
                 chainedSourcePropertyPath.OriginalSourcePath);
         }

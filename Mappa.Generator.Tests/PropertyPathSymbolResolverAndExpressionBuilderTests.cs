@@ -45,7 +45,7 @@ public sealed class PropertyPathSymbolResolverAndExpressionBuilderTests
                                         """;
 
     /// <summary>
-    /// Test <see cref="PropertyPathSymbolResolver.TryGetReceiverTypeForPathPrefix"/> success and failure arms.
+    /// Test <see cref="PropertyPathSymbolResolver.TryGetReceiverTypeForPathPrefix(ITypeSymbol, string, string, out ITypeSymbol)"/> success and failure arms.
     /// </summary>
     [Fact]
     [UnitTest]
@@ -106,7 +106,7 @@ public sealed class PropertyPathSymbolResolverAndExpressionBuilderTests
     }
 
     /// <summary>
-    /// Test <see cref="PropertyPathExpressionBuilder.BuildChainedAccessExpression"/> empty prefix, resolve failures, and value-type access.
+    /// Test <see cref="PropertyPathExpressionBuilder.BuildChainedAccessExpression(string, string, string[], ITypeSymbol, bool, ITypeSymbol, out IPropertySymbol[], string?)"/> empty prefix, resolve failures, and value-type access.
     /// </summary>
     [Fact]
     [UnitTest]
@@ -178,7 +178,7 @@ public sealed class PropertyPathSymbolResolverAndExpressionBuilderTests
     }
 
     /// <summary>
-    /// Test <see cref="PropertyPathExpressionBuilder.BuildChainedAccessExpression"/> appends
+    /// Test <see cref="PropertyPathExpressionBuilder.BuildChainedAccessExpression(string, string, string[], ITypeSymbol, bool, ITypeSymbol, out IPropertySymbol[], string?)"/> appends
     /// <c>?? throw</c> only when conditional access makes the expression nullable-capable.
     /// </summary>
     [Fact]
@@ -233,7 +233,7 @@ public sealed class PropertyPathSymbolResolverAndExpressionBuilderTests
     }
 
     /// <summary>
-    /// Test <see cref="PropertyPathExpressionBuilder.BuildChainedAccessExpression"/> treats
+    /// Test <see cref="PropertyPathExpressionBuilder.BuildChainedAccessExpression(string, string, string[], ITypeSymbol, bool, ITypeSymbol, out IPropertySymbol[], string?)"/> treats
     /// <see cref="Nullable{T}"/> leaves as nullable-capable without prior conditional access.
     /// </summary>
     [Fact]

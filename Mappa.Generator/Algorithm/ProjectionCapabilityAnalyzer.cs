@@ -507,17 +507,19 @@ internal static class ProjectionCapabilityAnalyzer
             || propertyMapStrategy.RequiresInterfaceCastOnTarget)
         {
             failureKind = AnalysisFailureKind.UnsupportedConstruct;
-            failureMember = propertyMapStrategy.TargetProperty.Name;
+            failureMember = propertyMapStrategy.TargetMemberName;
             return false;
         }
 
         if (analysisContext is not null
-            && (IsNestedQueryableType(propertyMapStrategy.TargetProperty.Type, analysisContext.Compilation)
+            && (IsNestedQueryableType(propertyMapStrategy.TargetType, analysisContext.Compilation)
                 || (propertyMapStrategy.SourceProperty is not null
-                    && IsNestedQueryableType(propertyMapStrategy.SourceProperty.Type, analysisContext.Compilation))))
+                    && IsNestedQueryableType(propertyMapStrategy.SourceProperty.Type, analysisContext.Compilation))
+                || (propertyMapStrategy.SourceField is not null
+                    && IsNestedQueryableType(propertyMapStrategy.SourceField.Type, analysisContext.Compilation))))
         {
             failureKind = AnalysisFailureKind.NestedQueryable;
-            failureMember = propertyMapStrategy.TargetProperty.Name;
+            failureMember = propertyMapStrategy.TargetMemberName;
             return false;
         }
 
@@ -540,7 +542,9 @@ internal static class ProjectionCapabilityAnalyzer
             propertyMapStrategy.RequiresUnsafeAccessorOnSource,
             propertyMapStrategy.RequiresUnsafeAccessorOnTarget,
             propertyMapStrategy.RequiresInterfaceCastOnSource,
-            propertyMapStrategy.RequiresInterfaceCastOnTarget);
+            propertyMapStrategy.RequiresInterfaceCastOnTarget,
+            propertyMapStrategy.SourceField,
+            propertyMapStrategy.TargetField);
         return true;
     }
 

@@ -31,7 +31,7 @@ internal sealed class PropertyMapStrategyBuilder
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
         var builder = new PrettyCode.StringBuilder();
-        var sourcePropertyTemporary = this.BuildSourcePropertyTemporary(builder, source, context);
+        var sourcePropertyTemporary = this.BuildSourcePropertyTemporary(builder, source, context, mappaGlobalOptions);
 
         string targetTemporary;
         string code;
@@ -60,17 +60,19 @@ internal sealed class PropertyMapStrategyBuilder
         ChainedSourcePropertyPathInfo chainedSourcePropertyPath,
         string chainSource,
         string receiverPathPrefix,
-        IPropertySymbol[] resolvedProperties)
+        MappableMember[] resolvedMembers,
+        bool includeFields)
     {
-        if (resolvedProperties.Length > 0)
+        if (resolvedMembers.Length > 0)
         {
-            return resolvedProperties[resolvedProperties.Length - 1].Type;
+            return resolvedMembers[resolvedMembers.Length - 1].Type;
         }
 
         if (PropertyPathSymbolResolver.TryGetReceiverTypeForPathPrefix(
                 chainedSourcePropertyPath.StartingSourceType,
                 chainSource,
                 string.IsNullOrWhiteSpace(receiverPathPrefix) ? chainSource : receiverPathPrefix,
+                includeFields,
                 out var receiverType))
         {
             return receiverType;
@@ -79,11 +81,15 @@ internal sealed class PropertyMapStrategyBuilder
         return chainedSourcePropertyPath.StartingSourceType;
     }
 
-    private string BuildSourcePropertyTemporary(PrettyCode.StringBuilder builder, string source, MappaBuilderContext context)
+    private string BuildSourcePropertyTemporary(
+        PrettyCode.StringBuilder builder,
+        string source,
+        MappaBuilderContext context,
+        MappaGlobalOptions mappaGlobalOptions)
     {
         if (this.strategy.ChainedSourcePropertyPath is not null)
         {
-            return this.AppendChainedSourcePropertyRead(builder, source, context);
+            return this.AppendChainedSourcePropertyRead(builder, source, context, mappaGlobalOptions);
         }
 
         if (this.strategy.SourceProperty is not null || this.strategy.SourceField is not null)
@@ -94,7 +100,11 @@ internal sealed class PropertyMapStrategyBuilder
         return string.Empty;
     }
 
-    private string AppendChainedSourcePropertyRead(PrettyCode.StringBuilder builder, string source, MappaBuilderContext context)
+    private string AppendChainedSourcePropertyRead(
+        PrettyCode.StringBuilder builder,
+        string source,
+        MappaBuilderContext context,
+        MappaGlobalOptions mappaGlobalOptions)
     {
         var chainedSourcePropertyPath = this.strategy.ChainedSourcePropertyPath;
         if (chainedSourcePropertyPath is null)
@@ -117,8 +127,9 @@ internal sealed class PropertyMapStrategyBuilder
         // AssignValue / InvokeMethod can substitute instead of throwing.
         var chainTargetType = this.strategy.PropertyStrategy is NullSubstituteMapStrategy nullSubstituteMapStrategy
             ? nullSubstituteMapStrategy.SourceType
-            : this.strategy.TargetProperty.Type;
+            : this.strategy.TargetType;
 
+        var includeFields = mappaGlobalOptions.MapSourceFields is BooleanSetting.Enable;
         var accessExpression = PropertyPathExpressionBuilder.BuildChainedAccessExpression(
             chainSource,
             receiverPathPrefix,
@@ -126,14 +137,16 @@ internal sealed class PropertyMapStrategyBuilder
             chainedSourcePropertyPath.StartingSourceType,
             context.GetMapMethod().NullableEnabled,
             chainTargetType,
-            out var resolvedProperties,
+            includeFields,
+            out var resolvedMembers,
             chainedSourcePropertyPath.OriginalSourcePath);
 
         var innermostSourceType = ResolveInnermostChainedSourceType(
             chainedSourcePropertyPath,
             chainSource,
             receiverPathPrefix,
-            resolvedProperties);
+            resolvedMembers,
+            includeFields);
 
         var sourcePropertyTemporary = context.NextTemporary();
         builder.AppendLine($"{innermostSourceType.ToDisplayString()} {sourcePropertyTemporary} = {accessExpression};");

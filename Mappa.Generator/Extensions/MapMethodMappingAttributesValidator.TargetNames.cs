@@ -32,7 +32,8 @@ internal static partial class MapMethodMappingAttributesValidator
                 validationContext.PropertyNames,
                 validationContext.ConstructorParameterNames,
                 validationContext.TargetType,
-                validationContext.PropertyPathContext);
+                validationContext.PropertyPathContext,
+                validationContext.IncludeTargetFields);
             ValidateSourcePropertyPath(
                 context,
                 validationContext.MethodDeclarationSyntax,
@@ -42,7 +43,8 @@ internal static partial class MapMethodMappingAttributesValidator
                 attribute.TargetPropertyName,
                 attribute.SourcePropertyName,
                 validationContext.SourceType,
-                validationContext.PropertyPathContext);
+                validationContext.PropertyPathContext,
+                validationContext.IncludeSourceFields);
         }
     }
 
@@ -63,7 +65,8 @@ internal static partial class MapMethodMappingAttributesValidator
                 validationContext.PropertyNames,
                 validationContext.ConstructorParameterNames,
                 validationContext.TargetType,
-                validationContext.PropertyPathContext);
+                validationContext.PropertyPathContext,
+                validationContext.IncludeTargetFields);
 
             if (attribute.SourcePropertyName is not string sourcePropertyName
                 || string.IsNullOrWhiteSpace(sourcePropertyName))
@@ -80,7 +83,8 @@ internal static partial class MapMethodMappingAttributesValidator
                 attribute.TargetPropertyName,
                 sourcePropertyName,
                 validationContext.SourceType,
-                validationContext.PropertyPathContext);
+                validationContext.PropertyPathContext,
+                validationContext.IncludeSourceFields);
         }
     }
 
@@ -101,7 +105,8 @@ internal static partial class MapMethodMappingAttributesValidator
                 validationContext.PropertyNames,
                 validationContext.ConstructorParameterNames,
                 validationContext.TargetType,
-                validationContext.PropertyPathContext);
+                validationContext.PropertyPathContext,
+                validationContext.IncludeTargetFields);
 
             if (attribute.SourcePropertyName is not string sourcePropertyName
                 || string.IsNullOrWhiteSpace(sourcePropertyName))
@@ -118,7 +123,8 @@ internal static partial class MapMethodMappingAttributesValidator
                 attribute.TargetPropertyName,
                 sourcePropertyName,
                 validationContext.SourceType,
-                validationContext.PropertyPathContext);
+                validationContext.PropertyPathContext,
+                validationContext.IncludeSourceFields);
         }
     }
 
@@ -142,7 +148,8 @@ internal static partial class MapMethodMappingAttributesValidator
                 validationContext.PropertyNames,
                 validationContext.ConstructorParameterNames,
                 validationContext.TargetType,
-                validationContext.PropertyPathContext);
+                validationContext.PropertyPathContext,
+                validationContext.IncludeTargetFields);
         }
     }
 
@@ -157,7 +164,9 @@ internal static partial class MapMethodMappingAttributesValidator
             string[] constructorParameterNames,
             ITypeSymbol targetType,
             ITypeSymbol sourceType,
-            PropertyPathContext? propertyPathContext)
+            PropertyPathContext? propertyPathContext,
+            bool includeTargetFields,
+            bool includeSourceFields)
         {
             this.MethodDeclarationSyntax = methodDeclarationSyntax;
             this.MethodName = methodName;
@@ -168,6 +177,8 @@ internal static partial class MapMethodMappingAttributesValidator
             this.TargetType = targetType;
             this.SourceType = sourceType;
             this.PropertyPathContext = propertyPathContext;
+            this.IncludeTargetFields = includeTargetFields;
+            this.IncludeSourceFields = includeSourceFields;
         }
 
         internal MethodDeclarationSyntax MethodDeclarationSyntax { get; }
@@ -187,5 +198,9 @@ internal static partial class MapMethodMappingAttributesValidator
         internal ITypeSymbol SourceType { get; }
 
         internal PropertyPathContext? PropertyPathContext { get; }
+
+        internal bool IncludeTargetFields { get; }
+
+        internal bool IncludeSourceFields { get; }
     }
 }

@@ -144,21 +144,28 @@ internal sealed partial class ConstructorMapStrategyDetector
                         StringComparison.OrdinalIgnoreCase,
                         sourceProperty,
                         propertyStrategyFromAttribute);
-                    if (sourceProperty is null)
+                    if (sourceProperty is null && sourceField is null)
                     {
                         return (Parameter: targetParameter, Strategy: (MapStrategy)noMapStrategy);
                     }
 
-                    this.TryIsSourcePropertyReadable(
-                        sourceProperty,
-                        out var requiresUnsafeAccessorOnSourceFromAttribute,
-                        out var requiresInterfaceCastOnSourceFromAttribute);
+                    var requiresUnsafeAccessorOnSourceFromAttribute = false;
+                    var requiresInterfaceCastOnSourceFromAttribute = false;
+                    if (sourceProperty is not null)
+                    {
+                        this.TryIsSourcePropertyReadable(
+                            sourceProperty,
+                            out requiresUnsafeAccessorOnSourceFromAttribute,
+                            out requiresInterfaceCastOnSourceFromAttribute);
+                    }
+
                     var strategy = new ParameterMapStrategy(
                         targetParameter,
                         sourceProperty,
                         propertyStrategyFromAttribute,
                         requiresUnsafeAccessorOnSourceFromAttribute,
-                        requiresInterfaceCastOnSourceFromAttribute);
+                        requiresInterfaceCastOnSourceFromAttribute,
+                        sourceField: sourceProperty is null ? sourceField : null);
                     return (Parameter: targetParameter, Strategy: (MapStrategy)strategy);
                 }
 
@@ -284,14 +291,9 @@ internal sealed partial class ConstructorMapStrategyDetector
             .Where(property => !this.ShouldIgnoreTargetPropertyAtCurrentLevel(property.GetMappablePropertyName()))
             .ToArray();
 
-        if (targetProperties.Length == 0)
-        {
-            return !requireAtLeastOneMappedProperty;
-        }
-
         var sourceProperties = this.GetReadableSourceProperties(this.context.SourceType);
 
-        var mappedInitializerStrategies = targetProperties
+        var mappedPropertyStrategies = targetProperties
             .Where(targetProperty => this.context.MappaUserSettings.ProtobufOptional is not BooleanSetting.Enable
                                      || allTargetProperties.All(otherProperty => !targetProperty.GetMappablePropertyName().Equals($"Has{otherProperty.GetMappablePropertyName()}", StringComparison.Ordinal)))
             .Select(targetProperty => this.TryCreateEmptyCtorPropertyMapStrategy(
@@ -301,7 +303,33 @@ internal sealed partial class ConstructorMapStrategyDetector
                 noMapStrategy))
             .ToArray();
 
-        if (Array.Exists(mappedInitializerStrategies, propertyStrategy => propertyStrategy.TargetProperty.IsRequired && propertyStrategy.PropertyStrategy is NoMapStrategy))
+        var mappedPropertyNames = new HashSet<string>(
+            mappedPropertyStrategies
+                .Where(propertyStrategy => propertyStrategy.PropertyStrategy is not NoMapStrategy)
+                .Select(propertyStrategy => propertyStrategy.TargetMemberName),
+            StringComparer.Ordinal);
+
+        var mappedFieldStrategies = this.GetWritableTargetFields(this.context.TargetType)
+            .Where(targetField => !ignoredTargetPropertyNames.Contains(targetField.Name))
+            .Where(targetField => !this.ShouldIgnoreTargetPropertyAtCurrentLevel(targetField.Name))
+            .Where(targetField => !mappedPropertyNames.Contains(targetField.Name)
+                                  && !targetProperties.Any(property => property.GetMappablePropertyName().Equals(targetField.Name, StringComparison.Ordinal)))
+            .Select(targetField => this.TryCreateEmptyCtorFieldMapStrategy(
+                targetField,
+                sourceProperties,
+                noMapStrategy))
+            .ToArray();
+
+        var mappedInitializerStrategies = mappedPropertyStrategies
+            .Concat(mappedFieldStrategies)
+            .ToArray();
+
+        if (targetProperties.Length == 0 && mappedFieldStrategies.Length == 0)
+        {
+            return !requireAtLeastOneMappedProperty;
+        }
+
+        if (Array.Exists(mappedInitializerStrategies, propertyStrategy => propertyStrategy.IsRequiredTarget && propertyStrategy.PropertyStrategy is NoMapStrategy))
         {
             return false;
         }
@@ -310,7 +338,7 @@ internal sealed partial class ConstructorMapStrategyDetector
             .Where(propertyStrategy => propertyStrategy.PropertyStrategy is not NoMapStrategy)
             .ToArray();
 
-        var propertiesWithoutStrategy = mappedInitializerStrategies
+        var propertiesWithoutStrategy = mappedPropertyStrategies
             .Where(propertyStrategy => propertyStrategy.PropertyStrategy is NoMapStrategy)
             .ToArray();
 

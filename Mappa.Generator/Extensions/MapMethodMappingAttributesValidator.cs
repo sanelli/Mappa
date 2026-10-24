@@ -56,6 +56,14 @@ internal static partial class MapMethodMappingAttributesValidator
         var propertyNames = new HashSet<string>(
             targetType.GetTypeProperties().Select(property => property.Name),
             StringComparer.Ordinal);
+        if (context.MappaUserSettings.MapTargetFields is BooleanSetting.Enable)
+        {
+            foreach (var field in targetType.GetTypeFields())
+            {
+                propertyNames.Add(field.Name);
+            }
+        }
+
         var constructorParameterNames = targetType
             .GetAccessibleConstructors(compilation, context.ParentSymbol)
             .SelectMany(constructor => constructor.Parameters)
@@ -65,6 +73,8 @@ internal static partial class MapMethodMappingAttributesValidator
         var methodName = context.GetRootMapMethod().MethodName;
         var targetTypeName = targetType.ToDisplayString();
         var sourceTypeName = sourceType.ToDisplayString();
+        var includeTargetFields = context.MappaUserSettings.MapTargetFields is BooleanSetting.Enable;
+        var includeSourceFields = context.MappaUserSettings.MapSourceFields is BooleanSetting.Enable;
 
         var validationContext = new TargetNamesValidationContext(
             methodDeclarationSyntax,
@@ -75,7 +85,9 @@ internal static partial class MapMethodMappingAttributesValidator
             constructorParameterNames,
             targetType,
             sourceType,
-            context.PropertyPathContext);
+            context.PropertyPathContext,
+            includeTargetFields,
+            includeSourceFields);
 
         ValidateUsePropertyTargetNames(context, validationContext, mapMethod.GetAttributes<MappaUsePropertyAttribute>());
         ValidateInvokeMethodTargetNames(context, validationContext, mapMethod.GetAttributes<MappaInvokeMethodAttribute>());
@@ -339,6 +351,7 @@ internal static partial class MapMethodMappingAttributesValidator
     /// <param name="targetPropertyPath">The full target property path from the attribute.</param>
     /// <param name="segmentsToValidate">The remaining target path segments to validate at the current type.</param>
     /// <param name="targetType">The type from which segments are resolved.</param>
+    /// <param name="includeFields">Whether fields may resolve a path segment.</param>
     internal static void ValidateTargetPathSegments(
         MappaMapAlgorithmContext context,
         MethodDeclarationSyntax methodDeclarationSyntax,
@@ -347,7 +360,8 @@ internal static partial class MapMethodMappingAttributesValidator
         string attributeName,
         string targetPropertyPath,
         string[] segmentsToValidate,
-        ITypeSymbol targetType)
+        ITypeSymbol targetType,
+        bool includeFields = false)
     {
         if (segmentsToValidate.Length == 0)
         {
@@ -357,7 +371,10 @@ internal static partial class MapMethodMappingAttributesValidator
         if (segmentsToValidate.Length == 1)
         {
             var segment = segmentsToValidate[0];
-            if (!targetType.GetTypeProperties().Any(property => property.Name.Equals(segment, StringComparison.Ordinal)))
+            var hasProperty = targetType.GetTypeProperties().Any(property => property.Name.Equals(segment, StringComparison.Ordinal));
+            var hasField = includeFields
+                           && targetType.GetTypeFields().Any(field => field.Name.Equals(segment, StringComparison.Ordinal));
+            if (!hasProperty && !hasField)
             {
                 context.ReportDiagnostic(MappaDiagnostics.MappingAttributeTargetPropertyOrParameterDoesNotExist(
                     methodDeclarationSyntax,
@@ -370,9 +387,10 @@ internal static partial class MapMethodMappingAttributesValidator
             return;
         }
 
-        if (!PropertyPathSymbolResolver.TryResolvePropertyPath(
+        if (!PropertyPathSymbolResolver.TryResolveMemberPath(
                 targetType,
                 PropertyPath.FromRemainingSegments(segmentsToValidate),
+                includeFields,
                 out _,
                 out _))
         {
@@ -482,7 +500,8 @@ internal static partial class MapMethodMappingAttributesValidator
         HashSet<string> propertyNames,
         string[] constructorParameterNames,
         ITypeSymbol targetType,
-        PropertyPathContext? propertyPathContext)
+        PropertyPathContext? propertyPathContext,
+        bool includeFields)
     {
         var parsedTargetPath = PropertyPath.Parse(targetPropertyPath);
         if (parsedTargetPath.Segments.Length == 0)
@@ -505,7 +524,8 @@ internal static partial class MapMethodMappingAttributesValidator
                 attributeName,
                 targetPropertyPath,
                 propertyPathContext.RemainingTargetSegments,
-                targetType);
+                targetType,
+                includeFields);
             return;
         }
 
@@ -522,9 +542,10 @@ internal static partial class MapMethodMappingAttributesValidator
         }
 
         if (parsedTargetPath.IsNested
-            && !PropertyPathSymbolResolver.TryResolvePropertyPath(
+            && !PropertyPathSymbolResolver.TryResolveMemberPath(
                 targetType,
                 parsedTargetPath,
+                includeFields,
                 out _,
                 out _))
         {
@@ -546,7 +567,8 @@ internal static partial class MapMethodMappingAttributesValidator
         string targetPropertyPath,
         string sourcePropertyPath,
         ITypeSymbol sourceType,
-        PropertyPathContext? propertyPathContext)
+        PropertyPathContext? propertyPathContext,
+        bool includeFields)
     {
         if (propertyPathContext is not null)
         {
@@ -576,9 +598,10 @@ internal static partial class MapMethodMappingAttributesValidator
             return;
         }
 
-        if (!PropertyPathSymbolResolver.TryResolvePropertyPath(
+        if (!PropertyPathSymbolResolver.TryResolveMemberPath(
                 sourceType,
                 parsedSourcePath,
+                includeFields,
                 out _,
                 out var missingSegment))
         {

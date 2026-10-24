@@ -54,7 +54,7 @@ internal sealed class ValueTransformerResolver
             return ValueTransformerCatalog.Empty;
         }
 
-        var applyTransformers = this.ResolveApplyTransformers(mapMethod);
+        var applyTransformers = this.ResolveApplyTransformers(mapMethod, mappaUserSettings);
 
         var classTransformers = new List<ValueTransformer>();
         AddUsableTransformers(classTransformers, this.GetOwnTransformers(), mapMethod);
@@ -222,7 +222,7 @@ internal sealed class ValueTransformerResolver
         return new ValueTransformer(method, fieldOrProperty, explicitType, null, null);
     }
 
-    private ValueTransformer[] ResolveApplyTransformers(MapMethod mapMethod)
+    private ValueTransformer[] ResolveApplyTransformers(MapMethod mapMethod, IMappaUserSettings mappaUserSettings)
     {
         if (mapMethod.MethodSymbol is null)
         {
@@ -233,7 +233,7 @@ internal sealed class ValueTransformerResolver
         var transformers = new List<ValueTransformer>();
         foreach (var attribute in attributes)
         {
-            if (this.TryResolveApplyTransformer(mapMethod, attribute, out var resolved))
+            if (this.TryResolveApplyTransformer(mapMethod, attribute, mappaUserSettings, out var resolved))
             {
                 transformers.AddRange(resolved);
             }
@@ -245,6 +245,7 @@ internal sealed class ValueTransformerResolver
     private bool TryResolveApplyTransformer(
         MapMethod mapMethod,
         MappaApplyTransformerAttributeData attribute,
+        IMappaUserSettings mappaUserSettings,
         out ValueTransformer[] resolved)
     {
         resolved = [];
@@ -258,7 +259,7 @@ internal sealed class ValueTransformerResolver
             return false;
         }
 
-        var sourcePathIsValid = this.ValidateSourcePropertyName(mapMethod, attribute);
+        var sourcePathIsValid = this.ValidateSourcePropertyName(mapMethod, attribute, mappaUserSettings);
         if (!this.TryBuildLookup(mapMethod, attribute, out var lookup))
         {
             return false;
@@ -279,7 +280,10 @@ internal sealed class ValueTransformerResolver
         return true;
     }
 
-    private bool ValidateSourcePropertyName(MapMethod mapMethod, MappaApplyTransformerAttributeData attribute)
+    private bool ValidateSourcePropertyName(
+        MapMethod mapMethod,
+        MappaApplyTransformerAttributeData attribute,
+        IMappaUserSettings mappaUserSettings)
     {
         if (attribute.SourcePropertyName is not { } sourcePropertyName)
         {
@@ -287,8 +291,9 @@ internal sealed class ValueTransformerResolver
         }
 
         var path = PropertyPath.Parse(sourcePropertyName);
+        var includeFields = mappaUserSettings.MapSourceFields is BooleanSetting.Enable;
         if (path.Segments.Length > 0
-            && PropertyPathSymbolResolver.TryResolvePropertyPath(mapMethod.SourceType, path, out _, out _))
+            && PropertyPathSymbolResolver.TryResolveMemberPath(mapMethod.SourceType, path, includeFields, out _, out _))
         {
             return true;
         }

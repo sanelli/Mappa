@@ -243,7 +243,7 @@ internal sealed class MappaBuilderContext
     /// <param name="requiresInterfaceCast"><c>true</c> when an interface cast is required.</param>
     /// <returns>Disposable value used to restore the previous values.</returns>
     internal IDisposable PushCurrentTargetPropertyUnsafeAccess(
-        IPropertySymbol property,
+        IPropertySymbol? property,
         bool requiresUnsafeAccessor,
         bool requiresInterfaceCast = false)
     {

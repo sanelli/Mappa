@@ -3,13 +3,14 @@
 // </copyright>
 
 using Mappa.Generator.Extensions;
+using Mappa.Generator.Models;
 
 using Microsoft.CodeAnalysis;
 
 namespace Mappa.Generator.Helpers;
 
 /// <summary>
-/// Resolves dot-separated property paths against type symbols.
+/// Resolves dot-separated property/field paths against type symbols.
 /// </summary>
 internal static class PropertyPathSymbolResolver
 {
@@ -27,26 +28,69 @@ internal static class PropertyPathSymbolResolver
         out IPropertySymbol[] resolvedProperties,
         out string? missingSegment)
     {
-        List<IPropertySymbol> properties = new();
+        if (!TryResolveMemberPath(typeSymbol, path, includeFields: false, out var resolvedMembers, out missingSegment))
+        {
+            resolvedProperties = [];
+            return false;
+        }
+
+        resolvedProperties = resolvedMembers
+            .Select(member => member.Property!)
+            .ToArray();
+        return true;
+    }
+
+    /// <summary>
+    /// Tries to resolve a member path on a type, preferring properties over fields per segment.
+    /// </summary>
+    /// <param name="typeSymbol">The starting type.</param>
+    /// <param name="path">The member path.</param>
+    /// <param name="includeFields">Whether fields may resolve a segment when no property matches.</param>
+    /// <param name="resolvedMembers">The resolved members in path order.</param>
+    /// <param name="missingSegment">The first segment that could not be resolved, if any.</param>
+    /// <returns><c>true</c> when the full path resolves; otherwise, <c>false</c>.</returns>
+    internal static bool TryResolveMemberPath(
+        ITypeSymbol typeSymbol,
+        PropertyPath path,
+        bool includeFields,
+        out MappableMember[] resolvedMembers,
+        out string? missingSegment)
+    {
+        List<MappableMember> members = new();
         var currentType = typeSymbol;
         foreach (var segment in path.Segments)
         {
             var property = currentType
                 .GetTypeProperties()
-                .FirstOrDefault(candidate => candidate.Name.Equals(segment, StringComparison.Ordinal));
+                .FirstOrDefault(candidate => candidate.Name.Equals(segment, StringComparison.Ordinal)
+                                             || candidate.GetMappablePropertyName().Equals(segment, StringComparison.Ordinal));
 
-            if (property is null)
+            if (property is not null)
             {
-                resolvedProperties = [];
-                missingSegment = segment;
-                return false;
+                members.Add(MappableMember.FromProperty(property, property.GetMappablePropertyName()));
+                currentType = property.Type;
+                continue;
             }
 
-            properties.Add(property);
-            currentType = property.Type;
+            if (includeFields)
+            {
+                var field = currentType
+                    .GetTypeFields()
+                    .FirstOrDefault(candidate => candidate.Name.Equals(segment, StringComparison.Ordinal));
+                if (field is not null)
+                {
+                    members.Add(MappableMember.FromField(field));
+                    currentType = field.Type;
+                    continue;
+                }
+            }
+
+            resolvedMembers = [];
+            missingSegment = segment;
+            return false;
         }
 
-        resolvedProperties = [.. properties];
+        resolvedMembers = [.. members];
         missingSegment = null;
         return true;
     }
@@ -64,6 +108,28 @@ internal static class PropertyPathSymbolResolver
         string rootReceiverExpression,
         string receiverPathPrefix,
         out ITypeSymbol receiverType)
+        => TryGetReceiverTypeForPathPrefix(
+            rootSourceType,
+            rootReceiverExpression,
+            receiverPathPrefix,
+            includeFields: false,
+            out receiverType);
+
+    /// <summary>
+    /// Resolves the receiver type reached by a dotted path prefix from the root source receiver.
+    /// </summary>
+    /// <param name="rootSourceType">The root source type.</param>
+    /// <param name="rootReceiverExpression">The root receiver expression.</param>
+    /// <param name="receiverPathPrefix">The dotted receiver path prefix.</param>
+    /// <param name="includeFields">Whether fields may resolve a path segment.</param>
+    /// <param name="receiverType">The resolved receiver type.</param>
+    /// <returns><c>true</c> when the prefix resolves; otherwise, <c>false</c>.</returns>
+    internal static bool TryGetReceiverTypeForPathPrefix(
+        ITypeSymbol rootSourceType,
+        string rootReceiverExpression,
+        string receiverPathPrefix,
+        bool includeFields,
+        out ITypeSymbol receiverType)
     {
         receiverType = rootSourceType;
         if (string.IsNullOrWhiteSpace(receiverPathPrefix)
@@ -79,12 +145,12 @@ internal static class PropertyPathSymbolResolver
         }
 
         var suffixPath = PropertyPath.Parse(receiverPathPrefix.Substring(prefixSuffix.Length));
-        if (!TryResolvePropertyPath(rootSourceType, suffixPath, out var resolvedProperties, out _))
+        if (!TryResolveMemberPath(rootSourceType, suffixPath, includeFields, out var resolvedMembers, out _))
         {
             return false;
         }
 
-        receiverType = resolvedProperties[resolvedProperties.Length - 1].Type;
+        receiverType = resolvedMembers[resolvedMembers.Length - 1].Type;
         return true;
     }
 
@@ -116,26 +182,13 @@ internal static class PropertyPathSymbolResolver
             return true;
         }
 
-        var currentType = typeSymbol;
-        List<string> segments = new();
-        foreach (var segment in path.Segments)
+        if (!TryResolveMemberPath(typeSymbol, path, includeFields: true, out var resolvedMembers, out missingSegment))
         {
-            var property = currentType
-                .GetTypeProperties()
-                .FirstOrDefault(candidate => candidate.Name.Equals(segment, StringComparison.Ordinal));
-
-            if (property is null)
-            {
-                memberAccessExpression = string.Empty;
-                missingSegment = segment;
-                return false;
-            }
-
-            segments.Add(segment);
-            currentType = property.Type;
+            memberAccessExpression = string.Empty;
+            return false;
         }
 
-        memberAccessExpression = string.Join(".", segments);
+        memberAccessExpression = string.Join(".", resolvedMembers.Select(member => member.Name));
         missingSegment = null;
         return true;
     }

@@ -218,10 +218,11 @@ internal sealed partial class ConstructorMapStrategyDetector
 
                                     var strategy = new ParameterMapStrategy(
                                         targetParameter,
-                                        sourceProperty!,
+                                        sourceProperty,
                                         propertyStrategyFromAttribute,
                                         requiresUnsafeAccessorOnSource,
-                                        requiresInterfaceCastOnSource);
+                                        requiresInterfaceCastOnSource,
+                                        sourceField: sourceProperty is null ? sourceField : null);
                                     return (targetParameter, sourceProperty!, strategy);
                                 }
 
