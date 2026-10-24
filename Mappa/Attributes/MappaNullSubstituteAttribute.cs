@@ -9,11 +9,13 @@ namespace Mappa.Attributes;
 /// <para>
 /// <see cref="TargetPropertyName"/> may be a single property name or a dot-separated chain of nested property names
 /// (for example <c>"Address.City"</c>).
+/// When <see cref="MappaSettingsAttribute.MapTargetFields"/> is enabled, path segments may also name instance fields.
 /// </para>
 /// <para>
 /// <see cref="SourcePropertyName"/> is optional. When omitted, the generator uses the usual name-based source
 /// property match for the target member (and any <see cref="MappaUsePropertyAttribute"/> override).
 /// When set, it may be a single name or a dot-separated nested source path and overrides the default match.
+/// When <see cref="MappaSettingsAttribute.MapSourceFields"/> is enabled, source path segments may also name instance fields.
 /// </para>
 /// <para>
 /// Exactly one of <see cref="AssignValue"/> or <see cref="InvokeMethod"/> must be set:

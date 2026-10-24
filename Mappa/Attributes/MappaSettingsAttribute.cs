@@ -369,6 +369,27 @@ public sealed class MappaSettingsAttribute
     public BooleanSetting MapTargetExplicitInterfaceProperties { get; set; } = BooleanSetting.Undefined;
 
     /// <summary>
+    /// Gets or sets a value indicating whether accessible instance fields on the source type
+    /// may be read when pairing with a target property, field, or constructor parameter by name
+    /// (including nested paths and attribute-driven member names). Disabled by default.
+    /// Private or protected source fields require <see cref="MappaAllowInaccessibleSourceMembersAttribute"/>.
+    /// Compiler-generated backing fields and <c>static</c>/<c>const</c>/<c>ref</c>/<c>fixed</c> fields are never included.
+    /// </summary>
+    public BooleanSetting MapSourceFields { get; set; } = BooleanSetting.Undefined;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether accessible instance fields on the target type
+    /// may be written or initialized when pairing with a source property or field by name
+    /// (including nested paths, post-constructor assignment, and attribute-driven member names).
+    /// Disabled by default. Private or protected target fields require
+    /// <see cref="MappaAllowInaccessibleTargetMembersAttribute"/> (subject to
+    /// <see cref="MappaAllowInaccessibleTargetMembersAttribute.AllowFields"/>).
+    /// Compiler-generated backing fields, <c>static</c>/<c>const</c>/<c>ref</c>/<c>fixed</c>,
+    /// and <c>readonly</c> fields are never assigned.
+    /// </summary>
+    public BooleanSetting MapTargetFields { get; set; } = BooleanSetting.Undefined;
+
+    /// <summary>
     /// Gets or sets a value indicating whether enum member names or
     /// <see cref="System.ComponentModel.DescriptionAttribute"/> values are matched
     /// case-insensitively when mapping between enums or from <see cref="string"/> to an enum.
