@@ -130,7 +130,7 @@ internal static class ProjectionExpressionBuilder
         }
 
         var literal = AttributeConstantValueHelper.ToCode(strategy.AssignValue);
-        var substitutedSource = $"({source} ?? {literal})";
+        var substitutedSource = $"{source} ?? {literal}";
         if (!TryBuildExpression(strategy.ElementStrategy, substitutedSource, context, out var expression))
         {
             throw new MappaGeneratorException("Unable to build projection expression for null-substitute element strategy.");
@@ -238,20 +238,34 @@ internal static class ProjectionExpressionBuilder
         var selectExpression =
             $"global::System.Linq.Enumerable.Select({source}, {lambdaParameter} => {elementExpression})";
 
+        string mappedExpression;
         if (strategy.TargetType.IsArray())
         {
-            return $"global::System.Linq.Enumerable.ToArray({selectExpression})";
+            mappedExpression = $"global::System.Linq.Enumerable.ToArray({selectExpression})";
         }
-
-        if (strategy.TargetType.IsIEnumerable()
+        else if (strategy.TargetType.IsIEnumerable()
             && !strategy.TargetType.IsList(context.BuilderContext.Compilation)
             && !strategy.TargetType.IsOrImplementICollection()
             && !strategy.TargetType.IsOrImplementIList())
         {
-            return selectExpression;
+            mappedExpression = selectExpression;
+        }
+        else
+        {
+            mappedExpression = $"global::System.Linq.Enumerable.ToList({selectExpression})";
         }
 
-        return $"global::System.Linq.Enumerable.ToList({selectExpression})";
+        if (EmptyContainerExpressionHelper.IsEnabled(strategy.ReplaceNullWithEmptyContainer)
+            && EmptyContainerExpressionHelper.TryGetEmptyExpression(
+                strategy.TargetType,
+                context.BuilderContext.Compilation,
+                context.BuilderContext.GetMapMethod().MethodSymbol,
+                out var emptyExpression))
+        {
+            return $"{source} == null ? {emptyExpression} : {mappedExpression}";
+        }
+
+        return mappedExpression;
     }
 
     private static string BuildIdentityExpression(string source)

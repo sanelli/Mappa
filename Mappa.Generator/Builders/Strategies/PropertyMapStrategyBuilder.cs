@@ -113,13 +113,19 @@ internal sealed class PropertyMapStrategyBuilder
             chainSource = rootParameterName;
         }
 
+        // When null substitution wraps the property strategy, allow a null chain result so
+        // AssignValue / InvokeMethod can substitute instead of throwing.
+        var chainTargetType = this.strategy.PropertyStrategy is NullSubstituteMapStrategy nullSubstituteMapStrategy
+            ? nullSubstituteMapStrategy.SourceType
+            : this.strategy.TargetProperty.Type;
+
         var accessExpression = PropertyPathExpressionBuilder.BuildChainedAccessExpression(
             chainSource,
             receiverPathPrefix,
             chainedSourcePropertyPath.RemainingSourceSegments,
             chainedSourcePropertyPath.StartingSourceType,
             context.GetMapMethod().NullableEnabled,
-            this.strategy.TargetProperty.Type,
+            chainTargetType,
             out var resolvedProperties,
             chainedSourcePropertyPath.OriginalSourcePath);
 

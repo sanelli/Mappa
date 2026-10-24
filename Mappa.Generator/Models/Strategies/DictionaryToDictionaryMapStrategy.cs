@@ -16,6 +16,7 @@ namespace Mappa.Generator.Models.Strategies;
 /// <param name="keyStrategy">The strategy for the keys.</param>
 /// <param name="valueStrategy">The strategy for the values.</param>
 /// <param name="dictionaryAssignment">The dictionary assignment setting.</param>
+/// <param name="replaceNullWithEmptyContainer">Enable or disable replacing a null source dictionary with an empty target.</param>
 /// <param name="preferredSourceInterface">The resolved preferred source interface, if any.</param>
 /// <param name="preferredTargetInterface">The resolved preferred target interface, if any.</param>
 internal sealed class DictionaryToDictionaryMapStrategy(
@@ -24,6 +25,7 @@ internal sealed class DictionaryToDictionaryMapStrategy(
     MapStrategy keyStrategy,
     MapStrategy valueStrategy,
     DictionaryAssignmentSetting dictionaryAssignment,
+    BooleanSetting replaceNullWithEmptyContainer = BooleanSetting.Undefined,
     INamedTypeSymbol? preferredSourceInterface = null,
     INamedTypeSymbol? preferredTargetInterface = null)
         : MapStrategy(targetType, sourceType)
@@ -42,6 +44,11 @@ internal sealed class DictionaryToDictionaryMapStrategy(
     /// Gets the dictionary assignment setting.
     /// </summary>
     internal DictionaryAssignmentSetting DictionaryAssignment { get; } = dictionaryAssignment;
+
+    /// <summary>
+    /// Gets a value indicating whether a null source dictionary should be replaced with an empty target.
+    /// </summary>
+    internal BooleanSetting ReplaceNullWithEmptyContainer { get; } = replaceNullWithEmptyContainer;
 
     /// <summary>
     /// Gets the resolved preferred source interface, if any.

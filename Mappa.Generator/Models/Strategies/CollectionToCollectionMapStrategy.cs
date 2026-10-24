@@ -19,6 +19,7 @@ namespace Mappa.Generator.Models.Strategies;
 /// <param name="containerCapacityConstructors">Enable or disable support for custom collection with capacity constructor.</param>
 /// <param name="preventEnumerableCount">Enable or disable avoiding <c>Enumerable.Count</c> when mapping to fixed-size collection targets.</param>
 /// <param name="enumerableConcreteType">Defines the concrete type used for sequence-like collection interface targets.</param>
+/// <param name="replaceNullWithEmptyContainer">Enable or disable replacing a null source container with an empty target.</param>
 /// <param name="preferredSourceInterface">The resolved preferred source interface, if any.</param>
 /// <param name="preferredTargetInterface">The resolved preferred target interface, if any.</param>
 internal sealed class CollectionToCollectionMapStrategy(
@@ -30,6 +31,7 @@ internal sealed class CollectionToCollectionMapStrategy(
     BooleanSetting containerCapacityConstructors,
     BooleanSetting preventEnumerableCount,
     EnumerableConcreteTypeSetting enumerableConcreteType,
+    BooleanSetting replaceNullWithEmptyContainer = BooleanSetting.Undefined,
     INamedTypeSymbol? preferredSourceInterface = null,
     INamedTypeSymbol? preferredTargetInterface = null)
         : MapStrategy(targetType, sourceType)
@@ -65,6 +67,11 @@ internal sealed class CollectionToCollectionMapStrategy(
     /// Gets the concrete type used for sequence-like collection interface targets.
     /// </summary>
     internal EnumerableConcreteTypeSetting EnumerableConcreteType { get; } = enumerableConcreteType;
+
+    /// <summary>
+    /// Gets a value indicating whether a null source container should be replaced with an empty target.
+    /// </summary>
+    internal BooleanSetting ReplaceNullWithEmptyContainer { get; } = replaceNullWithEmptyContainer;
 
     /// <summary>
     /// Gets the resolved preferred source interface, if any.

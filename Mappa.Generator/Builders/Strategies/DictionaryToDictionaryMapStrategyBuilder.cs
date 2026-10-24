@@ -29,6 +29,42 @@ internal sealed class DictionaryToDictionaryMapStrategyBuilder
     /// <inheritdoc/>
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
+        if (EmptyContainerExpressionHelper.IsEnabled(this.strategy.ReplaceNullWithEmptyContainer)
+            && EmptyContainerExpressionHelper.TryGetEmptyExpression(
+                this.strategy.TargetType,
+                context.Compilation,
+                context.GetMapMethod().MethodSymbol,
+                out var emptyExpression))
+        {
+            var stringBuilder = new PrettyCode.StringBuilder();
+            var resultTemporary = context.NextTemporary();
+            stringBuilder.AppendLine($"{this.strategy.TargetType.ToDisplayString()} {resultTemporary};");
+            stringBuilder.AppendLine($"if ({source} is null)");
+            using (stringBuilder.CurlyBracesBlock())
+            {
+                stringBuilder.AppendLine($"{resultTemporary} = {emptyExpression};");
+            }
+
+            stringBuilder.AppendLine("else");
+            using (stringBuilder.CurlyBracesBlock())
+            {
+                var (mappedTemporary, mappedCode) = this.BuildMappedSource(source, context, mappaGlobalOptions);
+                if (!string.IsNullOrWhiteSpace(mappedCode))
+                {
+                    stringBuilder.AppendLine(mappedCode);
+                }
+
+                stringBuilder.AppendLine($"{resultTemporary} = {mappedTemporary};");
+            }
+
+            return (resultTemporary, stringBuilder.ToString());
+        }
+
+        return this.BuildMappedSource(source, context, mappaGlobalOptions);
+    }
+
+    private (string VariableName, string Code) BuildMappedSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
+    {
         var (targetKeyType, targetValueType) = this.strategy.TargetType.GetKeyAndValueTypes(context.Compilation);
         var (sourceKeyType, sourceValueType) = this.strategy.SourceType.GetKeyAndValueTypes(context.Compilation);
 

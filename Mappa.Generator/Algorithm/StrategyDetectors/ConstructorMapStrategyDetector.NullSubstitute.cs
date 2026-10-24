@@ -34,11 +34,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         string targetMemberName,
         StringComparison stringComparison)
     {
-        if (this.context.MapMethod is null && this.context.PropertyPathContext is null)
-        {
-            return [];
-        }
-
+        // Use the root map method when mapping in a derived context (e.g. projection element types).
         return this.GetAttributeMapMethod()
             .GetAttributes<MappaNullSubstituteAttribute>()
             .Where(attribute => PropertyPathAttributeMatching.MatchesTargetMember(
@@ -54,11 +50,6 @@ internal sealed partial class ConstructorMapStrategyDetector
         string targetMemberName,
         StringComparison stringComparison)
     {
-        if (this.context.MapMethod is null && this.context.PropertyPathContext is null)
-        {
-            return false;
-        }
-
         return this.GetAttributeMapMethod()
             .GetAttributes<MappaAssignFromConstantAttribute>()
             .Any(attribute => PropertyPathAttributeMatching.MatchesTargetMember(
@@ -95,6 +86,14 @@ internal sealed partial class ConstructorMapStrategyDetector
         }
 
         var nullSubstituteAttribute = nullSubstituteAttributes[0];
+        var hasInvokeMethod = !string.IsNullOrWhiteSpace(nullSubstituteAttribute.InvokeMethod);
+
+        // Exactly one mode must be set; validation reports the diagnostic when neither or both are present.
+        if (nullSubstituteAttribute.HasAssignValue == hasInvokeMethod)
+        {
+            return strategy;
+        }
+
         var sourceType = sourceProperty?.Type ?? strategy.SourceType;
         var elementStrategy = UnwrapNullableStrategies(strategy);
 
@@ -105,11 +104,6 @@ internal sealed partial class ConstructorMapStrategyDetector
                 sourceType,
                 nullSubstituteAttribute.AssignValue,
                 elementStrategy);
-        }
-
-        if (string.IsNullOrWhiteSpace(nullSubstituteAttribute.InvokeMethod))
-        {
-            return strategy;
         }
 
         return this.TryWrapWithNullSubstituteInvokeMethod(

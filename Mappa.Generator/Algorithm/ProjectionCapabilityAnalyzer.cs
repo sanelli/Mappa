@@ -686,6 +686,7 @@ internal static class ProjectionCapabilityAnalyzer
             collectionToCollectionMapStrategy.ContainerCapacityConstructors,
             collectionToCollectionMapStrategy.PreventEnumerableCount,
             collectionToCollectionMapStrategy.EnumerableConcreteType,
+            collectionToCollectionMapStrategy.ReplaceNullWithEmptyContainer,
             collectionToCollectionMapStrategy.PreferredSourceInterface,
             collectionToCollectionMapStrategy.PreferredTargetInterface);
         return true;

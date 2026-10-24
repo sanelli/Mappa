@@ -11,7 +11,7 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Integration tests for <c>[MappaNullSubstitute]</c> AssignValue mode.
 /// </summary>
-public sealed class MappaNullSubstituteAssignValueIntegrationTests
+public sealed partial class MappaNullSubstituteAssignValueIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {
     /// <summary>
