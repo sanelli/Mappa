@@ -998,7 +998,7 @@ public sealed class AttributeDataExtensionsTests
 
     /// <summary>
     /// Test <see cref="AttributeDataExtensions.GetMappaAllowInaccessibleTargetMembersAttribute"/>
-    /// reads <c>AllowProperties = false</c> and <c>AllowConstructors = false</c>.
+    /// reads <c>AllowProperties</c>, <c>AllowFields</c>, and <c>AllowConstructors</c> as <c>false</c>.
     /// </summary>
     [Fact]
     [UnitTest]
@@ -1022,7 +1022,7 @@ public sealed class AttributeDataExtensionsTests
                               [Mappa]
                               public sealed partial class TestMapper
                               {
-                                  [MappaAllowInaccessibleTargetMembers(AllowProperties = false, AllowConstructors = false)]
+                                  [MappaAllowInaccessibleTargetMembers(AllowProperties = false, AllowFields = false, AllowConstructors = false)]
                                   public partial Target Map(Source input);
                               }
                               """;
@@ -1037,6 +1037,7 @@ public sealed class AttributeDataExtensionsTests
 
         attribute.Should().NotBeNull();
         attribute.AllowProperties.Should().BeFalse();
+        attribute.AllowFields.Should().BeFalse();
         attribute.AllowConstructors.Should().BeFalse();
         attribute.MemberNames.Should().BeEmpty();
     }

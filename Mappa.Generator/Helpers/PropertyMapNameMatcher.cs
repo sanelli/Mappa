@@ -3,13 +3,14 @@
 // </copyright>
 
 using Mappa.Generator.Extensions;
+using Mappa.Generator.Models;
 
 using Microsoft.CodeAnalysis;
 
 namespace Mappa.Generator.Helpers;
 
 /// <summary>
-/// Matches source property names to target property or constructor parameter names.
+/// Matches source property and field names to target property, field, or constructor parameter names.
 /// </summary>
 internal static class PropertyMapNameMatcher
 {
@@ -34,6 +35,88 @@ internal static class PropertyMapNameMatcher
         out IPropertySymbol? match)
     {
         match = null;
+        if (!TryFindSourceMember(
+                sourceProperties,
+                sourceFields: [],
+                expectedName,
+                caseInsensitivePropertyMap,
+                ignoreUnderscoreForPropertyMap,
+                isConstructorParameterPath,
+                useExactNameFromAttribute,
+                out var member)
+            || member?.Property is not { } property)
+        {
+            return false;
+        }
+
+        match = property;
+        return true;
+    }
+
+    /// <summary>
+    /// Tries to find a single source member matching the expected name.
+    /// When both a property and a field match, the property is preferred.
+    /// </summary>
+    /// <param name="sourceProperties">The source properties.</param>
+    /// <param name="sourceFields">The source fields.</param>
+    /// <param name="expectedName">The expected source member name.</param>
+    /// <param name="caseInsensitivePropertyMap">The case-insensitive matching setting.</param>
+    /// <param name="ignoreUnderscoreForPropertyMap">The ignore-underscore matching setting.</param>
+    /// <param name="isConstructorParameterPath">Whether the match is for a constructor parameter.</param>
+    /// <param name="useExactNameFromAttribute">Whether an explicit source member name was provided.</param>
+    /// <param name="match">The matched source member, if any.</param>
+    /// <returns><c>true</c> when exactly one preferred source member matches; otherwise <c>false</c>.</returns>
+    internal static bool TryFindSourceMember(
+        IReadOnlyList<IPropertySymbol> sourceProperties,
+        IReadOnlyList<IFieldSymbol> sourceFields,
+        string expectedName,
+        BooleanSetting caseInsensitivePropertyMap,
+        BooleanSetting ignoreUnderscoreForPropertyMap,
+        bool isConstructorParameterPath,
+        bool useExactNameFromAttribute,
+        out MappableMember? match)
+    {
+        match = null;
+
+        if (TryFindSingleMatchingProperty(
+                sourceProperties,
+                expectedName,
+                caseInsensitivePropertyMap,
+                ignoreUnderscoreForPropertyMap,
+                isConstructorParameterPath,
+                useExactNameFromAttribute,
+                out var propertyMatch))
+        {
+            match = MappableMember.FromProperty(propertyMatch, propertyMatch.GetMappablePropertyName());
+            return true;
+        }
+
+        if (TryFindSingleMatchingField(
+                sourceFields,
+                expectedName,
+                caseInsensitivePropertyMap,
+                ignoreUnderscoreForPropertyMap,
+                isConstructorParameterPath,
+                useExactNameFromAttribute,
+                out var fieldMatch))
+        {
+            match = MappableMember.FromField(fieldMatch);
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool TryFindSingleMatchingProperty(
+        IReadOnlyList<IPropertySymbol> sourceProperties,
+        string expectedName,
+        BooleanSetting caseInsensitivePropertyMap,
+        BooleanSetting ignoreUnderscoreForPropertyMap,
+        bool isConstructorParameterPath,
+        bool useExactNameFromAttribute,
+        out IPropertySymbol match)
+    {
+        match = null!;
         IPropertySymbol? candidate = null;
         var matchCount = 0;
 
@@ -55,13 +138,61 @@ internal static class PropertyMapNameMatcher
 
             if (matchCount > 1)
             {
-                match = null;
                 return false;
             }
         }
 
+        if (matchCount != 1 || candidate is null)
+        {
+            return false;
+        }
+
         match = candidate;
-        return matchCount == 1;
+        return true;
+    }
+
+    private static bool TryFindSingleMatchingField(
+        IReadOnlyList<IFieldSymbol> sourceFields,
+        string expectedName,
+        BooleanSetting caseInsensitivePropertyMap,
+        BooleanSetting ignoreUnderscoreForPropertyMap,
+        bool isConstructorParameterPath,
+        bool useExactNameFromAttribute,
+        out IFieldSymbol match)
+    {
+        match = null!;
+        IFieldSymbol? candidate = null;
+        var matchCount = 0;
+
+        foreach (var field in sourceFields)
+        {
+            if (!NamesMatch(
+                    expectedName,
+                    field.Name,
+                    caseInsensitivePropertyMap,
+                    ignoreUnderscoreForPropertyMap,
+                    isConstructorParameterPath,
+                    useExactNameFromAttribute))
+            {
+                continue;
+            }
+
+            candidate = field;
+            matchCount++;
+
+            if (matchCount > 1)
+            {
+                return false;
+            }
+        }
+
+        if (matchCount != 1 || candidate is null)
+        {
+            return false;
+        }
+
+        match = candidate;
+        return true;
     }
 
     private static bool NamesMatch(

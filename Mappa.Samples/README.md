@@ -38,6 +38,7 @@ See the [tutorial](../Documentation/tutorial.md) for a guided introduction, or b
 | [`InvokeParseMapper.cs`](InvokeParseMapper.cs) | Parse settings: culture and format for date/time, `Guid`, and numeric types |
 | [`InvokeToStringMapper.cs`](InvokeToStringMapper.cs) | ToString settings: culture and format |
 | [`PropertyMapNameSettingsMapper.cs`](PropertyMapNameSettingsMapper.cs) | `CaseInsensitivePropertyMap`, `IgnoreUnderscoreForPropertyMap` |
+| [`MapFieldsMapper.cs`](MapFieldsMapper.cs) | `MapSourceFields`, `MapTargetFields` (field ↔ field and field → property) |
 | [`ExplicitInterfacePropertiesMapper.cs`](ExplicitInterfacePropertiesMapper.cs) | `MapSourceExplicitInterfaceProperties`, `MapTargetExplicitInterfaceProperties` (empty ctor + parameterized leftover) |
 | [`CaseInsensitiveEnumMapper.cs`](CaseInsensitiveEnumMapper.cs) | `CaseInsensitiveEnumMap` (string-to-enum) |
 | [`CaseInsensitiveEnumToEnumMapper.cs`](CaseInsensitiveEnumToEnumMapper.cs) | `CaseInsensitiveEnumMap` (enum-to-enum) |

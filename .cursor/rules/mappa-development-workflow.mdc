@@ -63,6 +63,7 @@ The development environment uses **PowerShell**. All commands run in the termina
 - **File endings:** the root [`.editorconfig`](.editorconfig) sets `insert_final_newline = false` and `end_of_line = crlf`. Source files must **not** end with a trailing newline after the last line of content. A trailing newline triggers StyleCop **SA1518** (*File may not end with a newline character*). When creating or editing files, ensure the final character is the last character of the closing line (e.g. `}`), not an extra blank line or newline after it.
 - **Nullability:** do **not** use the null-forgiving operator (`!`) to silence nullable reference warnings. Prefer APIs that accept nullable parameters when null is valid, explicit null or whitespace checks with a thrown exception when null is unexpected (e.g. `MappaGeneratorException`, `ArgumentNullException`), or assign to a local variable after validation so the compiler can narrow the type.
 - **Generated C# emission strings (hard rule):** never put source-code strings used for mapping codegen (type names in emitted statements, method calls, object-creation snippets, casts, placeholders like `{source}`, etc.) inside **strategy detectors** or **strategy model** classes. Those strings belong **only** in `IMappaStrategyBuilder` implementations under `Mappa.Generator/Builders/Strategies/`. Detectors may only choose types and construct strategy instances; strategies may only hold typed data (`ITypeSymbol`, enums, nested strategies). Prefer many small builders over stuffing emission templates into detectors/strategies. Using `ITypeSymbol.ToDisplayString()` in a builder is allowed; hardcoding conversion expressions in detectors/strategies is not.
+- **Properties and fields (hard rule):** wherever a mapping path uses, matches, or documents a **property**, also support **instance fields** when `MapSourceFields` / `MapTargetFields` are enabled. See [`.cursor/rules/mappa-property-field-members.mdc`](mappa-property-field-members.mdc) (settings gates, property-over-field precedence, attribute “Property” names meaning members, exclusions, inaccessible + projections). Do not add property-only behaviour without field parity or an explicit documented exclusion.
 
 ## Git
 
@@ -114,7 +115,7 @@ A single feature may require **two** bumps (e.g. one after **Mappa**, one after 
 - Update tests after changing a project.
 - Cover **happy path and negative paths** where possible.
 - When a coverage baseline was recorded (code-change issues), maintain or improve **code coverage** relative to that baseline (see **Code Coverage**).
-- For **Mappa.Generator**, test error/warning messages and corner cases.
+- For **Mappa.Generator**, test error/warning messages and corner cases. When a feature maps or selects **properties**, add or extend tests that exercise the same behaviour with **fields** under `MapSourceFields` / `MapTargetFields` (see [`.cursor/rules/mappa-property-field-members.mdc`](mappa-property-field-members.mdc)), unless the feature is explicitly property-only and documented as such.
 - **`HaveGeneratedSourceCode()` is not validation (hard rule):** it only asserts that generated sources exist (count). **Never** end an assertion chain on `HaveGeneratedSourceCode()` alone — that is always incomplete and incorrect.
 - **Required continuation after `HaveGeneratedSourceCode()`:** in the **same** assertion chain, immediately continue with all of the following (no exceptions for warning/diagnostic tests):
   1. `WithCompilationUnit()` (or `WithCompilationUnits`);
@@ -152,9 +153,9 @@ A single feature may require **two** bumps (e.g. one after **Mappa**, one after 
 ## Documentation
 
 - When a new feature is added or a new setting is added, update the relevant sections of [`Documentation/tutorial.md`](Documentation/tutorial.md).
-- When adding, changing, or removing a Mappa attribute (or changing its documented behaviour, including XML docs that describe public parameters), update [`Documentation/mappa-attributes.md`](Documentation/mappa-attributes.md) and [`Mappa/README.md`](Mappa/README.md).
+- When adding, changing, or removing a Mappa attribute (or changing its documented behaviour, including XML docs that describe public parameters), update [`Documentation/mappa-attributes.md`](Documentation/mappa-attributes.md) and [`Mappa/README.md`](Mappa/README.md). If the attribute selects or names a mapped **property**, document that path segments / names may also resolve to **fields** when `MapSourceFields` / `MapTargetFields` are enabled (see [`.cursor/rules/mappa-property-field-members.mdc`](mappa-property-field-members.mdc)).
 - When adding a new `MappaSettings` property, update [`Documentation/mappa-attributes.md`](Documentation/mappa-attributes.md) and [`Mappa/README.md`](Mappa/README.md) as needed, but do **not** update the root [`.editorconfig`](.editorconfig).
-- When the source generator algorithm is updated, update [`Documentation/mappa-generator-algorithm.md`](Documentation/mappa-generator-algorithm.md) and [`Mappa.Generator/README.md`](Mappa.Generator/README.md).
+- When the source generator algorithm is updated, update [`Documentation/mappa-generator-algorithm.md`](Documentation/mappa-generator-algorithm.md) and [`Mappa.Generator/README.md`](Mappa.Generator/README.md). Call out field participation wherever the algorithm describes property pairing, initializers, nested paths, or projections.
 - When a new feature is added (mapping strategy, attribute, `MappaSettings` property, integration package, or other user-facing capability), add or update the corresponding entry in [`Documentation/features.md`](Documentation/features.md) with links to tutorial, attributes, algorithm, and samples as applicable.
 
 ## Final Step

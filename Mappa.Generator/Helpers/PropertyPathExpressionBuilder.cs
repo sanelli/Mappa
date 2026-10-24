@@ -3,6 +3,7 @@
 // </copyright>
 
 using Mappa.Generator.Extensions;
+using Mappa.Generator.Models;
 
 using Microsoft.CodeAnalysis;
 
@@ -37,6 +38,48 @@ internal static class PropertyPathExpressionBuilder
         out IPropertySymbol[] resolvedProperties,
         string? diagnosticPathOverride = null)
     {
+        var expression = BuildChainedAccessExpression(
+            receiverExpression,
+            receiverPathPrefix,
+            pathSegments,
+            startingType,
+            nullableEnabled,
+            targetType,
+            includeFields: false,
+            out var resolvedMembers,
+            diagnosticPathOverride);
+        resolvedProperties = resolvedMembers
+            .Select(member => member.Property!)
+            .ToArray();
+        return expression;
+    }
+
+    /// <summary>
+    /// Builds a chained member-access expression for the specified path.
+    /// </summary>
+    /// <param name="receiverExpression">The starting receiver expression.</param>
+    /// <param name="receiverPathPrefix">The dotted path prefix already consumed, used for diagnostics.</param>
+    /// <param name="pathSegments">The remaining path segments to access.</param>
+    /// <param name="startingType">The type of the receiver expression.</param>
+    /// <param name="nullableEnabled">Whether nullable reference types are enabled.</param>
+    /// <param name="targetType">The final target member type.</param>
+    /// <param name="includeFields">Whether fields may resolve a path segment.</param>
+    /// <param name="resolvedMembers">The resolved members for each segment.</param>
+    /// <param name="diagnosticPathOverride">
+    /// Optional full path used in null-reference diagnostics (for example the original attribute source path).
+    /// </param>
+    /// <returns>The chained access expression.</returns>
+    internal static string BuildChainedAccessExpression(
+        string receiverExpression,
+        string receiverPathPrefix,
+        string[] pathSegments,
+        ITypeSymbol startingType,
+        bool nullableEnabled,
+        ITypeSymbol targetType,
+        bool includeFields,
+        out MappableMember[] resolvedMembers,
+        string? diagnosticPathOverride = null)
+    {
         var path = PropertyPath.FromRemainingSegments(pathSegments);
         var chainExpression = string.IsNullOrWhiteSpace(receiverPathPrefix)
             ? receiverExpression
@@ -46,14 +89,21 @@ internal static class PropertyPathExpressionBuilder
                 startingType,
                 receiverExpression,
                 chainExpression,
+                includeFields,
                 out var pathStartingType))
         {
-            resolvedProperties = [];
+            resolvedMembers = [];
             return receiverExpression;
         }
 
-        if (!PropertyPathSymbolResolver.TryResolvePropertyPath(pathStartingType, path, out resolvedProperties, out _))
+        if (!PropertyPathSymbolResolver.TryResolveMemberPath(
+                pathStartingType,
+                path,
+                includeFields,
+                out resolvedMembers,
+                out _))
         {
+            resolvedMembers = [];
             return chainExpression;
         }
 
@@ -62,7 +112,7 @@ internal static class PropertyPathExpressionBuilder
             pathSegments,
             pathStartingType,
             nullableEnabled,
-            resolvedProperties,
+            resolvedMembers,
             out var diagnosticPath,
             out var receiverTypeForAccess,
             out var usedConditionalAccess);
@@ -99,7 +149,7 @@ internal static class PropertyPathExpressionBuilder
         string[] pathSegments,
         ITypeSymbol pathStartingType,
         bool nullableEnabled,
-        IPropertySymbol[] resolvedProperties,
+        MappableMember[] resolvedMembers,
         out string diagnosticPath,
         out ITypeSymbol receiverTypeForAccess,
         out bool usedConditionalAccess)
@@ -119,7 +169,7 @@ internal static class PropertyPathExpressionBuilder
             diagnosticPath = string.IsNullOrWhiteSpace(diagnosticPath)
                 ? segment
                 : $"{diagnosticPath}.{segment}";
-            receiverTypeForAccessLocal = resolvedProperties[index].Type;
+            receiverTypeForAccessLocal = resolvedMembers[index].Type;
         }
 
         receiverTypeForAccess = receiverTypeForAccessLocal;

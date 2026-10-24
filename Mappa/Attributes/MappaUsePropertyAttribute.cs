@@ -9,6 +9,8 @@ namespace Mappa.Attributes;
 /// <para>
 /// Both <see cref="TargetPropertyName"/> and <see cref="SourcePropertyName"/> may be a single property name or a dot-separated chain of nested property names
 /// (for example <c>"Address.City"</c> or <c>"Location.Address.City"</c>).
+/// When <see cref="MappaSettingsAttribute.MapTargetFields"/> / <see cref="MappaSettingsAttribute.MapSourceFields"/>
+/// is enabled, path segments may also name instance fields.
 /// </para>
 /// <para>
 /// For a target path with multiple segments, the attribute applies when mapping the <strong>first</strong> segment; the remaining segments are used while mapping the nested property type.

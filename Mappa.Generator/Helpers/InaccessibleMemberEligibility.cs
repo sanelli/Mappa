@@ -135,6 +135,90 @@ internal static class InaccessibleMemberEligibility
     }
 
     /// <summary>
+    /// Checks whether a source field can be read either because it is accessible
+    /// or via an unsafe accessor when opted in.
+    /// </summary>
+    /// <param name="field">The source field.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <param name="mapMethod">The root map method.</param>
+    /// <param name="options">The inaccessible source options, if any.</param>
+    /// <param name="requiresUnsafeAccessor">
+    /// Set to <c>true</c> when the field is only readable via an unsafe accessor.
+    /// </param>
+    /// <returns><c>true</c> when the field can be used as a mapping source.</returns>
+    internal static bool TryIsSourceFieldReadable(
+        IFieldSymbol field,
+        Compilation compilation,
+        MapMethod mapMethod,
+        InaccessibleSourceMemberOptions? options,
+        out bool requiresUnsafeAccessor)
+    {
+        requiresUnsafeAccessor = false;
+
+        if (!field.IsEligibleForInstanceMemberMapping())
+        {
+            return false;
+        }
+
+        if (field.IsFieldAccessible(compilation, mapMethod))
+        {
+            return true;
+        }
+
+        if (options is null
+            || !compilation.IsUnsafeAccessorSupported()
+            || !options.IsMemberAllowed(field.Name))
+        {
+            return false;
+        }
+
+        requiresUnsafeAccessor = true;
+        return true;
+    }
+
+    /// <summary>
+    /// Checks whether a target field can be written either because it is accessible
+    /// or via an unsafe accessor when opted in.
+    /// </summary>
+    /// <param name="field">The target field.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <param name="mapMethod">The root map method.</param>
+    /// <param name="options">The inaccessible target options, if any.</param>
+    /// <param name="requiresUnsafeAccessor">
+    /// Set to <c>true</c> when the field is only writable via an unsafe accessor.
+    /// </param>
+    /// <returns><c>true</c> when the field can be used as a mapping target.</returns>
+    internal static bool TryIsTargetFieldWritable(
+        IFieldSymbol field,
+        Compilation compilation,
+        MapMethod mapMethod,
+        InaccessibleTargetMemberOptions? options,
+        out bool requiresUnsafeAccessor)
+    {
+        requiresUnsafeAccessor = false;
+
+        if (!field.IsEligibleForTargetMemberAssignment())
+        {
+            return false;
+        }
+
+        if (field.IsFieldAccessible(compilation, mapMethod))
+        {
+            return true;
+        }
+
+        if (options is null
+            || !compilation.IsUnsafeAccessorSupported()
+            || !options.IsFieldAllowed(field.Name))
+        {
+            return false;
+        }
+
+        requiresUnsafeAccessor = true;
+        return true;
+    }
+
+    /// <summary>
     /// Checks whether a constructor can be invoked either because it is accessible
     /// or because inaccessible constructors are opted in.
     /// </summary>

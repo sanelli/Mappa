@@ -60,17 +60,19 @@ internal sealed class PropertyMapStrategyBuilder
         ChainedSourcePropertyPathInfo chainedSourcePropertyPath,
         string chainSource,
         string receiverPathPrefix,
-        IPropertySymbol[] resolvedProperties)
+        MappableMember[] resolvedMembers,
+        bool includeFields)
     {
-        if (resolvedProperties.Length > 0)
+        if (resolvedMembers.Length > 0)
         {
-            return resolvedProperties[resolvedProperties.Length - 1].Type;
+            return resolvedMembers[resolvedMembers.Length - 1].Type;
         }
 
         if (PropertyPathSymbolResolver.TryGetReceiverTypeForPathPrefix(
                 chainedSourcePropertyPath.StartingSourceType,
                 chainSource,
                 string.IsNullOrWhiteSpace(receiverPathPrefix) ? chainSource : receiverPathPrefix,
+                includeFields,
                 out var receiverType))
         {
             return receiverType;
@@ -79,22 +81,28 @@ internal sealed class PropertyMapStrategyBuilder
         return chainedSourcePropertyPath.StartingSourceType;
     }
 
-    private string BuildSourcePropertyTemporary(PrettyCode.StringBuilder builder, string source, MappaBuilderContext context)
+    private string BuildSourcePropertyTemporary(
+        PrettyCode.StringBuilder builder,
+        string source,
+        MappaBuilderContext context)
     {
         if (this.strategy.ChainedSourcePropertyPath is not null)
         {
             return this.AppendChainedSourcePropertyRead(builder, source, context);
         }
 
-        if (this.strategy.SourceProperty is not null)
+        if (this.strategy.SourceProperty is not null || this.strategy.SourceField is not null)
         {
-            return this.AppendDirectSourcePropertyRead(builder, source, context);
+            return this.AppendDirectSourceMemberRead(builder, source, context);
         }
 
         return string.Empty;
     }
 
-    private string AppendChainedSourcePropertyRead(PrettyCode.StringBuilder builder, string source, MappaBuilderContext context)
+    private string AppendChainedSourcePropertyRead(
+        PrettyCode.StringBuilder builder,
+        string source,
+        MappaBuilderContext context)
     {
         var chainedSourcePropertyPath = this.strategy.ChainedSourcePropertyPath;
         if (chainedSourcePropertyPath is null)
@@ -117,8 +125,9 @@ internal sealed class PropertyMapStrategyBuilder
         // AssignValue / InvokeMethod can substitute instead of throwing.
         var chainTargetType = this.strategy.PropertyStrategy is NullSubstituteMapStrategy nullSubstituteMapStrategy
             ? nullSubstituteMapStrategy.SourceType
-            : this.strategy.TargetProperty.Type;
+            : this.strategy.TargetType;
 
+        var includeFields = chainedSourcePropertyPath.IncludeFields;
         var accessExpression = PropertyPathExpressionBuilder.BuildChainedAccessExpression(
             chainSource,
             receiverPathPrefix,
@@ -126,35 +135,49 @@ internal sealed class PropertyMapStrategyBuilder
             chainedSourcePropertyPath.StartingSourceType,
             context.GetMapMethod().NullableEnabled,
             chainTargetType,
-            out var resolvedProperties,
+            includeFields,
+            out var resolvedMembers,
             chainedSourcePropertyPath.OriginalSourcePath);
 
         var innermostSourceType = ResolveInnermostChainedSourceType(
             chainedSourcePropertyPath,
             chainSource,
             receiverPathPrefix,
-            resolvedProperties);
+            resolvedMembers,
+            includeFields);
 
         var sourcePropertyTemporary = context.NextTemporary();
         builder.AppendLine($"{innermostSourceType.ToDisplayString()} {sourcePropertyTemporary} = {accessExpression};");
         return sourcePropertyTemporary;
     }
 
-    private string AppendDirectSourcePropertyRead(PrettyCode.StringBuilder builder, string source, MappaBuilderContext context)
+    private string AppendDirectSourceMemberRead(PrettyCode.StringBuilder builder, string source, MappaBuilderContext context)
     {
-        if (this.strategy.SourceProperty is not { } sourceProperty)
+        if (this.strategy.SourceProperty is { } sourceProperty)
         {
-            return string.Empty;
+            var sourcePropertyTemporary = context.NextTemporary();
+            var sourceReadExpression = InaccessibleMemberAccessHelper.BuildPropertyReadExpression(
+                source,
+                sourceProperty,
+                this.strategy.RequiresUnsafeAccessorOnSource,
+                this.strategy.RequiresInterfaceCastOnSource,
+                context);
+            builder.AppendLine($"{sourceProperty.Type.ToDisplayString()} {sourcePropertyTemporary} = {sourceReadExpression};");
+            return sourcePropertyTemporary;
         }
 
-        var sourcePropertyTemporary = context.NextTemporary();
-        var sourceReadExpression = InaccessibleMemberAccessHelper.BuildPropertyReadExpression(
-            source,
-            sourceProperty,
-            this.strategy.RequiresUnsafeAccessorOnSource,
-            this.strategy.RequiresInterfaceCastOnSource,
-            context);
-        builder.AppendLine($"{sourceProperty.Type.ToDisplayString()} {sourcePropertyTemporary} = {sourceReadExpression};");
-        return sourcePropertyTemporary;
+        if (this.strategy.SourceField is { } sourceField)
+        {
+            var sourceFieldTemporary = context.NextTemporary();
+            var sourceReadExpression = InaccessibleMemberAccessHelper.BuildFieldReadExpression(
+                source,
+                sourceField,
+                this.strategy.RequiresUnsafeAccessorOnSource,
+                context);
+            builder.AppendLine($"{sourceField.Type.ToDisplayString()} {sourceFieldTemporary} = {sourceReadExpression};");
+            return sourceFieldTemporary;
+        }
+
+        return string.Empty;
     }
 }

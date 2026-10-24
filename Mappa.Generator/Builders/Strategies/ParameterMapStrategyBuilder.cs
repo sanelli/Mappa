@@ -30,22 +30,32 @@ internal sealed class ParameterMapStrategyBuilder
     {
         var builder = new PrettyCode.StringBuilder();
 
-        var sourcePropertyTemporary = string.Empty;
+        var sourceMemberTemporary = string.Empty;
         if (this.strategy.SourceProperty is not null)
         {
-            sourcePropertyTemporary = context.NextTemporary();
+            sourceMemberTemporary = context.NextTemporary();
             var sourceReadExpression = InaccessibleMemberAccessHelper.BuildPropertyReadExpression(
                 source,
                 this.strategy.SourceProperty,
                 this.strategy.RequiresUnsafeAccessorOnSource,
                 this.strategy.RequiresInterfaceCastOnSource,
                 context);
-            builder.AppendLine($"{this.strategy.SourceProperty.Type.ToDisplayString()} {sourcePropertyTemporary} = {sourceReadExpression};");
+            builder.AppendLine($"{this.strategy.SourceProperty.Type.ToDisplayString()} {sourceMemberTemporary} = {sourceReadExpression};");
+        }
+        else if (this.strategy.SourceField is not null)
+        {
+            sourceMemberTemporary = context.NextTemporary();
+            var sourceReadExpression = InaccessibleMemberAccessHelper.BuildFieldReadExpression(
+                source,
+                this.strategy.SourceField,
+                this.strategy.RequiresUnsafeAccessorOnSource,
+                context);
+            builder.AppendLine($"{this.strategy.SourceField.Type.ToDisplayString()} {sourceMemberTemporary} = {sourceReadExpression};");
         }
 
         (string targetTemporary, string code) = ReferenceHandlingCodeGenerator.BuildNestedSource(
             this.strategy.ParameterStrategy,
-            sourcePropertyTemporary,
+            sourceMemberTemporary,
             context,
             mappaGlobalOptions);
         if (!string.IsNullOrWhiteSpace(code))

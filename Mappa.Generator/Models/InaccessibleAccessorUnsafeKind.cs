@@ -15,6 +15,11 @@ internal enum InaccessibleAccessorUnsafeKind
     Method,
 
     /// <summary>
+    /// <c>UnsafeAccessorKind.Field</c>.
+    /// </summary>
+    Field,
+
+    /// <summary>
     /// <c>UnsafeAccessorKind.Constructor</c>.
     /// </summary>
     Constructor,

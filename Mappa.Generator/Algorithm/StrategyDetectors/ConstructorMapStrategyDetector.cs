@@ -176,14 +176,18 @@ internal sealed partial class ConstructorMapStrategyDetector
                                     }
                                 }
 
-                                PropertyMapNameMatcher.TryFindSourceProperty(
+                                var sourceFields = this.GetReadableSourceFields(this.context.SourceType);
+                                PropertyMapNameMatcher.TryFindSourceMember(
                                     sourceProperties,
+                                    sourceFields,
                                     expectedSourcePropertyName,
                                     this.context.MappaUserSettings.CaseInsensitivePropertyMap,
                                     this.context.MappaUserSettings.IgnoreUnderscoreForPropertyMap,
                                     isConstructorParameterPath: true,
                                     useExactNameFromAttribute,
-                                    out IPropertySymbol? sourceProperty);
+                                    out var sourceMember);
+                                IPropertySymbol? sourceProperty = sourceMember?.Property;
+                                IFieldSymbol? sourceField = sourceMember?.Field;
 
                                 // Look for any attribute action that can be applied
                                 if (this.context.MapMethod is not null &&
@@ -211,17 +215,22 @@ internal sealed partial class ConstructorMapStrategyDetector
                                             out requiresUnsafeAccessorOnSource,
                                             out requiresInterfaceCastOnSource);
                                     }
+                                    else if (sourceField is not null)
+                                    {
+                                        this.TryIsSourceFieldReadable(sourceField, out requiresUnsafeAccessorOnSource);
+                                    }
 
                                     var strategy = new ParameterMapStrategy(
                                         targetParameter,
-                                        sourceProperty!,
+                                        sourceProperty,
                                         propertyStrategyFromAttribute,
                                         requiresUnsafeAccessorOnSource,
-                                        requiresInterfaceCastOnSource);
+                                        requiresInterfaceCastOnSource,
+                                        sourceField: sourceProperty is null ? sourceField : null);
                                     return (targetParameter, sourceProperty!, strategy);
                                 }
 
-                                if (sourceProperty is null)
+                                if (sourceProperty is null && sourceField is null)
                                 {
                                     return (targetParameter, null!, noMapStrategy);
                                 }
@@ -236,7 +245,8 @@ internal sealed partial class ConstructorMapStrategyDetector
                                 }
 
                                 // Get a strategy from source to target
-                                if (this.TryGetStrategyForSourceProperty(targetParameterType, sourceProperty, true, out var propertyStrategy))
+                                if (sourceProperty is not null
+                                    && this.TryGetStrategyForSourceProperty(targetParameterType, sourceProperty, true, out var propertyStrategy))
                                 {
                                     propertyStrategy = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, sourceProperties, propertyStrategy);
                                     propertyStrategy = this.TryWrapWithNullSubstituteAssignValue(
@@ -255,6 +265,20 @@ internal sealed partial class ConstructorMapStrategyDetector
                                         requiresUnsafeAccessorOnSource,
                                         requiresInterfaceCastOnSource);
                                     return (targetParameter, sourceProperty, parameterMapStrategy);
+                                }
+
+                                if (sourceField is not null
+                                    && this.TryGetStrategyForSourceField(targetParameterType, sourceField, true, out var fieldStrategy))
+                                {
+                                    this.TryIsSourceFieldReadable(sourceField, out var requiresUnsafeAccessorOnSourceField);
+                                    var parameterMapStrategy = new ParameterMapStrategy(
+                                        targetParameter,
+                                        sourceProperty: null,
+                                        fieldStrategy,
+                                        requiresUnsafeAccessorOnSource: requiresUnsafeAccessorOnSourceField,
+                                        requiresInterfaceCastOnSource: false,
+                                        sourceField: sourceField);
+                                    return (targetParameter, null!, parameterMapStrategy);
                                 }
 
                                 // There is no mapping from source property to target parameter.
@@ -600,10 +624,23 @@ internal sealed partial class ConstructorMapStrategyDetector
             sourceProperty.Type,
             useConstructorMapStrategyDetector,
             null,
-            this.GetSourceMemberPath(sourceProperty, this.context.PropertyPathContext),
+            this.GetSourceMemberPath(sourceProperty.Name, this.context.PropertyPathContext),
             out elementStrategy);
 
-    private string GetSourceMemberPath(IPropertySymbol sourceProperty, PropertyPathContext? propertyPathContext)
+    private bool TryGetStrategyForSourceField(
+        ITypeSymbol targetType,
+        IFieldSymbol sourceField,
+        bool useConstructorMapStrategyDetector,
+        out MapStrategy elementStrategy)
+        => this.TryGetStrategyBetweenTypes(
+            targetType,
+            sourceField.Type,
+            useConstructorMapStrategyDetector,
+            null,
+            this.GetSourceMemberPath(sourceField.Name, this.context.PropertyPathContext),
+            out elementStrategy);
+
+    private string GetSourceMemberPath(string sourceMemberName, PropertyPathContext? propertyPathContext)
     {
         if (propertyPathContext is { IsLeafTargetMapping: true, OriginalSourcePath: { Length: > 0 } originalSourcePath })
         {
@@ -612,8 +649,8 @@ internal sealed partial class ConstructorMapStrategyDetector
 
         var parentPath = this.context.SourceMemberPath;
         return string.IsNullOrEmpty(parentPath)
-            ? sourceProperty.Name
-            : $"{parentPath}.{sourceProperty.Name}";
+            ? sourceMemberName
+            : $"{parentPath}.{sourceMemberName}";
     }
 
     private bool TryGetStrategyForPropertyOrArgumentUsingAttributesOnMethod(

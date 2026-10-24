@@ -177,25 +177,41 @@ internal static class TypeSymbolExtensions
         this ITypeSymbol typeSymbol,
         Compilation compilation,
         ISymbol within)
+        => typeSymbol.GetTypeFields()
+            .Where(field => compilation.IsSymbolAccessibleWithin(field, within));
+
+    /// <summary>
+    /// Gets instance fields declared on the type and its base types that are eligible for member mapping
+    /// (excludes static, const, ref, fixed, and compiler-generated backing fields).
+    /// Accessibility is not filtered here.
+    /// </summary>
+    /// <param name="typeSymbol">The type symbol.</param>
+    /// <returns>The eligible instance fields.</returns>
+    internal static IEnumerable<IFieldSymbol> GetTypeFields(this ITypeSymbol typeSymbol)
     {
-        var currentType = typeSymbol;
+        HashSet<string> fieldNames = new(StringComparer.Ordinal);
+        List<IFieldSymbol> fields = new();
+
+        ITypeSymbol? currentType = typeSymbol;
         while (currentType is not null)
         {
             foreach (var field in currentType.GetMembers().OfType<IFieldSymbol>())
             {
-                if (field.IsStatic || field.IsConst)
+                if (!field.IsEligibleForInstanceMemberMapping())
                 {
                     continue;
                 }
 
-                if (compilation.IsSymbolAccessibleWithin(field, within))
+                if (fieldNames.Add(field.Name))
                 {
-                    yield return field;
+                    fields.Add(field);
                 }
             }
 
             currentType = currentType.BaseType;
         }
+
+        return fields;
     }
 
     /// <summary>

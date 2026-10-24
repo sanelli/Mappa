@@ -348,6 +348,20 @@ internal static class AttributeDataExtensions
                     attribute.MapTargetExplicitInterfaceProperties = (BooleanSetting)value;
                 }
             },
+            [nameof(MappaSettingsAttribute.MapSourceFields)] = static (attribute, constant) =>
+            {
+                if (constant.Value is int value)
+                {
+                    attribute.MapSourceFields = (BooleanSetting)value;
+                }
+            },
+            [nameof(MappaSettingsAttribute.MapTargetFields)] = static (attribute, constant) =>
+            {
+                if (constant.Value is int value)
+                {
+                    attribute.MapTargetFields = (BooleanSetting)value;
+                }
+            },
             [nameof(MappaSettingsAttribute.CaseInsensitiveEnumMap)] = static (attribute, constant) =>
             {
                 if (constant.Value is int value)
@@ -1233,6 +1247,11 @@ internal static class AttributeDataExtensions
                 && namedArgument.Value.Value is bool allowProperties)
             {
                 attribute.AllowProperties = allowProperties;
+            }
+            else if (namedArgument.Key == nameof(MappaAllowInaccessibleTargetMembersAttribute.AllowFields)
+                     && namedArgument.Value.Value is bool allowFields)
+            {
+                attribute.AllowFields = allowFields;
             }
             else if (namedArgument.Key == nameof(MappaAllowInaccessibleTargetMembersAttribute.AllowConstructors)
                      && namedArgument.Value.Value is bool allowConstructors)

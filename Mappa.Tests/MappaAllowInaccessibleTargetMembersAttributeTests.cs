@@ -30,6 +30,7 @@ public sealed class MappaAllowInaccessibleTargetMembersAttributeTests
         // Assert
         attribute.MemberNames.Should().BeEmpty();
         attribute.AllowProperties.Should().BeTrue();
+        attribute.AllowFields.Should().BeTrue();
         attribute.AllowConstructors.Should().BeTrue();
     }
 
@@ -41,11 +42,12 @@ public sealed class MappaAllowInaccessibleTargetMembersAttributeTests
     public void ParamsConstructorInitializesMemberNamesAndDefaultFlags()
     {
         // Act
-        var attribute = new MappaAllowInaccessibleTargetMembersAttribute("PropertyA", "PropertyB");
+        var attribute = new MappaAllowInaccessibleTargetMembersAttribute("PropertyA", "fieldB");
 
         // Assert
-        attribute.MemberNames.Should().Equal("PropertyA", "PropertyB");
+        attribute.MemberNames.Should().Equal("PropertyA", "fieldB");
         attribute.AllowProperties.Should().BeTrue();
+        attribute.AllowFields.Should().BeTrue();
         attribute.AllowConstructors.Should().BeTrue();
     }
 
@@ -84,7 +86,8 @@ public sealed class MappaAllowInaccessibleTargetMembersAttributeTests
     }
 
     /// <summary>
-    /// Tests that <see cref="MappaAllowInaccessibleTargetMembersAttribute.AllowProperties"/>
+    /// Tests that <see cref="MappaAllowInaccessibleTargetMembersAttribute.AllowProperties"/>,
+    /// <see cref="MappaAllowInaccessibleTargetMembersAttribute.AllowFields"/>,
     /// and <see cref="MappaAllowInaccessibleTargetMembersAttribute.AllowConstructors"/> can be set.
     /// </summary>
     [Fact]
@@ -95,19 +98,23 @@ public sealed class MappaAllowInaccessibleTargetMembersAttributeTests
         var attribute = new MappaAllowInaccessibleTargetMembersAttribute
         {
             AllowProperties = false,
+            AllowFields = false,
             AllowConstructors = true,
         };
 
         // Assert
         attribute.AllowProperties.Should().BeFalse();
+        attribute.AllowFields.Should().BeFalse();
         attribute.AllowConstructors.Should().BeTrue();
 
         // Act
         attribute.AllowProperties = true;
+        attribute.AllowFields = true;
         attribute.AllowConstructors = false;
 
         // Assert
         attribute.AllowProperties.Should().BeTrue();
+        attribute.AllowFields.Should().BeTrue();
         attribute.AllowConstructors.Should().BeFalse();
     }
 

@@ -100,22 +100,18 @@ internal sealed class InvokeObjectFactoryMapStrategyBuilder
             _ => throw new MappaGeneratorException($"Unexpected symbol kind '{fieldOrProperty.Kind}' for field or property '{fieldOrProperty.Name}'."),
         };
 
-    private static List<(IPropertySymbol TargetProperty, string TemporaryName, bool RequiresUnsafeAccessorOnTarget, bool RequiresInterfaceCastOnTarget)> BuildPreConstructionInitializerMappings(
+    private static List<(PropertyMapStrategy Strategy, string TemporaryName)> BuildPreConstructionInitializerMappings(
         string source,
         MappaBuilderContext context,
         MappaGlobalOptions mappaGlobalOptions,
         PrettyCode.StringBuilder builder,
         PropertyMapStrategy[] preConstructionInitializers)
     {
-        var propertyInitializersMappings = new List<(IPropertySymbol TargetProperty, string TemporaryName, bool RequiresUnsafeAccessorOnTarget, bool RequiresInterfaceCastOnTarget)>();
+        var propertyInitializersMappings = new List<(PropertyMapStrategy Strategy, string TemporaryName)>();
         foreach (var propertyMapStrategy in preConstructionInitializers)
         {
             var (initializerPropertyTargetTemporary, initializerPropertyCode) = propertyMapStrategy.GetBuilder().BuildSource(source, context, mappaGlobalOptions);
-            propertyInitializersMappings.Add((
-                propertyMapStrategy.TargetProperty,
-                initializerPropertyTargetTemporary,
-                propertyMapStrategy.RequiresUnsafeAccessorOnTarget,
-                propertyMapStrategy.RequiresInterfaceCastOnTarget));
+            propertyInitializersMappings.Add((propertyMapStrategy, initializerPropertyTargetTemporary));
             if (!string.IsNullOrWhiteSpace(initializerPropertyCode))
             {
                 builder.AppendLine(initializerPropertyCode);
@@ -129,7 +125,7 @@ internal sealed class InvokeObjectFactoryMapStrategyBuilder
         MappaBuilderContext context,
         PrettyCode.StringBuilder builder,
         string resultTemporary,
-        List<(IPropertySymbol TargetProperty, string TemporaryName, bool RequiresUnsafeAccessorOnTarget, bool RequiresInterfaceCastOnTarget)> propertyInitializersMappings,
+        List<(PropertyMapStrategy Strategy, string TemporaryName)> propertyInitializersMappings,
         bool hasPropertyInitializers)
     {
         if (!hasPropertyInitializers)
@@ -139,12 +135,10 @@ internal sealed class InvokeObjectFactoryMapStrategyBuilder
 
         foreach (var propertyInitializersMapping in propertyInitializersMappings)
         {
-            builder.AppendLine(InaccessibleMemberAccessHelper.BuildPropertyAssignmentStatement(
+            builder.AppendLine(BuildTargetMemberAssignmentStatement(
                 resultTemporary,
-                propertyInitializersMapping.TargetProperty,
+                propertyInitializersMapping.Strategy,
                 propertyInitializersMapping.TemporaryName,
-                propertyInitializersMapping.RequiresUnsafeAccessorOnTarget,
-                propertyInitializersMapping.RequiresInterfaceCastOnTarget,
                 context));
         }
     }
@@ -170,16 +164,45 @@ internal sealed class InvokeObjectFactoryMapStrategyBuilder
 
                 if (deferInitializersForReferenceReusing && !propertyMapStrategy.PostConstructorInitializer)
                 {
-                    builder.AppendLine(InaccessibleMemberAccessHelper.BuildPropertyAssignmentStatement(
+                    builder.AppendLine(BuildTargetMemberAssignmentStatement(
                         resultTemporary,
-                        propertyMapStrategy.TargetProperty,
+                        propertyMapStrategy,
                         initializerPropertyTargetTemporary,
-                        propertyMapStrategy.RequiresUnsafeAccessorOnTarget,
-                        propertyMapStrategy.RequiresInterfaceCastOnTarget,
                         context));
                 }
             }
         }
+    }
+
+    private static string BuildTargetMemberAssignmentStatement(
+        string resultTemporary,
+        PropertyMapStrategy propertyMapStrategy,
+        string valueExpression,
+        MappaBuilderContext context)
+    {
+        if (propertyMapStrategy.TargetProperty is { } targetProperty)
+        {
+            return InaccessibleMemberAccessHelper.BuildPropertyAssignmentStatement(
+                resultTemporary,
+                targetProperty,
+                valueExpression,
+                propertyMapStrategy.RequiresUnsafeAccessorOnTarget,
+                propertyMapStrategy.RequiresInterfaceCastOnTarget,
+                context);
+        }
+
+        if (propertyMapStrategy.TargetField is { } targetField)
+        {
+            return InaccessibleMemberAccessHelper.BuildFieldAssignmentStatement(
+                resultTemporary,
+                targetField,
+                valueExpression,
+                propertyMapStrategy.RequiresUnsafeAccessorOnTarget,
+                context);
+        }
+
+        throw new MappaGeneratorException(
+            $"Property map strategy for '{propertyMapStrategy.TargetMemberName}' has neither a target property nor a target field.");
     }
 
     private List<string> BuildParameterMappings(

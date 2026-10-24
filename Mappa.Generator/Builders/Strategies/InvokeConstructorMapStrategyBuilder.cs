@@ -2,6 +2,7 @@
 // Copyright (c) Stefano Anelli. All rights reserved.
 // </copyright>
 
+using Mappa.Generator.Exceptions;
 using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
@@ -95,19 +96,19 @@ internal sealed class InvokeConstructorMapStrategyBuilder
         return parametersVariableNames;
     }
 
-    private static List<(IPropertySymbol TargetProperty, string TemporaryName, bool RequiresUnsafeAccessorOnTarget)> BuildObjectInitializerMappings(
+    private static List<(string TargetMemberName, string TemporaryName, bool RequiresUnsafeAccessorOnTarget)> BuildObjectInitializerMappings(
         string source,
         MappaBuilderContext context,
         MappaGlobalOptions mappaGlobalOptions,
         PrettyCode.StringBuilder builder,
         PropertyMapStrategy[] objectInitializerStrategies)
     {
-        var propertyInitializersMappings = new List<(IPropertySymbol TargetProperty, string TemporaryName, bool RequiresUnsafeAccessorOnTarget)>();
+        var propertyInitializersMappings = new List<(string TargetMemberName, string TemporaryName, bool RequiresUnsafeAccessorOnTarget)>();
         foreach (var propertyMapStrategy in objectInitializerStrategies)
         {
             var (initializerPropertyTargetTemporary, initializerPropertyCode) = propertyMapStrategy.GetBuilder().BuildSource(source, context, mappaGlobalOptions);
             propertyInitializersMappings.Add((
-                propertyMapStrategy.TargetProperty,
+                propertyMapStrategy.TargetMemberName,
                 initializerPropertyTargetTemporary,
                 propertyMapStrategy.RequiresUnsafeAccessorOnTarget));
             if (!string.IsNullOrWhiteSpace(initializerPropertyCode))
@@ -123,7 +124,7 @@ internal sealed class InvokeConstructorMapStrategyBuilder
         PrettyCode.StringBuilder builder,
         string resultTemporary,
         string constructionExpression,
-        List<(IPropertySymbol TargetProperty, string TemporaryName, bool RequiresUnsafeAccessorOnTarget)> propertyInitializersMappings,
+        List<(string TargetMemberName, string TemporaryName, bool RequiresUnsafeAccessorOnTarget)> propertyInitializersMappings,
         bool hasPropertyInitializers,
         ITypeSymbol targetType)
     {
@@ -134,7 +135,7 @@ internal sealed class InvokeConstructorMapStrategyBuilder
             {
                 foreach (var propertyInitializersMapping in propertyInitializersMappings)
                 {
-                    builder.AppendLine($"{propertyInitializersMapping.TargetProperty.Name} = {propertyInitializersMapping.TemporaryName},");
+                    builder.AppendLine($"{propertyInitializersMapping.TargetMemberName} = {propertyInitializersMapping.TemporaryName},");
                 }
             }
 
@@ -184,12 +185,10 @@ internal sealed class InvokeConstructorMapStrategyBuilder
 
                 if (!propertyMapStrategy.PostConstructorInitializer)
                 {
-                    builder.AppendLine(InaccessibleMemberAccessHelper.BuildPropertyAssignmentStatement(
+                    builder.AppendLine(BuildTargetMemberAssignmentStatement(
                         resultTemporary,
-                        propertyMapStrategy.TargetProperty,
+                        propertyMapStrategy,
                         initializerPropertyTargetTemporary,
-                        propertyMapStrategy.RequiresUnsafeAccessorOnTarget,
-                        propertyMapStrategy.RequiresInterfaceCastOnTarget,
                         context));
                 }
             }
@@ -211,6 +210,37 @@ internal sealed class InvokeConstructorMapStrategyBuilder
         {
             builder.AppendLine($"{contextParameterName}[{CSharpLiteralHelper.ToStringLiteral(assignToContextEntry.ContextKey)}] = {PropertyPathExpressionBuilder.BuildTargetMemberAccessExpression(resultTemporary, assignToContextEntry.MemberName)};");
         }
+    }
+
+    private static string BuildTargetMemberAssignmentStatement(
+        string resultTemporary,
+        PropertyMapStrategy propertyMapStrategy,
+        string valueExpression,
+        MappaBuilderContext context)
+    {
+        if (propertyMapStrategy.TargetProperty is { } targetProperty)
+        {
+            return InaccessibleMemberAccessHelper.BuildPropertyAssignmentStatement(
+                resultTemporary,
+                targetProperty,
+                valueExpression,
+                propertyMapStrategy.RequiresUnsafeAccessorOnTarget,
+                propertyMapStrategy.RequiresInterfaceCastOnTarget,
+                context);
+        }
+
+        if (propertyMapStrategy.TargetField is { } targetField)
+        {
+            return InaccessibleMemberAccessHelper.BuildFieldAssignmentStatement(
+                resultTemporary,
+                targetField,
+                valueExpression,
+                propertyMapStrategy.RequiresUnsafeAccessorOnTarget,
+                context);
+        }
+
+        throw new MappaGeneratorException(
+            $"Property map strategy for '{propertyMapStrategy.TargetMemberName}' has neither a target property nor a target field.");
     }
 
     private (PropertyMapStrategy[] ObjectInitializers, PropertyMapStrategy[] PostConstructor) PartitionConstructorInitializers(
@@ -244,7 +274,7 @@ internal sealed class InvokeConstructorMapStrategyBuilder
         PrettyCode.StringBuilder builder,
         string resultTemporary,
         string constructionExpression,
-        List<(IPropertySymbol TargetProperty, string TemporaryName, bool RequiresUnsafeAccessorOnTarget)> propertyInitializersMappings,
+        List<(string TargetMemberName, string TemporaryName, bool RequiresUnsafeAccessorOnTarget)> propertyInitializersMappings,
         bool hasPropertyInitializers)
         => AppendConstructionWithOptionalObjectInitializer(
             builder,

@@ -975,7 +975,7 @@ public sealed class MappaAllowInaccessibleMembersIntegrationTests
                                   [Mappa]
                                   public sealed partial class Mapper
                                   {
-                                      [MappaAllowInaccessibleTargetMembers(AllowProperties = false, AllowConstructors = false)]
+                                      [MappaAllowInaccessibleTargetMembers(AllowProperties = false, AllowFields = false, AllowConstructors = false)]
                                       public partial Target Map(Source input);
                                   }
                                   #nullable restore

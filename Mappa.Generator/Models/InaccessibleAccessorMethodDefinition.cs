@@ -39,7 +39,7 @@ internal sealed class InaccessibleAccessorMethodDefinition
 
     /// <summary>
     /// Gets the runtime member name passed to the <c>Name</c> attribute argument
-    /// (for example <c>get_Property</c>, <c>set_Property</c>, or <c>.ctor</c>).
+    /// (for example <c>get_Property</c>, <c>set_Property</c>, a field name, or <c>.ctor</c>).
     /// </summary>
     internal string RuntimeName { get; }
 
@@ -97,6 +97,25 @@ internal sealed class InaccessibleAccessorMethodDefinition
             [(containingType, "instance"), (property.Type, "value")]);
 
     /// <summary>
+    /// Creates a field accessor definition that returns a <c>ref</c> to the field.
+    /// </summary>
+    /// <param name="methodName">The generated method name.</param>
+    /// <param name="containingType">The declaring type.</param>
+    /// <param name="field">The field.</param>
+    /// <returns>The accessor definition.</returns>
+    internal static InaccessibleAccessorMethodDefinition ForField(
+        string methodName,
+        ITypeSymbol containingType,
+        IFieldSymbol field)
+        => new(
+            methodName,
+            InaccessibleAccessorUnsafeKind.Field,
+            field.Name,
+            containingType,
+            $"ref {field.Type.ToDisplayString()}",
+            [(containingType, "instance")]);
+
+    /// <summary>
     /// Creates a constructor accessor definition.
     /// </summary>
     /// <param name="methodName">The generated method name.</param>
@@ -128,6 +147,7 @@ internal sealed class InaccessibleAccessorMethodDefinition
         var unsafeKindLiteral = this.UnsafeKind switch
         {
             InaccessibleAccessorUnsafeKind.Constructor => "Constructor",
+            InaccessibleAccessorUnsafeKind.Field => "Field",
             _ => "Method",
         };
 

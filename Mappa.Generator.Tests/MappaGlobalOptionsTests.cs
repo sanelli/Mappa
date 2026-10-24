@@ -125,6 +125,8 @@ public sealed class MappaGlobalOptionsTests
         options.BreakCompileTimeCycles.Should().Be(BooleanSetting.Undefined);
         options.MappaTransformerFromDependency.Should().Be(BooleanSetting.Undefined);
         options.ReplaceNullWithEmptyContainer.Should().Be(BooleanSetting.Undefined);
+        options.MapSourceFields.Should().Be(BooleanSetting.Undefined);
+        options.MapTargetFields.Should().Be(BooleanSetting.Undefined);
     }
 
     /// <summary>
@@ -155,6 +157,66 @@ public sealed class MappaGlobalOptionsTests
             compilation.SyntaxTrees[0]);
 
         options.ReplaceNullWithEmptyContainer.Should().Be(expected);
+    }
+
+    /// <summary>
+    /// Test <see cref="MappaGlobalOptions"/> reads <c>mappa.mapsourcefields</c> from <c>.editorconfig</c>.
+    /// </summary>
+    /// <param name="value">The value in <c>.editorconfig</c>.</param>
+    /// <param name="expected">The expected setting.</param>
+    [Theory]
+    [UnitTest]
+    [InlineData("enable", BooleanSetting.Enable)]
+    [InlineData("Enable", BooleanSetting.Enable)]
+    [InlineData("disable", BooleanSetting.Disable)]
+    [InlineData("DISABLE", BooleanSetting.Disable)]
+    [InlineData("undefined", BooleanSetting.Undefined)]
+    [InlineData("not-a-valid-value", BooleanSetting.Undefined)]
+    public void ReadsMapSourceFieldsFromEditorConfig(string value, BooleanSetting expected)
+    {
+        var editorConfig = $"""
+                            root = true
+
+                            [*.cs]
+                            mappa.mapsourcefields = {value}
+                            """;
+
+        var compilation = BuildCompilation("namespace Mappa.Generator.Tests.UnitTests.SourceCode { internal class Placeholder { } }");
+        var options = new MappaGlobalOptions(
+            TestAnalyzerConfigOptionsProvider.FromEditorConfig(editorConfig),
+            compilation.SyntaxTrees[0]);
+
+        options.MapSourceFields.Should().Be(expected);
+    }
+
+    /// <summary>
+    /// Test <see cref="MappaGlobalOptions"/> reads <c>mappa.maptargetfields</c> from <c>.editorconfig</c>.
+    /// </summary>
+    /// <param name="value">The value in <c>.editorconfig</c>.</param>
+    /// <param name="expected">The expected setting.</param>
+    [Theory]
+    [UnitTest]
+    [InlineData("enable", BooleanSetting.Enable)]
+    [InlineData("Enable", BooleanSetting.Enable)]
+    [InlineData("disable", BooleanSetting.Disable)]
+    [InlineData("DISABLE", BooleanSetting.Disable)]
+    [InlineData("undefined", BooleanSetting.Undefined)]
+    [InlineData("not-a-valid-value", BooleanSetting.Undefined)]
+    public void ReadsMapTargetFieldsFromEditorConfig(string value, BooleanSetting expected)
+    {
+        var editorConfig = $"""
+                            root = true
+
+                            [*.cs]
+                            mappa.maptargetfields = {value}
+                            """;
+
+        var compilation = BuildCompilation("namespace Mappa.Generator.Tests.UnitTests.SourceCode { internal class Placeholder { } }");
+        var options = new MappaGlobalOptions(
+            TestAnalyzerConfigOptionsProvider.FromEditorConfig(editorConfig),
+            compilation.SyntaxTrees[0]);
+
+        options.MapTargetFields.Should().Be(expected);
     }
 
     /// <summary>

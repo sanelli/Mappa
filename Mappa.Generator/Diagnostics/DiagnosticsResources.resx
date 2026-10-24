@@ -220,7 +220,7 @@
         <value>Method '{0}' allows inaccessible members, but UnsafeAccessor is not available in this compilation; target .NET 8 or later (or an equivalent runtime that provides System.Runtime.CompilerServices.UnsafeAccessorAttribute) and C# 12+.</value>
     </data>
     <data name="AllowInaccessibleTargetMembersDisabledAll" xml:space="preserve">
-        <value>Method '{0}' declares MappaAllowInaccessibleTargetMembers with both AllowProperties and AllowConstructors set to false.</value>
+        <value>Method '{0}' declares MappaAllowInaccessibleTargetMembers with AllowProperties, AllowFields, and AllowConstructors all set to false.</value>
     </data>
     <data name="ProjectionMethodHasAllowInaccessibleMembers" xml:space="preserve">
         <value>Method '{0}' projects IQueryable but declares inaccessible-member attributes which are not supported for queryable projections.</value>

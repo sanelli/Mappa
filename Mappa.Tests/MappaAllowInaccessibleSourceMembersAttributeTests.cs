@@ -38,10 +38,10 @@ public sealed class MappaAllowInaccessibleSourceMembersAttributeTests
     public void ParamsConstructorInitializesMemberNames()
     {
         // Act
-        var attribute = new MappaAllowInaccessibleSourceMembersAttribute("PropertyA", "PropertyB");
+        var attribute = new MappaAllowInaccessibleSourceMembersAttribute("PropertyA", "fieldB");
 
         // Assert
-        attribute.MemberNames.Should().Equal("PropertyA", "PropertyB");
+        attribute.MemberNames.Should().Equal("PropertyA", "fieldB");
     }
 
     /// <summary>

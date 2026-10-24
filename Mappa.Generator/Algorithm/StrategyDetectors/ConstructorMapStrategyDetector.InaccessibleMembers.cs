@@ -29,6 +29,30 @@ internal sealed partial class ConstructorMapStrategyDetector
             .Where(property => this.TryIsSourcePropertyReadable(property, out _, out _))
             .ToArray();
 
+    private IFieldSymbol[] GetReadableSourceFields(ITypeSymbol sourceType)
+    {
+        if (this.context.MappaUserSettings.MapSourceFields is not BooleanSetting.Enable)
+        {
+            return [];
+        }
+
+        return sourceType.GetTypeFields()
+            .Where(field => this.TryIsSourceFieldReadable(field, out _))
+            .ToArray();
+    }
+
+    private IFieldSymbol[] GetWritableTargetFields(ITypeSymbol targetType)
+    {
+        if (this.context.MappaUserSettings.MapTargetFields is not BooleanSetting.Enable)
+        {
+            return [];
+        }
+
+        return targetType.GetTypeFields()
+            .Where(field => this.TryIsTargetFieldWritable(field, out _))
+            .ToArray();
+    }
+
     private bool TryIsSourcePropertyReadable(
         IPropertySymbol property,
         out bool requiresUnsafeAccessor,
@@ -54,6 +78,22 @@ internal sealed partial class ConstructorMapStrategyDetector
             this.context.MappaUserSettings.MapTargetExplicitInterfaceProperties,
             out requiresUnsafeAccessor,
             out requiresInterfaceCast);
+
+    private bool TryIsSourceFieldReadable(IFieldSymbol field, out bool requiresUnsafeAccessor)
+        => InaccessibleMemberEligibility.TryIsSourceFieldReadable(
+            field,
+            this.compilation,
+            this.context.GetRootMapMethod(),
+            this.GetInaccessibleSourceOptions(),
+            out requiresUnsafeAccessor);
+
+    private bool TryIsTargetFieldWritable(IFieldSymbol field, out bool requiresUnsafeAccessor)
+        => InaccessibleMemberEligibility.TryIsTargetFieldWritable(
+            field,
+            this.compilation,
+            this.context.GetRootMapMethod(),
+            this.GetInaccessibleTargetOptions(),
+            out requiresUnsafeAccessor);
 
     private bool TryIsTargetPropertyGetterReadable(IPropertySymbol property, out bool requiresUnsafeAccessor)
     {

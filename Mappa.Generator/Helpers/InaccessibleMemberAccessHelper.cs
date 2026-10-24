@@ -51,6 +51,32 @@ internal static class InaccessibleMemberAccessHelper
     }
 
     /// <summary>
+    /// Builds an expression that reads <paramref name="field"/> from <paramref name="receiverExpression"/>.
+    /// </summary>
+    /// <param name="receiverExpression">The instance expression.</param>
+    /// <param name="field">The field to read.</param>
+    /// <param name="requiresUnsafeAccessor"><c>true</c> when an unsafe accessor must be used.</param>
+    /// <param name="context">The builder context.</param>
+    /// <returns>The read expression.</returns>
+    internal static string BuildFieldReadExpression(
+        string receiverExpression,
+        IFieldSymbol field,
+        bool requiresUnsafeAccessor,
+        MappaBuilderContext context)
+    {
+        if (!requiresUnsafeAccessor)
+        {
+            return $"{receiverExpression}.{field.Name}";
+        }
+
+        var accessor = context.InaccessibleAccessors.GetOrAddField(
+            field.ContainingType,
+            field,
+            context);
+        return $"{accessor}({receiverExpression})";
+    }
+
+    /// <summary>
     /// Builds a statement that assigns <paramref name="valueExpression"/> to <paramref name="property"/>
     /// on <paramref name="receiverExpression"/>.
     /// </summary>
@@ -86,6 +112,35 @@ internal static class InaccessibleMemberAccessHelper
             property,
             context);
         return $"{accessor}({receiverExpression}, {valueExpression});";
+    }
+
+    /// <summary>
+    /// Builds a statement that assigns <paramref name="valueExpression"/> to <paramref name="field"/>
+    /// on <paramref name="receiverExpression"/>.
+    /// </summary>
+    /// <param name="receiverExpression">The instance expression.</param>
+    /// <param name="field">The field to write.</param>
+    /// <param name="valueExpression">The value expression.</param>
+    /// <param name="requiresUnsafeAccessor"><c>true</c> when an unsafe accessor must be used.</param>
+    /// <param name="context">The builder context.</param>
+    /// <returns>The assignment statement without a trailing newline.</returns>
+    internal static string BuildFieldAssignmentStatement(
+        string receiverExpression,
+        IFieldSymbol field,
+        string valueExpression,
+        bool requiresUnsafeAccessor,
+        MappaBuilderContext context)
+    {
+        if (!requiresUnsafeAccessor)
+        {
+            return $"{receiverExpression}.{field.Name} = {valueExpression};";
+        }
+
+        var accessor = context.InaccessibleAccessors.GetOrAddField(
+            field.ContainingType,
+            field,
+            context);
+        return $"{accessor}({receiverExpression}) = {valueExpression};";
     }
 
     /// <summary>

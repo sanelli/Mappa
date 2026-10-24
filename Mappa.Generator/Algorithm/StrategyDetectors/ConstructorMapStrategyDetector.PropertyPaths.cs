@@ -268,7 +268,8 @@ internal sealed partial class ConstructorMapStrategyDetector
             usePropertyAttribute.SourcePropertyName,
             sourcePath.Segments,
             this.context.GetRootSourceType(),
-            this.context.GetRootMapMethod().SourceParameterName);
+            this.context.GetRootMapMethod().SourceParameterName,
+            this.ShouldIncludeFieldsInSourcePaths());
         return true;
     }
 
@@ -299,9 +300,13 @@ internal sealed partial class ConstructorMapStrategyDetector
             usePropertyAttribute.SourcePropertyName,
             remainingSourceSegments,
             this.context.SourceType,
-            string.Empty);
+            string.Empty,
+            this.ShouldIncludeFieldsInSourcePaths());
         return true;
     }
+
+    private bool ShouldIncludeFieldsInSourcePaths()
+        => this.context.MappaUserSettings.MapSourceFields is BooleanSetting.Enable;
 
     private string[] GetRemainingSourceSegmentsForLeafMapping(
         PropertyPath sourcePath,
@@ -389,11 +394,11 @@ internal sealed partial class ConstructorMapStrategyDetector
 
     private bool TryResolveChainedSourceProperty(
         ChainedSourcePropertyPathInfo chainedSourcePropertyPath,
-        out IPropertySymbol[] resolvedProperties,
-        out IPropertySymbol? firstProperty)
+        out MappableMember[] resolvedMembers,
+        out MappableMember? firstMember)
     {
-        resolvedProperties = [];
-        firstProperty = null;
+        resolvedMembers = [];
+        firstMember = null;
 
         ITypeSymbol chainReceiverType;
         if (string.IsNullOrWhiteSpace(chainedSourcePropertyPath.ReceiverPathPrefix))
@@ -404,26 +409,31 @@ internal sealed partial class ConstructorMapStrategyDetector
         {
             var rootSourceType = this.context.GetRootSourceType();
             var rootReceiverExpression = this.context.GetRootMapMethod().SourceParameterName;
+            var includeFieldsForPrefix = this.context.MappaUserSettings.MapSourceFields is BooleanSetting.Enable;
             if (!PropertyPathSymbolResolver.TryGetReceiverTypeForPathPrefix(
                     rootSourceType,
                     rootReceiverExpression,
                     chainedSourcePropertyPath.ReceiverPathPrefix,
+                    includeFieldsForPrefix,
                     out chainReceiverType))
             {
                 chainReceiverType = chainedSourcePropertyPath.StartingSourceType;
             }
         }
 
-        if (!PropertyPathSymbolResolver.TryResolvePropertyPath(
+        var includeFields = this.context.MappaUserSettings.MapSourceFields is BooleanSetting.Enable;
+        if (!PropertyPathSymbolResolver.TryResolveMemberPath(
                 chainReceiverType,
                 PropertyPath.FromRemainingSegments(chainedSourcePropertyPath.RemainingSourceSegments),
-                out resolvedProperties,
+                includeFields,
+                out resolvedMembers,
                 out _))
         {
+            resolvedMembers = [];
             return false;
         }
 
-        firstProperty = resolvedProperties[0];
+        firstMember = resolvedMembers[0];
         return true;
     }
 

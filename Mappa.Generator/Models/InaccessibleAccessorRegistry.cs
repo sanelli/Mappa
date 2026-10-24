@@ -79,6 +79,32 @@ internal sealed class InaccessibleAccessorRegistry
     }
 
     /// <summary>
+    /// Gets or adds a field accessor and returns the fully-qualified call target
+    /// (container type + method name).
+    /// </summary>
+    /// <param name="containingType">The declaring type.</param>
+    /// <param name="field">The field.</param>
+    /// <param name="context">The builder context used to allocate temporary names.</param>
+    /// <returns>The call target expression prefix (<c>Container.Method</c>).</returns>
+    internal string GetOrAddField(
+        ITypeSymbol containingType,
+        IFieldSymbol field,
+        MappaBuilderContext context)
+    {
+        var key = new AccessorKey(containingType, InaccessibleAccessorUnsafeKind.Field, field.Name);
+        if (!this.accessors.TryGetValue(key, out var definition))
+        {
+            definition = InaccessibleAccessorMethodDefinition.ForField(
+                context.NextTemporary(),
+                containingType,
+                field);
+            this.accessors.Add(key, definition);
+        }
+
+        return $"{this.ContainerTypeName}.{definition.MethodName}";
+    }
+
+    /// <summary>
     /// Gets or adds a constructor accessor and returns the fully-qualified call target
     /// (container type + method name).
     /// </summary>

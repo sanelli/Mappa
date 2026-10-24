@@ -38,6 +38,13 @@ public sealed class InaccessibleMembersCoverageTests
             new MappaAllowInaccessibleTargetMembersAttribute { AllowProperties = false });
         propertiesDisabled.Should().NotBeNull();
         propertiesDisabled.IsPropertyAllowed("Any").Should().BeFalse();
+        propertiesDisabled.IsFieldAllowed("Any").Should().BeTrue();
+
+        var fieldsDisabled = InaccessibleTargetMemberOptions.FromAttribute(
+            new MappaAllowInaccessibleTargetMembersAttribute { AllowFields = false });
+        fieldsDisabled.Should().NotBeNull();
+        fieldsDisabled.IsFieldAllowed("Any").Should().BeFalse();
+        fieldsDisabled.IsPropertyAllowed("Any").Should().BeTrue();
 
         InaccessibleTargetMemberOptions.FromAttribute(null).Should().BeNull();
     }
@@ -427,6 +434,166 @@ public sealed class InaccessibleMembersCoverageTests
 
         InaccessibleMemberEligibility.TryGetExplicitInterfaceType(targetProperty, out _)
             .Should().BeFalse();
+    }
+
+    /// <summary>
+    /// Test field eligibility helpers reject static/const/readonly fields and allow accessible instance fields.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void FieldEligibilityCoversStaticConstReadonlyAndAccessibleInstanceFields()
+    {
+        const string source = """
+                              namespace Coverage;
+                              public class Source
+                              {
+                                  public int PublicValue;
+                                  private int PrivateValue;
+                                  public static int StaticValue;
+                                  public const int ConstValue = 1;
+                                  public readonly int ReadonlyValue;
+                              }
+
+                              public class Target
+                              {
+                                  public int PublicValue;
+                                  private int PrivateValue;
+                                  public static int StaticValue;
+                                  public readonly int ReadonlyValue;
+                              }
+
+                              public sealed class Mapper
+                              {
+                                  public Target Map(Source input) => new Target();
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var tree = compilation.SyntaxTrees.Single();
+        var model = compilation.GetSemanticModel(tree);
+        var mapMethodSyntax = tree.GetRoot(TestContext.Current.CancellationToken).DescendantNodes().OfType<MethodDeclarationSyntax>()
+            .Single(method => method.Identifier.Text == "Map");
+        var mapMethod = new MapMethod(
+            mapMethodSyntax,
+            model,
+            nullableEnabled: true,
+            TestContext.Current.CancellationToken);
+
+        var sourceType = compilation.GetTypeByMetadataName("Coverage.Source");
+        var targetType = compilation.GetTypeByMetadataName("Coverage.Target");
+        sourceType.Should().NotBeNull();
+        targetType.Should().NotBeNull();
+
+        var publicSource = sourceType.GetMembers("PublicValue").OfType<IFieldSymbol>().Single();
+        var privateSource = sourceType.GetMembers("PrivateValue").OfType<IFieldSymbol>().Single();
+        var staticSource = sourceType.GetMembers("StaticValue").OfType<IFieldSymbol>().Single();
+        var constSource = sourceType.GetMembers("ConstValue").OfType<IFieldSymbol>().Single();
+        var readonlySource = sourceType.GetMembers("ReadonlyValue").OfType<IFieldSymbol>().Single();
+
+        publicSource.IsEligibleForInstanceMemberMapping().Should().BeTrue();
+        staticSource.IsEligibleForInstanceMemberMapping().Should().BeFalse();
+        constSource.IsEligibleForInstanceMemberMapping().Should().BeFalse();
+        readonlySource.IsEligibleForInstanceMemberMapping().Should().BeTrue();
+
+        var publicTarget = targetType.GetMembers("PublicValue").OfType<IFieldSymbol>().Single();
+        var privateTarget = targetType.GetMembers("PrivateValue").OfType<IFieldSymbol>().Single();
+        var staticTarget = targetType.GetMembers("StaticValue").OfType<IFieldSymbol>().Single();
+        var readonlyTarget = targetType.GetMembers("ReadonlyValue").OfType<IFieldSymbol>().Single();
+
+        publicTarget.IsEligibleForTargetMemberAssignment().Should().BeTrue();
+        staticTarget.IsEligibleForTargetMemberAssignment().Should().BeFalse();
+        readonlyTarget.IsEligibleForTargetMemberAssignment().Should().BeFalse();
+
+        var sourceOptions = InaccessibleSourceMemberOptions.FromAttribute(new MappaAllowInaccessibleSourceMembersAttribute());
+        var targetOptions = InaccessibleTargetMemberOptions.FromAttribute(new MappaAllowInaccessibleTargetMembersAttribute());
+        var targetFieldsDisabled = InaccessibleTargetMemberOptions.FromAttribute(
+            new MappaAllowInaccessibleTargetMembersAttribute { AllowFields = false });
+        var sourceWhitelist = InaccessibleSourceMemberOptions.FromAttribute(
+            new MappaAllowInaccessibleSourceMembersAttribute("Other"));
+
+        InaccessibleMemberEligibility.TryIsSourceFieldReadable(
+                publicSource,
+                compilation,
+                mapMethod,
+                sourceOptions,
+                out var publicRequiresUnsafe)
+            .Should().BeTrue();
+        publicRequiresUnsafe.Should().BeFalse();
+
+        InaccessibleMemberEligibility.TryIsSourceFieldReadable(
+                staticSource,
+                compilation,
+                mapMethod,
+                sourceOptions,
+                out _)
+            .Should().BeFalse();
+
+        InaccessibleMemberEligibility.TryIsSourceFieldReadable(
+                privateSource,
+                compilation,
+                mapMethod,
+                null,
+                out _)
+            .Should().BeFalse();
+
+        InaccessibleMemberEligibility.TryIsSourceFieldReadable(
+                privateSource,
+                compilation,
+                mapMethod,
+                sourceWhitelist,
+                out _)
+            .Should().BeFalse();
+
+        InaccessibleMemberEligibility.TryIsSourceFieldReadable(
+                privateSource,
+                compilation,
+                mapMethod,
+                sourceOptions,
+                out var privateRequiresUnsafe)
+            .Should().BeTrue();
+        privateRequiresUnsafe.Should().BeTrue();
+
+        InaccessibleMemberEligibility.TryIsTargetFieldWritable(
+                publicTarget,
+                compilation,
+                mapMethod,
+                targetOptions,
+                out var publicTargetRequiresUnsafe)
+            .Should().BeTrue();
+        publicTargetRequiresUnsafe.Should().BeFalse();
+
+        InaccessibleMemberEligibility.TryIsTargetFieldWritable(
+                readonlyTarget,
+                compilation,
+                mapMethod,
+                targetOptions,
+                out _)
+            .Should().BeFalse();
+
+        InaccessibleMemberEligibility.TryIsTargetFieldWritable(
+                privateTarget,
+                compilation,
+                mapMethod,
+                null,
+                out _)
+            .Should().BeFalse();
+
+        InaccessibleMemberEligibility.TryIsTargetFieldWritable(
+                privateTarget,
+                compilation,
+                mapMethod,
+                targetFieldsDisabled,
+                out _)
+            .Should().BeFalse();
+
+        InaccessibleMemberEligibility.TryIsTargetFieldWritable(
+                privateTarget,
+                compilation,
+                mapMethod,
+                targetOptions,
+                out var privateTargetRequiresUnsafe)
+            .Should().BeTrue();
+        privateTargetRequiresUnsafe.Should().BeTrue();
     }
 
     private static (Compilation Compilation, MapMethod MapMethod, IPropertySymbol TargetProperty) BuildMapMethodAndTargetProperty(

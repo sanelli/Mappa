@@ -22,9 +22,10 @@ namespace Mappa.Attributes;
 /// </description></item>
 /// <item><description>
 /// <c>(sourcePropertyName, methodName)</c>: apply only when mapping the source member identified by
-/// <see cref="SourcePropertyName"/> (a single name or a dot-separated nested path); look up the method
-/// on the mapper class or an accessible base class. If the source member does not exist, a diagnostic
-/// is reported.
+/// <see cref="SourcePropertyName"/> (a single name or a dot-separated nested path; path segments may
+/// name instance fields when <see cref="MappaSettingsAttribute.MapSourceFields"/> is enabled); look up
+/// the method on the mapper class or an accessible base class. If the source member does not exist, a
+/// diagnostic is reported.
 /// </description></item>
 /// <item><description>
 /// <c>(sourcePropertyName, classType, methodName)</c>: apply only to that source member; look up a

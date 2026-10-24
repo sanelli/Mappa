@@ -188,6 +188,15 @@ internal static class AotSampleData
     };
 
     /// <summary>
+    /// Gets a <see cref="MapFieldsSourceModel"/> with name Ada and age 36.
+    /// </summary>
+    public static MapFieldsSourceModel MapFieldsSourceModelAdaThirtySix { get; } = new()
+    {
+        Name = "Ada",
+        Age = 36,
+    };
+
+    /// <summary>
     /// Gets an <see cref="ExplicitInterfaceSourceModel"/> with Id 1 and Value 42.
     /// </summary>
     public static ExplicitInterfaceSourceModel ExplicitInterfaceSourceModel1And42 { get; } = CreateExplicitInterfaceSourceModel(1, 42);

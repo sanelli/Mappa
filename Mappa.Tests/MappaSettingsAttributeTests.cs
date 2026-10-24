@@ -129,6 +129,8 @@ public sealed class MappaSettingsAttributeTests
         attribute.IgnoreUnderscoreForPropertyMap.Should().Be(BooleanSetting.Undefined);
         attribute.MapSourceExplicitInterfaceProperties.Should().Be(BooleanSetting.Undefined);
         attribute.MapTargetExplicitInterfaceProperties.Should().Be(BooleanSetting.Undefined);
+        attribute.MapSourceFields.Should().Be(BooleanSetting.Undefined);
+        attribute.MapTargetFields.Should().Be(BooleanSetting.Undefined);
         attribute.CaseInsensitiveEnumMap.Should().Be(BooleanSetting.Undefined);
         attribute.ReferenceReusing.Should().Be(BooleanSetting.Undefined);
         attribute.BreakCompileTimeCycles.Should().Be(BooleanSetting.Undefined);
@@ -202,6 +204,8 @@ public sealed class MappaSettingsAttributeTests
             IgnoreUnderscoreForPropertyMap = BooleanSetting.Enable,
             MapSourceExplicitInterfaceProperties = BooleanSetting.Enable,
             MapTargetExplicitInterfaceProperties = BooleanSetting.Enable,
+            MapSourceFields = BooleanSetting.Enable,
+            MapTargetFields = BooleanSetting.Enable,
             CaseInsensitiveEnumMap = BooleanSetting.Enable,
             EnumStringMapSetting = EnumStringMapSetting.Description,
             EnumToEnumMapSetting = EnumToEnumMapSetting.MemberName,
@@ -288,6 +292,8 @@ public sealed class MappaSettingsAttributeTests
         attribute.IgnoreUnderscoreForPropertyMap.Should().Be(BooleanSetting.Enable);
         attribute.MapSourceExplicitInterfaceProperties.Should().Be(BooleanSetting.Enable);
         attribute.MapTargetExplicitInterfaceProperties.Should().Be(BooleanSetting.Enable);
+        attribute.MapSourceFields.Should().Be(BooleanSetting.Enable);
+        attribute.MapTargetFields.Should().Be(BooleanSetting.Enable);
         attribute.CaseInsensitiveEnumMap.Should().Be(BooleanSetting.Enable);
         attribute.ReferenceReusing.Should().Be(BooleanSetting.Enable);
         attribute.BreakCompileTimeCycles.Should().Be(BooleanSetting.Enable);

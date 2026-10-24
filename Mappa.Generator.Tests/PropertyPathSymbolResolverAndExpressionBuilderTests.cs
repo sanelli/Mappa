@@ -45,7 +45,7 @@ public sealed class PropertyPathSymbolResolverAndExpressionBuilderTests
                                         """;
 
     /// <summary>
-    /// Test <see cref="PropertyPathSymbolResolver.TryGetReceiverTypeForPathPrefix"/> success and failure arms.
+    /// Test <see cref="PropertyPathSymbolResolver.TryGetReceiverTypeForPathPrefix(ITypeSymbol, string, string, out ITypeSymbol)"/> success and failure arms.
     /// </summary>
     [Fact]
     [UnitTest]
@@ -106,7 +106,7 @@ public sealed class PropertyPathSymbolResolverAndExpressionBuilderTests
     }
 
     /// <summary>
-    /// Test <see cref="PropertyPathExpressionBuilder.BuildChainedAccessExpression"/> empty prefix, resolve failures, and value-type access.
+    /// Test <see cref="PropertyPathExpressionBuilder.BuildChainedAccessExpression(string, string, string[], ITypeSymbol, bool, ITypeSymbol, out IPropertySymbol[], string?)"/> empty prefix, resolve failures, and value-type access.
     /// </summary>
     [Fact]
     [UnitTest]
@@ -178,7 +178,7 @@ public sealed class PropertyPathSymbolResolverAndExpressionBuilderTests
     }
 
     /// <summary>
-    /// Test <see cref="PropertyPathExpressionBuilder.BuildChainedAccessExpression"/> appends
+    /// Test <see cref="PropertyPathExpressionBuilder.BuildChainedAccessExpression(string, string, string[], ITypeSymbol, bool, ITypeSymbol, out IPropertySymbol[], string?)"/> appends
     /// <c>?? throw</c> only when conditional access makes the expression nullable-capable.
     /// </summary>
     [Fact]
@@ -233,7 +233,7 @@ public sealed class PropertyPathSymbolResolverAndExpressionBuilderTests
     }
 
     /// <summary>
-    /// Test <see cref="PropertyPathExpressionBuilder.BuildChainedAccessExpression"/> treats
+    /// Test <see cref="PropertyPathExpressionBuilder.BuildChainedAccessExpression(string, string, string[], ITypeSymbol, bool, ITypeSymbol, out IPropertySymbol[], string?)"/> treats
     /// <see cref="Nullable{T}"/> leaves as nullable-capable without prior conditional access.
     /// </summary>
     [Fact]
@@ -282,5 +282,113 @@ public sealed class PropertyPathSymbolResolverAndExpressionBuilderTests
             .Should().Be("result.City");
         PropertyPathExpressionBuilder.BuildTargetMemberAccessExpression("result", "Address.City")
             .Should().Be("result.Address.City");
+    }
+
+    /// <summary>
+    /// Test <see cref="PropertyPathSymbolResolver.TryResolvePropertyPath"/> success and missing-segment failure.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void TryResolvePropertyPathHandlesSuccessAndMissingSegment()
+    {
+        var compilation = BuildCompilation(ModelsSource);
+        var sourceType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Source");
+        sourceType.Should().NotBeNull();
+
+        PropertyPathSymbolResolver.TryResolvePropertyPath(
+                sourceType,
+                PropertyPath.Parse("Location.Address.City"),
+                out var resolved,
+                out var missing)
+            .Should().BeTrue();
+        resolved.Should().HaveCount(3);
+        missing.Should().BeNull();
+
+        PropertyPathSymbolResolver.TryResolvePropertyPath(
+                sourceType,
+                PropertyPath.Parse("Location.Missing"),
+                out var missingResolved,
+                out var missingSegment)
+            .Should().BeFalse();
+        missingResolved.Should().BeEmpty();
+        missingSegment.Should().Be("Missing");
+    }
+
+    /// <summary>
+    /// Test <see cref="PropertyPathSymbolResolver.TryResolveMemberPath"/> and prefix resolution when fields are included.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void TryResolveMemberPathAndPrefixHandleFieldsWhenEnabled()
+    {
+        var compilation = BuildCompilation("""
+                                           namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                           public class Address
+                                           {
+                                               public string City;
+                                           }
+
+                                           public class Source
+                                           {
+                                               public Address Location;
+                                           }
+                                           """);
+        var sourceType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Source");
+        var addressType = compilation.GetTypeByMetadataName("Mappa.Generator.Tests.UnitTests.SourceCode.Address");
+        sourceType.Should().NotBeNull();
+        addressType.Should().NotBeNull();
+
+        PropertyPathSymbolResolver.TryResolveMemberPath(
+                sourceType,
+                PropertyPath.Parse("Location.City"),
+                includeFields: false,
+                out var withoutFields,
+                out var missingWithoutFields)
+            .Should().BeFalse();
+        withoutFields.Should().BeEmpty();
+        missingWithoutFields.Should().Be("Location");
+
+        PropertyPathSymbolResolver.TryResolveMemberPath(
+                sourceType,
+                PropertyPath.Parse("Location.City"),
+                includeFields: true,
+                out var withFields,
+                out var missingWithFields)
+            .Should().BeTrue();
+        withFields.Should().HaveCount(2);
+        withFields[0].IsField.Should().BeTrue();
+        withFields[1].IsField.Should().BeTrue();
+        missingWithFields.Should().BeNull();
+
+        PropertyPathSymbolResolver.TryGetReceiverTypeForPathPrefix(
+                sourceType,
+                "input",
+                "input.Location",
+                includeFields: true,
+                out var locationReceiver)
+            .Should().BeTrue();
+        locationReceiver.ToDisplayString().Should().Be(addressType.ToDisplayString());
+
+        PropertyPathSymbolResolver.TryGetReceiverTypeForPathPrefix(
+                sourceType,
+                "input",
+                "input.Location",
+                includeFields: false,
+                out _)
+            .Should().BeFalse();
+
+        var chained = PropertyPathExpressionBuilder.BuildChainedAccessExpression(
+            "input",
+            "input",
+            ["Location", "City"],
+            sourceType,
+            nullableEnabled: true,
+            compilation.GetSpecialType(SpecialType.System_String),
+            includeFields: true,
+            out var resolvedMembers);
+        resolvedMembers.Should().HaveCount(2);
+        chained.Should().Contain("input.Location");
+        chained.Should().Contain(".City");
     }
 }
