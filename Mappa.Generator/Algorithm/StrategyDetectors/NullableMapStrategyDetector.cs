@@ -3,6 +3,7 @@
 // </copyright>
 
 using Mappa.Generator.Extensions;
+using Mappa.Generator.Helpers;
 using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
@@ -72,7 +73,11 @@ internal sealed class NullableMapStrategyDetector
             var elementStrategy = algorithm.GetStrategy();
             if (elementStrategy is not NoMapStrategy)
             {
-                if (wrapInNullableStrategy)
+                if (wrapInNullableStrategy
+                    && !EmptyContainerExpressionHelper.ShouldReplaceNullWithEmpty(
+                        elementStrategy,
+                        this.compilation,
+                        this.context.MapMethod?.MethodSymbol))
                 {
                     mapStrategy = new NullableStrategy(this.context.TargetType, this.context.SourceType, elementStrategy);
                 }

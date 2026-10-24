@@ -1966,6 +1966,88 @@ internal static class MappaDiagnostics
             location,
             methodName);
 
+    /// <summary>
+    /// Diagnostic: [MappaNullSubstitute] does not specify exactly one of AssignValue or InvokeMethod.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The map method.</param>
+    /// <param name="methodName">The map method name.</param>
+    /// <param name="targetPropertyName">The target property name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic NullSubstituteModeMissingOrAmbiguous(
+        MethodDeclarationSyntax methodDeclarationSyntax,
+        string methodName,
+        string targetPropertyName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.NullSubstituteModeMissingOrAmbiguous,
+            methodDeclarationSyntax.GetLocation(),
+            methodName,
+            targetPropertyName);
+
+    /// <summary>
+    /// Diagnostic: [MappaNullSubstitute] specifies both InvokeMethodType and InvokeMethodSource.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The map method.</param>
+    /// <param name="methodName">The map method name.</param>
+    /// <param name="targetPropertyName">The target property name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic NullSubstituteInvokeMethodTypeAndSourceConflict(
+        MethodDeclarationSyntax methodDeclarationSyntax,
+        string methodName,
+        string targetPropertyName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.NullSubstituteInvokeMethodTypeAndSourceConflict,
+            methodDeclarationSyntax.GetLocation(),
+            methodName,
+            targetPropertyName);
+
+    /// <summary>
+    /// Diagnostic: Multiple [MappaNullSubstitute] attributes target the same member.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The map method.</param>
+    /// <param name="methodName">The map method name.</param>
+    /// <param name="targetPropertyName">The target property name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic TooManyNullSubstituteAttributesForTheSameTargetProperty(
+        MethodDeclarationSyntax methodDeclarationSyntax,
+        string methodName,
+        string targetPropertyName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.TooManyNullSubstituteAttributesForTheSameTargetProperty,
+            methodDeclarationSyntax.GetLocation(),
+            methodName,
+            targetPropertyName);
+
+    /// <summary>
+    /// Diagnostic: [MappaNullSubstitute] is ignored because [MappaAssignFromConstant] targets the same member.
+    /// </summary>
+    /// <param name="methodDeclarationSyntax">The map method.</param>
+    /// <param name="methodName">The map method name.</param>
+    /// <param name="targetPropertyName">The target property name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic NullSubstituteIgnoredBecauseAssignFromConstant(
+        MethodDeclarationSyntax methodDeclarationSyntax,
+        string methodName,
+        string targetPropertyName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.NullSubstituteIgnoredBecauseAssignFromConstant,
+            methodDeclarationSyntax.GetLocation(),
+            methodName,
+            targetPropertyName);
+
+    /// <summary>
+    /// Diagnostic: A projection map method uses [MappaNullSubstitute] InvokeMethod mode.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="methodName">The map method name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic ProjectionMethodHasNullSubstituteInvokeMethod(
+        Location? location,
+        string methodName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.ProjectionMethodHasNullSubstituteInvokeMethod,
+            location,
+            methodName);
+
     private static Location? GetSyntaxLocation(SyntaxNode? syntaxNode)
         => syntaxNode?.GetLocation();
 }

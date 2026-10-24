@@ -206,6 +206,43 @@ public sealed class AttributeDataExtensionsGetMappaSettingsAttributeTests
     }
 
     /// <summary>
+    /// Test <see cref="AttributeDataExtensions.GetMappaSettingsAttribute"/> reads <see cref="MappaSettingsAttribute.ReplaceNullWithEmptyContainer"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void GetMappaSettingsAttributeReadsReplaceNullWithEmptyContainer()
+    {
+        const string source = """
+                              using Mappa;
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Source { }
+
+                              public class Target { }
+
+                              [Mappa]
+                              public sealed partial class TestMapper
+                              {
+                                  [MappaSettings(ReplaceNullWithEmptyContainer = BooleanSetting.Enable)]
+                                  public partial Target Map(Source input);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var attributes = AttributeDataExtensionsTestHelper.GetMethodAttributes(
+            compilation,
+            AttributeDataExtensionsTestHelper.MapperMetadataName,
+            "Map");
+
+        var settings = attributes.GetMappaSettingsAttribute(compilation);
+
+        settings.Should().NotBeNull();
+        settings.ReplaceNullWithEmptyContainer.Should().Be(BooleanSetting.Enable);
+    }
+
+    /// <summary>
     /// Test <see cref="AttributeDataExtensions.GetMappaSettingsAttribute"/> reads
     /// <see cref="MappaSettingsAttribute.BsonWellKnownTypes"/> and
     /// <see cref="MappaSettingsAttribute.ProtobufWellKnownTypes"/>.

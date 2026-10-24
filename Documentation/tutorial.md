@@ -760,6 +760,37 @@ public sealed partial class Mapper
 
 See also: [MappaAssignFromConstantAttributeMapper.cs](../Mappa.Samples/MappaAssignFromConstantAttributeMapper.cs).
 
+### MappaNullSubstitute attribute
+When a source member is null, substitute a constant (`AssignValue`) or call a method (`InvokeMethod`) before mapping continues. The substitute is typed as the **source** member; conversion to the target runs afterward. Mapping `T?` → non-nullable `T` is allowed for that member because the substitute yields non-null `T`.
+
+```csharp
+[Mappa]
+public sealed partial class Mapper
+{
+    [MappaNullSubstitute(nameof(Target.Name), AssignValue = "unknown")]
+    [MappaNullSubstitute(nameof(Target.Nickname), InvokeMethod = nameof(DefaultNickname))]
+    public partial Target Map(Source source);
+
+    private static string DefaultNickname(string? value) => "guest";
+}
+```
+
+`InvokeMethod` is not supported on `IQueryable` projections (**MP00119**). See also: [MappaNullSubstituteMapper.cs](../Mappa.Samples/MappaNullSubstituteMapper.cs), [attributes](./mappa-attributes.md#mappanullsubstitute), diagnostics **MP00115–MP00119**.
+
+### ReplaceNullWithEmptyContainer setting
+Enable `MappaSettings.ReplaceNullWithEmptyContainer` (or `mappa.replacenullwithemptycontainer` in `.editorconfig`) so a null source collection or dictionary maps to an empty target container instead of `null` / throw:
+
+```csharp
+[Mappa]
+[MappaSettings(ReplaceNullWithEmptyContainer = BooleanSetting.Enable)]
+public sealed partial class Mapper
+{
+    public partial List<string> Map(List<string>? source);
+}
+```
+
+See also: [ReplaceNullWithEmptyContainerMapper.cs](../Mappa.Samples/ReplaceNullWithEmptyContainerMapper.cs), [attributes](./mappa-attributes.md#replacenullwithemptycontainer).
+
 ### MappaAssignFromContext attribute
 Read a value from `MappaContext` and assign it to a target member. The map method must accept `MappaContext` as its second parameter:
 

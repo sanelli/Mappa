@@ -58,6 +58,7 @@ internal sealed class MappaUserSettings
     private readonly StackSetting<BooleanSetting> fastCollections;
     private readonly StackSetting<BooleanSetting> containerCapacityConstructors;
     private readonly StackSetting<BooleanSetting> preventEnumerableCount;
+    private readonly StackSetting<BooleanSetting> replaceNullWithEmptyContainer;
     private readonly StackSetting<EnumerableConcreteTypeSetting> enumerableConcreteType;
     private readonly StackSetting<DictionaryAssignmentSetting> dictionaryAssignment;
     private readonly StackSetting<BooleanSetting> polymorphicMapMethodWithMatchingDefaultAttribute;
@@ -125,6 +126,7 @@ internal sealed class MappaUserSettings
             otherSettings.FastCollections,
             otherSettings.ContainerCapacityConstructors,
             otherSettings.PreventEnumerableCount,
+            otherSettings.ReplaceNullWithEmptyContainer,
             otherSettings.EnumerableConcreteType,
             otherSettings.DictionaryAssignment,
             otherSettings.PolymorphicMapMethodWithMatchingDefaultAttribute,
@@ -191,6 +193,7 @@ internal sealed class MappaUserSettings
     /// <param name="fastCollections">Enable or disable fast collection iterations for arrays and <see cref="List{T}"/> via <c>Span{T}</c>.</param>
     /// <param name="containerCapacityConstructors">Enable or disable the ability to support custom collection with capacity constructor.</param>
     /// <param name="preventEnumerableCount">Enable or disable avoiding <c>Enumerable.Count</c> when mapping to fixed-size collection targets.</param>
+    /// <param name="replaceNullWithEmptyContainer">Enable or disable replacing a null source container with an empty target container.</param>
     /// <param name="enumerableConcreteType">Defines the concrete type used for sequence-like collection interface targets.</param>
     /// <param name="dictionaryAssignment">Defines how entries are inserted when mapping between dictionaries.</param>
     /// <param name="polymorphicMapMethodWithMatchingDefaultAttribute">Enable or disable the support for <see cref="MappaTypeMappingDefaultBehavior.MapSourceType"/> when picking up a polymorphic method.</param>
@@ -252,6 +255,7 @@ internal sealed class MappaUserSettings
         BooleanSetting fastCollections,
         BooleanSetting containerCapacityConstructors,
         BooleanSetting preventEnumerableCount,
+        BooleanSetting replaceNullWithEmptyContainer,
         EnumerableConcreteTypeSetting enumerableConcreteType,
         DictionaryAssignmentSetting dictionaryAssignment,
         BooleanSetting polymorphicMapMethodWithMatchingDefaultAttribute,
@@ -313,6 +317,7 @@ internal sealed class MappaUserSettings
         this.fastCollections = new(fastCollections);
         this.containerCapacityConstructors = new(containerCapacityConstructors);
         this.preventEnumerableCount = new(preventEnumerableCount);
+        this.replaceNullWithEmptyContainer = new(replaceNullWithEmptyContainer);
         this.enumerableConcreteType = new(enumerableConcreteType);
         this.dictionaryAssignment = new(dictionaryAssignment);
         this.polymorphicMapMethodWithMatchingDefaultAttribute = new(polymorphicMapMethodWithMatchingDefaultAttribute);
@@ -460,6 +465,9 @@ internal sealed class MappaUserSettings
 
     /// <inheritdoc/>
     public BooleanSetting PreventEnumerableCount => this.preventEnumerableCount;
+
+    /// <inheritdoc/>
+    public BooleanSetting ReplaceNullWithEmptyContainer => this.replaceNullWithEmptyContainer;
 
     /// <inheritdoc/>
     public EnumerableConcreteTypeSetting EnumerableConcreteType => this.enumerableConcreteType;
@@ -667,6 +675,7 @@ internal sealed class MappaUserSettings
             this.fastCollections.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.FastCollections, BooleanSetting.Undefined, this.fastCollections)),
             this.containerCapacityConstructors.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.ContainerCapacityConstructors, BooleanSetting.Undefined, this.containerCapacityConstructors)),
             this.preventEnumerableCount.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.PreventEnumerableCount, BooleanSetting.Undefined, this.preventEnumerableCount)),
+            this.replaceNullWithEmptyContainer.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.ReplaceNullWithEmptyContainer, BooleanSetting.Undefined, this.replaceNullWithEmptyContainer)),
             this.enumerableConcreteType.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.EnumerableConcreteType, EnumerableConcreteTypeSetting.Undefined, this.enumerableConcreteType)),
             this.dictionaryAssignment.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.DictionaryAssignment, DictionaryAssignmentSetting.Undefined, this.dictionaryAssignment)),
             this.polymorphicMapMethodWithMatchingDefaultAttribute.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.PolymorphicMapMethodWithMatchingDefaultAttribute, BooleanSetting.Undefined, this.polymorphicMapMethodWithMatchingDefaultAttribute)),

@@ -233,65 +233,101 @@ internal sealed class CollectionToCollectionMapStrategyBuilder(CollectionToColle
     /// <inheritdoc/>
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
-        var stringBuilder = new PrettyCode.StringBuilder();
-
-        AppendTargetVariable(
-            stringBuilder,
-            source,
-            context,
-            this.strategy.MethodSymbol,
-            this.strategy.TargetType,
-            this.strategy.SourceType,
-            this.strategy.FastCollections,
-            this.strategy.ContainerCapacityConstructors,
-            this.strategy.PreventEnumerableCount,
-            this.strategy.EnumerableConcreteType,
-            this.strategy.PreferredTargetInterface,
-            out var targetVariableName,
-            out var addMethod,
-            out var targetCounterTemporary,
-            out var interfaceMethodAccessMode,
-            out var interfaceToAccessFrom,
-            out var variableToAccessFrom,
-            out var usedGrowableBuffer);
-        using (AppendLoopBlock(
-                   stringBuilder,
-                   source,
-                   context,
-                   this.strategy.SourceType,
-                   this.strategy.FastCollections,
-                   this.strategy.PreferredSourceInterface,
-                   out var loopVariableName,
-                   out var loopCounterTemporary))
+        if (EmptyContainerExpressionHelper.IsEnabled(this.strategy.ReplaceNullWithEmptyContainer)
+            && EmptyContainerExpressionHelper.TryGetEmptyExpression(
+                this.strategy.TargetType,
+                context.Compilation,
+                this.strategy.MethodSymbol,
+                out var emptyExpression))
         {
-            var (targetElementVariable, targetElementCode) = ReferenceHandlingCodeGenerator.BuildNestedSource(
-                this.strategy.ElementStrategy,
-                loopVariableName,
-                context,
-                mappaGlobalOptions);
-            if (!string.IsNullOrWhiteSpace(targetElementCode))
+            var stringBuilder = new PrettyCode.StringBuilder();
+            var resultTemporary = context.NextTemporary();
+            stringBuilder.AppendLine($"{this.strategy.TargetType.ToDisplayString()} {resultTemporary};");
+            stringBuilder.AppendLine($"if ({source} is null)");
+            using (stringBuilder.CurlyBracesBlock())
             {
-                stringBuilder.AppendLine(targetElementCode);
+                stringBuilder.AppendLine($"{resultTemporary} = {emptyExpression};");
             }
 
-            AppendMappedElementToTarget(
-                stringBuilder,
-                context,
-                addMethod,
-                targetVariableName,
-                variableToAccessFrom,
-                interfaceMethodAccessMode,
-                interfaceToAccessFrom,
-                targetElementVariable,
-                loopCounterTemporary,
-                targetCounterTemporary);
+            stringBuilder.AppendLine("else");
+            using (stringBuilder.CurlyBracesBlock())
+            {
+                var (mappedTemporary, mappedCode) = BuildMappedSource();
+                if (!string.IsNullOrWhiteSpace(mappedCode))
+                {
+                    stringBuilder.AppendLine(mappedCode);
+                }
+
+                stringBuilder.AppendLine($"{resultTemporary} = {mappedTemporary};");
+            }
+
+            return (resultTemporary, stringBuilder.ToString());
         }
 
-        // For some types we need to do a bit of post-processing to make sure we always return the correct type
-        // (e.g. if we convert a T[] into a Span<T>, even if not needed it clarifies the code).
-        AppendPostLoopCode(stringBuilder, context, this.strategy.TargetType, ref targetVariableName, usedGrowableBuffer);
+        return BuildMappedSource();
 
-        return (targetVariableName, stringBuilder.ToString());
+        (string VariableName, string Code) BuildMappedSource()
+        {
+            var stringBuilder = new PrettyCode.StringBuilder();
+
+            AppendTargetVariable(
+                stringBuilder,
+                source,
+                context,
+                this.strategy.MethodSymbol,
+                this.strategy.TargetType,
+                this.strategy.SourceType,
+                this.strategy.FastCollections,
+                this.strategy.ContainerCapacityConstructors,
+                this.strategy.PreventEnumerableCount,
+                this.strategy.EnumerableConcreteType,
+                this.strategy.PreferredTargetInterface,
+                out var targetVariableName,
+                out var addMethod,
+                out var targetCounterTemporary,
+                out var interfaceMethodAccessMode,
+                out var interfaceToAccessFrom,
+                out var variableToAccessFrom,
+                out var usedGrowableBuffer);
+            using (AppendLoopBlock(
+                       stringBuilder,
+                       source,
+                       context,
+                       this.strategy.SourceType,
+                       this.strategy.FastCollections,
+                       this.strategy.PreferredSourceInterface,
+                       out var loopVariableName,
+                       out var loopCounterTemporary))
+            {
+                var (targetElementVariable, targetElementCode) = ReferenceHandlingCodeGenerator.BuildNestedSource(
+                    this.strategy.ElementStrategy,
+                    loopVariableName,
+                    context,
+                    mappaGlobalOptions);
+                if (!string.IsNullOrWhiteSpace(targetElementCode))
+                {
+                    stringBuilder.AppendLine(targetElementCode);
+                }
+
+                AppendMappedElementToTarget(
+                    stringBuilder,
+                    context,
+                    addMethod,
+                    targetVariableName,
+                    variableToAccessFrom,
+                    interfaceMethodAccessMode,
+                    interfaceToAccessFrom,
+                    targetElementVariable,
+                    loopCounterTemporary,
+                    targetCounterTemporary);
+            }
+
+            // For some types we need to do a bit of post-processing to make sure we always return the correct type
+            // (e.g. if we convert a T[] into a Span<T>, even if not needed it clarifies the code).
+            AppendPostLoopCode(stringBuilder, context, this.strategy.TargetType, ref targetVariableName, usedGrowableBuffer);
+
+            return (targetVariableName, stringBuilder.ToString());
+        }
     }
 
     private static void AppendMappedElementToTarget(

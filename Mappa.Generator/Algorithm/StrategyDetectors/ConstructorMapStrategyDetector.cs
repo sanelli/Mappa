@@ -49,6 +49,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
 
         this.context.ValidateTargetNamesExist(this.compilation);
+        this.context.ValidateMappaNullSubstituteAttributes();
         this.context.ValidateMappaIgnoreTargetPropertyAttributes();
         this.context.ValidateMappaMustMapTargetPropertyAttributes();
         this.context.ValidateMappaAllowInaccessibleMembersAttributes(this.compilation);
@@ -142,24 +143,37 @@ internal sealed partial class ConstructorMapStrategyDetector
                         .Select<IParameterSymbol, (IParameterSymbol Parameter, IPropertySymbol Property, MapStrategy Strategy)>(
                             targetParameter =>
                             {
+                                var nullSubstituteAttributesForParameter = this.GetMatchingNullSubstituteAttributes(
+                                    targetParameter.Name,
+                                    StringComparison.OrdinalIgnoreCase);
                                 var usePropertyAttributes = this.context.MapMethod is not null
                                     ? this.context.MapMethod.GetAttributes<MappaUsePropertyAttribute>().Where(attribute => attribute.TargetPropertyName.Equals(targetParameter.Name, StringComparison.OrdinalIgnoreCase)).ToArray()
                                     : [];
 
                                 string expectedSourcePropertyName;
                                 var useExactNameFromAttribute = false;
-                                switch (usePropertyAttributes.Length)
+                                if (nullSubstituteAttributesForParameter.Length == 1
+                                    && nullSubstituteAttributesForParameter[0].SourcePropertyName is string nullSubstituteSourcePropertyName
+                                    && !string.IsNullOrWhiteSpace(nullSubstituteSourcePropertyName))
                                 {
-                                    case 0:
-                                        expectedSourcePropertyName = targetParameter.Name;
-                                        break;
-                                    case 1:
-                                        expectedSourcePropertyName = usePropertyAttributes[0].SourcePropertyName;
-                                        useExactNameFromAttribute = true;
-                                        break;
-                                    default:
-                                        this.context.ReportDiagnostic(MappaDiagnostics.TooManyUsePropertyAttributesForTheSameTargetProperty(this.context.GetRootMapMethod().MethodDeclarationSyntax, this.context.GetRootMapMethod().MethodName, targetParameter.Name));
-                                        return (targetParameter, null!, noMapStrategy);
+                                    expectedSourcePropertyName = nullSubstituteSourcePropertyName;
+                                    useExactNameFromAttribute = true;
+                                }
+                                else
+                                {
+                                    switch (usePropertyAttributes.Length)
+                                    {
+                                        case 0:
+                                            expectedSourcePropertyName = targetParameter.Name;
+                                            break;
+                                        case 1:
+                                            expectedSourcePropertyName = usePropertyAttributes[0].SourcePropertyName;
+                                            useExactNameFromAttribute = true;
+                                            break;
+                                        default:
+                                            this.context.ReportDiagnostic(MappaDiagnostics.TooManyUsePropertyAttributesForTheSameTargetProperty(this.context.GetRootMapMethod().MethodDeclarationSyntax, this.context.GetRootMapMethod().MethodName, targetParameter.Name));
+                                            return (targetParameter, null!, noMapStrategy);
+                                    }
                                 }
 
                                 PropertyMapNameMatcher.TryFindSourceProperty(
@@ -183,6 +197,11 @@ internal sealed partial class ConstructorMapStrategyDetector
                                         out var propertyStrategyFromAttribute))
                                 {
                                     propertyStrategyFromAttribute = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, sourceProperties, propertyStrategyFromAttribute);
+                                    propertyStrategyFromAttribute = this.TryWrapWithNullSubstituteAssignValue(
+                                        targetParameter.Name,
+                                        StringComparison.OrdinalIgnoreCase,
+                                        sourceProperty,
+                                        propertyStrategyFromAttribute);
                                     var requiresUnsafeAccessorOnSource = false;
                                     var requiresInterfaceCastOnSource = false;
                                     if (sourceProperty is not null)
@@ -220,6 +239,11 @@ internal sealed partial class ConstructorMapStrategyDetector
                                 if (this.TryGetStrategyForSourceProperty(targetParameterType, sourceProperty, true, out var propertyStrategy))
                                 {
                                     propertyStrategy = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, sourceProperties, propertyStrategy);
+                                    propertyStrategy = this.TryWrapWithNullSubstituteAssignValue(
+                                        targetParameter.Name,
+                                        StringComparison.OrdinalIgnoreCase,
+                                        sourceProperty,
+                                        propertyStrategy);
                                     this.TryIsSourcePropertyReadable(
                                         sourceProperty,
                                         out var requiresUnsafeAccessorOnSource,
@@ -617,6 +641,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         var matchingAttributes = this.GetAttributeMapMethod()
             .GetAttributes<Attribute>()
             .OfType<IMappaTargetPropertyNameAttribute>()
+            .Where(attribute => attribute is not MappaNullSubstituteAttribute)
             .Where(attribute => this.AttributeTargetPathMatches(attribute.TargetPropertyName, targetName, stringComparison))
             .Where(attribute => this.IsMappingAttributeActiveAtCurrentLevel(attribute.TargetPropertyName))
             .ToArray();

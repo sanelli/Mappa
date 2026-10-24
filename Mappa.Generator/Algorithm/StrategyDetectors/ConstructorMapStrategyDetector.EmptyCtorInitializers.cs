@@ -117,6 +117,17 @@ internal sealed partial class ConstructorMapStrategyDetector
         NoMapStrategy noMapStrategy)
     {
         var mappableTargetPropertyName = targetProperty.GetMappablePropertyName();
+        var nullSubstituteAttributes = this.GetMatchingNullSubstituteAttributes(
+            mappableTargetPropertyName,
+            StringComparison.Ordinal);
+        if (nullSubstituteAttributes.Length == 1
+            && !string.IsNullOrWhiteSpace(nullSubstituteAttributes[0].SourcePropertyName))
+        {
+            return this.ResolveEmptyCtorPropertySourceNamingFromNullSubstituteAttribute(
+                targetProperty,
+                nullSubstituteAttributes[0]);
+        }
+
         var usePropertyAttributes = this.GetMatchingUsePropertyAttributes(
             mappableTargetPropertyName,
             StringComparison.Ordinal);
@@ -137,6 +148,35 @@ internal sealed partial class ConstructorMapStrategyDetector
                 usePropertyAttributes,
                 noMapStrategy),
         };
+    }
+
+    private EmptyCtorPropertySourceResolution ResolveEmptyCtorPropertySourceNamingFromNullSubstituteAttribute(
+        IPropertySymbol targetProperty,
+        MappaNullSubstituteAttribute nullSubstituteAttribute)
+    {
+        var isLeafTargetMapping = this.IsLeafTargetMappingForAttribute(nullSubstituteAttribute.TargetPropertyName);
+        if (this.TryResolveNullSubstituteSourceNaming(
+                nullSubstituteAttribute,
+                isLeafTargetMapping,
+                out var expectedSourcePropertyName,
+                out var useExactNameFromAttribute,
+                out var nestedPropertyPathContext,
+                out var chainedSourcePropertyPath))
+        {
+            return new EmptyCtorPropertySourceResolution(
+                expectedSourcePropertyName,
+                useExactNameFromAttribute,
+                nestedPropertyPathContext,
+                chainedSourcePropertyPath,
+                FailureStrategy: null);
+        }
+
+        return new EmptyCtorPropertySourceResolution(
+            targetProperty.GetMappablePropertyName(),
+            UseExactNameFromAttribute: true,
+            nestedPropertyPathContext,
+            chainedSourcePropertyPath,
+            FailureStrategy: null);
     }
 
     private EmptyCtorPropertySourceResolution ResolveEmptyCtorPropertySourceNamingFromSingleUsePropertyAttribute(
@@ -299,6 +339,11 @@ internal sealed partial class ConstructorMapStrategyDetector
             sourceProperty,
             sourceProperties,
             propertyStrategyFromAttribute);
+        propertyStrategyFromAttribute = this.TryWrapWithNullSubstituteAssignValue(
+            targetProperty.Name,
+            StringComparison.Ordinal,
+            sourceProperty,
+            propertyStrategyFromAttribute);
         propertyStrategyFromAttribute = this.EncapsulateMapStrategyForTargetOptional(
             targetProperty,
             allTargetProperties,
@@ -342,6 +387,11 @@ internal sealed partial class ConstructorMapStrategyDetector
 
         var innerSourceType = chainedSourceProperties[chainedSourceProperties.Length - 1].Type;
         MapStrategy chainedPropertyStrategy = new IdentityMapStrategy(targetProperty.Type, innerSourceType);
+        chainedPropertyStrategy = this.TryWrapWithNullSubstituteAssignValue(
+            targetProperty.Name,
+            StringComparison.Ordinal,
+            chainedSourceProperties[chainedSourceProperties.Length - 1],
+            chainedPropertyStrategy);
         chainedPropertyStrategy = this.EncapsulateMapStrategyForTargetOptional(
             targetProperty,
             allTargetProperties,
@@ -666,6 +716,11 @@ internal sealed partial class ConstructorMapStrategyDetector
         }
 
         propertyStrategy = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, sourceProperties, propertyStrategy);
+        propertyStrategy = this.TryWrapWithNullSubstituteAssignValue(
+            targetProperty.Name,
+            StringComparison.Ordinal,
+            sourceProperty,
+            propertyStrategy);
         propertyStrategy = this.EncapsulateMapStrategyForTargetOptional(
             targetProperty,
             allTargetProperties,

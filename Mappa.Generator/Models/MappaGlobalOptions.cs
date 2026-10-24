@@ -196,6 +196,10 @@ namespace Mappa.Generator.Models;
 ///         <description>Set the default value to enable or disable avoiding <c>Enumerable.Count</c> when mapping from sources without <c>Count</c> or <c>Length</c> to fixed-size collection targets.</description>
 ///     </item>
 ///     <item>
+///         <term><c>mappa.replacenullwithemptycontainer</c></term>
+///         <description>Set the default value to enable or disable replacing a null source container with an empty target container.</description>
+///     </item>
+///     <item>
 ///         <term><c>mappa.polymorphicmapmethodwithmatchingdefaultattribute</c></term>
 ///         <description>Set the default value to enable or disable the support for <see cref="MappaTypeMappingDefaultBehavior.MapSourceType"/> when picking up a polymorphic method.</description>
 ///     </item>
@@ -310,6 +314,7 @@ internal sealed class MappaGlobalOptions
     private const string MappaSettingsFastCollections = "fastcollections";
     private const string MappaSettingsContainerCapacityConstructors = "containercapacityconstructors";
     private const string MappaSettingsPreventEnumerableCount = "preventenumerablecount";
+    private const string MappaSettingsReplaceNullWithEmptyContainer = "replacenullwithemptycontainer";
     private const string MappaSettingsPolymorphicMapMethodWithMatchingDefaultAttribute = "polymorphicmapmethodwithmatchingdefaultattribute";
     private const string MappaSettingsCompatibleMapMethod = "compatiblemapmethod";
     private const string MappaSettingsCaseInsensitivePropertyMap = "caseinsensitivepropertymap";
@@ -386,6 +391,7 @@ internal sealed class MappaGlobalOptions
         this.FastCollections = ReadBooleanSettingOption(options, MappaSettingsFastCollections, BooleanSetting.Undefined);
         this.ContainerCapacityConstructors = ReadBooleanSettingOption(options, MappaSettingsContainerCapacityConstructors, BooleanSetting.Undefined);
         this.PreventEnumerableCount = ReadBooleanSettingOption(options, MappaSettingsPreventEnumerableCount, BooleanSetting.Undefined);
+        this.ReplaceNullWithEmptyContainer = ReadBooleanSettingOption(options, MappaSettingsReplaceNullWithEmptyContainer, BooleanSetting.Undefined);
         this.PolymorphicMapMethodWithMatchingDefaultAttribute = ReadBooleanSettingOption(options, MappaSettingsPolymorphicMapMethodWithMatchingDefaultAttribute, BooleanSetting.Undefined);
         this.CompatibleMapMethod = ReadBooleanSettingOption(options, MappaSettingsCompatibleMapMethod, BooleanSetting.Undefined);
         this.CaseInsensitivePropertyMap = ReadBooleanSettingOption(options, MappaSettingsCaseInsensitivePropertyMap, BooleanSetting.Undefined);
@@ -533,6 +539,9 @@ internal sealed class MappaGlobalOptions
 
     /// <inheritdoc/>
     public BooleanSetting PreventEnumerableCount { get; }
+
+    /// <inheritdoc/>
+    public BooleanSetting ReplaceNullWithEmptyContainer { get; }
 
     /// <inheritdoc/>
     public BooleanSetting PolymorphicMapMethodWithMatchingDefaultAttribute { get; }

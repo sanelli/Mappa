@@ -169,6 +169,7 @@ internal sealed class ContainerMapStrategyDetector
                 dictionaryKeyStrategy,
                 dictionaryValueStrategy,
                 DictionaryAssignmentSettingHelper.GetEffective(this.context.MappaUserSettings.DictionaryAssignment),
+                this.context.MappaUserSettings.ReplaceNullWithEmptyContainer,
                 preferredDictionarySourceInterface,
                 preferredDictionaryTargetInterface);
         }
@@ -188,6 +189,7 @@ internal sealed class ContainerMapStrategyDetector
                 this.context.MappaUserSettings.ContainerCapacityConstructors,
                 this.context.MappaUserSettings.PreventEnumerableCount,
                 GetEffectiveEnumerableConcreteType(this.context.MappaUserSettings.EnumerableConcreteType),
+                this.context.MappaUserSettings.ReplaceNullWithEmptyContainer,
                 preferredCollectionSourceInterface,
                 preferredCollectionTargetInterface);
         }

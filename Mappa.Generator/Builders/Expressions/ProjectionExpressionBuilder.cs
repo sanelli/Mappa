@@ -24,6 +24,8 @@ internal static class ProjectionExpressionBuilder
             [typeof(IdentityMapStrategy)] = static (_, source, _) => BuildIdentityExpression(source),
             [typeof(NullableStrategy)] = static (strategy, source, context) =>
                 BuildNullableExpression((NullableStrategy)strategy, source, context),
+            [typeof(NullSubstituteMapStrategy)] = static (strategy, source, context) =>
+                BuildNullSubstituteExpression((NullSubstituteMapStrategy)strategy, source, context),
             [typeof(InvokeConstructorMapStrategy)] = static (strategy, source, context) =>
                 BuildConstructorExpression((InvokeConstructorMapStrategy)strategy, source, context),
             [typeof(ParameterMapStrategy)] = static (strategy, source, context) =>
@@ -108,6 +110,33 @@ internal static class ProjectionExpressionBuilder
 
         expression = builder(strategy, source, context);
         return true;
+    }
+
+    /// <summary>
+    /// Builds a null-substitute (AssignValue) projection expression.
+    /// </summary>
+    /// <param name="strategy">The null-substitute strategy.</param>
+    /// <param name="source">The source expression.</param>
+    /// <param name="context">The expression build context.</param>
+    /// <returns>The projection expression.</returns>
+    internal static string BuildNullSubstituteExpression(
+        NullSubstituteMapStrategy strategy,
+        string source,
+        ExpressionBuildContext context)
+    {
+        if (!strategy.IsAssignValueMode)
+        {
+            throw new MappaGeneratorException("NullSubstitute InvokeMethod mode is not supported in projections.");
+        }
+
+        var literal = AttributeConstantValueHelper.ToCode(strategy.AssignValue);
+        var substitutedSource = $"{source} ?? {literal}";
+        if (!TryBuildExpression(strategy.ElementStrategy, substitutedSource, context, out var expression))
+        {
+            throw new MappaGeneratorException("Unable to build projection expression for null-substitute element strategy.");
+        }
+
+        return expression;
     }
 
     /// <summary>
@@ -209,20 +238,34 @@ internal static class ProjectionExpressionBuilder
         var selectExpression =
             $"global::System.Linq.Enumerable.Select({source}, {lambdaParameter} => {elementExpression})";
 
+        string mappedExpression;
         if (strategy.TargetType.IsArray())
         {
-            return $"global::System.Linq.Enumerable.ToArray({selectExpression})";
+            mappedExpression = $"global::System.Linq.Enumerable.ToArray({selectExpression})";
         }
-
-        if (strategy.TargetType.IsIEnumerable()
+        else if (strategy.TargetType.IsIEnumerable()
             && !strategy.TargetType.IsList(context.BuilderContext.Compilation)
             && !strategy.TargetType.IsOrImplementICollection()
             && !strategy.TargetType.IsOrImplementIList())
         {
-            return selectExpression;
+            mappedExpression = selectExpression;
+        }
+        else
+        {
+            mappedExpression = $"global::System.Linq.Enumerable.ToList({selectExpression})";
         }
 
-        return $"global::System.Linq.Enumerable.ToList({selectExpression})";
+        if (EmptyContainerExpressionHelper.IsEnabled(strategy.ReplaceNullWithEmptyContainer)
+            && EmptyContainerExpressionHelper.TryGetEmptyExpression(
+                strategy.TargetType,
+                context.BuilderContext.Compilation,
+                context.BuilderContext.GetMapMethod().MethodSymbol,
+                out var emptyExpression))
+        {
+            return $"{source} == null ? {emptyExpression} : {mappedExpression}";
+        }
+
+        return mappedExpression;
     }
 
     private static string BuildIdentityExpression(string source)

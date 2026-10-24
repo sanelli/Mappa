@@ -175,6 +175,9 @@ internal static class ValueTransformerStrategyWrapper
             case NullableStrategy nullableStrategy:
                 CollectApplied(nullableStrategy.ElementStrategy, appliedOnSource, appliedOnTarget);
                 break;
+            case NullSubstituteMapStrategy nullSubstituteMapStrategy:
+                CollectApplied(nullSubstituteMapStrategy.ElementStrategy, appliedOnSource, appliedOnTarget);
+                break;
         }
     }
 }

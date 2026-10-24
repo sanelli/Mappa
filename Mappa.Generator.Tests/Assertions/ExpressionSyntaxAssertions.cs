@@ -228,8 +228,16 @@ internal sealed class ExpressionSyntaxAssertions
 
         this.Subject.Should().BeOfType<InvocationExpressionSyntax>();
         var invocationExpressionSyntax = (InvocationExpressionSyntax)this.Subject;
-        new ExpressionSyntaxAssertions(invocationExpressionSyntax.Expression, this.semanticModel, this.compilation)
-            .BeMemberAccessExpressionSyntax(memberAccess);
+        if (invocationExpressionSyntax.Expression is IdentifierNameSyntax identifierNameSyntax)
+        {
+            identifierNameSyntax.Identifier.Text.Should().Be(memberAccess);
+        }
+        else
+        {
+            new ExpressionSyntaxAssertions(invocationExpressionSyntax.Expression, this.semanticModel, this.compilation)
+                .BeMemberAccessExpressionSyntax(memberAccess);
+        }
+
         invocationExpressionSyntax.ArgumentList.Arguments.Should().HaveCount(assertArguments.Length);
 
         for (int index = 0; index < assertArguments.Length; ++index)
@@ -321,6 +329,18 @@ internal sealed class ExpressionSyntaxAssertions
     internal ExpressionSyntaxAssertions BeOmittedSizeExpressionSyntax()
     {
         this.Subject.Should().BeOfType<OmittedArraySizeExpressionSyntax>();
+        return this;
+    }
+
+    /// <summary>
+    /// Assert that the expression is an empty collection expression (<c>[]</c>).
+    /// </summary>
+    /// <returns>The assertions.</returns>
+    internal ExpressionSyntaxAssertions BeCollectionExpressionSyntax()
+    {
+        this.Subject.Should().BeOfType<CollectionExpressionSyntax>();
+        var collectionExpressionSyntax = (CollectionExpressionSyntax)this.Subject;
+        collectionExpressionSyntax.Elements.Should().BeEmpty();
         return this;
     }
 
@@ -593,6 +613,32 @@ internal sealed class ExpressionSyntaxAssertions
 
         expressionAssertions(new ExpressionSyntaxAssertions(isPatternExpressionSyntax.Expression, this.semanticModel, this.compilation));
         patternAssertions(new PatternSyntaxAssertions(isPatternExpressionSyntax.Pattern, this.semanticModel, this.compilation));
+
+        return this;
+    }
+
+    /// <summary>
+    /// Assert that the expression is a conditional (ternary) expression.
+    /// </summary>
+    /// <param name="conditionAssertions">Assertions on the condition.</param>
+    /// <param name="whenTrueAssertions">Assertions on the <c>when true</c> expression.</param>
+    /// <param name="whenFalseAssertions">Assertions on the <c>when false</c> expression.</param>
+    /// <returns>The assertions.</returns>
+    internal ExpressionSyntaxAssertions BeConditionalExpressionSyntax(
+        Action<ExpressionSyntaxAssertions> conditionAssertions,
+        Action<ExpressionSyntaxAssertions> whenTrueAssertions,
+        Action<ExpressionSyntaxAssertions> whenFalseAssertions)
+    {
+        ArgumentNullException.ThrowIfNull(conditionAssertions);
+        ArgumentNullException.ThrowIfNull(whenTrueAssertions);
+        ArgumentNullException.ThrowIfNull(whenFalseAssertions);
+
+        this.Subject.Should().BeOfType<ConditionalExpressionSyntax>();
+        var conditionalExpressionSyntax = (ConditionalExpressionSyntax)this.Subject;
+
+        conditionAssertions(new ExpressionSyntaxAssertions(conditionalExpressionSyntax.Condition, this.semanticModel, this.compilation));
+        whenTrueAssertions(new ExpressionSyntaxAssertions(conditionalExpressionSyntax.WhenTrue, this.semanticModel, this.compilation));
+        whenFalseAssertions(new ExpressionSyntaxAssertions(conditionalExpressionSyntax.WhenFalse, this.semanticModel, this.compilation));
 
         return this;
     }

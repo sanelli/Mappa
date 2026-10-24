@@ -238,6 +238,12 @@ internal interface IMappaUserSettings
     BooleanSetting PreventEnumerableCount { get; }
 
     /// <summary>
+    /// Gets a value indicating whether a null source container is replaced with an empty
+    /// target container instead of mapping to <c>null</c> or throwing.
+    /// </summary>
+    BooleanSetting ReplaceNullWithEmptyContainer { get; }
+
+    /// <summary>
     /// Gets the concrete type used when mapping to sequence-like collection interfaces.
     /// </summary>
     EnumerableConcreteTypeSetting EnumerableConcreteType { get; }

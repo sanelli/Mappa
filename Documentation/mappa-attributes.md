@@ -18,6 +18,7 @@ This is the list of attributes provided:
 - `MappaAssignToContext`: When mapping structured types via the constructor-map strategy, stores the value of a target property or field in `MappaContext` after the target object has been fully constructed; `TargetPropertyName` may be a single name or a [dot-separated nested property path](#nested-property-paths);
 - `MappaInvokeMethodAttribute`: When mapping structured types via the constructor-map strategy, forces a target property or constructor parameter to be mapped by invoking a named method; supports an optional `SourcePropertyName` named parameter (see [MappaInvokeMethodAttribute](#mappainvokemethodattribute)); `TargetPropertyName` and optional `SourcePropertyName` may be a single name or a [dot-separated nested property path](#nested-property-paths);
 - `MappaAssignFromConstant`: When mapping structured types, allows specifying a constant value for a target property or constructor parameter; `TargetPropertyName` may be a single name or a [dot-separated nested property path](#nested-property-paths);
+- `MappaNullSubstitute`: When mapping structured types, substitutes a null source member with a constant (`AssignValue`) or a method call (`InvokeMethod`) before mapping continues; optional `SourcePropertyName`; supports [nested property paths](#nested-property-paths) (see [MappaNullSubstitute](#mappanullsubstitute));
 - `MappaBeforeMap`: Invokes a named hook immediately before the generated root mapping body (see [MappaBeforeMap and MappaAfterMap](#mappabeforemap-and-mappaaftermap));
 - `MappaAfterMap`: Invokes a named hook immediately after the generated root mapping body and before returning the target (see [MappaBeforeMap and MappaAfterMap](#mappabeforemap-and-mappaaftermap));
 - `MappaTransformer`: Marks a method as a value transformer (`T` → `T`) that is applied at every matching mapping site of the mapper class — to the source value before it is mapped and to the mapped value before it is assigned or returned (see [MappaTransformer and MappaApplyTransformer](#mappatransformer-and-mappaapplytransformer));
@@ -123,6 +124,7 @@ Attributes that accept `TargetPropertyName` and/or `SourcePropertyName` support 
 | `MappaUseProperty` | yes | yes |
 | `MappaInvokeMethod` | yes | optional `SourcePropertyName` |
 | `MappaAssignFromConstant` | yes | — |
+| `MappaNullSubstitute` | yes | optional `SourcePropertyName` |
 | `MappaAssignFromContext` | yes | — |
 | `MappaAssignToContext` | yes | — |
 | `MappaIgnoreTargetProperty` | yes | — |
@@ -198,6 +200,29 @@ When inaccessible setters or unsafe-accessor constructors are used, assignments 
 Explicitly implemented interface properties are **not** mapped through this attribute. Use `MappaSettings.MapTargetExplicitInterfaceProperties` instead (interface cast after construction, never `UnsafeAccessor`).
 
 See also: [InaccessibleMembersMapper.cs](../Mappa.Samples/InaccessibleMembersMapper.cs).
+
+## MappaNullSubstitute
+
+`[MappaNullSubstitute]` substitutes a **null source member** before mapping continues to the target. The substitute is typed as the **source** member type `T`; conversion to the target runs afterward. Because substitution yields non-null `T`, mapping `T?` → non-nullable `T` is allowed for that member.
+
+Exactly one mode must be set:
+
+- **`AssignValue`**: emit `source ?? constant` (or the equivalent null check under `#nullable disable`).
+- **`InvokeMethod`**: invoke a method only when the source is null; when non-null, use the source as-is. The method accepts `T?`/`T` and returns non-null `T`. Optional `InvokeMethodType` (static method on that type) or `InvokeMethodSource` (instance method on a mapper field/property). Do not set both locators. `InvokeMethod` is **not** supported on `IQueryable` projections (**MP00119**).
+
+`TargetPropertyName` and optional `SourcePropertyName` support [nested property paths](#nested-property-paths). Distinct from `[MappaAssignFromConstant]`, which writes the target directly and skips mapping; when both target the same member, AssignFromConstant wins and **MP00118** is reported.
+
+Diagnostics: **MP00115** (mode missing/ambiguous), **MP00116** (both locators), **MP00117** (duplicate attributes), **MP00118** (ignored for AssignFromConstant), **MP00119** (InvokeMethod on projection).
+
+See also: [MappaNullSubstituteMapper.cs](../Mappa.Samples/MappaNullSubstituteMapper.cs).
+
+## ReplaceNullWithEmptyContainer
+
+`MappaSettings.ReplaceNullWithEmptyContainer` (default off) maps a null source collection or dictionary to an empty target container instead of producing `null` or throwing. Enable at class or method level, or via `mappa.replacenullwithemptycontainer` in `.editorconfig`.
+
+Supported empties include concrete types with a parameterless constructor (`new List<T>()`), allow-listed interfaces/arrays (`[]`), and well-known immutable/frozen/readonly wrappers (`.Empty` or equivalent). Span/Memory family types and `IProducerConsumerCollection<T>` are excluded. The same empty forms apply inside `IQueryable` projections when the setting is on.
+
+See also: [ReplaceNullWithEmptyContainerMapper.cs](../Mappa.Samples/ReplaceNullWithEmptyContainerMapper.cs).
 
 ## MappaAssignFromConstant
 
@@ -441,6 +466,7 @@ The following settings are available:
 - `ProtobufWellKnownTypes`: when `Enable`, maps `Google.Protobuf.WellKnownTypes` (`Timestamp`, `Duration`, and scalar wrappers) without a separate dependency package (disabled by default; requires a reference to [Google.Protobuf](https://www.nuget.org/packages/Google.Protobuf/));
 - `PragmaWarning`: allows surrounding the generated methods with a `#pragma warning disable` block;
 - `FastCollections`: uses `Span<T>` to make mappings involving arrays and `System.Collections.Generic.List<T>` faster;
+- `ReplaceNullWithEmptyContainer`: when enabled, a null source collection or dictionary is mapped to an empty target container instead of producing `null` or throwing (disabled by default; see [ReplaceNullWithEmptyContainer](#replacenullwithemptycontainer));
 - `ContainerCapacityConstructors`: supports mapping custom containers using (if available) a constructor accepting an integer value representing the initial capacity of the container;
 - `PreventEnumerableCount`: when enabled, avoids calling `Enumerable.Count` when mapping from a source that does not expose `Count` or `Length` to a fixed-size target such as `T[]`, `Span<T>`, `ReadOnlySpan<T>`, `Memory<T>`, or `ReadOnlyMemory<T>`; a growable `List<T>` buffer is used so the source is enumerated only once;
 - `EnumerableConcreteType`: selects whether mappings to sequence-like collection interfaces (for example `IEnumerable<T>`, `IList<T>`, `ICollection<T>`, `IReadOnlyList<T>`, `IReadOnlyCollection<T>`) use `List<T>` (default) or `T[]` as the concrete buffer; concrete `List<T>` targets are unchanged;
@@ -703,6 +729,7 @@ Global configuration can be set up via the `.editorconfig` file. The following v
 | `mappa.protobufwellknowntypes`                           | `Enable`, `Disable`, `Undefined`                                                                                                                                                                                                         | `Undefined` | Enables generator strategies for `Google.Protobuf.WellKnownTypes` (`Timestamp`, `Duration`, scalar wrappers).                                          |
 | `mappa.pragmawarning`                                    | `NoBlock`, `Disable`, `Undefined`                                                                                                                                                                                                        | `NoBlock`   | Surrounds the generated code with a `#pragma warning disable` block.                                                                                   |
 | `mappa.fastcollections`                                  | `Enable`, `Disable`, `Undefined`                                                                                                                                                                                                         | `Undefined` | Uses `Span<T>` to make mappings involving arrays and `System.Collections.Generic.List<T>` faster.                                                      |
+| `mappa.replacenullwithemptycontainer`                    | `Enable`, `Disable`, `Undefined`                                                                                                                                                                                                         | `Undefined` | When enabled, maps a null source collection/dictionary to an empty target container instead of `null` / throw.                                           |
 | `mappa.containercapacityconstructors`                    | `Enable`, `Disable`, `Undefined`                                                                                                                                                                                                         | `Undefined` | Supports mapping custom containers using (if available) a constructor accepting an integer value representing the initial capacity of the container.   |
 | `mappa.preventenumerablecount`                           | `Enable`, `Disable`, `Undefined`                                                                                                                                                                                                         | `Undefined` | Avoids calling `Enumerable.Count` when mapping from a source without `Count` or `Length` to fixed-size targets such as `T[]`, `Span<T>`, or `Memory<T>`. |
 | `mappa.enumerableconcretetype`                           | `List`, `Array`, `Undefined`                                                                                                                                                                                                             | `List`      | Selects the concrete buffer for sequence-like collection interface targets. Concrete `List<T>` return types are unchanged.                               |

@@ -728,5 +728,35 @@ namespace Mappa.Generator.Diagnostics {
                 return ResourceManager.GetString("ProjectionMethodHasApplyTransformer", resourceCulture);
             }
         }
+
+        internal static string NullSubstituteModeMissingOrAmbiguous {
+            get {
+                return ResourceManager.GetString("NullSubstituteModeMissingOrAmbiguous", resourceCulture);
+            }
+        }
+
+        internal static string NullSubstituteInvokeMethodTypeAndSourceConflict {
+            get {
+                return ResourceManager.GetString("NullSubstituteInvokeMethodTypeAndSourceConflict", resourceCulture);
+            }
+        }
+
+        internal static string TooManyNullSubstituteAttributesForTheSameTargetProperty {
+            get {
+                return ResourceManager.GetString("TooManyNullSubstituteAttributesForTheSameTargetProperty", resourceCulture);
+            }
+        }
+
+        internal static string NullSubstituteIgnoredBecauseAssignFromConstant {
+            get {
+                return ResourceManager.GetString("NullSubstituteIgnoredBecauseAssignFromConstant", resourceCulture);
+            }
+        }
+
+        internal static string ProjectionMethodHasNullSubstituteInvokeMethod {
+            get {
+                return ResourceManager.GetString("ProjectionMethodHasNullSubstituteInvokeMethod", resourceCulture);
+            }
+        }
     }
 }
