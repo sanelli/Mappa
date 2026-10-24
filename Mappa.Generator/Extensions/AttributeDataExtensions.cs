@@ -264,6 +264,13 @@ internal static class AttributeDataExtensions
                     attribute.ProtobufWellKnownTypes = (BooleanSetting)value;
                 }
             },
+            [nameof(MappaSettingsAttribute.OneOfWellKnownTypes)] = static (attribute, constant) =>
+            {
+                if (constant.Value is int value)
+                {
+                    attribute.OneOfWellKnownTypes = (BooleanSetting)value;
+                }
+            },
             [nameof(MappaSettingsAttribute.PragmaWarning)] = static (attribute, constant) =>
             {
                 if (constant.Value is int value)

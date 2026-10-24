@@ -244,8 +244,9 @@ public sealed class AttributeDataExtensionsGetMappaSettingsAttributeTests
 
     /// <summary>
     /// Test <see cref="AttributeDataExtensions.GetMappaSettingsAttribute"/> reads
-    /// <see cref="MappaSettingsAttribute.BsonWellKnownTypes"/> and
-    /// <see cref="MappaSettingsAttribute.ProtobufWellKnownTypes"/>.
+    /// <see cref="MappaSettingsAttribute.BsonWellKnownTypes"/>,
+    /// <see cref="MappaSettingsAttribute.ProtobufWellKnownTypes"/>, and
+    /// <see cref="MappaSettingsAttribute.OneOfWellKnownTypes"/>.
     /// </summary>
     [Fact]
     [UnitTest]
@@ -266,7 +267,8 @@ public sealed class AttributeDataExtensionsGetMappaSettingsAttributeTests
                               {
                                   [MappaSettings(
                                       BsonWellKnownTypes = BooleanSetting.Enable,
-                                      ProtobufWellKnownTypes = BooleanSetting.Disable)]
+                                      ProtobufWellKnownTypes = BooleanSetting.Disable,
+                                      OneOfWellKnownTypes = BooleanSetting.Enable)]
                                   public partial Target Map(Source input);
                               }
                               """;
@@ -282,6 +284,7 @@ public sealed class AttributeDataExtensionsGetMappaSettingsAttributeTests
         settings.Should().NotBeNull();
         settings.BsonWellKnownTypes.Should().Be(BooleanSetting.Enable);
         settings.ProtobufWellKnownTypes.Should().Be(BooleanSetting.Disable);
+        settings.OneOfWellKnownTypes.Should().Be(BooleanSetting.Enable);
     }
 
     /// <summary>

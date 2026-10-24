@@ -63,6 +63,7 @@ internal static class Program
         MappaDependencyInjectionRegistrarRunner.Run(report);
         ProtobufWellKnownTypesMapperRunner.Run(report);
         BsonWellKnownTypesMapperRunner.Run(report);
+        OneOfWellKnownTypesMapperRunner.Run(report);
         MappaIgnoreMappersRunner.Run(report);
         MappaObjectFactoryMapperRunner.Run(report);
         MappaIgnoreTargetPropertyAttributeMapperRunner.Run(report);

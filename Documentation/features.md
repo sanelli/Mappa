@@ -37,6 +37,7 @@ The generator resolves mappings using a [detector chain](./mappa-generator-algor
 | Enum | Enum-to-enum, enum-to-integral, enum-to-string, integral-to-enum, and string-to-enum. | [§4 Enum](./mappa-generator-algorithm.md#4-enum-strategy) | [EnumToEnumMapper.cs](../Mappa.Samples/EnumToEnumMapper.cs), [NumericValueEnumToEnumMapper.cs](../Mappa.Samples/NumericValueEnumToEnumMapper.cs), [DescriptionEnumToEnumMapper.cs](../Mappa.Samples/DescriptionEnumToEnumMapper.cs), [DescriptionEnumToStringMapper.cs](../Mappa.Samples/DescriptionEnumToStringMapper.cs), [DescriptionStringToEnumMapper.cs](../Mappa.Samples/DescriptionStringToEnumMapper.cs), [CaseInsensitiveEnumMapper.cs](../Mappa.Samples/CaseInsensitiveEnumMapper.cs), [CaseInsensitiveEnumToEnumMapper.cs](../Mappa.Samples/CaseInsensitiveEnumToEnumMapper.cs), [EnumToIntegralMapper.cs](../Mappa.Samples/EnumToIntegralMapper.cs), [EnumToStringMapper.cs](../Mappa.Samples/EnumToStringMapper.cs), [IntegralToEnumMapper.cs](../Mappa.Samples/IntegralToEnumMapper.cs), [StringToEnumMapper.cs](../Mappa.Samples/StringToEnumMapper.cs), [EnumMappingConfigurationMappers.cs](../Mappa.Samples/EnumMappingConfigurationMappers.cs) |
 | Bson well-known types | Opt-in `ObjectId` ↔ `string`/`byte[]` and `Decimal128` → `decimal` via `BsonWellKnownTypes`. | [§4b Bson](./mappa-generator-algorithm.md#4b-bson-well-known-types-strategy) | [BsonWellKnownTypesMapper.cs](../Mappa.Samples/BsonWellKnownTypesMapper.cs) |
 | Protobuf well-known types | Opt-in `Timestamp`/`Duration` and scalar wrappers via `ProtobufWellKnownTypes`. | [§4c Protobuf](./mappa-generator-algorithm.md#4c-protobuf-well-known-types-strategy) | [ProtobufWellKnownTypesMapper.cs](../Mappa.Samples/ProtobufWellKnownTypesMapper.cs) |
+| OneOf well-known types | Opt-in Option / `OneOf` / `OneOfBase` unwrap and wrap via `OneOfWellKnownTypes`. | [§4d OneOf](./mappa-generator-algorithm.md#4d-oneof-well-known-types-strategy) | [OneOfWellKnownTypesMapper.cs](../Mappa.Samples/OneOfWellKnownTypesMapper.cs) |
 | String | `Parse` and `ToString` for date/time types, `Guid`, `Uri`, `TimeSpan`, and numeric types. | [§5 String](./mappa-generator-algorithm.md#5-string-strategy) | [InvokeParseMapper.cs](../Mappa.Samples/InvokeParseMapper.cs), [InvokeToStringMapper.cs](../Mappa.Samples/InvokeToStringMapper.cs), [StringToSystemEntitiesMapper.cs](../Mappa.Samples/StringToSystemEntitiesMapper.cs) |
 | Date & time | Cross-conversions among `DateTime`, `DateTimeOffset`, `DateOnly`, `TimeOnly`, `TimeSpan`, and numeric tick representations. | [§6 Date & time](./mappa-generator-algorithm.md#6-date--time-strategy) | [DateAndTimeMapper.cs](../Mappa.Samples/DateAndTimeMapper.cs) |
 | IQueryable projection | `IQueryable<TSource>` → `IQueryable<TTarget>` emits deferred `Select` expression trees for ORM providers (EF Core), including nested collections, tuples, and `Guid`. Optional `[MappaProjection]` and `Projection*` settings. Not compatible with Native AOT (`[RequiresDynamicCode]`). | [§7a IQueryable projection](./mappa-generator-algorithm.md#7a-iqueryable-projection-strategy) | [IQueryableProjectionMapper.cs](../Mappa.Samples/IQueryableProjectionMapper.cs), [IQueryableProjectionSqliteMapper.cs](../Mappa.Samples/IQueryableProjectionSqliteMapper.cs) |
@@ -126,6 +127,7 @@ Settings may be applied at the mapper class level or overridden on individual ma
 | Protobuf optional fields | `ProtobufOptional` | [ProtobufOptionalMapper.cs](../Mappa.Samples/ProtobufOptionalMapper.cs) |
 | Bson well-known types | `BsonWellKnownTypes` | [BsonWellKnownTypesMapper.cs](../Mappa.Samples/BsonWellKnownTypesMapper.cs) |
 | Protobuf well-known types | `ProtobufWellKnownTypes` | [ProtobufWellKnownTypesMapper.cs](../Mappa.Samples/ProtobufWellKnownTypesMapper.cs) |
+| OneOf well-known types | `OneOfWellKnownTypes` | [OneOfWellKnownTypesMapper.cs](../Mappa.Samples/OneOfWellKnownTypesMapper.cs) |
 | Generated code warnings | `PragmaWarning` | [PragmaWarningSettingMapper.cs](../Mappa.Samples/PragmaWarningSettingMapper.cs) |
 
 ## Global configuration (.editorconfig)
@@ -180,12 +182,12 @@ No dedicated sample demonstrates `.editorconfig`-only configuration; settings ar
 
 ## Core packages
 
-See also [NuGet packages](./nuget.md) and [Bson and Protobuf well-known types](./tutorial.md#bson-and-protobuf-well-known-types).
+See also [NuGet packages](./nuget.md), [Bson and Protobuf well-known types](./tutorial.md#bson-and-protobuf-well-known-types), and [OneOf well-known types](./tutorial.md#oneof-well-known-types).
 
 | Package | Feature | Documented in | Sample |
 |---------|---------|---------------|--------|
 | `Mappa` | Attributes and `MappaContext`. | [NuGet](./nuget.md) | All samples |
-| `Mappa.Generator` | Compile-time mapping source generator, including opt-in Bson/Protobuf well-known strategies. | [NuGet](./nuget.md), [Algorithm](./mappa-generator-algorithm.md) | [BsonWellKnownTypesMapper.cs](../Mappa.Samples/BsonWellKnownTypesMapper.cs), [ProtobufWellKnownTypesMapper.cs](../Mappa.Samples/ProtobufWellKnownTypesMapper.cs), [ProtobufOptionalMapper.cs](../Mappa.Samples/ProtobufOptionalMapper.cs) |
+| `Mappa.Generator` | Compile-time mapping source generator, including opt-in Bson/Protobuf/OneOf well-known strategies. | [NuGet](./nuget.md), [Algorithm](./mappa-generator-algorithm.md) | [BsonWellKnownTypesMapper.cs](../Mappa.Samples/BsonWellKnownTypesMapper.cs), [ProtobufWellKnownTypesMapper.cs](../Mappa.Samples/ProtobufWellKnownTypesMapper.cs), [OneOfWellKnownTypesMapper.cs](../Mappa.Samples/OneOfWellKnownTypesMapper.cs), [ProtobufOptionalMapper.cs](../Mappa.Samples/ProtobufOptionalMapper.cs) |
 
 ## Diagnostics
 

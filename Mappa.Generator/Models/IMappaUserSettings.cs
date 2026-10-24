@@ -211,6 +211,12 @@ internal interface IMappaUserSettings
     BooleanSetting ProtobufWellKnownTypes { get; }
 
     /// <summary>
+    /// Gets a value indicating whether well-known <c>OneOf</c> / <c>OneOfBase</c>
+    /// type-pair mappings (including Option <c>OneOf&lt;T, None&gt;</c>) are enabled when performing mapping.
+    /// </summary>
+    BooleanSetting OneOfWellKnownTypes { get; }
+
+    /// <summary>
     /// Gets a value indicating whether the mapping method should be surrounded
     /// by <c>#pragma warning disable</c>.
     /// </summary>

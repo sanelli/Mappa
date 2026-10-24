@@ -75,6 +75,7 @@ When no existing method applies (or for root methods), `TypeMapIdentifierAlgorit
 4. Enum
 4b. Bson well-known types *(only when `BsonWellKnownTypes` is `Enable`)*
 4c. Protobuf well-known types *(only when `ProtobufWellKnownTypes` is `Enable`)*
+4d. OneOf well-known types *(only when `OneOfWellKnownTypes` is `Enable`)*
 5. String
 6. Date & time
 7a. IQueryable projection *(root methods with `IQueryable<TSource>` → `IQueryable<TTarget>` only)*
@@ -182,6 +183,12 @@ When `ReferenceReusing` is enabled and the map method declares `MappaContext`, g
 - _When_: `ProtobufWellKnownTypes` is `Enable` and well-known protobuf types are available — Timestamp/Duration and scalar wrappers.
 - _What_: Emits library helpers (`FromDateTime`, `ToTimeSpan`, wrapper `.Value`, etc.).
 - _Notes_: Opt-in; consumer references `Google.Protobuf`. Distinct from `ProtobufOptional`. See [algorithm §4c](../Documentation/mappa-generator-algorithm.md#4c-protobuf-well-known-types-strategy).
+
+### 4d. OneOf well-known types strategy
+
+- _When_: `OneOfWellKnownTypes` is `Enable` and OneOf / OneOfBase types are available — Option unwrap/wrap, unique-arm general unwrap, and constructible `OneOfBase` wrap.
+- _What_: Emits `IsTn` / `AsTn` / `FromTn` checks and `MappaException` on missing arms / `None` (or `null`/`default` for Option under NRT rules).
+- _Notes_: Opt-in; consumer references `OneOf`. Exact-arm `T → OneOf<…, T, …>` via identity remains ungated. `IQueryable` projection involving OneOf is unsupported. See [algorithm §4d](../Documentation/mappa-generator-algorithm.md#4d-oneof-well-known-types-strategy).
 
 ### 5. String strategy
 
@@ -377,7 +384,7 @@ Currently unsupported features include:
 Other relevant packages:
 - [Mappa](https://www.nuget.org/packages/Mappa/): attributes and `MappaContext` used to drive the source generator.
 
-For Bson/Protobuf well-known types, enable `BsonWellKnownTypes` / `ProtobufWellKnownTypes` and reference [MongoDB.Bson](https://www.nuget.org/packages/MongoDB.Bson/) or [Google.Protobuf](https://www.nuget.org/packages/Google.Protobuf/).
+For Bson/Protobuf/OneOf well-known types, enable `BsonWellKnownTypes` / `ProtobufWellKnownTypes` / `OneOfWellKnownTypes` and reference [MongoDB.Bson](https://www.nuget.org/packages/MongoDB.Bson/), [Google.Protobuf](https://www.nuget.org/packages/Google.Protobuf/), or [OneOf](https://www.nuget.org/packages/OneOf/).
 
 You can find [samples](https://github.com/sanelli/Mappa/tree/main/Mappa.Samples) here.
 Visit the Mappa [documentation](https://github.com/sanelli/Mappa/blob/main/Documentation/README.md) to learn more.

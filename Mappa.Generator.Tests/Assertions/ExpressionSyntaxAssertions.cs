@@ -198,6 +198,29 @@ internal sealed class ExpressionSyntaxAssertions
     }
 
     /// <summary>
+    /// Assert that the expression is a <c>default(T)</c> expression.
+    /// </summary>
+    /// <param name="type">The type inside the default expression.</param>
+    /// <returns>The expression.</returns>
+    internal ExpressionSyntaxAssertions BeDefaultExpressionSyntax(string type)
+    {
+        ArgumentNullException.ThrowIfNull(type);
+
+        this.Subject.Should().BeOfType<DefaultExpressionSyntax>();
+        var defaultExpressionSyntax = (DefaultExpressionSyntax)this.Subject;
+
+        var expectedType = this.compilation.GetTypeSymbol(type);
+        var actualType = this.compilation.GetTypeSymbol(defaultExpressionSyntax.Type.ToString());
+
+        SymbolEqualityComparer
+            .Default
+            .Equals(actualType, expectedType)
+            .Should().BeTrue();
+
+        return this;
+    }
+
+    /// <summary>
     /// Assert that the expression is a <c>nameof</c> expression
     /// around a member access.
     /// </summary>

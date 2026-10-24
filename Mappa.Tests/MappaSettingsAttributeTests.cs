@@ -118,6 +118,7 @@ public sealed class MappaSettingsAttributeTests
         attribute.ProtobufOptional.Should().Be(BooleanSetting.Undefined);
         attribute.BsonWellKnownTypes.Should().Be(BooleanSetting.Undefined);
         attribute.ProtobufWellKnownTypes.Should().Be(BooleanSetting.Undefined);
+        attribute.OneOfWellKnownTypes.Should().Be(BooleanSetting.Undefined);
         attribute.FastCollections.Should().Be(BooleanSetting.Undefined);
         attribute.ContainerCapacityConstructors.Should().Be(BooleanSetting.Undefined);
         attribute.PreventEnumerableCount.Should().Be(BooleanSetting.Undefined);
@@ -190,6 +191,7 @@ public sealed class MappaSettingsAttributeTests
             ProtobufOptional = BooleanSetting.Enable,
             BsonWellKnownTypes = BooleanSetting.Enable,
             ProtobufWellKnownTypes = BooleanSetting.Enable,
+            OneOfWellKnownTypes = BooleanSetting.Enable,
             PragmaWarning = PragmaWarningSetting.Disable,
             FastCollections = BooleanSetting.Enable,
             ContainerCapacityConstructors = BooleanSetting.Enable,
@@ -281,6 +283,7 @@ public sealed class MappaSettingsAttributeTests
         attribute.ProtobufOptional.Should().Be(BooleanSetting.Enable);
         attribute.BsonWellKnownTypes.Should().Be(BooleanSetting.Enable);
         attribute.ProtobufWellKnownTypes.Should().Be(BooleanSetting.Enable);
+        attribute.OneOfWellKnownTypes.Should().Be(BooleanSetting.Enable);
         attribute.FastCollections.Should().Be(BooleanSetting.Enable);
         attribute.ContainerCapacityConstructors.Should().Be(BooleanSetting.Enable);
         attribute.PreventEnumerableCount.Should().Be(BooleanSetting.Enable);
@@ -302,5 +305,22 @@ public sealed class MappaSettingsAttributeTests
         // Assert — depths
         attribute.MaxRuntimeDepth.Should().Be((short)7);
         attribute.MaxCompileTimeDepth.Should().Be((short)42);
+    }
+
+    /// <summary>
+    /// Tests that <see cref="MappaSettingsAttribute.OneOfWellKnownTypes"/> round-trips
+    /// <see cref="BooleanSetting.Enable"/> and <see cref="BooleanSetting.Disable"/>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void OneOfWellKnownTypesRoundTripsEnableAndDisable()
+    {
+        // Act
+        var enabled = new MappaSettingsAttribute { OneOfWellKnownTypes = BooleanSetting.Enable };
+        var disabled = new MappaSettingsAttribute { OneOfWellKnownTypes = BooleanSetting.Disable };
+
+        // Assert
+        enabled.OneOfWellKnownTypes.Should().Be(BooleanSetting.Enable);
+        disabled.OneOfWellKnownTypes.Should().Be(BooleanSetting.Disable);
     }
 }

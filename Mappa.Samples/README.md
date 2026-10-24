@@ -68,11 +68,12 @@ See the [tutorial](../Documentation/tutorial.md) for a guided introduction, or b
 | [`MapMethodStrategyWithUserCustomStaticMethodMapper.cs`](MapMethodStrategyWithUserCustomStaticMethodMapper.cs) | Custom static mapping methods |
 | [`MappaDependencyInjectionRegistrar.cs`](MappaDependencyInjectionRegistrar.cs) / [`MappaDependencyInjectionMapper.cs`](MappaDependencyInjectionMapper.cs) | `[MappaDependencyInjection]` registers `[Mappa]` mappers (`IgnoreType`) |
 
-## Bson, Protobuf, and collections
+## Bson, Protobuf, OneOf, and collections
 | Sample | Demonstrates |
 |--------|--------------|
 | [`BsonWellKnownTypesMapper.cs`](BsonWellKnownTypesMapper.cs) | `BsonWellKnownTypes` for `ObjectId` and `Decimal128` |
 | [`ProtobufWellKnownTypesMapper.cs`](ProtobufWellKnownTypesMapper.cs) | `ProtobufWellKnownTypes` for Timestamp/Duration and scalar wrappers |
+| [`OneOfWellKnownTypesMapper.cs`](OneOfWellKnownTypesMapper.cs) | `OneOfWellKnownTypes` for Option, `OneOf` / `OneOfBase` unwrap and wrap |
 | [`ProtobufOptionalMapper.cs`](ProtobufOptionalMapper.cs) | `ProtobufOptional` setting for optional protobuf fields |
 | [`ReadOnlyTargetCollectionMapper.cs`](ReadOnlyTargetCollectionMapper.cs) | Get-only collection properties and protobuf collections |
 
