@@ -102,25 +102,28 @@ internal class TypeMapIdentifierAlgorithm
             // 07. Protobuf well-known type strategies.
             new ProtobufWellKnownTypesMapStrategyDetector(this.Context, this.Compilation),
 
-            // 08. String related strategies.
+            // 08. OneOf well-known type strategies.
+            new OneOfWellKnownTypesMapStrategyDetector(this.Context, this.Compilation),
+
+            // 09. String related strategies.
             new StringMapStrategyDetector(this.Context, this.Compilation),
 
-            // 09. Date and time related strategies.
+            // 10. Date and time related strategies.
             new DateAndTimeMapStrategyDetector(this.Context, this.Compilation),
 
-            // 10. IQueryable projection strategies.
+            // 11. IQueryable projection strategies.
             new QueryableProjectionMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
 
-            // 11. Container related strategies.
+            // 12. Container related strategies.
             new ContainerMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
 
-            // 12. Tuple related strategies.
+            // 13. Tuple related strategies.
             new TupleMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
 
-            // 13. Guid related strategies.
+            // 14. Guid related strategies.
             new GuidStrategyDetector(this.Context, this.Compilation),
 
-            // 14. Constructor related strategies.
+            // 15. Constructor related strategies.
             new ConstructorMapStrategyDetector(this.Context, this.Compilation, this.CancellationToken),
         ];
 

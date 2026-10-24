@@ -75,6 +75,7 @@ When no existing method applies (or for root methods), `TypeMapIdentifierAlgorit
 4. Enum
 4b. Bson well-known types *(only when `BsonWellKnownTypes` is `Enable`)*
 4c. Protobuf well-known types *(only when `ProtobufWellKnownTypes` is `Enable`)*
+4d. OneOf well-known types *(only when `OneOfWellKnownTypes` is `Enable`)*
 5. String
 6. Date & time
 7a. IQueryable projection *(root methods with `IQueryable<TSource>` → `IQueryable<TTarget>` only)*
