@@ -669,6 +669,11 @@ Signature tiers (first match wins): `(Source, MappaContext)` or `(Source)` retur
 
 See also: [MappaObjectFactoryMapper.cs](../Mappa.Samples/MappaObjectFactoryMapper.cs) and [Mappa attributes](./mappa-attributes.md#mappaobjectfactory).
 
+### Empty-to-empty types
+When the target type has a parameterless constructor and **no** mappable members after empty-constructor filters (and no eligible instance fields on the type), Mappa still emits `new TTarget()` with no property initializers. The same rule applies to **nested** empty targets. This covers marker / unit types (for example protobuf `google.protobuf.Empty`). If the target has mappable candidates and none are mapped, empty-constructor selection still fails.
+
+See [EmptyToEmptyMapper.cs](../Mappa.Samples/EmptyToEmptyMapper.cs).
+
 ### MappaUseConstructor attribute
 `[MappaUseConstructor]` forces empty or parameterized constructor selection when both would otherwise compete, or picks an exact signature among several parameterized constructors. Omit `typeof(T)` to target the map method return type; pass `typeof(TTarget)` (or the optional generic `targetType`) for a nested type.
 

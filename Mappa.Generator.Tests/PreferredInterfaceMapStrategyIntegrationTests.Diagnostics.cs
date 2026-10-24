@@ -16,6 +16,9 @@ public sealed partial class PreferredInterfaceMapStrategyIntegrationTests
     private const string DualDictionaryTypeDefinition = """
                                                           public sealed class Unmappable
                                                           {
+                                                              private Unmappable()
+                                                              {
+                                                              }
                                                           }
 
                                                           public sealed class DualDictionary :
@@ -71,6 +74,9 @@ public sealed partial class PreferredInterfaceMapStrategyIntegrationTests
     private const string DualListTargetTypeDefinition = """
                                                           public sealed class Unmappable
                                                           {
+                                                              private Unmappable()
+                                                              {
+                                                              }
                                                           }
 
                                                           public sealed class DualList : System.Collections.Generic.List<int>, System.Collections.Generic.IEnumerable<Unmappable>
