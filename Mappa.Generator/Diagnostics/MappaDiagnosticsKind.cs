@@ -621,4 +621,29 @@ internal enum MappaDiagnosticsKind
     /// A projection map method is decorated with an apply-transformer attribute.
     /// </summary>
     ProjectionMethodHasApplyTransformer,
+
+    /// <summary>
+    /// A null-substitute attribute does not specify exactly one of AssignValue or InvokeMethod.
+    /// </summary>
+    NullSubstituteModeMissingOrAmbiguous,
+
+    /// <summary>
+    /// A null-substitute attribute specifies both InvokeMethodType and InvokeMethodSource.
+    /// </summary>
+    NullSubstituteInvokeMethodTypeAndSourceConflict,
+
+    /// <summary>
+    /// A method has multiple null-substitute attributes for the same target member.
+    /// </summary>
+    TooManyNullSubstituteAttributesForTheSameTargetProperty,
+
+    /// <summary>
+    /// A null-substitute attribute is ignored because AssignFromConstant targets the same member.
+    /// </summary>
+    NullSubstituteIgnoredBecauseAssignFromConstant,
+
+    /// <summary>
+    /// A projection map method uses null-substitute InvokeMethod mode.
+    /// </summary>
+    ProjectionMethodHasNullSubstituteInvokeMethod,
 }

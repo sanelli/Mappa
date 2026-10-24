@@ -353,4 +353,19 @@
     <data name="ProjectionMethodHasApplyTransformer" xml:space="preserve">
         <value>Metodo '{0}': i metodi di proiezione non possono essere decorati con [MappaApplyTransformer].</value>
     </data>
+    <data name="NullSubstituteModeMissingOrAmbiguous" xml:space="preserve">
+        <value>Metodo '{0}': [MappaNullSubstitute] per '{1}' deve specificare esattamente uno tra AssignValue e InvokeMethod.</value>
+    </data>
+    <data name="NullSubstituteInvokeMethodTypeAndSourceConflict" xml:space="preserve">
+        <value>Metodo '{0}': [MappaNullSubstitute] per '{1}' specifica sia InvokeMethodType sia InvokeMethodSource.</value>
+    </data>
+    <data name="TooManyNullSubstituteAttributesForTheSameTargetProperty" xml:space="preserve">
+        <value>Il metodo '{0}' ha troppi attributi [MappaNullSubstitute] che puntano a '{1}'.</value>
+    </data>
+    <data name="NullSubstituteIgnoredBecauseAssignFromConstant" xml:space="preserve">
+        <value>Metodo '{0}': [MappaNullSubstitute] per '{1}' viene ignorato perché [MappaAssignFromConstant] punta allo stesso membro.</value>
+    </data>
+    <data name="ProjectionMethodHasNullSubstituteInvokeMethod" xml:space="preserve">
+        <value>Metodo '{0}': i metodi di proiezione non possono usare [MappaNullSubstitute] con InvokeMethod.</value>
+    </data>
 </root>

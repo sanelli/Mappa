@@ -360,4 +360,19 @@
     <data name="ProjectionMethodHasApplyTransformer" xml:space="preserve">
         <value>Method '{0}': projection methods cannot be decorated with [MappaApplyTransformer].</value>
     </data>
+    <data name="NullSubstituteModeMissingOrAmbiguous" xml:space="preserve">
+        <value>Method '{0}': [MappaNullSubstitute] for '{1}' must specify exactly one of AssignValue or InvokeMethod.</value>
+    </data>
+    <data name="NullSubstituteInvokeMethodTypeAndSourceConflict" xml:space="preserve">
+        <value>Method '{0}': [MappaNullSubstitute] for '{1}' specifies both InvokeMethodType and InvokeMethodSource.</value>
+    </data>
+    <data name="TooManyNullSubstituteAttributesForTheSameTargetProperty" xml:space="preserve">
+        <value>Method '{0}' has too many [MappaNullSubstitute] attributes targeting '{1}'.</value>
+    </data>
+    <data name="NullSubstituteIgnoredBecauseAssignFromConstant" xml:space="preserve">
+        <value>Method '{0}': [MappaNullSubstitute] for '{1}' is ignored because [MappaAssignFromConstant] targets the same member.</value>
+    </data>
+    <data name="ProjectionMethodHasNullSubstituteInvokeMethod" xml:space="preserve">
+        <value>Method '{0}': projection methods cannot use [MappaNullSubstitute] with InvokeMethod.</value>
+    </data>
 </root>

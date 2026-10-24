@@ -131,9 +131,18 @@ internal static class ProjectionMapMethodEligibilityValidator
             return false;
         }
 
-        return ValidateProjectionQueryableHasNoApplyTransformers(
-            methodSymbol,
-            compilation,
+        if (!ValidateProjectionQueryableHasNoApplyTransformers(
+                methodSymbol,
+                compilation,
+                classContext,
+                methodDeclarationSyntax,
+                methodName))
+        {
+            return false;
+        }
+
+        return ValidateProjectionQueryableHasNoNullSubstituteInvokeMethod(
+            mapMethod,
             classContext,
             methodDeclarationSyntax,
             methodName);
@@ -249,6 +258,26 @@ internal static class ProjectionMapMethodEligibilityValidator
         classContext.ReportDiagnostic(
             MappaDiagnostics.ProjectionMethodHasApplyTransformer(
                 applyTransformerAttributes[0].Location ?? methodDeclarationSyntax?.GetLocation(),
+                methodName));
+        return false;
+    }
+
+    private static bool ValidateProjectionQueryableHasNoNullSubstituteInvokeMethod(
+        MapMethod mapMethod,
+        MappaClassGeneratorContext classContext,
+        MethodDeclarationSyntax? methodDeclarationSyntax,
+        string methodName)
+    {
+        var hasInvokeMethodNullSubstitute = mapMethod.GetAttributes<MappaNullSubstituteAttribute>()
+            .Any(attribute => !string.IsNullOrWhiteSpace(attribute.InvokeMethod));
+        if (!hasInvokeMethodNullSubstitute)
+        {
+            return true;
+        }
+
+        classContext.ReportDiagnostic(
+            MappaDiagnostics.ProjectionMethodHasNullSubstituteInvokeMethod(
+                methodDeclarationSyntax?.GetLocation(),
                 methodName));
         return false;
     }

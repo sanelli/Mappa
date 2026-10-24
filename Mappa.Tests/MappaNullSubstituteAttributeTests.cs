@@ -30,6 +30,7 @@ public sealed class MappaNullSubstituteAttributeTests
         attribute.TargetPropertyName.Should().Be("Target.Value");
         attribute.SourcePropertyName.Should().Be("Source.Value");
         attribute.AssignValue.Should().BeNull();
+        attribute.HasAssignValue.Should().BeFalse();
         attribute.InvokeMethod.Should().BeNull();
         attribute.InvokeMethodType.Should().BeNull();
         attribute.InvokeMethodSource.Should().BeNull();
@@ -46,10 +47,12 @@ public sealed class MappaNullSubstituteAttributeTests
         var attribute = new MappaNullSubstituteAttribute("Value", "Value")
         {
             AssignValue = "Other Value",
+            HasAssignValue = true,
         };
 
         // Assert
         attribute.AssignValue.Should().Be("Other Value");
+        attribute.HasAssignValue.Should().BeTrue();
         attribute.InvokeMethod.Should().BeNull();
     }
 

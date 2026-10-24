@@ -54,9 +54,16 @@ public sealed class MappaNullSubstituteAttribute(string targetPropertyName, stri
 
     /// <summary>
     /// Gets or sets the constant substitute value of the source member type.
-    /// Mutually exclusive with <see cref="InvokeMethod"/>. Presence is detected from the named attribute argument.
+    /// Mutually exclusive with <see cref="InvokeMethod"/>. Presence is detected from the named attribute argument
+    /// (see <see cref="HasAssignValue"/>).
     /// </summary>
     public object? AssignValue { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether <see cref="AssignValue"/> was supplied as a named attribute argument.
+    /// Used by the source generator when reconstructing the attribute from <c>AttributeData</c>.
+    /// </summary>
+    public bool HasAssignValue { get; set; }
 
     /// <summary>
     /// Gets or sets the name of the method invoked when the source value is null.

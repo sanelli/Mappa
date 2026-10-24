@@ -49,6 +49,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
 
         this.context.ValidateTargetNamesExist(this.compilation);
+        this.context.ValidateMappaNullSubstituteAttributes();
         this.context.ValidateMappaIgnoreTargetPropertyAttributes();
         this.context.ValidateMappaMustMapTargetPropertyAttributes();
         this.context.ValidateMappaAllowInaccessibleMembersAttributes(this.compilation);

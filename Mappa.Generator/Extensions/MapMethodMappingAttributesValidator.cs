@@ -79,6 +79,7 @@ internal static partial class MapMethodMappingAttributesValidator
 
         ValidateUsePropertyTargetNames(context, validationContext, mapMethod.GetAttributes<MappaUsePropertyAttribute>());
         ValidateInvokeMethodTargetNames(context, validationContext, mapMethod.GetAttributes<MappaInvokeMethodAttribute>());
+        ValidateNullSubstituteTargetNames(context, validationContext, mapMethod.GetAttributes<MappaNullSubstituteAttribute>());
         ValidateTargetOnlyAttributeNames(
             context,
             validationContext,
@@ -97,6 +98,72 @@ internal static partial class MapMethodMappingAttributesValidator
             mapMethod.GetAttributes<MappaIgnoreTargetPropertyAttribute>(),
             nameof(MappaIgnoreTargetPropertyAttribute),
             attribute => attribute.TargetPropertyName);
+    }
+
+    /// <summary>
+    /// Reports diagnostics for <see cref="MappaNullSubstituteAttribute"/> declarations
+    /// (mode selection, locator conflicts, duplicates, and AssignFromConstant precedence).
+    /// </summary>
+    /// <param name="context">The mapping algorithm context.</param>
+    internal static void ValidateMappaNullSubstituteAttributes(this MappaMapAlgorithmContext context)
+    {
+        if (context.MapMethod is null)
+        {
+            return;
+        }
+
+        if (context.AlgorithmSettings.UseAttributesForConstructorDetectorSettings
+            .Equals(MappaMapAlgorithmContextSettings.MappaAttributesForConstructorDetectorSettings.Disable))
+        {
+            return;
+        }
+
+        var mapMethod = context.MapMethod;
+        var methodDeclarationSyntax = mapMethod.MethodDeclarationSyntax;
+        if (methodDeclarationSyntax is null)
+        {
+            return;
+        }
+
+        var nullSubstituteAttributes = mapMethod.GetAttributes<MappaNullSubstituteAttribute>();
+        if (nullSubstituteAttributes.Length == 0)
+        {
+            return;
+        }
+
+        var methodName = context.GetRootMapMethod().MethodName;
+        var assignFromConstantTargets = new HashSet<string>(
+            mapMethod.GetAttributes<MappaAssignFromConstantAttribute>()
+                .Select(attribute => attribute.TargetPropertyName),
+            StringComparer.Ordinal);
+
+        foreach (var attribute in nullSubstituteAttributes)
+        {
+            ValidateMappaNullSubstituteAttributeModeAndLocators(
+                context,
+                methodDeclarationSyntax,
+                methodName,
+                attribute);
+
+            if (assignFromConstantTargets.Contains(attribute.TargetPropertyName))
+            {
+                context.ReportDiagnostic(MappaDiagnostics.NullSubstituteIgnoredBecauseAssignFromConstant(
+                    methodDeclarationSyntax,
+                    methodName,
+                    attribute.TargetPropertyName));
+            }
+        }
+
+        foreach (var duplicateTarget in nullSubstituteAttributes
+                     .GroupBy(attribute => attribute.TargetPropertyName, StringComparer.Ordinal)
+                     .Where(group => group.Count() > 1)
+                     .Select(group => group.Key))
+        {
+            context.ReportDiagnostic(MappaDiagnostics.TooManyNullSubstituteAttributesForTheSameTargetProperty(
+                methodDeclarationSyntax,
+                methodName,
+                duplicateTarget));
+        }
     }
 
     /// <summary>
@@ -150,6 +217,8 @@ internal static partial class MapMethodMappingAttributesValidator
             .Concat(mapMethod.GetAttributes<MappaAssignFromContextAttribute>()
                 .Select(attribute => attribute.TargetPropertyName))
             .Concat(mapMethod.GetAttributes<MappaAssignFromConstantAttribute>()
+                .Select(attribute => attribute.TargetPropertyName))
+            .Concat(mapMethod.GetAttributes<MappaNullSubstituteAttribute>()
                 .Select(attribute => attribute.TargetPropertyName))
             .Distinct(StringComparer.Ordinal)
             .ToArray();
@@ -334,6 +403,33 @@ internal static partial class MapMethodMappingAttributesValidator
         }
 
         return attributeTargetPath.EndsWith(propertyPathContext.RemainingTargetSegments);
+    }
+
+    private static void ValidateMappaNullSubstituteAttributeModeAndLocators(
+        MappaMapAlgorithmContext context,
+        MethodDeclarationSyntax methodDeclarationSyntax,
+        string methodName,
+        MappaNullSubstituteAttribute attribute)
+    {
+        var hasAssignValue = attribute.HasAssignValue;
+        var hasInvokeMethod = !string.IsNullOrWhiteSpace(attribute.InvokeMethod);
+        if (hasAssignValue == hasInvokeMethod)
+        {
+            context.ReportDiagnostic(MappaDiagnostics.NullSubstituteModeMissingOrAmbiguous(
+                methodDeclarationSyntax,
+                methodName,
+                attribute.TargetPropertyName));
+        }
+
+        var hasInvokeMethodType = attribute.InvokeMethodType is not null;
+        var hasInvokeMethodSource = !string.IsNullOrWhiteSpace(attribute.InvokeMethodSource);
+        if (hasInvokeMethodType && hasInvokeMethodSource)
+        {
+            context.ReportDiagnostic(MappaDiagnostics.NullSubstituteInvokeMethodTypeAndSourceConflict(
+                methodDeclarationSyntax,
+                methodName,
+                attribute.TargetPropertyName));
+        }
     }
 
     private static void ValidateSingleMustMapTargetPropertyName(

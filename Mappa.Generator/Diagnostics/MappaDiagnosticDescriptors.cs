@@ -128,6 +128,11 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? applyTransformerSourceMemberNotFound;
     private static DiagnosticDescriptor? applyTransformerClassTypeAndFieldNameConflict;
     private static DiagnosticDescriptor? projectionMethodHasApplyTransformer;
+    private static DiagnosticDescriptor? nullSubstituteModeMissingOrAmbiguous;
+    private static DiagnosticDescriptor? nullSubstituteInvokeMethodTypeAndSourceConflict;
+    private static DiagnosticDescriptor? tooManyNullSubstituteAttributesForTheSameTargetProperty;
+    private static DiagnosticDescriptor? nullSubstituteIgnoredBecauseAssignFromConstant;
+    private static DiagnosticDescriptor? projectionMethodHasNullSubstituteInvokeMethod;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -1040,6 +1045,46 @@ internal static class MappaDiagnosticDescriptors
         => projectionMethodHasApplyTransformer ??= BuildError(
             MappaDiagnosticsKind.ProjectionMethodHasApplyTransformer,
             DiagnosticsResources.ProjectionMethodHasApplyTransformer);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.NullSubstituteModeMissingOrAmbiguous"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor NullSubstituteModeMissingOrAmbiguous
+        => nullSubstituteModeMissingOrAmbiguous ??= BuildError(
+            MappaDiagnosticsKind.NullSubstituteModeMissingOrAmbiguous,
+            DiagnosticsResources.NullSubstituteModeMissingOrAmbiguous);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.NullSubstituteInvokeMethodTypeAndSourceConflict"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor NullSubstituteInvokeMethodTypeAndSourceConflict
+        => nullSubstituteInvokeMethodTypeAndSourceConflict ??= BuildError(
+            MappaDiagnosticsKind.NullSubstituteInvokeMethodTypeAndSourceConflict,
+            DiagnosticsResources.NullSubstituteInvokeMethodTypeAndSourceConflict);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.TooManyNullSubstituteAttributesForTheSameTargetProperty"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor TooManyNullSubstituteAttributesForTheSameTargetProperty
+        => tooManyNullSubstituteAttributesForTheSameTargetProperty ??= BuildError(
+            MappaDiagnosticsKind.TooManyNullSubstituteAttributesForTheSameTargetProperty,
+            DiagnosticsResources.TooManyNullSubstituteAttributesForTheSameTargetProperty);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.NullSubstituteIgnoredBecauseAssignFromConstant"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor NullSubstituteIgnoredBecauseAssignFromConstant
+        => nullSubstituteIgnoredBecauseAssignFromConstant ??= BuildWarning(
+            MappaDiagnosticsKind.NullSubstituteIgnoredBecauseAssignFromConstant,
+            DiagnosticsResources.NullSubstituteIgnoredBecauseAssignFromConstant);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.ProjectionMethodHasNullSubstituteInvokeMethod"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor ProjectionMethodHasNullSubstituteInvokeMethod
+        => projectionMethodHasNullSubstituteInvokeMethod ??= BuildError(
+            MappaDiagnosticsKind.ProjectionMethodHasNullSubstituteInvokeMethod,
+            DiagnosticsResources.ProjectionMethodHasNullSubstituteInvokeMethod);
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(

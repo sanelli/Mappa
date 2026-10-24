@@ -43,6 +43,7 @@ internal static class AttributeDataExtensions
     private const string MappaDependencyAttributeFullName = "Mappa.Attributes.MappaDependencyAttribute";
     private const string MappaStaticDependencyAttributeFullName = "Mappa.Attributes.MappaStaticDependencyAttribute";
     private const string MappaAssignFromConstantAttributeFullName = "Mappa.Attributes.MappaAssignFromConstantAttribute";
+    private const string MappaNullSubstituteAttributeFullName = "Mappa.Attributes.MappaNullSubstituteAttribute";
     private const string MappaIgnoreTargetPropertyAttributeFullName = "Mappa.Attributes.MappaIgnoreTargetPropertyAttribute";
     private const string MappaMustMapTargetPropertyAttributeFullName = "Mappa.Attributes.MappaMustMapTargetPropertyAttribute";
     private const string MappaAllowInaccessibleSourceMembersAttributeFullName = "Mappa.Attributes.MappaAllowInaccessibleSourceMembersAttribute";
@@ -972,6 +973,28 @@ internal static class AttributeDataExtensions
     }
 
     /// <summary>
+    /// Gets the <see cref="MappaNullSubstituteAttribute"/>s applied.
+    /// </summary>
+    /// <param name="attributes">The attributes.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The <see cref="MappaNullSubstituteAttribute"/> applied.</returns>
+    internal static MappaNullSubstituteAttribute[] GetMappaNullSubstituteAttributes(this ImmutableArray<AttributeData> attributes, Compilation compilation)
+    {
+        var mappaNullSubstituteAttributeSymbol = compilation.GetTypeByMetadataName(MappaNullSubstituteAttributeFullName);
+        List<MappaNullSubstituteAttribute> results = new();
+        foreach (var attributeData in attributes
+                     .Where(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, mappaNullSubstituteAttributeSymbol)))
+        {
+            if (TryCreateMappaNullSubstituteAttribute(attributeData) is { } attribute)
+            {
+                results.Add(attribute);
+            }
+        }
+
+        return [.. results];
+    }
+
+    /// <summary>
     /// Determines whether the <see cref="MappaDependencyAttribute"/> is applied.
     /// </summary>
     /// <param name="attributes">The attributes.</param>
@@ -1614,6 +1637,50 @@ internal static class AttributeDataExtensions
             string targetOneOfCaseName => new MappaProtobufTypeMappingDefaultAttribute(behavior, targetOneOfCaseName),
             _ => new MappaProtobufTypeMappingDefaultAttribute(behavior),
         };
+    }
+
+    private static MappaNullSubstituteAttribute? TryCreateMappaNullSubstituteAttribute(AttributeData attributeData)
+    {
+        var constructorArguments = attributeData.ConstructorArguments;
+        if (constructorArguments.Length != 2
+            || constructorArguments[0].Value is not string targetPropertyName
+            || constructorArguments[1].Value is not string sourcePropertyName)
+        {
+            return null;
+        }
+
+        var attribute = new MappaNullSubstituteAttribute(targetPropertyName, sourcePropertyName);
+        ApplyMappaNullSubstituteNamedArguments(attribute, attributeData.NamedArguments);
+        return attribute;
+    }
+
+    private static void ApplyMappaNullSubstituteNamedArguments(
+        MappaNullSubstituteAttribute attribute,
+        ImmutableArray<KeyValuePair<string, TypedConstant>> namedArguments)
+    {
+        foreach (var namedArgument in namedArguments)
+        {
+            if (namedArgument.Key.Equals(nameof(MappaNullSubstituteAttribute.AssignValue), StringComparison.Ordinal))
+            {
+                attribute.HasAssignValue = true;
+                attribute.AssignValue = namedArgument.Value;
+            }
+            else if (namedArgument.Key.Equals(nameof(MappaNullSubstituteAttribute.InvokeMethod), StringComparison.Ordinal)
+                     && namedArgument.Value.Value is string invokeMethod)
+            {
+                attribute.InvokeMethod = invokeMethod;
+            }
+            else if (namedArgument.Key.Equals(nameof(MappaNullSubstituteAttribute.InvokeMethodType), StringComparison.Ordinal)
+                     && namedArgument.Value.Value is INamedTypeSymbol invokeMethodType)
+            {
+                attribute.InvokeMethodType = new FakeType(invokeMethodType.ToDisplayString());
+            }
+            else if (namedArgument.Key.Equals(nameof(MappaNullSubstituteAttribute.InvokeMethodSource), StringComparison.Ordinal)
+                     && namedArgument.Value.Value is string invokeMethodSource)
+            {
+                attribute.InvokeMethodSource = invokeMethodSource;
+            }
+        }
     }
 
     private static MappaInvokeMethodAttribute? TryCreateInvokeMethodAttribute(AttributeData attributeData)

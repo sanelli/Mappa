@@ -84,6 +84,37 @@ internal static partial class MapMethodMappingAttributesValidator
         }
     }
 
+    private static void ValidateNullSubstituteTargetNames(
+        MappaMapAlgorithmContext context,
+        TargetNamesValidationContext validationContext,
+        MappaNullSubstituteAttribute[] attributes)
+    {
+        foreach (var attribute in attributes)
+        {
+            ValidateTargetPropertyPath(
+                context,
+                validationContext.MethodDeclarationSyntax,
+                validationContext.MethodName,
+                validationContext.TargetTypeName,
+                nameof(MappaNullSubstituteAttribute),
+                attribute.TargetPropertyName,
+                validationContext.PropertyNames,
+                validationContext.ConstructorParameterNames,
+                validationContext.TargetType,
+                validationContext.PropertyPathContext);
+            ValidateSourcePropertyPath(
+                context,
+                validationContext.MethodDeclarationSyntax,
+                validationContext.MethodName,
+                validationContext.SourceTypeName,
+                nameof(MappaNullSubstituteAttribute),
+                attribute.TargetPropertyName,
+                attribute.SourcePropertyName,
+                validationContext.SourceType,
+                validationContext.PropertyPathContext);
+        }
+    }
+
     private static void ValidateTargetOnlyAttributeNames<TAttribute>(
         MappaMapAlgorithmContext context,
         TargetNamesValidationContext validationContext,
