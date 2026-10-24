@@ -31,7 +31,7 @@ internal sealed class PropertyMapStrategyBuilder
     public (string VariableName, string Code) BuildSource(string source, MappaBuilderContext context, MappaGlobalOptions mappaGlobalOptions)
     {
         var builder = new PrettyCode.StringBuilder();
-        var sourcePropertyTemporary = this.BuildSourcePropertyTemporary(builder, source, context, mappaGlobalOptions);
+        var sourcePropertyTemporary = this.BuildSourcePropertyTemporary(builder, source, context);
 
         string targetTemporary;
         string code;
@@ -84,12 +84,11 @@ internal sealed class PropertyMapStrategyBuilder
     private string BuildSourcePropertyTemporary(
         PrettyCode.StringBuilder builder,
         string source,
-        MappaBuilderContext context,
-        MappaGlobalOptions mappaGlobalOptions)
+        MappaBuilderContext context)
     {
         if (this.strategy.ChainedSourcePropertyPath is not null)
         {
-            return this.AppendChainedSourcePropertyRead(builder, source, context, mappaGlobalOptions);
+            return this.AppendChainedSourcePropertyRead(builder, source, context);
         }
 
         if (this.strategy.SourceProperty is not null || this.strategy.SourceField is not null)
@@ -103,8 +102,7 @@ internal sealed class PropertyMapStrategyBuilder
     private string AppendChainedSourcePropertyRead(
         PrettyCode.StringBuilder builder,
         string source,
-        MappaBuilderContext context,
-        MappaGlobalOptions mappaGlobalOptions)
+        MappaBuilderContext context)
     {
         var chainedSourcePropertyPath = this.strategy.ChainedSourcePropertyPath;
         if (chainedSourcePropertyPath is null)
@@ -129,7 +127,7 @@ internal sealed class PropertyMapStrategyBuilder
             ? nullSubstituteMapStrategy.SourceType
             : this.strategy.TargetType;
 
-        var includeFields = mappaGlobalOptions.MapSourceFields is BooleanSetting.Enable;
+        var includeFields = chainedSourcePropertyPath.IncludeFields;
         var accessExpression = PropertyPathExpressionBuilder.BuildChainedAccessExpression(
             chainSource,
             receiverPathPrefix,

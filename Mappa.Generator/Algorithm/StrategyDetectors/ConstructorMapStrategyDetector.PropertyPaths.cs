@@ -268,7 +268,8 @@ internal sealed partial class ConstructorMapStrategyDetector
             usePropertyAttribute.SourcePropertyName,
             sourcePath.Segments,
             this.context.GetRootSourceType(),
-            this.context.GetRootMapMethod().SourceParameterName);
+            this.context.GetRootMapMethod().SourceParameterName,
+            this.ShouldIncludeFieldsInSourcePaths());
         return true;
     }
 
@@ -299,9 +300,13 @@ internal sealed partial class ConstructorMapStrategyDetector
             usePropertyAttribute.SourcePropertyName,
             remainingSourceSegments,
             this.context.SourceType,
-            string.Empty);
+            string.Empty,
+            this.ShouldIncludeFieldsInSourcePaths());
         return true;
     }
+
+    private bool ShouldIncludeFieldsInSourcePaths()
+        => this.context.MappaUserSettings.MapSourceFields is BooleanSetting.Enable;
 
     private string[] GetRemainingSourceSegmentsForLeafMapping(
         PropertyPath sourcePath,

@@ -495,7 +495,8 @@ internal sealed partial class ConstructorMapStrategyDetector
             sourcePropertyName,
             sourcePath.Segments,
             this.context.GetRootSourceType(),
-            this.context.GetRootMapMethod().SourceParameterName);
+            this.context.GetRootMapMethod().SourceParameterName,
+            this.ShouldIncludeFieldsInSourcePaths());
         return true;
     }
 
@@ -526,7 +527,8 @@ internal sealed partial class ConstructorMapStrategyDetector
             sourcePropertyName,
             remainingSourceSegments,
             this.context.SourceType,
-            string.Empty);
+            string.Empty,
+            this.ShouldIncludeFieldsInSourcePaths());
         return true;
     }
 }

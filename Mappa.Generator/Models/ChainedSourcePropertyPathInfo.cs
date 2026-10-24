@@ -18,16 +18,19 @@ internal sealed class ChainedSourcePropertyPathInfo
     /// <param name="remainingSourceSegments">The source segments still to read from the current receiver.</param>
     /// <param name="startingSourceType">The type of the current source receiver.</param>
     /// <param name="receiverPathPrefix">The dotted path prefix already consumed, used for diagnostics.</param>
+    /// <param name="includeFields">Whether field segments may resolve while emitting the chain.</param>
     internal ChainedSourcePropertyPathInfo(
         string originalSourcePath,
         string[] remainingSourceSegments,
         ITypeSymbol startingSourceType,
-        string receiverPathPrefix)
+        string receiverPathPrefix,
+        bool includeFields = false)
     {
         this.OriginalSourcePath = originalSourcePath;
         this.RemainingSourceSegments = remainingSourceSegments;
         this.StartingSourceType = startingSourceType;
         this.ReceiverPathPrefix = receiverPathPrefix;
+        this.IncludeFields = includeFields;
     }
 
     /// <summary>
@@ -49,4 +52,9 @@ internal sealed class ChainedSourcePropertyPathInfo
     /// Gets the dotted path prefix already consumed, used for diagnostics.
     /// </summary>
     internal string ReceiverPathPrefix { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether field segments may resolve while emitting the chain.
+    /// </summary>
+    internal bool IncludeFields { get; }
 }

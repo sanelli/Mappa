@@ -331,7 +331,6 @@ internal static class ProjectionExpressionBuilder
                 chainSource = rootParameterName;
             }
 
-            var includeFields = context.MappaGlobalOptions.MapSourceFields is BooleanSetting.Enable;
             return PropertyPathExpressionBuilder.BuildChainedAccessExpression(
                 chainSource,
                 receiverPathPrefix,
@@ -339,7 +338,7 @@ internal static class ProjectionExpressionBuilder
                 chainedSourcePropertyPath.StartingSourceType,
                 mapMethod.NullableEnabled,
                 sourceProperty?.Type ?? sourceField?.Type ?? chainedSourcePropertyPath.StartingSourceType,
-                includeFields,
+                chainedSourcePropertyPath.IncludeFields,
                 out _,
                 chainedSourcePropertyPath.OriginalSourcePath);
         }
