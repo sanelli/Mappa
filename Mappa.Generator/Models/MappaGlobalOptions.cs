@@ -310,6 +310,7 @@ internal sealed class MappaGlobalOptions
     private const string MappaSettingsProtobufOptional = "protobufoptional";
     private const string MappaSettingsBsonWellKnownTypes = "bsonwellknowntypes";
     private const string MappaSettingsProtobufWellKnownTypes = "protobufwellknowntypes";
+    private const string MappaSettingsOneOfWellKnownTypes = "oneofwellknowntypes";
     private const string MappaSettingsPragmaWarning = "pragmawarning";
     private const string MappaSettingsFastCollections = "fastcollections";
     private const string MappaSettingsContainerCapacityConstructors = "containercapacityconstructors";
@@ -389,6 +390,7 @@ internal sealed class MappaGlobalOptions
         this.ProtobufOptional = ReadBooleanSettingOption(options, MappaSettingsProtobufOptional, BooleanSetting.Undefined);
         this.BsonWellKnownTypes = ReadBooleanSettingOption(options, MappaSettingsBsonWellKnownTypes, BooleanSetting.Undefined);
         this.ProtobufWellKnownTypes = ReadBooleanSettingOption(options, MappaSettingsProtobufWellKnownTypes, BooleanSetting.Undefined);
+        this.OneOfWellKnownTypes = ReadBooleanSettingOption(options, MappaSettingsOneOfWellKnownTypes, BooleanSetting.Undefined);
         this.PragmaWarning = ReadPragmaWarningSettingOption(options, MappaSettingsPragmaWarning);
         this.FastCollections = ReadBooleanSettingOption(options, MappaSettingsFastCollections, BooleanSetting.Undefined);
         this.ContainerCapacityConstructors = ReadBooleanSettingOption(options, MappaSettingsContainerCapacityConstructors, BooleanSetting.Undefined);
@@ -531,6 +533,9 @@ internal sealed class MappaGlobalOptions
 
     /// <inheritdoc/>
     public BooleanSetting ProtobufWellKnownTypes { get; }
+
+    /// <inheritdoc/>
+    public BooleanSetting OneOfWellKnownTypes { get; }
 
     /// <inheritdoc/>
     public PragmaWarningSetting PragmaWarning { get; }

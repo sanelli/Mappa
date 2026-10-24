@@ -54,6 +54,7 @@ internal sealed class MappaUserSettings
     private readonly StackSetting<BooleanSetting> protobufOptional;
     private readonly StackSetting<BooleanSetting> bsonWellKnownTypes;
     private readonly StackSetting<BooleanSetting> protobufWellKnownTypes;
+    private readonly StackSetting<BooleanSetting> oneOfWellKnownTypes;
     private readonly StackSetting<PragmaWarningSetting> pragmaWarning;
     private readonly StackSetting<BooleanSetting> fastCollections;
     private readonly StackSetting<BooleanSetting> containerCapacityConstructors;
@@ -124,6 +125,7 @@ internal sealed class MappaUserSettings
             otherSettings.ProtobufOptional,
             otherSettings.BsonWellKnownTypes,
             otherSettings.ProtobufWellKnownTypes,
+            otherSettings.OneOfWellKnownTypes,
             otherSettings.PragmaWarning,
             otherSettings.FastCollections,
             otherSettings.ContainerCapacityConstructors,
@@ -193,6 +195,7 @@ internal sealed class MappaUserSettings
     /// <param name="protobufOptional">Enable or disable (protobuf) optional feature.</param>
     /// <param name="bsonWellKnownTypes">Enable or disable well-known <c>MongoDB.Bson.ObjectId</c> type-pair mappings.</param>
     /// <param name="protobufWellKnownTypes">Enable or disable well-known <c>Google.Protobuf.WellKnownTypes</c> (Timestamp / Duration) type-pair mappings.</param>
+    /// <param name="oneOfWellKnownTypes">Enable or disable well-known <c>OneOf</c> / <c>OneOfBase</c> type-pair mappings.</param>
     /// <param name="pragmaWarningSetting">Allow to surround the code generated with a <c>#pragma warning disable</c> block.</param>
     /// <param name="fastCollections">Enable or disable fast collection iterations for arrays and <see cref="List{T}"/> via <c>Span{T}</c>.</param>
     /// <param name="containerCapacityConstructors">Enable or disable the ability to support custom collection with capacity constructor.</param>
@@ -257,6 +260,7 @@ internal sealed class MappaUserSettings
         BooleanSetting protobufOptional,
         BooleanSetting bsonWellKnownTypes,
         BooleanSetting protobufWellKnownTypes,
+        BooleanSetting oneOfWellKnownTypes,
         PragmaWarningSetting pragmaWarningSetting,
         BooleanSetting fastCollections,
         BooleanSetting containerCapacityConstructors,
@@ -321,6 +325,7 @@ internal sealed class MappaUserSettings
         this.protobufOptional = new(protobufOptional);
         this.bsonWellKnownTypes = new(bsonWellKnownTypes);
         this.protobufWellKnownTypes = new(protobufWellKnownTypes);
+        this.oneOfWellKnownTypes = new(oneOfWellKnownTypes);
         this.pragmaWarning = new(pragmaWarningSetting);
         this.fastCollections = new(fastCollections);
         this.containerCapacityConstructors = new(containerCapacityConstructors);
@@ -463,6 +468,9 @@ internal sealed class MappaUserSettings
 
     /// <inheritdoc/>
     public BooleanSetting ProtobufWellKnownTypes => this.protobufWellKnownTypes;
+
+    /// <inheritdoc/>
+    public BooleanSetting OneOfWellKnownTypes => this.oneOfWellKnownTypes;
 
     /// <inheritdoc/>
     public PragmaWarningSetting PragmaWarning => this.pragmaWarning;
@@ -687,6 +695,7 @@ internal sealed class MappaUserSettings
             this.protobufOptional.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.ProtobufOptional, BooleanSetting.Undefined, this.protobufOptional)),
             this.bsonWellKnownTypes.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.BsonWellKnownTypes, BooleanSetting.Undefined, this.bsonWellKnownTypes)),
             this.protobufWellKnownTypes.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.ProtobufWellKnownTypes, BooleanSetting.Undefined, this.protobufWellKnownTypes)),
+            this.oneOfWellKnownTypes.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.OneOfWellKnownTypes, BooleanSetting.Undefined, this.oneOfWellKnownTypes)),
             this.pragmaWarning.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.PragmaWarning, PragmaWarningSetting.Undefined, this.pragmaWarning)),
             this.fastCollections.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.FastCollections, BooleanSetting.Undefined, this.fastCollections)),
             this.containerCapacityConstructors.Apply(ApplyDefinedOrKeep(mappaSettingsAttribute.ContainerCapacityConstructors, BooleanSetting.Undefined, this.containerCapacityConstructors)),
