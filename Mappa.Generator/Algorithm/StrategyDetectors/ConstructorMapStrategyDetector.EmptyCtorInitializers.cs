@@ -716,44 +716,14 @@ internal sealed partial class ConstructorMapStrategyDetector
             out var chainedSourcePropertyPath,
             out var sourceField);
 
-        if ((this.context.MapMethod is not null || this.context.PropertyPathContext is not null)
-            && this.TryGetStrategyForPropertyOrArgumentUsingAttributesOnMethod(
-                targetField.Name,
-                targetField.Type,
-                this.context.SourceType,
-                ref sourceProperty,
-                StringComparison.Ordinal,
-                isConstructorParameterPath: false,
-                out var propertyStrategyFromAttribute))
+        var attributeStrategy = this.TryCreateEmptyCtorFieldMapStrategyFromAttributes(
+            targetField,
+            chainedSourcePropertyPath,
+            ref sourceProperty,
+            sourceField);
+        if (attributeStrategy is not null)
         {
-            this.TryIsTargetFieldWritable(targetField, out var requiresUnsafeAccessorOnTargetFromAttribute);
-
-            var requiresUnsafeAccessorOnSourceFromAttribute = false;
-            var requiresInterfaceCastOnSourceFromAttribute = false;
-            if (sourceProperty is not null)
-            {
-                this.TryIsSourcePropertyReadable(
-                    sourceProperty,
-                    out requiresUnsafeAccessorOnSourceFromAttribute,
-                    out requiresInterfaceCastOnSourceFromAttribute);
-            }
-            else if (sourceField is not null)
-            {
-                this.TryIsSourceFieldReadable(sourceField, out requiresUnsafeAccessorOnSourceFromAttribute);
-            }
-
-            return new PropertyMapStrategy(
-                targetProperty: null,
-                sourceProperty,
-                propertyStrategyFromAttribute,
-                postConstructorInitializer: false,
-                chainedSourcePropertyPath,
-                requiresUnsafeAccessorOnSourceFromAttribute,
-                requiresUnsafeAccessorOnTargetFromAttribute,
-                requiresInterfaceCastOnSourceFromAttribute,
-                requiresInterfaceCastOnTarget: false,
-                sourceField: sourceProperty is null ? sourceField : null,
-                targetField: targetField);
+            return attributeStrategy;
         }
 
         var chainedStrategy = this.TryCreateEmptyCtorFieldMapStrategyFromChainedSource(
@@ -764,6 +734,67 @@ internal sealed partial class ConstructorMapStrategyDetector
             return chainedStrategy;
         }
 
+        return this.TryCreateWritableEmptyCtorFieldMapStrategy(
+            targetField,
+            sourceProperties,
+            sourceProperty,
+            sourceField,
+            nestedPropertyPathContext,
+            noMapStrategy);
+    }
+
+    private PropertyMapStrategy? TryCreateEmptyCtorFieldMapStrategyFromAttributes(
+        IFieldSymbol targetField,
+        ChainedSourcePropertyPathInfo? chainedSourcePropertyPath,
+        ref IPropertySymbol? sourceProperty,
+        IFieldSymbol? sourceField)
+    {
+        if (this.context.MapMethod is null && this.context.PropertyPathContext is null)
+        {
+            return null;
+        }
+
+        if (!this.TryGetStrategyForPropertyOrArgumentUsingAttributesOnMethod(
+                targetField.Name,
+                targetField.Type,
+                this.context.SourceType,
+                ref sourceProperty,
+                StringComparison.Ordinal,
+                isConstructorParameterPath: false,
+                out var propertyStrategyFromAttribute))
+        {
+            return null;
+        }
+
+        this.TryIsTargetFieldWritable(targetField, out var requiresUnsafeAccessorOnTargetFromAttribute);
+        this.GetEmptyCtorFieldSourceAccessFlags(
+            sourceProperty,
+            sourceField,
+            out var requiresUnsafeAccessorOnSourceFromAttribute,
+            out var requiresInterfaceCastOnSourceFromAttribute);
+
+        return new PropertyMapStrategy(
+            targetProperty: null,
+            sourceProperty,
+            propertyStrategyFromAttribute,
+            postConstructorInitializer: false,
+            chainedSourcePropertyPath,
+            requiresUnsafeAccessorOnSourceFromAttribute,
+            requiresUnsafeAccessorOnTargetFromAttribute,
+            requiresInterfaceCastOnSourceFromAttribute,
+            requiresInterfaceCastOnTarget: false,
+            sourceField: sourceProperty is null ? sourceField : null,
+            targetField: targetField);
+    }
+
+    private PropertyMapStrategy TryCreateWritableEmptyCtorFieldMapStrategy(
+        IFieldSymbol targetField,
+        IPropertySymbol[] sourceProperties,
+        IPropertySymbol? sourceProperty,
+        IFieldSymbol? sourceField,
+        PropertyPathContext? nestedPropertyPathContext,
+        NoMapStrategy noMapStrategy)
+    {
         if ((sourceProperty is null && sourceField is null)
             || !this.TryIsTargetFieldWritable(targetField, out var requiresUnsafeAccessorOnTarget))
         {
@@ -798,37 +829,65 @@ internal sealed partial class ConstructorMapStrategyDetector
 
         if (sourceProperty is not null)
         {
-            fieldPropertyStrategy = this.EncapsulateMapStrategyForSourceOptional(
-                sourceProperty,
+            return this.CreateEmptyCtorFieldMapStrategyFromSourceProperty(
+                targetField,
                 sourceProperties,
-                fieldPropertyStrategy);
-            fieldPropertyStrategy = this.TryWrapWithNullSubstituteAssignValue(
-                targetField.Name,
-                StringComparison.Ordinal,
-                sourceProperty,
-                fieldPropertyStrategy);
-            this.TryIsSourcePropertyReadable(
-                sourceProperty,
-                out var requiresUnsafeAccessorOnSource,
-                out var requiresInterfaceCastOnSource);
-            return new PropertyMapStrategy(
-                targetProperty: null,
                 sourceProperty,
                 fieldPropertyStrategy,
-                postConstructorInitializer: false,
-                requiresUnsafeAccessorOnSource: requiresUnsafeAccessorOnSource,
-                requiresUnsafeAccessorOnTarget: requiresUnsafeAccessorOnTarget,
-                requiresInterfaceCastOnSource: requiresInterfaceCastOnSource,
-                requiresInterfaceCastOnTarget: false,
-                targetField: targetField);
+                requiresUnsafeAccessorOnTarget);
         }
 
+        return this.CreateEmptyCtorFieldMapStrategyFromSourceField(
+            targetField,
+            sourceField!,
+            fieldPropertyStrategy,
+            requiresUnsafeAccessorOnTarget);
+    }
+
+    private PropertyMapStrategy CreateEmptyCtorFieldMapStrategyFromSourceProperty(
+        IFieldSymbol targetField,
+        IPropertySymbol[] sourceProperties,
+        IPropertySymbol sourceProperty,
+        MapStrategy fieldPropertyStrategy,
+        bool requiresUnsafeAccessorOnTarget)
+    {
+        fieldPropertyStrategy = this.EncapsulateMapStrategyForSourceOptional(
+            sourceProperty,
+            sourceProperties,
+            fieldPropertyStrategy);
+        fieldPropertyStrategy = this.TryWrapWithNullSubstituteAssignValue(
+            targetField.Name,
+            StringComparison.Ordinal,
+            sourceProperty,
+            fieldPropertyStrategy);
+        this.TryIsSourcePropertyReadable(
+            sourceProperty,
+            out var requiresUnsafeAccessorOnSource,
+            out var requiresInterfaceCastOnSource);
+        return new PropertyMapStrategy(
+            targetProperty: null,
+            sourceProperty,
+            fieldPropertyStrategy,
+            postConstructorInitializer: false,
+            requiresUnsafeAccessorOnSource: requiresUnsafeAccessorOnSource,
+            requiresUnsafeAccessorOnTarget: requiresUnsafeAccessorOnTarget,
+            requiresInterfaceCastOnSource: requiresInterfaceCastOnSource,
+            requiresInterfaceCastOnTarget: false,
+            targetField: targetField);
+    }
+
+    private PropertyMapStrategy CreateEmptyCtorFieldMapStrategyFromSourceField(
+        IFieldSymbol targetField,
+        IFieldSymbol sourceField,
+        MapStrategy fieldPropertyStrategy,
+        bool requiresUnsafeAccessorOnTarget)
+    {
         fieldPropertyStrategy = this.TryWrapWithNullSubstituteAssignValue(
             targetField.Name,
             StringComparison.Ordinal,
             sourceProperty: null,
             fieldPropertyStrategy);
-        this.TryIsSourceFieldReadable(sourceField!, out var requiresUnsafeAccessorOnSourceField);
+        this.TryIsSourceFieldReadable(sourceField, out var requiresUnsafeAccessorOnSourceField);
         return new PropertyMapStrategy(
             targetProperty: null,
             sourceProperty: null,
@@ -840,6 +899,29 @@ internal sealed partial class ConstructorMapStrategyDetector
             requiresInterfaceCastOnTarget: false,
             sourceField: sourceField,
             targetField: targetField);
+    }
+
+    private void GetEmptyCtorFieldSourceAccessFlags(
+        IPropertySymbol? sourceProperty,
+        IFieldSymbol? sourceField,
+        out bool requiresUnsafeAccessorOnSource,
+        out bool requiresInterfaceCastOnSource)
+    {
+        requiresUnsafeAccessorOnSource = false;
+        requiresInterfaceCastOnSource = false;
+        if (sourceProperty is not null)
+        {
+            this.TryIsSourcePropertyReadable(
+                sourceProperty,
+                out requiresUnsafeAccessorOnSource,
+                out requiresInterfaceCastOnSource);
+            return;
+        }
+
+        if (sourceField is not null)
+        {
+            this.TryIsSourceFieldReadable(sourceField, out requiresUnsafeAccessorOnSource);
+        }
     }
 
     private EmptyCtorPropertySourceResolution ResolveEmptyCtorFieldSourceNaming(

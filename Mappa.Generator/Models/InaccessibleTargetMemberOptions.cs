@@ -46,11 +46,6 @@ internal sealed class InaccessibleTargetMemberOptions(
     internal bool AllowAllMembers => this.MemberNames.Length == 0;
 
     /// <summary>
-    /// Gets a value indicating whether every eligible inaccessible target property is allowed.
-    /// </summary>
-    internal bool AllowAllProperties => this.AllowAllMembers;
-
-    /// <summary>
     /// Creates options from the attribute, or <c>null</c> when the attribute is absent.
     /// </summary>
     /// <param name="attribute">The attribute.</param>

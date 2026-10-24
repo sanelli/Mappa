@@ -518,22 +518,14 @@ internal static class ProjectionCapabilityAnalyzer
         failureKind = null;
         failureMember = null;
 
-        if (propertyMapStrategy.PostConstructorInitializer
-            || propertyMapStrategy.RequiresInterfaceCastOnTarget
-            || propertyMapStrategy.RequiresUnsafeAccessorOnSource
-            || propertyMapStrategy.RequiresUnsafeAccessorOnTarget)
+        if (IsUnsupportedPropertyConstructForProjection(propertyMapStrategy))
         {
             failureKind = AnalysisFailureKind.UnsupportedConstruct;
             failureMember = propertyMapStrategy.TargetMemberName;
             return false;
         }
 
-        if (analysisContext is not null
-            && (IsNestedQueryableType(propertyMapStrategy.TargetType, analysisContext.Compilation)
-                || (propertyMapStrategy.SourceProperty is not null
-                    && IsNestedQueryableType(propertyMapStrategy.SourceProperty.Type, analysisContext.Compilation))
-                || (propertyMapStrategy.SourceField is not null
-                    && IsNestedQueryableType(propertyMapStrategy.SourceField.Type, analysisContext.Compilation))))
+        if (HasNestedQueryablePropertyMapping(propertyMapStrategy, analysisContext))
         {
             failureKind = AnalysisFailureKind.NestedQueryable;
             failureMember = propertyMapStrategy.TargetMemberName;
@@ -563,6 +555,36 @@ internal static class ProjectionCapabilityAnalyzer
             propertyMapStrategy.SourceField,
             propertyMapStrategy.TargetField);
         return true;
+    }
+
+    private static bool IsUnsupportedPropertyConstructForProjection(PropertyMapStrategy propertyMapStrategy)
+        => propertyMapStrategy.PostConstructorInitializer
+           || propertyMapStrategy.RequiresInterfaceCastOnTarget
+           || propertyMapStrategy.RequiresUnsafeAccessorOnSource
+           || propertyMapStrategy.RequiresUnsafeAccessorOnTarget;
+
+    private static bool HasNestedQueryablePropertyMapping(
+        PropertyMapStrategy propertyMapStrategy,
+        ProjectionCapabilityAnalysisContext? analysisContext)
+    {
+        if (analysisContext is null)
+        {
+            return false;
+        }
+
+        if (IsNestedQueryableType(propertyMapStrategy.TargetType, analysisContext.Compilation))
+        {
+            return true;
+        }
+
+        if (propertyMapStrategy.SourceProperty is not null
+            && IsNestedQueryableType(propertyMapStrategy.SourceProperty.Type, analysisContext.Compilation))
+        {
+            return true;
+        }
+
+        return propertyMapStrategy.SourceField is not null
+               && IsNestedQueryableType(propertyMapStrategy.SourceField.Type, analysisContext.Compilation);
     }
 
     private static bool TryAnalyzeMethodMap(
