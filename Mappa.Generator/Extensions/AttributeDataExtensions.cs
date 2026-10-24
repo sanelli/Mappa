@@ -1248,6 +1248,11 @@ internal static class AttributeDataExtensions
             {
                 attribute.AllowProperties = allowProperties;
             }
+            else if (namedArgument.Key == nameof(MappaAllowInaccessibleTargetMembersAttribute.AllowFields)
+                     && namedArgument.Value.Value is bool allowFields)
+            {
+                attribute.AllowFields = allowFields;
+            }
             else if (namedArgument.Key == nameof(MappaAllowInaccessibleTargetMembersAttribute.AllowConstructors)
                      && namedArgument.Value.Value is bool allowConstructors)
             {

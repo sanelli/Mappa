@@ -115,14 +115,18 @@ internal sealed partial class ConstructorMapStrategyDetector
                     }
                 }
 
-                PropertyMapNameMatcher.TryFindSourceProperty(
+                var sourceFields = this.GetReadableSourceFields(this.context.SourceType);
+                PropertyMapNameMatcher.TryFindSourceMember(
                     sourceProperties,
+                    sourceFields,
                     expectedSourcePropertyName,
                     this.context.MappaUserSettings.CaseInsensitivePropertyMap,
                     this.context.MappaUserSettings.IgnoreUnderscoreForPropertyMap,
                     isConstructorParameterPath: true,
                     useExactNameFromAttribute,
-                    out IPropertySymbol? sourceProperty);
+                    out var sourceMember);
+                IPropertySymbol? sourceProperty = sourceMember?.Property;
+                IFieldSymbol? sourceField = sourceMember?.Field;
 
                 if (this.context.MapMethod is not null &&
                     this.TryGetStrategyForPropertyOrArgumentUsingAttributesOnMethod(
@@ -158,7 +162,7 @@ internal sealed partial class ConstructorMapStrategyDetector
                     return (Parameter: targetParameter, Strategy: (MapStrategy)strategy);
                 }
 
-                if (sourceProperty is null)
+                if (sourceProperty is null && sourceField is null)
                 {
                     return (Parameter: targetParameter, Strategy: (MapStrategy)noMapStrategy);
                 }
@@ -170,7 +174,8 @@ internal sealed partial class ConstructorMapStrategyDetector
                     return (Parameter: targetParameter, Strategy: (MapStrategy)noMapStrategy);
                 }
 
-                if (this.TryGetStrategyForSourceProperty(targetParameterType, sourceProperty, true, out var propertyStrategy))
+                if (sourceProperty is not null
+                    && this.TryGetStrategyForSourceProperty(targetParameterType, sourceProperty, true, out var propertyStrategy))
                 {
                     propertyStrategy = this.EncapsulateMapStrategyForSourceOptional(sourceProperty, sourceProperties, propertyStrategy);
                     propertyStrategy = this.TryWrapWithNullSubstituteAssignValue(
@@ -188,6 +193,19 @@ internal sealed partial class ConstructorMapStrategyDetector
                         propertyStrategy,
                         requiresUnsafeAccessorOnSource,
                         requiresInterfaceCastOnSource);
+                    return (Parameter: targetParameter, Strategy: (MapStrategy)parameterMapStrategy);
+                }
+
+                if (sourceField is not null
+                    && this.TryGetStrategyForSourceField(targetParameterType, sourceField, true, out var fieldStrategy))
+                {
+                    var parameterMapStrategy = new ParameterMapStrategy(
+                        targetParameter,
+                        sourceProperty: null,
+                        fieldStrategy,
+                        requiresUnsafeAccessorOnSource: false,
+                        requiresInterfaceCastOnSource: false,
+                        sourceField: sourceField);
                     return (Parameter: targetParameter, Strategy: (MapStrategy)parameterMapStrategy);
                 }
 

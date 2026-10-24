@@ -9,17 +9,18 @@ using Microsoft.CodeAnalysis;
 namespace Mappa.Generator.Models.Strategies;
 
 /// <summary>
-/// The strategy that can be applied between two properties.
+/// The strategy that can be applied between a target property and a source property or field.
 /// </summary>
 /// <param name="targetProperty">The target property.</param>
-/// <param name="sourceProperty">The source property.</param>
-/// <param name="propertyStrategy">The strategy between these properties.</param>
+/// <param name="sourceProperty">The source property, if any.</param>
+/// <param name="propertyStrategy">The strategy between these members.</param>
 /// <param name="postConstructorInitializer"><c>true</c> if this property initializer must happen after the constructor invocation.</param>
 /// <param name="chainedSourcePropertyPath">The chained source property path to read before mapping, if any.</param>
-/// <param name="requiresUnsafeAccessorOnSource"><c>true</c> when the source property must be read via an unsafe accessor.</param>
+/// <param name="requiresUnsafeAccessorOnSource"><c>true</c> when the source member must be read via an unsafe accessor.</param>
 /// <param name="requiresUnsafeAccessorOnTarget"><c>true</c> when the target property must be accessed via an unsafe accessor.</param>
 /// <param name="requiresInterfaceCastOnSource"><c>true</c> when the source property must be read via an interface cast.</param>
 /// <param name="requiresInterfaceCastOnTarget"><c>true</c> when the target property must be written via an interface cast.</param>
+/// <param name="sourceField">The source field, if any (mutually exclusive with <paramref name="sourceProperty"/>).</param>
 internal sealed class PropertyMapStrategy(
     IPropertySymbol targetProperty,
     IPropertySymbol? sourceProperty,
@@ -29,8 +30,9 @@ internal sealed class PropertyMapStrategy(
     bool requiresUnsafeAccessorOnSource = false,
     bool requiresUnsafeAccessorOnTarget = false,
     bool requiresInterfaceCastOnSource = false,
-    bool requiresInterfaceCastOnTarget = false)
-    : MapStrategy(targetProperty.Type, sourceProperty?.Type ?? chainedSourcePropertyPath?.StartingSourceType ?? null!)
+    bool requiresInterfaceCastOnTarget = false,
+    IFieldSymbol? sourceField = null)
+    : MapStrategy(targetProperty.Type, sourceProperty?.Type ?? sourceField?.Type ?? chainedSourcePropertyPath?.StartingSourceType ?? null!)
 {
     /// <summary>
     /// Gets the target property.
@@ -43,7 +45,12 @@ internal sealed class PropertyMapStrategy(
     public IPropertySymbol? SourceProperty { get; } = sourceProperty;
 
     /// <summary>
-    /// Gets the strategy to be applied between the two properties.
+    /// Gets the source field.
+    /// </summary>
+    public IFieldSymbol? SourceField { get; } = sourceField;
+
+    /// <summary>
+    /// Gets the strategy to be applied between the source and target members.
     /// </summary>
     public MapStrategy PropertyStrategy { get; } = propertyStrategy;
 
@@ -58,7 +65,7 @@ internal sealed class PropertyMapStrategy(
     public ChainedSourcePropertyPathInfo? ChainedSourcePropertyPath { get; } = chainedSourcePropertyPath;
 
     /// <summary>
-    /// Gets a value indicating whether the source property must be read via an unsafe accessor.
+    /// Gets a value indicating whether the source member must be read via an unsafe accessor.
     /// </summary>
     public bool RequiresUnsafeAccessorOnSource { get; } = requiresUnsafeAccessorOnSource;
 

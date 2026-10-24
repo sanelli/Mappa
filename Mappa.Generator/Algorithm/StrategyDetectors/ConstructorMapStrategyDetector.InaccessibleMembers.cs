@@ -29,6 +29,19 @@ internal sealed partial class ConstructorMapStrategyDetector
             .Where(property => this.TryIsSourcePropertyReadable(property, out _, out _))
             .ToArray();
 
+    private IFieldSymbol[] GetReadableSourceFields(ITypeSymbol sourceType)
+    {
+        if (this.context.MappaUserSettings.MapSourceFields is not BooleanSetting.Enable)
+        {
+            return [];
+        }
+
+        // Inaccessible field UnsafeAccessor emission is wired in a later step; collect accessible fields only.
+        return sourceType.GetTypeFields()
+            .Where(field => this.TryIsSourceFieldReadable(field, out var requiresUnsafeAccessor) && !requiresUnsafeAccessor)
+            .ToArray();
+    }
+
     private bool TryIsSourcePropertyReadable(
         IPropertySymbol property,
         out bool requiresUnsafeAccessor,
@@ -54,6 +67,14 @@ internal sealed partial class ConstructorMapStrategyDetector
             this.context.MappaUserSettings.MapTargetExplicitInterfaceProperties,
             out requiresUnsafeAccessor,
             out requiresInterfaceCast);
+
+    private bool TryIsSourceFieldReadable(IFieldSymbol field, out bool requiresUnsafeAccessor)
+        => InaccessibleMemberEligibility.TryIsSourceFieldReadable(
+            field,
+            this.compilation,
+            this.context.GetRootMapMethod(),
+            this.GetInaccessibleSourceOptions(),
+            out requiresUnsafeAccessor);
 
     private bool TryIsTargetPropertyGetterReadable(IPropertySymbol property, out bool requiresUnsafeAccessor)
     {

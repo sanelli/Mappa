@@ -38,6 +38,13 @@ public sealed class InaccessibleMembersCoverageTests
             new MappaAllowInaccessibleTargetMembersAttribute { AllowProperties = false });
         propertiesDisabled.Should().NotBeNull();
         propertiesDisabled.IsPropertyAllowed("Any").Should().BeFalse();
+        propertiesDisabled.IsFieldAllowed("Any").Should().BeTrue();
+
+        var fieldsDisabled = InaccessibleTargetMemberOptions.FromAttribute(
+            new MappaAllowInaccessibleTargetMembersAttribute { AllowFields = false });
+        fieldsDisabled.Should().NotBeNull();
+        fieldsDisabled.IsFieldAllowed("Any").Should().BeFalse();
+        fieldsDisabled.IsPropertyAllowed("Any").Should().BeTrue();
 
         InaccessibleTargetMemberOptions.FromAttribute(null).Should().BeNull();
     }

@@ -11,10 +11,12 @@ namespace Mappa.Generator.Models;
 /// </summary>
 /// <param name="memberNames">The whitelisted member names; empty means all eligible members.</param>
 /// <param name="allowProperties">Whether inaccessible properties may be written.</param>
+/// <param name="allowFields">Whether inaccessible fields may be written.</param>
 /// <param name="allowConstructors">Whether inaccessible constructors may be invoked.</param>
 internal sealed class InaccessibleTargetMemberOptions(
     string[] memberNames,
     bool allowProperties,
+    bool allowFields,
     bool allowConstructors)
 {
     /// <summary>
@@ -28,14 +30,25 @@ internal sealed class InaccessibleTargetMemberOptions(
     internal bool AllowProperties { get; } = allowProperties;
 
     /// <summary>
+    /// Gets a value indicating whether inaccessible target fields may be written.
+    /// </summary>
+    internal bool AllowFields { get; } = allowFields;
+
+    /// <summary>
     /// Gets a value indicating whether inaccessible target constructors may be invoked.
     /// </summary>
     internal bool AllowConstructors { get; } = allowConstructors;
 
     /// <summary>
+    /// Gets a value indicating whether every eligible inaccessible target property or field is allowed
+    /// (empty whitelist).
+    /// </summary>
+    internal bool AllowAllMembers => this.MemberNames.Length == 0;
+
+    /// <summary>
     /// Gets a value indicating whether every eligible inaccessible target property is allowed.
     /// </summary>
-    internal bool AllowAllProperties => this.MemberNames.Length == 0;
+    internal bool AllowAllProperties => this.AllowAllMembers;
 
     /// <summary>
     /// Creates options from the attribute, or <c>null</c> when the attribute is absent.
@@ -48,6 +61,7 @@ internal sealed class InaccessibleTargetMemberOptions(
             : new InaccessibleTargetMemberOptions(
                 attribute.MemberNames,
                 attribute.AllowProperties,
+                attribute.AllowFields,
                 attribute.AllowConstructors);
 
     /// <summary>
@@ -57,6 +71,16 @@ internal sealed class InaccessibleTargetMemberOptions(
     /// <returns><c>true</c> when allowed; otherwise <c>false</c>.</returns>
     internal bool IsPropertyAllowed(string memberName)
         => this.AllowProperties
-           && (this.AllowAllProperties
+           && (this.AllowAllMembers
+               || this.MemberNames.Any(name => name.Equals(memberName, StringComparison.Ordinal)));
+
+    /// <summary>
+    /// Checks whether <paramref name="memberName"/> is allowed by this options instance for fields.
+    /// </summary>
+    /// <param name="memberName">The member name.</param>
+    /// <returns><c>true</c> when allowed; otherwise <c>false</c>.</returns>
+    internal bool IsFieldAllowed(string memberName)
+        => this.AllowFields
+           && (this.AllowAllMembers
                || this.MemberNames.Any(name => name.Equals(memberName, StringComparison.Ordinal)));
 }

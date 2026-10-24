@@ -86,9 +86,9 @@ internal sealed class PropertyMapStrategyBuilder
             return this.AppendChainedSourcePropertyRead(builder, source, context);
         }
 
-        if (this.strategy.SourceProperty is not null)
+        if (this.strategy.SourceProperty is not null || this.strategy.SourceField is not null)
         {
-            return this.AppendDirectSourcePropertyRead(builder, source, context);
+            return this.AppendDirectSourceMemberRead(builder, source, context);
         }
 
         return string.Empty;
@@ -140,21 +140,33 @@ internal sealed class PropertyMapStrategyBuilder
         return sourcePropertyTemporary;
     }
 
-    private string AppendDirectSourcePropertyRead(PrettyCode.StringBuilder builder, string source, MappaBuilderContext context)
+    private string AppendDirectSourceMemberRead(PrettyCode.StringBuilder builder, string source, MappaBuilderContext context)
     {
-        if (this.strategy.SourceProperty is not { } sourceProperty)
+        if (this.strategy.SourceProperty is { } sourceProperty)
         {
-            return string.Empty;
+            var sourcePropertyTemporary = context.NextTemporary();
+            var sourceReadExpression = InaccessibleMemberAccessHelper.BuildPropertyReadExpression(
+                source,
+                sourceProperty,
+                this.strategy.RequiresUnsafeAccessorOnSource,
+                this.strategy.RequiresInterfaceCastOnSource,
+                context);
+            builder.AppendLine($"{sourceProperty.Type.ToDisplayString()} {sourcePropertyTemporary} = {sourceReadExpression};");
+            return sourcePropertyTemporary;
         }
 
-        var sourcePropertyTemporary = context.NextTemporary();
-        var sourceReadExpression = InaccessibleMemberAccessHelper.BuildPropertyReadExpression(
-            source,
-            sourceProperty,
-            this.strategy.RequiresUnsafeAccessorOnSource,
-            this.strategy.RequiresInterfaceCastOnSource,
-            context);
-        builder.AppendLine($"{sourceProperty.Type.ToDisplayString()} {sourcePropertyTemporary} = {sourceReadExpression};");
-        return sourcePropertyTemporary;
+        if (this.strategy.SourceField is { } sourceField)
+        {
+            var sourceFieldTemporary = context.NextTemporary();
+            var sourceReadExpression = InaccessibleMemberAccessHelper.BuildFieldReadExpression(
+                source,
+                sourceField,
+                this.strategy.RequiresUnsafeAccessorOnSource,
+                context);
+            builder.AppendLine($"{sourceField.Type.ToDisplayString()} {sourceFieldTemporary} = {sourceReadExpression};");
+            return sourceFieldTemporary;
+        }
+
+        return string.Empty;
     }
 }

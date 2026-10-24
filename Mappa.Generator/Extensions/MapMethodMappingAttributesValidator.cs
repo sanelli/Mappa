@@ -623,7 +623,7 @@ internal static partial class MapMethodMappingAttributesValidator
                 methodName));
         }
 
-        if (targetAttribute is { AllowProperties: false, AllowConstructors: false })
+        if (targetAttribute is { AllowProperties: false, AllowFields: false, AllowConstructors: false })
         {
             context.ReportDiagnostic(MappaDiagnostics.AllowInaccessibleTargetMembersDisabledAll(
                 methodDeclarationSyntax,
@@ -662,13 +662,17 @@ internal static partial class MapMethodMappingAttributesValidator
         ITypeSymbol type)
     {
         var typeName = type.ToDisplayString();
-        var propertyNames = new HashSet<string>(
+        var memberNamesOnType = new HashSet<string>(
             type.GetTypeProperties().Select(property => property.GetMappablePropertyName()),
             StringComparer.Ordinal);
+        foreach (var field in type.GetTypeFields())
+        {
+            memberNamesOnType.Add(field.Name);
+        }
 
         foreach (var memberName in memberNames
                      .Distinct(StringComparer.Ordinal)
-                     .Where(name => !propertyNames.Contains(name)))
+                     .Where(name => !memberNamesOnType.Contains(name)))
         {
             context.ReportDiagnostic(MappaDiagnostics.MappingAttributeTargetPropertyOrParameterDoesNotExist(
                 methodDeclarationSyntax,

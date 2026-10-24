@@ -179,6 +179,7 @@ internal static class ProjectionExpressionBuilder
     {
         var sourceExpression = BuildSourceMemberExpression(
             parameterMapStrategy.SourceProperty,
+            parameterMapStrategy.SourceField,
             null,
             source,
             context);
@@ -205,6 +206,7 @@ internal static class ProjectionExpressionBuilder
     {
         var sourceExpression = BuildSourceMemberExpression(
             propertyMapStrategy.SourceProperty,
+            propertyMapStrategy.SourceField,
             propertyMapStrategy.ChainedSourcePropertyPath,
             source,
             context);
@@ -310,6 +312,7 @@ internal static class ProjectionExpressionBuilder
 
     private static string BuildSourceMemberExpression(
         IPropertySymbol? sourceProperty,
+        IFieldSymbol? sourceField,
         ChainedSourcePropertyPathInfo? chainedSourcePropertyPath,
         string source,
         ExpressionBuildContext context)
@@ -334,7 +337,7 @@ internal static class ProjectionExpressionBuilder
                 chainedSourcePropertyPath.RemainingSourceSegments,
                 chainedSourcePropertyPath.StartingSourceType,
                 mapMethod.NullableEnabled,
-                sourceProperty?.Type ?? chainedSourcePropertyPath.StartingSourceType,
+                sourceProperty?.Type ?? sourceField?.Type ?? chainedSourcePropertyPath.StartingSourceType,
                 out _,
                 chainedSourcePropertyPath.OriginalSourcePath);
         }
@@ -342,6 +345,11 @@ internal static class ProjectionExpressionBuilder
         if (sourceProperty is not null)
         {
             return $"{source}.{sourceProperty.Name}";
+        }
+
+        if (sourceField is not null)
+        {
+            return $"{source}.{sourceField.Name}";
         }
 
         return source;

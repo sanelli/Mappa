@@ -365,9 +365,10 @@ internal enum MappaDiagnosticsKind
     UnsafeAccessorNotSupported,
 
     /// <summary>
-    /// <see cref="Mappa.Attributes.MappaAllowInaccessibleTargetMembersAttribute"/> has both
-    /// <see cref="Mappa.Attributes.MappaAllowInaccessibleTargetMembersAttribute.AllowProperties"/> and
-    /// <see cref="Mappa.Attributes.MappaAllowInaccessibleTargetMembersAttribute.AllowConstructors"/> set to <c>false</c>.
+    /// <see cref="Mappa.Attributes.MappaAllowInaccessibleTargetMembersAttribute"/> has
+    /// <see cref="Mappa.Attributes.MappaAllowInaccessibleTargetMembersAttribute.AllowProperties"/>,
+    /// <see cref="Mappa.Attributes.MappaAllowInaccessibleTargetMembersAttribute.AllowFields"/>, and
+    /// <see cref="Mappa.Attributes.MappaAllowInaccessibleTargetMembersAttribute.AllowConstructors"/> all set to <c>false</c>.
     /// </summary>
     AllowInaccessibleTargetMembersDisabledAll,
 

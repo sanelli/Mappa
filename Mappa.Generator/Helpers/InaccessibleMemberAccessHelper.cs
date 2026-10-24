@@ -51,6 +51,26 @@ internal static class InaccessibleMemberAccessHelper
     }
 
     /// <summary>
+    /// Builds an expression that reads <paramref name="field"/> from <paramref name="receiverExpression"/>.
+    /// </summary>
+    /// <param name="receiverExpression">The instance expression.</param>
+    /// <param name="field">The field to read.</param>
+    /// <param name="requiresUnsafeAccessor"><c>true</c> when an unsafe accessor must be used.</param>
+    /// <param name="context">The builder context.</param>
+    /// <returns>The read expression.</returns>
+    internal static string BuildFieldReadExpression(
+        string receiverExpression,
+        IFieldSymbol field,
+        bool requiresUnsafeAccessor,
+        MappaBuilderContext context)
+    {
+        // Inaccessible field UnsafeAccessor emission is wired in a later step.
+        _ = requiresUnsafeAccessor;
+        _ = context;
+        return $"{receiverExpression}.{field.Name}";
+    }
+
+    /// <summary>
     /// Builds a statement that assigns <paramref name="valueExpression"/> to <paramref name="property"/>
     /// on <paramref name="receiverExpression"/>.
     /// </summary>
