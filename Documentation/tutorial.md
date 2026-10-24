@@ -240,7 +240,7 @@ Numeric format properties (for example `IntFormat`, `DecimalFormat`) apply to `T
 See also: [InvokeParseMapper.cs](../Mappa.Samples/InvokeParseMapper.cs), [InvokeToStringMapper.cs](../Mappa.Samples/InvokeToStringMapper.cs), and [Mappa attributes](./mappa-attributes.md#mappasettings).
 
 ### Property name matching settings
-`CaseInsensitivePropertyMap` and `IgnoreUnderscoreForPropertyMap` change how source and target properties are paired by name during constructor-map mapping:
+`CaseInsensitivePropertyMap` and `IgnoreUnderscoreForPropertyMap` change how source and target properties (and fields, when field mapping is enabled) are paired by name during constructor-map mapping:
 
 ```csharp
 [Mappa]
@@ -254,6 +254,23 @@ public sealed partial class Mapper
 ```
 
 See also: [PropertyMapNameSettingsMapper.cs](../Mappa.Samples/PropertyMapNameSettingsMapper.cs).
+
+### Mapping instance fields
+
+By default Mappa maps properties only. Enable `MapSourceFields` and/or `MapTargetFields` to treat accessible instance fields as mapping members (constructor parameters, empty-constructor initializers, nested paths, and attribute `*PropertyName` parameters). When both a property and a field match the same name, the property wins. Compiler-generated backing fields, `static` / `const` / `ref` / `fixed` fields, and `readonly` target fields are never included. Private or protected fields also require `[MappaAllowInaccessibleSourceMembers]` / `[MappaAllowInaccessibleTargetMembers]` (and `AllowFields` on the target attribute):
+
+```csharp
+[Mappa]
+[MappaSettings(
+    MapSourceFields = BooleanSetting.Enable,
+    MapTargetFields = BooleanSetting.Enable)]
+public sealed partial class Mapper
+{
+    public partial Target Map(Source input);
+}
+```
+
+See also: [MapFieldsMapper.cs](../Mappa.Samples/MapFieldsMapper.cs) and [Mappa attributes — MappaSettings](./mappa-attributes.md#mappasettings).
 
 ### Explicit interface property mapping
 
@@ -855,7 +872,7 @@ public sealed partial class AllPropertiesMapper
 See also: [MappaMustMapTargetPropertyAttributeMapper.cs](../Mappa.Samples/MappaMustMapTargetPropertyAttributeMapper.cs).
 
 ### MappaAllowInaccessibleSourceMembers / TargetMembers
-Opt in to private or protected members via generated `UnsafeAccessor` helpers (.NET 8+ / C# 12+):
+Opt in to private or protected properties (and fields when `MapSourceFields` / `MapTargetFields` are enabled) via generated `UnsafeAccessor` helpers (.NET 8+ / C# 12+). Target field writes are gated by `AllowFields` (default `true`):
 
 ```csharp
 [Mappa]

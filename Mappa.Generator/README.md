@@ -316,8 +316,8 @@ The constructor strategy tries sub-strategies in order. A valid `[MappaUseConstr
 | **Object factory** | A `[MappaObjectFactory]` registration on the root map method (class ∪ method attributes) resolves to an accessible factory for the exact target type |
 | **Forced use-constructor** | A valid `[MappaUseConstructor]` targets this type (`NoParameters` or exact `WithParameters` signature) |
 | **Mapping constructor** | An accessible constructor `TTarget(TSource input)` exists where the single parameter type matches the source type *(or an inaccessible matching constructor when `[MappaAllowInaccessibleTargetMembers]` allows constructors)* |
-| **Empty constructor + property init** | An accessible zero-argument constructor exists; settable properties (and get-only collections per the notes below) can be mapped from the source *(or an inaccessible empty constructor when allowed)* |
-| **Parameterized constructor** | No suitable empty-constructor path; the accessible constructor with the **most** mappable parameters is chosen (parameter names are matched to source properties case-insensitively by default) *(inaccessible parameterized constructors participate when allowed)* |
+| **Empty constructor + property init** | An accessible zero-argument constructor exists; settable properties (and, when `MapTargetFields` is enabled, writable instance fields) and get-only collections per the notes below can be mapped from the source *(or an inaccessible empty constructor when allowed)* |
+| **Parameterized constructor** | No suitable empty-constructor path; the accessible constructor with the **most** mappable parameters is chosen (parameter names are matched to source properties — and source fields when `MapSourceFields` is enabled — case-insensitively by default) *(inaccessible parameterized constructors participate when allowed)* |
 
 - _What_:
     - **Object factory**: invoke the resolved factory; depending on signature tier, either return the factory result as-is, fill properties like the empty-constructor path after the call, or map factory parameters like the parameterized-constructor path;
@@ -329,29 +329,30 @@ The constructor strategy tries sub-strategies in order. A valid `[MappaUseConstr
     - Duplicate factories for the same target type report error **MP00062**; unresolved factories warn with **MP00063** and fall through to constructor strategies; factories on `IQueryable` projection maps report error **MP00064**;
     - Factory location and signature tiers are documented in [Mappa attributes — MappaObjectFactory](../Documentation/mappa-attributes.md#mappaobjectfactory);
     - `[MappaUseConstructor]` is method-only; see [Mappa attributes — MappaUseConstructor](../Documentation/mappa-attributes.md#mappauseconstructor) and diagnostics **MP00087–MP00092**;
-    - **Empty-constructor path**: property name matching is case-sensitive by default, configurable via `CaseInsensitivePropertyMap` and `IgnoreUnderscoreForPropertyMap` in `MappaSettings`;
-    - **Parameterized-constructor path**: constructor parameter names are matched to source properties case-insensitively by default, with optional underscore-insensitive matching via `IgnoreUnderscoreForPropertyMap`; when `MapTargetExplicitInterfaceProperties` is enabled, remaining explicitly implemented interface target properties are assigned after construction via an interface cast;
+    - **Empty-constructor path**: member name matching is case-sensitive by default, configurable via `CaseInsensitivePropertyMap` and `IgnoreUnderscoreForPropertyMap` in `MappaSettings`; enable `MapSourceFields` / `MapTargetFields` to include accessible instance fields (property preferred when both match the same name);
+    - **Parameterized-constructor path**: constructor parameter names are matched to source properties (and source fields when `MapSourceFields` is enabled) case-insensitively by default, with optional underscore-insensitive matching via `IgnoreUnderscoreForPropertyMap`; when `MapTargetExplicitInterfaceProperties` is enabled, remaining explicitly implemented interface target properties are assigned after construction via an interface cast;
     - Explicit interface implementation is supported for get-only dictionary and collection properties; scalar explicitly implemented interface properties are mapped when `MapSourceExplicitInterfaceProperties` / `MapTargetExplicitInterfaceProperties` is enabled (via cast to the declaring interface; never via `UnsafeAccessor`);
     - When both Map\* explicit-interface settings and `[MappaAllowInaccessible*]` are enabled, ordinary private members use `UnsafeAccessor` while explicit interface properties use interface casts;
     - Get-only `Stack<T>`, `Queue<T>`, `ConcurrentStack<T>`, `ConcurrentQueue<T>`, `ConcurrentBag<T>`, and `BlockingCollection<T>` properties are filled post-construction using `Push`, `Enqueue`, or `Add` respectively;
     - The following attributes on the map **method** can override mapping behaviour (see [`Documentation/mappa-attributes.md`](../Documentation/mappa-attributes.md) for details):
         - `[MappaUseProperty]`
         - `[MappaIgnoreTargetProperty]` *(empty-constructor / empty-ctor-like factory path only)*
-        - `[MappaMustMapTargetProperty]` *(empty-constructor / empty-ctor-like factory path only; flat property names; unmapped must-map properties report **MP00065**)*
-        - `[MappaAllowInaccessibleSourceMembers]` *(opt-in private/protected source property reads via `UnsafeAccessor`; flat names or all; **MP00067** / **MP00069**)*
-        - `[MappaAllowInaccessibleTargetMembers]` *(opt-in private/protected target property writes and/or inaccessible constructors via `UnsafeAccessor`; `AllowProperties` / `AllowConstructors`; **MP00067**–**MP00069**)*
+        - `[MappaMustMapTargetProperty]` *(empty-constructor / empty-ctor-like factory path only; flat property/field names; unmapped must-map members report **MP00065**)*
+        - `[MappaAllowInaccessibleSourceMembers]` *(opt-in private/protected source property (and field when `MapSourceFields`) reads via `UnsafeAccessor`; flat names or all; **MP00067** / **MP00069**)*
+        - `[MappaAllowInaccessibleTargetMembers]` *(opt-in private/protected target property/field writes and/or inaccessible constructors via `UnsafeAccessor`; `AllowProperties` / `AllowFields` / `AllowConstructors`; **MP00067**–**MP00069**)*
         - `[MappaAssignFromContext]`
         - `[MappaAssignFromConstant]`
         - `[MappaNullSubstitute]` — substitutes a null source member with `AssignValue` or `InvokeMethod` before mapping continues; optional `SourcePropertyName`; enables `T?` → non-nullable `T` for that member; **MP00115–MP00119**
-        - `[MappaInvokeMethod]` — optionally accepts `SourcePropertyName` to select the source property passed to the invoked method
+        - `[MappaInvokeMethod]` — optionally accepts `SourcePropertyName` to select the source property (or field) passed to the invoked method
         - `[MappaAssignToContext]` *(post-construction context writes; requires the caller to provide `MappaContext`)*
-    - Those attributes accept flat names or [dot-separated nested property paths](../Documentation/mappa-attributes.md#nested-property-paths) (see also [algorithm — nested property paths](../Documentation/mappa-generator-algorithm.md#nested-property-paths)) *(except the inaccessible-member attributes, which accept flat names only)*;
-    - When inaccessible setters or unsafe-accessor constructors are used, property assignments that would normally use an object initializer are emitted **after** construction; helpers are generated in a file-local `__MappaInaccessibleAccessors` type in the mapper's namespace;
+    - Those attributes accept flat names or [dot-separated nested property paths](../Documentation/mappa-attributes.md#nested-property-paths) (see also [algorithm — nested property paths](../Documentation/mappa-generator-algorithm.md#nested-property-paths)) *(except the inaccessible-member attributes, which accept flat names only)*; path segments may name fields when `MapSourceFields` / `MapTargetFields` are enabled;
+    - When inaccessible setters, inaccessible field writes, or unsafe-accessor constructors are used, assignments that would normally use an object initializer are emitted **after** construction; helpers are generated in a file-local `__MappaInaccessibleAccessors` type in the mapper's namespace;
     - When `MappaSettings.ProtobufOptional` is enabled, optional protobuf members are handled via companion `Has*` properties on the source and target types.
+    - Accessible fields in `IQueryable` projections are supported when field settings are enabled; inaccessible fields remain projection-forbidden (**MP00069**).
 
 ### Nested property paths
 
-Leaf source chains use conditional access based on each **receiver** type, reuse nested source temps, and append `?? throw new System.NullReferenceException("...")` only when the expression can be null and the target cannot (never on plain non-nullable value-type leaves). Nested `[MappaIgnoreTargetProperty]` applies alongside sibling nested attributes under the same root. Nested `[MappaAssignToContext]` reads the leaf from the constructed result after mapping. Details: [Documentation/mappa-generator-algorithm.md — Nested property paths](../Documentation/mappa-generator-algorithm.md#nested-property-paths).
+Leaf source chains use conditional access based on each **receiver** type, reuse nested source temps, and append `?? throw new System.NullReferenceException("...")` only when the expression can be null and the target cannot (never on plain non-nullable value-type leaves). Nested `[MappaIgnoreTargetProperty]` applies alongside sibling nested attributes under the same root. Nested `[MappaAssignToContext]` reads the leaf from the constructed result after mapping. Path segments may name fields when field mapping settings are enabled. Details: [Documentation/mappa-generator-algorithm.md — Nested property paths](../Documentation/mappa-generator-algorithm.md#nested-property-paths).
 
 ## Before and after map hooks
 
