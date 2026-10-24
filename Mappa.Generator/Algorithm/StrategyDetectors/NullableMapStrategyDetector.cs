@@ -42,10 +42,11 @@ internal sealed class NullableMapStrategyDetector
     {
         mapStrategy = new NoMapStrategy(this.context.TargetType, this.context.SourceType);
 
-        // When OneOf well-known strategies are enabled, Option wrap owns null → None
-        // (do not wrap with throw-on-null nullable strategy).
+        // When OneOf well-known strategies are enabled, Option wrap/unwrap owns
+        // null ↔ None (do not peel T? or wrap with throw-on-null nullable strategy).
         if (this.context.MappaUserSettings.OneOfWellKnownTypes is BooleanSetting.Enable
-            && OneOfWellKnownHelper.IsOneOfOptionShape(this.context.TargetType, this.compilation, out _))
+            && (OneOfWellKnownHelper.IsOneOfOptionShape(this.context.TargetType, this.compilation, out _)
+                || OneOfWellKnownHelper.IsOneOfOptionShape(this.context.SourceType, this.compilation, out _)))
         {
             return false;
         }
