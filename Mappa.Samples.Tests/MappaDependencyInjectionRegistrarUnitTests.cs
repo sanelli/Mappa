@@ -48,6 +48,7 @@ public sealed class MappaDependencyInjectionRegistrarUnitTests
         // Assert
         provider.GetRequiredService<ProtobufWellKnownTypesMapper>().Should().NotBeNull();
         provider.GetRequiredService<BsonWellKnownTypesMapper>().Should().NotBeNull();
+        provider.GetRequiredService<OneOfWellKnownTypesMapper>().Should().NotBeNull();
     }
 
     /// <summary>

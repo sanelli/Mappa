@@ -103,6 +103,7 @@ When no existing method applies (or for root methods), `TypeMapIdentifierAlgorit
 4. Enum
 4b. Bson well-known types *(only when `BsonWellKnownTypes` is `Enable` and `MongoDB.Bson` types are in the compilation)*
 4c. Protobuf well-known types *(only when `ProtobufWellKnownTypes` is `Enable` and `Google.Protobuf.WellKnownTypes` types are in the compilation)*
+4d. OneOf well-known types *(only when `OneOfWellKnownTypes` is `Enable` and `OneOf` / `OneOfBase` types are in the compilation)*
 5. String
 6. Date & time
 7a. IQueryable projection *(root methods with `IQueryable<TSource>` → `IQueryable<TTarget>` only)*
@@ -268,6 +269,26 @@ When `ReferenceReusing` is `Enable` and the map method declares `MappaContext`:
     - Disabled by default; the consumer must reference [Google.Protobuf](https://www.nuget.org/packages/Google.Protobuf/);
     - Nullable variants are handled by the nullable strategy;
     - Distinct from `ProtobufOptional`, which only affects optional protobuf message fields.
+
+### 4d. OneOf well-known types strategy
+
+- _When_:
+    - `MappaSettings.OneOfWellKnownTypes` is `BooleanSetting.Enable` AND
+    - The relevant [OneOf](https://www.nuget.org/packages/OneOf/) / `OneOfBase` type is present in the compilation AND one of:
+        - Option unwrap: `OneOf<T, None>` / `OneOfBase<T, None>` → `T` / `T?` (NRT on: throw/`null`; NRT off: `null`/`default`);
+        - Option wrap: `T` / `T?` → `OneOf<T, None>` / constructible `OneOfBase<T, None>`;
+        - General unwrap: `OneOf` / `OneOfBase` → unique exact or uniquely assignable arm (exact preferred; ambiguous arms refuse);
+        - Constructible `OneOfBase` wrap: value → unique arm via public implicit conversion from the arm or `new Target(OneOf.FromTn(...))`;
+- _What_:
+    - Option unwrap emits `IsT0 ? AsT0 : …` (`throw new MappaException(…)`, `null`, or `default`);
+    - Option wrap emits `FromT0` / `FromT1(default(None))` (and `new Target(…)` for `OneOfBase`);
+    - General unwrap emits `IsTn ? AsTn : throw new MappaException(…)`;
+    - `OneOfBase` wrap emits a cast (implicit) or `new Target(OneOf.FromTn(source))`;
+- _Notes_:
+    - Disabled by default; the consumer must reference [OneOf](https://www.nuget.org/packages/OneOf/);
+    - Exact-arm `T → OneOf<…, T, …>` via identity/implicit conversion is **not** gated by this setting;
+    - When the setting is enabled, identity/nullable strategies skip Option-shaped targets (and nullable peeling skips Option sources) so Option wrap/unwrap owns null ↔ `None`;
+    - `IQueryable` projection involving OneOf is unsupported (**MP00057** / projection mapping not supported).
 
 ### 5. String strategy
 

@@ -31,6 +31,7 @@ internal static class MappaDependencyInjectionRegistrarRunner
         var mapper = provider.GetRequiredService<MappaDependencyInjectionMapper>();
         var protobufMapper = provider.GetRequiredService<ProtobufWellKnownTypesMapper>();
         var bsonMapper = provider.GetRequiredService<BsonWellKnownTypesMapper>();
+        var oneOfMapper = provider.GetRequiredService<OneOfWellKnownTypesMapper>();
 
         report.RecordInvocation(
             nameof(MappaDependencyInjectionMapper.Map),
@@ -50,6 +51,12 @@ internal static class MappaDependencyInjectionRegistrarRunner
             "BsonWellKnownTypesMapper",
             "same-assembly",
             bsonMapper.GetType().Name);
+        report.RecordInvocation(
+            nameof(OneOfWellKnownTypesMapper),
+            "resolved",
+            "OneOfWellKnownTypesMapper",
+            "same-assembly",
+            oneOfMapper.GetType().Name);
         report.RecordInvocation(
             "IgnoreType",
             "IdentityStrategyMapper",

@@ -1094,4 +1094,26 @@ Supported pairs (when the setting is `Enable` and the type is in the compilation
 
 See also: [BsonWellKnownTypesMapper.cs](../Mappa.Samples/BsonWellKnownTypesMapper.cs) and [ProtobufWellKnownTypesMapper.cs](../Mappa.Samples/ProtobufWellKnownTypesMapper.cs).
 
+### OneOf well-known types
+The generator can emit mappings for [OneOf](https://www.nuget.org/packages/OneOf/) / `OneOfBase` (including the Option shape `OneOf<T, None>`) when you opt in with `[MappaSettings]`. Reference the [OneOf](https://www.nuget.org/packages/OneOf/) package yourself — there is no separate `Mappa.Dependency.OneOf` package. `IQueryable` projection involving OneOf remains unsupported.
+
+```csharp
+using Mappa.Attributes;
+using OneOf;
+using OneOf.Types;
+
+[Mappa]
+[MappaSettings(OneOfWellKnownTypes = BooleanSetting.Enable)]
+public sealed partial class Mapper
+{
+    public partial string Map(OneOf<string, None> input); // throws MappaException when None
+    public partial string? MapNullable(OneOf<string, None> input); // null when None
+    public partial OneOf<string, None> MapToOption(string? input); // None when null
+    public partial string MapUnion(OneOf<string, int> input); // unique exact/assignable arm
+    public partial OneOf<string, int> MapIdentity(string input); // identity wrap (also works with the setting off)
+}
+```
+
+See also: [OneOfWellKnownTypesMapper.cs](../Mappa.Samples/OneOfWellKnownTypesMapper.cs).
+
 For a complete catalog of samples, see [Mappa.Samples](../Mappa.Samples/README.md).
