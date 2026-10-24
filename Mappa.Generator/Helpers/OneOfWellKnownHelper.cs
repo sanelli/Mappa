@@ -4,6 +4,8 @@
 
 using System.Collections.Immutable;
 
+using Mappa.Generator.Models.Strategies;
+
 using Microsoft.CodeAnalysis;
 
 namespace Mappa.Generator.Helpers;
@@ -180,6 +182,185 @@ internal static class OneOfWellKnownHelper
         {
             armIndex = assignableMatches[0];
             return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Selects a unique arm index for wrapping <paramref name="sourceType"/> into a OneOf / OneOfBase.
+    /// Prefers an exact arm match over an arm that <paramref name="sourceType"/> is assignable to.
+    /// Returns <c>false</c> when zero or more than one matching arm exists.
+    /// </summary>
+    /// <param name="armTypes">The OneOf type arguments.</param>
+    /// <param name="sourceType">The value being wrapped.</param>
+    /// <param name="armIndex">The selected arm index when successful.</param>
+    /// <returns><c>true</c> when exactly one arm can be selected.</returns>
+    internal static bool TrySelectUniqueArmIndexForWrap(
+        ImmutableArray<ITypeSymbol> armTypes,
+        ITypeSymbol sourceType,
+        out int armIndex)
+    {
+        armIndex = -1;
+        if (armTypes.IsDefaultOrEmpty)
+        {
+            return false;
+        }
+
+        var exactMatches = new List<int>();
+        var assignableMatches = new List<int>();
+
+        for (var index = 0; index < armTypes.Length; index++)
+        {
+            var armType = armTypes[index];
+            if (IsExactArmMatch(armType, sourceType))
+            {
+                exactMatches.Add(index);
+                continue;
+            }
+
+            // Source must be assignable to the arm (e.g. Dog → Animal arm).
+            if (IsAssignableArmMatch(sourceType, armType))
+            {
+                assignableMatches.Add(index);
+            }
+        }
+
+        if (exactMatches.Count == 1)
+        {
+            armIndex = exactMatches[0];
+            return true;
+        }
+
+        if (exactMatches.Count > 1)
+        {
+            return false;
+        }
+
+        if (assignableMatches.Count == 1)
+        {
+            armIndex = assignableMatches[0];
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Attempts to resolve the constructed <c>OneOf&lt;…&gt;</c> struct type matching the type arguments
+    /// of a <c>OneOfBase</c> (or derived) target.
+    /// </summary>
+    /// <param name="oneOfBaseType">The <c>OneOfBase</c> or derived type.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <param name="optionStructType">The constructed <c>OneOf</c> type when successful.</param>
+    /// <returns><c>true</c> when the <c>OneOf</c> type was resolved.</returns>
+    internal static bool TryGetOptionStructTypeForOneOfBase(
+        ITypeSymbol oneOfBaseType,
+        Compilation compilation,
+        out INamedTypeSymbol? optionStructType)
+    {
+        optionStructType = null;
+        if (!TryGetOneOfBaseTypeArguments(oneOfBaseType, out var typeArguments)
+            || typeArguments.IsDefaultOrEmpty)
+        {
+            return false;
+        }
+
+        var unbound = compilation.GetTypeByMetadataName($"{OneOfNamespaceName}.{OneOfTypeName}`{typeArguments.Length}");
+        if (unbound is null)
+        {
+            return false;
+        }
+
+        optionStructType = unbound.Construct([.. typeArguments]);
+        return true;
+    }
+
+    /// <summary>
+    /// Attempts to find how to construct a <c>OneOfBase</c> (or derived) target from a source value
+    /// that maps to the given arm.
+    /// </summary>
+    /// <param name="targetType">The <c>OneOfBase</c> or derived target type.</param>
+    /// <param name="armIndex">The selected arm index.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <param name="constructionKind">The construction kind when successful.</param>
+    /// <param name="optionStructType">The underlying <c>OneOf</c> struct type when needed for construction.</param>
+    /// <returns><c>true</c> when a usable construction path exists.</returns>
+    internal static bool TryGetOneOfBaseWrapConstruction(
+        ITypeSymbol targetType,
+        int armIndex,
+        Compilation compilation,
+        out OneOfBaseConstructionKind constructionKind,
+        out INamedTypeSymbol? optionStructType)
+    {
+        constructionKind = OneOfBaseConstructionKind.ImplicitFromArm;
+        optionStructType = null;
+
+        if (targetType is not INamedTypeSymbol namedTarget
+            || !IsOneOfBase(namedTarget)
+            || !TryGetOneOfBaseTypeArguments(namedTarget, out var typeArguments)
+            || armIndex < 0
+            || armIndex >= typeArguments.Length)
+        {
+            return false;
+        }
+
+        var armType = typeArguments[armIndex];
+        if (HasPublicImplicitConversionFrom(namedTarget, armType))
+        {
+            constructionKind = OneOfBaseConstructionKind.ImplicitFromArm;
+            return true;
+        }
+
+        if (!TryGetOptionStructTypeForOneOfBase(namedTarget, compilation, out optionStructType)
+            || optionStructType is null
+            || !HasPublicConstructorAccepting(namedTarget, optionStructType))
+        {
+            return false;
+        }
+
+        constructionKind = OneOfBaseConstructionKind.ConstructorFromOneOf;
+        return true;
+    }
+
+    private static bool HasPublicImplicitConversionFrom(INamedTypeSymbol targetType, ITypeSymbol sourceType)
+    {
+        foreach (var member in targetType.GetMembers())
+        {
+            if (member is not IMethodSymbol conversion
+                || conversion.MethodKind is not MethodKind.Conversion
+                || !conversion.IsStatic
+                || conversion.DeclaredAccessibility is not Accessibility.Public
+                || conversion.Parameters.Length != 1)
+            {
+                continue;
+            }
+
+            if (IsExactArmMatch(conversion.Parameters[0].Type, sourceType)
+                && IsExactArmMatch(conversion.ReturnType, targetType))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool HasPublicConstructorAccepting(INamedTypeSymbol targetType, ITypeSymbol parameterType)
+    {
+        foreach (var constructor in targetType.Constructors)
+        {
+            if (constructor.DeclaredAccessibility != Accessibility.Public
+                || constructor.IsStatic
+                || constructor.Parameters.Length != 1)
+            {
+                continue;
+            }
+
+            if (IsExactArmMatch(constructor.Parameters[0].Type, parameterType))
+            {
+                return true;
+            }
         }
 
         return false;
