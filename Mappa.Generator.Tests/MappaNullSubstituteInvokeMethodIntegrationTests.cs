@@ -11,9 +11,12 @@ namespace Mappa.Generator.Tests;
 /// <summary>
 /// Integration tests for <c>[MappaNullSubstitute]</c> InvokeMethod mode.
 /// </summary>
-public sealed class MappaNullSubstituteInvokeMethodIntegrationTests
+public sealed partial class MappaNullSubstituteInvokeMethodIntegrationTests
     : MappaGeneratorAbstractUnitTests
 {
+    private const string SourceTypeName = "Mappa.Generator.Tests.UnitTests.SourceCode.Source";
+    private const string TargetTypeName = "Mappa.Generator.Tests.UnitTests.SourceCode.Target";
+
     /// <summary>
     /// Test InvokeMethod via <c>InvokeMethodType</c> emits a null-only conditional invoke before mapping.
     /// </summary>

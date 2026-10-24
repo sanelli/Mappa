@@ -325,6 +325,18 @@ internal sealed class ExpressionSyntaxAssertions
     }
 
     /// <summary>
+    /// Assert that the expression is an empty collection expression (<c>[]</c>).
+    /// </summary>
+    /// <returns>The assertions.</returns>
+    internal ExpressionSyntaxAssertions BeCollectionExpressionSyntax()
+    {
+        this.Subject.Should().BeOfType<CollectionExpressionSyntax>();
+        var collectionExpressionSyntax = (CollectionExpressionSyntax)this.Subject;
+        collectionExpressionSyntax.Elements.Should().BeEmpty();
+        return this;
+    }
+
+    /// <summary>
     /// Assert that the expression in a element access expression syntax having
     /// identifier name syntax for accessing both the array and the index.
     /// </summary>
