@@ -291,6 +291,13 @@ internal static class AttributeDataExtensions
                     attribute.PreventEnumerableCount = (BooleanSetting)value;
                 }
             },
+            [nameof(MappaSettingsAttribute.ReplaceNullWithEmptyContainer)] = static (attribute, constant) =>
+            {
+                if (constant.Value is int value)
+                {
+                    attribute.ReplaceNullWithEmptyContainer = (BooleanSetting)value;
+                }
+            },
             [nameof(MappaSettingsAttribute.PolymorphicMapMethodWithMatchingDefaultAttribute)] = static (attribute, constant) =>
             {
                 if (constant.Value is int value)
