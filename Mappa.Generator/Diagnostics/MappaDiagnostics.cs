@@ -128,25 +128,6 @@ internal static class MappaDiagnostics
             propertyOrParameterName);
 
     /// <summary>
-    /// Diagnostic to report the fact that it is not possible identify a suitable method to invoke.
-    /// </summary>
-    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
-    /// <param name="propertyOrParameterName">The name of the property or constructor parameter for which multiple mapping attributes have been defined.</param>
-    /// <param name="methodName">The name of the method to invoke.</param>
-    /// <param name="typeName">The type on which the method is being looked for.</param>
-    /// <returns>The diagnostic.</returns>
-    internal static Diagnostic CannotDetectSuitableMethodToInvokeForParameter(
-        MethodDeclarationSyntax methodDeclarationSyntax,
-        string propertyOrParameterName,
-        string methodName,
-        string typeName)
-        => CannotDetectSuitableMethodToInvokeForParameter(
-            methodDeclarationSyntax.GetLocation(),
-            propertyOrParameterName,
-            methodName,
-            typeName);
-
-    /// <summary>
     /// Diagnostic to report that a suitable method to invoke cannot be detected.
     /// </summary>
     /// <param name="location">The diagnostic location.</param>
@@ -169,17 +150,6 @@ internal static class MappaDiagnostics
     /// <summary>
     /// Diagnostic to report the fact that it is not possible identify a suitable type for the method to invoke.
     /// </summary>
-    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
-    /// <param name="type">The type that cannot be found.</param>
-    /// <returns>The diagnostic.</returns>
-    internal static Diagnostic CannotDetectType(
-        MethodDeclarationSyntax methodDeclarationSyntax,
-        string type)
-        => CannotDetectType(methodDeclarationSyntax.GetLocation(), type);
-
-    /// <summary>
-    /// Diagnostic to report the fact that it is not possible identify a suitable type for the method to invoke.
-    /// </summary>
     /// <param name="location">The diagnostic location.</param>
     /// <param name="type">The type that cannot be found.</param>
     /// <returns>The diagnostic.</returns>
@@ -190,17 +160,6 @@ internal static class MappaDiagnostics
             MappaDiagnosticDescriptors.CannotDetectType,
             location,
             type);
-
-    /// <summary>
-    /// Diagnostic to report the fact that it is not possible identify a suitable field or property.
-    /// </summary>
-    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
-    /// <param name="fieldName">The type that cannot be found.</param>
-    /// <returns>The diagnostic.</returns>
-    internal static Diagnostic CannotFindFieldOrProperty(
-        MethodDeclarationSyntax methodDeclarationSyntax,
-        string fieldName)
-        => CannotFindFieldOrProperty(methodDeclarationSyntax.GetLocation(), fieldName);
 
     /// <summary>
     /// Diagnostic to report the fact that it is not possible identify a suitable field or property.
@@ -548,29 +507,6 @@ internal static class MappaDiagnostics
             targetName,
             sourcePropertyName,
             conflictingAttributeName);
-
-    /// <summary>
-    /// Diagnostic to report that a <see cref="MappaUsePropertyAttribute"/> source property
-    /// will not be used because the invoked method does not require it.
-    /// </summary>
-    /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
-    /// <param name="methodName">The name of the method.</param>
-    /// <param name="targetName">The target property or constructor parameter name.</param>
-    /// <param name="sourcePropertyName">The source property name from MappaUseProperty.</param>
-    /// <param name="invokeMethodName">The name of the invoked method.</param>
-    /// <returns>The diagnostic.</returns>
-    internal static Diagnostic MappaUsePropertyNotUsedByInvokeMethod(
-        MethodDeclarationSyntax methodDeclarationSyntax,
-        string methodName,
-        string targetName,
-        string sourcePropertyName,
-        string invokeMethodName)
-        => MappaUsePropertyNotUsedByInvokeMethod(
-            methodDeclarationSyntax.GetLocation(),
-            methodName,
-            targetName,
-            sourcePropertyName,
-            invokeMethodName);
 
     /// <summary>
     /// Diagnostic to report that a <see cref="MappaUsePropertyAttribute"/> source property
