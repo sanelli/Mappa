@@ -153,7 +153,12 @@ if (-not $?)
 }
 
 New-Item -ItemType Directory -Name $MappaTestsAndCoveragePath > $null
-dotnet test -c Release --coverlet --coverlet-output-format cobertura --coverlet-exclude "[Moq]*" --report-xunit-html --report-xunit --report-xunit-filename mappa.test-results.xml --results-directory "$MappaTestsAndCoveragePath"
+# coverlet.MTP 10.1.0: restrict instrumentation to product assemblies. Without
+# --coverlet-include, solution-level runs instrument dependency assemblies and
+# crash with COMException/BadImageFormatException during async cleanup.
+# Include both [Mappa]* and [Mappa.Generator]* — coverlet assembly filters are
+# not prefix matches, so [Mappa]* alone does not cover Mappa.Generator.
+dotnet test -c Release --coverlet --coverlet-output-format cobertura --coverlet-include "[Mappa]*" --coverlet-include "[Mappa.Generator]*" --coverlet-exclude "[Moq]*" --report-xunit-html --report-xunit-xml --report-xunit-xml-filename mappa.test-results.xml --results-directory "$MappaTestsAndCoveragePath"
 if (-not $?)
 {
     Write-Host "Test failed" -ForegroundColor Red
