@@ -28,6 +28,16 @@ internal static class AttributeDataExtensions
     /// </summary>
     internal const string MappaDependencyInjectionAttributeFullName = "Mappa.Attributes.MappaDependencyInjectionAttribute";
 
+    /// <summary>
+    /// Metadata name for <c>Mappa.Attributes.MappaInterceptorAttribute</c>.
+    /// </summary>
+    internal const string MappaInterceptorAttributeFullName = "Mappa.Attributes.MappaInterceptorAttribute";
+
+    /// <summary>
+    /// Default interceptable method name when <see cref="MappaInterceptorAttributeFullName"/> omits a name.
+    /// </summary>
+    internal const string DefaultMappaInterceptorMethodName = "MappaMap";
+
     private const string MappaAfterMapAttributeFullName = "Mappa.Attributes.MappaAfterMapAttribute";
     private const string MappaBeforeMapAttributeFullName = "Mappa.Attributes.MappaBeforeMapAttribute";
     private const string MappaTransformerAttributeFullName = "Mappa.Attributes.MappaTransformerAttribute";
@@ -1322,6 +1332,54 @@ internal static class AttributeDataExtensions
         var attributeSymbol = compilation.GetTypeByMetadataName(MappaDependencyInjectionAttributeFullName);
         return attributes
             .Any(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, attributeSymbol));
+    }
+
+    /// <summary>
+    /// Returns <c>true</c> when <paramref name="attributes"/> contains
+    /// <c>Mappa.Attributes.MappaInterceptorAttribute</c>.
+    /// </summary>
+    /// <param name="attributes">The attributes.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>
+    /// <c>true</c> when <c>MappaInterceptorAttribute</c> is present; otherwise <c>false</c>.
+    /// </returns>
+    internal static bool HasMappaInterceptorAttribute(this ImmutableArray<AttributeData> attributes, Compilation compilation)
+    {
+        var attributeSymbol = compilation.GetTypeByMetadataName(MappaInterceptorAttributeFullName);
+        return attributes
+            .Any(attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, attributeSymbol));
+    }
+
+    /// <summary>
+    /// Gets the interceptable method name from <c>MappaInterceptorAttribute</c>, or
+    /// <see cref="DefaultMappaInterceptorMethodName"/> when absent or blank.
+    /// </summary>
+    /// <param name="attributes">The attributes.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <returns>The method name to emit as interceptable stubs.</returns>
+    internal static string GetMappaInterceptorMethodName(this ImmutableArray<AttributeData> attributes, Compilation compilation)
+    {
+        var attributeSymbol = compilation.GetTypeByMetadataName(MappaInterceptorAttributeFullName);
+        if (attributeSymbol is null)
+        {
+            return DefaultMappaInterceptorMethodName;
+        }
+
+        var attributeData = attributes.FirstOrDefault(
+            attribute => SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, attributeSymbol));
+        if (attributeData is null)
+        {
+            return DefaultMappaInterceptorMethodName;
+        }
+
+        if (attributeData.ConstructorArguments.Length >= 1
+            && attributeData.ConstructorArguments[0].Value is string methodName
+            && !string.IsNullOrWhiteSpace(methodName))
+        {
+            return methodName;
+        }
+
+        return DefaultMappaInterceptorMethodName;
     }
 
     /// <summary>

@@ -15,7 +15,9 @@ where `TSource` is the source type of the mapping and `TTarget` is the target ty
 
 ## Incremental discovery
 
-Both the mapper and dependency-injection pipelines use Roslyn `ForAttributeWithMetadataName` so only types that declare `[Mappa]` or `[MappaDependencyInjection]` are considered. Each provider predicate also requires a **`partial`** `ClassDeclarationSyntax`. Non-partial attributed classes are ignored by the syntax provider (no generation and no provider-driven diagnostics). See [Documentation/mappa-generator-algorithm.md — Incremental discovery](../Documentation/mappa-generator-algorithm.md#incremental-discovery) and [CancellationToken convention](../Documentation/mappa-generator-algorithm.md#cancellationtoken-convention).
+The mapper and dependency-injection pipelines use Roslyn `ForAttributeWithMetadataName` so only types that declare `[Mappa]` or `[MappaDependencyInjection]` are considered. Those provider predicates also require a **`partial`** `ClassDeclarationSyntax`. Non-partial attributed classes are ignored by those syntax providers (no generation and no provider-driven diagnostics). See [Documentation/mappa-generator-algorithm.md — Incremental discovery](../Documentation/mappa-generator-algorithm.md#incremental-discovery) and [CancellationToken convention](../Documentation/mappa-generator-algorithm.md#cancellationtoken-convention).
+
+A third pipeline discovers `[MappaInterceptor]` classes **without** requiring `partial` in the syntax predicate, so non-partial (and static) classes can receive diagnostics. Valid partial, non-static interceptor classes receive instance `MappaMap` (or renamed) stubs. Consumer projects must list mapper namespaces in `MappaInterceptorsNamespaces` (merged into `InterceptorsNamespaces` via the package `build`/`buildTransitive` props).
 
 ## Dependency injection registration
 

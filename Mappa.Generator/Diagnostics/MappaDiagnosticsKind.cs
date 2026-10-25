@@ -647,4 +647,49 @@ internal enum MappaDiagnosticsKind
     /// A projection map method uses null-substitute InvokeMethod mode.
     /// </summary>
     ProjectionMethodHasNullSubstituteInvokeMethod,
+
+    /// <summary>
+    /// <see cref="Mappa.Attributes.MappaInterceptorAttribute"/> is applied to a class that is not <c>partial</c>.
+    /// </summary>
+    MappaInterceptorClassIsNotPartial,
+
+    /// <summary>
+    /// <see cref="Mappa.Attributes.MappaInterceptorAttribute"/> is applied to a static class.
+    /// </summary>
+    MappaInterceptorClassIsStatic,
+
+    /// <summary>
+    /// A <c>With</c> argument on an interceptor call site is not a <c>new</c> object-creation expression.
+    /// </summary>
+    MappaInterceptorWithArgumentMustBeObjectCreation,
+
+    /// <summary>
+    /// Multiple <see cref="Mappa.Attributes.MappaSettingsAttribute"/> instances appear across collated <c>With</c> calls.
+    /// </summary>
+    MappaInterceptorMultipleSettings,
+
+    /// <summary>
+    /// Duplicate static dependency types appear across class and/or <c>With</c> declarations.
+    /// </summary>
+    MappaInterceptorDuplicateStaticDependencyType,
+
+    /// <summary>
+    /// Multiple instances of a method attribute with <c>AllowMultiple = false</c> appear across collated <c>With</c> calls.
+    /// </summary>
+    MappaInterceptorDuplicateNonMultipleAttribute,
+
+    /// <summary>
+    /// An attribute or feature is not supported on the interceptor mapping route.
+    /// </summary>
+    MappaInterceptorUnsupportedFeature,
+
+    /// <summary>
+    /// Interceptor mapping cannot target <c>IQueryable</c> / projection signatures.
+    /// </summary>
+    MappaInterceptorQueryableNotSupported,
+
+    /// <summary>
+    /// A <c>With</c> method-attributes array contains a type that does not implement <c>IMappaMethodAttribute</c>.
+    /// </summary>
+    MappaInterceptorInvalidMethodAttributeType,
 }

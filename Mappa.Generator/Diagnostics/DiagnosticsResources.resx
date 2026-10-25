@@ -375,4 +375,31 @@
     <data name="ProjectionMethodHasNullSubstituteInvokeMethod" xml:space="preserve">
         <value>Method '{0}': projection methods cannot use [MappaNullSubstitute] with InvokeMethod.</value>
     </data>
+    <data name="MappaInterceptorClassIsNotPartial" xml:space="preserve">
+        <value>Class '{0}' declares MappaInterceptor but is not partial; no interceptor stubs will be generated.</value>
+    </data>
+    <data name="MappaInterceptorClassIsStatic" xml:space="preserve">
+        <value>Class '{0}' declares MappaInterceptor but is static; instance MappaMap stubs require a non-static class.</value>
+    </data>
+    <data name="MappaInterceptorWithArgumentMustBeObjectCreation" xml:space="preserve">
+        <value>Interceptor With argument must be a new object-creation expression (or a collection of new expressions); '{0}' is not supported.</value>
+    </data>
+    <data name="MappaInterceptorMultipleSettings" xml:space="preserve">
+        <value>Multiple MappaSettings instances were supplied via With on an interceptor call site; settings are merged in source order.</value>
+    </data>
+    <data name="MappaInterceptorDuplicateStaticDependencyType" xml:space="preserve">
+        <value>Duplicate MappaStaticDependency type '{0}' was declared for an interceptor map; only one declaration is kept.</value>
+    </data>
+    <data name="MappaInterceptorDuplicateNonMultipleAttribute" xml:space="preserve">
+        <value>Attribute '{0}' does not allow multiple instances but appears more than once across With configuration for an interceptor map.</value>
+    </data>
+    <data name="MappaInterceptorUnsupportedFeature" xml:space="preserve">
+        <value>Feature or attribute '{0}' is not supported on the MappaInterceptor mapping route.</value>
+    </data>
+    <data name="MappaInterceptorQueryableNotSupported" xml:space="preserve">
+        <value>IQueryable and projection mappings are not supported on the MappaInterceptor mapping route.</value>
+    </data>
+    <data name="MappaInterceptorInvalidMethodAttributeType" xml:space="preserve">
+        <value>Type '{0}' in the With method-attributes list does not implement IMappaMethodAttribute.</value>
+    </data>
 </root>

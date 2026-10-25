@@ -2048,6 +2048,126 @@ internal static class MappaDiagnostics
             location,
             methodName);
 
+    /// <summary>
+    /// Diagnostic to report that <see cref="Mappa.Attributes.MappaInterceptorAttribute"/>
+    /// is applied to a non-<c>partial</c> class.
+    /// </summary>
+    /// <param name="classDeclarationSyntax">The class declaration syntax.</param>
+    /// <param name="className">The class name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappaInterceptorClassIsNotPartial(
+        ClassDeclarationSyntax? classDeclarationSyntax,
+        string className)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappaInterceptorClassIsNotPartial,
+            GetSyntaxLocation(classDeclarationSyntax),
+            className);
+
+    /// <summary>
+    /// Diagnostic to report that <see cref="Mappa.Attributes.MappaInterceptorAttribute"/>
+    /// is applied to a static class.
+    /// </summary>
+    /// <param name="classDeclarationSyntax">The class declaration syntax.</param>
+    /// <param name="className">The class name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappaInterceptorClassIsStatic(
+        ClassDeclarationSyntax? classDeclarationSyntax,
+        string className)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappaInterceptorClassIsStatic,
+            GetSyntaxLocation(classDeclarationSyntax),
+            className);
+
+    /// <summary>
+    /// Diagnostic to report that a <c>With</c> argument is not a <c>new</c> expression.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="argumentDescription">A short description of the unsupported argument.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappaInterceptorWithArgumentMustBeObjectCreation(
+        Location? location,
+        string argumentDescription)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappaInterceptorWithArgumentMustBeObjectCreation,
+            location,
+            argumentDescription);
+
+    /// <summary>
+    /// Diagnostic to report multiple settings across collated <c>With</c> calls.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappaInterceptorMultipleSettings(Location? location)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappaInterceptorMultipleSettings,
+            location);
+
+    /// <summary>
+    /// Diagnostic to report a duplicate static dependency type.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="dependencyTypeName">The dependency type display name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappaInterceptorDuplicateStaticDependencyType(
+        Location? location,
+        string dependencyTypeName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappaInterceptorDuplicateStaticDependencyType,
+            location,
+            dependencyTypeName);
+
+    /// <summary>
+    /// Diagnostic to report a duplicate <c>AllowMultiple = false</c> attribute.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="attributeTypeName">The attribute type display name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappaInterceptorDuplicateNonMultipleAttribute(
+        Location? location,
+        string attributeTypeName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappaInterceptorDuplicateNonMultipleAttribute,
+            location,
+            attributeTypeName);
+
+    /// <summary>
+    /// Diagnostic to report an unsupported interceptor feature or attribute.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="featureOrAttributeName">The unsupported feature or attribute name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappaInterceptorUnsupportedFeature(
+        Location? location,
+        string featureOrAttributeName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappaInterceptorUnsupportedFeature,
+            location,
+            featureOrAttributeName);
+
+    /// <summary>
+    /// Diagnostic to report that IQueryable / projection is not supported on the interceptor route.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappaInterceptorQueryableNotSupported(Location? location)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappaInterceptorQueryableNotSupported,
+            location);
+
+    /// <summary>
+    /// Diagnostic to report an invalid type in the <c>With</c> method-attributes list.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="typeName">The invalid type display name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappaInterceptorInvalidMethodAttributeType(
+        Location? location,
+        string typeName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappaInterceptorInvalidMethodAttributeType,
+            location,
+            typeName);
+
     private static Location? GetSyntaxLocation(SyntaxNode? syntaxNode)
         => syntaxNode?.GetLocation();
 }
