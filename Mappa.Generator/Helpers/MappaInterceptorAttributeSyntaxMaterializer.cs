@@ -120,6 +120,52 @@ internal static class MappaInterceptorAttributeSyntaxMaterializer
             case "Mappa.Attributes.MappaAssignFromConstantAttribute"
                 when ctorArgs.Length == 2 && ctorArgs[0] is string constantTarget:
                 return new MappaAssignFromConstantAttribute(constantTarget, ctorArgs[1]);
+            case "Mappa.Attributes.MappaAssignToContextAttribute"
+                when ctorArgs.Length == 2 && ctorArgs[0] is string contextKey && ctorArgs[1] is string contextTarget:
+                return new MappaAssignToContextAttribute(contextKey, contextTarget);
+            case "Mappa.Attributes.MappaNullSubstituteAttribute"
+                when ctorArgs.Length == 1 && ctorArgs[0] is string nullSubstituteTarget:
+                return MaterializeNullSubstituteAttribute(
+                    creation,
+                    nullSubstituteTarget,
+                    semanticModel,
+                    cancellationToken);
+            case "Mappa.Attributes.MappaInvokeMethodAttribute"
+                when ctorArgs.Length == 2 && ctorArgs[0] is string invokeTarget && ctorArgs[1] is string invokeMethod:
+                return MaterializeInvokeMethodAttribute(
+                    creation,
+                    invokeTarget,
+                    invokeMethod,
+                    fieldName: null,
+                    semanticModel,
+                    cancellationToken);
+            case "Mappa.Attributes.MappaInvokeMethodAttribute"
+                when ctorArgs.Length == 3
+                     && ctorArgs[0] is string invokeTargetWithField
+                     && ctorArgs[1] is string invokeField
+                     && ctorArgs[2] is string invokeMethodWithField:
+                return MaterializeInvokeMethodAttribute(
+                    creation,
+                    invokeTargetWithField,
+                    invokeMethodWithField,
+                    invokeField,
+                    semanticModel,
+                    cancellationToken);
+            case "Mappa.Attributes.MappaBeforeMapAttribute"
+                when ctorArgs.Length == 1 && ctorArgs[0] is string beforeMapMethod:
+                return new MappaBeforeMapAttribute(beforeMapMethod);
+            case "Mappa.Attributes.MappaBeforeMapAttribute"
+                when ctorArgs.Length == 2 && ctorArgs[0] is string beforeField && ctorArgs[1] is string beforeMethod:
+                return new MappaBeforeMapAttribute(beforeField, beforeMethod);
+            case "Mappa.Attributes.MappaAfterMapAttribute"
+                when ctorArgs.Length == 1 && ctorArgs[0] is string afterMapMethod:
+                return new MappaAfterMapAttribute(afterMapMethod);
+            case "Mappa.Attributes.MappaAfterMapAttribute"
+                when ctorArgs.Length == 2 && ctorArgs[0] is string afterField && ctorArgs[1] is string afterMethod:
+                return new MappaAfterMapAttribute(afterField, afterMethod);
+            case "Mappa.Attributes.MappaApplyTransformerAttribute"
+                when ctorArgs.Length == 1 && ctorArgs[0] is string applyTransformerMethod:
+                return new MappaApplyTransformerAttribute(applyTransformerMethod);
             case "Mappa.Attributes.MappaIgnoreAttribute":
                 return new MappaIgnoreAttribute();
             case "Mappa.Attributes.MappaTransformerAttribute":
@@ -127,9 +173,19 @@ internal static class MappaInterceptorAttributeSyntaxMaterializer
             case "Mappa.Attributes.MappaAllowInaccessibleSourceMembersAttribute"
                 when ctorArgs.Length == 0:
                 return new MappaAllowInaccessibleSourceMembersAttribute();
+            case "Mappa.Attributes.MappaAllowInaccessibleSourceMembersAttribute"
+                when ctorArgs.All(static arg => arg is string):
+                return new MappaAllowInaccessibleSourceMembersAttribute(ctorArgs.Cast<string>().ToArray());
             case "Mappa.Attributes.MappaAllowInaccessibleTargetMembersAttribute"
                 when ctorArgs.Length == 0:
-                return new MappaAllowInaccessibleTargetMembersAttribute();
+                return MaterializeAllowInaccessibleTargetMembersAttribute(creation, semanticModel, cancellationToken);
+            case "Mappa.Attributes.MappaAllowInaccessibleTargetMembersAttribute"
+                when ctorArgs.All(static arg => arg is string):
+                return MaterializeAllowInaccessibleTargetMembersAttribute(
+                    creation,
+                    semanticModel,
+                    cancellationToken,
+                    ctorArgs.Cast<string>().ToArray());
             case "Mappa.Attributes.MappaProjectionAttribute":
                 return MaterializeProjectionAttribute(creation, semanticModel, cancellationToken);
             default:
@@ -226,6 +282,128 @@ internal static class MappaInterceptorAttributeSyntaxMaterializer
             if (TryGetConstant(assignment.Right, semanticModel, cancellationToken) is int enabled)
             {
                 attribute.Enabled = (BooleanSetting)enabled;
+            }
+        }
+
+        return attribute;
+    }
+
+    private static MappaNullSubstituteAttribute MaterializeNullSubstituteAttribute(
+        ObjectCreationExpressionSyntax creation,
+        string targetPropertyName,
+        SemanticModel semanticModel,
+        CancellationToken cancellationToken)
+    {
+        var attribute = new MappaNullSubstituteAttribute(targetPropertyName);
+        if (creation.Initializer is null)
+        {
+            return attribute;
+        }
+
+        foreach (var expression in creation.Initializer.Expressions)
+        {
+            if (expression is not AssignmentExpressionSyntax assignment
+                || assignment.Left is not IdentifierNameSyntax propertyName)
+            {
+                continue;
+            }
+
+            var name = propertyName.Identifier.Text;
+            if (name.Equals(nameof(MappaNullSubstituteAttribute.AssignValue), StringComparison.Ordinal))
+            {
+                attribute.AssignValue = TryGetConstant(assignment.Right, semanticModel, cancellationToken);
+                attribute.HasAssignValue = true;
+            }
+            else if (name.Equals(nameof(MappaNullSubstituteAttribute.SourcePropertyName), StringComparison.Ordinal)
+                     && TryGetConstant(assignment.Right, semanticModel, cancellationToken) is string sourcePropertyName)
+            {
+                attribute.SourcePropertyName = sourcePropertyName;
+            }
+            else if (name.Equals(nameof(MappaNullSubstituteAttribute.InvokeMethod), StringComparison.Ordinal)
+                     && TryGetConstant(assignment.Right, semanticModel, cancellationToken) is string invokeMethod)
+            {
+                attribute.InvokeMethod = invokeMethod;
+            }
+        }
+
+        return attribute;
+    }
+
+    private static MappaInvokeMethodAttribute MaterializeInvokeMethodAttribute(
+        ObjectCreationExpressionSyntax creation,
+        string targetPropertyName,
+        string methodName,
+        string? fieldName,
+        SemanticModel semanticModel,
+        CancellationToken cancellationToken)
+    {
+        var attribute = fieldName is null
+            ? new MappaInvokeMethodAttribute(targetPropertyName, methodName)
+            : new MappaInvokeMethodAttribute(targetPropertyName, fieldName, methodName);
+
+        if (creation.Initializer is null)
+        {
+            return attribute;
+        }
+
+        foreach (var expression in creation.Initializer.Expressions)
+        {
+            if (expression is not AssignmentExpressionSyntax assignment
+                || assignment.Left is not IdentifierNameSyntax propertyName
+                || !propertyName.Identifier.Text.Equals(
+                    nameof(MappaInvokeMethodAttribute.SourcePropertyName),
+                    StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            if (TryGetConstant(assignment.Right, semanticModel, cancellationToken) is string sourcePropertyName)
+            {
+                attribute.SourcePropertyName = sourcePropertyName;
+            }
+        }
+
+        return attribute;
+    }
+
+    private static MappaAllowInaccessibleTargetMembersAttribute MaterializeAllowInaccessibleTargetMembersAttribute(
+        ObjectCreationExpressionSyntax creation,
+        SemanticModel semanticModel,
+        CancellationToken cancellationToken,
+        string[]? memberNames = null)
+    {
+        var attribute = memberNames is null
+            ? new MappaAllowInaccessibleTargetMembersAttribute()
+            : new MappaAllowInaccessibleTargetMembersAttribute(memberNames);
+
+        if (creation.Initializer is null)
+        {
+            return attribute;
+        }
+
+        foreach (var expression in creation.Initializer.Expressions)
+        {
+            if (expression is not AssignmentExpressionSyntax assignment
+                || assignment.Left is not IdentifierNameSyntax identifier)
+            {
+                continue;
+            }
+
+            var propertyName = identifier.Identifier.Text;
+            if (propertyName.Equals(nameof(MappaAllowInaccessibleTargetMembersAttribute.AllowFields), StringComparison.Ordinal)
+                && TryGetConstant(assignment.Right, semanticModel, cancellationToken) is bool allowFields)
+            {
+                attribute.AllowFields = allowFields;
+            }
+            else if (propertyName.Equals(nameof(MappaAllowInaccessibleTargetMembersAttribute.AllowProperties), StringComparison.Ordinal)
+                     && TryGetConstant(assignment.Right, semanticModel, cancellationToken) is bool allowProperties)
+            {
+                attribute.AllowProperties = allowProperties;
+            }
+            else if (propertyName.Equals(nameof(MappaAllowInaccessibleTargetMembersAttribute.AllowConstructors), StringComparison.Ordinal)
+                     && TryGetConstant(assignment.Right, semanticModel, cancellationToken) is bool allowConstructors)
+            {
+                attribute.AllowConstructors = allowConstructors;
             }
         }
 

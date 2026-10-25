@@ -785,18 +785,25 @@ internal sealed partial class ConstructorMapStrategyDetector
         strategy = new NoMapStrategy(targetType, null!);
 
         var mapMethod = this.GetAttributeMapMethod();
-        var mapMethodMethodDeclarationSyntax = mapMethod.MethodDeclarationSyntax ?? throw new MappaGeneratorException("Method declaration syntax has not been defined.");
-
         var rootMapMethod = this.context.GetRootMapMethod();
         if (rootMapMethod.ProvideMappaContextWhenInvoked())
         {
             sourceProperty = null; // Ignore any input property.
             strategy = new MappaAssignFromContextAttributeStrategy(targetType, attribute, rootMapMethod.GetMappaContextParameterName());
+            return;
+        }
+
+        if (mapMethod.MethodDeclarationSyntax is not null)
+        {
+            this.context.ReportDiagnostic(MappaDiagnostics.CannotUseMappaAssignFromContextAttributeWithoutContextParameter(
+                mapMethod.MethodDeclarationSyntax,
+                targetName));
         }
         else
         {
-            this.context.ReportDiagnostic(MappaDiagnostics.CannotUseMappaAssignFromContextAttributeWithoutContextParameter(
-                mapMethodMethodDeclarationSyntax,
+            this.context.ReportDiagnostic(Diagnostic.Create(
+                MappaDiagnosticDescriptors.CannotUseMappaAssignFromContextAttributeWithoutContextParameter,
+                mapMethod.Location,
                 targetName));
         }
     }

@@ -142,10 +142,26 @@ internal sealed class GeneratedResultsAssertions
     /// </summary>
     /// <returns>The syntax tree assertions instance.</returns>
     public CompilationUnitSyntaxAssertions WithGeneratedCompilationUnit()
+        => this.WithGeneratedCompilationUnit(hintNameContains: null);
+
+    /// <summary>
+    /// Gets assertions for a generated source selected by hint-name substring.
+    /// </summary>
+    /// <param name="hintNameContains">
+    /// Optional substring matched against generated hint names; when <see langword="null"/>,
+    /// exactly one generated source is required.
+    /// </param>
+    /// <returns>The syntax tree assertions instance.</returns>
+    public CompilationUnitSyntaxAssertions WithGeneratedCompilationUnit(string? hintNameContains)
     {
         var runResult = this.HaveOneResult();
-        runResult.GeneratedSources.Should().ContainSingle();
-        var syntaxTree = runResult.GeneratedSources[0].SyntaxTree;
+        var generatedSource = hintNameContains is null
+            ? runResult.GeneratedSources.Should().ContainSingle().Subject
+            : runResult.GeneratedSources.Should()
+                .ContainSingle(source => source.HintName.Contains(hintNameContains, StringComparison.Ordinal))
+                .Subject;
+
+        var syntaxTree = generatedSource.SyntaxTree;
         var compilationTree = this.Subject.OutputCompilation.SyntaxTrees
             .FirstOrDefault(tree => tree.FilePath == syntaxTree.FilePath)
             ?? syntaxTree;

@@ -228,6 +228,7 @@ internal sealed class MappaInterceptorFileBuilder
 
         using (builder.NullableDirective(interceptorMethod.NullableEnabled))
         using (builder.CurlyBracesBlock())
+        using (mappaBuilderContext.PushMapMethod(mapMethod))
         {
             builder.AppendLine($"var {TypedSourceParameterName} = ({sourceTypeName})source;");
 

@@ -126,6 +126,80 @@ internal sealed class MappaInterceptorGeneratorAlgorithm
                string.Equals(mapMethod.MethodName, methodName, StringComparison.Ordinal))
            || classContext.ClassSymbol.GetMembers(methodName).Length > 0;
 
+    private static MapHookAttributeData[] GetMethodBeforeMapAttributes(MapMethod mapMethod, Compilation compilation)
+    {
+        if (mapMethod.MethodSymbol is not null)
+        {
+            return mapMethod.MethodSymbol.GetAttributes().GetMappaBeforeMapAttributes(compilation);
+        }
+
+        return
+        [
+            .. mapMethod.GetAttributes<MappaBeforeMapAttribute>()
+                .Select(attribute => new MapHookAttributeData(
+                    attribute.MethodName,
+                    attribute.ClassType,
+                    attribute.FieldName,
+                    mapMethod.Location)),
+        ];
+    }
+
+    private static MapHookAttributeData[] GetMethodAfterMapAttributes(MapMethod mapMethod, Compilation compilation)
+    {
+        if (mapMethod.MethodSymbol is not null)
+        {
+            return mapMethod.MethodSymbol.GetAttributes().GetMappaAfterMapAttributes(compilation);
+        }
+
+        return
+        [
+            .. mapMethod.GetAttributes<MappaAfterMapAttribute>()
+                .Select(attribute => new MapHookAttributeData(
+                    attribute.MethodName,
+                    attribute.ClassType,
+                    attribute.FieldName,
+                    mapMethod.Location)),
+        ];
+    }
+
+    private static ImmutableArray<(MappaInterceptorCallSite CallSite, MapMethod MapMethod)> RegisterSyntheticInterceptorMethods(
+        MappaClassGeneratorContext classContext,
+        ImmutableArray<MappaInterceptorCallSite> callSites)
+    {
+        var results = ImmutableArray.CreateBuilder<(MappaInterceptorCallSite CallSite, MapMethod MapMethod)>();
+        var interceptorIndex = 0;
+
+        foreach (var callSite in callSites)
+        {
+            if (callSite.HasErrors || callSite.InterceptableLocation is null)
+            {
+                continue;
+            }
+
+            var methodName = AllocateInterceptorMethodName(classContext, interceptorIndex++);
+            var mapMethod = MapMethod.CreateSynthetic(
+                methodName,
+                callSite.SourceType,
+                callSite.TargetType,
+                classContext.ClassSymbol,
+                classContext.IsNullableEnabled(callSite.Invocation),
+                isStatic: false,
+                sourceParameterName: TypedSourceParameterName,
+                mappaContextParameterName: callSite.HasContext ? ContextParameterName : null,
+                location: callSite.Invocation.GetLocation(),
+                attributes: callSite.MethodAttributes.ToArray());
+
+            if (!classContext.TryAddMethod(mapMethod))
+            {
+                continue;
+            }
+
+            results.Add((callSite, mapMethod));
+        }
+
+        return results.ToImmutable();
+    }
+
     private void ExecuteForSingleClass(ClassDeclarationSyntax classDeclarationSyntax, CancellationToken cancellationToken)
     {
         var classSymbol = this.ResolveClassSymbol(classDeclarationSyntax, cancellationToken);
@@ -168,6 +242,11 @@ internal sealed class MappaInterceptorGeneratorAlgorithm
 
         var hasMappaAttribute = attributes.HasMappaAttribute(this.Compilation);
         var staticDependencyTypes = CollectStaticDependencyTypes(attributes, callSites, this.Compilation);
+
+        // Register interceptor synthetics before dependency collection so same-signature
+        // helpers (static deps / dual-[Mappa] wrappers) cannot block TryAddMethod.
+        var pendingInterceptorMethods = RegisterSyntheticInterceptorMethods(classContext, callSites);
+
         MappaInterceptorDependencyCollector.Collect(
             classContext,
             this.Compilation,
@@ -179,7 +258,7 @@ internal sealed class MappaInterceptorGeneratorAlgorithm
         var interceptorMethods = this.BuildInterceptorMethods(
             classContext,
             options,
-            callSites,
+            pendingInterceptorMethods,
             cancellationToken);
 
         foreach (var diagnostic in classContext.Diagnostics)
@@ -200,7 +279,7 @@ internal sealed class MappaInterceptorGeneratorAlgorithm
     private ImmutableArray<MappaInterceptorGeneratedMethod> BuildInterceptorMethods(
         MappaClassGeneratorContext classContext,
         MappaGlobalOptions options,
-        ImmutableArray<MappaInterceptorCallSite> callSites,
+        ImmutableArray<(MappaInterceptorCallSite CallSite, MapMethod MapMethod)> pendingInterceptorMethods,
         CancellationToken cancellationToken)
     {
         var results = ImmutableArray.CreateBuilder<MappaInterceptorGeneratedMethod>();
@@ -211,42 +290,18 @@ internal sealed class MappaInterceptorGeneratorAlgorithm
         var classSettings = classAttributes.GetMappaSettingsAttribute(this.Compilation);
         var mappaUserSettings = new MappaUserSettings(options);
         var valueTransformerResolver = new ValueTransformerResolver(this.Compilation, classContext);
-        var interceptorIndex = 0;
 
         using (mappaUserSettings.Apply(classSettings))
         {
-            foreach (var callSite in callSites)
+            foreach (var (callSite, mapMethod) in pendingInterceptorMethods)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                if (callSite.HasErrors || callSite.InterceptableLocation is null)
-                {
-                    continue;
-                }
 
                 var withSettingsDisposables = callSite.Settings
                     .Select(mappaUserSettings.Apply)
                     .ToArray();
                 try
                 {
-                    var methodName = AllocateInterceptorMethodName(classContext, interceptorIndex++);
-                    var methodAttributes = callSite.MethodAttributes.ToArray();
-                    var mapMethod = MapMethod.CreateSynthetic(
-                        methodName,
-                        callSite.SourceType,
-                        callSite.TargetType,
-                        classContext.ClassSymbol,
-                        classContext.IsNullableEnabled(callSite.Invocation),
-                        isStatic: false,
-                        sourceParameterName: TypedSourceParameterName,
-                        mappaContextParameterName: callSite.HasContext ? ContextParameterName : null,
-                        location: callSite.Invocation.GetLocation(),
-                        attributes: methodAttributes);
-
-                    if (!classContext.TryAddMethod(mapMethod))
-                    {
-                        continue;
-                    }
-
                     this.GenerateStrategiesUntilStable(
                         classContext,
                         mappaUserSettings,
@@ -263,7 +318,7 @@ internal sealed class MappaInterceptorGeneratorAlgorithm
 
                     results.Add(new MappaInterceptorGeneratedMethod(
                         mapMethod,
-                        callSite.InterceptableLocation,
+                        callSite.InterceptableLocation!,
                         mapMethod.NullableEnabled));
                 }
                 finally
@@ -302,6 +357,8 @@ internal sealed class MappaInterceptorGeneratorAlgorithm
 
                 var methodAttributes = mapMethod.MethodSymbol?.GetAttributes() ?? [];
                 var methodObjectFactoryAttributes = methodAttributes.GetMappaObjectFactoryAttributes(this.Compilation);
+                var methodBeforeMapAttributes = GetMethodBeforeMapAttributes(mapMethod, this.Compilation);
+                var methodAfterMapAttributes = GetMethodAfterMapAttributes(mapMethod, this.Compilation);
                 var mappaSettingsAttribute = mapMethod.GetAttribute<MappaSettingsAttribute>();
                 using (mappaUserSettings.Apply(mappaSettingsAttribute))
                 {
@@ -351,10 +408,10 @@ internal sealed class MappaInterceptorGeneratorAlgorithm
                     var mapHookResolver = new MapHookResolver(this.Compilation, classContext, mapMethod);
                     var beforeMapHooks = mapHookResolver.ResolveBeforeMapHooks(
                         classBeforeMapAttributes,
-                        methodAttributes.GetMappaBeforeMapAttributes(this.Compilation));
+                        methodBeforeMapAttributes);
                     var afterMapHooks = mapHookResolver.ResolveAfterMapHooks(
                         classAfterMapAttributes,
-                        methodAttributes.GetMappaAfterMapAttributes(this.Compilation));
+                        methodAfterMapAttributes);
                     var methodParameterMapStrategy = new MethodParameterMapStrategy(
                         strategy,
                         beforeMapHooks,
