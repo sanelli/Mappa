@@ -59,3 +59,5 @@ If you add or change a feature that maps, selects, ignores, or documents a **sou
 3. Update tutorial / attributes / algorithm / features docs so “property” wording does not imply fields are unsupported.
 
 **Out of scope for this parity rule (already separate):** mapper-side fields for `[MappaDependency]` / hooks / factories; `IdentityMapDeepCopy` nested field walking.
+
+Interceptor call sites configured with `With` obey the same property/field settings as classic map methods. New member-facing features must also satisfy [interceptor route parity](mappa-interceptor-route-parity.mdc).

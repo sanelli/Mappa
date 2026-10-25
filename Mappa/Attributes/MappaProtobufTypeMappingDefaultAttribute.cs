@@ -10,7 +10,7 @@ namespace Mappa.Attributes;
 /// If this attribute is not specified the generator assumes <see cref="MappaProtobufTypeMappingDefaultBehavior.Throw"/>.
 /// </summary>
 [AttributeUsage(AttributeTargets.Method)]
-public sealed class MappaProtobufTypeMappingDefaultAttribute : Attribute
+public sealed class MappaProtobufTypeMappingDefaultAttribute : Attribute, IMappaMethodAttribute
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaProtobufTypeMappingDefaultAttribute"/> class

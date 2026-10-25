@@ -21,7 +21,7 @@ namespace Mappa.Attributes;
 /// </summary>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
 public sealed class MappaMustMapTargetPropertyAttribute
-    : Attribute
+    : Attribute, IMappaMethodAttribute
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaMustMapTargetPropertyAttribute"/> class

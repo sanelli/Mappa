@@ -13,6 +13,8 @@
         <AnalysisLevel>latest-all</AnalysisLevel>
         <WarningsNotAsErrors>MP00000</WarningsNotAsErrors>
         <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+        <MappaInterceptorsNamespaces>Mappa.Samples</MappaInterceptorsNamespaces>
+        <InterceptorsNamespaces>$(InterceptorsNamespaces);Mappa.Samples</InterceptorsNamespaces>
     </PropertyGroup>
 
     <ItemGroup>

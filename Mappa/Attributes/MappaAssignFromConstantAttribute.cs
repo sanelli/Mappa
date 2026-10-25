@@ -20,7 +20,7 @@ namespace Mappa.Attributes;
 /// <param name="value">The constant value to assign.</param>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 public sealed class MappaAssignFromConstantAttribute(string targetPropertyName, object? value)
-        : Attribute, IMappaTargetPropertyNameAttribute
+        : Attribute, IMappaTargetPropertyNameAttribute, IMappaMethodAttribute
 {
     /// <summary>
     /// Gets the target property name, which may be a single name or a dot-separated chain of nested property names.

@@ -57,7 +57,7 @@ namespace Mappa.Attributes;
 /// </summary>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 public sealed class MappaInvokeMethodAttribute
-    : Attribute, IMappaTargetPropertyNameAttribute
+    : Attribute, IMappaTargetPropertyNameAttribute, IMappaMethodAttribute
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaInvokeMethodAttribute"/> class.

@@ -34,4 +34,4 @@ namespace Mappa.Attributes;
 /// </summary>
 [AttributeUsage(AttributeTargets.Method)]
 public sealed class MappaTransformerAttribute
-    : Attribute;
+    : Attribute, IMappaMethodAttribute;

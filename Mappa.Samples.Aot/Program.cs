@@ -65,6 +65,9 @@ internal static class Program
         BsonWellKnownTypesMapperRunner.Run(report);
         OneOfWellKnownTypesMapperRunner.Run(report);
         MappaIgnoreMappersRunner.Run(report);
+        MappaInterceptorStrategyMapperRunner.Run(report);
+        MappaInterceptorAttributeMapperRunner.Run(report);
+        MappaInterceptorDependencyMapperRunner.Run(report);
         MappaObjectFactoryMapperRunner.Run(report);
         MappaIgnoreTargetPropertyAttributeMapperRunner.Run(report);
         MappaMustMapTargetPropertyAttributeMapperRunner.Run(report);

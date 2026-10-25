@@ -25,7 +25,7 @@ namespace Mappa.Attributes;
 /// <param name="sourcePropertyName">The name of the source property, or a dot-separated chain of nested source property names.</param>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 public sealed class MappaUsePropertyAttribute(string targetPropertyName, string sourcePropertyName)
-        : Attribute
+        : Attribute, IMappaMethodAttribute
 {
     /// <summary>
     /// Gets the target property name, which may be a single name or a dot-separated chain of nested property names.

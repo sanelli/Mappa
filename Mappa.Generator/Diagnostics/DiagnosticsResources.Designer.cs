@@ -758,5 +758,59 @@ namespace Mappa.Generator.Diagnostics {
                 return ResourceManager.GetString("ProjectionMethodHasNullSubstituteInvokeMethod", resourceCulture);
             }
         }
+
+        internal static string MappaInterceptorClassIsNotPartial {
+            get {
+                return ResourceManager.GetString("MappaInterceptorClassIsNotPartial", resourceCulture);
+            }
+        }
+
+        internal static string MappaInterceptorClassIsStatic {
+            get {
+                return ResourceManager.GetString("MappaInterceptorClassIsStatic", resourceCulture);
+            }
+        }
+
+        internal static string MappaInterceptorWithArgumentMustBeObjectCreation {
+            get {
+                return ResourceManager.GetString("MappaInterceptorWithArgumentMustBeObjectCreation", resourceCulture);
+            }
+        }
+
+        internal static string MappaInterceptorMultipleSettings {
+            get {
+                return ResourceManager.GetString("MappaInterceptorMultipleSettings", resourceCulture);
+            }
+        }
+
+        internal static string MappaInterceptorDuplicateStaticDependencyType {
+            get {
+                return ResourceManager.GetString("MappaInterceptorDuplicateStaticDependencyType", resourceCulture);
+            }
+        }
+
+        internal static string MappaInterceptorDuplicateNonMultipleAttribute {
+            get {
+                return ResourceManager.GetString("MappaInterceptorDuplicateNonMultipleAttribute", resourceCulture);
+            }
+        }
+
+        internal static string MappaInterceptorUnsupportedFeature {
+            get {
+                return ResourceManager.GetString("MappaInterceptorUnsupportedFeature", resourceCulture);
+            }
+        }
+
+        internal static string MappaInterceptorQueryableNotSupported {
+            get {
+                return ResourceManager.GetString("MappaInterceptorQueryableNotSupported", resourceCulture);
+            }
+        }
+
+        internal static string MappaInterceptorInvalidMethodAttributeType {
+            get {
+                return ResourceManager.GetString("MappaInterceptorInvalidMethodAttributeType", resourceCulture);
+            }
+        }
     }
 }

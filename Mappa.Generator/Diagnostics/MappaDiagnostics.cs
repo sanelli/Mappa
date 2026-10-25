@@ -47,10 +47,19 @@ internal static class MappaDiagnostics
     /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
     /// <returns>The diagnostic.</returns>
     internal static Diagnostic MethodIsVoid(MethodDeclarationSyntax methodDeclarationSyntax)
+        => MethodIsVoid(methodDeclarationSyntax.GetLocation(), methodDeclarationSyntax.Identifier.ToFullString());
+
+    /// <summary>
+    /// Diagnostic to report that a mapping target type is <c>void</c>.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="methodName">The map method name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MethodIsVoid(Location? location, string methodName)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.MethodIsVoid,
-            methodDeclarationSyntax.GetLocation(),
-            methodDeclarationSyntax.Identifier.ToFullString());
+            location,
+            methodName);
 
     /// <summary>
     /// Diagnostic to report the fact that the method described by syntax
@@ -60,10 +69,19 @@ internal static class MappaDiagnostics
     /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
     /// <returns>The diagnostic.</returns>
     internal static Diagnostic MethodReturnsTaskType(MethodDeclarationSyntax methodDeclarationSyntax)
+        => MethodReturnsTaskType(methodDeclarationSyntax.GetLocation(), methodDeclarationSyntax.Identifier.ToFullString());
+
+    /// <summary>
+    /// Diagnostic to report that a mapping target type is a task type.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="methodName">The map method name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MethodReturnsTaskType(Location? location, string methodName)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.MethodReturnsTaskType,
-            methodDeclarationSyntax.GetLocation(),
-            methodDeclarationSyntax.Identifier.ToFullString());
+            location,
+            methodName);
 
     /// <summary>
     /// Diagnostic to report the fact that a method cannot be generated because a
@@ -122,9 +140,28 @@ internal static class MappaDiagnostics
         string propertyOrParameterName,
         string methodName,
         string typeName)
+        => CannotDetectSuitableMethodToInvokeForParameter(
+            methodDeclarationSyntax.GetLocation(),
+            propertyOrParameterName,
+            methodName,
+            typeName);
+
+    /// <summary>
+    /// Diagnostic to report that a suitable method to invoke cannot be detected.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="propertyOrParameterName">The target property or parameter name.</param>
+    /// <param name="methodName">The method name to invoke.</param>
+    /// <param name="typeName">The type used for lookup.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic CannotDetectSuitableMethodToInvokeForParameter(
+        Location? location,
+        string propertyOrParameterName,
+        string methodName,
+        string typeName)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.CannotDetectSuitableMethodToInvokeForParameter,
-            methodDeclarationSyntax.GetLocation(),
+            location,
             methodName,
             typeName,
             propertyOrParameterName);
@@ -528,9 +565,32 @@ internal static class MappaDiagnostics
         string targetName,
         string sourcePropertyName,
         string invokeMethodName)
+        => MappaUsePropertyNotUsedByInvokeMethod(
+            methodDeclarationSyntax.GetLocation(),
+            methodName,
+            targetName,
+            sourcePropertyName,
+            invokeMethodName);
+
+    /// <summary>
+    /// Diagnostic to report that a <see cref="MappaUsePropertyAttribute"/> source property
+    /// is not used by the invoke method.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="methodName">The name of the method.</param>
+    /// <param name="targetName">The target property or constructor parameter name.</param>
+    /// <param name="sourcePropertyName">The source property name.</param>
+    /// <param name="invokeMethodName">The invoke method name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappaUsePropertyNotUsedByInvokeMethod(
+        Location? location,
+        string methodName,
+        string targetName,
+        string sourcePropertyName,
+        string invokeMethodName)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.MappaUsePropertyNotUsedByInvokeMethod,
-            methodDeclarationSyntax.GetLocation(),
+            location,
             methodName,
             targetName,
             sourcePropertyName,
@@ -2047,6 +2107,126 @@ internal static class MappaDiagnostics
             MappaDiagnosticDescriptors.ProjectionMethodHasNullSubstituteInvokeMethod,
             location,
             methodName);
+
+    /// <summary>
+    /// Diagnostic to report that <see cref="Mappa.Attributes.MappaInterceptorAttribute"/>
+    /// is applied to a non-<c>partial</c> class.
+    /// </summary>
+    /// <param name="classDeclarationSyntax">The class declaration syntax.</param>
+    /// <param name="className">The class name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappaInterceptorClassIsNotPartial(
+        ClassDeclarationSyntax? classDeclarationSyntax,
+        string className)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappaInterceptorClassIsNotPartial,
+            GetSyntaxLocation(classDeclarationSyntax),
+            className);
+
+    /// <summary>
+    /// Diagnostic to report that <see cref="Mappa.Attributes.MappaInterceptorAttribute"/>
+    /// is applied to a static class.
+    /// </summary>
+    /// <param name="classDeclarationSyntax">The class declaration syntax.</param>
+    /// <param name="className">The class name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappaInterceptorClassIsStatic(
+        ClassDeclarationSyntax? classDeclarationSyntax,
+        string className)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappaInterceptorClassIsStatic,
+            GetSyntaxLocation(classDeclarationSyntax),
+            className);
+
+    /// <summary>
+    /// Diagnostic to report that a <c>With</c> argument is not a <c>new</c> expression.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="argumentDescription">A short description of the unsupported argument.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappaInterceptorWithArgumentMustBeObjectCreation(
+        Location? location,
+        string argumentDescription)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappaInterceptorWithArgumentMustBeObjectCreation,
+            location,
+            argumentDescription);
+
+    /// <summary>
+    /// Diagnostic to report multiple settings across collated <c>With</c> calls.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappaInterceptorMultipleSettings(Location? location)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappaInterceptorMultipleSettings,
+            location);
+
+    /// <summary>
+    /// Diagnostic to report a duplicate static dependency type.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="dependencyTypeName">The dependency type display name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappaInterceptorDuplicateStaticDependencyType(
+        Location? location,
+        string dependencyTypeName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappaInterceptorDuplicateStaticDependencyType,
+            location,
+            dependencyTypeName);
+
+    /// <summary>
+    /// Diagnostic to report a duplicate <c>AllowMultiple = false</c> attribute.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="attributeTypeName">The attribute type display name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappaInterceptorDuplicateNonMultipleAttribute(
+        Location? location,
+        string attributeTypeName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappaInterceptorDuplicateNonMultipleAttribute,
+            location,
+            attributeTypeName);
+
+    /// <summary>
+    /// Diagnostic to report an unsupported interceptor feature or attribute.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="featureOrAttributeName">The unsupported feature or attribute name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappaInterceptorUnsupportedFeature(
+        Location? location,
+        string featureOrAttributeName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappaInterceptorUnsupportedFeature,
+            location,
+            featureOrAttributeName);
+
+    /// <summary>
+    /// Diagnostic to report that IQueryable / projection is not supported on the interceptor route.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappaInterceptorQueryableNotSupported(Location? location)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappaInterceptorQueryableNotSupported,
+            location);
+
+    /// <summary>
+    /// Diagnostic to report an invalid type in the <c>With</c> method-attributes list.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="typeName">The invalid type display name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MappaInterceptorInvalidMethodAttributeType(
+        Location? location,
+        string typeName)
+        => Diagnostic.Create(
+            MappaDiagnosticDescriptors.MappaInterceptorInvalidMethodAttributeType,
+            location,
+            typeName);
 
     private static Location? GetSyntaxLocation(SyntaxNode? syntaxNode)
         => syntaxNode?.GetLocation();

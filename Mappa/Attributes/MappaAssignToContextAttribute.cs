@@ -17,7 +17,7 @@ namespace Mappa.Attributes;
 /// </summary>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 public sealed class MappaAssignToContextAttribute
-    : Attribute
+    : Attribute, IMappaMethodAttribute
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaAssignToContextAttribute"/> class.

@@ -72,7 +72,7 @@ namespace Mappa.Attributes;
 /// </summary>
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = true)]
 public sealed class MappaObjectFactoryAttribute
-    : Attribute
+    : Attribute, IMappaMethodAttribute
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaObjectFactoryAttribute"/> class.

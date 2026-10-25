@@ -277,6 +277,15 @@ public sealed class MappaDiagnosticsTests
         AssertLocationNone(MappaDiagnostics.ObjectFactoryMethodNotFound(null, "Map", "Target", "CreateTarget"));
         AssertLocationNone(MappaDiagnostics.DuplicateObjectFactoryForTargetType(null, "Map", "Target"));
         AssertLocationNone(MappaDiagnostics.IQueryableMappedAsCollection(null, "Map"));
+        AssertLocationNone(MappaDiagnostics.MappaInterceptorClassIsNotPartial(null, "InlineMapper"));
+        AssertLocationNone(MappaDiagnostics.MappaInterceptorClassIsStatic(null, "InlineMapper"));
+        AssertLocationNone(MappaDiagnostics.MappaInterceptorWithArgumentMustBeObjectCreation(null, "localVariable"));
+        AssertLocationNone(MappaDiagnostics.MappaInterceptorMultipleSettings(null));
+        AssertLocationNone(MappaDiagnostics.MappaInterceptorDuplicateStaticDependencyType(null, "HelperMaps"));
+        AssertLocationNone(MappaDiagnostics.MappaInterceptorDuplicateNonMultipleAttribute(null, "MappaMustMapTargetPropertyAttribute"));
+        AssertLocationNone(MappaDiagnostics.MappaInterceptorUnsupportedFeature(null, "MappaReverse"));
+        AssertLocationNone(MappaDiagnostics.MappaInterceptorQueryableNotSupported(null));
+        AssertLocationNone(MappaDiagnostics.MappaInterceptorInvalidMethodAttributeType(null, "System.Object"));
     }
 
     private static void AssertLocationNone(Diagnostic diagnostic)

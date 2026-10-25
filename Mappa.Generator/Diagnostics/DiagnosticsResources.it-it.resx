@@ -368,4 +368,31 @@
     <data name="ProjectionMethodHasNullSubstituteInvokeMethod" xml:space="preserve">
         <value>Metodo '{0}': i metodi di proiezione non possono usare [MappaNullSubstitute] con InvokeMethod.</value>
     </data>
+    <data name="MappaInterceptorClassIsNotPartial" xml:space="preserve">
+        <value>La classe '{0}' dichiara MappaInterceptor ma non è partial; non verranno generati stub interceptor.</value>
+    </data>
+    <data name="MappaInterceptorClassIsStatic" xml:space="preserve">
+        <value>La classe '{0}' dichiara MappaInterceptor ma è statica; gli stub instance MappaMap richiedono una classe non statica.</value>
+    </data>
+    <data name="MappaInterceptorWithArgumentMustBeObjectCreation" xml:space="preserve">
+        <value>L'argomento With dell'interceptor deve essere un'espressione new (o una collection di new); '{0}' non è supportato.</value>
+    </data>
+    <data name="MappaInterceptorMultipleSettings" xml:space="preserve">
+        <value>Sono state fornite più istanze di MappaSettings tramite With su un call site interceptor; le impostazioni vengono unite in ordine di codice.</value>
+    </data>
+    <data name="MappaInterceptorDuplicateStaticDependencyType" xml:space="preserve">
+        <value>Il tipo MappaStaticDependency duplicato '{0}' è stato dichiarato per una mappa interceptor; viene mantenuta una sola dichiarazione.</value>
+    </data>
+    <data name="MappaInterceptorDuplicateNonMultipleAttribute" xml:space="preserve">
+        <value>L'attributo '{0}' non consente istanze multiple ma compare più di una volta nella configurazione With di una mappa interceptor.</value>
+    </data>
+    <data name="MappaInterceptorUnsupportedFeature" xml:space="preserve">
+        <value>La funzionalità o l'attributo '{0}' non è supportato sul percorso di mapping MappaInterceptor.</value>
+    </data>
+    <data name="MappaInterceptorQueryableNotSupported" xml:space="preserve">
+        <value>I mapping IQueryable e di proiezione non sono supportati sul percorso di mapping MappaInterceptor.</value>
+    </data>
+    <data name="MappaInterceptorInvalidMethodAttributeType" xml:space="preserve">
+        <value>Il tipo '{0}' nell'elenco di attributi metodo di With non implementa IMappaMethodAttribute.</value>
+    </data>
 </root>

@@ -133,6 +133,15 @@ internal static class MappaDiagnosticDescriptors
     private static DiagnosticDescriptor? tooManyNullSubstituteAttributesForTheSameTargetProperty;
     private static DiagnosticDescriptor? nullSubstituteIgnoredBecauseAssignFromConstant;
     private static DiagnosticDescriptor? projectionMethodHasNullSubstituteInvokeMethod;
+    private static DiagnosticDescriptor? mappaInterceptorClassIsNotPartial;
+    private static DiagnosticDescriptor? mappaInterceptorClassIsStatic;
+    private static DiagnosticDescriptor? mappaInterceptorWithArgumentMustBeObjectCreation;
+    private static DiagnosticDescriptor? mappaInterceptorMultipleSettings;
+    private static DiagnosticDescriptor? mappaInterceptorDuplicateStaticDependencyType;
+    private static DiagnosticDescriptor? mappaInterceptorDuplicateNonMultipleAttribute;
+    private static DiagnosticDescriptor? mappaInterceptorUnsupportedFeature;
+    private static DiagnosticDescriptor? mappaInterceptorQueryableNotSupported;
+    private static DiagnosticDescriptor? mappaInterceptorInvalidMethodAttributeType;
 
     /// <summary>
     /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MethodHasInvalidNumberOfParameters"/>.
@@ -1085,6 +1094,78 @@ internal static class MappaDiagnosticDescriptors
         => projectionMethodHasNullSubstituteInvokeMethod ??= BuildError(
             MappaDiagnosticsKind.ProjectionMethodHasNullSubstituteInvokeMethod,
             DiagnosticsResources.ProjectionMethodHasNullSubstituteInvokeMethod);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MappaInterceptorClassIsNotPartial"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MappaInterceptorClassIsNotPartial
+        => mappaInterceptorClassIsNotPartial ??= BuildWarning(
+            MappaDiagnosticsKind.MappaInterceptorClassIsNotPartial,
+            DiagnosticsResources.MappaInterceptorClassIsNotPartial);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MappaInterceptorClassIsStatic"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MappaInterceptorClassIsStatic
+        => mappaInterceptorClassIsStatic ??= BuildError(
+            MappaDiagnosticsKind.MappaInterceptorClassIsStatic,
+            DiagnosticsResources.MappaInterceptorClassIsStatic);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MappaInterceptorWithArgumentMustBeObjectCreation"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MappaInterceptorWithArgumentMustBeObjectCreation
+        => mappaInterceptorWithArgumentMustBeObjectCreation ??= BuildError(
+            MappaDiagnosticsKind.MappaInterceptorWithArgumentMustBeObjectCreation,
+            DiagnosticsResources.MappaInterceptorWithArgumentMustBeObjectCreation);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MappaInterceptorMultipleSettings"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MappaInterceptorMultipleSettings
+        => mappaInterceptorMultipleSettings ??= BuildWarning(
+            MappaDiagnosticsKind.MappaInterceptorMultipleSettings,
+            DiagnosticsResources.MappaInterceptorMultipleSettings);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MappaInterceptorDuplicateStaticDependencyType"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MappaInterceptorDuplicateStaticDependencyType
+        => mappaInterceptorDuplicateStaticDependencyType ??= BuildWarning(
+            MappaDiagnosticsKind.MappaInterceptorDuplicateStaticDependencyType,
+            DiagnosticsResources.MappaInterceptorDuplicateStaticDependencyType);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MappaInterceptorDuplicateNonMultipleAttribute"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MappaInterceptorDuplicateNonMultipleAttribute
+        => mappaInterceptorDuplicateNonMultipleAttribute ??= BuildError(
+            MappaDiagnosticsKind.MappaInterceptorDuplicateNonMultipleAttribute,
+            DiagnosticsResources.MappaInterceptorDuplicateNonMultipleAttribute);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MappaInterceptorUnsupportedFeature"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MappaInterceptorUnsupportedFeature
+        => mappaInterceptorUnsupportedFeature ??= BuildError(
+            MappaDiagnosticsKind.MappaInterceptorUnsupportedFeature,
+            DiagnosticsResources.MappaInterceptorUnsupportedFeature);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MappaInterceptorQueryableNotSupported"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MappaInterceptorQueryableNotSupported
+        => mappaInterceptorQueryableNotSupported ??= BuildError(
+            MappaDiagnosticsKind.MappaInterceptorQueryableNotSupported,
+            DiagnosticsResources.MappaInterceptorQueryableNotSupported);
+
+    /// <summary>
+    /// Gets a descriptor for diagnostic <see cref="MappaDiagnosticsKind.MappaInterceptorInvalidMethodAttributeType"/>.
+    /// </summary>
+    internal static DiagnosticDescriptor MappaInterceptorInvalidMethodAttributeType
+        => mappaInterceptorInvalidMethodAttributeType ??= BuildError(
+            MappaDiagnosticsKind.MappaInterceptorInvalidMethodAttributeType,
+            DiagnosticsResources.MappaInterceptorInvalidMethodAttributeType);
 
     private static DiagnosticDescriptor BuildError(MappaDiagnosticsKind kind, string message)
         => new(

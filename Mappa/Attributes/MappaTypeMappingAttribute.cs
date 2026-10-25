@@ -13,7 +13,7 @@ namespace Mappa.Attributes;
 /// </summary>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 public class MappaTypeMappingAttribute(Type targetType, Type sourceType)
-    : Attribute
+    : Attribute, IMappaMethodAttribute
 {
     /// <summary>
     /// Gets the target type.

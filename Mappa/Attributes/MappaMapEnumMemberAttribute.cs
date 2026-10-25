@@ -22,7 +22,7 @@ namespace Mappa.Attributes;
 /// <typeparam name="TEnum">The enum type being configured.</typeparam>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 [CLSCompliant(false)]
-public sealed class MappaMapEnumMemberAttribute<TEnum> : Attribute
+public sealed class MappaMapEnumMemberAttribute<TEnum> : Attribute, IMappaMethodAttribute
     where TEnum : struct, Enum
 {
     /// <summary>
@@ -84,7 +84,7 @@ public sealed class MappaMapEnumMemberAttribute<TEnum> : Attribute
 /// <typeparam name="TOtherEnum">The second enum type being configured.</typeparam>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 [CLSCompliant(false)]
-public sealed class MappaMapEnumMemberAttribute<TEnum, TOtherEnum> : Attribute
+public sealed class MappaMapEnumMemberAttribute<TEnum, TOtherEnum> : Attribute, IMappaMethodAttribute
     where TEnum : struct, Enum
     where TOtherEnum : struct, Enum
 {

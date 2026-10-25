@@ -1,0 +1,7 @@
+<Project>
+  <!--
+    Transitive import of interceptor namespace wiring for projects that reference
+    Mappa.Generator (or a package that depends on it).
+  -->
+  <Import Project="..\build\Mappa.Generator.props" Condition="Exists('..\build\Mappa.Generator.props')" />
+</Project>

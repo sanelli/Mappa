@@ -797,7 +797,7 @@ public sealed partial class Mapper
 }
 ```
 
-`InvokeMethod` is not supported on `IQueryable` projections (**MP00119**). See also: [MappaNullSubstituteMapper.cs](../Mappa.Samples/MappaNullSubstituteMapper.cs), [attributes](./mappa-attributes.md#mappanullsubstitute), diagnostics **MP00115–MP00119**.
+`InvokeMethod` is not supported on `IQueryable` projections (**MP00118**). See also: [MappaNullSubstituteMapper.cs](../Mappa.Samples/MappaNullSubstituteMapper.cs), [attributes](./mappa-attributes.md#mappanullsubstitute), diagnostics **MP00115–MP00118**.
 
 ### ReplaceNullWithEmptyContainer setting
 Enable `MappaSettings.ReplaceNullWithEmptyContainer` (or `mappa.replacenullwithemptycontainer` in `.editorconfig`) so a null source collection or dictionary maps to an empty target container instead of `null` / throw:
@@ -1115,5 +1115,71 @@ public sealed partial class Mapper
 ```
 
 See also: [OneOfWellKnownTypesMapper.cs](../Mappa.Samples/OneOfWellKnownTypesMapper.cs).
+
+## Inline mapping with MappaInterceptor
+
+Use `[MappaInterceptor]` when you want mapping inlined at call sites via C# interceptors instead of (or in addition to) classic partial `Map` methods.
+
+### Setup
+
+1. Tag a **partial**, **non-static** class with `[MappaInterceptor]` (optional constructor argument renames the stub from `MappaMap`).
+2. List the mapper namespace in the project file:
+
+```xml
+<PropertyGroup>
+  <MappaInterceptorsNamespaces>MappaTutorial</MappaInterceptorsNamespaces>
+</PropertyGroup>
+```
+
+### Basic call site
+
+```csharp
+using Mappa;
+using Mappa.Attributes;
+
+namespace MappaTutorial;
+
+[MappaInterceptor]
+public sealed partial class InlineMapper
+{
+    public Target Map(Source input) => this.MappaMap<Target>(input);
+}
+```
+
+The generator emits interceptable stubs on the class and an interceptor method per discovered call site. The stub takes `object` (struct sources are boxed); the interceptor casts to the inferred source type and runs the same strategy chain as `[Mappa]`.
+
+### Configure with `With`
+
+Pass settings, static dependencies, and method attributes as `new` expressions only (compile-time configuration; runtime is a no-op identity):
+
+```csharp
+public Target Map(Source input) =>
+    this.MappaMap<Target>(input)
+        .With(
+            mappaMethodAttributes:
+            [
+                new MappaUsePropertyAttribute(nameof(Target.PropertyOne), nameof(Source.PropertyOne)),
+                new MappaAssignFromConstantAttribute(nameof(Target.PropertyThree), "fixed"),
+            ]);
+```
+
+Supported method attributes are those that implement `IMappaMethodAttribute` (most method-level Mappa attributes except `MappaSettings`, which has its own `With` parameter). `[MappaProjection]` and `IQueryable` mappings are **not** supported on this route (**MP00125** / **MP00126**).
+
+### Interceptor-only method dependencies
+
+Mark helper map methods with `[MappaInterceptorMethodDependency]` when they should be reused as nested dependencies on the interceptor path but must not participate on a co-located `[Mappa]` path:
+
+```csharp
+[MappaInterceptor]
+public sealed partial class InlineMapper
+{
+    [MappaInterceptorMethodDependency]
+    private static long MapId(int id) => id;
+
+    public Target Map(Source input) => this.MappaMap<Target>(input);
+}
+```
+
+See also: [MappaInterceptorAttributeMapper.cs](../Mappa.Samples/MappaInterceptorAttributeMapper.cs), [MappaInterceptorStrategyMapper.cs](../Mappa.Samples/MappaInterceptorStrategyMapper.cs), [MappaInterceptorDependencyMapper.cs](../Mappa.Samples/MappaInterceptorDependencyMapper.cs), [attributes](./mappa-attributes.md#mappainterceptor).
 
 For a complete catalog of samples, see [Mappa.Samples](../Mappa.Samples/README.md).

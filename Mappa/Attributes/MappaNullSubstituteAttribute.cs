@@ -50,7 +50,7 @@ namespace Mappa.Attributes;
 /// <param name="targetPropertyName">The name of the target property or constructor parameter, or a dot-separated chain of nested target property names.</param>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 public sealed class MappaNullSubstituteAttribute(string targetPropertyName)
-        : Attribute, IMappaTargetPropertyNameAttribute
+        : Attribute, IMappaTargetPropertyNameAttribute, IMappaMethodAttribute
 {
     /// <summary>
     /// Gets the target property name, which may be a single name or a dot-separated chain of nested property names.

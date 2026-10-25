@@ -11,7 +11,6 @@ using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Mappa.Generator.Algorithm.StrategyDetectors;
 
@@ -125,8 +124,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         MapStrategy strategy)
     {
         var mapMethod = this.GetAttributeMapMethod();
-        var mapMethodMethodDeclarationSyntax = mapMethod.MethodDeclarationSyntax
-            ?? throw new MappaGeneratorException("Method declaration syntax has not been defined.");
+        var diagnosticLocation = mapMethod.Location;
         var mapMethodClass = mapMethod.ContainingType;
         var rootMethod = this.context.GetRootMapMethod();
         var methodName = nullSubstituteAttribute.InvokeMethod!;
@@ -137,7 +135,7 @@ internal sealed partial class ConstructorMapStrategyDetector
                 methodName,
                 mapMethodClass,
                 rootMethod,
-                mapMethodMethodDeclarationSyntax,
+                diagnosticLocation,
                 sourceType,
                 out var fieldOrProperty,
                 out var method)
@@ -167,7 +165,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         string methodName,
         INamedTypeSymbol mapMethodClass,
         MapMethod rootMethod,
-        MethodDeclarationSyntax mapMethodMethodDeclarationSyntax,
+        Location? diagnosticLocation,
         ITypeSymbol sourceMemberType,
         out ISymbol? fieldOrProperty,
         out IMethodSymbol? method)
@@ -182,7 +180,7 @@ internal sealed partial class ConstructorMapStrategyDetector
                 methodName,
                 mapMethodClass,
                 rootMethod,
-                mapMethodMethodDeclarationSyntax,
+                diagnosticLocation,
                 sourceMemberType,
                 out fieldOrProperty,
                 out method);
@@ -196,7 +194,7 @@ internal sealed partial class ConstructorMapStrategyDetector
                 methodName,
                 mapMethodClass,
                 rootMethod,
-                mapMethodMethodDeclarationSyntax,
+                diagnosticLocation,
                 sourceMemberType,
                 out method);
         }
@@ -206,7 +204,7 @@ internal sealed partial class ConstructorMapStrategyDetector
             methodName,
             mapMethodClass,
             rootMethod,
-            mapMethodMethodDeclarationSyntax,
+            diagnosticLocation,
             sourceMemberType,
             out method);
     }
@@ -217,7 +215,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         string methodName,
         INamedTypeSymbol mapMethodClass,
         MapMethod rootMethod,
-        MethodDeclarationSyntax mapMethodMethodDeclarationSyntax,
+        Location? diagnosticLocation,
         ITypeSymbol sourceMemberType,
         out ISymbol? fieldOrProperty,
         out IMethodSymbol? method)
@@ -230,7 +228,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         if (fieldOrProperty is null)
         {
             this.context.ReportDiagnostic(MappaDiagnostics.CannotFindFieldOrProperty(
-                mapMethodMethodDeclarationSyntax,
+                diagnosticLocation,
                 invokeMethodSource));
             method = null;
             return false;
@@ -254,7 +252,7 @@ internal sealed partial class ConstructorMapStrategyDetector
             sourceMemberType,
             InvokeMethodStaticRequirement.NotStatic,
             rootMethod,
-            mapMethodMethodDeclarationSyntax,
+            diagnosticLocation,
             out method);
 
         return this.IsSuccessfulNullSubstituteInvokeMethodResolution(
@@ -263,7 +261,7 @@ internal sealed partial class ConstructorMapStrategyDetector
             targetName,
             fieldOrPropertyType.ToDisplayString(),
             methodName,
-            mapMethodMethodDeclarationSyntax);
+            diagnosticLocation);
     }
 
     private bool TryResolveNullSubstituteInvokeMethodFromType(
@@ -272,7 +270,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         string methodName,
         INamedTypeSymbol mapMethodClass,
         MapMethod rootMethod,
-        MethodDeclarationSyntax mapMethodMethodDeclarationSyntax,
+        Location? diagnosticLocation,
         ITypeSymbol sourceMemberType,
         out IMethodSymbol? method)
     {
@@ -282,7 +280,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         if (className is null)
         {
             this.context.ReportDiagnostic(MappaDiagnostics.CannotDetectType(
-                mapMethodMethodDeclarationSyntax,
+                diagnosticLocation,
                 classTypeFullName));
             method = null;
             return false;
@@ -296,7 +294,7 @@ internal sealed partial class ConstructorMapStrategyDetector
             sourceMemberType,
             InvokeMethodStaticRequirement.Static,
             rootMethod,
-            mapMethodMethodDeclarationSyntax,
+            diagnosticLocation,
             out method);
 
         return this.IsSuccessfulNullSubstituteInvokeMethodResolution(
@@ -305,7 +303,7 @@ internal sealed partial class ConstructorMapStrategyDetector
             targetName,
             className.ToDisplayString(),
             methodName,
-            mapMethodMethodDeclarationSyntax);
+            diagnosticLocation);
     }
 
     private bool TryResolveNullSubstituteInvokeMethodFromMapper(
@@ -313,7 +311,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         string methodName,
         INamedTypeSymbol mapMethodClass,
         MapMethod rootMethod,
-        MethodDeclarationSyntax mapMethodMethodDeclarationSyntax,
+        Location? diagnosticLocation,
         ITypeSymbol sourceMemberType,
         out IMethodSymbol? method)
     {
@@ -329,7 +327,7 @@ internal sealed partial class ConstructorMapStrategyDetector
             sourceMemberType,
             staticRequirement,
             rootMethod,
-            mapMethodMethodDeclarationSyntax,
+            diagnosticLocation,
             out method);
 
         return this.IsSuccessfulNullSubstituteInvokeMethodResolution(
@@ -338,7 +336,7 @@ internal sealed partial class ConstructorMapStrategyDetector
             targetName,
             mapMethodClass.ToDisplayString(),
             methodName,
-            mapMethodMethodDeclarationSyntax);
+            diagnosticLocation);
     }
 
     private InvokeMethodResolutionResult TryResolveNullSubstituteInvokeMethodCandidates(
@@ -349,7 +347,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         ITypeSymbol sourceMemberType,
         InvokeMethodStaticRequirement staticRequirement,
         MapMethod rootMapMethod,
-        MethodDeclarationSyntax mapMethodMethodDeclarationSyntax,
+        Location? diagnosticLocation,
         out IMethodSymbol? method)
     {
         var resolutionResult = InvokeMethodResolution.TryResolveNullSubstituteInvokeMethod(
@@ -368,7 +366,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         if (resolutionResult is InvokeMethodResolutionResult.Ambiguous)
         {
             this.context.ReportDiagnostic(MappaDiagnostics.AmbiguousInvokeMethodResolution(
-                mapMethodMethodDeclarationSyntax.GetLocation(),
+                diagnosticLocation,
                 ambiguityDetails));
         }
 
@@ -381,7 +379,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         string targetName,
         string typeDisplayName,
         string methodName,
-        MethodDeclarationSyntax mapMethodMethodDeclarationSyntax)
+        Location? diagnosticLocation)
     {
         if (resolutionResult is InvokeMethodResolutionResult.Ambiguous)
         {
@@ -394,7 +392,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         }
 
         this.context.ReportDiagnostic(MappaDiagnostics.CannotDetectSuitableMethodToInvokeForParameter(
-            mapMethodMethodDeclarationSyntax,
+            diagnosticLocation,
             targetName,
             methodName,
             typeDisplayName));

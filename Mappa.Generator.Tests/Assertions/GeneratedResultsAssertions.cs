@@ -137,6 +137,42 @@ internal sealed class GeneratedResultsAssertions
     }
 
     /// <summary>
+    /// Gets assertions for the single generated source from the driver run result
+    /// (preferred for interceptor tests where the output compilation may contain extra trees).
+    /// </summary>
+    /// <returns>The syntax tree assertions instance.</returns>
+    public CompilationUnitSyntaxAssertions WithGeneratedCompilationUnit()
+        => this.WithGeneratedCompilationUnit(hintNameContains: null);
+
+    /// <summary>
+    /// Gets assertions for a generated source selected by hint-name substring.
+    /// </summary>
+    /// <param name="hintNameContains">
+    /// Optional substring matched against generated hint names; when <see langword="null"/>,
+    /// exactly one generated source is required.
+    /// </param>
+    /// <returns>The syntax tree assertions instance.</returns>
+    public CompilationUnitSyntaxAssertions WithGeneratedCompilationUnit(string? hintNameContains)
+    {
+        var runResult = this.HaveOneResult();
+        var generatedSource = hintNameContains is null
+            ? runResult.GeneratedSources.Should().ContainSingle().Subject
+            : runResult.GeneratedSources.Should()
+                .ContainSingle(source => source.HintName.Contains(hintNameContains, StringComparison.Ordinal))
+                .Subject;
+
+        var syntaxTree = generatedSource.SyntaxTree;
+        var compilationTree = this.Subject.OutputCompilation.SyntaxTrees
+            .FirstOrDefault(tree => tree.FilePath == syntaxTree.FilePath)
+            ?? syntaxTree;
+        var semanticModel = this.Subject.OutputCompilation.GetSemanticModel(compilationTree);
+        return new CompilationUnitSyntaxAssertions(
+            (CompilationUnitSyntax)compilationTree.GetRoot(),
+            semanticModel,
+            this.Subject.OutputCompilation);
+    }
+
+    /// <summary>
     /// Gets the assertions for the syntax tree.
     /// </summary>
     /// <param name="howMany">The number of expected generated syntax trees.</param>

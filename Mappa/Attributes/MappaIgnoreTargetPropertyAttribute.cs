@@ -19,7 +19,7 @@ namespace Mappa.Attributes;
 /// <param name="targetPropertyName">The name of the target property to ignore, or a dot-separated chain of nested target property names.</param>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 public sealed class MappaIgnoreTargetPropertyAttribute(string targetPropertyName)
-        : Attribute
+        : Attribute, IMappaMethodAttribute
 {
     /// <summary>
     /// Gets the target property name, which may be a single name or a dot-separated chain of nested property names.

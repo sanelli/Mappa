@@ -11,7 +11,6 @@ using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Mappa.Generator.Algorithm.StrategyDetectors;
 
@@ -785,18 +784,25 @@ internal sealed partial class ConstructorMapStrategyDetector
         strategy = new NoMapStrategy(targetType, null!);
 
         var mapMethod = this.GetAttributeMapMethod();
-        var mapMethodMethodDeclarationSyntax = mapMethod.MethodDeclarationSyntax ?? throw new MappaGeneratorException("Method declaration syntax has not been defined.");
-
         var rootMapMethod = this.context.GetRootMapMethod();
         if (rootMapMethod.ProvideMappaContextWhenInvoked())
         {
             sourceProperty = null; // Ignore any input property.
             strategy = new MappaAssignFromContextAttributeStrategy(targetType, attribute, rootMapMethod.GetMappaContextParameterName());
+            return;
+        }
+
+        if (mapMethod.MethodDeclarationSyntax is not null)
+        {
+            this.context.ReportDiagnostic(MappaDiagnostics.CannotUseMappaAssignFromContextAttributeWithoutContextParameter(
+                mapMethod.MethodDeclarationSyntax,
+                targetName));
         }
         else
         {
-            this.context.ReportDiagnostic(MappaDiagnostics.CannotUseMappaAssignFromContextAttributeWithoutContextParameter(
-                mapMethodMethodDeclarationSyntax,
+            this.context.ReportDiagnostic(Diagnostic.Create(
+                MappaDiagnosticDescriptors.CannotUseMappaAssignFromContextAttributeWithoutContextParameter,
+                mapMethod.Location,
                 targetName));
         }
     }
@@ -810,7 +816,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         IPropertySymbol? sourceProperty,
         InvokeMethodStaticRequirement staticRequirement,
         MapMethod rootMapMethod,
-        MethodDeclarationSyntax mapMethodMethodDeclarationSyntax,
+        Location? diagnosticLocation,
         out IMethodSymbol? method)
     {
         var resolutionResult = InvokeMethodResolution.TryResolveMappaInvokeMethod(
@@ -830,7 +836,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         if (resolutionResult is InvokeMethodResolutionResult.Ambiguous)
         {
             this.context.ReportDiagnostic(MappaDiagnostics.AmbiguousInvokeMethodResolution(
-                mapMethodMethodDeclarationSyntax.GetLocation(),
+                diagnosticLocation,
                 ambiguityDetails));
         }
 

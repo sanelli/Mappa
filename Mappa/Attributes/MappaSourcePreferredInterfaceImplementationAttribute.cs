@@ -36,7 +36,7 @@ namespace Mappa.Attributes;
 /// </summary>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 public class MappaSourcePreferredInterfaceImplementationAttribute(Type implementingType, Type preferredClosedInterface)
-    : Attribute
+    : Attribute, IMappaMethodAttribute
 {
     /// <summary>
     /// Gets the concrete type being disambiguated when it appears as a source type in the mapping tree.

@@ -74,9 +74,37 @@ public abstract class MappaGeneratorAbstractUnitTests
         string? editorConfig,
         LanguageVersion languageVersion,
         CancellationToken cancellationToken)
+        => RunMappaGeneratorAsync(source, editorConfig, languageVersion, interceptorsNamespaces: null, runTwice: false, cancellationToken);
+
+    /// <summary>
+    /// Run the generator on the input source with optional editorconfig, language version,
+    /// interceptors namespaces, and a second pass for interceptable locations.
+    /// </summary>
+    /// <param name="source">The input source code.</param>
+    /// <param name="editorConfig">The optional <c>.editorconfig</c> content.</param>
+    /// <param name="languageVersion">The C# language version for the compilation.</param>
+    /// <param name="interceptorsNamespaces">Optional semicolon-separated interceptor namespaces.</param>
+    /// <param name="runTwice">When <c>true</c>, run the generator a second time on the updated compilation.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The driver, the cancellation output and the diagnostics.</returns>
+    protected static Task<GeneratedResults> RunMappaGeneratorAsync(
+        string source,
+        string? editorConfig,
+        LanguageVersion languageVersion,
+        string? interceptorsNamespaces,
+        bool runTwice,
+        CancellationToken cancellationToken)
     {
         var generator = new MappaGenerator();
         var parseOptions = CSharpParseOptions.Default.WithLanguageVersion(languageVersion);
+        if (!string.IsNullOrWhiteSpace(interceptorsNamespaces))
+        {
+            parseOptions = parseOptions.WithFeatures(
+            [
+                new KeyValuePair<string, string>("InterceptorsNamespaces", interceptorsNamespaces),
+            ]);
+        }
+
         var compilation = BuildCompilation(source, parseOptions);
         AnalyzerConfigOptionsProvider? optionsProvider = editorConfig is null
             ? null
@@ -92,9 +120,41 @@ public abstract class MappaGeneratorAbstractUnitTests
             out var outputCompilation,
             out var diagnostics,
             cancellationToken);
+
+        if (runTwice)
+        {
+            driver = driver.RunGeneratorsAndUpdateCompilation(
+                outputCompilation,
+                out outputCompilation,
+                out diagnostics,
+                cancellationToken);
+        }
+
         GeneratedSourceDumpHelper.TryDumpGeneratedSources(driver);
         return Task.FromResult(new GeneratedResults(driver, outputCompilation, diagnostics.ToArray()));
     }
+
+    /// <summary>
+    /// Run the generator twice with <c>InterceptorsNamespaces</c> enabled so stub emission
+    /// from the first pass can be intercepted on the second pass.
+    /// </summary>
+    /// <param name="source">The input source code.</param>
+    /// <param name="interceptorsNamespace">
+    /// The namespace listed in <c>InterceptorsNamespaces</c> (must contain the interceptor class).
+    /// </param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The driver, the updated compilation, and diagnostics from the second pass.</returns>
+    protected static Task<GeneratedResults> RunMappaInterceptorGeneratorAsync(
+        string source,
+        string interceptorsNamespace,
+        CancellationToken cancellationToken)
+        => RunMappaGeneratorAsync(
+            source,
+            editorConfig: null,
+            LanguageVersion.Latest,
+            interceptorsNamespace,
+            runTwice: true,
+            cancellationToken);
 
     /// <summary>
     /// Create a new compilation for the source generator.

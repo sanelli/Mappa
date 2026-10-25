@@ -1,0 +1,11 @@
+<Project>
+  <!--
+    Interceptor methods are emitted into the consumer mapper namespace.
+    Set MappaInterceptorsNamespaces to one or more semicolon-separated namespaces
+    that contain [MappaInterceptor] types (typically the mapper namespace).
+    Those values are merged into InterceptorsNamespaces for the C# compiler.
+  -->
+  <PropertyGroup>
+    <InterceptorsNamespaces>$(InterceptorsNamespaces);$(MappaInterceptorsNamespaces)</InterceptorsNamespaces>
+  </PropertyGroup>
+</Project>
