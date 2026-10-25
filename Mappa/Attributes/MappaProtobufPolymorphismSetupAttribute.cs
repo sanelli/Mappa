@@ -10,7 +10,7 @@ namespace Mappa.Attributes;
 /// or <see cref="MappaProtobufTypeMappingDefaultAttribute"/>.
 /// </summary>
 [AttributeUsage(AttributeTargets.Method)]
-public sealed class MappaProtobufPolymorphismSetupAttribute : Attribute
+public sealed class MappaProtobufPolymorphismSetupAttribute : Attribute, IMappaMethodAttribute
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaProtobufPolymorphismSetupAttribute"/> class

@@ -35,7 +35,7 @@ namespace Mappa.Attributes;
 /// </summary>
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
 public sealed class MappaProjectionAttribute
-    : Attribute
+    : Attribute, IMappaMethodAttribute
 {
     /// <summary>
     /// Gets or sets a value indicating whether queryable projection is enabled for the

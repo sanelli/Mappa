@@ -15,7 +15,7 @@ namespace Mappa.Attributes;
 /// </summary>
 [AttributeUsage(AttributeTargets.Method)]
 public class MappaTypeMappingDefaultAttribute
-    : Attribute
+    : Attribute, IMappaMethodAttribute
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaTypeMappingDefaultAttribute"/> class.

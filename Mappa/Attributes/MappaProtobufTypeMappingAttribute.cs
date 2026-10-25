@@ -10,7 +10,7 @@ namespace Mappa.Attributes;
 /// All constructors take arguments in <c>(target, source)</c> order.
 /// </summary>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-public sealed class MappaProtobufTypeMappingAttribute : Attribute
+public sealed class MappaProtobufTypeMappingAttribute : Attribute, IMappaMethodAttribute
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaProtobufTypeMappingAttribute"/> class

@@ -19,7 +19,7 @@ namespace Mappa.Attributes;
 /// <param name="enumValue">The enum member to exclude from mapping.</param>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 [CLSCompliant(false)]
-public sealed class MappaMapEnumIgnoreAttribute<TEnum>(TEnum enumValue) : Attribute
+public sealed class MappaMapEnumIgnoreAttribute<TEnum>(TEnum enumValue) : Attribute, IMappaMethodAttribute
     where TEnum : struct, Enum
 {
     /// <summary>

@@ -32,7 +32,7 @@ namespace Mappa.Attributes;
 /// </para>
 /// </summary>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-public class MappaUseConstructorAttribute : Attribute
+public class MappaUseConstructorAttribute : Attribute, IMappaMethodAttribute
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaUseConstructorAttribute"/> class

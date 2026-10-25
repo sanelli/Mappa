@@ -18,7 +18,7 @@ namespace Mappa.Attributes;
 /// <typeparam name="TEnum">The enum type whose fallback behaviour is being configured.</typeparam>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 [CLSCompliant(false)]
-public sealed class MappaMapEnumDefaultAttribute<TEnum> : Attribute
+public sealed class MappaMapEnumDefaultAttribute<TEnum> : Attribute, IMappaMethodAttribute
     where TEnum : struct, Enum
 {
     /// <summary>
