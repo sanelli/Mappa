@@ -21,7 +21,7 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="coverlet.MTP" Version="10.0.1" />
+        <PackageReference Include="coverlet.MTP" Version="10.1.0" />
         <PackageReference Include="AwesomeAssertions" Version="9.6.0" />
         <PackageReference Include="Xunit.OpenCategories.V3" Version="2.4.1.19" />
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.9.0" />
