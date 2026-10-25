@@ -14,6 +14,8 @@
         <PublishAot>true</PublishAot>
         <PublishReadyToRun>true</PublishReadyToRun>
         <StripSymbols>true</StripSymbols>
+        <MappaInterceptorsNamespaces>Mappa.Samples</MappaInterceptorsNamespaces>
+        <InterceptorsNamespaces>$(InterceptorsNamespaces);Mappa.Samples</InterceptorsNamespaces>
     </PropertyGroup>
 
     <ItemGroup>

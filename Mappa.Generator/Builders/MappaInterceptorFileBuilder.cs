@@ -92,25 +92,49 @@ internal sealed class MappaInterceptorFileBuilder
             builder.AppendEmptyLine();
         }
 
-        var classSource = this.BuildClassSource();
+        var mappaBuilderContext = new MappaBuilderContext(this.Compilation);
+        var classSource = this.BuildClassSource(mappaBuilderContext);
+        var inaccessibleAccessorsSource = mappaBuilderContext.InaccessibleAccessors.BuildSource();
         var @namespace = this.ClassSymbol.ContainingNamespace.ToDisplayString();
 
-        if (this.ClassDeclarationSyntax.Parent is FileScopedNamespaceDeclarationSyntax)
-        {
-            builder.AppendLine($"namespace {@namespace};");
-            builder.AppendEmptyLine();
-            builder.AppendLine(classSource);
-        }
-        else if (this.ClassDeclarationSyntax.Parent is NamespaceDeclarationSyntax)
+        // When the InterceptsLocation polyfill is emitted first as a block-scoped namespace,
+        // the mapper must also use a block-scoped namespace (file-scoped is illegal afterwards).
+        var emitInterceptsLocationPolyfill = this.InterceptorMethods.Length > 0;
+        if (emitInterceptsLocationPolyfill
+            || this.ClassDeclarationSyntax.Parent is NamespaceDeclarationSyntax)
         {
             builder.AppendLine($"namespace {@namespace}");
             using (builder.CurlyBracesBlock())
             {
+                if (!string.IsNullOrWhiteSpace(inaccessibleAccessorsSource))
+                {
+                    builder.AppendLine(inaccessibleAccessorsSource);
+                    builder.AppendEmptyLine();
+                }
+
                 builder.AppendLine(classSource);
             }
         }
+        else if (this.ClassDeclarationSyntax.Parent is FileScopedNamespaceDeclarationSyntax)
+        {
+            builder.AppendLine($"namespace {@namespace};");
+            builder.AppendEmptyLine();
+            if (!string.IsNullOrWhiteSpace(inaccessibleAccessorsSource))
+            {
+                builder.AppendLine(inaccessibleAccessorsSource);
+                builder.AppendEmptyLine();
+            }
+
+            builder.AppendLine(classSource);
+        }
         else
         {
+            if (!string.IsNullOrWhiteSpace(inaccessibleAccessorsSource))
+            {
+                builder.AppendLine(inaccessibleAccessorsSource);
+                builder.AppendEmptyLine();
+            }
+
             builder.AppendLine(classSource);
         }
 
@@ -145,7 +169,7 @@ internal sealed class MappaInterceptorFileBuilder
         }
     }
 
-    private string BuildClassSource()
+    private string BuildClassSource(MappaBuilderContext mappaBuilderContext)
     {
         var accessibility = this.ClassSymbol.DeclaredAccessibility.GetAccessibilityAsCode();
         var builder = new PrettyCode.StringBuilder();
@@ -156,7 +180,6 @@ internal sealed class MappaInterceptorFileBuilder
             builder.AppendEmptyLine();
             this.AppendStubMethod(builder, accessibility, hasContext: true);
 
-            var mappaBuilderContext = new MappaBuilderContext(this.Compilation);
             foreach (var interceptorMethod in this.InterceptorMethods)
             {
                 builder.AppendEmptyLine();
@@ -170,6 +193,18 @@ internal sealed class MappaInterceptorFileBuilder
     private void AppendStubMethod(PrettyCode.StringBuilder builder, string accessibility, bool hasContext)
     {
         builder
+            .AppendLine("/// <summary>")
+            .AppendLine($"/// Interceptable stub for inline <c>{this.MethodName}</c> mapping; replaced by generated interceptors.")
+            .AppendLine("/// </summary>")
+            .AppendLine("/// <typeparam name=\"TTarget\">The target type of the mapping.</typeparam>")
+            .AppendLine("/// <param name=\"source\">The source value (typed as <see cref=\"object\"/> for interception).</param>");
+        if (hasContext)
+        {
+            builder.AppendLine("/// <param name=\"context\">The mapping context.</param>");
+        }
+
+        builder
+            .AppendLine("/// <returns>The mapped target value.</returns>")
             .AppendLine($"[global::{typeof(DebuggerNonUserCodeAttribute).FullName}]")
             .AppendLine($"[global::{typeof(GeneratedCodeAttribute).FullName}(\"Mappa\", \"{typeof(MappaGenerator).Assembly.GetName().Version}\")]");
 
