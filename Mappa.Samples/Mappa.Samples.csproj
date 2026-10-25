@@ -18,13 +18,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Google.Protobuf" Version="3.35.1" />
-        <PackageReference Include="Grpc.Tools" Version="2.83.0">
+        <PackageReference Include="Google.Protobuf" Version="3.36.2" />
+        <PackageReference Include="Grpc.Tools" Version="2.84.0">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.10" />
-        <PackageReference Include="MongoDB.Bson" Version="3.10.0" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.13" />
+        <PackageReference Include="MongoDB.Bson" Version="3.13.0" />
         <PackageReference Include="OneOf" Version="3.0.271" />
         <PackageReference Include="Mappa" Version="$(MappaVersion)" />
         <PackageReference Include="Mappa.Generator" Version="$(MappaVersion)">
@@ -35,7 +35,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="SonarAnalyzer.CSharp" Version="10.31.0.145097">
+        <PackageReference Include="SonarAnalyzer.CSharp" Version="10.35.0.4138">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
