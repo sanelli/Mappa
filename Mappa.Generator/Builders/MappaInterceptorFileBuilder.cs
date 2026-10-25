@@ -3,9 +3,11 @@
 // </copyright>
 
 using System.CodeDom.Compiler;
+using System.Collections.Immutable;
 using System.Diagnostics;
 
 using Mappa.Generator.Extensions;
+using Mappa.Generator.Models;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -13,7 +15,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace Mappa.Generator.Builders;
 
 /// <summary>
-/// Builds interceptable <c>MappaMap</c> (or renamed) instance stubs for a
+/// Builds interceptable <c>MappaMap</c> (or renamed) instance stubs and interceptor methods for a
 /// <see cref="Mappa.Attributes.MappaInterceptorAttribute"/> class.
 /// </summary>
 internal sealed class MappaInterceptorFileBuilder
@@ -21,20 +23,31 @@ internal sealed class MappaInterceptorFileBuilder
     private const string StubNotInterceptedMessage =
         "This method should have been intercepted by the Mappa source generator.";
 
+    private const string TypedSourceParameterName = "__mappaTypedSource";
+
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaInterceptorFileBuilder"/> class.
     /// </summary>
     /// <param name="classDeclarationSyntax">The interceptor class syntax.</param>
     /// <param name="classSymbol">The interceptor class symbol.</param>
     /// <param name="methodName">The interceptable method name.</param>
+    /// <param name="interceptorMethods">Strategized interceptor methods to emit.</param>
+    /// <param name="compilation">The compilation.</param>
+    /// <param name="options">The global options.</param>
     internal MappaInterceptorFileBuilder(
         ClassDeclarationSyntax classDeclarationSyntax,
         INamedTypeSymbol classSymbol,
-        string methodName)
+        string methodName,
+        ImmutableArray<MappaInterceptorGeneratedMethod> interceptorMethods,
+        Compilation compilation,
+        MappaGlobalOptions options)
     {
         this.ClassDeclarationSyntax = classDeclarationSyntax;
         this.ClassSymbol = classSymbol;
         this.MethodName = methodName;
+        this.InterceptorMethods = interceptorMethods;
+        this.Compilation = compilation;
+        this.Options = options;
         this.HintName = $"{this.ClassSymbol.ToDisplayString()}.Interceptor.g.cs";
     }
 
@@ -48,6 +61,12 @@ internal sealed class MappaInterceptorFileBuilder
     private INamedTypeSymbol ClassSymbol { get; }
 
     private string MethodName { get; }
+
+    private ImmutableArray<MappaInterceptorGeneratedMethod> InterceptorMethods { get; }
+
+    private Compilation Compilation { get; }
+
+    private MappaGlobalOptions Options { get; }
 
     /// <summary>
     /// Builds the generated source text.
@@ -66,6 +85,12 @@ internal sealed class MappaInterceptorFileBuilder
         builder.AppendEmptyLine();
         builder.AppendLine("#nullable enable");
         builder.AppendEmptyLine();
+
+        if (this.InterceptorMethods.Length > 0)
+        {
+            AppendInterceptsLocationAttributeDefinition(builder);
+            builder.AppendEmptyLine();
+        }
 
         var classSource = this.BuildClassSource();
         var @namespace = this.ClassSymbol.ContainingNamespace.ToDisplayString();
@@ -92,6 +117,34 @@ internal sealed class MappaInterceptorFileBuilder
         return builder.ToString();
     }
 
+    private static void AppendInterceptsLocationAttributeDefinition(PrettyCode.StringBuilder builder)
+    {
+        builder.AppendLine("namespace System.Runtime.CompilerServices");
+        using (builder.CurlyBracesBlock())
+        {
+            builder
+                .AppendLine("[global::System.AttributeUsage(global::System.AttributeTargets.Method, AllowMultiple = true)]")
+                .AppendLine("file sealed class InterceptsLocationAttribute : global::System.Attribute");
+            using (builder.CurlyBracesBlock())
+            {
+                builder.AppendLine("public InterceptsLocationAttribute(int version, string data)");
+                using (builder.CurlyBracesBlock())
+                {
+                    builder.AppendLine("_ = version;");
+                    builder.AppendLine("_ = data;");
+                }
+            }
+        }
+    }
+
+    private static void AppendEffectiveAttributesAsComments(PrettyCode.StringBuilder builder, MapMethod mapMethod)
+    {
+        foreach (var attribute in mapMethod.GetAttributes<Attribute>())
+        {
+            builder.AppendLine($"// Effective attribute: {attribute.GetType().FullName}");
+        }
+    }
+
     private string BuildClassSource()
     {
         var accessibility = this.ClassSymbol.DeclaredAccessibility.GetAccessibilityAsCode();
@@ -102,6 +155,13 @@ internal sealed class MappaInterceptorFileBuilder
             this.AppendStubMethod(builder, accessibility, hasContext: false);
             builder.AppendEmptyLine();
             this.AppendStubMethod(builder, accessibility, hasContext: true);
+
+            var mappaBuilderContext = new MappaBuilderContext(this.Compilation);
+            foreach (var interceptorMethod in this.InterceptorMethods)
+            {
+                builder.AppendEmptyLine();
+                this.AppendInterceptorMethod(builder, interceptorMethod, mappaBuilderContext);
+            }
         }
 
         return builder.ToString();
@@ -133,6 +193,55 @@ internal sealed class MappaInterceptorFileBuilder
 
             builder.AppendLine(
                 $"throw new global::System.InvalidOperationException(\"{StubNotInterceptedMessage}\");");
+        }
+    }
+
+    private void AppendInterceptorMethod(
+        PrettyCode.StringBuilder builder,
+        MappaInterceptorGeneratedMethod interceptorMethod,
+        MappaBuilderContext mappaBuilderContext)
+    {
+        var mapMethod = interceptorMethod.MapMethod;
+        var location = interceptorMethod.InterceptableLocation;
+        var escapedData = location.Data.Replace("\\", "\\\\").Replace("\"", "\\\"");
+
+        builder
+            .AppendLine($"[global::System.Runtime.CompilerServices.InterceptsLocationAttribute({location.Version}, \"{escapedData}\")]")
+            .AppendLine($"[global::{typeof(DebuggerNonUserCodeAttribute).FullName}]")
+            .AppendLine($"[global::{typeof(GeneratedCodeAttribute).FullName}(\"Mappa\", \"{typeof(MappaGenerator).Assembly.GetName().Version}\")]");
+
+        AppendEffectiveAttributesAsComments(builder, mapMethod);
+
+        var targetTypeName = mapMethod.TargetType.ToDisplayString();
+        var sourceTypeName = mapMethod.SourceType.ToDisplayString();
+        var accessibility = "private";
+
+        if (mapMethod.RequireMappaContextWhenInvoked())
+        {
+            builder.AppendLine(
+                $"{accessibility} {targetTypeName} {mapMethod.MethodName}(object source, global::Mappa.MappaContext context)");
+        }
+        else
+        {
+            builder.AppendLine($"{accessibility} {targetTypeName} {mapMethod.MethodName}(object source)");
+        }
+
+        using (builder.NullableDirective(interceptorMethod.NullableEnabled))
+        using (builder.CurlyBracesBlock())
+        {
+            builder.AppendLine($"var {TypedSourceParameterName} = ({sourceTypeName})source;");
+
+            var (strategySource, header) = mapMethod.Strategy.GetBuilder().BuildSource(
+                TypedSourceParameterName,
+                mappaBuilderContext,
+                this.Options);
+            if (!string.IsNullOrWhiteSpace(header))
+            {
+                builder.AppendLine(header);
+                builder.AppendEmptyLine();
+            }
+
+            builder.AppendLine(strategySource);
         }
     }
 }

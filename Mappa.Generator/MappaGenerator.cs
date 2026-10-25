@@ -60,11 +60,13 @@ public sealed class MappaGenerator
                 static (attributeContext, _) => attributeContext.TargetNode as ClassDeclarationSyntax)
             .Where(CommonExtensions.IsNotNull);
 
-        // Step 7. Register the source output for interceptor stubs (and later interceptor methods).
-        var compilationAndInterceptorClasses = context
-            .CompilationProvider
-            .Combine(interceptorClassDeclarations.Collect());
-        context.RegisterSourceOutput(compilationAndInterceptorClasses, ExecuteInterceptor);
+        // Step 7. Register the source output for interceptor stubs and interceptor methods.
+        var analyzerConfigCompilationAndInterceptorClasses = context
+            .AnalyzerConfigOptionsProvider
+            .Combine(context
+                .CompilationProvider
+                .Combine(interceptorClassDeclarations.Collect()));
+        context.RegisterSourceOutput(analyzerConfigCompilationAndInterceptorClasses, ExecuteInterceptor);
     }
 
     private static void Execute(SourceProductionContext context, (AnalyzerConfigOptionsProvider AnalyzerConfigOptionsProvider, (Compilation Compilation, ImmutableArray<ClassDeclarationSyntax?> ClassDeclarationSyntaxes) Right) settings)
@@ -82,7 +84,11 @@ public sealed class MappaGenerator
 
     private static void ExecuteInterceptor(
         SourceProductionContext context,
-        (Compilation Compilation, ImmutableArray<ClassDeclarationSyntax?> ClassDeclarationSyntaxes) settings)
-        => new MappaInterceptorGeneratorAlgorithm(context, settings.Compilation, settings.ClassDeclarationSyntaxes)
+        (AnalyzerConfigOptionsProvider AnalyzerConfigOptionsProvider, (Compilation Compilation, ImmutableArray<ClassDeclarationSyntax?> ClassDeclarationSyntaxes) Right) settings)
+        => new MappaInterceptorGeneratorAlgorithm(
+                context,
+                settings.AnalyzerConfigOptionsProvider,
+                settings.Right.Compilation,
+                settings.Right.ClassDeclarationSyntaxes)
             .Execute();
 }

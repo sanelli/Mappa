@@ -112,7 +112,8 @@ internal sealed class MapMethod
         bool isStatic,
         string sourceParameterName,
         string? mappaContextParameterName,
-        Location? location)
+        Location? location,
+        Attribute[] attributes)
     {
         this.MethodDeclarationSyntax = null;
         this.MethodSymbol = null;
@@ -126,7 +127,7 @@ internal sealed class MapMethod
         this.Mapped = false;
         this.Location = location;
         this.NullableEnabled = nullableEnabled;
-        this.attributes = [];
+        this.attributes = attributes;
         this.PragmaWarning = PragmaWarningSetting.Undefined;
         this.CanBeUsedByStaticMethod = isStatic;
         this.ReferenceReusing = BooleanSetting.Undefined;
@@ -237,6 +238,7 @@ internal sealed class MapMethod
     /// <param name="sourceParameterName">The source parameter name.</param>
     /// <param name="mappaContextParameterName">The optional <see cref="MappaContext"/> parameter name.</param>
     /// <param name="location">The location associated with the cycle edge.</param>
+    /// <param name="attributes">Optional method-level Mappa attributes (e.g. interceptor <c>With</c>).</param>
     /// <returns>The synthetic map method.</returns>
     internal static MapMethod CreateSynthetic(
         string methodName,
@@ -247,7 +249,8 @@ internal sealed class MapMethod
         bool isStatic,
         string sourceParameterName,
         string? mappaContextParameterName,
-        Location? location)
+        Location? location,
+        Attribute[]? attributes = null)
         => new(
             methodName,
             sourceType,
@@ -257,7 +260,8 @@ internal sealed class MapMethod
             isStatic,
             sourceParameterName,
             mappaContextParameterName,
-            location);
+            location,
+            attributes ?? []);
 
     /// <summary>
     /// Mark the method as being mapped.

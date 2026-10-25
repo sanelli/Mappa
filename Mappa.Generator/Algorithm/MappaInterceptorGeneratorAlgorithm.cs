@@ -4,26 +4,35 @@
 
 using System.Collections.Immutable;
 
+using Mappa.Attributes;
 using Mappa.Generator.Builders;
 using Mappa.Generator.Diagnostics;
+using Mappa.Generator.Diagnostics.Debug;
 using Mappa.Generator.Extensions;
 using Mappa.Generator.Helpers;
+using Mappa.Generator.Models;
+using Mappa.Generator.Models.Strategies;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Mappa.Generator.Algorithm;
 
 /// <summary>
-/// Algorithm that generates interceptable mapping stubs for classes marked with
+/// Algorithm that generates interceptable mapping stubs and interceptor methods for classes marked with
 /// <see cref="Mappa.Attributes.MappaInterceptorAttribute"/>.
 /// </summary>
 internal sealed class MappaInterceptorGeneratorAlgorithm
 {
+    private const string TypedSourceParameterName = "__mappaTypedSource";
+    private const string ContextParameterName = "context";
+
     /// <summary>
     /// Initializes a new instance of the <see cref="MappaInterceptorGeneratorAlgorithm"/> class.
     /// </summary>
     /// <param name="context">The source production context.</param>
+    /// <param name="analyzerConfigOptionsProvider">The analyzer config options provider.</param>
     /// <param name="compilation">The compilation.</param>
     /// <param name="classDeclarationSyntaxes">The candidate interceptor class declarations.</param>
     /// <param name="classSymbolResolver">
@@ -31,17 +40,21 @@ internal sealed class MappaInterceptorGeneratorAlgorithm
     /// </param>
     public MappaInterceptorGeneratorAlgorithm(
         SourceProductionContext context,
+        AnalyzerConfigOptionsProvider analyzerConfigOptionsProvider,
         Compilation compilation,
         ImmutableArray<ClassDeclarationSyntax?> classDeclarationSyntaxes,
         Func<Compilation, ClassDeclarationSyntax, CancellationToken, INamedTypeSymbol?>? classSymbolResolver = null)
     {
         this.Context = context;
+        this.AnalyzerConfigOptionsProvider = analyzerConfigOptionsProvider;
         this.Compilation = compilation;
         this.ClassDeclarationSyntaxes = classDeclarationSyntaxes;
         this.ClassSymbolResolver = classSymbolResolver;
     }
 
     private SourceProductionContext Context { get; }
+
+    private AnalyzerConfigOptionsProvider AnalyzerConfigOptionsProvider { get; }
 
     private Compilation Compilation { get; }
 
@@ -66,6 +79,52 @@ internal sealed class MappaInterceptorGeneratorAlgorithm
             this.ExecuteForSingleClass(classDeclarationSyntax, cancellationToken);
         }
     }
+
+    private static INamedTypeSymbol[] CollectStaticDependencyTypes(
+        ImmutableArray<AttributeData> classAttributes,
+        ImmutableArray<MappaInterceptorCallSite> callSites,
+        Compilation compilation)
+    {
+        var seen = new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
+        var results = new List<INamedTypeSymbol>();
+
+        foreach (var dependency in classAttributes.GetMappaStaticDependencies(compilation)
+                     .Where(dependency => seen.Add(dependency)))
+        {
+            results.Add(dependency);
+        }
+
+        foreach (var dependency in callSites
+                     .SelectMany(static callSite => callSite.StaticDependencies)
+                     .Where(dependency => seen.Add(dependency)))
+        {
+            results.Add(dependency);
+        }
+
+        return [.. results];
+    }
+
+    private static string AllocateInterceptorMethodName(MappaClassGeneratorContext classContext, int index)
+    {
+        var baseName = $"__MappaIntercept_{index}";
+        if (!IsNameTaken(classContext, baseName))
+        {
+            return baseName;
+        }
+
+        var suffix = 1;
+        while (IsNameTaken(classContext, $"{baseName}_{suffix}"))
+        {
+            suffix++;
+        }
+
+        return $"{baseName}_{suffix}";
+    }
+
+    private static bool IsNameTaken(MappaClassGeneratorContext classContext, string methodName)
+        => classContext.MapMethods.Any(mapMethod =>
+               string.Equals(mapMethod.MethodName, methodName, StringComparison.Ordinal))
+           || classContext.ClassSymbol.GetMembers(methodName).Length > 0;
 
     private void ExecuteForSingleClass(ClassDeclarationSyntax classDeclarationSyntax, CancellationToken cancellationToken)
     {
@@ -95,17 +154,216 @@ internal sealed class MappaInterceptorGeneratorAlgorithm
         }
 
         var methodName = attributes.GetMappaInterceptorMethodName(this.Compilation);
-        var builder = new MappaInterceptorFileBuilder(classDeclarationSyntax, classSymbol, methodName);
-        this.Context.AddSource(builder.HintName, builder.BuildSource());
+        var options = new MappaGlobalOptions(this.AnalyzerConfigOptionsProvider, classDeclarationSyntax.SyntaxTree);
+        var mappaDebug = new MappaDebug(options, this.Context.ReportDiagnostic);
+        var classContext = new MappaClassGeneratorContext(options, mappaDebug, this.Compilation, classDeclarationSyntax);
 
-        // Call-site discovery / collation diagnostics (interceptor emission is step 9).
-        _ = MappaInterceptorCallSiteAnalyzer.Analyze(
+        var callSites = MappaInterceptorCallSiteAnalyzer.Analyze(
             classDeclarationSyntax,
             classSymbol,
             methodName,
             this.Compilation,
             this.Context.ReportDiagnostic,
             cancellationToken);
+
+        var hasMappaAttribute = attributes.HasMappaAttribute(this.Compilation);
+        var staticDependencyTypes = CollectStaticDependencyTypes(attributes, callSites, this.Compilation);
+        MappaInterceptorDependencyCollector.Collect(
+            classContext,
+            this.Compilation,
+            hasMappaAttribute,
+            staticDependencyTypes,
+            this.Context.ReportDiagnostic,
+            cancellationToken);
+
+        var interceptorMethods = this.BuildInterceptorMethods(
+            classContext,
+            options,
+            callSites,
+            cancellationToken);
+
+        foreach (var diagnostic in classContext.Diagnostics)
+        {
+            this.Context.ReportDiagnostic(diagnostic);
+        }
+
+        var builder = new MappaInterceptorFileBuilder(
+            classDeclarationSyntax,
+            classSymbol,
+            methodName,
+            interceptorMethods,
+            this.Compilation,
+            options);
+        this.Context.AddSource(builder.HintName, builder.BuildSource());
+    }
+
+    private ImmutableArray<MappaInterceptorGeneratedMethod> BuildInterceptorMethods(
+        MappaClassGeneratorContext classContext,
+        MappaGlobalOptions options,
+        ImmutableArray<MappaInterceptorCallSite> callSites,
+        CancellationToken cancellationToken)
+    {
+        var results = ImmutableArray.CreateBuilder<MappaInterceptorGeneratedMethod>();
+        var classAttributes = classContext.ClassSymbol.GetAttributes();
+        var classBeforeMapAttributes = classAttributes.GetMappaBeforeMapAttributes(this.Compilation);
+        var classAfterMapAttributes = classAttributes.GetMappaAfterMapAttributes(this.Compilation);
+        var classObjectFactoryAttributes = classAttributes.GetMappaObjectFactoryAttributes(this.Compilation);
+        var classSettings = classAttributes.GetMappaSettingsAttribute(this.Compilation);
+        var mappaUserSettings = new MappaUserSettings(options);
+        var valueTransformerResolver = new ValueTransformerResolver(this.Compilation, classContext);
+        var interceptorIndex = 0;
+
+        using (mappaUserSettings.Apply(classSettings))
+        {
+            foreach (var callSite in callSites)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                if (callSite.HasErrors || callSite.InterceptableLocation is null)
+                {
+                    continue;
+                }
+
+                var withSettingsDisposables = callSite.Settings
+                    .Select(mappaUserSettings.Apply)
+                    .ToArray();
+                try
+                {
+                    var methodName = AllocateInterceptorMethodName(classContext, interceptorIndex++);
+                    var methodAttributes = callSite.MethodAttributes.ToArray();
+                    var mapMethod = MapMethod.CreateSynthetic(
+                        methodName,
+                        callSite.SourceType,
+                        callSite.TargetType,
+                        classContext.ClassSymbol,
+                        classContext.IsNullableEnabled(callSite.Invocation),
+                        isStatic: false,
+                        sourceParameterName: TypedSourceParameterName,
+                        mappaContextParameterName: callSite.HasContext ? ContextParameterName : null,
+                        location: callSite.Invocation.GetLocation(),
+                        attributes: methodAttributes);
+
+                    if (!classContext.TryAddMethod(mapMethod))
+                    {
+                        continue;
+                    }
+
+                    this.GenerateStrategiesUntilStable(
+                        classContext,
+                        mappaUserSettings,
+                        classBeforeMapAttributes,
+                        classAfterMapAttributes,
+                        classObjectFactoryAttributes,
+                        valueTransformerResolver,
+                        cancellationToken);
+
+                    if (!mapMethod.HasStrategy || mapMethod.Strategy.Strategy is NoMapStrategy)
+                    {
+                        continue;
+                    }
+
+                    results.Add(new MappaInterceptorGeneratedMethod(
+                        mapMethod,
+                        callSite.InterceptableLocation,
+                        mapMethod.NullableEnabled));
+                }
+                finally
+                {
+                    for (var index = withSettingsDisposables.Length - 1; index >= 0; index--)
+                    {
+                        withSettingsDisposables[index].Dispose();
+                    }
+                }
+            }
+        }
+
+        return results.ToImmutable();
+    }
+
+    private void GenerateStrategiesUntilStable(
+        MappaClassGeneratorContext classContext,
+        MappaUserSettings mappaUserSettings,
+        MapHookAttributeData[] classBeforeMapAttributes,
+        MapHookAttributeData[] classAfterMapAttributes,
+        MappaObjectFactoryAttributeData[] classObjectFactoryAttributes,
+        ValueTransformerResolver valueTransformerResolver,
+        CancellationToken cancellationToken)
+    {
+        while (!classContext.AreAllMethodsMapped())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            MapMethod[] mapMethodsSnapshot = [.. classContext.MapMethods];
+            foreach (var mapMethod in mapMethodsSnapshot)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                if (mapMethod.Mapped)
+                {
+                    continue;
+                }
+
+                var methodAttributes = mapMethod.MethodSymbol?.GetAttributes() ?? [];
+                var methodObjectFactoryAttributes = methodAttributes.GetMappaObjectFactoryAttributes(this.Compilation);
+                var mappaSettingsAttribute = mapMethod.GetAttribute<MappaSettingsAttribute>();
+                using (mappaUserSettings.Apply(mappaSettingsAttribute))
+                {
+                    mapMethod.SetPragmaWarning(mappaUserSettings.PragmaWarning);
+                    mapMethod.SetMaxRuntimeDepth(mappaUserSettings.MaxRuntimeDepth);
+                    mapMethod.SetReferenceReusing(mappaUserSettings.ReferenceReusing);
+
+                    if (!ProjectionMapMethodEligibilityValidator.TryValidate(
+                            mapMethod,
+                            this.Compilation,
+                            classContext,
+                            classBeforeMapAttributes,
+                            classAfterMapAttributes,
+                            classObjectFactoryAttributes,
+                            methodObjectFactoryAttributes,
+                            mappaUserSettings))
+                    {
+                        mapMethod.MarkMapped();
+                        continue;
+                    }
+
+                    if (!ObjectFactoryDuplicateValidator.TryValidate(
+                            mapMethod,
+                            classObjectFactoryAttributes,
+                            methodObjectFactoryAttributes,
+                            classContext))
+                    {
+                        mapMethod.MarkMapped();
+                        continue;
+                    }
+
+                    var methodContext = new MappaMethodGeneratorContext(classContext, mappaUserSettings, mapMethod);
+                    methodContext.SetValueTransformerCatalog(valueTransformerResolver.Resolve(mapMethod, mappaUserSettings));
+                    methodContext.ValidatePreferredInterfaceAttributes(this.Compilation);
+                    methodContext.ValidateMappaUseConstructorAttributes(this.Compilation);
+                    var typeIdentifierAlgorithm = new TypeMapIdentifierAlgorithm(
+                        methodContext,
+                        this.Compilation,
+                        cancellationToken);
+                    var strategy = typeIdentifierAlgorithm.GetStrategy();
+                    if (strategy is not NoMapStrategy && !methodContext.HasErrorDiagnostics)
+                    {
+                        methodContext.ReportPreferredInterfaceNotNeededWarnings();
+                        methodContext.ReportMappaUseConstructorUnusedWarnings();
+                    }
+
+                    var mapHookResolver = new MapHookResolver(this.Compilation, classContext, mapMethod);
+                    var beforeMapHooks = mapHookResolver.ResolveBeforeMapHooks(
+                        classBeforeMapAttributes,
+                        methodAttributes.GetMappaBeforeMapAttributes(this.Compilation));
+                    var afterMapHooks = mapHookResolver.ResolveAfterMapHooks(
+                        classAfterMapAttributes,
+                        methodAttributes.GetMappaAfterMapAttributes(this.Compilation));
+                    var methodParameterMapStrategy = new MethodParameterMapStrategy(
+                        strategy,
+                        beforeMapHooks,
+                        afterMapHooks);
+                    mapMethod.SetStrategy(methodParameterMapStrategy);
+                    mapMethod.MarkMapped();
+                }
+            }
+        }
     }
 
     private INamedTypeSymbol? ResolveClassSymbol(ClassDeclarationSyntax classDeclarationSyntax, CancellationToken cancellationToken)

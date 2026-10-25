@@ -647,6 +647,12 @@ internal sealed class MappaGeneratorClassAlgorithm
         }
 
         var mapMethod = CreateMapMethodFromDeclaration(methodDeclarationSyntax, classContext, cancellationToken);
+        if (mapMethod.MethodSymbol is not null
+            && mapMethod.MethodSymbol.GetAttributes().HasMappaInterceptorMethodDependencyAttribute(this.Compilation))
+        {
+            return;
+        }
+
         if (!this.ValidateMapMethodSymbolForAccept(methodDeclarationSyntax, mapMethod, classContext, reportDiagnostics: false))
         {
             return;
@@ -767,6 +773,12 @@ internal sealed class MappaGeneratorClassAlgorithm
         bool methodMustBeStatic)
     {
         if (method.GetAttributes().GetMappaIgnoreAttribute(this.Compilation) is not null)
+        {
+            return false;
+        }
+
+        // Interceptor-only dependency markers are ignored on the [Mappa] path.
+        if (method.GetAttributes().HasMappaInterceptorMethodDependencyAttribute(this.Compilation))
         {
             return false;
         }

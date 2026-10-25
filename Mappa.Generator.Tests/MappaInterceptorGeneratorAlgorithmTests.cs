@@ -253,6 +253,83 @@ public sealed class MappaInterceptorGeneratorAlgorithmTests
             diagnostic.Id == MappaDiagnosticDescriptors.MappaInterceptorWithArgumentMustBeObjectCreation.Id);
     }
 
+    /// <summary>
+    /// After stubs exist in the compilation, a second generator pass emits interceptor methods
+    /// with <c>[InterceptsLocation]</c> for identity-mappable call sites.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void ExecuteEmitsInterceptorMethodsOnSecondPass()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              [MappaInterceptor]
+                              public partial class InlineMapper
+                              {
+                                  public int Map(int value)
+                                  {
+                                      return this.MappaMap<int>(value);
+                                  }
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var classDeclaration = GetClassDeclaration(compilation, "InlineMapper");
+
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(
+            new InterceptorAlgorithmHarness([classDeclaration]).AsSourceGenerator());
+        driver = driver.RunGeneratorsAndUpdateCompilation(
+            compilation,
+            out var updatedCompilation,
+            out _,
+            TestContext.Current.CancellationToken);
+        driver = driver.RunGeneratorsAndUpdateCompilation(
+            updatedCompilation,
+            out _,
+            out _,
+            TestContext.Current.CancellationToken);
+        var runResult = driver.GetRunResult();
+
+        runResult.GeneratedTrees.Should().ContainSingle();
+        var generated = runResult.GeneratedTrees[0].GetText(TestContext.Current.CancellationToken).ToString();
+        generated.Should().Contain("InterceptsLocationAttribute");
+        generated.Should().Contain("__MappaIntercept_");
+        generated.Should().Contain("__mappaTypedSource");
+    }
+
+    /// <summary>
+    /// Classes with both <c>[Mappa]</c> and <c>[MappaInterceptor]</c> still emit interceptor stubs.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void ExecuteAllowsCoexistenceWithMappaAttribute()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              [Mappa]
+                              [MappaInterceptor]
+                              public partial class InlineMapper
+                              {
+                                  public partial long Map(int value);
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var classDeclaration = GetClassDeclaration(compilation, "InlineMapper");
+
+        var runResult = RunAlgorithm(compilation, [classDeclaration]);
+
+        runResult.GeneratedTrees.Should().ContainSingle();
+        var generated = runResult.GeneratedTrees[0].GetText(TestContext.Current.CancellationToken).ToString();
+        generated.Should().Contain("TTarget MappaMap<TTarget>(object source)");
+    }
+
     private static ClassDeclarationSyntax GetClassDeclaration(Compilation compilation, string className)
         => compilation.SyntaxTrees
             .SelectMany(syntaxTree => syntaxTree.GetRoot(TestContext.Current.CancellationToken)
@@ -296,12 +373,13 @@ public sealed class MappaInterceptorGeneratorAlgorithmTests
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
             context.RegisterSourceOutput(
-                context.CompilationProvider,
-                (productionContext, compilation) =>
+                context.AnalyzerConfigOptionsProvider.Combine(context.CompilationProvider),
+                (productionContext, pair) =>
                 {
                     new MappaInterceptorGeneratorAlgorithm(
                             productionContext,
-                            compilation,
+                            pair.Left,
+                            pair.Right,
                             this.classDeclarations,
                             this.classSymbolResolver)
                         .Execute();
