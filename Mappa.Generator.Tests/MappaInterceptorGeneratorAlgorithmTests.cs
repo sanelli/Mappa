@@ -219,6 +219,40 @@ public sealed class MappaInterceptorGeneratorAlgorithmTests
         generated.Should().NotContain("TTarget MappaMap<TTarget>");
     }
 
+    /// <summary>
+    /// Call-site collation diagnostics from <c>With</c> are reported while stubs are still emitted.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void ExecuteReportsCallSiteCollationDiagnostics()
+    {
+        const string source = """
+                              using Mappa;
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              [MappaInterceptor]
+                              public partial class InlineMapper
+                              {
+                                  public string Map(int value)
+                                  {
+                                      var settings = new MappaSettingsAttribute();
+                                      return this.MappaMap<string>(value).With(settings);
+                                  }
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var classDeclaration = GetClassDeclaration(compilation, "InlineMapper");
+
+        var runResult = RunAlgorithm(compilation, [classDeclaration]);
+
+        runResult.GeneratedTrees.Should().ContainSingle();
+        runResult.Diagnostics.Should().Contain(diagnostic =>
+            diagnostic.Id == MappaDiagnosticDescriptors.MappaInterceptorWithArgumentMustBeObjectCreation.Id);
+    }
+
     private static ClassDeclarationSyntax GetClassDeclaration(Compilation compilation, string className)
         => compilation.SyntaxTrees
             .SelectMany(syntaxTree => syntaxTree.GetRoot(TestContext.Current.CancellationToken)

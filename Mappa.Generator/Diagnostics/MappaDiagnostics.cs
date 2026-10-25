@@ -47,10 +47,19 @@ internal static class MappaDiagnostics
     /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
     /// <returns>The diagnostic.</returns>
     internal static Diagnostic MethodIsVoid(MethodDeclarationSyntax methodDeclarationSyntax)
+        => MethodIsVoid(methodDeclarationSyntax.GetLocation(), methodDeclarationSyntax.Identifier.ToFullString());
+
+    /// <summary>
+    /// Diagnostic to report that a mapping target type is <c>void</c>.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="methodName">The map method name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MethodIsVoid(Location? location, string methodName)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.MethodIsVoid,
-            methodDeclarationSyntax.GetLocation(),
-            methodDeclarationSyntax.Identifier.ToFullString());
+            location,
+            methodName);
 
     /// <summary>
     /// Diagnostic to report the fact that the method described by syntax
@@ -60,10 +69,19 @@ internal static class MappaDiagnostics
     /// <param name="methodDeclarationSyntax">The method declaration syntax.</param>
     /// <returns>The diagnostic.</returns>
     internal static Diagnostic MethodReturnsTaskType(MethodDeclarationSyntax methodDeclarationSyntax)
+        => MethodReturnsTaskType(methodDeclarationSyntax.GetLocation(), methodDeclarationSyntax.Identifier.ToFullString());
+
+    /// <summary>
+    /// Diagnostic to report that a mapping target type is a task type.
+    /// </summary>
+    /// <param name="location">The diagnostic location.</param>
+    /// <param name="methodName">The map method name.</param>
+    /// <returns>The diagnostic.</returns>
+    internal static Diagnostic MethodReturnsTaskType(Location? location, string methodName)
         => Diagnostic.Create(
             MappaDiagnosticDescriptors.MethodReturnsTaskType,
-            methodDeclarationSyntax.GetLocation(),
-            methodDeclarationSyntax.Identifier.ToFullString());
+            location,
+            methodName);
 
     /// <summary>
     /// Diagnostic to report the fact that a method cannot be generated because a

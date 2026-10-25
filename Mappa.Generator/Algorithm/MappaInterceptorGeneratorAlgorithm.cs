@@ -7,6 +7,7 @@ using System.Collections.Immutable;
 using Mappa.Generator.Builders;
 using Mappa.Generator.Diagnostics;
 using Mappa.Generator.Extensions;
+using Mappa.Generator.Helpers;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -96,6 +97,15 @@ internal sealed class MappaInterceptorGeneratorAlgorithm
         var methodName = attributes.GetMappaInterceptorMethodName(this.Compilation);
         var builder = new MappaInterceptorFileBuilder(classDeclarationSyntax, classSymbol, methodName);
         this.Context.AddSource(builder.HintName, builder.BuildSource());
+
+        // Call-site discovery / collation diagnostics (interceptor emission is step 9).
+        _ = MappaInterceptorCallSiteAnalyzer.Analyze(
+            classDeclarationSyntax,
+            classSymbol,
+            methodName,
+            this.Compilation,
+            this.Context.ReportDiagnostic,
+            cancellationToken);
     }
 
     private INamedTypeSymbol? ResolveClassSymbol(ClassDeclarationSyntax classDeclarationSyntax, CancellationToken cancellationToken)
