@@ -92,6 +92,18 @@ internal sealed class MethodDeclarationSyntaxAssertions
     }
 
     /// <summary>
+    /// Check that the method has an <c>InterceptsLocationAttribute</c>.
+    /// </summary>
+    /// <returns>The assertions.</returns>
+    internal MethodDeclarationSyntaxAssertions HaveInterceptsLocationAttribute()
+    {
+        var attributes = this.Subject.AttributeLists.SelectMany(attributeList => attributeList.Attributes);
+        attributes.Should().Contain(attributeSyntax =>
+            attributeSyntax.Name.ToString().Contains("InterceptsLocation", StringComparison.Ordinal));
+        return this;
+    }
+
+    /// <summary>
     /// Assert that the method have all the expected modifiers.
     /// </summary>
     /// <param name="modifiers">The expected modifier.</param>

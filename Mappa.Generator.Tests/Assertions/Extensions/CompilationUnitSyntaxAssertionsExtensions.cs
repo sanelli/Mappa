@@ -22,7 +22,8 @@ internal static class CompilationUnitSyntaxAssertionsExtensions
         @this.Subject.HasLeadingTrivia.Should().BeTrue();
         var leadingTrivia = @this.Subject.GetLeadingTrivia()
             .Select(trivia => trivia.ToString())
-            .Where(line => !string.IsNullOrWhiteSpace(line))
+            .Where(line => !string.IsNullOrWhiteSpace(line)
+                           && line.StartsWith("//", StringComparison.Ordinal))
             .ToArray();
         leadingTrivia.Should().HaveCount(6);
         var mappaGeneratorVersion = MappaGeneratorConsts.MappaGeneratorVersion.ToString();

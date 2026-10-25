@@ -137,6 +137,26 @@ internal sealed class GeneratedResultsAssertions
     }
 
     /// <summary>
+    /// Gets assertions for the single generated source from the driver run result
+    /// (preferred for interceptor tests where the output compilation may contain extra trees).
+    /// </summary>
+    /// <returns>The syntax tree assertions instance.</returns>
+    public CompilationUnitSyntaxAssertions WithGeneratedCompilationUnit()
+    {
+        var runResult = this.HaveOneResult();
+        runResult.GeneratedSources.Should().ContainSingle();
+        var syntaxTree = runResult.GeneratedSources[0].SyntaxTree;
+        var compilationTree = this.Subject.OutputCompilation.SyntaxTrees
+            .FirstOrDefault(tree => tree.FilePath == syntaxTree.FilePath)
+            ?? syntaxTree;
+        var semanticModel = this.Subject.OutputCompilation.GetSemanticModel(compilationTree);
+        return new CompilationUnitSyntaxAssertions(
+            (CompilationUnitSyntax)compilationTree.GetRoot(),
+            semanticModel,
+            this.Subject.OutputCompilation);
+    }
+
+    /// <summary>
     /// Gets the assertions for the syntax tree.
     /// </summary>
     /// <param name="howMany">The number of expected generated syntax trees.</param>
