@@ -381,6 +381,320 @@ public sealed class MappaInterceptorCallSiteAnalyzerTests
         callSites[0].TargetType.ToDisplayString().Should().Be("string");
     }
 
+    /// <summary>
+    /// Accepts explicit array creation for method attributes.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void AnalyzeAcceptsExplicitArrayCreationForMethodAttributes()
+    {
+        const string source = """
+                              using Mappa;
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              [MappaInterceptor]
+                              public partial class InlineMapper
+                              {
+                                  public string Map(int value)
+                                  {
+                                      return this.MappaMap<string>(value)
+                                          .With(
+                                              mappaMethodAttributes: new IMappaMethodAttribute[]
+                                              {
+                                                  new MappaIgnoreTargetPropertyAttribute("Ignored"),
+                                              });
+                                  }
+                              }
+                              """;
+
+        var (callSites, diagnostics) = Analyze(source);
+
+        diagnostics.Should().BeEmpty();
+        callSites.Should().ContainSingle();
+        callSites[0].MethodAttributes.Should().ContainSingle()
+            .Which.Should().BeOfType<MappaIgnoreTargetPropertyAttribute>();
+    }
+
+    /// <summary>
+    /// Accepts collection expressions for static dependencies.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void AnalyzeAcceptsCollectionExpressionForStaticDependencies()
+    {
+        const string source = """
+                              using Mappa;
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public static class HelperMapper
+                              {
+                              }
+
+                              [MappaInterceptor]
+                              public partial class InlineMapper
+                              {
+                                  public string Map(int value)
+                                  {
+                                      return this.MappaMap<string>(value)
+                                          .With(
+                                              mappaStaticDependencies:
+                                              [
+                                                  new MappaStaticDependencyAttribute(typeof(HelperMapper)),
+                                              ]);
+                                  }
+                              }
+                              """;
+
+        var (callSites, diagnostics) = Analyze(source);
+
+        diagnostics.Should().BeEmpty();
+        callSites.Should().ContainSingle();
+        callSites[0].StaticDependencies.Should().ContainSingle()
+            .Which.Name.Should().Be("HelperMapper");
+    }
+
+    /// <summary>
+    /// Reports when an array initializer contains a non-creation expression.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void AnalyzeReportsNonCreationInsideArrayInitializer()
+    {
+        const string source = """
+                              using Mappa;
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              [MappaInterceptor]
+                              public partial class InlineMapper
+                              {
+                                  public string Map(int value)
+                                  {
+                                      var ignore = new MappaIgnoreTargetPropertyAttribute("Ignored");
+                                      return this.MappaMap<string>(value)
+                                          .With(mappaMethodAttributes: new IMappaMethodAttribute[] { ignore });
+                                  }
+                              }
+                              """;
+
+        var (callSites, diagnostics) = Analyze(source);
+
+        callSites.Should().ContainSingle().Which.HasErrors.Should().BeTrue();
+        diagnostics.Should().Contain(diagnostic =>
+            diagnostic.Id == MappaDiagnosticDescriptors.MappaInterceptorWithArgumentMustBeObjectCreation.Id);
+    }
+
+    /// <summary>
+    /// Reports when method-attribute arguments are not inline creations or arrays of creations.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void AnalyzeReportsMethodAttributesVariableArgument()
+    {
+        const string source = """
+                              using Mappa;
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              [MappaInterceptor]
+                              public partial class InlineMapper
+                              {
+                                  public string Map(int value)
+                                  {
+                                      IMappaMethodAttribute[] attrs =
+                                      {
+                                          new MappaIgnoreTargetPropertyAttribute("Ignored"),
+                                      };
+                                      return this.MappaMap<string>(value).With(mappaMethodAttributes: attrs);
+                                  }
+                              }
+                              """;
+
+        var (callSites, diagnostics) = Analyze(source);
+
+        callSites.Should().ContainSingle().Which.HasErrors.Should().BeTrue();
+        diagnostics.Should().Contain(diagnostic =>
+            diagnostic.Id == MappaDiagnosticDescriptors.MappaInterceptorWithArgumentMustBeObjectCreation.Id);
+    }
+
+    /// <summary>
+    /// Warns when the same static dependency type is declared twice at class level.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void AnalyzeWarnsOnDuplicateClassLevelStaticDependencies()
+    {
+        const string source = """
+                              using Mappa;
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public static class HelperMapper
+                              {
+                              }
+
+                              [MappaInterceptor]
+                              [MappaStaticDependency(typeof(HelperMapper))]
+                              [MappaStaticDependency(typeof(HelperMapper))]
+                              public partial class InlineMapper
+                              {
+                                  public string Map(int value) => this.MappaMap<string>(value);
+                              }
+                              """;
+
+        var (callSites, diagnostics) = Analyze(source);
+
+        callSites.Should().ContainSingle();
+        callSites[0].StaticDependencies.Should().ContainSingle();
+        diagnostics.Should().Contain(diagnostic =>
+            diagnostic.Id == MappaDiagnosticDescriptors.MappaInterceptorDuplicateStaticDependencyType.Id);
+    }
+
+    /// <summary>
+    /// Errors when the interceptor target type is a <c>Task</c>.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void AnalyzeErrorsOnTaskTargetType()
+    {
+        const string source = """
+                              using System.Threading.Tasks;
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              [MappaInterceptor]
+                              public partial class InlineMapper
+                              {
+                                  public Task<string> Map(int value)
+                                  {
+                                      return this.MappaMap<Task<string>>(value);
+                                  }
+                              }
+                              """;
+
+        var (callSites, diagnostics) = Analyze(source);
+
+        callSites.Should().ContainSingle().Which.HasErrors.Should().BeTrue();
+        diagnostics.Should().Contain(diagnostic =>
+            diagnostic.Id == MappaDiagnosticDescriptors.MethodReturnsTaskType.Id);
+    }
+
+    /// <summary>
+    /// Non-matching invocations still exercise map-call matching rejection branches.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void AnalyzeIgnoresNonMatchingMapInvocations()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              [MappaInterceptor]
+                              public partial class InlineMapper
+                              {
+                                  public string Map(int value)
+                                  {
+                                      _ = this.MappaMap(value);
+                                      _ = this.MappaMap<string, int>(value);
+                                      _ = this.MappaMap<string>();
+                                      _ = this.MappaMap<string>(value, value, value);
+                                      _ = this.NotMappaMap<string>(value);
+                                      return this.MappaMap<string>(value);
+                                  }
+                              }
+                              """;
+
+        var (callSites, diagnostics) = Analyze(source);
+
+        diagnostics.Should().BeEmpty();
+        callSites.Should().ContainSingle();
+        callSites[0].TargetType.ToDisplayString().Should().Be("string");
+    }
+
+    /// <summary>
+    /// Extra positional <c>With</c> arguments are ignored during collation.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void AnalyzeIgnoresExtraPositionalWithArguments()
+    {
+        const string source = """
+                              using Mappa;
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              [MappaInterceptor]
+                              public partial class InlineMapper
+                              {
+                                  public string Map(int value)
+                                  {
+                                      return this.MappaMap<string>(value)
+                                          .With(
+                                              new MappaSettingsAttribute { DateTimeFormat = "O" },
+                                              null,
+                                              null,
+                                              "ignored");
+                                  }
+                              }
+                              """;
+
+        var (callSites, diagnostics) = Analyze(source);
+
+        diagnostics.Should().BeEmpty();
+        callSites.Should().ContainSingle();
+        callSites[0].Settings.Should().ContainSingle()
+            .Which.DateTimeFormat.Should().Be("O");
+    }
+
+    /// <summary>
+    /// Reports when static-dependency arguments are not inline creations.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void AnalyzeReportsStaticDependenciesVariableArgument()
+    {
+        const string source = """
+                              using Mappa;
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public static class HelperMapper
+                              {
+                              }
+
+                              [MappaInterceptor]
+                              public partial class InlineMapper
+                              {
+                                  public string Map(int value)
+                                  {
+                                      var deps = new MappaStaticDependencyAttribute[]
+                                      {
+                                          new MappaStaticDependencyAttribute(typeof(HelperMapper)),
+                                      };
+                                      return this.MappaMap<string>(value).With(mappaStaticDependencies: deps);
+                                  }
+                              }
+                              """;
+
+        var (callSites, diagnostics) = Analyze(source);
+
+        callSites.Should().ContainSingle().Which.HasErrors.Should().BeTrue();
+        diagnostics.Should().Contain(diagnostic =>
+            diagnostic.Id == MappaDiagnosticDescriptors.MappaInterceptorWithArgumentMustBeObjectCreation.Id);
+    }
+
     private static (System.Collections.Immutable.ImmutableArray<MappaInterceptorCallSite> CallSites, List<Diagnostic> Diagnostics)
         Analyze(string source, string methodName = "MappaMap")
     {

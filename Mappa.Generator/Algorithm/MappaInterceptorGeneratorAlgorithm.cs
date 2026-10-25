@@ -126,13 +126,9 @@ internal sealed class MappaInterceptorGeneratorAlgorithm
                string.Equals(mapMethod.MethodName, methodName, StringComparison.Ordinal))
            || classContext.ClassSymbol.GetMembers(methodName).Length > 0;
 
-    private static MapHookAttributeData[] GetMethodBeforeMapAttributes(MapMethod mapMethod, Compilation compilation)
+    private static MapHookAttributeData[] GetMethodBeforeMapAttributes(MapMethod mapMethod)
     {
-        if (mapMethod.MethodSymbol is not null)
-        {
-            return mapMethod.MethodSymbol.GetAttributes().GetMappaBeforeMapAttributes(compilation);
-        }
-
+        // Interceptor synthetics carry materialised attributes; dependency MapMethods are already Mapped.
         return
         [
             .. mapMethod.GetAttributes<MappaBeforeMapAttribute>()
@@ -144,13 +140,9 @@ internal sealed class MappaInterceptorGeneratorAlgorithm
         ];
     }
 
-    private static MapHookAttributeData[] GetMethodAfterMapAttributes(MapMethod mapMethod, Compilation compilation)
+    private static MapHookAttributeData[] GetMethodAfterMapAttributes(MapMethod mapMethod)
     {
-        if (mapMethod.MethodSymbol is not null)
-        {
-            return mapMethod.MethodSymbol.GetAttributes().GetMappaAfterMapAttributes(compilation);
-        }
-
+        // Interceptor synthetics carry materialised attributes; dependency MapMethods are already Mapped.
         return
         [
             .. mapMethod.GetAttributes<MappaAfterMapAttribute>()
@@ -357,8 +349,8 @@ internal sealed class MappaInterceptorGeneratorAlgorithm
 
                 var methodAttributes = mapMethod.MethodSymbol?.GetAttributes() ?? [];
                 var methodObjectFactoryAttributes = methodAttributes.GetMappaObjectFactoryAttributes(this.Compilation);
-                var methodBeforeMapAttributes = GetMethodBeforeMapAttributes(mapMethod, this.Compilation);
-                var methodAfterMapAttributes = GetMethodAfterMapAttributes(mapMethod, this.Compilation);
+                var methodBeforeMapAttributes = GetMethodBeforeMapAttributes(mapMethod);
+                var methodAfterMapAttributes = GetMethodAfterMapAttributes(mapMethod);
                 var mappaSettingsAttribute = mapMethod.GetAttribute<MappaSettingsAttribute>();
                 using (mappaUserSettings.Apply(mappaSettingsAttribute))
                 {
@@ -366,20 +358,7 @@ internal sealed class MappaInterceptorGeneratorAlgorithm
                     mapMethod.SetMaxRuntimeDepth(mappaUserSettings.MaxRuntimeDepth);
                     mapMethod.SetReferenceReusing(mappaUserSettings.ReferenceReusing);
 
-                    if (!ProjectionMapMethodEligibilityValidator.TryValidate(
-                            mapMethod,
-                            this.Compilation,
-                            classContext,
-                            classBeforeMapAttributes,
-                            classAfterMapAttributes,
-                            classObjectFactoryAttributes,
-                            methodObjectFactoryAttributes,
-                            mappaUserSettings))
-                    {
-                        mapMethod.MarkMapped();
-                        continue;
-                    }
-
+                    // Projection eligibility always passes for interceptor synthetics (IsSynthetic).
                     if (!ObjectFactoryDuplicateValidator.TryValidate(
                             mapMethod,
                             classObjectFactoryAttributes,

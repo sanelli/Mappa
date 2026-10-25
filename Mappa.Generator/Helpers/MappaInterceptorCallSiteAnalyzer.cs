@@ -143,14 +143,9 @@ internal static class MappaInterceptorCallSiteAnalyzer
 
         var typeArgument = genericName.TypeArgumentList.Arguments[0];
         var resolvedTarget = semanticModel.GetTypeInfo(typeArgument, cancellationToken).Type;
-        if (resolvedTarget is null)
-        {
-            return false;
-        }
-
         var sourceArgument = invocation.ArgumentList.Arguments[0].Expression;
         var resolvedSource = semanticModel.GetTypeInfo(sourceArgument, cancellationToken).Type;
-        if (resolvedSource is null)
+        if (resolvedTarget is null || resolvedSource is null)
         {
             return false;
         }
@@ -280,19 +275,10 @@ internal static class MappaInterceptorCallSiteAnalyzer
             return false;
         }
 
-        var materialized = MappaInterceptorAttributeSyntaxMaterializer.TryMaterializeSettings(
+        settings.Add(MappaInterceptorAttributeSyntaxMaterializer.MaterializeSettings(
             creation,
             semanticModel,
-            cancellationToken);
-        if (materialized is null)
-        {
-            reportDiagnostic(MappaDiagnostics.MappaInterceptorWithArgumentMustBeObjectCreation(
-                expression.GetLocation(),
-                expression.ToString()));
-            return false;
-        }
-
-        settings.Add(materialized);
+            cancellationToken));
         return true;
     }
 
@@ -351,9 +337,6 @@ internal static class MappaInterceptorCallSiteAnalyzer
                 ?? semanticModel.GetSymbolInfo(creation.Type, cancellationToken).Symbol as INamedTypeSymbol;
             if (attributeType is null)
             {
-                reportDiagnostic(MappaDiagnostics.MappaInterceptorWithArgumentMustBeObjectCreation(
-                    creation.GetLocation(),
-                    creation.ToString()));
                 success = false;
                 continue;
             }
@@ -390,9 +373,6 @@ internal static class MappaInterceptorCallSiteAnalyzer
         creations = [];
         switch (expression)
         {
-            case ObjectCreationExpressionSyntax single:
-                creations.Add(single);
-                return true;
             case ArrayCreationExpressionSyntax { Initializer: { } arrayInitializer }:
                 return TryAddCreationsFromInitializer(arrayInitializer.Expressions, reportDiagnostic, creations);
             case ImplicitArrayCreationExpressionSyntax { Initializer: { } implicitInitializer }:
@@ -536,12 +516,7 @@ internal static class MappaInterceptorCallSiteAnalyzer
             }
         }
 
-        if (targetType.IsVoid())
-        {
-            reportDiagnostic(MappaDiagnostics.MethodIsVoid(location, methodName));
-            hasErrors = true;
-        }
-        else if (targetType.IsAnyTaskType(compilation))
+        if (targetType.IsAnyTaskType(compilation))
         {
             reportDiagnostic(MappaDiagnostics.MethodReturnsTaskType(location, methodName));
             hasErrors = true;

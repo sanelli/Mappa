@@ -189,7 +189,6 @@ internal static class MappaInterceptorDependencyCollector
                     classContext.ClassDeclarationSyntax,
                     method,
                     accessFieldName,
-                    methodMustBeStatic: true,
                     canBeInvokedByStaticMethod: true,
                     classContext,
                     compilation);
@@ -221,7 +220,6 @@ internal static class MappaInterceptorDependencyCollector
                 classContext.ClassDeclarationSyntax,
                 method,
                 method.IsStatic ? $"global::{method.ContainingType.ToDisplayString()}" : "this",
-                methodMustBeStatic: method.IsStatic,
                 canBeInvokedByStaticMethod: method.IsStatic,
                 classContext,
                 compilation);
@@ -262,7 +260,6 @@ internal static class MappaInterceptorDependencyCollector
                 methodDeclaration,
                 methodSymbol,
                 methodSymbol.IsStatic ? $"global::{methodSymbol.ContainingType.ToDisplayString()}" : "this",
-                methodMustBeStatic: methodSymbol.IsStatic,
                 canBeInvokedByStaticMethod: methodSymbol.IsStatic,
                 classContext,
                 compilation);
@@ -281,7 +278,6 @@ internal static class MappaInterceptorDependencyCollector
                 classContext.ClassDeclarationSyntax,
                 method,
                 method.IsStatic ? $"global::{method.ContainingType.ToDisplayString()}" : "this",
-                methodMustBeStatic: method.IsStatic,
                 canBeInvokedByStaticMethod: method.IsStatic,
                 classContext,
                 compilation);
@@ -306,7 +302,6 @@ internal static class MappaInterceptorDependencyCollector
                 referenceSyntaxNode,
                 method,
                 method.IsStatic ? staticAccessor : accessFieldName,
-                methodMustBeStatic: method.IsStatic,
                 canBeInvokedByStaticMethod: method.IsStatic || dependencyMemberIsStatic,
                 classContext,
                 compilation);
@@ -324,13 +319,12 @@ internal static class MappaInterceptorDependencyCollector
         SyntaxNode referenceSyntaxNode,
         IMethodSymbol method,
         string accessFieldName,
-        bool methodMustBeStatic,
         bool canBeInvokedByStaticMethod,
         MappaClassGeneratorContext classContext,
         Compilation compilation)
     {
         _ = referenceSyntaxNode;
-        if (!IsViableDependencyMapMethod(method, classContext, compilation, methodMustBeStatic))
+        if (!IsViableDependencyMapMethod(method, classContext, compilation))
         {
             return false;
         }
@@ -348,8 +342,7 @@ internal static class MappaInterceptorDependencyCollector
     private static bool IsViableDependencyMapMethod(
         IMethodSymbol method,
         MappaClassGeneratorContext classContext,
-        Compilation compilation,
-        bool methodMustBeStatic)
+        Compilation compilation)
     {
         if (method.GetAttributes().GetMappaIgnoreAttribute(compilation) is not null)
         {
@@ -357,11 +350,6 @@ internal static class MappaInterceptorDependencyCollector
         }
 
         if (!compilation.IsSymbolAccessibleWithin(method, classContext.ClassSymbol))
-        {
-            return false;
-        }
-
-        if (method.IsStatic != methodMustBeStatic)
         {
             return false;
         }

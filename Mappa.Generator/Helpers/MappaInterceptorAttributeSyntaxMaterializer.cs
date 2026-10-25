@@ -25,8 +25,8 @@ internal static class MappaInterceptorAttributeSyntaxMaterializer
     /// <param name="creation">The object creation.</param>
     /// <param name="semanticModel">The semantic model.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>The settings instance, or <c>null</c> when materialization fails.</returns>
-    internal static MappaSettingsAttribute? TryMaterializeSettings(
+    /// <returns>The settings instance.</returns>
+    internal static MappaSettingsAttribute MaterializeSettings(
         ObjectCreationExpressionSyntax creation,
         SemanticModel semanticModel,
         CancellationToken cancellationToken)
@@ -215,12 +215,6 @@ internal static class MappaInterceptorAttributeSyntaxMaterializer
                     return allowMultiple;
                 }
             }
-
-            if (attributeData.ConstructorArguments.Length >= 2
-                && attributeData.ConstructorArguments[1].Value is bool constructorAllowMultiple)
-            {
-                return constructorAllowMultiple;
-            }
         }
 
         return false;
@@ -235,13 +229,9 @@ internal static class MappaInterceptorAttributeSyntaxMaterializer
     internal static bool ImplementsIMappaMethodAttribute(INamedTypeSymbol attributeType, Compilation compilation)
     {
         var marker = compilation.GetTypeByMetadataName("Mappa.IMappaMethodAttribute");
-        if (marker is null)
-        {
-            return false;
-        }
-
-        return attributeType.AllInterfaces.Any(
-            @interface => SymbolEqualityComparer.Default.Equals(@interface, marker));
+        return marker is not null
+               && attributeType.AllInterfaces.Any(
+                   @interface => SymbolEqualityComparer.Default.Equals(@interface, marker));
     }
 
     /// <summary>
@@ -436,10 +426,6 @@ internal static class MappaInterceptorAttributeSyntaxMaterializer
         {
             // Ignore values that cannot be converted for this property.
         }
-        catch (InvalidCastException)
-        {
-            // Ignore values that cannot be converted for this property.
-        }
     }
 
     private static object? ConvertConstantToPropertyType(object constant, Type propertyType)
@@ -468,16 +454,6 @@ internal static class MappaInterceptorAttributeSyntaxMaterializer
         if (underlying == typeof(short))
         {
             return Convert.ToInt16(constant, CultureInfo.InvariantCulture);
-        }
-
-        if (underlying == typeof(DateTimeStyles) && constant is int dateTimeStyles)
-        {
-            return (DateTimeStyles)dateTimeStyles;
-        }
-
-        if (underlying == typeof(NumberStyles) && constant is int numberStyles)
-        {
-            return (NumberStyles)numberStyles;
         }
 
         return Convert.ChangeType(constant, underlying, CultureInfo.InvariantCulture);
