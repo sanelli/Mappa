@@ -57,9 +57,20 @@ internal static class MappaInterceptorDependencyCollector
         CancellationToken cancellationToken)
     {
         var processedNames = new HashSet<string>(StringComparer.Ordinal);
-        var classDeclaration = classContext.ClassDeclarationSyntax;
+        CollectDeclaredDependencyProperties(classContext, compilation, reportDiagnostic, processedNames, cancellationToken);
+        CollectBaseDependencyProperties(classContext, compilation, reportDiagnostic, processedNames, cancellationToken);
+        CollectDeclaredDependencyFields(classContext, compilation, reportDiagnostic, processedNames, cancellationToken);
+        CollectBaseDependencyFields(classContext, compilation, reportDiagnostic, processedNames, cancellationToken);
+    }
 
-        foreach (var propertyDeclaration in classDeclaration.ChildNodes().OfType<PropertyDeclarationSyntax>())
+    private static void CollectDeclaredDependencyProperties(
+        MappaClassGeneratorContext classContext,
+        Compilation compilation,
+        Action<Diagnostic> reportDiagnostic,
+        HashSet<string> processedNames,
+        CancellationToken cancellationToken)
+    {
+        foreach (var propertyDeclaration in classContext.ClassDeclarationSyntax.ChildNodes().OfType<PropertyDeclarationSyntax>())
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (propertyDeclaration.AccessorList is null
@@ -84,14 +95,22 @@ internal static class MappaInterceptorDependencyCollector
             ProcessDependencyType(
                 propertyDeclaration,
                 propertySymbol.Type,
-                propertySymbol.IsStatic ? $"global::{propertySymbol.Type.ToDisplayString()}" : $"this.{propertyIdentifier}",
+                BuildDependencyAccessor(propertySymbol.IsStatic, propertySymbol.Type, propertyIdentifier),
                 propertySymbol.IsStatic,
                 propertyIdentifier,
                 classContext,
                 compilation,
                 reportDiagnostic);
         }
+    }
 
+    private static void CollectBaseDependencyProperties(
+        MappaClassGeneratorContext classContext,
+        Compilation compilation,
+        Action<Diagnostic> reportDiagnostic,
+        HashSet<string> processedNames,
+        CancellationToken cancellationToken)
+    {
         foreach (var propertySymbol in compilation.GetMappaDependencyPropertiesInMapperBaseTypeHierarchy(classContext.ClassSymbol))
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -101,17 +120,25 @@ internal static class MappaInterceptorDependencyCollector
             }
 
             ProcessDependencyType(
-                classDeclaration,
+                classContext.ClassDeclarationSyntax,
                 propertySymbol.Type,
-                propertySymbol.IsStatic ? $"global::{propertySymbol.Type.ToDisplayString()}" : $"this.{propertySymbol.Name}",
+                BuildDependencyAccessor(propertySymbol.IsStatic, propertySymbol.Type, propertySymbol.Name),
                 propertySymbol.IsStatic,
                 propertySymbol.Name,
                 classContext,
                 compilation,
                 reportDiagnostic);
         }
+    }
 
-        foreach (var fieldDeclaration in classDeclaration.ChildNodes().OfType<FieldDeclarationSyntax>())
+    private static void CollectDeclaredDependencyFields(
+        MappaClassGeneratorContext classContext,
+        Compilation compilation,
+        Action<Diagnostic> reportDiagnostic,
+        HashSet<string> processedNames,
+        CancellationToken cancellationToken)
+    {
+        foreach (var fieldDeclaration in classContext.ClassDeclarationSyntax.ChildNodes().OfType<FieldDeclarationSyntax>())
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (fieldDeclaration.AttributeLists.GetMappaDependencyAttributeSyntax(classContext.SemanticModel, cancellationToken) is null)
@@ -131,7 +158,7 @@ internal static class MappaInterceptorDependencyCollector
                 ProcessDependencyType(
                     fieldDeclaration,
                     fieldSymbol.Type,
-                    fieldSymbol.IsStatic ? $"global::{fieldSymbol.Type.ToDisplayString()}" : $"this.{fieldIdentifier}",
+                    BuildDependencyAccessor(fieldSymbol.IsStatic, fieldSymbol.Type, fieldIdentifier),
                     fieldSymbol.IsStatic,
                     fieldIdentifier,
                     classContext,
@@ -139,7 +166,15 @@ internal static class MappaInterceptorDependencyCollector
                     reportDiagnostic);
             }
         }
+    }
 
+    private static void CollectBaseDependencyFields(
+        MappaClassGeneratorContext classContext,
+        Compilation compilation,
+        Action<Diagnostic> reportDiagnostic,
+        HashSet<string> processedNames,
+        CancellationToken cancellationToken)
+    {
         foreach (var fieldSymbol in compilation.GetMappaDependencyFieldsInMapperBaseTypeHierarchy(classContext.ClassSymbol))
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -149,9 +184,9 @@ internal static class MappaInterceptorDependencyCollector
             }
 
             ProcessDependencyType(
-                classDeclaration,
+                classContext.ClassDeclarationSyntax,
                 fieldSymbol.Type,
-                fieldSymbol.IsStatic ? $"global::{fieldSymbol.Type.ToDisplayString()}" : $"this.{fieldSymbol.Name}",
+                BuildDependencyAccessor(fieldSymbol.IsStatic, fieldSymbol.Type, fieldSymbol.Name),
                 fieldSymbol.IsStatic,
                 fieldSymbol.Name,
                 classContext,
@@ -159,6 +194,11 @@ internal static class MappaInterceptorDependencyCollector
                 reportDiagnostic);
         }
     }
+
+    private static string BuildDependencyAccessor(bool isStatic, ITypeSymbol dependencyType, string memberName)
+        => isStatic
+            ? $"global::{dependencyType.ToDisplayString()}"
+            : $"this.{memberName}";
 
     private static void CollectFromStaticDependencies(
         MappaClassGeneratorContext classContext,

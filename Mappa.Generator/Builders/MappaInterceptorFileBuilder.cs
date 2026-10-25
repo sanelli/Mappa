@@ -95,13 +95,17 @@ internal sealed class MappaInterceptorFileBuilder
         var mappaBuilderContext = new MappaBuilderContext(this.Compilation);
         var classSource = this.BuildClassSource(mappaBuilderContext);
         var inaccessibleAccessorsSource = mappaBuilderContext.InaccessibleAccessors.BuildSource();
-        var @namespace = this.ClassSymbol.ContainingNamespace.ToDisplayString();
+        var containingNamespace = this.ClassSymbol.ContainingNamespace;
+        var isGlobalNamespace = containingNamespace.IsGlobalNamespace;
+        var @namespace = containingNamespace.ToDisplayString();
 
         // When the InterceptsLocation polyfill is emitted first as a block-scoped namespace,
-        // the mapper must also use a block-scoped namespace (file-scoped is illegal afterwards).
+        // a file-scoped mapper namespace is illegal afterwards — force a block-scoped namespace.
+        // Global-namespace mappers stay at file scope (an empty `namespace` wrapper is invalid).
         var emitInterceptsLocationPolyfill = this.InterceptorMethods.Length > 0;
-        if (emitInterceptsLocationPolyfill
-            || this.ClassDeclarationSyntax.Parent is NamespaceDeclarationSyntax)
+        if (!isGlobalNamespace
+            && (emitInterceptsLocationPolyfill
+                || this.ClassDeclarationSyntax.Parent is NamespaceDeclarationSyntax))
         {
             builder.AppendLine($"namespace {@namespace}");
             using (builder.CurlyBracesBlock())
@@ -115,7 +119,8 @@ internal sealed class MappaInterceptorFileBuilder
                 builder.AppendLine(classSource);
             }
         }
-        else if (this.ClassDeclarationSyntax.Parent is FileScopedNamespaceDeclarationSyntax)
+        else if (!isGlobalNamespace
+            && this.ClassDeclarationSyntax.Parent is FileScopedNamespaceDeclarationSyntax)
         {
             builder.AppendLine($"namespace {@namespace};");
             builder.AppendEmptyLine();

@@ -428,6 +428,233 @@ public sealed class MappaInterceptorAttributeMatrixIntegrationTests
     }
 
     /// <summary>
+    /// <c>MappaNullSubstitute</c> with <c>InvokeMethod</c> substitutes null source members on the interceptor route.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanNullSubstituteInvokeMethodViaWith()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class Source
+                                  {
+                                      public string? Name { get; set; }
+                                  }
+
+                                  public class Target
+                                  {
+                                      public string Name { get; set; }
+                                  }
+
+                                  [MappaInterceptor]
+                                  public partial class InlineMapper
+                                  {
+                                      public Target Map(Source value)
+                                      {
+                                          return this.MappaMap<Target>(value)
+                                              .With(
+                                                  mappaMethodAttributes: new IMappaMethodAttribute[]
+                                                  {
+                                                      new MappaNullSubstituteAttribute("Name") { InvokeMethod = nameof(WhenNull) },
+                                                  });
+                                      }
+
+                                      private static string WhenNull(string? value) => value ?? "fallback";
+                                  }
+                                  #nullable restore
+                                  """;
+
+        var generatedResults = await RunMappaInterceptorGeneratorAsync(
+            sourceCode,
+            InterceptorsNamespace,
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithGeneratedCompilationUnit()
+            .HaveCommentHeader()
+            .HaveClass("InlineMapper", classAssertions =>
+            {
+                classAssertions
+                    .HaveMethod(
+                        TargetType,
+                        NullableAnnotation.NotAnnotated,
+                        "__MappaIntercept_0",
+                        false,
+                        [("object", NullableAnnotation.NotAnnotated, "source", RefKind.None, false)],
+                        methodAssertions =>
+                        {
+                            methodAssertions
+                                .HaveInterceptsLocationAttribute()
+                                .HaveBody(blockAssertions =>
+                                {
+                                    blockAssertions
+                                        .HasSyntaxNodesCount(5)
+                                        .HasNextSyntaxNode(node =>
+                                        {
+                                            node.BeLocalDeclarationStatementSyntax(
+                                                SourceType + "?",
+                                                "__mappaTypedSource",
+                                                init => init.BeCastExpressionSyntax(
+                                                    SourceType,
+                                                    casted => casted.BeIdentifierNameSyntax("source")));
+                                        })
+                                        .HasNextSyntaxNode(node =>
+                                        {
+                                            node.BeLocalDeclarationStatementSyntax(
+                                                "string?",
+                                                "__mappa_tmp_1",
+                                                init => init.BeMemberAccessExpressionSyntax("__mappaTypedSource.Name"));
+                                        })
+                                        .HasNextSyntaxNode(node =>
+                                        {
+                                            node.BeLocalDeclarationStatementSyntax(
+                                                "string",
+                                                "__mappa_tmp_2",
+                                                init => init.BeConditionalExpressionSyntax(
+                                                    condition => condition.BeIsPatternExpressionSyntax(
+                                                        expression => expression.BeIdentifierNameSyntax("__mappa_tmp_1"),
+                                                        pattern => pattern.BeConstantPatternSyntax(null)),
+                                                    whenTrue => whenTrue.BeInvocationExpressionSyntax(
+                                                        "WhenNull",
+                                                        parameter => parameter.BeIdentifierNameSyntax("__mappa_tmp_1")),
+                                                    whenFalse => whenFalse.BeCastExpressionSyntax(
+                                                        "string",
+                                                        expression => expression.BeIdentifierNameSyntax("__mappa_tmp_1"))));
+                                        })
+                                        .HasNextSyntaxNode(node =>
+                                        {
+                                            node.BeLocalDeclarationStatementSyntax(
+                                                TargetType,
+                                                "__mappa_tmp_3",
+                                                init => init.BeObjectCreationExpressionSyntax(
+                                                    TargetType,
+                                                    ("Name", expression => expression.BeIdentifierNameSyntax("__mappa_tmp_2"))));
+                                        })
+                                        .HasNextSyntaxNode(node => node.BeReturnStatement("__mappa_tmp_3"));
+                                });
+                        });
+            });
+    }
+
+    /// <summary>
+    /// <c>MappaInvokeMethod</c> invokes a mapper helper on the interceptor route.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanInvokeMethodViaWith()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class Source
+                                  {
+                                      public int Value { get; set; }
+                                  }
+
+                                  public class Target
+                                  {
+                                      public string Value { get; set; }
+                                  }
+
+                                  [MappaInterceptor]
+                                  public partial class InlineMapper
+                                  {
+                                      public Target Map(Source value)
+                                      {
+                                          return this.MappaMap<Target>(value)
+                                              .With(
+                                                  mappaMethodAttributes: new IMappaMethodAttribute[]
+                                                  {
+                                                      new MappaInvokeMethodAttribute("Value", nameof(FormatValue)),
+                                                  });
+                                      }
+
+                                      private string FormatValue(Source source) => source.Value.ToString();
+                                  }
+                                  #nullable restore
+                                  """;
+
+        var generatedResults = await RunMappaInterceptorGeneratorAsync(
+            sourceCode,
+            InterceptorsNamespace,
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithGeneratedCompilationUnit()
+            .HaveCommentHeader()
+            .HaveClass("InlineMapper", classAssertions =>
+            {
+                classAssertions
+                    .HaveMethod(
+                        TargetType,
+                        NullableAnnotation.NotAnnotated,
+                        "__MappaIntercept_0",
+                        false,
+                        [("object", NullableAnnotation.NotAnnotated, "source", RefKind.None, false)],
+                        methodAssertions =>
+                        {
+                            methodAssertions
+                                .HaveInterceptsLocationAttribute()
+                                .HaveBody(blockAssertions =>
+                                {
+                                    blockAssertions
+                                        .HasSyntaxNodesCount(5)
+                                        .HasNextSyntaxNode(node =>
+                                        {
+                                            node.BeLocalDeclarationStatementSyntax(
+                                                SourceType + "?",
+                                                "__mappaTypedSource",
+                                                init => init.BeCastExpressionSyntax(
+                                                    SourceType,
+                                                    casted => casted.BeIdentifierNameSyntax("source")));
+                                        })
+                                        .HasNextSyntaxNode(node =>
+                                        {
+                                            node.BeLocalDeclarationStatementSyntax(
+                                                "int",
+                                                "__mappa_tmp_1",
+                                                init => init.BeMemberAccessExpressionSyntax("__mappaTypedSource.Value"));
+                                        })
+                                        .HasNextSyntaxNode(node =>
+                                        {
+                                            node.BeLocalDeclarationStatementSyntax(
+                                                "string",
+                                                "__mappa_tmp_2",
+                                                init => init.BeInvocationExpressionSyntax(
+                                                    "this.FormatValue",
+                                                    parameter => parameter.BeIdentifierNameSyntax("__mappaTypedSource")));
+                                        })
+                                        .HasNextSyntaxNode(node =>
+                                        {
+                                            node.BeLocalDeclarationStatementSyntax(
+                                                TargetType,
+                                                "__mappa_tmp_3",
+                                                init => init.BeObjectCreationExpressionSyntax(
+                                                    TargetType,
+                                                    ("Value", expression => expression.BeIdentifierNameSyntax("__mappa_tmp_2"))));
+                                        })
+                                        .HasNextSyntaxNode(node => node.BeReturnStatement("__mappa_tmp_3"));
+                                });
+                        });
+            });
+    }
+
+    /// <summary>
     /// <c>MappaBeforeMap</c> invokes a hook before the interceptor mapping body.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>

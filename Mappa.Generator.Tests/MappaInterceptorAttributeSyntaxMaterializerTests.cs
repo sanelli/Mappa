@@ -158,6 +158,54 @@ public sealed class MappaInterceptorAttributeSyntaxMaterializerTests
     }
 
     /// <summary>
+    /// Non-constant inaccessible-target allow flags are ignored; constant flags still apply.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void AnalyzeMaterializesAllowInaccessibleTargetMembersIgnoringNonConstantFlags()
+    {
+        const string source = """
+                              using Mappa;
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              [MappaInterceptor]
+                              public partial class InlineMapper
+                              {
+                                  private static readonly bool DisableConstructors = false;
+
+                                  public string Map(int value)
+                                  {
+                                      return this.MappaMap<string>(value)
+                                          .With(
+                                              mappaMethodAttributes: new IMappaMethodAttribute[]
+                                              {
+                                                  new MappaAllowInaccessibleTargetMembersAttribute()
+                                                  {
+                                                      AllowFields = true,
+                                                      AllowProperties = false,
+                                                      AllowConstructors = DisableConstructors,
+                                                  },
+                                              });
+                                  }
+                              }
+                              """;
+
+        var (callSites, diagnostics) = Analyze(source);
+
+        diagnostics.Should().BeEmpty();
+        callSites.Should().ContainSingle();
+
+        // AllowConstructors defaults to true; the non-constant assignment is ignored.
+        callSites[0].MethodAttributes.OfType<MappaAllowInaccessibleTargetMembersAttribute>()
+            .Should().ContainSingle(attribute =>
+                attribute.AllowFields
+                && !attribute.AllowProperties
+                && attribute.AllowConstructors);
+    }
+
+    /// <summary>
     /// Materializes named inaccessible-target members with field writes enabled.
     /// </summary>
     [Fact]
@@ -496,6 +544,59 @@ public sealed class MappaInterceptorAttributeSyntaxMaterializerTests
         diagnostics.Should().BeEmpty();
         callSites.Should().ContainSingle();
         callSites[0].HasErrors.Should().BeFalse();
+        callSites[0].MethodAttributes.Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// Non-constant constructor arguments prevent method-attribute materialization.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void AnalyzeSkipsMethodAttributesWithNonConstantConstructorArguments()
+    {
+        const string source = """
+                              using Mappa;
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              [MappaInterceptor]
+                              public partial class InlineMapper
+                              {
+                                  private const string TargetName = "Value";
+                                  private static readonly string SourceName = "Alt";
+
+                                  public string Map(int value)
+                                  {
+                                      return this.MappaMap<string>(value)
+                                          .With(
+                                              mappaMethodAttributes: new IMappaMethodAttribute[]
+                                              {
+                                                  new MappaUsePropertyAttribute(TargetName, SourceName),
+                                                  new MappaIgnoreTargetPropertyAttribute(SourceName),
+                                                  new MappaAssignFromContextAttribute(SourceName, TargetName),
+                                                  new MappaAssignFromConstantAttribute(SourceName, 1),
+                                                  new MappaAssignToContextAttribute(TargetName, SourceName),
+                                                  new MappaNullSubstituteAttribute(SourceName),
+                                                  new MappaInvokeMethodAttribute(TargetName, SourceName),
+                                                  new MappaInvokeMethodAttribute(TargetName, SourceName, TargetName),
+                                                  new MappaBeforeMapAttribute(SourceName),
+                                                  new MappaBeforeMapAttribute(SourceName, TargetName),
+                                                  new MappaAfterMapAttribute(SourceName),
+                                                  new MappaAfterMapAttribute(SourceName, TargetName),
+                                                  new MappaApplyTransformerAttribute(SourceName),
+                                                  new MappaMustMapTargetPropertyAttribute(SourceName),
+                                                  new MappaAllowInaccessibleSourceMembersAttribute(SourceName),
+                                                  new MappaAllowInaccessibleTargetMembersAttribute(SourceName),
+                                              });
+                                  }
+                              }
+                              """;
+
+        var (callSites, diagnostics) = Analyze(source);
+
+        diagnostics.Should().BeEmpty();
+        callSites.Should().ContainSingle();
         callSites[0].MethodAttributes.Should().BeEmpty();
     }
 

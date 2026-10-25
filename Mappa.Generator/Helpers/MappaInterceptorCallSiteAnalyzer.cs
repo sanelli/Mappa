@@ -448,7 +448,6 @@ internal static class MappaInterceptorCallSiteAnalyzer
         Action<Diagnostic> reportDiagnostic,
         out ImmutableArray<INamedTypeSymbol> dedupedStaticDependencies)
     {
-        var hasErrors = false;
         var location = invocation.GetLocation();
 
         if (settings.Count > 1)
@@ -456,38 +455,62 @@ internal static class MappaInterceptorCallSiteAnalyzer
             reportDiagnostic(MappaDiagnostics.MappaInterceptorMultipleSettings(location));
         }
 
+        dedupedStaticDependencies = DeduplicateStaticDependencies(
+            location,
+            classStaticDependencies,
+            withStaticDependencies,
+            reportDiagnostic);
+
+        var hasErrors = ValidateMethodAttributeGroups(methodAttributeTypes, reportDiagnostic);
+        hasErrors |= ValidateMapTypes(location, methodName, targetType, sourceType, compilation, reportDiagnostic);
+        return hasErrors;
+    }
+
+    private static ImmutableArray<INamedTypeSymbol> DeduplicateStaticDependencies(
+        Location location,
+        INamedTypeSymbol[] classStaticDependencies,
+        List<(INamedTypeSymbol Type, Location Location)> withStaticDependencies,
+        Action<Diagnostic> reportDiagnostic)
+    {
         var seenDependencies = new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
         var deduped = ImmutableArray.CreateBuilder<INamedTypeSymbol>();
+
         foreach (var dependency in classStaticDependencies)
         {
-            if (seenDependencies.Add(dependency))
-            {
-                deduped.Add(dependency);
-            }
-            else
-            {
-                reportDiagnostic(MappaDiagnostics.MappaInterceptorDuplicateStaticDependencyType(
-                    location,
-                    dependency.ToDisplayString()));
-            }
+            AddUniqueStaticDependency(dependency, location, seenDependencies, deduped, reportDiagnostic);
         }
 
         foreach (var (dependency, dependencyLocation) in withStaticDependencies)
         {
-            if (seenDependencies.Add(dependency))
-            {
-                deduped.Add(dependency);
-            }
-            else
-            {
-                reportDiagnostic(MappaDiagnostics.MappaInterceptorDuplicateStaticDependencyType(
-                    dependencyLocation,
-                    dependency.ToDisplayString()));
-            }
+            AddUniqueStaticDependency(dependency, dependencyLocation, seenDependencies, deduped, reportDiagnostic);
         }
 
-        dedupedStaticDependencies = deduped.ToImmutable();
+        return deduped.ToImmutable();
+    }
 
+    private static void AddUniqueStaticDependency(
+        INamedTypeSymbol dependency,
+        Location location,
+        HashSet<INamedTypeSymbol> seenDependencies,
+        ImmutableArray<INamedTypeSymbol>.Builder deduped,
+        Action<Diagnostic> reportDiagnostic)
+    {
+        if (seenDependencies.Add(dependency))
+        {
+            deduped.Add(dependency);
+            return;
+        }
+
+        reportDiagnostic(MappaDiagnostics.MappaInterceptorDuplicateStaticDependencyType(
+            location,
+            dependency.ToDisplayString()));
+    }
+
+    private static bool ValidateMethodAttributeGroups(
+        List<(INamedTypeSymbol Type, Location Location)> methodAttributeTypes,
+        Action<Diagnostic> reportDiagnostic)
+    {
+        var hasErrors = false;
         foreach (var group in methodAttributeTypes.GroupBy(
                      item => item.Type,
                      SymbolEqualityComparer.Default))
@@ -516,6 +539,18 @@ internal static class MappaInterceptorCallSiteAnalyzer
             }
         }
 
+        return hasErrors;
+    }
+
+    private static bool ValidateMapTypes(
+        Location location,
+        string methodName,
+        ITypeSymbol targetType,
+        ITypeSymbol sourceType,
+        Compilation compilation,
+        Action<Diagnostic> reportDiagnostic)
+    {
+        var hasErrors = false;
         if (targetType.IsAnyTaskType(compilation))
         {
             reportDiagnostic(MappaDiagnostics.MethodReturnsTaskType(location, methodName));

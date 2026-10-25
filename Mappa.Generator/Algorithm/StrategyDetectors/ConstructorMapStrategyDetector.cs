@@ -11,7 +11,6 @@ using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Mappa.Generator.Algorithm.StrategyDetectors;
 
@@ -817,7 +816,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         IPropertySymbol? sourceProperty,
         InvokeMethodStaticRequirement staticRequirement,
         MapMethod rootMapMethod,
-        MethodDeclarationSyntax mapMethodMethodDeclarationSyntax,
+        Location? diagnosticLocation,
         out IMethodSymbol? method)
     {
         var resolutionResult = InvokeMethodResolution.TryResolveMappaInvokeMethod(
@@ -837,7 +836,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         if (resolutionResult is InvokeMethodResolutionResult.Ambiguous)
         {
             this.context.ReportDiagnostic(MappaDiagnostics.AmbiguousInvokeMethodResolution(
-                mapMethodMethodDeclarationSyntax.GetLocation(),
+                diagnosticLocation,
                 ambiguityDetails));
         }
 

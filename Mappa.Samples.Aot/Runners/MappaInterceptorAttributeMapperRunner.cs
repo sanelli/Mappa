@@ -53,6 +53,13 @@ internal static class MappaInterceptorAttributeMapperRunner
             mapper.MapNullSubstitute(new NullSubstituteSourceModel()));
 
         report.RecordInvocation(
+            nameof(MappaInterceptorAttributeMapper.MapInvokeMethod),
+            nameof(InterceptorPersonSource),
+            nameof(InterceptorPersonTarget),
+            new InterceptorPersonSource { Name = "Ada", Age = 36 },
+            mapper.MapInvokeMethod(new InterceptorPersonSource { Name = "Ada", Age = 36 }));
+
+        report.RecordInvocation(
             nameof(MappaInterceptorAttributeMapper.MapHooks),
             nameof(InterceptorHookCounter),
             nameof(InterceptorHookCounter),

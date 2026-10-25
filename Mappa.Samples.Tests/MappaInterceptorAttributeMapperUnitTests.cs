@@ -44,7 +44,7 @@ public sealed class MappaInterceptorAttributeMapperUnitTests
     }
 
     /// <summary>
-    /// Test null substitute on the interceptor route.
+    /// Test null substitute on the interceptor route (AssignValue and InvokeMethod).
     /// </summary>
     [Fact]
     [UnitTest]
@@ -53,6 +53,18 @@ public sealed class MappaInterceptorAttributeMapperUnitTests
         var actual = this.mapper.MapNullSubstitute(new NullSubstituteSourceModel());
         actual.Name.Should().Be("Anonymous");
         actual.Alias.Should().Be("NoAlias");
+    }
+
+    /// <summary>
+    /// Test invoke-method mapping on the interceptor route.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CanMapInvokeMethod()
+    {
+        var actual = this.mapper.MapInvokeMethod(new InterceptorPersonSource { Name = "Ada", Age = 36 });
+        actual.Name.Should().Be("ADA");
+        actual.Age.Should().Be(36);
     }
 
     /// <summary>

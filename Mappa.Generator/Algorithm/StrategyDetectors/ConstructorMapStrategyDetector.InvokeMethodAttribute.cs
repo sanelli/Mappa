@@ -11,7 +11,6 @@ using Mappa.Generator.Models;
 using Mappa.Generator.Models.Strategies;
 
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Mappa.Generator.Algorithm.StrategyDetectors;
 
@@ -159,7 +158,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         strategy = new NoMapStrategy(targetType, sourceClassType);
 
         var mapMethod = this.GetAttributeMapMethod();
-        var mapMethodMethodDeclarationSyntax = mapMethod.MethodDeclarationSyntax ?? throw new MappaGeneratorException("Method declaration syntax has not been defined.");
+        var diagnosticLocation = mapMethod.Location;
         var mapMethodClass = mapMethod.ContainingType;
         var rootMethod = this.context.GetRootMapMethod();
 
@@ -168,7 +167,7 @@ internal sealed partial class ConstructorMapStrategyDetector
                 mappaInvokeMethodAttribute,
                 mapMethodClass,
                 rootMethod,
-                mapMethodMethodDeclarationSyntax,
+                diagnosticLocation,
                 targetType,
                 sourceClassType,
                 sourceProperty,
@@ -200,7 +199,7 @@ internal sealed partial class ConstructorMapStrategyDetector
             mappaInvokeMethodAttribute,
             method,
             stringComparison,
-            mapMethodMethodDeclarationSyntax);
+            diagnosticLocation);
     }
 
     private bool TryResolveMappaInvokeMethodSymbol(
@@ -208,7 +207,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         MappaInvokeMethodAttribute mappaInvokeMethodAttribute,
         INamedTypeSymbol mapMethodClass,
         MapMethod rootMethod,
-        MethodDeclarationSyntax mapMethodMethodDeclarationSyntax,
+        Location? diagnosticLocation,
         ITypeSymbol targetType,
         ITypeSymbol sourceClassType,
         IPropertySymbol? sourceProperty,
@@ -224,7 +223,7 @@ internal sealed partial class ConstructorMapStrategyDetector
                 mappaInvokeMethodAttribute,
                 mapMethodClass,
                 rootMethod,
-                mapMethodMethodDeclarationSyntax,
+                diagnosticLocation,
                 targetType,
                 sourceClassType,
                 sourceProperty,
@@ -239,7 +238,7 @@ internal sealed partial class ConstructorMapStrategyDetector
                 mappaInvokeMethodAttribute,
                 mapMethodClass,
                 rootMethod,
-                mapMethodMethodDeclarationSyntax,
+                diagnosticLocation,
                 targetType,
                 sourceClassType,
                 sourceProperty,
@@ -251,7 +250,7 @@ internal sealed partial class ConstructorMapStrategyDetector
             mappaInvokeMethodAttribute,
             mapMethodClass,
             rootMethod,
-            mapMethodMethodDeclarationSyntax,
+            diagnosticLocation,
             targetType,
             sourceClassType,
             sourceProperty,
@@ -263,7 +262,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         MappaInvokeMethodAttribute mappaInvokeMethodAttribute,
         INamedTypeSymbol mapMethodClass,
         MapMethod rootMethod,
-        MethodDeclarationSyntax mapMethodMethodDeclarationSyntax,
+        Location? diagnosticLocation,
         ITypeSymbol targetType,
         ITypeSymbol sourceClassType,
         IPropertySymbol? sourceProperty,
@@ -285,7 +284,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         if (fieldOrProperty is null)
         {
             this.context.ReportDiagnostic(MappaDiagnostics.CannotFindFieldOrProperty(
-                mapMethodMethodDeclarationSyntax,
+                diagnosticLocation,
                 fieldName));
             method = null;
             return false;
@@ -310,7 +309,7 @@ internal sealed partial class ConstructorMapStrategyDetector
             sourceProperty,
             InvokeMethodStaticRequirement.NotStatic,
             rootMethod,
-            mapMethodMethodDeclarationSyntax,
+            diagnosticLocation,
             out var resolvedMethod);
         method = resolvedMethod;
 
@@ -319,7 +318,7 @@ internal sealed partial class ConstructorMapStrategyDetector
             method,
             mappaInvokeMethodAttribute,
             mapMethodClass,
-            mapMethodMethodDeclarationSyntax,
+            diagnosticLocation,
             targetName);
     }
 
@@ -328,7 +327,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         MappaInvokeMethodAttribute mappaInvokeMethodAttribute,
         INamedTypeSymbol mapMethodClass,
         MapMethod rootMethod,
-        MethodDeclarationSyntax mapMethodMethodDeclarationSyntax,
+        Location? diagnosticLocation,
         ITypeSymbol targetType,
         ITypeSymbol sourceClassType,
         IPropertySymbol? sourceProperty,
@@ -340,7 +339,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         if (className is null)
         {
             this.context.ReportDiagnostic(MappaDiagnostics.CannotDetectType(
-                mapMethodMethodDeclarationSyntax,
+                diagnosticLocation,
                 classTypeFullName));
             method = null;
             return false;
@@ -355,7 +354,7 @@ internal sealed partial class ConstructorMapStrategyDetector
             sourceProperty,
             InvokeMethodStaticRequirement.Static,
             rootMethod,
-            mapMethodMethodDeclarationSyntax,
+            diagnosticLocation,
             out method);
 
         return this.IsSuccessfulMappaInvokeMethodResolution(
@@ -363,7 +362,7 @@ internal sealed partial class ConstructorMapStrategyDetector
             method,
             mappaInvokeMethodAttribute,
             mapMethodClass,
-            mapMethodMethodDeclarationSyntax,
+            diagnosticLocation,
             targetName);
     }
 
@@ -372,7 +371,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         MappaInvokeMethodAttribute mappaInvokeMethodAttribute,
         INamedTypeSymbol mapMethodClass,
         MapMethod rootMethod,
-        MethodDeclarationSyntax mapMethodMethodDeclarationSyntax,
+        Location? diagnosticLocation,
         ITypeSymbol targetType,
         ITypeSymbol sourceClassType,
         IPropertySymbol? sourceProperty,
@@ -391,7 +390,7 @@ internal sealed partial class ConstructorMapStrategyDetector
             sourceProperty,
             staticRequirement,
             rootMethod,
-            mapMethodMethodDeclarationSyntax,
+            diagnosticLocation,
             out method);
 
         return this.IsSuccessfulMappaInvokeMethodResolution(
@@ -399,7 +398,7 @@ internal sealed partial class ConstructorMapStrategyDetector
             method,
             mappaInvokeMethodAttribute,
             mapMethodClass,
-            mapMethodMethodDeclarationSyntax,
+            diagnosticLocation,
             targetName);
     }
 
@@ -408,7 +407,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         IMethodSymbol? method,
         MappaInvokeMethodAttribute mappaInvokeMethodAttribute,
         INamedTypeSymbol mapMethodClass,
-        MethodDeclarationSyntax mapMethodMethodDeclarationSyntax,
+        Location? diagnosticLocation,
         string targetName)
     {
         if (resolutionResult is InvokeMethodResolutionResult.Ambiguous)
@@ -425,7 +424,7 @@ internal sealed partial class ConstructorMapStrategyDetector
             ? mappaInvokeMethodAttribute.ClassType.FullName ?? "unknown"
             : mapMethodClass.ToDisplayString();
         this.context.ReportDiagnostic(MappaDiagnostics.CannotDetectSuitableMethodToInvokeForParameter(
-            mapMethodMethodDeclarationSyntax,
+            diagnosticLocation,
             targetName,
             mappaInvokeMethodAttribute.MethodName,
             displayClassName));
@@ -439,7 +438,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         MappaInvokeMethodAttribute mappaInvokeMethodAttribute,
         IMethodSymbol method,
         StringComparison stringComparison,
-        MethodDeclarationSyntax mapMethodMethodDeclarationSyntax)
+        Location? diagnosticLocation)
     {
         var explicitSourcePropertyName = this.GetExplicitSourcePropertyNameForInvokeMethod(
             targetName,
@@ -460,7 +459,7 @@ internal sealed partial class ConstructorMapStrategyDetector
         }
 
         this.context.ReportDiagnostic(MappaDiagnostics.MappaUsePropertyNotUsedByInvokeMethod(
-            mapMethodMethodDeclarationSyntax,
+            diagnosticLocation,
             this.context.GetRootMapMethod().MethodName,
             targetName,
             explicitSourcePropertyName,

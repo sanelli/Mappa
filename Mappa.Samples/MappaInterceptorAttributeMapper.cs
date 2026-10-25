@@ -82,7 +82,22 @@ public sealed partial class MappaInterceptorAttributeMapper
                 mappaMethodAttributes:
                 [
                     new MappaNullSubstituteAttribute(nameof(NullSubstituteTargetModel.Name)) { AssignValue = "Anonymous" },
-                    new MappaNullSubstituteAttribute(nameof(NullSubstituteTargetModel.Alias)) { AssignValue = "NoAlias" },
+                    new MappaNullSubstituteAttribute(nameof(NullSubstituteTargetModel.Alias)) { InvokeMethod = nameof(WhenAliasNull) },
+                ]);
+    }
+
+    /// <summary>
+    /// Invoke a mapper helper via <see cref="MappaInvokeMethodAttribute"/>.
+    /// </summary>
+    /// <param name="value">The source person.</param>
+    /// <returns>The mapped person with a formatted name.</returns>
+    public InterceptorPersonTarget MapInvokeMethod(InterceptorPersonSource value)
+    {
+        return this.MappaMap<InterceptorPersonTarget>(value)
+            .With(
+                mappaMethodAttributes:
+                [
+                    new MappaInvokeMethodAttribute(nameof(InterceptorPersonTarget.Name), nameof(this.FormatName)),
                 ]);
     }
 
@@ -200,8 +215,14 @@ public sealed partial class MappaInterceptorAttributeMapper
     }
 
     [MappaIgnore]
+    private static string WhenAliasNull(string? value) => value ?? "NoAlias";
+
+    [MappaIgnore]
     [MappaTransformer]
     private string Trim(string value) => value.Trim();
+
+    [MappaIgnore]
+    private string FormatName(InterceptorPersonSource source) => source.Name.ToUpperInvariant();
 
     private void Before(ref InterceptorHookCounter input)
     {

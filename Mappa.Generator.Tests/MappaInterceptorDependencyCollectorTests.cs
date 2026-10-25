@@ -213,6 +213,117 @@ public sealed class MappaInterceptorDependencyCollectorTests
     }
 
     /// <summary>
+    /// Static <c>[MappaDependency]</c> fields use a type-qualified accessor.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CollectIncludesStaticMappaDependencyFieldMethods()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Dependency
+                              {
+                                  public static long Map(int value) => value;
+                              }
+
+                              [MappaInterceptor]
+                              public partial class InlineMapper
+                              {
+                                  [MappaDependency]
+                                  private static readonly Dependency helpers = new Dependency();
+
+                                  public long Map(int value) => this.MappaMap<long>(value);
+                              }
+                              """;
+
+        var (classContext, diagnostics) = Collect(source, hasMappaAttribute: false);
+
+        diagnostics.Should().BeEmpty();
+        classContext.MapMethods.Should().Contain(mapMethod =>
+            mapMethod.MethodName == "Map"
+            && mapMethod.CanBeUsedByStaticMethod);
+    }
+
+    /// <summary>
+    /// Inherited static <c>[MappaDependency]</c> properties from a base mapper are collected.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CollectIncludesBaseTypeStaticMappaDependencyProperties()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Dependency
+                              {
+                                  public static long Map(int value) => value;
+                              }
+
+                              public class BaseMapper
+                              {
+                                  [MappaDependency]
+                                  protected static Dependency BaseHelpers { get; } = new Dependency();
+                              }
+
+                              [MappaInterceptor]
+                              public partial class InlineMapper : BaseMapper
+                              {
+                                  public long Map(int value) => this.MappaMap<long>(value);
+                              }
+                              """;
+
+        var (classContext, diagnostics) = Collect(source, hasMappaAttribute: false);
+
+        diagnostics.Should().BeEmpty();
+        classContext.MapMethods.Should().Contain(mapMethod =>
+            mapMethod.MethodName == "Map"
+            && mapMethod.CanBeUsedByStaticMethod);
+    }
+
+    /// <summary>
+    /// Inherited static <c>[MappaDependency]</c> fields from a base mapper are collected.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void CollectIncludesBaseTypeStaticMappaDependencyFields()
+    {
+        const string source = """
+                              using Mappa.Attributes;
+
+                              namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                              public class Dependency
+                              {
+                                  public static long Map(int value) => value;
+                              }
+
+                              public class BaseMapper
+                              {
+                                  [MappaDependency]
+                                  protected static readonly Dependency baseHelpers = new Dependency();
+                              }
+
+                              [MappaInterceptor]
+                              public partial class InlineMapper : BaseMapper
+                              {
+                                  public long Map(int value) => this.MappaMap<long>(value);
+                              }
+                              """;
+
+        var (classContext, diagnostics) = Collect(source, hasMappaAttribute: false);
+
+        diagnostics.Should().BeEmpty();
+        classContext.MapMethods.Should().Contain(mapMethod =>
+            mapMethod.MethodName == "Map"
+            && mapMethod.CanBeUsedByStaticMethod);
+    }
+
+    /// <summary>
     /// Static dependency types without viable map methods report a diagnostic.
     /// </summary>
     [Fact]
