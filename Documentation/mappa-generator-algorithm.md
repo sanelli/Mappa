@@ -27,14 +27,17 @@ the source generator attempts to identify a mapping from `TSource` to `TTarget`.
 
 ## Incremental discovery
 
-`MappaGenerator` uses two Roslyn incremental pipelines, each driven by `SyntaxProvider.ForAttributeWithMetadataName` so only classes that actually carry the relevant attribute are considered (avoiding semantic lookups on every attributed type in the compilation):
+`MappaGenerator` uses Roslyn incremental pipelines driven by `SyntaxProvider.ForAttributeWithMetadataName` so only classes that actually carry the relevant attribute are considered (avoiding semantic lookups on every attributed type in the compilation):
 
 | Pipeline | Metadata name | Predicate |
 |----------|---------------|-----------|
 | Mapper (`[Mappa]`) | `Mappa.Attributes.MappaAttribute` | `ClassDeclarationSyntax` **and** `partial` |
 | Dependency injection (`[MappaDependencyInjection]`) | `Mappa.Attributes.MappaDependencyInjectionAttribute` | `ClassDeclarationSyntax` **and** `partial` |
+| Interceptor (`[MappaInterceptor]`) | `Mappa.Attributes.MappaInterceptorAttribute` | `ClassDeclarationSyntax` (**without** requiring `partial` in the predicate) |
 
-Both predicates require `partial`. Non-partial classes with either attribute never enter the corresponding pipeline, so they produce neither generated sources nor discovery diagnostics from that pipeline. The DI algorithm still contains a defensive **MP00070** check if a non-partial registrar is supplied directly (for example from unit-test harnesses).
+Mapper and DI predicates require `partial`. Non-partial classes with those attributes never enter those pipelines, so they produce neither generated sources nor discovery diagnostics from that pipeline. The DI algorithm still contains a defensive **MP00070** check if a non-partial registrar is supplied directly (for example from unit-test harnesses).
+
+The interceptor pipeline intentionally does **not** require `partial` in the syntax predicate so non-partial and static classes can receive diagnostics (**MP00119**, **MP00120**). Valid partial, non-static interceptor classes receive stubs and per–call-site interceptor methods (see [Interceptor inline mapping](#interceptor-inline-mapping)).
 
 ## CancellationToken convention
 
@@ -61,6 +64,21 @@ Separately from mapper generation, **partial** classes marked with `[MappaDepend
 5. Emit `{FullTypeName}.DependencyInjection.g.cs` with a registration method that calls `AddSingleton` / `AddScoped` / `AddTransient` according to the attribute configuration.
 
 Details and diagnostics (**MP00070**–**MP00073**): [Mappa attributes — MappaDependencyInjection](./mappa-attributes.md#mappadependencyinjection).
+
+## Interceptor inline mapping
+
+Classes marked with `[MappaInterceptor]` are processed by a dedicated pipeline that shares the same strategy detectors and builders as classic `[Mappa]` maps where possible:
+
+1. Validate the class (must be `partial` and non-`static`).
+2. Emit interceptable instance stub methods (`MappaMap` or the configured name) accepting `object` (and optional `MappaContext`).
+3. Discover call sites to those stubs; collect trailing `With` invocations in source order.
+4. Materialize `With` arguments from syntax (`new` expressions only): settings, static dependencies, and `IMappaMethodAttribute` instances.
+5. Build a synthetic map method model (source/target types from the call site, collated attributes/settings/dependencies) and run the shared mapping algorithm.
+6. Emit a C# interceptor method per call site that casts the `object` argument to the inferred source type and executes the generated mapping body.
+
+Dependency eligibility on this route includes class-level `[MappaStaticDependency]` / `With` static dependencies, `[MappaDependency]` members, methods marked `[MappaInterceptorMethodDependency]`, and — when the class also has `[Mappa]` — other eligible map methods. `IQueryable` / `[MappaProjection]` are rejected (**MP00125**, **MP00126**). Consumer projects must list mapper namespaces in `MappaInterceptorsNamespaces` (merged into `InterceptorsNamespaces`).
+
+Details: [Mappa attributes — MappaInterceptor](./mappa-attributes.md#mappainterceptor). Diagnostics **MP00119**–**MP00127**.
 
 ## Strategy resolution overview
 
@@ -345,7 +363,7 @@ When `ReferenceReusing` is `Enable` and the map method declares `MappaContext`:
     - Element mapping is validated by `ProjectionCapabilityAnalyzer` and built by `ProjectionExpressionBuilder` (expression-tree-compatible code, not imperative statements),
 - _Notes_:
     - Projection is **signature-driven** by default; optional `[MappaProjection]` on the class or method opts in (`Enabled = Enable`, default when present) or out (`Enabled = Disable` falls through to the container / eager path),
-    - Mapping attributes such as `[MappaUseProperty]` on the projection method participate in element construction; `[MappaNullSubstitute]` with `AssignValue` is supported, but `InvokeMethod` is rejected (**MP00119**),
+    - Mapping attributes such as `[MappaUseProperty]` on the projection method participate in element construction; `[MappaNullSubstitute]` with `AssignValue` is supported, but `InvokeMethod` is rejected (**MP00118** / null-substitute projection family),
     - When `ReplaceNullWithEmptyContainer` is enabled, null nested collections/dictionaries in the projection use the same empty-container forms as the eager container strategy,
     - Nested **collections** (`List<T>` / arrays) are projected via nested `Enumerable.Select` plus `ToList` / `ToArray` as required by the target type; nested `IQueryable` properties remain unsupported (**MP00059**),
     - Value tuples and common `Guid`↔`string` / `Guid`↔`byte[]` conversions are supported via expression builders (value tuples emit `new System.ValueTuple<...>(...)` because tuple literals are illegal in expression trees; provider translation is not guaranteed for every shape),
@@ -451,7 +469,7 @@ The constructor strategy tries sub-strategies in order. When a valid `[MappaUseC
         - `[MappaAllowInaccessibleTargetMembers]` *(opt-in private/protected target property/field writes and/or inaccessible constructors via `UnsafeAccessor`; `AllowProperties` / `AllowFields` / `AllowConstructors`; **MP00067**–**MP00069**)*
         - `[MappaAssignFromContext]`
         - `[MappaAssignFromConstant]`
-        - `[MappaNullSubstitute]` — substitutes a null source member with `AssignValue` or `InvokeMethod` before mapping continues; optional `SourcePropertyName`; enables `T?` → non-nullable `T` for that member; **MP00115–MP00119**
+        - `[MappaNullSubstitute]` — substitutes a null source member with `AssignValue` or `InvokeMethod` before mapping continues; optional `SourcePropertyName`; enables `T?` → non-nullable `T` for that member; **MP00115–MP00118**
         - `[MappaInvokeMethod]` — optionally accepts `SourcePropertyName` to select the source property (or field) passed to the invoked method
         - `[MappaAssignToContext]` *(post-construction context writes; requires the caller to provide `MappaContext`)*
     - Those attributes accept flat names or [dot-separated nested property paths](#nested-property-paths) *(except the inaccessible-member attributes, which accept flat names only)*; path segments may name fields when `MapSourceFields` / `MapTargetFields` are enabled;

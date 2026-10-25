@@ -201,6 +201,70 @@ public sealed class MappaInterceptorCoverageGapIntegrationTests
     }
 
     /// <summary>
+    /// When both the base interceptor name and the first suffix are taken, allocation advances the suffix.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanAllocateSecondSuffixWhenBaseAndFirstSuffixNamesAreTaken()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  [MappaInterceptor]
+                                  public partial class DoubleNameCollisionMapper
+                                  {
+                                      private int __MappaIntercept_0(int value) => value;
+
+                                      private int __MappaIntercept_0_1(int value) => value;
+
+                                      public int Map(int value)
+                                      {
+                                          return this.MappaMap<int>(value);
+                                      }
+                                  }
+                                  #nullable restore
+                                  """;
+
+        var generatedResults = await RunMappaInterceptorGeneratorAsync(
+            sourceCode,
+            InterceptorsNamespace,
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithGeneratedCompilationUnit()
+            .HaveInterceptorStubsAndMethod(
+                "DoubleNameCollisionMapper",
+                "__MappaIntercept_0_2",
+                "int",
+                hasContext: false,
+                expectedMethodCount: 3,
+                blockAssertions =>
+                {
+                    blockAssertions
+                        .HasSyntaxNodesCount(2)
+                        .HasNextSyntaxNode(node =>
+                        {
+                            node.BeLocalDeclarationStatementSyntax(
+                                "int",
+                                "__mappaTypedSource",
+                                init => init.BeCastExpressionSyntax(
+                                    "int",
+                                    casted => casted.BeIdentifierNameSyntax("source")));
+                        })
+                        .HasNextSyntaxNode(node =>
+                        {
+                            node.BeReturnStatement("__mappaTypedSource");
+                        });
+                });
+    }
+
+    /// <summary>
     /// Duplicate class-level object factories stop interceptor strategy generation.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>

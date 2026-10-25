@@ -1,0 +1,34 @@
+---
+description: New mapping features must work on [MappaInterceptor]/With or emit an explicit unsupported diagnostic (#334)
+alwaysApply: true
+---
+
+# Interceptor route parity
+
+The `[MappaInterceptor]` path (interceptable `MappaMap` stubs + trailing `With` configuration) shares the classic `[Mappa]` mapping algorithm where possible. User-facing mapping capabilities must not silently diverge between routes.
+
+## Required behaviour
+
+When you add or change a **user-facing** mapping feature (method attribute, `MappaSettings` property, strategy capability, or dependency/hook surface):
+
+1. **Support it on the interceptor route** via `With` / class-level interceptor configuration and the shared algorithm, **or**
+2. **Reject it explicitly** with an interceptor unsupported diagnostic (for example **MP00125** for unsupported attributes, **MP00126** for `IQueryable` / projection).
+
+Do **not** leave a feature working only on `[Mappa]` with no diagnostic on `[MappaInterceptor]`.
+
+## Tests
+
+- Extend interceptor-route generator tests for each newly supported attribute or representative combination (and keep the no-extra-attribute baseline covered).
+- Cover negative paths that assert the unsupported diagnostic when the feature is intentionally excluded from the interceptor route.
+- Field/property parity ([`mappa-property-field-members.mdc`](mappa-property-field-members.mdc)) still applies when the feature selects or maps members on either route.
+
+## Implementation notes
+
+- Prefer shared algorithm / validator / detector code over a parallel interceptor-only strategy tree.
+- `With` arguments are syntax-materialized (`new` expressions only); keep materializers and classic attribute parsers aligned.
+- `[MappaInterceptorMethodDependency]` is interceptor-path-only; do not assume it affects the `[Mappa]` path.
+- Consumer projects need `MappaInterceptorsNamespaces` (merged into `InterceptorsNamespaces`) or interception will not apply.
+
+## Documentation
+
+When documenting attributes or settings that say “Property”, note that interceptor `With` paths honour `MapSourceFields` / `MapTargetFields` the same way as classic maps. Update tutorial / attributes / algorithm / features when the interceptor surface changes.

@@ -1198,6 +1198,127 @@ public sealed class MappaInterceptorAttributeMatrixIntegrationTests
     }
 
     /// <summary>
+    /// Two interceptor call sites with the same source/target types both receive interceptor methods
+    /// (different <c>With</c> attributes must not collapse to a single synthetic map method).
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
+    [Fact]
+    [IntegrationTest]
+    public async Task CanEmitDistinctInterceptorsForSameSourceTargetTypes()
+    {
+        const string sourceCode = """
+                                  #nullable enable
+                                  using Mappa;
+                                  using Mappa.Attributes;
+
+                                  namespace Mappa.Generator.Tests.UnitTests.SourceCode;
+
+                                  public class Source
+                                  {
+                                      public int Value { get; set; }
+                                      public string Name { get; set; } = string.Empty;
+                                  }
+
+                                  public class Target
+                                  {
+                                      public int Value { get; set; }
+                                      public string Name { get; set; } = string.Empty;
+                                  }
+
+                                  [MappaInterceptor]
+                                  public partial class SameTypeCallSitesMapper
+                                  {
+                                      public Target MapInvoke(Source value)
+                                      {
+                                          return this.MappaMap<Target>(value)
+                                              .With(
+                                                  mappaMethodAttributes: new IMappaMethodAttribute[]
+                                                  {
+                                                      new MappaInvokeMethodAttribute("Name", nameof(this.FormatName)),
+                                                  });
+                                      }
+
+                                      public Target MapMustMap(Source value)
+                                      {
+                                          return this.MappaMap<Target>(value)
+                                              .With(
+                                                  mappaMethodAttributes: new IMappaMethodAttribute[]
+                                                  {
+                                                      new MappaMustMapTargetPropertyAttribute("Name"),
+                                                  });
+                                      }
+
+                                      private string FormatName(Source source) => source.Name.ToUpperInvariant();
+                                  }
+                                  #nullable restore
+                                  """;
+
+        var generatedResults = await RunMappaInterceptorGeneratorAsync(
+            sourceCode,
+            InterceptorsNamespace,
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        generatedResults.Should()
+            .NotHaveDiagnostics()
+            .HaveGeneratedSourceCode()
+            .WithGeneratedCompilationUnit()
+            .HaveInterceptorStubsAndMethod(
+                "SameTypeCallSitesMapper",
+                "__MappaIntercept_0",
+                TargetType,
+                hasContext: false,
+                expectedMethodCount: 4,
+                blockAssertions =>
+                {
+                    blockAssertions
+                        .HasSyntaxNodesCount(6)
+                        .HasNextSyntaxNode(node =>
+                        {
+                            node.BeLocalDeclarationStatementSyntax(
+                                SourceType + "?",
+                                "__mappaTypedSource",
+                                init => init.BeCastExpressionSyntax(
+                                    SourceType,
+                                    casted => casted.BeIdentifierNameSyntax("source")));
+                        })
+                        .HasNextSyntaxNode(node =>
+                        {
+                            node.BeLocalDeclarationStatementSyntax(
+                                "int",
+                                "__mappa_tmp_1",
+                                init => init.BeMemberAccessExpressionSyntax("__mappaTypedSource.Value"));
+                        })
+                        .HasNextSyntaxNode(node =>
+                        {
+                            node.BeLocalDeclarationStatementSyntax(
+                                "string",
+                                "__mappa_tmp_2",
+                                init => init.BeMemberAccessExpressionSyntax("__mappaTypedSource.Name"));
+                        })
+                        .HasNextSyntaxNode(node =>
+                        {
+                            node.BeLocalDeclarationStatementSyntax(
+                                "string",
+                                "__mappa_tmp_3",
+                                init => init.BeInvocationExpressionSyntax(
+                                    "this.FormatName",
+                                    param => param.BeIdentifierNameSyntax("__mappaTypedSource")));
+                        })
+                        .HasNextSyntaxNode(node =>
+                        {
+                            node.BeLocalDeclarationStatementSyntax(
+                                TargetType,
+                                "__mappa_tmp_4",
+                                init => init.BeObjectCreationExpressionSyntax(
+                                    TargetType,
+                                    ("Value", expression => expression.BeIdentifierNameSyntax("__mappa_tmp_1")),
+                                    ("Name", expression => expression.BeIdentifierNameSyntax("__mappa_tmp_3"))));
+                        })
+                        .HasNextSyntaxNode(node => node.BeReturnStatement("__mappa_tmp_4"));
+                });
+    }
+
+    /// <summary>
     /// <c>MappaIgnoreTargetProperty</c> skips a target property on the interceptor route.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>

@@ -181,11 +181,8 @@ internal sealed class MappaInterceptorGeneratorAlgorithm
                 location: callSite.Invocation.GetLocation(),
                 attributes: callSite.MethodAttributes.ToArray());
 
-            if (!classContext.TryAddMethod(mapMethod))
-            {
-                continue;
-            }
-
+            // Interceptor synthetics always register (see TryAddMethod); uniqueness is by call site, not type pair.
+            classContext.TryAddMethod(mapMethod);
             results.Add((callSite, mapMethod));
         }
 

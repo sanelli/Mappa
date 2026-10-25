@@ -866,6 +866,106 @@ public sealed class MappaInterceptorAttributeSyntaxMaterializerTests
         method.Invoke(null, [true, typeof(bool)]).Should().Be(true);
         method.Invoke(null, [42, typeof(int)]).Should().Be(42);
         method.Invoke(null, [3L, typeof(long)]).Should().Be(3L);
+        method.Invoke(null, ["text", typeof(string)]).Should().Be("text");
+        method.Invoke(null, [(short)7, typeof(short)]).Should().Be((short)7);
+        method.Invoke(null, [1, typeof(BooleanSetting)]).Should().Be(BooleanSetting.Enable);
+        method.Invoke(null, [1, typeof(BooleanSetting?)]).Should().Be(BooleanSetting.Enable);
+    }
+
+    /// <summary>
+    /// Simple attribute materializers reject constructor argument shapes that cannot build the attribute.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void MaterializeSimpleAttributesRejectInvalidConstructorArguments()
+    {
+        const System.Reflection.BindingFlags flags =
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static;
+        var type = typeof(MappaInterceptorAttributeSyntaxMaterializer);
+
+        InvokeMaterializer(type, "MaterializeIgnoreTargetPropertyAttribute", flags, [])
+            .Should().BeNull();
+        InvokeMaterializer(type, "MaterializeIgnoreTargetPropertyAttribute", flags, [1])
+            .Should().BeNull();
+
+        InvokeMaterializer(type, "MaterializeUsePropertyAttribute", flags, ["a"])
+            .Should().BeNull();
+        InvokeMaterializer(type, "MaterializeUsePropertyAttribute", flags, ["a", 1])
+            .Should().BeNull();
+
+        InvokeMaterializer(type, "MaterializeMustMapTargetPropertyAttribute", flags, [1])
+            .Should().BeNull();
+
+        InvokeMaterializer(type, "MaterializeAssignFromContextAttribute", flags, ["a"])
+            .Should().BeNull();
+        InvokeMaterializer(type, "MaterializeAssignFromContextAttribute", flags, ["a", 1])
+            .Should().BeNull();
+
+        InvokeMaterializer(type, "MaterializeAssignFromConstantAttribute", flags, ["a"])
+            .Should().BeNull();
+        InvokeMaterializer(type, "MaterializeAssignFromConstantAttribute", flags, [1, "a"])
+            .Should().BeNull();
+
+        InvokeMaterializer(type, "MaterializeAssignToContextAttribute", flags, ["a"])
+            .Should().BeNull();
+        InvokeMaterializer(type, "MaterializeAssignToContextAttribute", flags, [1, "a"])
+            .Should().BeNull();
+
+        InvokeMaterializer(type, "MaterializeBeforeMapAttribute", flags, [1])
+            .Should().BeNull();
+        InvokeMaterializer(type, "MaterializeBeforeMapAttribute", flags, ["a", 1])
+            .Should().BeNull();
+
+        InvokeMaterializer(type, "MaterializeAfterMapAttribute", flags, [1])
+            .Should().BeNull();
+        InvokeMaterializer(type, "MaterializeAfterMapAttribute", flags, ["a", 1])
+            .Should().BeNull();
+
+        InvokeMaterializer(type, "MaterializeApplyTransformerAttribute", flags, [])
+            .Should().BeNull();
+        InvokeMaterializer(type, "MaterializeApplyTransformerAttribute", flags, [1])
+            .Should().BeNull();
+
+        InvokeMaterializer(type, "MaterializeAllowInaccessibleSourceMembersAttribute", flags, [1])
+            .Should().BeNull();
+    }
+
+    /// <summary>
+    /// Settings property application ignores unknown property names and non-writable targets.
+    /// </summary>
+    [Fact]
+    [UnitTest]
+    public void ApplySettingsPropertyIgnoresUnknownOrNonWritableProperties()
+    {
+        const string source = """
+                              class C
+                              {
+                                  void M()
+                                  {
+                                      var x = 1;
+                                  }
+                              }
+                              """;
+
+        var compilation = BuildCompilation(source);
+        var literal = compilation.SyntaxTrees
+            .SelectMany(syntaxTree => syntaxTree.GetRoot(TestContext.Current.CancellationToken).DescendantNodes())
+            .OfType<LiteralExpressionSyntax>()
+            .Single();
+        var semanticModel = compilation.GetSemanticModel(literal.SyntaxTree);
+        var apply = typeof(MappaInterceptorAttributeSyntaxMaterializer)
+            .GetMethod("ApplySettingsProperty", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+        apply.Should().NotBeNull();
+        if (apply is null)
+        {
+            return;
+        }
+
+        var settings = new MappaSettingsAttribute();
+        var actUnknown = () => apply.Invoke(
+            null,
+            [settings, "DoesNotExist", literal, semanticModel, TestContext.Current.CancellationToken]);
+        actUnknown.Should().NotThrow();
     }
 
     /// <summary>
@@ -901,6 +1001,17 @@ public sealed class MappaInterceptorAttributeSyntaxMaterializerTests
         callSites.Should().ContainSingle().Which.HasErrors.Should().BeTrue();
         diagnostics.Should().Contain(diagnostic =>
             diagnostic.Id == MappaDiagnosticDescriptors.MappaInterceptorUnsupportedFeature.Id);
+    }
+
+    private static object? InvokeMaterializer(
+        Type type,
+        string methodName,
+        System.Reflection.BindingFlags flags,
+        object?[] ctorArgs)
+    {
+        var method = type.GetMethod(methodName, flags);
+        method.Should().NotBeNull($"expected private materializer {methodName}");
+        return method?.Invoke(null, [ctorArgs]);
     }
 
     private static (System.Collections.Immutable.ImmutableArray<MappaInterceptorCallSite> CallSites, List<Diagnostic> Diagnostics)

@@ -228,11 +228,21 @@ internal sealed class MappaClassGeneratorContext
     /// <summary>
     /// Adds the map method to the list of methods.
     /// Method is added only if no other method with the same mapping exists.
+    /// Interceptor call-site synthetics (<c>__MappaIntercept_*</c>) are always added so each
+    /// call site gets its own body when source/target types match another site with different
+    /// <c>With</c> attributes. Cycle-break synthetics keep the unique type-pair rule.
     /// </summary>
     /// <param name="mapMethod">The method to be added.</param>
     /// <returns><c>true</c> if the method has been added, false otherwise.</returns>
     internal bool TryAddMethod(MapMethod mapMethod)
     {
+        if (mapMethod.IsSynthetic
+            && mapMethod.MethodName.StartsWith("__MappaIntercept_", StringComparison.Ordinal))
+        {
+            this.mapMethods.Add(mapMethod);
+            return true;
+        }
+
         if (!this.TryGetMethod(
                 mapMethod.TargetType,
                 mapMethod.SourceType,
