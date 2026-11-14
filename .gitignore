@@ -57,6 +57,7 @@ dlldata.c
 # Benchmark Results
 BenchmarkDotNet.Artifacts/
 .mappa-benchmark/
+Mappa.Benchmark/.bdn/
 
 # .NET Core
 project.lock.json
