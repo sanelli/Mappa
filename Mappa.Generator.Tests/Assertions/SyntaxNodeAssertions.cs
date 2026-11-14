@@ -110,7 +110,7 @@ internal sealed class SyntaxNodeAssertions
             .Should()
             .BeEquivalentTo(names);
 
-        var isTypeNullable = type.EndsWith('?');
+        var isTypeNullable = type.EndsWith('?', StringComparison.Ordinal);
         type = type.Replace("?", string.Empty, StringComparison.Ordinal);
 
         var localSymbol = this.semanticModel.GetDeclaredSymbol(localDeclarationStatementSyntax.Declaration.Variables[0]) as ILocalSymbol;

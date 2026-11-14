@@ -33,7 +33,7 @@ internal static partial class AssertionsHelpers
         }
 
         // Manually handle named tuples
-        if (type.StartsWith('(') && ContainSpacesRegex().Count(type) > 0)
+        if (type.StartsWith('(', StringComparison.Ordinal) && ContainSpacesRegex().Count(type) > 0)
         {
             var typeWithoutParenthesis = type.Substring(1, type.Length - 2);
             var elementTypes = typeWithoutParenthesis.Split(',');

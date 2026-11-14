@@ -63,11 +63,11 @@ internal sealed class ExpressionSyntaxAssertions
         this.Subject.Should().BeOfType<CastExpressionSyntax>();
         var castExpressionSyntax = (CastExpressionSyntax)this.Subject;
 
-        var isTypeNullable = type.EndsWith('?');
+        var isTypeNullable = type.EndsWith('?', StringComparison.Ordinal);
         type = type.Replace("?", string.Empty, StringComparison.Ordinal);
 
         var actualStringType = castExpressionSyntax.Type.ToString();
-        var isActualTypeNullable = actualStringType.EndsWith('?');
+        var isActualTypeNullable = actualStringType.EndsWith('?', StringComparison.Ordinal);
         actualStringType = actualStringType.Replace("?", string.Empty, StringComparison.Ordinal);
 
         var expectedType = this.compilation.GetTypeSymbol(type);

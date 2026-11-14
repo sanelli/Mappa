@@ -44,7 +44,7 @@ internal sealed class TestAnalyzerConfigOptionsProvider
 
         foreach (var line in editorConfig.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
         {
-            if (line.StartsWith('[') || line.StartsWith("is_global", StringComparison.Ordinal) || line.StartsWith("root", StringComparison.Ordinal))
+            if (line.StartsWith('[', StringComparison.Ordinal) || line.StartsWith("is_global", StringComparison.Ordinal) || line.StartsWith("root", StringComparison.Ordinal))
             {
                 continue;
             }
