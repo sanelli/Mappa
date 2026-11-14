@@ -1,5 +1,13 @@
 # Upgrade guide
 
+## 10.3.0 → 11.0.0
+
+### Breaking changes
+
+- **Repository and samples require .NET 11**
+  - Building, testing, AOT publish, benchmarks, and CI for this repository require the **.NET 11 SDK** (`net11.0` host projects).
+  - Published `Mappa` and `Mappa.Generator` NuGet packages remain **`netstandard2.0`** and continue to work in consumer projects that already reference them; the package major version moves to the **11.0.0** line to align with the .NET 11 release.
+
 ## 10.2.0 → 10.3.0
 
 ### Breaking changes

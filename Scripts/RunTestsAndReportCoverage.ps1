@@ -140,7 +140,7 @@ if (-not $?)
     Exit 1
 }
 
-$publishRoot = Join-Path (Resolve-Path "./Mappa.Samples.Aot/bin/Release/net10.0").Path "*/publish"
+$publishRoot = Join-Path (Resolve-Path "./Mappa.Samples.Aot/bin/Release/net11.0").Path "*/publish"
 $publishDir = Get-Item $publishRoot | Select-Object -First 1
 $exe = Get-ChildItem $publishDir.FullName -File |
     Where-Object { $_.Name -like "Mappa.Samples.Aot*" -and $_.Extension -ne ".pdb" } |
